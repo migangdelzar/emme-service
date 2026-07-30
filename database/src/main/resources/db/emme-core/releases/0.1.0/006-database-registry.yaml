@@ -1,0 +1,94 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-database-registry
+      author: emme
+      comment: Create database_registry table and add database_id foreign key to tenant_registry.
+      changes:
+        # --- database_registry ---
+        - createTable:
+            schemaName: emme_core
+            tableName: database_registry
+            columns:
+              - column:
+                  name: database_id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_database_registry
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_database_registry_name
+              - column:
+                  name: jdbc_url
+                  type: varchar(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: min_pool_size
+                  type: integer
+                  defaultValueNumeric: 5
+              - column:
+                  name: max_pool_size
+                  type: integer
+                  defaultValueNumeric: 20
+              - column:
+                  name: priority
+                  type: integer
+                  defaultValueNumeric: 0
+              - column:
+                  name: is_active
+                  type: boolean
+                  defaultValueBoolean: true
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+        # --- alter tenant_registry ---
+        - sql:
+            sql: |
+              ALTER TABLE emme_core.tenant_registry
+                ADD COLUMN database_id UUID
+                REFERENCES emme_core.database_registry(database_id);
+      rollback:
+        - sql:
+            sql: ALTER TABLE emme_core.tenant_registry DROP COLUMN IF EXISTS database_id;
+        - dropTable:
+            schemaName: emme_core
+            tableName: database_registry
+  - changeSet:
+      id: 006-seed-default-database
+      author: emme
+      comment: Seed default database entry (idempotent).
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: "0"
+            sql: "SELECT COUNT(*) FROM emme_core.database_registry WHERE database_id = '00000000-0000-0000-0000-000000000000'"
+      changes:
+        - insert:
+            schemaName: emme_core
+            tableName: database_registry
+            columns:
+              - column:
+                  name: database_id
+                  value: '00000000-0000-0000-0000-000000000000'
+              - column:
+                  name: name
+                  value: default
+              - column:
+                  name: jdbc_url
+                  value: jdbc:postgresql://localhost:5432/emme
+              - column:
+                  name: min_pool_size
+                  valueNumeric: 5
+              - column:
+                  name: max_pool_size
+                  valueNumeric: 20
+              - column:
+                  name: priority
+                  valueNumeric: 0

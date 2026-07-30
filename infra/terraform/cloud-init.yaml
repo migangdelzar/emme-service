@@ -1,0 +1,17 @@
+#cloud-config
+hostname: ${cluster_name}
+packages:
+  - curl
+  - ufw
+write_files:
+  - path: /etc/rancher/k3s/config.yaml
+    content: |
+      write-kubeconfig-mode: "0644"
+      disable: traefik
+runcmd:
+  - curl -sfL https://get.k3s.io | sh -
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw allow 6443/tcp
+  - ufw --force enable

@@ -1,0 +1,168 @@
+package com.emme.identity.web;
+
+import com.emme.identity.application.CustomerAuthService;
+import com.emme.identity.application.KeycloakAuthService;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class AuthController {
+
+  private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+  private final KeycloakAuthService authService;
+  private final CustomerAuthService customerAuthService;
+  private final CurrentUserController currentUserController;
+
+  public AuthController(
+      KeycloakAuthService authService,
+      CustomerAuthService customerAuthService,
+      CurrentUserController currentUserController) {
+    this.authService = authService;
+    this.customerAuthService = customerAuthService;
+    this.currentUserController = currentUserController;
+  }
+
+  public record LoginRequest(String email, String password) {}
+
+  public record TokenLoginResponse(
+      String accessToken, String refreshToken, CurrentUserController.CurrentUserResponse user) {}
+
+  @PostMapping("/api/auth/login")
+  public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    try {
+      var tokens = authService.authenticate(request.email(), request.password());
+
+      // Get full user claims from Keycloak userinfo (access token has no claims for public clients)
+      Map<String, Object> userClaims = authService.getUserInfo(tokens.accessToken());
+
+      // Build a Jwt from userinfo claims so CurrentUserController can read sub, email, name,
+      // realm_access
+      String sub = (String) userClaims.get("sub");
+      if (sub == null || sub.isBlank()) {
+        log.error("No sub claim in userinfo response for {}", request.email());
+        return ResponseEntity.status(500).body(Map.of("error", "Authentication failed"));
+      }
+
+      Jwt jwt =
+          Jwt.withTokenValue(tokens.accessToken())
+              .header("alg", "RS256")
+              .claim("sub", sub)
+              .claim(
+                  "preferred_username",
+                  userClaims.getOrDefault("preferred_username", request.email()))
+              .claim(
+                  "email",
+                  userClaims.getOrDefault(
+                      "email", request.email().contains("@") ? request.email() : ""))
+              .claim(
+                  "name",
+                  userClaims.getOrDefault(
+                      "name", userClaims.getOrDefault("preferred_username", request.email())))
+              .claim("realm_access", userClaims.get("realm_access"))
+              .claim("tenant_id", userClaims.get("tenant_id"))
+              .claim("tenant_slug", userClaims.get("tenant_slug"))
+              .subject(sub)
+              .issuedAt(java.time.Instant.now())
+              .expiresAt(java.time.Instant.now().plusSeconds(3600))
+              .build();
+
+      log.info("User {} ({}) logged in via password grant", sub, request.email());
+
+      // Build user response using /api/me logic
+      var user = currentUserController.currentUser(jwt);
+
+      // Return token + user in response
+      // Return ID token (has sub claim) instead of access token for Bearer auth
+      var bearerToken = tokens.idToken() != null ? tokens.idToken() : tokens.accessToken();
+      return ResponseEntity.ok(new TokenLoginResponse(bearerToken, tokens.refreshToken(), user));
+
+    } catch (KeycloakAuthService.AuthenticationException e) {
+      return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
+    } catch (Exception e) {
+      log.error("Login error", e);
+      return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
+    }
+  }
+
+  
+  @PostMapping("/api/auth/customer-login")
+  public ResponseEntity<?> customerLogin(@RequestBody(required = false) Map<String, String> body,
+                                          @RequestHeader(value = "X-Provider-Token", required = false) String headerToken,
+                                          @RequestParam(value = "token", required = false) String queryToken) {
+    String providerToken = queryToken != null ? queryToken :
+                          (headerToken != null ? headerToken :
+                          (body != null ? body.get("providerToken") : null));
+    if (providerToken == null || providerToken.isBlank()) {
+      return ResponseEntity.badRequest().body(Map.of("error", "providerToken required"));
+    }
+    // Decode if encoded (client workaround for Spring Security JWT scanning)
+    if (!providerToken.contains(".")) {
+      String decoded = null;
+      try {
+        byte[] bytes = new byte[providerToken.length() / 2];
+        for (int i = 0; i < bytes.length; i++) {
+          bytes[i] = (byte) Integer.parseInt(providerToken.substring(i * 2, i * 2 + 2), 16);
+        }
+        decoded = new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+        log.debug("Hex decoded token: {} chars", decoded.length());
+      } catch (Exception hexErr) {
+        log.debug("Hex decode failed: {}", hexErr.getMessage());
+        try {
+          decoded = new String(java.util.Base64.getDecoder().decode(providerToken),
+                               java.nio.charset.StandardCharsets.UTF_8);
+          log.debug("Base64 decoded token: {} chars", decoded.length());
+        } catch (Exception b64Err) {
+          log.debug("Base64 decode failed: {}", b64Err.getMessage());
+        }
+      }
+      if (decoded != null) providerToken = decoded;
+    }
+    try {
+      var result = customerAuthService.authenticate(providerToken);
+      var customer = result.customer();
+      Map<String, Object> response = new LinkedHashMap<>();
+      response.put("needsPhone", result.needsPhone());
+      response.put(
+          "customer",
+          Map.of(
+              "id", customer.getId().toString(),
+              "email", customer.getEmail() != null ? customer.getEmail() : "",
+              "name", customer.getName() != null ? customer.getName() : "",
+              "phone", customer.getPhone() != null ? customer.getPhone() : "",
+              "provider", customer.getProvider() != null ? customer.getProvider().name() : "UNKNOWN"));
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      log.error("Customer login failed", e);
+      return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
+    }
+  }
+
+  @PutMapping("/api/me/profile")
+  public ResponseEntity<?> updateCustomerProfile(
+      @RequestBody Map<String, String> body, @AuthenticationPrincipal Jwt jwt) {
+    if (jwt == null) return ResponseEntity.status(401).build();
+    String role = jwt.getClaimAsString("role");
+    if (!"CUSTOMER".equals(role)) {
+      return ResponseEntity.status(403).body(Map.of("error", "Not a customer account"));
+    }
+    String customerId = jwt.getSubject();
+    String phone = body.get("phone");
+    if (phone == null || phone.isBlank()) {
+      return ResponseEntity.badRequest().body(Map.of("error", "phone required"));
+    }
+    var customer = customerAuthService.updatePhone(UUID.fromString(customerId), phone);
+    return ResponseEntity.ok(Map.of("phone", customer.getPhone()));
+  }
+}

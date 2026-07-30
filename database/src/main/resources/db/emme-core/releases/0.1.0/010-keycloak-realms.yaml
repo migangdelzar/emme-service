@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-keycloak-realms
+      author: emme-platform
+      changes:
+        - addColumn:
+            schemaName: emme_core
+            tableName: tenant
+            columns:
+              - column:
+                  name: keycloak_realm
+                  type: varchar(100)
+                  defaultValue: 'emme'
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropColumn:
+            schemaName: emme_core
+            tableName: tenant
+            columnName: keycloak_realm

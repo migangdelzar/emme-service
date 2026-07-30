@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: emme-studio
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: modules/**,libraries/**
+    livereload:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://${EMME_DB_HOST:localhost}:${EMME_DB_PORT:15432}/emme?sslmode=disable
+    username: ${DB_USERNAME:emme}
+    password: ${DB_PASSWORD:emme}
+  jpa:
+    hibernate:
+      ddl-auto: validate      # Schema owned by database migration Job
+    show-sql: false
+    open-in-view: false
+  liquibase:
+    enabled: false            # Migrations run via K8s Job, not app startup
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${EMME_KEYCLOAK_URL:http://localhost:18080}/realms/emme
+          jwk-set-uri: ${EMME_KEYCLOAK_URL:http://localhost:18080}/realms/emme/protocol/openid-connect/certs
+      client:
+        registration:
+          keycloak:
+            client-id: emme-salon-app
+            authorization-grant-type: authorization_code
+            scope: openid,profile,email
+            redirect-uri: "http://localhost:${EMME_BACKEND_PORT:8081}/login/oauth2/code/keycloak"
+        provider:
+          keycloak:
+            issuer-uri: "${EMME_KEYCLOAK_URL:http://localhost:18080}/realms/emme"
+  data:
+    redis:
+      host: ${EMME_REDIS_HOST:localhost}
+      port: ${EMME_REDIS_PORT:16379}
+
+logging:
+  level:
+    com.emme: DEBUG
+    org.springframework.security: INFO

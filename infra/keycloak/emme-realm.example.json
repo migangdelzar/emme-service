@@ -1,0 +1,126 @@
+{
+  "realm": "emme",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 3600,
+  "clients": [
+    {
+      "clientId": "emme-gateway",
+      "enabled": true,
+      "secret": "CHANGE_ME_gateway_secret",
+      "directAccessGrantsEnabled": true,
+      "publicClient": false,
+      "redirectUris": ["http://localhost:8080/*", "https://*.emme.app/*"]
+    },
+    {
+      "clientId": "emme-platform",
+      "enabled": true,
+      "secret": "CHANGE_ME_platform_secret",
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": false
+    },
+    {
+      "clientId": "emme-salon-app",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:5173/*",
+        "http://localhost:5173",
+        "http://localhost:8100/*",
+        "http://localhost:8100",
+        "capacitor://localhost",
+        "https://*.emme.app/*"
+      ],
+      "webOrigins": ["http://localhost:3000", "http://localhost:5173", "http://localhost:8100", "capacitor://localhost"],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false
+    }
+  ],
+  "roles": {
+    "realm": [
+      {"name": "platform_admin", "description": "Full platform access"},
+      {"name": "business_owner", "description": "Tenant owner"},
+      {"name": "business_manager", "description": "Tenant manager"},
+      {"name": "front_desk", "description": "Tenant front desk"},
+      {"name": "nail_artist", "description": "Nail artist"},
+      {"name": "accountant", "description": "Tenant accountant"},
+      {"name": "read_only", "description": "Tenant read-only"}
+    ]
+  },
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@emme.app",
+      "firstName": "Platform",
+      "lastName": "Admin",
+      "credentials": [{"type": "password", "value": "CHANGE_ME_admin_password"}],
+      "realmRoles": ["platform_admin"]
+    },
+    {
+      "username": "owner",
+      "enabled": true,
+      "email": "owner@demo-salon.emme.app",
+      "firstName": "Demo",
+      "lastName": "Owner",
+      "credentials": [{"type": "password", "value": "CHANGE_ME_owner_password"}],
+      "realmRoles": ["business_owner"],
+      "attributes": {
+        "tenant_id": ["TENANT_ID_FROM_SEED_DATA"],
+        "tenant_slug": ["demo-salon"]
+      }
+    },
+    {
+      "username": "staff",
+      "enabled": true,
+      "email": "staff@demo-salon.emme.app",
+      "firstName": "Demo",
+      "lastName": "Staff",
+      "credentials": [{"type": "password", "value": "CHANGE_ME_staff_password"}],
+      "realmRoles": ["front_desk"],
+      "attributes": {
+        "tenant_id": ["TENANT_ID_FROM_SEED_DATA"],
+        "tenant_slug": ["demo-salon"]
+      }
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "tenant-context",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "tenant-id-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenant_id",
+            "claim.name": "tenant_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "tenant-slug-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenant_slug",
+            "claim.name": "tenant_slug",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": ["tenant-context", "web-origins", "acr", "profile", "roles", "email"]
+}

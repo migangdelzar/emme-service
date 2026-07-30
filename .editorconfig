@@ -1,0 +1,29 @@
+# EditorConfig for Emme Platform
+# https://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_size = 2
+
+[*.java]
+# Prevent IntelliJ from collapsing imports to wildcards
+ij_java_class_count_to_use_import_on_demand = 999
+ij_java_names_count_to_use_import_on_demand = 999
+
+[*.kts]
+indent_style = space
+
+
+[*.{yml,yaml}]
+indent_style = space
+
+[*.{xml,properties}]
+indent_style = space
+
+[*.md]
+trim_trailing_whitespace = false

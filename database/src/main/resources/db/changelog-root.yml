@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: emme-core/changelog.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: emme-studio/changelog.yaml
+      relativeToChangelogFile: true

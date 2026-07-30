@@ -1,0 +1,22 @@
+[tools]
+java = "25"
+python = "3.13"
+
+[env]
+_.source = "scripts/mise/env.sh"
+
+[tasks.compile]
+description = "Compile the backend"
+run = "./gradlew compileJava --no-configuration-cache"
+
+[tasks.test]
+description = "Run backend tests"
+run = "./gradlew test --no-configuration-cache"
+
+[tasks.arch-test]
+description = "Verify Spring Modulith and ArchUnit boundaries"
+run = "./gradlew :applications:emme-platform:archTest --no-configuration-cache"
+
+[tasks.build]
+description = "Build the deployable backend"
+run = "./gradlew :applications:emme-platform:build --no-configuration-cache"

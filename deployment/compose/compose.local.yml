@@ -1,0 +1,10 @@
+# Local dev — mounts source for hot reload
+services:
+  studio-api:
+    build:
+      context: ../..
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+    ports:
+      - "8081:8081"

@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-core-schema
+      author: emme
+      comment: Create the central emme_core schema for platform data.
+      changes:
+        - sql:
+            sql: CREATE SCHEMA IF NOT EXISTS emme_core;
+      rollback:
+        - sql:
+            sql: DROP SCHEMA IF EXISTS emme_core CASCADE;

@@ -1,0 +1,73 @@
+# application-resttest.yml — REST integration tests with H2 + real embedded server
+# Uses RANDOM_PORT, TestRestTemplate, JWT auth via TestSecurityConfig
+# Does NOT exclude OAuth2ResourceServer/OAuth2Client (needed for SecurityConfig)
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: never
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        hbm2ddl:
+          create_namespaces: true
+        create_empty_composites:
+          enabled: true
+  modulith:
+    events:
+      jdbc-schema-initialization:
+        enabled: false
+  liquibase:
+    enabled: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - net.javacrumbs.shedlock.spring.autoconfigure.ShedLockAutoConfiguration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://test-issuer/realms/emme
+      client:
+        provider:
+          keycloak:
+            issuer-uri: https://test-issuer/realms/emme
+        registration:
+          keycloak:
+            client-id: test-client
+            client-secret: test-secret
+  cache:
+    type: none
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+app:
+  ai:
+    provider: mock
+  calendar:
+    google:
+      service-account: ""
+    calendar-id: test-calendar
+
+emme:
+  tenancy:
+    pooling:
+      global-max-connections: 20
+      idle-timeout-minutes: 1
+      eviction-check-interval-seconds: 5
+      default-min-pool-size: 2
+      default-max-pool-size: 5
+      default-database-id: "00000000-0000-0000-0000-000000000000"
+
+logging:
+  level:
+    com.emme: DEBUG

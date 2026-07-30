@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-feature-flags
+      author: emme
+      comment: Create platform feature flag table for global feature toggles.
+      changes:
+        - createTable:
+            schemaName: emme_core
+            tableName: feature_flag
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_feature_flag
+              - column:
+                  name: code
+                  type: varchar(80)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: plan_required
+                  type: varchar(20)
+              - column:
+                  name: description
+                  type: varchar(255)
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - createIndex:
+            schemaName: emme_core
+            tableName: feature_flag
+            indexName: uq_feature_flag_code
+            unique: true
+            columns:
+              - column:
+                  name: code
+        - sql:
+            sql: |
+              INSERT INTO emme_core.feature_flag (id, code, enabled, description)
+              VALUES
+                (gen_random_uuid(), 'whatsapp_booking', true,  'WhatsApp booking integration'),
+                (gen_random_uuid(), 'ai_chat',          true,  'AI chat and RAG features'),
+                (gen_random_uuid(), 'calendar_sync',     false, 'External calendar sync (Google/Outlook)'),
+                (gen_random_uuid(), 'analytics_export',  false, 'Analytics data export'),
+                (gen_random_uuid(), 'custom_notifications', true, 'Custom notification templates'),
+                (gen_random_uuid(), 'multi_staff',       true,  'Multiple staff/artist management');
+      rollback:
+        - dropTable:
+            schemaName: emme_core
+            tableName: feature_flag

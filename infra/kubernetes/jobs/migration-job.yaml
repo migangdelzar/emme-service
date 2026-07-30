@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: database-migrations
+  labels:
+    app.kubernetes.io/name: database-migrations
+    app.kubernetes.io/part-of: emme-modulith
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: database-migrations
+        app.kubernetes.io/part-of: emme-modulith
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: database-migrations
+          image: emme-database-migrations:dev
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_ADMIN_DB
+              value: postgres
+            - name: POSTGRES_USER
+              value: emme
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: emme-secrets
+                  key: postgres-password
+            - name: DATABASE_NAME
+              value: emme
+            - name: LIQUIBASE_CONTEXTS
+              value: prod

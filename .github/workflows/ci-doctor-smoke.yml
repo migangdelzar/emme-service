@@ -1,0 +1,28 @@
+name: Doctor Smoke
+
+on:
+  workflow_run:
+    workflows: [Backend CI]
+    types: [completed]
+
+jobs:
+  smoke:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Backend health
+        run: curl -sf https://emme.app/actuator/health
+      - name: API smoke
+        run: curl -sf https://emme.app/api-docs
+      - name: AI smoke
+        run: |
+          curl -sf -X POST https://emme.app/api/v1/ai/chat \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.SMOKE_TOKEN }}" \
+            -d '{"userMessage":"hi","conversationContext":""}'
+      - name: Catalog smoke
+        run: |
+          curl -sf https://emme.app/api/v1/catalog/items \
+            -H "Authorization: Bearer ${{ secrets.SMOKE_TOKEN }}"

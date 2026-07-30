@@ -1,0 +1,85 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-customer-identity
+      author: emme-platform
+      changes:
+        - createTable:
+            schemaName: emme_core
+            tableName: customer_identity
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone
+                  type: varchar(20)
+              - column:
+                  name: provider
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: provider_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: avatar_url
+                  type: varchar(500)
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            schemaName: emme_core
+            tableName: customer_identity
+            columnNames: provider, provider_id
+        - createTable:
+            schemaName: emme_core
+            tableName: customer_membership
+            columns:
+              - column:
+                  name: customer_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: tenant_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            schemaName: emme_core
+            tableName: customer_membership
+            columnNames: customer_id, tenant_id
+      rollback:
+        - dropTable:
+            schemaName: emme_core
+            tableName: customer_membership
+        - dropTable:
+            schemaName: emme_core
+            tableName: customer_identity

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: emme
+  labels:
+    app: emme-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emme-backend
+  template:
+    metadata:
+      labels:
+        app: emme-backend
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: backend
+          image: ghcr.io/emme/emme-modulith:latest
+          ports:
+            - containerPort: 8081
+              name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:+UseZGC -XX:MaxRAMPercentage=75"
+            - name: APP_GOOGLE_OAUTH_CLIENT_ID
+              value: ""
+            - name: APP_GOOGLE_OAUTH_CLIENT_SECRET
+              value: ""
+            - name: APP_GOOGLE_OAUTH_REDIRECT_URI
+              value: "https://dev.emme.lat/api/v1/google/oauth/callback"
+            - name: APP_GOOGLE_OAUTH_ENCRYPTION_KEY
+              value: "replace-with-32-char-secure-key!!"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000

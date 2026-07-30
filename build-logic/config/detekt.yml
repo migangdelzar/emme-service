@@ -1,0 +1,25 @@
+build:
+  maxIssues: 0
+
+style:
+  MagicNumber:
+    active: true
+    ignoreNumbers:
+      - '0'
+      - '1'
+      - '2'
+      - '12'
+      - '25'
+      - '8081'
+  WildcardImport:
+    active: false
+
+naming:
+  PackageNaming:
+    active: true
+
+complexity:
+  LongParameterList:
+    active: true
+    functionThreshold: 6
+    constructorThreshold: 7

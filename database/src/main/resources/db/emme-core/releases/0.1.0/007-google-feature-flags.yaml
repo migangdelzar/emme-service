@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-google-feature-flags
+      author: emme
+      comment: Seed feature flags for Google Workspace integration (Calendar + Sheets).
+      changes:
+        - sql:
+            dbms: postgresql
+            sql: |
+              INSERT INTO emme_core.feature_flag (id, code, enabled, description)
+              VALUES
+                (gen_random_uuid(), 'google_workspace',    false, 'Google Workspace integration (Calendar + Sheets)'),
+                (gen_random_uuid(), 'google_sheets_export', false, 'Google Sheets export for business data'),
+                (gen_random_uuid(), 'client_google_sync',   false, 'Client Google Calendar sync');
+      rollback:
+        - sql:
+            dbms: postgresql
+            sql: |
+              DELETE FROM emme_core.feature_flag
+              WHERE code IN ('google_workspace', 'google_sheets_export', 'client_google_sync');

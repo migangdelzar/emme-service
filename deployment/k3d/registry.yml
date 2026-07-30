@@ -1,0 +1,4 @@
+mirrors:
+  "ghcr.io":
+    endpoint:
+      - http://emme-registry.local:5000

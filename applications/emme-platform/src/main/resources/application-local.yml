@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: emme-platform
+  datasource:
+    url: jdbc:postgresql://localhost:5432/emme
+    username: emme
+    password: emme
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    com.emme: DEBUG
+    org.springframework.modulith: DEBUG

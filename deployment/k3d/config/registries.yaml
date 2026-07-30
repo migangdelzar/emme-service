@@ -1,0 +1,7 @@
+mirrors:
+  "docker.io":
+    endpoint:
+      - http://emme-registry.local:5000
+  "ghcr.io":
+    endpoint:
+      - http://emme-registry.local:5000

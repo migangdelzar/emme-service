@@ -1,0 +1,73 @@
+# Build
+build/
+bin/
+dist/
+/out/
+
+# Gradle / Kotlin
+.gradle/
+.kotlin/
+gradle-app.setting
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local agent configuration and credentials
+.opencode/opencode.json
+.opencode/opencode.local.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.credentials.json
+
+# Kubernetes secrets
+infra/keycloak/emme-realm.json
+infra/keycloak/**/*-realm*.json
+!infra/keycloak/emme-realm.example.json
+infra/kubernetes/**/*-secret*
+infra/kubernetes/**/secrets/
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/.terraform.lock.hcl
+infra/terraform/*.tfstate*
+infra/terraform/*.tfvars
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# Local Superpowers visual brainstorming sessions
+.superpowers/
+.worktrees/
+
+# SOPS
+*secret*.yml
+
+# Java safety net
+*.class
+.playwright-mcp/
+
+# Test artifacts
+e2e/src/test-results.json
+tasks/test-outputs/
+.superpowers/

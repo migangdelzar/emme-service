@@ -1,0 +1,87 @@
+@startuml EMME Use Cases Overview
+left to right direction
+
+actor "Customer" as customer
+actor "Staff Member" as staff
+actor "Salon Owner" as owner
+actor "Platform Administrator" as platformAdmin
+actor "System Operator" as operator
+actor "External Provider" as provider
+
+rectangle "EMME Modulith" {
+    usecase "UC-001\nAccess Tenant Workspace" as UC001
+    usecase "UC-002\nManage Tenant Lifecycle" as UC002
+    usecase "UC-003\nReview Business Performance" as UC003
+    usecase "UC-004\nManage Service Catalog" as UC004
+    usecase "UC-005\nManage Customers" as UC005
+    usecase "UC-006\nManage Appointments" as UC006
+    usecase "UC-007\nConfigure Business" as UC007
+    usecase "UC-008\nConverse Through Channels" as UC008
+    usecase "UC-009\nNormalize Multimodal Input" as UC009
+    usecase "UC-010\nReceive AI Guidance" as UC010
+    usecase "UC-011\nComplete Conversational Booking" as UC011
+    usecase "UC-012\nReview Conversation History" as UC012
+    usecase "UC-013\nManage Knowledge Sources" as UC013
+    usecase "UC-014\nDeliver Notifications" as UC014
+    usecase "UC-015\nManage Subscription" as UC015
+    usecase "UC-016\nProcess Payments" as UC016
+    usecase "UC-017\nAudit Business Activity" as UC017
+    usecase "UC-018\nMaintain Search Projections" as UC018
+}
+
+staff --> UC001
+owner --> UC001
+platformAdmin --> UC001
+platformAdmin --> UC002
+owner --> UC003
+owner --> UC004
+staff --> UC004
+owner --> UC005
+staff --> UC005
+customer --> UC006
+staff --> UC006
+owner --> UC007
+customer --> UC008
+provider --> UC008
+customer --> UC009
+provider --> UC009
+customer --> UC010
+customer --> UC011
+staff --> UC012
+owner --> UC013
+staff --> UC014
+provider --> UC014
+owner --> UC015
+customer --> UC016
+owner --> UC016
+provider --> UC016
+platformAdmin --> UC017
+operator --> UC017
+operator --> UC018
+
+UC009 ..> UC008 : <<extend>>
+UC010 ..> UC008 : <<extend>>
+UC011 ..> UC010 : <<extend>>
+UC014 ..> UC006 : <<extend>>
+UC018 ..> UC013 : <<include>>
+
+note right of UC001 : FR-001 through FR-007
+note right of UC002 : FR-008 through FR-017
+note right of UC003 : FR-018, FR-038, FR-039
+note right of UC004 : FR-019 through FR-023
+note right of UC005 : FR-024 through FR-028
+note right of UC006 : FR-029 through FR-037
+note right of UC007 : FR-040, FR-041
+note right of UC008 : FR-042 through FR-046
+note right of UC009 : FR-047 through FR-049
+note right of UC010 : FR-050 through FR-053, FR-060
+note right of UC011 : FR-054 through FR-057
+note right of UC012 : FR-058, FR-059
+note right of UC013 : FR-061 through FR-065
+note right of UC014 : FR-066 through FR-069
+note right of UC015 : FR-070, FR-071
+note right of UC016 : FR-072 through FR-074
+note right of UC017 : FR-075
+note right of UC018 : FR-076, FR-077
+
+@enduml

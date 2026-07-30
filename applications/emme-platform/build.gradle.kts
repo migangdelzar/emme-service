@@ -76,13 +76,13 @@ tasks.register<Test>("e2eTest") {
 
 emmeContainer {
   enabled.set(true)
-  imageName.set("ghcr.io/emme/emme-platform")
+  imageName.set("ghcr.io/migangdelzar/emme-service")
   contextDirectory.set(layout.projectDirectory)
 }
 
 emmePublishing {
   enabled.set(true)
-  registry.set("ghcr.io/emme")
+  registry.set("ghcr.io/migangdelzar")
 }
 
 emmeDeployment {

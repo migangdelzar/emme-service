@@ -44,6 +44,25 @@ sequenceDiagram
 The repositories may be released independently, but a breaking contract
 requires a coordinated compatibility window and consumer migration.
 
+## Container image contract
+
+Repository ownership and product identity are separate concerns. Kubernetes
+labels may continue to use `emme-modulith` as the product identity, while
+release images use the public repository owner and the deployable application
+name:
+
+| Artifact | Canonical image |
+|---|---|
+| Main service application (`emme-platform`) | `ghcr.io/migangdelzar/emme-service` |
+| Studio API application | `ghcr.io/migangdelzar/emme-service-studio-api` |
+| Web application | `ghcr.io/migangdelzar/emme-web` |
+
+Environment overlays may replace these images with local registry names, but
+production manifests must promote an immutable tag or digest from the
+canonical registry. The service repository owns backend image build and
+deployment wiring; the web repository owns the frontend image source and
+build context.
+
 ## Migration policy
 
 - The original `emme-modulith` repository remains the historical migration

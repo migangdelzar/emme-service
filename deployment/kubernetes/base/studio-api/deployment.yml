@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: studio-api
-          image: ghcr.io/emme/studio-api:latest
+          image: ghcr.io/migangdelzar/emme-service-studio-api:latest
           ports:
             - containerPort: 8081
               protocol: TCP

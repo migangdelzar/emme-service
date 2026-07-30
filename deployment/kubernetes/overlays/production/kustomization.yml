@@ -8,7 +8,7 @@ resources:
 namespace: emme-prod
 
 images:
-  - name: ghcr.io/emme/studio-api
+  - name: ghcr.io/migangdelzar/emme-service-studio-api
     newTag: latest
 
 patches:

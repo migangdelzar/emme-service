@@ -18,7 +18,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: backend
-          image: ghcr.io/emme/emme-modulith:latest
+          image: ghcr.io/migangdelzar/emme-service:latest
           ports:
             - containerPort: 8081
               name: http

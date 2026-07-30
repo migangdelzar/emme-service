@@ -7,7 +7,7 @@ resources:
 namespace: emme-local
 
 images:
-  - name: ghcr.io/emme/studio-api
+  - name: ghcr.io/migangdelzar/emme-service-studio-api
     newTag: dev
 
 patches:

@@ -107,12 +107,12 @@ tasks.register<Test>("e2eTest") {
 // ── Extensions ──
 emmeContainer {
   enabled.set(true)
-  imageName.set("ghcr.io/emme/studio-api")
+  imageName.set("ghcr.io/migangdelzar/emme-service-studio-api")
   contextDirectory.set(layout.projectDirectory)
 }
 emmePublishing {
   enabled.set(true)
-  registry.set("ghcr.io/emme")
+  registry.set("ghcr.io/migangdelzar")
   signArtifacts.set(true)
 }
 emmeDeployment {

@@ -10,10 +10,10 @@ namespace: emme-dev
 namePrefix: dev-
 
 images:
-  - name: ghcr.io/emme/emme-modulith
+  - name: ghcr.io/migangdelzar/emme-service
     newName: emme-modulith
     newTag: dev
-  - name: ghcr.io/emme/emme-frontend
+  - name: ghcr.io/migangdelzar/emme-web
     newName: emme-frontend
     newTag: dev
 

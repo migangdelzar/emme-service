@@ -8,7 +8,7 @@ resources:
 namespace: emme-prod
 
 images:
-  - name: ghcr.io/emme/emme-modulith
+  - name: ghcr.io/migangdelzar/emme-service
     newTag: 0.1.0
 
 patches:

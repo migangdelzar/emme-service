@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/emme/emme-frontend:latest
+          image: ghcr.io/migangdelzar/emme-web:latest
           ports:
             - containerPort: 80
               name: http

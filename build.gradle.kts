@@ -19,9 +19,11 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
 configure<org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension> {
     formats.set(listOf("HTML", "JSON", "SARIF"))
     failBuildOnCVSS.set(7.0f)
-    failOnError.set(true)
-    skipTestGroups.set(true)
-    outputDirectory.set(layout.buildDirectory.dir("reports/dependency-check"))
+  failOnError.set(true)
+  skipTestGroups.set(true)
+  outputDirectory.set(layout.buildDirectory.dir("reports/dependency-check"))
+  nvd.apiKey.set(providers.environmentVariable("NVD_API_KEY"))
+  nvd.validForHours.set(24)
 }
 
 tasks.named("check") {

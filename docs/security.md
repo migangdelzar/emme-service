@@ -37,6 +37,12 @@ defense in depth, secure defaults, and explicit denial.
 - [ ] Dependency, secret, and image scans pass.
 - [ ] Changed boundaries have an updated threat model or recorded rationale.
 
+OWASP Dependency-Check uses the NVD API. Configure the repository secret
+`NVD_API_KEY` before making its workflow job required; the workflow caches the
+NVD database and skips the dependency job when the secret is absent so a public
+NVD rate-limit stall cannot masquerade as an application failure. Local Gradle
+verification metadata remains required for reproducible builds.
+
 See the boundary-specific controls in [API](architecture/01-backend/api.md),
 [integration](architecture/03-integration/frontend-backend.md), and
 [containers](architecture/04-delivery/container.md).

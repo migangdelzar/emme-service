@@ -34,7 +34,7 @@ flowchart LR
 |---|---|---|
 | `ci-backend.yml` | Pushes and pull requests targeting `main` | Markdown validation, static Gradle quality, platform tests, module-boundary tests, both bootable JARs |
 | `ci-module-boundaries.yml` | Pushes and pull requests | Spring Modulith and ArchUnit verification |
-| `security-scan.yml` | Pushes, pull requests, weekly schedule | Gitleaks and OWASP dependency analysis |
+| `security-scan.yml` | Pushes, pull requests, weekly schedule | Gitleaks always; OWASP Dependency-Check when `NVD_API_KEY` is configured |
 | `dependency-review.yml` | Manual dispatch until GitHub Dependency Graph is enabled | High-severity dependency changes are rejected when supported |
 
 The backend quality job runs Gradle `ci` with application test tasks excluded so
@@ -83,6 +83,9 @@ CI may select focused jobs based on changed paths, but the protected branch must
 - Keep local Gradle verification metadata and OWASP dependency analysis blocking;
   the optional GitHub dependency-review workflow must be enabled by repository
   administration before it is restored as an automatic pull-request gate.
+- Configure the repository `NVD_API_KEY` secret before making OWASP analysis a
+  required pull-request check. Without it, the dependency job is intentionally
+  skipped instead of timing out against the public NVD rate limit.
 
 ### Test execution policy
 

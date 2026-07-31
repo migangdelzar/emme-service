@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
   schedule:
     - cron: '17 3 * * 1'
 
@@ -26,8 +27,14 @@ jobs:
 
   dependencies:
     name: Dependency vulnerability scan
+    # OWASP Dependency-Check requires an NVD API key for a deterministic CI
+    # update. The job skips until the repository secret is configured; secret
+    # scanning is independent and always runs.
+    if: ${{ env.NVD_API_KEY != '' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -35,5 +42,12 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
+      - name: Cache OWASP Dependency-Check data
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/dependency-check-data
+          key: dependency-check-data-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: |
+            dependency-check-data-${{ runner.os }}-
       - name: Run OWASP dependency check
         run: ./gradlew dependencyCheckAnalyze --no-daemon --no-configuration-cache --stacktrace

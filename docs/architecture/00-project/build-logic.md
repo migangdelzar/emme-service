@@ -601,6 +601,13 @@ Unit tests must cover provider selection, model validation, task inputs, and plu
 
 Every new external provider needs provider unit tests, a functional wiring test, and a documented local/CI prerequisite. Every custom task needs input/output validation and a failure-path test.
 
+The quality capability is enforced by the included build itself. Spotless formats
+Kotlin, Kotlin Gradle scripts, and Java with repository-approved formatters;
+Checkstyle validates Java source conventions; and Detekt validates build-logic
+Kotlin. The committed Detekt baseline contains only acknowledged legacy findings:
+new findings fail the build and must be fixed or explicitly reviewed before the
+baseline is changed.
+
 ### 14. Capability ownership and change isolation
 
 | Change | Primary location | Expected cross-cutting impact |

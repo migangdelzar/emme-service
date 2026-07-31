@@ -9,13 +9,25 @@ _.source = "scripts/mise/env.sh"
 description = "Compile the backend"
 run = "./gradlew compileJava --no-configuration-cache"
 
+[tasks.docs-check]
+description = "Validate Markdown links and code fences"
+run = "node scripts/validate-markdown.mjs"
+
+[tasks.quality]
+description = "Run backend formatting, compilation, and static analysis"
+run = "./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon --no-configuration-cache"
+
+[tasks.security-check]
+description = "Run the OWASP dependency vulnerability scan"
+run = "./gradlew dependencyCheckAnalyze --no-daemon --no-configuration-cache"
+
 [tasks.test]
 description = "Run backend tests"
 run = "./gradlew test --no-configuration-cache"
 
 [tasks.arch-test]
 description = "Verify Spring Modulith and ArchUnit boundaries"
-run = "./gradlew :applications:emme-platform:archTest --no-configuration-cache"
+run = "./gradlew :applications:studio-api:test --tests com.emme.ModularityTest --tests com.emme.LayerConventionTest --no-daemon --no-configuration-cache"
 
 [tasks.build]
 description = "Build the deployable backend"

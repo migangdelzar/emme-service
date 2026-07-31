@@ -6,9 +6,17 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  compile:
+  quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -16,11 +24,18 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew compileJava --no-configuration-cache
+      - name: Verify documentation
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/validate-markdown.mjs
+      - name: Run Gradle quality lifecycle
+        run: ./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon --no-configuration-cache --stacktrace
 
   test:
-    needs: compile
+    needs: quality
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -28,11 +43,13 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :applications:emme-platform:test --no-configuration-cache
+      - name: Run platform tests
+        run: ./gradlew :applications:emme-platform:test --no-daemon --no-configuration-cache --stacktrace
 
-  arch-test:
-    needs: compile
+  build-logic:
+    name: Build-logic unit and functional tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -40,11 +57,12 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :applications:emme-platform:archTest --no-configuration-cache
+      - run: ./gradlew :build-logic:check --no-daemon --no-configuration-cache --stacktrace
 
   boot-jar:
-    needs: test
+    needs: [quality, test, build-logic]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -52,7 +70,7 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :applications:emme-platform:bootJar --no-configuration-cache
+      - run: ./gradlew :applications:emme-platform:bootJar :applications:studio-api:bootJar --no-daemon --no-configuration-cache --stacktrace
 
   deploy:
     needs: boot-jar
@@ -66,4 +84,4 @@ jobs:
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
       - name: Deploy
-        run: ./gradlew deploy -Paction=up -Pprovider=${{ github.ref_name == 'main' && 'prod' || 'k3d' }}
+        run: ./gradlew deploy -Paction=up -Pprovider=${{ github.ref_name == 'main' && 'prod' || 'k3d' }} --no-daemon --no-configuration-cache

@@ -15,10 +15,6 @@ architecture + contract tests
        ↓
 integration tests
        ↓
-frontend build + component tests
-       ↓
-E2E / regression
-       ↓
 security / dependency / image checks
        ↓
 release artifact
@@ -28,10 +24,25 @@ release artifact
 flowchart LR
     COMMIT[Commit] --> FAST[Format + compile + unit]
     FAST --> ARCH[Architecture + contract]
-    ARCH --> INTEGRATION[Integration + E2E]
-    INTEGRATION --> SECURITY[Security + dependency + image]
+    ARCH --> SECURITY[Security + dependency + image]
     SECURITY --> ARTIFACT[Traceable artifact]
 ```
+
+## Repository workflows
+
+| Workflow | Trigger | Required evidence |
+|---|---|---|
+| `ci-backend.yml` | Pushes and pull requests targeting `main` | Markdown validation, static Gradle quality, platform tests, module-boundary tests, both bootable JARs |
+| `ci-module-boundaries.yml` | Pushes and pull requests | Spring Modulith and ArchUnit verification |
+| `security-scan.yml` | Pushes, pull requests, weekly schedule | Gitleaks and OWASP dependency analysis |
+| `dependency-review.yml` | Pull requests | High-severity dependency changes are rejected |
+
+The backend quality job runs Gradle `ci` with application test tasks excluded so
+formatting, compilation, Spotless, Checkstyle, and project checks provide fast
+feedback. Dedicated jobs then run the existing platform test suite and module
+boundary suite. Build-logic has its own job for unit tests, Detekt, Spotless,
+plugin validation, and Gradle TestKit functional tests. Integration tests that
+require external infrastructure remain explicit release or environment jobs.
 
 ## Rules
 

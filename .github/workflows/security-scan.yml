@@ -26,28 +26,40 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   dependencies:
-    name: Dependency vulnerability scan
-    # OWASP Dependency-Check requires an NVD API key for a deterministic CI
-    # update. The job skips until the repository secret is configured; secret
-    # scanning is independent and always runs.
-    if: ${{ env.NVD_API_KEY != '' }}
+    name: Dependency vulnerability scan (NVD key required)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    env:
-      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
     steps:
+      - name: Check NVD API key configuration
+        id: nvd-key
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if [[ -n "$NVD_API_KEY" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::OWASP Dependency-Check skipped: configure the NVD_API_KEY repository secret."
+          fi
       - uses: actions/checkout@v4
+        if: steps.nvd-key.outputs.configured == 'true'
       - uses: actions/setup-java@v4
+        if: steps.nvd-key.outputs.configured == 'true'
         with:
           java-version: '25'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
+        if: steps.nvd-key.outputs.configured == 'true'
       - name: Cache OWASP Dependency-Check data
         uses: actions/cache@v4
+        if: steps.nvd-key.outputs.configured == 'true'
         with:
           path: ~/.gradle/dependency-check-data
           key: dependency-check-data-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
           restore-keys: |
             dependency-check-data-${{ runner.os }}-
       - name: Run OWASP dependency check
+        if: steps.nvd-key.outputs.configured == 'true'
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: ./gradlew dependencyCheckAnalyze --no-daemon --no-configuration-cache --stacktrace

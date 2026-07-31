@@ -35,7 +35,7 @@ flowchart LR
 | `ci-backend.yml` | Pushes and pull requests targeting `main` | Markdown validation, static Gradle quality, platform tests, module-boundary tests, both bootable JARs |
 | `ci-module-boundaries.yml` | Pushes and pull requests | Spring Modulith and ArchUnit verification |
 | `security-scan.yml` | Pushes, pull requests, weekly schedule | Gitleaks and OWASP dependency analysis |
-| `dependency-review.yml` | Pull requests | High-severity dependency changes are rejected |
+| `dependency-review.yml` | Manual dispatch until GitHub Dependency Graph is enabled | High-severity dependency changes are rejected when supported |
 
 The backend quality job runs Gradle `ci` with application test tasks excluded so
 formatting, compilation, Spotless, Checkstyle, and project checks provide fast
@@ -80,6 +80,9 @@ CI may select focused jobs based on changed paths, but the protected branch must
 - Do not expose production secrets to pull-request jobs.
 - Produce signed, traceable artifacts with commit and dependency metadata.
 - Keep dependency and build caches scoped, integrity-checked, and free of secrets.
+- Keep local Gradle verification metadata and OWASP dependency analysis blocking;
+  the optional GitHub dependency-review workflow must be enabled by repository
+  administration before it is restored as an automatic pull-request gate.
 
 ### Test execution policy
 

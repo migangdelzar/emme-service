@@ -1,5 +1,5 @@
 plugins {
-    `java-library`
+    id("emme.java-library")
 }
 
 group = "com.emme"

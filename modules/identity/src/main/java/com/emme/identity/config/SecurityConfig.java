@@ -79,12 +79,15 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(
-      HttpSecurity http, LoginRateLimitFilter rateLimitFilter,
-      MultiRealmJwtDecoder multiRealmJwtDecoder) throws Exception {
-    http.securityMatcher(request -> {
-          String uri = request.getRequestURI();
-          return !uri.startsWith("/api/auth/customer-login");
-        })
+      HttpSecurity http,
+      LoginRateLimitFilter rateLimitFilter,
+      MultiRealmJwtDecoder multiRealmJwtDecoder)
+      throws Exception {
+    http.securityMatcher(
+            request -> {
+              String uri = request.getRequestURI();
+              return !uri.startsWith("/api/auth/customer-login");
+            })
         .headers(
             headers ->
                 headers
@@ -152,17 +155,23 @@ public class SecurityConfig {
                         userInfo -> userInfo.userAuthoritiesMapper(userAuthoritiesMapper())))
         .oauth2ResourceServer(
             oauth2 ->
-                oauth2.jwt(jwt -> jwt
-                    .decoder(multiRealmJwtDecoder)
-                    .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                .bearerTokenResolver(request -> {
-                    String uri = request.getRequestURI();
-                    if (uri != null && (uri.endsWith("/customer-login") || uri.endsWith("/login"))) {
-                        return null;
-                    }
-                    String header = request.getHeader("Authorization");
-                    return (header != null && header.startsWith("Bearer ")) ? header.substring(7) : null;
-                }))
+                oauth2
+                    .jwt(
+                        jwt ->
+                            jwt.decoder(multiRealmJwtDecoder)
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                    .bearerTokenResolver(
+                        request -> {
+                          String uri = request.getRequestURI();
+                          if (uri != null
+                              && (uri.endsWith("/customer-login") || uri.endsWith("/login"))) {
+                            return null;
+                          }
+                          String header = request.getHeader("Authorization");
+                          return (header != null && header.startsWith("Bearer "))
+                              ? header.substring(7)
+                              : null;
+                        }))
         .logout(
             logout ->
                 logout
@@ -205,7 +214,8 @@ public class SecurityConfig {
     http.securityMatcher("/api/auth/customer-login")
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     return http.build();
   }
 

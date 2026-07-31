@@ -6,9 +6,11 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.ProviderFactory
 import javax.inject.Inject
 
-abstract class EmmePublishingExtension @Inject constructor(
+abstract class EmmePublishingExtension
+  @Inject
+  constructor(
     providers: ProviderFactory,
-) {
+  ) {
     abstract val enabled: Property<Boolean>
     abstract val channel: Property<ReleaseChannel>
     abstract val version: Property<String>
@@ -18,12 +20,12 @@ abstract class EmmePublishingExtension @Inject constructor(
     abstract val platforms: ListProperty<String>
 
     init {
-        enabled.convention(false)
-        channel.convention(ReleaseChannel.SNAPSHOT)
-        signArtifacts.convention(false)
-        signingKeyId.convention(
-            providers.gradleProperty("emme.publishing.signingKeyId").orElse("")
-        )
-        platforms.convention(listOf("linux/amd64", "linux/arm64"))
+      enabled.convention(false)
+      channel.convention(ReleaseChannel.SNAPSHOT)
+      signArtifacts.convention(false)
+      signingKeyId.convention(
+        providers.gradleProperty("emme.publishing.signingKeyId").orElse(""),
+      )
+      platforms.convention(listOf("linux/amd64", "linux/arm64"))
     }
-}
+  }

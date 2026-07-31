@@ -21,10 +21,6 @@ spring:
   sql:
     init:
       mode: never
-  modulith:
-    events:
-      jdbc-schema-initialization:
-        enabled: true
   liquibase:
     enabled: false
   autoconfigure:

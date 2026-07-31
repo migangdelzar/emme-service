@@ -8,22 +8,22 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 abstract class DeployTask : DefaultTask() {
+  @get:Input
+  abstract val action: Property<String>
 
-    @get:Input
-    abstract val action: Property<String>
+  @get:Internal
+  abstract val deploymentProvider: Property<DeploymentProvider>
 
-    @get:Internal
-    abstract val deploymentProvider: Property<DeploymentProvider>
-
-    @TaskAction
-    fun deploy() {
-        val result = when (action.get()) {
-            "up" -> deploymentProvider.get().up()
-            "down" -> deploymentProvider.get().down()
-            "apply" -> deploymentProvider.get().apply()
-            else -> throw IllegalArgumentException("Unknown deploy action: ${action.get()}")
-        }
-        if (!result.success) throw RuntimeException("Deployment failed: ${result.message}")
-        logger.lifecycle("Deployment {} successful: {}", action.get(), result.message)
-    }
+  @TaskAction
+  fun deploy() {
+    val result =
+      when (action.get()) {
+        "up" -> deploymentProvider.get().up()
+        "down" -> deploymentProvider.get().down()
+        "apply" -> deploymentProvider.get().apply()
+        else -> throw IllegalArgumentException("Unknown deploy action: ${action.get()}")
+      }
+    if (!result.success) throw RuntimeException("Deployment failed: ${result.message}")
+    logger.lifecycle("Deployment {} successful: {}", action.get(), result.message)
+  }
 }

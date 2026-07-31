@@ -7,18 +7,17 @@ import org.gradle.api.services.BuildServiceParameters
 import org.gradle.api.services.BuildServiceSpec
 
 object ProviderRegistry {
+  inline fun <reified T : BuildService<P>, P : BuildServiceParameters> registerProvider(
+    gradle: Gradle,
+    name: String,
+    noinline configure: BuildServiceSpec<P>.() -> Unit = {},
+  ): Provider<T> = gradle.sharedServices.registerIfAbsent(name, T::class.java, configure)
 
-    inline fun <reified T : BuildService<P>, P : BuildServiceParameters> registerProvider(
-        gradle: Gradle,
-        name: String,
-        noinline configure: BuildServiceSpec<P>.() -> Unit = {},
-    ): Provider<T> = gradle.sharedServices.registerIfAbsent(name, T::class.java, configure)
+  fun BuildServiceSpec<*>.containerConcurrency() {
+    (this as BuildServiceSpec<BuildServiceParameters>).maxParallelUsages.set(2)
+  }
 
-    fun BuildServiceSpec<*>.containerConcurrency() {
-        (this as BuildServiceSpec<BuildServiceParameters>).maxParallelUsages.set(2)
-    }
-
-    fun BuildServiceSpec<*>.singleConcurrency() {
-        (this as BuildServiceSpec<BuildServiceParameters>).maxParallelUsages.set(1)
-    }
+  fun BuildServiceSpec<*>.singleConcurrency() {
+    (this as BuildServiceSpec<BuildServiceParameters>).maxParallelUsages.set(1)
+  }
 }

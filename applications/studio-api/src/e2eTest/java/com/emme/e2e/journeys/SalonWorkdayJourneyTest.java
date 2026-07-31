@@ -1,11 +1,10 @@
 package com.emme.e2e.journeys;
 
-import com.emme.client.E2eTest;
-import com.emme.client.Role;
 import static com.emme.client.E2eTest.withSession;
 import static com.emme.client.E2eTest.withUnauthenticated;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.client.Role;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +22,9 @@ class SalonWorkdayJourneyTest {
 
   @Test
   void doCreateCustomerAndVerify() {
-    withSession(DEMO_TENANT, Role.BUSINESS_OWNER,
+    withSession(
+        DEMO_TENANT,
+        Role.BUSINESS_OWNER,
         s -> {
           s.setup().subscription(DEMO_TENANT);
           var user = s.user();
@@ -39,7 +40,9 @@ class SalonWorkdayJourneyTest {
 
   @Test
   void doCreateServiceAndVerify() {
-    withSession(DEMO_TENANT, Role.BUSINESS_OWNER,
+    withSession(
+        DEMO_TENANT,
+        Role.BUSINESS_OWNER,
         s -> {
           s.setup().subscription(DEMO_TENANT);
           String uniqueName = UUID.randomUUID().toString().substring(0, 8) + "-Journey-Manicure";
@@ -62,7 +65,9 @@ class SalonWorkdayJourneyTest {
 
   @Test
   void doFullBusinessDay() {
-    withSession(DEMO_TENANT, Role.BUSINESS_OWNER,
+    withSession(
+        DEMO_TENANT,
+        Role.BUSINESS_OWNER,
         s -> {
           s.setup().subscription(DEMO_TENANT);
           var user = s.user();

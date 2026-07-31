@@ -5,15 +5,15 @@ val libs = extensions.getByType(VersionCatalogsExtension::class).named("libs")
 val e = EmmeDependencies(libs)
 
 plugins {
-    id("emme.spring-module")
+  id("emme.spring-module")
 }
 
 dependencies {
-    implementation(e.springBootStarterDataJpa)
-    implementation(e.liquibaseCore)
+  implementation(e.springBootStarterDataJpa)
+  implementation(e.liquibaseCore)
 
-    runtimeOnly(e.postgresql)
+  runtimeOnly(e.postgresql)
 
-    testImplementation(e.testcontainersJunitJupiter)
-    testImplementation(e.testcontainersPostgresql)
+  testImplementation(e.testcontainersJunitJupiter)
+  testImplementation(e.testcontainersPostgresql)
 }

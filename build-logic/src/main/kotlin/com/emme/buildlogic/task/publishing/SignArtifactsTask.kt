@@ -11,23 +11,22 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 abstract class SignArtifactsTask : DefaultTask() {
+  @get:InputFile
+  abstract val artifact: RegularFileProperty
 
-    @get:InputFile
-    abstract val artifact: RegularFileProperty
+  @get:Input
+  abstract val keyId: Property<String>
 
-    @get:Input
-    abstract val keyId: Property<String>
+  @get:OutputFile
+  abstract val signatureFile: RegularFileProperty
 
-    @get:OutputFile
-    abstract val signatureFile: RegularFileProperty
+  @get:Internal
+  abstract val publisher: Property<PublisherProvider>
 
-    @get:Internal
-    abstract val publisher: Property<PublisherProvider>
-
-    @TaskAction
-    fun sign() {
-        val result = publisher.get().sign(artifact.get().asFile, keyId.get())
-        signatureFile.get().asFile.writeText(result.signaturePath)
-        logger.lifecycle("Artifact signed: {}", result.signaturePath)
-    }
+  @TaskAction
+  fun sign() {
+    val result = publisher.get().sign(artifact.get().asFile, keyId.get())
+    signatureFile.get().asFile.writeText(result.signaturePath)
+    logger.lifecycle("Artifact signed: {}", result.signaturePath)
+  }
 }

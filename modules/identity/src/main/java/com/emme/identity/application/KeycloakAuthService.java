@@ -112,7 +112,9 @@ public class KeycloakAuthService {
 
   private String resolveRealm(String email) {
     // Platform admin check — if email is in the platform domain
-    if (email.endsWith("@emme.app") && !email.contains("@demo-salon") && !email.contains("@studio-a")) {
+    if (email.endsWith("@emme.app")
+        && !email.contains("@demo-salon")
+        && !email.contains("@studio-a")) {
       return defaultRealm;
     }
     // Try to find tenant by email domain

@@ -5,11 +5,11 @@ val libs = extensions.getByType(VersionCatalogsExtension::class).named("libs")
 val e = EmmeDependencies(libs)
 
 plugins {
-    id("emme.java-library")
-    `java-test-fixtures`
+  id("emme.java-library")
+  `java-test-fixtures`
 }
 
 dependencies {
-    testFixturesImplementation(platform(project(":platform")))
-    testFixturesImplementation(e.assertjCore)
+  testFixturesImplementation(platform(project(":platform")))
+  testFixturesImplementation(e.assertjCore)
 }

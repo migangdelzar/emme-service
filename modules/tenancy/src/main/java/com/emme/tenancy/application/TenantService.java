@@ -28,12 +28,12 @@ public class TenantService {
       throw new IllegalArgumentException("Tenant with slug '" + slug + "' already exists");
     }
     Tenant saved = repository.save(new Tenant(slug, name));
-    eventPublisher.publishEvent(new TenantCreatedEvent(
-        saved.getId(),
-        saved.getSlug(),
-        saved.getName(),
-        "admin@" + saved.getSlug() + ".emme.app"
-    ));
+    eventPublisher.publishEvent(
+        new TenantCreatedEvent(
+            saved.getId(),
+            saved.getSlug(),
+            saved.getName(),
+            "admin@" + saved.getSlug() + ".emme.app"));
     return saved;
   }
 

@@ -10,42 +10,42 @@ import java.time.Instant
 import java.util.Properties
 
 abstract class GenerateBuildInfo : DefaultTask() {
+  @get:Input
+  abstract val version: Property<String>
 
-    @get:Input
-    abstract val version: Property<String>
+  @get:Input
+  abstract val commit: Property<String>
 
-    @get:Input
-    abstract val commit: Property<String>
+  @get:Input
+  abstract val branch: Property<String>
 
-    @get:Input
-    abstract val branch: Property<String>
+  @get:Input
+  abstract val channel: Property<String>
 
-    @get:Input
-    abstract val channel: Property<String>
+  @get:Input
+  abstract val buildTimestamp: Property<String>
 
-    @get:Input
-    abstract val buildTimestamp: Property<String>
+  @get:OutputFile
+  abstract val outputFile: RegularFileProperty
 
-    @get:OutputFile
-    abstract val outputFile: RegularFileProperty
+  init {
+    // No convention: resolved lazily in @TaskAction for reproducibility within a build
+  }
 
-    init {
-        // No convention: resolved lazily in @TaskAction for reproducibility within a build
+  @TaskAction
+  fun generate() {
+    val props =
+      Properties().apply {
+        setProperty("build.version", version.get())
+        setProperty("build.commit", commit.get())
+        setProperty("build.branch", branch.get())
+        setProperty("build.channel", channel.get())
+        setProperty("build.timestamp", buildTimestamp.orElse(Instant.now().toString()).get())
+      }
+
+    outputFile.get().asFile.apply {
+      parentFile.mkdirs()
+      outputStream().use { props.store(it, "Emme Build Info") }
     }
-
-    @TaskAction
-    fun generate() {
-        val props = Properties().apply {
-            setProperty("build.version", version.get())
-            setProperty("build.commit", commit.get())
-            setProperty("build.branch", branch.get())
-            setProperty("build.channel", channel.get())
-            setProperty("build.timestamp", buildTimestamp.orElse(Instant.now().toString()).get())
-        }
-
-        outputFile.get().asFile.apply {
-            parentFile.mkdirs()
-            outputStream().use { props.store(it, "Emme Build Info") }
-        }
-    }
+  }
 }

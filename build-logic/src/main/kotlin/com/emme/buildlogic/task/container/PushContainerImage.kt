@@ -8,26 +8,25 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 abstract class PushContainerImage : DefaultTask() {
+  @get:Input
+  abstract val imageName: Property<String>
 
-    @get:Input
-    abstract val imageName: Property<String>
+  @get:Input
+  abstract val registry: Property<String>
 
-    @get:Input
-    abstract val registry: Property<String>
+  @get:Internal
+  abstract val runtimeService: Property<ContainerRuntimeProvider>
 
-    @get:Internal
-    abstract val runtimeService: Property<ContainerRuntimeProvider>
+  init {
+    registry.convention("")
+    doNotTrackState(
+      "Container push creates external state.",
+    )
+  }
 
-    init {
-        registry.convention("")
-        doNotTrackState(
-            "Container push creates external state."
-        )
-    }
-
-    @TaskAction
-    fun push() {
-        val result = runtimeService.get().push(imageName.get(), registry.get())
-        logger.lifecycle("Container pushed: {}", result.manifest)
-    }
+  @TaskAction
+  fun push() {
+    val result = runtimeService.get().push(imageName.get(), registry.get())
+    logger.lifecycle("Container pushed: {}", result.manifest)
+  }
 }

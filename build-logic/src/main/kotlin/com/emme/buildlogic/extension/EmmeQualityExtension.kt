@@ -4,9 +4,11 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.ProviderFactory
 import javax.inject.Inject
 
-abstract class EmmeQualityExtension @Inject constructor(
+abstract class EmmeQualityExtension
+  @Inject
+  constructor(
     providers: ProviderFactory,
-) {
+  ) {
     /** SonarQube server URL */
     abstract val sonarHostUrl: Property<String>
 
@@ -20,17 +22,19 @@ abstract class EmmeQualityExtension @Inject constructor(
     abstract val coverageThreshold: Property<Double>
 
     init {
-        sonarHostUrl.convention(
-            providers.gradleProperty("sonar.host.url")
-                .orElse(providers.environmentVariable("SONAR_HOST_URL"))
-                .orElse(""),
-        )
-        projectKey.convention("emme")
-        gateMode.convention(
-            providers.gradleProperty("emme.quality.gate")
-                .orElse(providers.environmentVariable("EMME_QUALITY_GATE"))
-                .orElse("strict"),
-        )
-        coverageThreshold.convention(0.70)
+      sonarHostUrl.convention(
+        providers
+          .gradleProperty("sonar.host.url")
+          .orElse(providers.environmentVariable("SONAR_HOST_URL"))
+          .orElse(""),
+      )
+      projectKey.convention("emme")
+      gateMode.convention(
+        providers
+          .gradleProperty("emme.quality.gate")
+          .orElse(providers.environmentVariable("EMME_QUALITY_GATE"))
+          .orElse("strict"),
+      )
+      coverageThreshold.convention(0.70)
     }
-}
+  }

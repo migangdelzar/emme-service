@@ -96,14 +96,17 @@ public class AuthController {
     }
   }
 
-  
   @PostMapping("/api/auth/customer-login")
-  public ResponseEntity<?> customerLogin(@RequestBody(required = false) Map<String, String> body,
-                                          @RequestHeader(value = "X-Provider-Token", required = false) String headerToken,
-                                          @RequestParam(value = "token", required = false) String queryToken) {
-    String providerToken = queryToken != null ? queryToken :
-                          (headerToken != null ? headerToken :
-                          (body != null ? body.get("providerToken") : null));
+  public ResponseEntity<?> customerLogin(
+      @RequestBody(required = false) Map<String, String> body,
+      @RequestHeader(value = "X-Provider-Token", required = false) String headerToken,
+      @RequestParam(value = "token", required = false) String queryToken) {
+    String providerToken =
+        queryToken != null
+            ? queryToken
+            : (headerToken != null
+                ? headerToken
+                : (body != null ? body.get("providerToken") : null));
     if (providerToken == null || providerToken.isBlank()) {
       return ResponseEntity.badRequest().body(Map.of("error", "providerToken required"));
     }
@@ -120,8 +123,10 @@ public class AuthController {
       } catch (Exception hexErr) {
         log.debug("Hex decode failed: {}", hexErr.getMessage());
         try {
-          decoded = new String(java.util.Base64.getDecoder().decode(providerToken),
-                               java.nio.charset.StandardCharsets.UTF_8);
+          decoded =
+              new String(
+                  java.util.Base64.getDecoder().decode(providerToken),
+                  java.nio.charset.StandardCharsets.UTF_8);
           log.debug("Base64 decoded token: {} chars", decoded.length());
         } catch (Exception b64Err) {
           log.debug("Base64 decode failed: {}", b64Err.getMessage());
@@ -141,7 +146,8 @@ public class AuthController {
               "email", customer.getEmail() != null ? customer.getEmail() : "",
               "name", customer.getName() != null ? customer.getName() : "",
               "phone", customer.getPhone() != null ? customer.getPhone() : "",
-              "provider", customer.getProvider() != null ? customer.getProvider().name() : "UNKNOWN"));
+              "provider",
+                  customer.getProvider() != null ? customer.getProvider().name() : "UNKNOWN"));
       return ResponseEntity.ok(response);
     } catch (Exception e) {
       log.error("Customer login failed", e);

@@ -23,3 +23,15 @@ configure<org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension> {
     skipTestGroups.set(true)
     outputDirectory.set(layout.buildDirectory.dir("reports/dependency-check"))
 }
+
+tasks.named("check") {
+    dependsOn("spotlessCheck")
+}
+
+gradle.projectsEvaluated {
+    tasks.named("ci") {
+        dependsOn(subprojects.flatMap { subproject ->
+            subproject.tasks.matching { task -> task.name == "check" }
+        })
+    }
+}

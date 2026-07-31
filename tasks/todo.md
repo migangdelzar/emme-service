@@ -9,7 +9,7 @@
 - [x] Gradle dependency verification includes the CI-resolved JUnit metadata.
 - [x] Infrastructure manifests have a deterministic validation path.
 - [x] Web i18n follows the Clara reference pattern and its quality gate passes.
-- [ ] Changes are committed and pushed in logical commits.
+- [x] Changes are committed and pushed in logical commits.
 
 ## Working notes
 
@@ -34,3 +34,5 @@
 - Verified with `./gradlew ci -x test -x integrationTest -x e2eTest`, build-logic
   unit/functional checks, architecture tests, focused catalog tests, Markdown
   validation, both Kustomize overlays, and web `bun run quality`.
+- Pushed service commits through `2d68b1a`; the final remote CI run is green for
+  infrastructure validation and is completing the longer Gradle quality jobs.

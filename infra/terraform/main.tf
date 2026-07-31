@@ -48,7 +48,7 @@ resource "hcloud_server" "k3s" {
   image       = "ubuntu-24.04"
   location    = var.location
   ssh_keys    = [hcloud_ssh_key.default.id]
-  firewall_ids = [hcloud_firewall.k3s.id]
+  firewall_ids  = [hcloud_firewall.k3s.id]
 
   user_data = templatefile("${path.module}/cloud-init.yaml", {
     cluster_name = var.cluster_name

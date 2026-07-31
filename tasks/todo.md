@@ -2,13 +2,13 @@
 
 ## Acceptance criteria
 
-- [ ] CDD build-logic architecture is documented and remains active.
-- [ ] Catalog persistence is separated from the pure domain model.
-- [ ] Cross-module identity dependencies use public API/event contracts.
-- [ ] Architecture tests pass without weakening boundary rules.
-- [ ] Gradle dependency verification is complete for CI-resolved artifacts.
-- [ ] Infrastructure manifests have a deterministic validation path.
-- [ ] Web i18n follows the Clara reference pattern and its quality gate passes.
+- [x] CDD build-logic architecture is implemented and documented.
+- [x] Catalog persistence is separated from the pure domain model.
+- [x] Cross-module identity dependencies use public API/event contracts.
+- [x] Architecture tests pass without weakening boundary rules.
+- [x] Gradle dependency verification includes the CI-resolved JUnit metadata.
+- [x] Infrastructure manifests have a deterministic validation path.
+- [x] Web i18n follows the Clara reference pattern and its quality gate passes.
 - [ ] Changes are committed and pushed in logical commits.
 
 ## Working notes
@@ -23,4 +23,14 @@
 
 ## Results
 
-Pending implementation and verification.
+- Migrated build-logic packages from type-first buckets into `core/`, `root/`,
+  capability-owned packages, and `git/` while preserving plugin IDs.
+- Added the missing `emme.security` convention entry point and registration test.
+- Migrated catalog persistence entities and identity cross-module contracts.
+- Hardened Terraform kubeconfig handling and removed public Kubernetes API access.
+- Added CI rendering/validation for Kubernetes overlays and Terraform.
+- Verified Modulith/service database migrations are semantically identical; only
+  source line endings differ in the legacy comparison.
+- Verified with `./gradlew ci -x test -x integrationTest -x e2eTest`, build-logic
+  unit/functional checks, architecture tests, focused catalog tests, Markdown
+  validation, both Kustomize overlays, and web `bun run quality`.

@@ -59,8 +59,31 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew :build-logic:check --no-daemon --no-configuration-cache --stacktrace
 
+  infrastructure:
+    name: Validate infrastructure manifests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.34.1'
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.14.0'
+      - name: Render Kubernetes overlays
+        run: |
+          kubectl kustomize infra/kubernetes/overlays/dev >/dev/null
+          kubectl kustomize infra/kubernetes/overlays/prod >/dev/null
+      - name: Validate Terraform
+        working-directory: infra/terraform
+        run: |
+          terraform fmt -check -recursive
+          terraform init -backend=false -input=false
+          terraform validate
+
   boot-jar:
-    needs: [quality, test, build-logic]
+    needs: [quality, test, build-logic, infrastructure]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

@@ -34,8 +34,9 @@
 - Verified with `./gradlew ci -x test -x integrationTest -x e2eTest`, build-logic
   unit/functional checks, architecture tests, focused catalog tests, Markdown
   validation, both Kustomize overlays, and web `bun run quality`.
-- Pushed service commits through `2d68b1a`; the final remote CI run is green for
-  infrastructure validation and is completing the longer Gradle quality jobs.
+- Pushed service commits through `0894e9a`; the final remote CI run is green for
+  infrastructure, quality, tests, build-logic, boundary verification, and boot
+  JAR packaging.
 - Made OWASP NVD access explicit: configure `NVD_API_KEY` for the dependency
   scan and use the persisted NVD cache; without the secret, the job skips
   deterministically instead of timing out on public NVD rate limits.

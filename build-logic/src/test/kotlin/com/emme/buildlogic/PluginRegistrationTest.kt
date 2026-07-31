@@ -1,13 +1,15 @@
 package com.emme.buildlogic
 
-import com.emme.buildlogic.extension.EmmeBuildExtension
-import com.emme.buildlogic.extension.EmmeContainerExtension
-import com.emme.buildlogic.extension.EmmeDeploymentExtension
-import com.emme.buildlogic.extension.EmmePublishingExtension
-import com.emme.buildlogic.plugin.EmmeContainerPlugin
-import com.emme.buildlogic.plugin.EmmeDeploymentPlugin
-import com.emme.buildlogic.plugin.EmmePublishingPlugin
-import com.emme.buildlogic.plugin.EmmeRootPlugin
+import com.emme.buildlogic.container.EmmeContainerExtension
+import com.emme.buildlogic.container.EmmeContainerPlugin
+import com.emme.buildlogic.deployment.EmmeDeploymentExtension
+import com.emme.buildlogic.deployment.EmmeDeploymentPlugin
+import com.emme.buildlogic.publishing.EmmePublishingExtension
+import com.emme.buildlogic.publishing.EmmePublishingPlugin
+import com.emme.buildlogic.root.EmmeBuildExtension
+import com.emme.buildlogic.root.EmmeRootPlugin
+import com.emme.buildlogic.security.EmmeSecurityExtension
+import com.emme.buildlogic.security.EmmeSecurityPlugin
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
@@ -84,5 +86,13 @@ class PluginRegistrationTest {
 
     val ext = project.extensions.findByType(EmmeDeploymentExtension::class.java)
     assertThat(ext).isNotNull
+  }
+
+  @Test
+  fun `emme security plugin registers extension`() {
+    val project = project()
+    project.pluginManager.apply(EmmeSecurityPlugin::class.java)
+
+    assertThat(project.extensions.findByType(EmmeSecurityExtension::class.java)).isNotNull
   }
 }

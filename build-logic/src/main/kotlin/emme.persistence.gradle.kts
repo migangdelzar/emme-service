@@ -1,4 +1,4 @@
-import com.emme.buildlogic.dependency.EmmeDependencies
+import com.emme.buildlogic.core.dependency.EmmeDependencies
 import org.gradle.api.artifacts.VersionCatalogsExtension
 
 val libs = extensions.getByType(VersionCatalogsExtension::class).named("libs")

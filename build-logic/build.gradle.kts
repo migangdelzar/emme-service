@@ -89,19 +89,23 @@ gradlePlugin {
   plugins {
     register("emmeRoot") {
       id = "com.emme.root"
-      implementationClass = "com.emme.buildlogic.plugin.EmmeRootPlugin"
+      implementationClass = "com.emme.buildlogic.root.EmmeRootPlugin"
     }
     register("emmeContainerBinary") {
       id = "com.emme.container-binary"
-      implementationClass = "com.emme.buildlogic.plugin.EmmeContainerPlugin"
+      implementationClass = "com.emme.buildlogic.container.EmmeContainerPlugin"
     }
     register("emmePublishingBinary") {
       id = "com.emme.publishing-binary"
-      implementationClass = "com.emme.buildlogic.plugin.EmmePublishingPlugin"
+      implementationClass = "com.emme.buildlogic.publishing.EmmePublishingPlugin"
     }
     register("emmeDeployment") {
       id = "com.emme.deployment"
-      implementationClass = "com.emme.buildlogic.plugin.EmmeDeploymentPlugin"
+      implementationClass = "com.emme.buildlogic.deployment.EmmeDeploymentPlugin"
+    }
+    register("emmeSecurityBinary") {
+      id = "com.emme.security-binary"
+      implementationClass = "com.emme.buildlogic.security.EmmeSecurityPlugin"
     }
   }
 }

@@ -67,7 +67,7 @@ single universal folder structure.
 ## Existing focused architecture documents
 
 - [Library architecture](library-architecture.md) — responsibility-based libraries and contract extraction.
-- [E2E architecture](e2e-architecture.md) — current service-side REST/UI test flows and identity/tenancy fixtures.
+- [End-to-end architecture](03-integration/end-to-end.md) — cross-repository critical journeys and privacy-safe evidence.
 - [ADR-0001: Precompiled convention plugins](../adr/0001-build-logic-convention-plugins.md)
 - [ADR-0002: Deployment strategy pattern](../adr/0002-deployment-strategy-pattern.md)
 - [Modulith application template](../templates/modulith-application-template.md)

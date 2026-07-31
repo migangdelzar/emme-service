@@ -2,7 +2,7 @@ package com.emme.identity.application;
 
 import com.emme.identity.entity.CustomerMembership;
 import com.emme.identity.entity.CustomerMembershipRepository;
-import com.emme.studio.event.AppointmentCreatedEvent;
+import com.emme.studio.api.event.AppointmentCreatedEvent;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

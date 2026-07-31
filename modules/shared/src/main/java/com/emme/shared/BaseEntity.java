@@ -33,6 +33,15 @@ public abstract class BaseEntity {
     return id;
   }
 
+  /**
+   * Assigns an identifier while mapping a domain object to its persistence representation.
+   * Persistence adapters are the only callers; normal entities receive identifiers in {@link
+   * #onCreate()}.
+   */
+  protected void setId(UUID id) {
+    this.id = Objects.requireNonNull(id, "id must not be null");
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }

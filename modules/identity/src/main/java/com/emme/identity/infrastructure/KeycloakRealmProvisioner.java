@@ -1,8 +1,7 @@
 package com.emme.identity.infrastructure;
 
-import com.emme.tenancy.entity.Tenant;
-import com.emme.tenancy.entity.TenantRepository;
-import com.emme.tenancy.event.TenantCreatedEvent;
+import com.emme.tenancy.api.TenantApi;
+import com.emme.tenancy.api.event.TenantCreatedEvent;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +18,11 @@ public class KeycloakRealmProvisioner {
   private static final int MAX_RETRIES = 3;
 
   private final KeycloakAdminClient kc;
-  private final TenantRepository tenantRepo;
+  private final TenantApi tenantApi;
 
-  public KeycloakRealmProvisioner(KeycloakAdminClient kc, TenantRepository tenantRepo) {
+  public KeycloakRealmProvisioner(KeycloakAdminClient kc, TenantApi tenantApi) {
     this.kc = kc;
-    this.tenantRepo = tenantRepo;
+    this.tenantApi = tenantApi;
   }
 
   @EventListener
@@ -49,10 +48,7 @@ public class KeycloakRealmProvisioner {
         kc.createUser(realm, "admin", event.adminEmail(), "admin123", "business_owner");
         log.info("  Admin user created: {}", event.adminEmail());
 
-        // Update tenant record with realm name
-        Tenant tenant = tenantRepo.findById(event.tenantId()).orElseThrow();
-        tenant.setKeycloakRealm(realm);
-        tenantRepo.save(tenant);
+        tenantApi.updateIdentityRealm(event.tenantId(), realm);
         log.info("Tenant {} provisioned with realm {}", event.slug(), realm);
         return;
 

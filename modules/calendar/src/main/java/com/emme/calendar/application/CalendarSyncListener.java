@@ -1,9 +1,9 @@
 package com.emme.calendar.application;
 
 import com.emme.calendar.event.CalendarSyncRequested;
-import com.emme.studio.event.AppointmentCancelledEvent;
-import com.emme.studio.event.AppointmentCreatedEvent;
-import com.emme.studio.event.AppointmentRescheduledEvent;
+import com.emme.studio.api.event.AppointmentCancelledEvent;
+import com.emme.studio.api.event.AppointmentCreatedEvent;
+import com.emme.studio.api.event.AppointmentRescheduledEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;

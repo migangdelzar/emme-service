@@ -1,9 +1,9 @@
 package com.emme.tenancy.application;
 
+import com.emme.tenancy.api.event.TenantCreatedEvent;
 import com.emme.tenancy.entity.Tenant;
 import com.emme.tenancy.entity.TenantRepository;
 import com.emme.tenancy.entity.TenantStatus;
-import com.emme.tenancy.event.TenantCreatedEvent;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

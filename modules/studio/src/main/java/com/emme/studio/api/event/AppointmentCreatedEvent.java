@@ -1,4 +1,4 @@
-package com.emme.studio.event;
+package com.emme.studio.api.event;
 
 import java.time.Instant;
 import java.util.UUID;

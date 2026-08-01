@@ -12,7 +12,5 @@ public interface MembershipRepository {
 
   Optional<Membership> findById(UUID membershipId);
 
-  List<Membership> findByUserReference(String userReference);
-
   List<Membership> findActiveByUserReference(String userReference);
 }

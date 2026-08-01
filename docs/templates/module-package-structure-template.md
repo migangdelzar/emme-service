@@ -4,6 +4,13 @@
 
 > **Template status:** Approved baseline. Adopt the mandatory rules for every production module. Mark any deliberate deviation in the module metadata and record the decision in an ADR.
 
+> **Unreleased-system rule:** When the service or module is not released to
+> external consumers, do not preserve legacy names, packages, wrappers, or
+> compatibility aliases. Update all in-repository consumers in the same
+> migration. Compatibility layers require an external released consumer,
+> persisted/serialized contract, or an explicitly approved migration window
+> recorded in an ADR or migration plan.
+
 ## 1. Module metadata
 
 | Field | Value |

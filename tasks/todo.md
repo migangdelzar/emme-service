@@ -467,6 +467,27 @@ Execution rules and dependencies are maintained in
   behavior remain unchanged.
 - Focused Identity tests and Spotless formatting passed.
 
+## Identity unreleased API cleanup — 2026-08-01
+
+- [x] Remove the legacy `IdentityApi` use-case contract and
+  `IdentityApiService` implementation.
+- [x] Remove the temporary all-memberships compatibility query/use-case that
+  existed only to preserve the legacy implementation.
+- [x] Add an executable source-tree rule rejecting the removed legacy API
+  files.
+- [x] Record the unreleased-system rule in the architecture handbook,
+  templates, naming catalog, and engineering lessons.
+- [x] Verify Identity compilation/tests, Modulith, service CI, both boot JARs,
+  formatting, Markdown, and whitespace.
+
+### Results
+
+- The unreleased service now uses only canonical grouped API contracts; no
+  compatibility alias or legacy Identity API implementation remains.
+- The architecture rule is explicit: compatibility layers require an external
+  released consumer, persisted/serialized contract, or approved migration
+  window with documented evidence.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

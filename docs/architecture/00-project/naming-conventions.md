@@ -21,9 +21,12 @@ When naming guidance conflicts, apply this order:
 3. The module package structure template.
 4. A capability-specific naming decision recorded in the module plan or ADR.
 
-Compatibility names such as `TenantApi` may remain temporarily when renaming would
-break consumers. The type must still live in the correct package, and the deliberate
-exception must be recorded in the migration plan with an owner and removal trigger.
+For an unreleased service or module, compatibility names, aliases, wrappers, and
+legacy packages are not allowed. Remove the obsolete shape and update all in-repo
+consumers in the same atomic migration. A compatibility layer is allowed only when
+an external released consumer, persisted/serialized contract, or explicitly approved
+migration window requires it; record that exception in the migration plan or an ADR
+with an owner, removal trigger, and verification evidence.
 
 ## Universal rules
 

@@ -18,7 +18,4 @@ public interface SpringDataMembershipRepository extends JpaRepository<Membership
   @EntityGraph(attributePaths = {"role"})
   List<MembershipEntity> findByUserReferenceAndStatus(
       String userReference, MembershipStatus status);
-
-  @EntityGraph(attributePaths = {"role"})
-  List<MembershipEntity> findByUserReference(String userReference);
 }

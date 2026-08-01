@@ -126,8 +126,8 @@ context, but they must not become business API types accidentally.
 
 ## Definition of done
 
-- [ ] No legacy mixed Identity package remains except a documented temporary
-  exception with owner, removal task, tests, and ADR.
+- [ ] No legacy mixed Identity package remains; compatibility exceptions are
+  not permitted for this unreleased service.
 - [ ] Security boundaries are executable and no persistence entity leaks into API
   or web responses.
 - [ ] Existing authentication and authorization behavior is preserved.
@@ -514,6 +514,22 @@ final tenant-isolation and migration/recovery evidence.
 Remaining Identity work is architecture dependency evidence, broader
 authorization hardening, explicit provisioning transaction/event ports, and
 final tenant-isolation and migration/recovery evidence.
+
+## Completed unreleased API cleanup — 2026-08-01
+
+- [x] Removed the legacy `IdentityApi` use-case contract and
+  `IdentityApiService` implementation.
+- [x] Removed the temporary all-memberships query/use-case created only to
+  preserve that legacy implementation.
+- [x] Added a source-tree regression rule rejecting the removed legacy files.
+- [x] Applied the unreleased-system no-compatibility rule to the architecture
+  handbook, module/application templates, naming catalog, and lessons.
+- [x] Verified Identity compilation/tests, Modulith, service CI, both boot
+  JARs, formatting, Markdown, and whitespace.
+
+The remaining Identity work is authorization hardening, explicit provisioning
+transaction/event ports, and final tenant-isolation and migration/recovery
+evidence.
 
 ## Completed authentication-configuration port slice — 2026-08-01
 

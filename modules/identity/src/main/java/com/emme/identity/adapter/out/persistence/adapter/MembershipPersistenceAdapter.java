@@ -52,11 +52,6 @@ public class MembershipPersistenceAdapter implements MembershipRepository {
   }
 
   @Override
-  public List<Membership> findByUserReference(String userReference) {
-    return repository.findByUserReference(userReference).stream().map(mapper::toDomain).toList();
-  }
-
-  @Override
   public List<Membership> findActiveByUserReference(String userReference) {
     return repository
         .findByUserReferenceAndStatus(

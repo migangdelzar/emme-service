@@ -43,7 +43,7 @@ public class MembershipService
 
   @Override
   public List<MembershipInfo> getMemberships(GetCurrentUserMembershipsQuery query) {
-    return findCurrentUserMemberships(query.userReference()).stream()
+    return membershipRepository.findActiveByUserReference(query.userReference()).stream()
         .map(MembershipService::toMembershipInfo)
         .toList();
   }
@@ -64,16 +64,6 @@ public class MembershipService
             .orElseThrow(() -> new IllegalArgumentException("Membership not found"));
     membership.revoke();
     return membershipRepository.save(membership);
-  }
-
-  @Transactional(readOnly = true)
-  public List<Membership> findCurrentUserMemberships(String userReference) {
-    return membershipRepository.findActiveByUserReference(userReference);
-  }
-
-  @Transactional(readOnly = true)
-  public List<Membership> findUserMemberships(String userReference) {
-    return membershipRepository.findByUserReference(userReference);
   }
 
   private static MembershipInfo toMembershipInfo(Membership membership) {

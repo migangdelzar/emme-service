@@ -26,6 +26,15 @@ Frontend: app shell + features, organized by user-facing capability
 Delivery: container + publishing + deployment capabilities, composed at the application edge
 ```
 
+## Unreleased-system rule
+
+This repository is not released to external consumers. Therefore migrations
+must use the latest canonical architecture directly: remove obsolete names,
+packages, wrappers, and compatibility aliases and update all in-repository
+consumers in the same change. A compatibility layer is permitted only for an
+external released consumer, a persisted/serialized contract, or an explicitly
+approved migration window documented in an ADR or migration plan.
+
 These are related but different architecture models:
 
 | Boundary | Model | Canonical guide |

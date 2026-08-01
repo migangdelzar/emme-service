@@ -27,6 +27,15 @@
 
 This repository contains one or more deployable applications assembled from independently understandable business modules. Each deployable application is a modular monolith: its modules run together in one process and release unit. Each module owns a business capability, hides its implementation, exposes deliberate contracts, and can be tested in isolation.
 
+### Unreleased-system rule
+
+When the application or module has not been released to external consumers, use
+the canonical structure directly: remove obsolete names, packages, wrappers, and
+compatibility aliases during the migration and update all repository consumers in
+the same change. Retain compatibility only for an external released consumer,
+persisted/serialized contract, or an explicitly approved migration window recorded
+in an ADR or migration plan.
+
 The objective is not to imitate distributed microservices inside one process. The objective is to gain clear ownership and replaceable internals without accepting unnecessary network, deployment, and operational complexity.
 
 ## 3. Architecture principles

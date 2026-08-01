@@ -19,6 +19,11 @@ class IdentityPackageConventionTest {
       sourcePath("modules/identity/src/main/java/com/emme/identity/api/result/package-info.java");
   private static final Path LEGACY_API =
       sourcePath("modules/identity/src/main/java/com/emme/identity/api/IdentityApi.java");
+  private static final Path LEGACY_USE_CASE_API =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/api/usecase/IdentityApi.java");
+  private static final Path LEGACY_USE_CASE_SERVICE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/service/IdentityApiService.java");
   private static final Path LEGACY_MEMBERSHIP_RESULT =
       sourcePath("modules/identity/src/main/java/com/emme/identity/api/MembershipInfo.java");
   private static final Path LEGACY_USER_RESULT =
@@ -487,6 +492,13 @@ class IdentityPackageConventionTest {
 
     assertThat(Files.readString(provisioningUseCase))
         .doesNotContain("com.emme.tenancy.api.event.TenantCreated");
+  }
+
+  @Test
+  void removesLegacyIdentityApiContractsAndImplementation() {
+    assertThat(Files.exists(LEGACY_API)).isFalse();
+    assertThat(Files.exists(LEGACY_USE_CASE_API)).isFalse();
+    assertThat(Files.exists(LEGACY_USE_CASE_SERVICE)).isFalse();
   }
 
   @Test

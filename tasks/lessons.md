@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-08-01 — Unreleased architecture has no compatibility legacy
+
+- Failure mode: a boundary refactor initially preserved a legacy public API and
+  implementation because compatibility was treated as the default.
+- Detection signal: the user clarified that the service is unreleased and wants
+  the latest canonical architecture everywhere.
+- Prevention rule: for unreleased services and modules, remove obsolete names,
+  packages, wrappers, and compatibility aliases in the same migration. Keep a
+  compatibility layer only when an external released consumer, persisted
+  contract, or explicitly approved migration window requires it.
+
 ## 2026-08-01 — Patch target validation
 
 - Failure mode: an edit was accidentally targeted at a similarly named path

@@ -66,6 +66,6 @@ class AuthenticateCustomerServiceTest {
                 new AuthenticateCustomerService(repository, tokenDecoder)
                     .authenticate(new AuthenticateCustomerCommand("provider-token")))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Token not from customers realm");
+        .hasMessage("Customer token is invalid");
   }
 }

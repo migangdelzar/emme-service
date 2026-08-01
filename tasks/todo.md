@@ -142,6 +142,14 @@
 - [x] Verify Identity checks and login/profile regression coverage.
 - [ ] Continue with typed security configuration and Identity failure advice.
 
+### Identity typed security configuration slice — 2026-08-01
+
+- [x] Add failing tests for typed security defaults and package ownership.
+- [x] Introduce IdentitySecurityProperties with safe local defaults.
+- [x] Rewire SecurityConfiguration to consume typed properties.
+- [x] Verify Identity checks and security configuration regression coverage.
+- [ ] Continue with Identity-specific failure advice.
+
 ### Plan update results
 
 - Added the plan registry at `docs/superpowers/plans/README.md`.

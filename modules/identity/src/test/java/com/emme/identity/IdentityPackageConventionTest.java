@@ -216,6 +216,9 @@ class IdentityPackageConventionTest {
   private static final Path LEGACY_CUSTOMER_IDENTITY_REPOSITORY =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/CustomerIdentityRepository.java");
+  private static final Path IDENTITY_SECURITY_PROPERTIES =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/configuration/IdentitySecurityProperties.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -374,6 +377,11 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(LEGACY_CUSTOMER_AUTH_SERVICE)).isFalse();
     assertThat(Files.exists(LEGACY_CUSTOMER_IDENTITY_ENTITY)).isFalse();
     assertThat(Files.exists(LEGACY_CUSTOMER_IDENTITY_REPOSITORY)).isFalse();
+  }
+
+  @Test
+  void ownsSecurityDefaultsInTypedIdentityConfiguration() {
+    assertThat(Files.exists(IDENTITY_SECURITY_PROPERTIES)).isTrue();
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

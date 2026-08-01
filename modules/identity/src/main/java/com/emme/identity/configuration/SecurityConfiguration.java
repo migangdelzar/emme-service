@@ -5,7 +5,6 @@ import com.emme.identity.adapter.out.client.keycloak.MultiRealmJwtDecoder;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +37,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
+  private final IdentitySecurityProperties securityProperties;
+
+  public SecurityConfiguration(IdentitySecurityProperties securityProperties) {
+    this.securityProperties = securityProperties;
+  }
+
   @Bean
   public RoleHierarchy roleHierarchy() {
     return RoleHierarchyImpl.fromHierarchy(
@@ -61,16 +66,11 @@ public class SecurityConfiguration {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(
-        List.of(
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "http://localhost:8100",
-            "capacitor://localhost"));
-    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Tenant-Id"));
-    configuration.setAllowCredentials(true);
-    configuration.setMaxAge(3600L);
+    configuration.setAllowedOrigins(securityProperties.getAllowedOrigins());
+    configuration.setAllowedMethods(securityProperties.getAllowedMethods());
+    configuration.setAllowedHeaders(securityProperties.getAllowedHeaders());
+    configuration.setAllowCredentials(securityProperties.isAllowCredentials());
+    configuration.setMaxAge(securityProperties.getMaxAgeSeconds());
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
@@ -101,7 +101,8 @@ public class SecurityConfiguration {
                             csp.policyDirectives(
                                 "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
                                     + "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
-                                    + "font-src 'self'; connect-src 'self' http://localhost:*"))
+                                    + "font-src 'self'; connect-src 'self' "
+                                    + securityProperties.getCspConnectSource()))
                     .frameOptions(frame -> frame.deny())
                     .xssProtection(xss -> xss.disable())
                     .contentTypeOptions(contentType -> contentType.disable()))
@@ -176,9 +177,7 @@ public class SecurityConfiguration {
             logout ->
                 logout
                     .logoutUrl("/oauth2/logout")
-                    .logoutSuccessUrl(
-                        "http://localhost:18080/realms/emme/protocol/openid-connect/logout"
-                            + "?redirect_uri=http://localhost:3000")
+                    .logoutSuccessUrl(securityProperties.getLogoutSuccessUrl())
                     .invalidateHttpSession(true)
                     .clearAuthentication(true)
                     .deleteCookies("JSESSIONID"))

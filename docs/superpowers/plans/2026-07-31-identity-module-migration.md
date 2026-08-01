@@ -297,3 +297,17 @@ failure advice remain open slices.
 
 Typed security configuration, Identity-specific failure advice, and the final
 security hardening gate remain open slices.
+
+## Completed typed security configuration slice — 2026-08-01
+
+- [x] Added `IdentitySecurityProperties` under `configuration` with typed CORS,
+  CSP, logout, and cache settings.
+- [x] Preserved the existing local-development defaults and security behavior.
+- [x] Rewired `SecurityConfiguration` to consume typed settings instead of
+  embedding environment-specific values in the security bean wiring.
+- [x] Added property-default and package-ownership tests.
+- [x] Verified Identity checks, Studio Modulith verification, Markdown
+  validation, and diff whitespace checks.
+
+Identity-specific failure advice and the final security hardening gate remain
+open slices.

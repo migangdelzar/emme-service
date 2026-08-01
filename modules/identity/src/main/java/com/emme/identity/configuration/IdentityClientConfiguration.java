@@ -1,5 +1,6 @@
 package com.emme.identity.configuration;
 
+import com.emme.identity.application.port.out.RetryDelayPort;
 import java.time.Duration;
 import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
@@ -15,5 +16,10 @@ public class IdentityClientConfiguration {
         .connectTimeout(Duration.ofSeconds(10))
         .readTimeout(Duration.ofSeconds(30))
         .build();
+  }
+
+  @Bean
+  public RetryDelayPort identityRetryDelayPort() {
+    return delay -> Thread.sleep(delay.toMillis());
   }
 }

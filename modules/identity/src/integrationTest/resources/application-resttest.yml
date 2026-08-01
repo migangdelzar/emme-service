@@ -55,6 +55,8 @@ app:
     base-url: http://localhost:8080
     issuer-uri: https://test-issuer/realms/emme
     client-id: test-client
+    provisioning:
+      initial-admin-password: test-provisioning-password
   ai:
     provider: mock
   calendar:

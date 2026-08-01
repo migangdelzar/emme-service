@@ -98,6 +98,9 @@ app:
     base-url: http://localhost:8080
     issuer-uri: http://localhost:8080/realms/emme
     client-id: emme-salon-app
+    admin-password: ${EMME_KEYCLOAK_ADMIN_PASSWORD:}
+    provisioning:
+      initial-admin-password: ${EMME_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_PASSWORD:}
   ai:
     provider: mock
     # provider: ollama  # switch to Ollama (needs ollama running)

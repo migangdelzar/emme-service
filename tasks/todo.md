@@ -185,6 +185,23 @@
 
 Remaining Identity follow-up: complete the broader security hardening review.
 
+### Identity realm provisioning hardening slice — 2026-08-01
+
+- [x] Add failing tests for missing provisioning credentials and configurable
+  retry behavior.
+- [x] Move realm client, redirect URI, role, admin-user, and retry settings into
+  `IdentityRealmProvisioningProperties`.
+- [x] Remove the production hardcoded tenant-user password and validate the
+  provisioning password before contacting the provider.
+- [x] Inject retry delay behavior through `RetryDelayPort` so tests do not block
+  on real sleeps.
+- [x] Remove the master admin password default and expose environment-backed
+  configuration for runtime profiles.
+- [x] Verify Identity checks, Studio Modulith verification, Markdown validation,
+  whitespace checks, and the source-level secret guard.
+
+Remaining Identity follow-up: complete the broader security hardening review.
+
 ### Identity realm provisioning port slice — 2026-08-01
 
 - [x] Add failing process and package-boundary tests for the outbound

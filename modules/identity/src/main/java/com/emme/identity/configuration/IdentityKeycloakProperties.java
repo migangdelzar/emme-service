@@ -11,7 +11,7 @@ public class IdentityKeycloakProperties {
   private String clientId = "emme-salon-app";
   private String adminRealm = "master";
   private String adminUsername = "admin";
-  private String adminPassword = "admin";
+  private String adminPassword = "";
   private String defaultRealm = "emme";
 
   public String getBaseUrl() {

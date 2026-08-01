@@ -449,6 +449,8 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(IDENTITY_PROVIDER_ADMINISTRATION_PORT)).isTrue();
     assertThat(processSource).contains("IdentityProviderAdministrationPort");
     assertThat(processSource).doesNotContain("KeycloakAdminClient");
+    assertThat(processSource).doesNotContain("admin123");
+    assertThat(processSource).doesNotContain("Thread.sleep");
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

@@ -35,7 +35,7 @@ app:
     client-id: emme-salon-app
     admin-realm: master
     admin-username: admin
-    admin-password: admin
+    admin-password: ${EMME_KEYCLOAK_ADMIN_PASSWORD:}
     default-realm: emme
   google:
     oauth:

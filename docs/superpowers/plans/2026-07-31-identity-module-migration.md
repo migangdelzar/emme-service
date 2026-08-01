@@ -372,3 +372,19 @@ Remaining follow-up: complete the broader Identity security hardening review.
 
 Remaining follow-up: review provisioning secrets, retry policy, and the wider
 Identity security hardening surface.
+
+## Completed realm provisioning hardening slice — 2026-08-01
+
+- [x] Added typed `IdentityRealmProvisioningProperties` for realm client,
+  redirect URI, role, admin-user, and retry settings.
+- [x] Removed the production hardcoded tenant-user password and fail fast when
+  the provisioning password is not configured.
+- [x] Moved retry timing behind `RetryDelayPort`; production wiring uses the
+  configured delay while tests use a no-op delay.
+- [x] Removed the default master Keycloak admin password and exposed runtime
+  environment variables for sensitive credentials.
+- [x] Added configuration, retry, secret, and source-boundary regression tests.
+- [x] Verified Identity checks, Studio Modulith verification, Markdown
+  validation, whitespace checks, and the security source scan.
+
+Remaining follow-up: complete the wider Identity security hardening surface.

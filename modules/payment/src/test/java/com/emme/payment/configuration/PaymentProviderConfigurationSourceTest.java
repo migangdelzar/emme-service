@@ -20,7 +20,7 @@ class PaymentProviderConfigurationSourceTest {
   @Test
   void paymentProvidersAndWebhooksDoNotReadProcessEnvironmentDirectly() throws IOException {
     Path root = sourcePath("modules/payment/src/main/java/com/emme/payment");
-    Path providers = root.resolve("provider");
+    Path providers = root.resolve("adapter/out/provider");
 
     for (String provider : PROVIDERS) {
       assertThat(Files.readString(providers.resolve(provider)))
@@ -28,7 +28,9 @@ class PaymentProviderConfigurationSourceTest {
           .doesNotContain("System.getenv(");
     }
 
-    assertThat(Files.readString(root.resolve("web/MercadoPagoWebhookController.java")))
+    assertThat(
+            Files.readString(
+                root.resolve("adapter/in/web/controller/MercadoPagoWebhookController.java")))
         .doesNotContain("System.getenv(");
     assertThat(Files.exists(providers.resolve("PaymentProperties.java"))).isTrue();
   }

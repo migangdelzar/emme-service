@@ -142,3 +142,20 @@ only performs transport. Provider DTOs remain inside their external-system packa
 
 The broader Payment package/domain/application migration remains tracked above;
 this slice changes only configuration ownership.
+
+## Completed canonical package-boundary slice — 2026-08-01
+
+- [x] Added red/green package guard coverage for legacy package removal.
+- [x] Moved the JPA representation to `PaymentEntity`, status vocabulary to
+  `domain/model`, and Spring Data access to
+  `SpringDataPaymentRepository`.
+- [x] Added a framework-free Payment domain model and initial
+  `InitiatePaymentUseCase` boundary.
+- [x] Moved provider configuration, provider implementations, payment provider
+  port, HTTP controllers, and webhook controller into canonical ownership
+  packages.
+- [x] Verified Payment compilation, formatting, and package guard tests.
+
+The remaining Payment work is to add the persistence adapter/mapper, replace the
+temporary multi-operation service with focused use-case services, extract web
+DTOs, and complete webhook signature/replay and provider evidence.

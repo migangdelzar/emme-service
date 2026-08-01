@@ -1,5 +1,6 @@
-package com.emme.payment.entity;
+package com.emme.payment.adapter.out.persistence.entity;
 
+import com.emme.payment.domain.model.PaymentStatus;
 import com.emme.shared.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +13,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "payment")
-public class Payment extends TenantOwnedEntity {
+public class PaymentEntity extends TenantOwnedEntity {
 
   @Column(name = "provider_reference", nullable = false, length = 150)
   private String providerReference;
@@ -30,9 +31,10 @@ public class Payment extends TenantOwnedEntity {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt = Instant.now();
 
-  protected Payment() {}
+  protected PaymentEntity() {}
 
-  public Payment(UUID tenantId, String providerReference, BigDecimal amount, String currency) {
+  public PaymentEntity(
+      UUID tenantId, String providerReference, BigDecimal amount, String currency) {
     super(tenantId);
     this.providerReference = providerReference;
     this.amount = amount;

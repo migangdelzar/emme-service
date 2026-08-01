@@ -81,6 +81,10 @@ reopened by this backlog.
   use-case services and application-owned delivery ports.
 - [ ] Migrate Payment after Subscription contracts are stable, preserving
   webhook signature/replay and transaction behavior.
+- [x] Normalize Payment persistence, provider, configuration, and inbound
+  webhook package boundaries.
+- [ ] Replace Payment's temporary multi-operation service with focused use-case
+  services and application-owned persistence/provider ports.
 
 ## Studio Documents canonical boundary slice — 2026-08-01
 

@@ -1,10 +1,10 @@
-package com.emme.payment.application;
+package com.emme.payment.application.service;
 
-import com.emme.payment.entity.Payment;
-import com.emme.payment.entity.PaymentRepository;
-import com.emme.payment.entity.PaymentStatus;
-import com.emme.payment.provider.PaymentProvider;
-import com.emme.payment.provider.PaymentProviderException;
+import com.emme.payment.adapter.out.persistence.entity.PaymentEntity;
+import com.emme.payment.adapter.out.persistence.repository.SpringDataPaymentRepository;
+import com.emme.payment.adapter.out.provider.PaymentProvider;
+import com.emme.payment.adapter.out.provider.PaymentProviderException;
+import com.emme.payment.domain.model.PaymentStatus;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -17,17 +17,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PaymentService {
 
-  private final PaymentRepository repository;
+  private final SpringDataPaymentRepository repository;
   private final PaymentProvider provider;
 
-  public PaymentService(PaymentRepository repository, PaymentProvider provider) {
+  public PaymentService(SpringDataPaymentRepository repository, PaymentProvider provider) {
     this.repository = repository;
     this.provider = provider;
   }
 
-  public Payment initiate(
+  public PaymentEntity initiate(
       UUID tenantId, String providerReference, BigDecimal amount, String currency) {
-    Optional<Payment> existing =
+    Optional<PaymentEntity> existing =
         repository.findByTenantIdAndProviderReference(tenantId, providerReference);
     if (existing.isPresent()) return existing.get(); // idempotent
 
@@ -38,11 +38,12 @@ public class PaymentService {
       throw new PaymentProviderException("Provider initiate returned null transaction ID");
     }
 
-    return repository.save(new Payment(tenantId, result.providerTransactionId(), amount, currency));
+    return repository.save(
+        new PaymentEntity(tenantId, result.providerTransactionId(), amount, currency));
   }
 
-  public Payment authorize(UUID paymentId) {
-    Payment payment =
+  public PaymentEntity authorize(UUID paymentId) {
+    PaymentEntity payment =
         repository
             .findById(paymentId)
             .orElseThrow(() -> new IllegalArgumentException("Payment not found: " + paymentId));
@@ -51,8 +52,8 @@ public class PaymentService {
     return repository.save(payment);
   }
 
-  public Payment capture(UUID paymentId) {
-    Payment payment =
+  public PaymentEntity capture(UUID paymentId) {
+    PaymentEntity payment =
         repository
             .findById(paymentId)
             .orElseThrow(() -> new IllegalArgumentException("Payment not found: " + paymentId));
@@ -62,8 +63,8 @@ public class PaymentService {
     return repository.save(payment);
   }
 
-  public Payment refund(UUID paymentId) {
-    Payment payment =
+  public PaymentEntity refund(UUID paymentId) {
+    PaymentEntity payment =
         repository
             .findById(paymentId)
             .orElseThrow(() -> new IllegalArgumentException("Payment not found: " + paymentId));
@@ -73,34 +74,35 @@ public class PaymentService {
     return repository.save(payment);
   }
 
-  public Payment processCallback(UUID tenantId, Map<String, String> payload, String signature) {
+  public PaymentEntity processCallback(
+      UUID tenantId, Map<String, String> payload, String signature) {
     PaymentProvider.PaymentResult result = provider.handleCallback(payload, signature);
     if (result == null || result.providerTransactionId() == null) {
       throw new PaymentProviderException("Provider handleCallback returned null transaction ID");
     }
 
     String providerReference = result.providerTransactionId();
-    Optional<Payment> existing =
+    Optional<PaymentEntity> existing =
         repository.findByTenantIdAndProviderReference(tenantId, providerReference);
     if (existing.isPresent()) {
-      Payment payment = existing.get();
+      PaymentEntity payment = existing.get();
       updateStatus(payment, result.status());
       return repository.save(payment);
     }
-    return repository.save(new Payment(tenantId, providerReference, BigDecimal.ZERO, "MXN"));
+    return repository.save(new PaymentEntity(tenantId, providerReference, BigDecimal.ZERO, "MXN"));
   }
 
   @Transactional(readOnly = true)
-  public Optional<Payment> findById(UUID id) {
+  public Optional<PaymentEntity> findById(UUID id) {
     return repository.findById(id);
   }
 
   @Transactional(readOnly = true)
-  public List<Payment> findByTenantId(UUID tenantId) {
+  public List<PaymentEntity> findByTenantId(UUID tenantId) {
     return repository.findByTenantId(tenantId);
   }
 
-  private void updateStatus(Payment payment, String providerStatus) {
+  private void updateStatus(PaymentEntity payment, String providerStatus) {
     payment.setStatus(PaymentStatus.valueOf(providerStatus.toUpperCase()));
   }
 }

@@ -1,4 +1,4 @@
-package com.emme.payment.entity;
+package com.emme.payment.domain.model;
 
 public enum PaymentStatus {
   PENDING,

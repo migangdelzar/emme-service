@@ -1,8 +1,8 @@
-package com.emme.payment.config;
+package com.emme.payment.configuration;
 
-import com.emme.payment.provider.PaymentProperties;
-import com.emme.payment.provider.PaymentProvider;
-import com.emme.payment.provider.PaymentProviderException;
+import com.emme.payment.adapter.out.provider.PaymentProperties;
+import com.emme.payment.adapter.out.provider.PaymentProvider;
+import com.emme.payment.adapter.out.provider.PaymentProviderException;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

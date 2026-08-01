@@ -1,4 +1,4 @@
-package com.emme.payment.provider;
+package com.emme.payment.adapter.out.provider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;

@@ -1,8 +1,8 @@
-package com.emme.payment.web;
+package com.emme.payment.adapter.in.web.controller;
 
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.payment.application.PaymentService;
-import com.emme.payment.provider.PaymentProperties;
+import com.emme.payment.adapter.out.provider.PaymentProperties;
+import com.emme.payment.application.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

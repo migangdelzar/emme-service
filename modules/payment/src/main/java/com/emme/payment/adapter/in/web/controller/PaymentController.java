@@ -1,9 +1,9 @@
-package com.emme.payment.web;
+package com.emme.payment.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.payment.application.PaymentService;
-import com.emme.payment.entity.Payment;
+import com.emme.payment.adapter.out.persistence.entity.PaymentEntity;
+import com.emme.payment.application.service.PaymentService;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
@@ -30,7 +30,7 @@ public class PaymentController {
 
   record PaymentResponse(
       UUID id, String providerReference, BigDecimal amount, String currency, String status) {
-    static PaymentResponse from(Payment p) {
+    static PaymentResponse from(PaymentEntity p) {
       return new PaymentResponse(
           p.getId(),
           p.getProviderReference(),

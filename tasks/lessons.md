@@ -200,3 +200,12 @@
   production tree before marking the slice complete. Keep provider-specific
   secret migration as an explicit follow-up when its existing property model
   needs redesign.
+
+## 2026-08-01 — Move source-boundary assertions with package refactors
+
+- Failure mode: production packages were moved while source-boundary tests
+  continued asserting the old paths.
+- Detection signal: focused architecture tests failed on paths that no longer
+  represented the canonical package layout.
+- Prevention rule: move or update source-boundary tests in the same slice as
+  production package moves, then run the focused package guard before commit.

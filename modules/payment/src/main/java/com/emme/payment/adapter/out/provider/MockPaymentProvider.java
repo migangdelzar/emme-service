@@ -1,4 +1,4 @@
-package com.emme.payment.provider;
+package com.emme.payment.adapter.out.provider;
 
 import java.math.BigDecimal;
 import java.util.HashMap;

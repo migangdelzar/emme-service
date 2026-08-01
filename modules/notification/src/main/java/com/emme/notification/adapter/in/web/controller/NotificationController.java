@@ -68,10 +68,12 @@ public class NotificationController {
   @GetMapping("/{id}")
   @Operation(summary = "Get a notification by ID")
   public ResponseEntity<NotificationResponse> get(@PathVariable UUID id) {
-    return getNotification
-        .get(new GetNotificationQuery(id))
-        .map(NotificationResponse::from)
-        .map(ResponseEntity::ok)
-        .orElseGet(() -> ResponseEntity.notFound().build());
+    return withCurrentTenant(
+        tenantId ->
+            getNotification
+                .get(new GetNotificationQuery(tenantId, id))
+                .map(NotificationResponse::from)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build()));
   }
 }

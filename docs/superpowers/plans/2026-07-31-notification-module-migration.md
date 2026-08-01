@@ -199,3 +199,18 @@ idempotency/retry evidence, and service-wide Modulith verification.
 
 Remaining work is retry/idempotency evidence, tenant-scoped endpoint enforcement,
 provider contract coverage, and full service-wide verification.
+
+## Completed tenant-scoped read boundary slice — 2026-08-01
+
+- [x] Added tenant identity to `GetNotificationQuery`.
+- [x] Added the application-owned tenant-scoped repository query and persistence
+  adapter implementation.
+- [x] Updated `NotificationController` to resolve the current tenant before
+  reading a notification; cross-tenant reads now return the same not-found
+  result as an absent record.
+- [x] Added a red/green application-service regression test for cross-tenant
+  isolation.
+- [x] Verified the focused Notification test after the boundary change.
+
+Remaining Notification evidence is durable delivery idempotency/retry policy,
+provider contract coverage, and the final service-wide verification gate.

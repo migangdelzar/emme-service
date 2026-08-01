@@ -20,6 +20,8 @@ public class GetNotificationService implements GetNotificationUseCase {
 
   @Override
   public Optional<NotificationInfo> get(GetNotificationQuery query) {
-    return repository.findById(query.notificationId()).map(NotificationApplicationMapper::toInfo);
+    return repository
+        .findByTenantIdAndId(query.tenantId(), query.notificationId())
+        .map(NotificationApplicationMapper::toInfo);
   }
 }

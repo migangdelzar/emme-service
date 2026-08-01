@@ -20,6 +20,9 @@ class PaymentPackageConventionTest {
         .isTrue();
     assertThat(Files.exists(ROOT.resolve("adapter/in/web/controller/PaymentController.java")))
         .isTrue();
+    assertThat(Files.exists(ROOT.resolve("adapter/in/webhook/MercadoPagoWebhookController.java")))
+        .isTrue();
+    assertThat(hasJavaSources(ROOT.resolve("adapter/in/web/controller"))).isTrue();
     assertThat(Files.exists(ROOT.resolve("api/usecase/InitiatePaymentUseCase.java"))).isTrue();
   }
 
@@ -35,7 +38,10 @@ class PaymentPackageConventionTest {
   private static boolean hasDirectJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) return false;
     try (Stream<Path> paths = Files.list(directory)) {
-      return paths.anyMatch(path -> path.toString().endsWith(".java"));
+      return paths.anyMatch(
+          path ->
+              path.toString().endsWith(".java")
+                  && !path.getFileName().toString().equals("package-info.java"));
     } catch (Exception exception) {
       throw new IllegalStateException("Cannot inspect " + directory, exception);
     }

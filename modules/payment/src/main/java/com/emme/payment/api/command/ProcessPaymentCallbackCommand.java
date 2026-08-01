@@ -4,4 +4,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public record ProcessPaymentCallbackCommand(
-    UUID tenantId, Map<String, String> payload, String signature) {}
+    UUID tenantId,
+    String provider,
+    String eventId,
+    Map<String, String> payload,
+    String signature) {}

@@ -3,9 +3,11 @@
 > **For agentic workers:** Use the executing-plans or subagent-driven-development workflow. The current module template is authoritative; the older Modulith payment plan is historical input only.
 
 **Goal:** Migrate Payment from mixed `entity`, `application`, `provider`, `config`,
-and `web` packages to canonical DDD + Hexagonal boundaries without changing
-payment state transitions, provider selection, webhook behavior, HTTP responses,
-or persistence schema.
+and `web` packages to canonical DDD + Hexagonal boundaries while preserving
+payment state transitions, provider selection, HTTP contracts, and tenant
+ownership. Unreleased webhook behavior is normalized to the provider's current
+signature and delivery-id contract rather than retained as a compatibility
+surface.
 
 **Architecture:** `Payment` and `PaymentStatus` become framework-free domain
 models. Persistence is isolated behind a repository port and explicit entity,
@@ -176,3 +178,23 @@ DTOs, and complete webhook signature/replay and provider evidence.
 Remaining work is limited to tenant-scoped endpoint enforcement, webhook replay
 and signature evidence, provider contract tests, database integration coverage,
 and service-wide verification.
+
+## Completed production webhook boundary slice — 2026-08-01
+
+- [x] Added an application-owned `PaymentWebhookEventRepository` port and a
+  tenant/provider/event uniqueness boundary for durable delivery claims.
+- [x] Added `PaymentWebhookEventEntity`, Spring Data repository, persistence
+  adapter, and Liquibase change `011-payment-webhook-events.sql`.
+- [x] Moved `MercadoPagoWebhookController` to `adapter/in/webhook` and added
+  package metadata plus a focused signature verifier.
+- [x] Implemented MercadoPago's documented `ts`/`v1` manifest verification with
+  constant-time comparison; raw-body Base64 HMAC is not used.
+- [x] Rejected malformed payloads, missing webhook configuration, missing
+  signatures, and missing tenant context before invoking the use case.
+- [x] Added unit coverage for signature verification, malformed/configuration
+  failures, tenant propagation, and duplicate callback suppression.
+- [x] Verified `:modules:payment:check` successfully.
+
+Remaining Payment evidence is provider contract coverage, tenant-scoped read
+coverage for every endpoint, database/integration execution against the new
+webhook table, and the final service-wide verification gate.

@@ -94,8 +94,9 @@ reopened by this backlog.
   webhook package boundaries.
 - [x] Replace Payment's temporary multi-operation service with focused use-case
   services and application-owned persistence/provider ports.
-- [ ] Complete Payment webhook replay/idempotency evidence, tenant-scoped reads,
-  provider contract tests, and full integration verification.
+- [x] Complete Payment webhook signature and durable replay/idempotency boundary;
+  remaining provider contract, tenant-read, and full integration evidence is
+  tracked in the Payment plan.
 
 ## Studio Documents canonical boundary slice — 2026-08-01
 

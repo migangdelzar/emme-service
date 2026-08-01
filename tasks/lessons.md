@@ -260,3 +260,24 @@
   obscured that the operation targeted a catalog entry.
 - Prevention rule: name the business target explicitly (`CreateServiceCatalogEntryService`)
   and apply the same normalized vocabulary to its use-case interface.
+
+## 2026-08-01 — Provider webhook signatures are provider manifests
+
+- Failure mode: treating a provider's `x-signature` header as a Base64 HMAC of
+  the raw body accepted the wrong protocol and could reject valid deliveries or
+  authenticate the wrong message.
+- Detection signal: official MercadoPago documentation defines a `ts`/`v1`
+  signature over `id`, `request-id`, and timestamp manifest fields.
+- Prevention rule: model each provider's documented signature manifest in a
+  focused inbound verifier, compare digests in constant time, and test malformed
+  metadata plus valid/invalid signatures before wiring the controller.
+
+## 2026-08-01 — Read queries must carry tenant scope
+
+- Failure mode: a notification lookup by UUID alone could return another
+  tenant's record when row-level security was not active in a test or support
+  context.
+- Detection signal: a red application-service test returned a record for a
+  mismatched tenant.
+- Prevention rule: require tenant identity in module read queries and repository
+  ports; adapters must resolve current tenant context before invoking them.

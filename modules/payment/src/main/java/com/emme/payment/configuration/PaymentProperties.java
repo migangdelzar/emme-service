@@ -17,6 +17,10 @@ public record PaymentProperties(
     StripeConfig stripe) {
   public PaymentProperties {
     if (provider == null || provider.isBlank()) provider = "mock";
+    if (mercadopago == null) mercadopago = new MercadoPagoConfig(null, null, null);
+    if (paypal == null) paypal = new PayPalConfig(null, null, null);
+    if (conekta == null) conekta = new ConektaConfig(null, null);
+    if (stripe == null) stripe = new StripeConfig(null, null);
   }
 
   public record MercadoPagoConfig(String accessToken, String publicKey, String webhookSecret) {}

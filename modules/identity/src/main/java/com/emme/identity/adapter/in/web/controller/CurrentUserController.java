@@ -10,7 +10,7 @@ import com.emme.identity.api.query.GetCurrentUserMembershipsQuery;
 import com.emme.identity.api.result.MembershipInfo;
 import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
-import com.emme.studio.api.usecase.SalonApi;
+import com.emme.studio.api.usecase.GetBusinessProfileUseCase;
 import com.emme.tenancy.api.query.GetTenantQuery;
 import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
@@ -27,17 +27,17 @@ public class CurrentUserController {
   private final GetUserPermissionsUseCase permissions;
   private final GetCurrentUserMembershipsUseCase memberships;
   private final GetTenantUseCase getTenant;
-  private final SalonApi salonApi;
+  private final GetBusinessProfileUseCase getBusinessProfile;
 
   public CurrentUserController(
       GetUserPermissionsUseCase permissions,
       GetCurrentUserMembershipsUseCase memberships,
       GetTenantUseCase getTenant,
-      SalonApi salonApi) {
+      GetBusinessProfileUseCase getBusinessProfile) {
     this.permissions = permissions;
     this.memberships = memberships;
     this.getTenant = getTenant;
-    this.salonApi = salonApi;
+    this.getBusinessProfile = getBusinessProfile;
   }
 
   @GetMapping("/api/me")
@@ -53,7 +53,7 @@ public class CurrentUserController {
     BusinessProfileResponse profile =
         selectedTenantId == null
             ? null
-            : salonApi
+            : getBusinessProfile
                 .getBusinessProfile(selectedTenantId)
                 .map(IdentityWebMapper::toBusinessProfileResponse)
                 .orElse(null);

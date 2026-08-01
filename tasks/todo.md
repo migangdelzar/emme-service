@@ -1043,3 +1043,15 @@ limiting, then continue authorization domain/application separation.
 - [x] Moved Tenancy audit persistence behind an application-owned port and
   outbound persistence adapter.
 - [x] Verified focused Calendar and Tenancy boundary tests.
+
+## Studio one-use-case-per-service normalization — 2026-08-01
+
+- [x] Add a failing architecture test for focused Studio use-case services and
+  removal of aggregate service/facade names.
+- [x] Replace `SalonApi` with focused business-profile, appointment-list, and
+  customer-list contracts.
+- [x] Split customer, artist, service-catalog, business-configuration, and
+  appointment operations into focused application services.
+- [x] Update Studio controllers, Identity, and Calendar consumers to use
+  canonical use-case interfaces.
+- [x] Verify Studio Checkstyle, Spotless, unit tests, and integration tests.

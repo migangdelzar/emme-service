@@ -7,7 +7,8 @@ import com.emme.calendar.api.result.GoogleSpreadsheetInfo;
 import com.emme.calendar.application.port.out.GoogleSheetsExportPort;
 import com.emme.studio.api.result.AppointmentInfo;
 import com.emme.studio.api.result.CustomerInfo;
-import com.emme.studio.api.usecase.SalonApi;
+import com.emme.studio.api.usecase.ListAppointmentsUseCase;
+import com.emme.studio.api.usecase.ListCustomersUseCase;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -30,15 +31,18 @@ public class GoogleSheetsAdapter implements GoogleSheetsExportPort {
 
   private final GoogleSheetsClient sheetsClient;
   private final SpringDataGoogleSpreadsheetLinkRepository sheetRepo;
-  private final SalonApi salonApi;
+  private final ListAppointmentsUseCase listAppointments;
+  private final ListCustomersUseCase listCustomers;
 
   public GoogleSheetsAdapter(
       GoogleSheetsClient sheetsClient,
       SpringDataGoogleSpreadsheetLinkRepository sheetRepo,
-      SalonApi salonApi) {
+      ListAppointmentsUseCase listAppointments,
+      ListCustomersUseCase listCustomers) {
     this.sheetsClient = sheetsClient;
     this.sheetRepo = sheetRepo;
-    this.salonApi = salonApi;
+    this.listAppointments = listAppointments;
+    this.listCustomers = listCustomers;
   }
 
   /** Export data to a new spreadsheet. */
@@ -109,7 +113,7 @@ public class GoogleSheetsAdapter implements GoogleSheetsExportPort {
   }
 
   private Object[][] buildAppointmentRows(UUID tenantId) {
-    List<AppointmentInfo> appointments = salonApi.listAppointments(tenantId);
+    List<AppointmentInfo> appointments = listAppointments.listAppointments(tenantId);
     Object[][] rows = new Object[appointments.size() + 1][];
     rows[0] = new Object[] {"Date", "Time", "Client", "Service", "Artist", "Status"};
 
@@ -136,7 +140,7 @@ public class GoogleSheetsAdapter implements GoogleSheetsExportPort {
   }
 
   private Object[][] buildCustomerRows(UUID tenantId) {
-    List<CustomerInfo> customers = salonApi.listCustomers(tenantId);
+    List<CustomerInfo> customers = listCustomers.listCustomers(tenantId);
     Object[][] rows = new Object[customers.size() + 1][];
     rows[0] = new Object[] {"Name", "Phone", "Email", "Last Visit"};
 

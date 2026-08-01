@@ -2,7 +2,12 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.studio.application.service.BusinessConfigService;
+import com.emme.studio.api.usecase.GetBookingPolicyUseCase;
+import com.emme.studio.api.usecase.GetBusinessProfileConfigUseCase;
+import com.emme.studio.api.usecase.GetOperatingHoursUseCase;
+import com.emme.studio.api.usecase.UpdateBookingPolicyUseCase;
+import com.emme.studio.api.usecase.UpdateBusinessProfileUseCase;
+import com.emme.studio.api.usecase.UpdateOperatingHoursUseCase;
 import com.emme.studio.domain.model.BookingPolicy;
 import com.emme.studio.domain.model.BusinessProfile;
 import com.emme.studio.domain.model.DayOfWeek;
@@ -24,10 +29,26 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Business Config")
 public class BusinessConfigController {
 
-  private final BusinessConfigService businessConfigService;
+  private final GetBusinessProfileConfigUseCase getProfile;
+  private final UpdateBusinessProfileUseCase updateProfile;
+  private final GetOperatingHoursUseCase getHours;
+  private final UpdateOperatingHoursUseCase updateHours;
+  private final GetBookingPolicyUseCase getPolicy;
+  private final UpdateBookingPolicyUseCase updatePolicy;
 
-  public BusinessConfigController(BusinessConfigService businessConfigService) {
-    this.businessConfigService = businessConfigService;
+  public BusinessConfigController(
+      GetBusinessProfileConfigUseCase getProfile,
+      UpdateBusinessProfileUseCase updateProfile,
+      GetOperatingHoursUseCase getHours,
+      UpdateOperatingHoursUseCase updateHours,
+      GetBookingPolicyUseCase getPolicy,
+      UpdateBookingPolicyUseCase updatePolicy) {
+    this.getProfile = getProfile;
+    this.updateProfile = updateProfile;
+    this.getHours = getHours;
+    this.updateHours = updateHours;
+    this.getPolicy = getPolicy;
+    this.updatePolicy = updatePolicy;
   }
 
   // --- Profile ---
@@ -37,8 +58,8 @@ public class BusinessConfigController {
   public ResponseEntity<BusinessProfileResponse> getProfile() {
     return withCurrentTenant(
         tenantId ->
-            businessConfigService
-                .getProfile(tenantId)
+            getProfile
+                .get(tenantId)
                 .map(p -> ResponseEntity.ok(BusinessProfileResponse.from(p)))
                 .orElse(ResponseEntity.notFound().build()));
   }
@@ -50,7 +71,7 @@ public class BusinessConfigController {
     return withCurrentTenant(
         tenantId -> {
           BusinessProfile profile =
-              businessConfigService.updateProfile(
+              updateProfile.update(
                   tenantId, request.displayName(), request.timeZone(), request.locale());
           return ResponseEntity.ok(BusinessProfileResponse.from(profile));
         });
@@ -64,9 +85,7 @@ public class BusinessConfigController {
     return withCurrentTenant(
         tenantId ->
             ResponseEntity.ok(
-                businessConfigService.getOperatingHours(tenantId).stream()
-                    .map(OperatingHoursResponse::from)
-                    .toList()));
+                getHours.get(tenantId).stream().map(OperatingHoursResponse::from).toList()));
   }
 
   @PutMapping("/hours")
@@ -76,7 +95,7 @@ public class BusinessConfigController {
     return withCurrentTenant(
         tenantId -> {
           OperatingHours hours =
-              businessConfigService.updateOperatingHours(
+              updateHours.update(
                   tenantId, request.day(), request.opensAt(), request.closesAt(), request.active());
           return ResponseEntity.ok(OperatingHoursResponse.from(hours));
         });
@@ -89,8 +108,8 @@ public class BusinessConfigController {
   public ResponseEntity<BookingPolicyResponse> getPolicy() {
     return withCurrentTenant(
         tenantId ->
-            businessConfigService
-                .getBookingPolicy(tenantId)
+            getPolicy
+                .get(tenantId)
                 .map(p -> ResponseEntity.ok(BookingPolicyResponse.from(p)))
                 .orElse(ResponseEntity.notFound().build()));
   }
@@ -102,7 +121,7 @@ public class BusinessConfigController {
     return withCurrentTenant(
         tenantId -> {
           BookingPolicy policy =
-              businessConfigService.updateBookingPolicy(
+              updatePolicy.update(
                   tenantId,
                   request.minNoticeMinutes(),
                   request.maxAdvanceDays(),

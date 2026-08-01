@@ -2,7 +2,11 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.studio.application.service.ServiceCatalogService;
+import com.emme.studio.api.usecase.CreateCatalogServiceUseCase;
+import com.emme.studio.api.usecase.GetCatalogServiceUseCase;
+import com.emme.studio.api.usecase.ListActiveCatalogServicesUseCase;
+import com.emme.studio.api.usecase.RetireCatalogServiceUseCase;
+import com.emme.studio.api.usecase.UpdateCatalogServiceUseCase;
 import com.emme.studio.domain.model.Service;
 import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
 import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
@@ -28,12 +32,25 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Services")
 public class ServiceController {
 
-  private final ServiceCatalogService serviceCatalogService;
+  private final ListActiveCatalogServicesUseCase listActiveServices;
+  private final CreateCatalogServiceUseCase createService;
+  private final GetCatalogServiceUseCase getService;
+  private final UpdateCatalogServiceUseCase updateService;
+  private final RetireCatalogServiceUseCase retireService;
   private final EnforceEntitlementUseCase enforceEntitlement;
 
   public ServiceController(
-      ServiceCatalogService serviceCatalogService, EnforceEntitlementUseCase enforceEntitlement) {
-    this.serviceCatalogService = serviceCatalogService;
+      ListActiveCatalogServicesUseCase listActiveServices,
+      CreateCatalogServiceUseCase createService,
+      GetCatalogServiceUseCase getService,
+      UpdateCatalogServiceUseCase updateService,
+      RetireCatalogServiceUseCase retireService,
+      EnforceEntitlementUseCase enforceEntitlement) {
+    this.listActiveServices = listActiveServices;
+    this.createService = createService;
+    this.getService = getService;
+    this.updateService = updateService;
+    this.retireService = retireService;
     this.enforceEntitlement = enforceEntitlement;
   }
 
@@ -43,7 +60,7 @@ public class ServiceController {
     return withCurrentTenant(
         tenantId ->
             ResponseEntity.ok(
-                serviceCatalogService.findActiveServices(tenantId).stream()
+                listActiveServices.listActive(tenantId).stream()
                     .map(ServiceResponse::from)
                     .toList()));
   }
@@ -55,21 +72,14 @@ public class ServiceController {
         tenantId -> {
           enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "services:write"));
           Service service =
-              request.category() == null && request.description() == null
-                  ? serviceCatalogService.create(
-                      tenantId,
-                      request.code(),
-                      request.name(),
-                      request.durationMinutes(),
-                      request.basePrice())
-                  : serviceCatalogService.create(
-                      tenantId,
-                      request.code(),
-                      request.name(),
-                      request.category(),
-                      request.description(),
-                      request.durationMinutes(),
-                      request.basePrice());
+              createService.create(
+                  tenantId,
+                  request.code(),
+                  request.name(),
+                  request.category(),
+                  request.description(),
+                  request.durationMinutes(),
+                  request.basePrice());
           var location = URI.create("/api/v1/services/" + service.getId());
           return ResponseEntity.created(location).body(ServiceResponse.from(service));
         });
@@ -78,8 +88,8 @@ public class ServiceController {
   @GetMapping("/{id}")
   @Operation(summary = "Get service by ID")
   public ResponseEntity<ServiceResponse> get(@PathVariable UUID id) {
-    return serviceCatalogService
-        .findById(id)
+    return getService
+        .get(id)
         .map(s -> ResponseEntity.ok(ServiceResponse.from(s)))
         .orElse(ResponseEntity.notFound().build());
   }
@@ -89,23 +99,20 @@ public class ServiceController {
   public ResponseEntity<ServiceResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateServiceRequest request) {
     Service service =
-        request.category() == null && request.description() == null
-            ? serviceCatalogService.update(
-                id, request.name(), request.durationMinutes(), request.basePrice())
-            : serviceCatalogService.update(
-                id,
-                request.name(),
-                request.category(),
-                request.description(),
-                request.durationMinutes(),
-                request.basePrice());
+        updateService.update(
+            id,
+            request.name(),
+            request.category(),
+            request.description(),
+            request.durationMinutes(),
+            request.basePrice());
     return ResponseEntity.ok(ServiceResponse.from(service));
   }
 
   @PostMapping("/{id}/retire")
   @Operation(summary = "Retire a service")
   public ResponseEntity<ServiceResponse> retire(@PathVariable UUID id) {
-    Service service = serviceCatalogService.retire(id);
+    Service service = retireService.retire(id);
     return ResponseEntity.ok(ServiceResponse.from(service));
   }
 

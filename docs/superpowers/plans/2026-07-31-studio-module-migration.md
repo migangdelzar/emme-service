@@ -8,14 +8,15 @@
 | Design | [`2026-07-31-studio-module-migration-design.md`](../specs/2026-07-31-studio-module-migration-design.md) |
 | Module | `modules/studio` |
 | Branch | `feat/studio-module-migration` |
-| Status | Core Studio migration complete; nested capabilities explicitly deferred |
+| Status | Core Studio and one-use-case-per-service normalization complete; nested capabilities explicitly deferred |
 | Date | 2026-07-31 |
 
 **Canonical template:** [`../../templates/module-package-structure-template.md`](../../templates/module-package-structure-template.md), reviewed 2026-07-31.
 
 **Template conformance:** Core Studio is complete against the current template.
-`SalonApi` remains a compatibility-preserving use-case name in `api/usecase`, and
-the existing public event contracts remain under `api/event`. `documents` and
+The public Studio contract is split into focused business-profile, appointment,
+and customer use cases under `api/usecase`; the legacy `SalonApi` facade is
+removed. The existing public event contracts remain under `api/event`. `documents` and
 `subscriptions` are not counted as migrated: each requires its own plan before
 its JPA entities, repositories, controllers, and configuration can leave the
 nested legacy packages. Those follow-up plans are
@@ -92,16 +93,16 @@ verified.
 - ✅ Migrate `ArtistService` to Artist/Artist Capability domain models and
   repository ports; its inbound controller no longer exposes persistence
   entities.
-- ✅ Services with a public cross-module contract implement the corresponding
-  `api.usecase` interface (`SalonApiImpl`); endpoint-specific services remain
-  application-owned until stable API result contracts are introduced.
+- ✅ Public cross-module operations implement focused `api.usecase` interfaces
+  (`GetBusinessProfileUseCase`, `ListAppointmentsUseCase`, and
+  `ListCustomersUseCase`); the multi-operation `SalonApi` facade is removed.
 - ✅ Ensure the migrated controllers call application services and do not access
   repositories or persistence entities.
 - ✅ Move the dashboard SSE broadcaster into the inbound web adapter boundary.
 - Preserve route paths, response shapes, tenant context, and authorization.
 
-The relocation is a green checkpoint; use-case ports and repository isolation
-remain part of the next structural slice.
+The relocation and use-case isolation are green checkpoints; nested capability
+behavior remains governed by the Documents and Subscriptions plans.
 
 ### 6. Normalize nested metadata and architecture rules
 
@@ -133,3 +134,16 @@ remain part of the next structural slice.
 - [x] Studio focused tests, architecture tests, and service CI pass.
 - [x] Documentation and lessons are updated.
 - [x] Feature branch is committed and pushed.
+
+## One-use-case-per-service normalization — 2026-08-01
+
+- [x] Replace the multi-operation `SalonApi` contract with focused public
+  business-profile, appointment-list, and customer-list use cases.
+- [x] Split customer, artist, service-catalog, business-configuration, and
+  appointment operations into one service per use case.
+- [x] Remove the legacy aggregate services and update inbound adapters and
+  cross-module consumers to depend on focused use-case interfaces.
+- [x] Add an executable convention test rejecting the removed aggregate service
+  and facade names.
+- [x] Verify Studio compilation, Spotless, Checkstyle, unit tests, and
+  integration tests.

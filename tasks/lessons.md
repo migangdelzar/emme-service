@@ -220,3 +220,13 @@
 - Prevention rule: expose one command/query/use-case contract per capability,
   implement each with one application service, and update test fixtures to use
   the public contract rather than retaining a compatibility facade.
+
+## 2026-08-01 — Avoid domain/annotation simple-name collisions
+
+- Failure mode: a domain type named `Service` collided with Spring's
+  `@Service` annotation while splitting application services.
+- Detection signal: Java compilation reported an ambiguous `Service` reference
+  in annotations and local variables.
+- Prevention rule: use a fully qualified domain type or a named mapper at the
+  boundary, and run the module compile immediately after introducing a new
+  application service.

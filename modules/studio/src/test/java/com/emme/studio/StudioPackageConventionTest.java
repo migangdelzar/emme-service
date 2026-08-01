@@ -35,41 +35,31 @@ class StudioPackageConventionTest {
     assertThat(hasClass("com.emme.studio.api.result.AppointmentInfo")).isTrue();
     assertThat(hasClass("com.emme.studio.api.result.BusinessProfileInfo")).isTrue();
     assertThat(hasClass("com.emme.studio.api.result.CustomerInfo")).isTrue();
-    assertThat(hasClass("com.emme.studio.api.usecase.SalonApi")).isTrue();
+    assertThat(hasClass("com.emme.studio.api.usecase.GetBusinessProfileUseCase")).isTrue();
+    assertThat(hasClass("com.emme.studio.api.usecase.ListAppointmentsUseCase")).isTrue();
+    assertThat(hasClass("com.emme.studio.api.usecase.ListCustomersUseCase")).isTrue();
     assertThat(hasClass("com.emme.studio.api.event.DashboardEvent")).isTrue();
   }
 
   @Test
-  void migratedCustomerServiceDoesNotDependOnOutboundAdapters() {
-    noClasses()
-        .that()
-        .haveSimpleName("CustomerService")
-        .should()
-        .dependOnClassesThat()
-        .resideInAnyPackage("com.emme.studio.adapter.out..")
-        .check(CLASSES);
-  }
+  void applicationServicesAreOneUseCasePerClass() {
+    Set<String> legacyServices =
+        Set.of(
+            "AppointmentService",
+            "ArtistService",
+            "BusinessConfigService",
+            "CustomerService",
+            "ServiceCatalogService",
+            "SlotSearchService",
+            "SalonApiImpl");
 
-  @Test
-  void migratedServiceCatalogDoesNotDependOnOutboundAdapters() {
-    noClasses()
-        .that()
-        .haveSimpleName("ServiceCatalogService")
-        .should()
-        .dependOnClassesThat()
-        .resideInAnyPackage("com.emme.studio.adapter.out..")
-        .check(CLASSES);
-  }
-
-  @Test
-  void migratedArtistServiceDoesNotDependOnOutboundAdapters() {
-    noClasses()
-        .that()
-        .haveSimpleName("ArtistService")
-        .should()
-        .dependOnClassesThat()
-        .resideInAnyPackage("com.emme.studio.adapter.out..")
-        .check(CLASSES);
+    assertThat(CLASSES.stream())
+        .extracting(JavaClass::getSimpleName)
+        .doesNotContainAnyElementsOf(legacyServices);
+    assertThat(hasClass("com.emme.studio.application.service.CreateCustomerService")).isTrue();
+    assertThat(hasClass("com.emme.studio.application.service.ListCustomersService")).isTrue();
+    assertThat(hasClass("com.emme.studio.application.service.CreateAppointmentService")).isTrue();
+    assertThat(hasClass("com.emme.studio.application.service.FindAvailableSlotsService")).isTrue();
   }
 
   @Test

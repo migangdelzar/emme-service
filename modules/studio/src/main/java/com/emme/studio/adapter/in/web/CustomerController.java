@@ -2,7 +2,12 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.studio.application.service.CustomerService;
+import com.emme.studio.api.usecase.CreateCustomerUseCase;
+import com.emme.studio.api.usecase.GetCustomerUseCase;
+import com.emme.studio.api.usecase.ListTenantCustomersUseCase;
+import com.emme.studio.api.usecase.RetireCustomerUseCase;
+import com.emme.studio.api.usecase.SearchCustomersUseCase;
+import com.emme.studio.api.usecase.UpdateCustomerUseCase;
 import com.emme.studio.domain.model.Customer;
 import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
 import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
@@ -28,12 +33,28 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Customers")
 public class CustomerController {
 
-  private final CustomerService customerService;
+  private final ListTenantCustomersUseCase listCustomers;
+  private final CreateCustomerUseCase createCustomer;
+  private final GetCustomerUseCase getCustomer;
+  private final UpdateCustomerUseCase updateCustomer;
+  private final RetireCustomerUseCase retireCustomer;
+  private final SearchCustomersUseCase searchCustomers;
   private final EnforceEntitlementUseCase enforceEntitlement;
 
   public CustomerController(
-      CustomerService customerService, EnforceEntitlementUseCase enforceEntitlement) {
-    this.customerService = customerService;
+      ListTenantCustomersUseCase listCustomers,
+      CreateCustomerUseCase createCustomer,
+      GetCustomerUseCase getCustomer,
+      UpdateCustomerUseCase updateCustomer,
+      RetireCustomerUseCase retireCustomer,
+      SearchCustomersUseCase searchCustomers,
+      EnforceEntitlementUseCase enforceEntitlement) {
+    this.listCustomers = listCustomers;
+    this.createCustomer = createCustomer;
+    this.getCustomer = getCustomer;
+    this.updateCustomer = updateCustomer;
+    this.retireCustomer = retireCustomer;
+    this.searchCustomers = searchCustomers;
     this.enforceEntitlement = enforceEntitlement;
   }
 
@@ -43,9 +64,7 @@ public class CustomerController {
     return withCurrentTenant(
         tenantId ->
             ResponseEntity.ok(
-                customerService.findByTenantId(tenantId).stream()
-                    .map(CustomerResponse::from)
-                    .toList()));
+                listCustomers.list(tenantId).stream().map(CustomerResponse::from).toList()));
   }
 
   @PostMapping
@@ -56,7 +75,7 @@ public class CustomerController {
         tenantId -> {
           enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "customers:write"));
           Customer customer =
-              customerService.create(tenantId, request.name(), request.phone(), request.email());
+              createCustomer.create(tenantId, request.name(), request.phone(), request.email());
           var location = URI.create("/api/v1/customers/" + customer.getId());
           return ResponseEntity.created(location).body(CustomerResponse.from(customer));
         });
@@ -65,8 +84,8 @@ public class CustomerController {
   @GetMapping("/{id}")
   @Operation(summary = "Get customer by ID")
   public ResponseEntity<CustomerResponse> get(@PathVariable UUID id) {
-    return customerService
-        .findById(id)
+    return getCustomer
+        .get(id)
         .map(c -> ResponseEntity.ok(CustomerResponse.from(c)))
         .orElse(ResponseEntity.notFound().build());
   }
@@ -75,15 +94,14 @@ public class CustomerController {
   @Operation(summary = "Update a customer")
   public ResponseEntity<CustomerResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateCustomerRequest request) {
-    Customer customer =
-        customerService.update(id, request.name(), request.phone(), request.email());
+    Customer customer = updateCustomer.update(id, request.name(), request.phone(), request.email());
     return ResponseEntity.ok(CustomerResponse.from(customer));
   }
 
   @PostMapping("/{id}/retire")
   @Operation(summary = "Retire a customer")
   public ResponseEntity<CustomerResponse> retire(@PathVariable UUID id) {
-    Customer customer = customerService.retire(id);
+    Customer customer = retireCustomer.retire(id);
     return ResponseEntity.ok(CustomerResponse.from(customer));
   }
 
@@ -93,9 +111,7 @@ public class CustomerController {
     return withCurrentTenant(
         tenantId ->
             ResponseEntity.ok(
-                customerService.searchByName(tenantId, q).stream()
-                    .map(CustomerResponse::from)
-                    .toList()));
+                searchCustomers.search(tenantId, q).stream().map(CustomerResponse::from).toList()));
   }
 
   // --- DTOs ---

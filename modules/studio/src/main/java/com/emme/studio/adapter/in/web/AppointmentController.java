@@ -2,9 +2,18 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.studio.api.usecase.CancelAppointmentUseCase;
+import com.emme.studio.api.usecase.CompleteAppointmentUseCase;
+import com.emme.studio.api.usecase.ConfirmAppointmentUseCase;
+import com.emme.studio.api.usecase.CreateAppointmentUseCase;
+import com.emme.studio.api.usecase.FindAvailableSlotsUseCase;
+import com.emme.studio.api.usecase.GetAppointmentUseCase;
+import com.emme.studio.api.usecase.ListAppointmentsByDateUseCase;
+import com.emme.studio.api.usecase.MarkAppointmentNoShowUseCase;
+import com.emme.studio.api.usecase.RescheduleAppointmentUseCase;
+import com.emme.studio.api.usecase.StartAppointmentUseCase;
 import com.emme.studio.application.result.AppointmentView;
-import com.emme.studio.application.service.AppointmentService;
-import com.emme.studio.application.service.SlotSearchService;
+import com.emme.studio.application.result.AvailableSlot;
 import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
 import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,16 +45,40 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Appointments")
 public class AppointmentController {
 
-  private final AppointmentService appointmentService;
-  private final SlotSearchService slotSearchService;
+  private final ListAppointmentsByDateUseCase listAppointments;
+  private final CreateAppointmentUseCase createAppointment;
+  private final GetAppointmentUseCase getAppointment;
+  private final RescheduleAppointmentUseCase rescheduleAppointment;
+  private final CancelAppointmentUseCase cancelAppointment;
+  private final ConfirmAppointmentUseCase confirmAppointment;
+  private final StartAppointmentUseCase startAppointment;
+  private final CompleteAppointmentUseCase completeAppointment;
+  private final MarkAppointmentNoShowUseCase markAppointmentNoShow;
+  private final FindAvailableSlotsUseCase findAvailableSlots;
   private final EnforceEntitlementUseCase enforceEntitlement;
 
   public AppointmentController(
-      AppointmentService appointmentService,
-      SlotSearchService slotSearchService,
+      ListAppointmentsByDateUseCase listAppointments,
+      CreateAppointmentUseCase createAppointment,
+      GetAppointmentUseCase getAppointment,
+      RescheduleAppointmentUseCase rescheduleAppointment,
+      CancelAppointmentUseCase cancelAppointment,
+      ConfirmAppointmentUseCase confirmAppointment,
+      StartAppointmentUseCase startAppointment,
+      CompleteAppointmentUseCase completeAppointment,
+      MarkAppointmentNoShowUseCase markAppointmentNoShow,
+      FindAvailableSlotsUseCase findAvailableSlots,
       EnforceEntitlementUseCase enforceEntitlement) {
-    this.appointmentService = appointmentService;
-    this.slotSearchService = slotSearchService;
+    this.listAppointments = listAppointments;
+    this.createAppointment = createAppointment;
+    this.getAppointment = getAppointment;
+    this.rescheduleAppointment = rescheduleAppointment;
+    this.cancelAppointment = cancelAppointment;
+    this.confirmAppointment = confirmAppointment;
+    this.startAppointment = startAppointment;
+    this.completeAppointment = completeAppointment;
+    this.markAppointmentNoShow = markAppointmentNoShow;
+    this.findAvailableSlots = findAvailableSlots;
     this.enforceEntitlement = enforceEntitlement;
   }
 
@@ -58,9 +91,9 @@ public class AppointmentController {
         tenantId -> {
           List<AppointmentView> appointments;
           if (date != null) {
-            appointments = appointmentService.findByTenantAndDate(tenantId, date);
+            appointments = listAppointments.list(tenantId, date);
           } else {
-            appointments = appointmentService.findByTenantAndDate(tenantId, LocalDate.now());
+            appointments = listAppointments.list(tenantId, LocalDate.now());
           }
           return ResponseEntity.ok(appointments.stream().map(AppointmentResponse::from).toList());
         });
@@ -74,7 +107,7 @@ public class AppointmentController {
           enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "appointments:write"));
           try {
             AppointmentView appointment =
-                appointmentService.create(
+                createAppointment.create(
                     tenantId,
                     request.customerId(),
                     request.serviceId(),
@@ -92,8 +125,8 @@ public class AppointmentController {
   @GetMapping("/{id}")
   @Operation(summary = "Get appointment by ID")
   public ResponseEntity<AppointmentResponse> get(@PathVariable UUID id) {
-    return appointmentService
-        .findById(id)
+    return getAppointment
+        .get(id)
         .map(a -> ResponseEntity.ok(AppointmentResponse.from(a)))
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
@@ -104,7 +137,7 @@ public class AppointmentController {
       @PathVariable UUID id, @Valid @RequestBody RescheduleRequest request) {
     try {
       AppointmentView appointment =
-          appointmentService.reschedule(id, request.newStartsAt(), request.newEndsAt());
+          rescheduleAppointment.reschedule(id, request.newStartsAt(), request.newEndsAt());
       return ResponseEntity.ok(AppointmentResponse.from(appointment));
     } catch (IllegalStateException e) {
       return ResponseEntity.status(409).body(e.getMessage());
@@ -117,32 +150,32 @@ public class AppointmentController {
     return withCurrentTenant(
         tenantId -> {
           enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "appointments:write"));
-          return withConflictHandling(() -> appointmentService.cancel(id));
+          return withConflictHandling(() -> cancelAppointment.cancel(id));
         });
   }
 
   @PostMapping("/{id}/confirm")
   @Operation(summary = "Confirm a DRAFT appointment")
   public ResponseEntity<AppointmentResponse> confirm(@PathVariable UUID id) {
-    return withConflictHandling(() -> appointmentService.confirm(id));
+    return withConflictHandling(() -> confirmAppointment.confirm(id));
   }
 
   @PostMapping("/{id}/start")
   @Operation(summary = "Start a CONFIRMED appointment (-> IN_PROGRESS)")
   public ResponseEntity<AppointmentResponse> start(@PathVariable UUID id) {
-    return withConflictHandling(() -> appointmentService.start(id));
+    return withConflictHandling(() -> startAppointment.start(id));
   }
 
   @PostMapping("/{id}/complete")
   @Operation(summary = "Complete an IN_PROGRESS appointment (-> COMPLETED)")
   public ResponseEntity<AppointmentResponse> complete(@PathVariable UUID id) {
-    return withConflictHandling(() -> appointmentService.complete(id));
+    return withConflictHandling(() -> completeAppointment.complete(id));
   }
 
   @PostMapping("/{id}/no-show")
   @Operation(summary = "Mark a CONFIRMED appointment as NO_SHOW")
   public ResponseEntity<AppointmentResponse> noShow(@PathVariable UUID id) {
-    return withConflictHandling(() -> appointmentService.noShow(id));
+    return withConflictHandling(() -> markAppointmentNoShow.markNoShow(id));
   }
 
   private ResponseEntity<AppointmentResponse> withConflictHandling(
@@ -160,8 +193,7 @@ public class AppointmentController {
       @RequestParam UUID serviceId, @RequestParam LocalDate date) {
     return withCurrentTenant(
         tenantId -> {
-          List<SlotSearchService.Slot> slots =
-              slotSearchService.findAvailableSlots(tenantId, serviceId, date);
+          List<AvailableSlot> slots = findAvailableSlots.find(tenantId, serviceId, date);
           return ResponseEntity.ok(slots.stream().map(SlotResponse::from).toList());
         });
   }
@@ -195,7 +227,7 @@ public class AppointmentController {
   }
 
   public record SlotResponse(UUID artistId, Instant startsAt, Instant endsAt) {
-    public static SlotResponse from(SlotSearchService.Slot slot) {
+    public static SlotResponse from(AvailableSlot slot) {
       return new SlotResponse(slot.artistId(), slot.startsAt(), slot.endsAt());
     }
   }

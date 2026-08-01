@@ -1,12 +1,13 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.usecase.FindAvailableSlotsUseCase;
 import com.emme.studio.application.port.out.AppointmentCollisionPort;
 import com.emme.studio.application.port.out.ArtistCapabilityRepository;
 import com.emme.studio.application.port.out.OperatingHoursRepository;
 import com.emme.studio.application.port.out.ServiceRepository;
+import com.emme.studio.application.result.AvailableSlot;
 import com.emme.studio.domain.model.DayOfWeek;
 import com.emme.studio.domain.model.OperatingHours;
-import com.emme.studio.domain.model.Service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -18,19 +19,19 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 
+/** Application service for finding available appointment slots. */
 @org.springframework.stereotype.Service
 @Transactional(readOnly = true)
-public class SlotSearchService {
+public class FindAvailableSlotsService implements FindAvailableSlotsUseCase {
 
   private static final int SLOT_INTERVAL_MINUTES = 15;
-  private static final ZoneId SALON_ZONE = ZoneId.of("America/Mexico_City");
-
+  private static final ZoneId STUDIO_ZONE = ZoneId.of("America/Mexico_City");
   private final ArtistCapabilityRepository artistCapabilityRepository;
   private final OperatingHoursRepository operatingHoursRepository;
   private final ServiceRepository serviceRepository;
   private final AppointmentCollisionPort collisionPort;
 
-  public SlotSearchService(
+  public FindAvailableSlotsService(
       ArtistCapabilityRepository artistCapabilityRepository,
       OperatingHoursRepository operatingHoursRepository,
       ServiceRepository serviceRepository,
@@ -41,8 +42,9 @@ public class SlotSearchService {
     this.collisionPort = collisionPort;
   }
 
-  public List<Slot> findAvailableSlots(UUID tenantId, UUID serviceId, LocalDate date) {
-    Service service =
+  @Override
+  public List<AvailableSlot> find(UUID tenantId, UUID serviceId, LocalDate date) {
+    com.emme.studio.domain.model.Service service =
         serviceRepository
             .findById(serviceId)
             .orElseThrow(() -> new IllegalArgumentException("Service not found: " + serviceId));
@@ -50,35 +52,34 @@ public class SlotSearchService {
     if (hours.isEmpty() || !hours.get().isActive()) {
       return List.of();
     }
-
     OperatingHours operatingHours = hours.get();
     List<UUID> artistIds =
         artistCapabilityRepository.findByServiceIdAndActive(serviceId).stream()
             .map(capability -> capability.getArtist().getId())
             .toList();
-    List<Slot> availableSlots = new ArrayList<>();
+    List<AvailableSlot> slots = new ArrayList<>();
     LocalTime slotStart = operatingHours.getOpensAt();
-    LocalTime closesAt = operatingHours.getClosesAt();
-
-    while (!slotStart.plusMinutes(service.getDurationMinutes()).isAfter(closesAt)) {
+    while (!slotStart
+        .plusMinutes(service.getDurationMinutes())
+        .isAfter(operatingHours.getClosesAt())) {
       Instant startsAt = toInstant(date, slotStart);
       Instant endsAt = toInstant(date, slotStart.plusMinutes(service.getDurationMinutes()));
       for (UUID artistId : artistIds) {
         if (!collisionPort.hasCollision(artistId, startsAt, endsAt)) {
-          availableSlots.add(new Slot(artistId, startsAt, endsAt));
+          slots.add(new AvailableSlot(artistId, startsAt, endsAt));
         }
       }
       slotStart = slotStart.plusMinutes(SLOT_INTERVAL_MINUTES);
     }
-    return availableSlots;
+    return slots;
   }
 
   private Optional<OperatingHours> findHours(UUID tenantId, LocalDate date) {
     return operatingHoursRepository.findByTenantIdAndDayOfWeek(
-        tenantId, toSalonDayOfWeek(date.getDayOfWeek()));
+        tenantId, toStudioDayOfWeek(date.getDayOfWeek()));
   }
 
-  private DayOfWeek toSalonDayOfWeek(java.time.DayOfWeek javaDay) {
+  private DayOfWeek toStudioDayOfWeek(java.time.DayOfWeek javaDay) {
     return switch (javaDay) {
       case MONDAY -> DayOfWeek.MON;
       case TUESDAY -> DayOfWeek.TUE;
@@ -91,8 +92,6 @@ public class SlotSearchService {
   }
 
   private Instant toInstant(LocalDate date, LocalTime time) {
-    return ZonedDateTime.of(date, time, SALON_ZONE).toInstant();
+    return ZonedDateTime.of(date, time, STUDIO_ZONE).toInstant();
   }
-
-  public record Slot(UUID artistId, Instant startsAt, Instant endsAt) {}
 }

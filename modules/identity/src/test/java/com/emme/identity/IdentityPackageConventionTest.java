@@ -224,6 +224,24 @@ class IdentityPackageConventionTest {
           "modules/identity/src/main/java/com/emme/identity/adapter/in/web/advice/IdentityExceptionHandler.java");
   private static final Path IDENTITY_EXCEPTION_PACKAGE =
       sourcePath("modules/identity/src/main/java/com/emme/identity/api/exception");
+  private static final Path USER_AUTH_USE_CASE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/api/usecase/AuthenticateUserUseCase.java");
+  private static final Path USER_AUTH_SERVICE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/service/AuthenticateUserService.java");
+  private static final Path USER_AUTH_PORT =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/port/out/UserAuthenticationPort.java");
+  private static final Path KEYCLOAK_USER_ADAPTER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/KeycloakUserAuthenticationAdapter.java");
+  private static final Path IDENTITY_CLIENT_CONFIGURATION =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/configuration/IdentityClientConfiguration.java");
+  private static final Path LEGACY_KEYCLOAK_AUTH_SERVICE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/KeycloakAuthService.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -396,6 +414,16 @@ class IdentityPackageConventionTest {
         .isTrue();
     assertThat(hasJavaSource(IDENTITY_EXCEPTION_PACKAGE, "InvalidCustomerTokenException.java"))
         .isTrue();
+  }
+
+  @Test
+  void ownsPasswordAuthenticationBehindApplicationAndKeycloakAdapterBoundaries() {
+    assertThat(Files.exists(USER_AUTH_USE_CASE)).isTrue();
+    assertThat(Files.exists(USER_AUTH_SERVICE)).isTrue();
+    assertThat(Files.exists(USER_AUTH_PORT)).isTrue();
+    assertThat(Files.exists(KEYCLOAK_USER_ADAPTER)).isTrue();
+    assertThat(Files.exists(IDENTITY_CLIENT_CONFIGURATION)).isTrue();
+    assertThat(Files.exists(LEGACY_KEYCLOAK_AUTH_SERVICE)).isFalse();
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

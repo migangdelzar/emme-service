@@ -324,6 +324,28 @@ open slices.
 - [x] Verified Identity checks, Studio Modulith verification, Markdown
   validation, and whitespace checks.
 
-The final Identity hardening work remains: move the password-grant Keycloak
+The next Identity hardening slice is to move the password-grant Keycloak
 orchestration out of the legacy application class, type the remaining Keycloak
 client configuration, and complete security regression coverage.
+
+## Completed Keycloak application boundary slice — 2026-08-01
+
+- [x] Added grouped `AuthenticateUserCommand`, `GetUserInfoQuery`,
+  `UserTokenResult`, `UserInfoResult`, and `AuthenticateUserUseCase` contracts.
+- [x] Added the application-owned `UserAuthenticationPort` and
+  `AuthenticateUserService`; tenant-realm selection remains application-owned.
+- [x] Moved password-grant and user-info HTTP calls into
+  `KeycloakUserAuthenticationAdapter`.
+- [x] Moved `OkHttpClient` construction to `IdentityClientConfiguration` and
+  removed direct Keycloak transport orchestration from the application layer.
+- [x] Rewired `AuthController` through `AuthenticateUserUseCase` and removed
+  the legacy `KeycloakAuthService`.
+- [x] Preserved the distinction between invalid credentials (`401`) and an
+  unavailable authentication provider (`500`).
+- [x] Added application-service, package-boundary, and login regression
+  coverage.
+- [x] Verified Identity checks, Studio Modulith verification, Markdown
+  validation, and whitespace checks.
+
+Remaining follow-up: type the remaining issuer/client Keycloak configuration
+and complete the broader Identity security hardening review.

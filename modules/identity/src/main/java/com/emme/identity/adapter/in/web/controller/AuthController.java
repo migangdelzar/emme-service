@@ -4,10 +4,13 @@ import com.emme.identity.adapter.in.web.mapper.CustomerWebMapper;
 import com.emme.identity.adapter.in.web.request.LoginRequest;
 import com.emme.identity.adapter.in.web.response.TokenLoginResponse;
 import com.emme.identity.api.command.AuthenticateCustomerCommand;
+import com.emme.identity.api.command.AuthenticateUserCommand;
 import com.emme.identity.api.command.UpdateCustomerPhoneCommand;
+import com.emme.identity.api.exception.IdentityAuthenticationException;
+import com.emme.identity.api.query.GetUserInfoQuery;
 import com.emme.identity.api.usecase.AuthenticateCustomerUseCase;
+import com.emme.identity.api.usecase.AuthenticateUserUseCase;
 import com.emme.identity.api.usecase.UpdateCustomerProfileUseCase;
-import com.emme.identity.application.KeycloakAuthService;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -26,17 +29,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-  private final KeycloakAuthService authService;
+  private final AuthenticateUserUseCase authenticateUserUseCase;
   private final AuthenticateCustomerUseCase authenticateCustomerUseCase;
   private final UpdateCustomerProfileUseCase updateCustomerProfileUseCase;
   private final CurrentUserController currentUserController;
 
   public AuthController(
-      KeycloakAuthService authService,
+      AuthenticateUserUseCase authenticateUserUseCase,
       AuthenticateCustomerUseCase authenticateCustomerUseCase,
       UpdateCustomerProfileUseCase updateCustomerProfileUseCase,
       CurrentUserController currentUserController) {
-    this.authService = authService;
+    this.authenticateUserUseCase = authenticateUserUseCase;
     this.authenticateCustomerUseCase = authenticateCustomerUseCase;
     this.updateCustomerProfileUseCase = updateCustomerProfileUseCase;
     this.currentUserController = currentUserController;
@@ -45,10 +48,13 @@ public class AuthController {
   @PostMapping("/api/auth/login")
   public ResponseEntity<?> login(@RequestBody LoginRequest request) {
     try {
-      var tokens = authService.authenticate(request.email(), request.password());
+      var tokens =
+          authenticateUserUseCase.authenticate(
+              new AuthenticateUserCommand(request.email(), request.password()));
 
       // Get full user claims from Keycloak userinfo (access token has no claims for public clients)
-      Map<String, Object> userClaims = authService.getUserInfo(tokens.accessToken());
+      Map<String, Object> userClaims =
+          authenticateUserUseCase.getUserInfo(new GetUserInfoQuery(tokens.accessToken())).claims();
 
       // Build a Jwt from userinfo claims so CurrentUserController can read sub, email, name,
       // realm_access
@@ -91,7 +97,7 @@ public class AuthController {
       var bearerToken = tokens.idToken() != null ? tokens.idToken() : tokens.accessToken();
       return ResponseEntity.ok(new TokenLoginResponse(bearerToken, tokens.refreshToken(), user));
 
-    } catch (KeycloakAuthService.AuthenticationException e) {
+    } catch (IdentityAuthenticationException e) {
       return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
     } catch (Exception e) {
       log.error("Login error", e);

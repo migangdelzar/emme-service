@@ -140,7 +140,7 @@
   implementations.
 - [x] Rewire AuthController without exposing JPA entities.
 - [x] Verify Identity checks and login/profile regression coverage.
-- [ ] Continue with typed security configuration and Identity failure advice.
+- [x] Continue with typed security configuration and Identity failure advice.
 
 ### Identity typed security configuration slice — 2026-08-01
 
@@ -148,7 +148,7 @@
 - [x] Introduce IdentitySecurityProperties with safe local defaults.
 - [x] Rewire SecurityConfiguration to consume typed properties.
 - [x] Verify Identity checks and security configuration regression coverage.
-- [ ] Continue with Identity-specific failure advice.
+- [x] Continue with Identity-specific failure advice.
 
 ### Identity failure advice slice — 2026-08-01
 
@@ -158,8 +158,21 @@
 - [x] Add scoped Identity web advice without replacing shared global handling.
 - [x] Rewire application services to raise stable Identity failures.
 - [x] Verify Identity checks and HTTP error regression coverage.
-- [ ] Continue with final Identity security hardening and Keycloak application
+- [x] Continue with final Identity security hardening and Keycloak application
   boundary separation.
+
+### Identity Keycloak application boundary slice — 2026-08-01
+
+- [x] Add failing tests for password-grant orchestration behind an application
+  use case and outbound port.
+- [x] Introduce typed user-authentication commands, queries, and results.
+- [x] Move OkHttp/Jackson/Keycloak user authentication into an outbound adapter.
+- [x] Rewire AuthController through the application use case.
+- [x] Remove the legacy application KeycloakAuthService.
+- [x] Verify Identity checks, login regression coverage, and Modulith boundaries.
+
+Remaining Identity follow-up: type the remaining issuer/client Keycloak
+configuration and complete the broader security hardening review.
 
 ### Plan update results
 

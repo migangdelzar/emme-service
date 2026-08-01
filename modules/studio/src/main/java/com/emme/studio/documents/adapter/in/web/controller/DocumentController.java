@@ -91,31 +91,43 @@ public class DocumentController {
   @GetMapping("/{id}")
   @Operation(summary = "Get a document by ID")
   public ResponseEntity<DocumentResponse> get(@PathVariable UUID id) {
-    DocumentInfo document = getDocument.get(new GetDocumentQuery(id));
-    return ResponseEntity.ok(mapper.toResponse(document));
+    return withCurrentTenant(
+        tenantId -> {
+          DocumentInfo document = getDocument.get(new GetDocumentQuery(tenantId, id));
+          return ResponseEntity.ok(mapper.toResponse(document));
+        });
   }
 
   @PostMapping("/{id}/process")
   @Operation(summary = "Trigger document processing")
   public ResponseEntity<DocumentResponse> process(@PathVariable UUID id) {
-    DocumentInfo document = processDocument.process(new ProcessDocumentCommand(id));
-    return ResponseEntity.ok(mapper.toResponse(document));
+    return withCurrentTenant(
+        tenantId -> {
+          DocumentInfo document = processDocument.process(new ProcessDocumentCommand(tenantId, id));
+          return ResponseEntity.ok(mapper.toResponse(document));
+        });
   }
 
   @PostMapping("/{id}/retire")
   @Operation(summary = "Retire a document")
   public ResponseEntity<DocumentResponse> retire(@PathVariable UUID id) {
-    DocumentInfo document = retireDocument.retire(new RetireDocumentCommand(id));
-    return ResponseEntity.ok(mapper.toResponse(document));
+    return withCurrentTenant(
+        tenantId -> {
+          DocumentInfo document = retireDocument.retire(new RetireDocumentCommand(tenantId, id));
+          return ResponseEntity.ok(mapper.toResponse(document));
+        });
   }
 
   @GetMapping("/{id}/chunks")
   @Operation(summary = "Get document chunks")
   public ResponseEntity<List<DocumentChunkResponse>> getChunks(@PathVariable UUID id) {
-    List<DocumentChunkResponse> chunks =
-        getDocumentChunks.getChunks(new GetDocumentChunksQuery(id)).stream()
-            .map(mapper::toResponse)
-            .toList();
-    return ResponseEntity.ok(chunks);
+    return withCurrentTenant(
+        tenantId -> {
+          List<DocumentChunkResponse> chunks =
+              getDocumentChunks.getChunks(new GetDocumentChunksQuery(tenantId, id)).stream()
+                  .map(mapper::toResponse)
+                  .toList();
+          return ResponseEntity.ok(chunks);
+        });
   }
 }

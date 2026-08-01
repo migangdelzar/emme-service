@@ -11,11 +11,13 @@ public interface DocumentRepository {
 
   Optional<Document> findById(UUID documentId);
 
+  Optional<Document> findByTenantIdAndId(UUID tenantId, UUID documentId);
+
   List<Document> findByTenantId(UUID tenantId);
 
   Document save(Document document);
 
-  List<DocumentChunk> findChunks(UUID documentId);
+  List<DocumentChunk> findChunks(UUID tenantId, UUID documentId);
 
-  void replaceChunks(UUID documentId, List<DocumentChunk> chunks);
+  void replaceChunks(UUID tenantId, UUID documentId, List<DocumentChunk> chunks);
 }

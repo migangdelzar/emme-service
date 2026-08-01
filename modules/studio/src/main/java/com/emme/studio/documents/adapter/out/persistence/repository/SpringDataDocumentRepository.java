@@ -3,6 +3,7 @@ package com.emme.studio.documents.adapter.out.persistence.repository;
 import com.emme.studio.documents.adapter.out.persistence.entity.DocumentEntity;
 import com.emme.studio.documents.adapter.out.persistence.entity.DocumentStatus;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataDocumentRepository extends JpaRepository<DocumentEntity, UUID> {
 
   List<DocumentEntity> findByTenantId(UUID tenantId);
+
+  Optional<DocumentEntity> findByTenantIdAndId(UUID tenantId, UUID documentId);
 
   List<DocumentEntity> findByTenantIdAndStatus(UUID tenantId, DocumentStatus status);
 }

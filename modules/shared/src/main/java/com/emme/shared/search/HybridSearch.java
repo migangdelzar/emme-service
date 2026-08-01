@@ -96,22 +96,33 @@ public class HybridSearch {
     return t.extraPredicate().isEmpty() ? "" : t.extraPredicate().replace("status", "t.status");
   }
 
-  public int updateEmbedding(SearchTarget t, UUID rowId, List<Float> vec) {
+  public int updateEmbedding(SearchTarget t, UUID tenantId, UUID rowId, List<Float> vec) {
     if (vec == null || vec.isEmpty()) return 0;
-    String sql = "UPDATE %s SET embedding = CAST(:v AS vector) WHERE id = :id".formatted(t.table());
-    return jdbc.sql(sql).param("v", toVectorLiteral(vec)).param("id", rowId).update();
+    String sql =
+        "UPDATE %s SET embedding = CAST(:v AS vector) WHERE tenant_id = :tenantId AND id = :id"
+            .formatted(t.table());
+    return jdbc.sql(sql)
+        .param("v", toVectorLiteral(vec))
+        .param("tenantId", tenantId)
+        .param("id", rowId)
+        .update();
   }
 
-  public List<UUID> idsMissingEmbedding(SearchTarget t, int limit) {
+  public List<UUID> idsMissingEmbedding(SearchTarget t, UUID tenantId, int limit) {
     return jdbc.sql(
-            "SELECT id FROM %s WHERE embedding IS NULL ORDER BY id LIMIT :l".formatted(t.table()))
+            "SELECT id FROM %s WHERE tenant_id = :tenantId AND embedding IS NULL ORDER BY id LIMIT :l"
+                .formatted(t.table()))
+        .param("tenantId", tenantId)
         .param("l", limit)
         .query(UUID.class)
         .list();
   }
 
-  public long countMissingEmbedding(SearchTarget t) {
-    return jdbc.sql("SELECT count(*) FROM %s WHERE embedding IS NULL".formatted(t.table()))
+  public long countMissingEmbedding(SearchTarget t, UUID tenantId) {
+    return jdbc.sql(
+            "SELECT count(*) FROM %s WHERE tenant_id = :tenantId AND embedding IS NULL"
+                .formatted(t.table()))
+        .param("tenantId", tenantId)
         .query(Long.class)
         .single();
   }

@@ -87,6 +87,19 @@ is added under the owning outbound port/adapter, not as a generic helper package
   use-case implementations from returning.
 - [x] Verified focused Documents tests, formatting, compilation, and whitespace.
 
-The remaining Documents work is search and embedding port ownership, full Studio
-integration evidence, and final Modulith verification.
+## Completed tenant-scoped capability boundary slice — 2026-08-01
+
+- [x] Added tenant identity to document read and lifecycle commands.
+- [x] Added tenant-scoped document and chunk repository operations and Spring
+  Data predicates.
+- [x] Updated the inbound controller to resolve the current tenant for get,
+  process, retire, and chunk operations.
+- [x] Added a red/green application-service regression test for cross-tenant
+  document access.
+- [x] Confirmed that no embedding/search implementation currently exists in the
+  capability; no speculative adapter was created. If search is introduced, it
+  must be added through an application-owned port and a technology adapter.
+
+Remaining Documents work is full Studio integration evidence, schema comparison,
+and final Modulith verification.
   regression tests.

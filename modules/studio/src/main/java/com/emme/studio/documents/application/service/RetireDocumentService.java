@@ -25,7 +25,7 @@ public class RetireDocumentService implements RetireDocumentUseCase {
   public DocumentInfo retire(RetireDocumentCommand command) {
     Document document =
         documentRepository
-            .findById(command.documentId())
+            .findByTenantIdAndId(command.tenantId(), command.documentId())
             .orElseThrow(() -> new DocumentNotFoundException(command.documentId()));
     document.markRetired();
     return DocumentApplicationMapper.toInfo(documentRepository.save(document));

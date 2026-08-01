@@ -20,6 +20,16 @@ class SharedOwnershipConventionTest {
     assertThat(Files.exists(root.resolve("adapter"))).isFalse();
   }
 
+  @Test
+  void everyEmbeddingMutationAndMaintenanceQueryRequiresTenantScope() throws Exception {
+    Path source =
+        sourcePath("modules/shared/src/main/java/com/emme/shared/search/HybridSearch.java");
+    String contents = Files.readString(source);
+    assertThat(contents).contains("WHERE tenant_id = :tenantId AND id = :id");
+    assertThat(contents).contains("WHERE tenant_id = :tenantId AND embedding IS NULL");
+    assertThat(contents).contains("count(*) FROM %s WHERE tenant_id = :tenantId");
+  }
+
   private static Path sourcePath(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {

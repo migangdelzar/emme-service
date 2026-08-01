@@ -43,6 +43,13 @@ class SubscriptionPackageConventionTest {
     }
   }
 
+  @Test
+  void inboundControllerRequiresCurrentTenantContext() throws Exception {
+    String source =
+        Files.readString(ROOT.resolve("adapter/in/web/controller/SubscriptionController.java"));
+    assertThat(source).contains("withCurrentTenant");
+  }
+
   private static boolean hasJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) {
       return false;

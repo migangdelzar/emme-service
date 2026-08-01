@@ -24,9 +24,9 @@ public class GetDocumentChunksService implements GetDocumentChunksUseCase {
   @Override
   public List<DocumentChunkInfo> getChunks(GetDocumentChunksQuery query) {
     documentRepository
-        .findById(query.documentId())
+        .findByTenantIdAndId(query.tenantId(), query.documentId())
         .orElseThrow(() -> new DocumentNotFoundException(query.documentId()));
-    return documentRepository.findChunks(query.documentId()).stream()
+    return documentRepository.findChunks(query.tenantId(), query.documentId()).stream()
         .map(DocumentApplicationMapper::toInfo)
         .toList();
   }

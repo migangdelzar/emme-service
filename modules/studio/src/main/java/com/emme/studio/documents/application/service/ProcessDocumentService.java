@@ -23,15 +23,15 @@ public class ProcessDocumentService implements ProcessDocumentUseCase {
 
   @Override
   public DocumentInfo process(ProcessDocumentCommand command) {
-    Document document = findDocument(command.documentId());
+    Document document = findDocument(command.tenantId(), command.documentId());
     document.markProcessing();
     document.markReady();
     return DocumentApplicationMapper.toInfo(documentRepository.save(document));
   }
 
-  private Document findDocument(java.util.UUID documentId) {
+  private Document findDocument(java.util.UUID tenantId, java.util.UUID documentId) {
     return documentRepository
-        .findById(documentId)
+        .findByTenantIdAndId(tenantId, documentId)
         .orElseThrow(() -> new DocumentNotFoundException(documentId));
   }
 }

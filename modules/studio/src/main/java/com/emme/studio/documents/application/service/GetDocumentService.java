@@ -23,7 +23,7 @@ public class GetDocumentService implements GetDocumentUseCase {
   @Override
   public DocumentInfo get(GetDocumentQuery query) {
     return documentRepository
-        .findById(query.documentId())
+        .findByTenantIdAndId(query.tenantId(), query.documentId())
         .map(DocumentApplicationMapper::toInfo)
         .orElseThrow(() -> new DocumentNotFoundException(query.documentId()));
   }

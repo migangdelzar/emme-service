@@ -79,3 +79,15 @@ owned responsibilities require them.
 
 The remaining global work is full service-wide Modulith, integration, schema,
 security, and recovery evidence.
+
+## Completed tenant-scoped inbound boundary slice — 2026-08-01
+
+- [x] Added a red source-boundary test requiring current tenant resolution in
+  the Subscription controller.
+- [x] Wrapped create, get, entitlement, and plan-change operations in the
+  tenant context boundary.
+- [x] Rejected mismatched path/body tenant identifiers with the same not-found
+  response used for inaccessible records.
+
+Remaining Subscription work is payment-boundary documentation and final
+service-wide integration, Modulith, schema, security, and recovery evidence.

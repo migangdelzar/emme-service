@@ -35,6 +35,11 @@ public class DocumentPersistenceAdapter implements DocumentRepository {
   }
 
   @Override
+  public Optional<Document> findByTenantIdAndId(UUID tenantId, UUID documentId) {
+    return documents.findByTenantIdAndId(tenantId, documentId).map(mapper::toDomain);
+  }
+
+  @Override
   public List<Document> findByTenantId(UUID tenantId) {
     return documents.findByTenantId(tenantId).stream()
         .map(entity -> mapper.toDomain(entity))
@@ -55,15 +60,15 @@ public class DocumentPersistenceAdapter implements DocumentRepository {
   }
 
   @Override
-  public List<DocumentChunk> findChunks(UUID documentId) {
-    return chunks.findByDocumentIdOrderByChunkIndexAsc(documentId).stream()
+  public List<DocumentChunk> findChunks(UUID tenantId, UUID documentId) {
+    return chunks.findByTenantIdAndDocumentIdOrderByChunkIndexAsc(tenantId, documentId).stream()
         .map(entity -> mapper.toDomain(entity))
         .toList();
   }
 
   @Override
-  public void replaceChunks(UUID documentId, List<DocumentChunk> newChunks) {
-    chunks.deleteByDocumentId(documentId);
+  public void replaceChunks(UUID tenantId, UUID documentId, List<DocumentChunk> newChunks) {
+    chunks.deleteByTenantIdAndDocumentId(tenantId, documentId);
     chunks.flush();
     chunks.saveAll(newChunks.stream().map(mapper::toEntity).toList());
   }

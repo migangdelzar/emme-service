@@ -97,3 +97,17 @@ business API results or domain aggregates.
 
 Remaining work is search integration evidence, full dependency-cycle checks, and
 the service-wide verification gate.
+
+## Completed tenant-scoped search maintenance slice — 2026-08-01
+
+- [x] Added a failing source-boundary test requiring tenant predicates on
+  embedding updates and missing-embedding maintenance queries.
+- [x] Updated `HybridSearch.updateEmbedding`, `idsMissingEmbedding`, and
+  `countMissingEmbedding` to require a tenant identifier and bind it as a
+  parameter.
+- [x] Preserved the existing enum-bound table allow-list and hybrid search
+  query semantics.
+- [x] Verified the Shared ownership test and compilation.
+
+Remaining Shared work is live PostgreSQL vector/full-text integration evidence,
+dependency-cycle verification, and the final service-wide gate.

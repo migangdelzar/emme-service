@@ -31,7 +31,7 @@ public class ChunkDocumentService implements ChunkDocumentUseCase {
   public List<DocumentChunkInfo> chunk(ChunkDocumentCommand command) {
     Document document =
         documentRepository
-            .findById(command.documentId())
+            .findByTenantIdAndId(command.tenantId(), command.documentId())
             .orElseThrow(() -> new DocumentNotFoundException(command.documentId()));
     List<DocumentChunk> chunks =
         java.util.stream.IntStream.range(0, command.chunks().size())
@@ -42,7 +42,7 @@ public class ChunkDocumentService implements ChunkDocumentUseCase {
                       document.tenantId(), document.id(), index, content, sha256(content));
                 })
             .toList();
-    documentRepository.replaceChunks(command.documentId(), chunks);
+    documentRepository.replaceChunks(command.tenantId(), command.documentId(), chunks);
     return chunks.stream().map(DocumentApplicationMapper::toInfo).toList();
   }
 

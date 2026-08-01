@@ -32,7 +32,7 @@ class PaymentProviderConfigurationSourceTest {
             Files.readString(
                 root.resolve("adapter/in/web/controller/MercadoPagoWebhookController.java")))
         .doesNotContain("System.getenv(");
-    assertThat(Files.exists(providers.resolve("PaymentProperties.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("configuration/PaymentProperties.java"))).isTrue();
   }
 
   private static Path sourcePath(String relativePath) {

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 /** Framework-free payment aggregate; provider adapters must not leak into it. */
 public final class Payment {
-  private final UUID id;
+  private UUID id;
   private final UUID tenantId;
   private final String providerReference;
   private final BigDecimal amount;
@@ -22,6 +22,21 @@ public final class Payment {
     this.currency = currency;
     this.status = PaymentStatus.PENDING;
     this.updatedAt = Instant.now();
+  }
+
+  public static Payment restore(
+      UUID id,
+      UUID tenantId,
+      String providerReference,
+      BigDecimal amount,
+      String currency,
+      PaymentStatus status,
+      Instant updatedAt) {
+    Payment payment = new Payment(tenantId, providerReference, amount, currency);
+    payment.id = id;
+    payment.status = status;
+    payment.updatedAt = updatedAt;
+    return payment;
   }
 
   public UUID id() {
@@ -50,5 +65,35 @@ public final class Payment {
 
   public Instant updatedAt() {
     return updatedAt;
+  }
+
+  public void authorize() {
+    transitionTo(PaymentStatus.AUTHORIZED, PaymentStatus.PENDING, "authorize");
+  }
+
+  public void capture() {
+    transitionTo(PaymentStatus.CAPTURED, PaymentStatus.AUTHORIZED, "capture");
+  }
+
+  public void refund() {
+    transitionTo(PaymentStatus.REFUNDED, PaymentStatus.CAPTURED, "refund");
+  }
+
+  public void decline() {
+    transitionTo(PaymentStatus.DECLINED, PaymentStatus.PENDING, "decline");
+  }
+
+  public void applyProviderStatus(PaymentStatus providerStatus) {
+    this.status =
+        java.util.Objects.requireNonNull(providerStatus, "providerStatus must not be null");
+    this.updatedAt = Instant.now();
+  }
+
+  private void transitionTo(PaymentStatus target, PaymentStatus required, String operation) {
+    if (status != required) {
+      throw new IllegalStateException("Cannot " + operation + " payment in " + status);
+    }
+    this.status = target;
+    this.updatedAt = Instant.now();
   }
 }

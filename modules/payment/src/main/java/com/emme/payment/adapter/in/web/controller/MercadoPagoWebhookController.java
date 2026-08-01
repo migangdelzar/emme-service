@@ -1,8 +1,9 @@
 package com.emme.payment.adapter.in.web.controller;
 
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.payment.adapter.out.provider.PaymentProperties;
-import com.emme.payment.application.service.PaymentService;
+import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
+import com.emme.payment.api.usecase.ProcessPaymentCallbackUseCase;
+import com.emme.payment.configuration.PaymentProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -30,11 +31,12 @@ class MercadoPagoWebhookController {
 
   private static final Logger log = LoggerFactory.getLogger(MercadoPagoWebhookController.class);
 
-  private final PaymentService paymentService;
+  private final ProcessPaymentCallbackUseCase processPaymentCallback;
   private final String webhookSecret;
 
-  MercadoPagoWebhookController(PaymentService paymentService, PaymentProperties props) {
-    this.paymentService = paymentService;
+  MercadoPagoWebhookController(
+      ProcessPaymentCallbackUseCase processPaymentCallback, PaymentProperties props) {
+    this.processPaymentCallback = processPaymentCallback;
     this.webhookSecret = props.mercadopago().webhookSecret();
   }
 
@@ -70,7 +72,8 @@ class MercadoPagoWebhookController {
             .orElse(UUID.fromString("00000000-0000-0000-0000-000000000000"));
 
     Map<String, String> payload = extractPayload(rawBody);
-    paymentService.processCallback(tenantId, payload, signature != null ? signature : "");
+    processPaymentCallback.process(
+        new ProcessPaymentCallbackCommand(tenantId, payload, signature != null ? signature : ""));
 
     return ResponseEntity.ok("OK");
   }

@@ -1,4 +1,4 @@
-package com.emme.payment.adapter.out.provider;
+package com.emme.payment.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

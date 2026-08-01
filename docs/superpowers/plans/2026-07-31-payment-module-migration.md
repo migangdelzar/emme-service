@@ -159,3 +159,20 @@ this slice changes only configuration ownership.
 The remaining Payment work is to add the persistence adapter/mapper, replace the
 temporary multi-operation service with focused use-case services, extract web
 DTOs, and complete webhook signature/replay and provider evidence.
+
+## Completed domain/application boundary slice — 2026-08-01
+
+- [x] Added framework-free Payment lifecycle transitions and domain tests.
+- [x] Added application-owned persistence and provider ports.
+- [x] Added persistence mapper and adapter so application services no longer
+  depend on JPA entities or Spring Data repositories.
+- [x] Replaced the multi-operation `PaymentService` with one service per public
+  use case: initiate, authorize, capture, refund, get, list, and callback.
+- [x] Added grouped commands, queries, results, API exceptions, HTTP DTOs, and
+  web mappers.
+- [x] Added idempotent initiation service coverage and re-ran Payment
+  formatting, compilation, and unit/module tests.
+
+Remaining work is limited to tenant-scoped endpoint enforcement, webhook replay
+and signature evidence, provider contract tests, database integration coverage,
+and service-wide verification.

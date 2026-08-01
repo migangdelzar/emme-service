@@ -1,4 +1,4 @@
-package com.emme.payment.adapter.out.provider;
+package com.emme.payment.application.port.out;
 
 /** Thrown when a payment provider operation fails (API errors, invalid state transitions, etc.). */
 public class PaymentProviderException extends RuntimeException {

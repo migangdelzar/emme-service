@@ -2,9 +2,16 @@ package com.emme.payment.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.payment.adapter.out.persistence.entity.PaymentEntity;
-import com.emme.payment.application.service.PaymentService;
-import java.math.BigDecimal;
+import com.emme.payment.adapter.in.web.mapper.PaymentWebMapper;
+import com.emme.payment.adapter.in.web.request.InitiatePaymentRequest;
+import com.emme.payment.adapter.in.web.response.PaymentResponse;
+import com.emme.payment.api.command.RefundPaymentCommand;
+import com.emme.payment.api.query.GetPaymentQuery;
+import com.emme.payment.api.query.ListPaymentsQuery;
+import com.emme.payment.api.usecase.GetPaymentUseCase;
+import com.emme.payment.api.usecase.InitiatePaymentUseCase;
+import com.emme.payment.api.usecase.ListPaymentsUseCase;
+import com.emme.payment.api.usecase.RefundPaymentUseCase;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -19,60 +26,54 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
+  private final InitiatePaymentUseCase initiatePayment;
+  private final ListPaymentsUseCase listPayments;
+  private final GetPaymentUseCase getPayment;
+  private final RefundPaymentUseCase refundPayment;
 
-  private final PaymentService service;
-
-  public PaymentController(PaymentService service) {
-    this.service = service;
-  }
-
-  record InitiateRequest(String providerReference, BigDecimal amount, String currency) {}
-
-  record PaymentResponse(
-      UUID id, String providerReference, BigDecimal amount, String currency, String status) {
-    static PaymentResponse from(PaymentEntity p) {
-      return new PaymentResponse(
-          p.getId(),
-          p.getProviderReference(),
-          p.getAmount(),
-          p.getCurrency(),
-          p.getStatus().name());
-    }
+  public PaymentController(
+      InitiatePaymentUseCase initiatePayment,
+      ListPaymentsUseCase listPayments,
+      GetPaymentUseCase getPayment,
+      RefundPaymentUseCase refundPayment) {
+    this.initiatePayment = initiatePayment;
+    this.listPayments = listPayments;
+    this.getPayment = getPayment;
+    this.refundPayment = refundPayment;
   }
 
   @GetMapping
   ResponseEntity<List<PaymentResponse>> list() {
     return withCurrentTenant(
-        tenantId -> {
-          var payments =
-              service.findByTenantId(tenantId).stream().map(PaymentResponse::from).toList();
-          return ResponseEntity.ok(payments);
-        });
+        tenantId ->
+            ResponseEntity.ok(
+                listPayments.list(new ListPaymentsQuery(tenantId)).stream()
+                    .map(PaymentResponse::from)
+                    .toList()));
   }
 
   @PostMapping
-  ResponseEntity<PaymentResponse> initiate(@RequestBody InitiateRequest req) {
+  ResponseEntity<PaymentResponse> initiate(@RequestBody InitiatePaymentRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          var payment =
-              service.initiate(tenantId, req.providerReference(), req.amount(), req.currency());
-          var response = PaymentResponse.from(payment);
-          var location = URI.create("/api/v1/payments/" + payment.getId());
-          return ResponseEntity.created(location).body(response);
+          var payment = initiatePayment.initiate(PaymentWebMapper.toCommand(tenantId, request));
+          return ResponseEntity.created(URI.create("/api/v1/payments/" + payment.id()))
+              .body(PaymentResponse.from(payment));
         });
   }
 
   @GetMapping("/{id}")
   ResponseEntity<PaymentResponse> get(@PathVariable UUID id) {
-    return service
-        .findById(id)
-        .map(p -> ResponseEntity.ok(PaymentResponse.from(p)))
-        .orElse(ResponseEntity.notFound().build());
+    return getPayment
+        .get(new GetPaymentQuery(id))
+        .map(PaymentResponse::from)
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @PostMapping("/{id}/refund")
   ResponseEntity<PaymentResponse> refund(@PathVariable UUID id) {
-    var payment = service.refund(id);
-    return ResponseEntity.ok(PaymentResponse.from(payment));
+    return ResponseEntity.ok(
+        PaymentResponse.from(refundPayment.refund(new RefundPaymentCommand(id))));
   }
 }

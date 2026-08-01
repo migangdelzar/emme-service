@@ -1,5 +1,8 @@
 package com.emme.payment.adapter.out.provider;
 
+import com.emme.payment.application.port.out.PaymentProvider;
+import com.emme.payment.application.port.out.PaymentProviderException;
+import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;

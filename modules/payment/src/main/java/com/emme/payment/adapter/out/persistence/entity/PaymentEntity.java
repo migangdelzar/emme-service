@@ -61,37 +61,12 @@ public class PaymentEntity extends TenantOwnedEntity {
     return updatedAt;
   }
 
-  public void authorize() {
-    if (status != PaymentStatus.PENDING)
-      throw new IllegalStateException("Cannot authorize payment in " + status);
-    this.status = PaymentStatus.AUTHORIZED;
-    this.updatedAt = Instant.now();
-  }
-
-  public void capture() {
-    if (status != PaymentStatus.AUTHORIZED)
-      throw new IllegalStateException("Cannot capture payment in " + status);
-    this.status = PaymentStatus.CAPTURED;
-    this.updatedAt = Instant.now();
-  }
-
-  public void decline() {
-    if (status != PaymentStatus.PENDING)
-      throw new IllegalStateException("Cannot decline payment in " + status);
-    this.status = PaymentStatus.DECLINED;
-    this.updatedAt = Instant.now();
-  }
-
-  public void refund() {
-    if (status != PaymentStatus.CAPTURED)
-      throw new IllegalStateException("Cannot refund payment in " + status);
-    this.status = PaymentStatus.REFUNDED;
-    this.updatedAt = Instant.now();
-  }
-
-  /** Direct status setter for provider-driven transitions */
   public void setStatus(PaymentStatus status) {
     this.status = status;
     this.updatedAt = Instant.now();
+  }
+
+  public void restoreIdentity(UUID id, Instant updatedAt) {
+    restoreAuditFields(id, updatedAt, updatedAt);
   }
 }

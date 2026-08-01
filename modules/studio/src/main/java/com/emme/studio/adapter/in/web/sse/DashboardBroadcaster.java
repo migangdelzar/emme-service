@@ -1,6 +1,6 @@
 package com.emme.studio.adapter.in.web.sse;
 
-import com.emme.notification.event.NotificationDeliveredEvent;
+import com.emme.notification.api.event.NotificationDeliveredEvent;
 import com.emme.studio.api.event.AppointmentCancelledEvent;
 import com.emme.studio.api.event.AppointmentCreatedEvent;
 import com.emme.studio.api.event.DashboardEvent;

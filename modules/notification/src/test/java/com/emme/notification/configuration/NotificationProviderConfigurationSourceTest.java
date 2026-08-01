@@ -24,7 +24,7 @@ class NotificationProviderConfigurationSourceTest {
   @Test
   void productionProvidersDoNotReadProcessEnvironmentDirectly() throws IOException {
     Path providerRoot =
-        sourcePath("modules/notification/src/main/java/com/emme/notification/provider");
+        sourcePath("modules/notification/src/main/java/com/emme/notification/adapter/out/provider");
 
     for (String provider : PROVIDERS) {
       assertThat(Files.readString(providerRoot.resolve(provider)))
@@ -35,7 +35,7 @@ class NotificationProviderConfigurationSourceTest {
     assertThat(
             Files.exists(
                 sourcePath(
-                    "modules/notification/src/main/java/com/emme/notification/config/NotificationProperties.java")))
+                    "modules/notification/src/main/java/com/emme/notification/configuration/NotificationProperties.java")))
         .isTrue();
   }
 

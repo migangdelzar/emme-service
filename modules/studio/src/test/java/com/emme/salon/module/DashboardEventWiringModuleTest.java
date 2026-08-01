@@ -4,7 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.emme.notification.event.NotificationDeliveredEvent;
+import com.emme.notification.api.event.NotificationDeliveredEvent;
 import com.emme.studio.adapter.in.web.sse.DashboardBroadcaster;
 import com.emme.testing.BaseSpringModuleTest;
 import java.io.IOException;

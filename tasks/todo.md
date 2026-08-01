@@ -75,6 +75,10 @@ reopened by this backlog.
 
 - [ ] Migrate Notification with explicit provider ports, idempotency, and retry
   evidence.
+- [x] Normalize Notification persistence, provider, event, configuration, and
+  inbound adapter package boundaries.
+- [ ] Replace Notification's temporary multi-operation service with focused
+  use-case services and application-owned delivery ports.
 - [ ] Migrate Payment after Subscription contracts are stable, preserving
   webhook signature/replay and transaction behavior.
 

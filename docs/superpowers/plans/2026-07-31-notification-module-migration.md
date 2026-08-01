@@ -160,3 +160,26 @@ content unless an approved contract changes that behavior.
 
 The broader package/domain/application migration remains tracked above; this
 slice changes only configuration ownership and preserves provider contracts.
+
+## Completed canonical package-boundary slice — 2026-08-01
+
+- [x] Added red/green package guard coverage for legacy package removal and
+  canonical Notification locations.
+- [x] Moved the JPA representation to `NotificationEntity`, Spring Data access
+  to `SpringDataNotificationRepository`, and status vocabulary to the domain
+  model package.
+- [x] Added a framework-free Notification domain model with delivery lifecycle
+  invariants.
+- [x] Moved typed configuration to `configuration`, providers to
+  `adapter/out/provider`, the controller to the inbound web adapter, and the
+  delivered event to the public `api/event` contract.
+- [x] Updated Studio's Dashboard broadcaster and event wiring tests to consume
+  the public event package.
+- [x] Materialized the initial `RequestNotificationUseCase` boundary and
+  package metadata.
+- [x] Verified Notification compilation, formatting, and package guard tests.
+
+The remaining Notification work is to replace the temporary entity-backed
+application service with focused use-case services and application-owned
+delivery ports, then complete DTO mapping, provider contract evidence,
+idempotency/retry evidence, and service-wide Modulith verification.

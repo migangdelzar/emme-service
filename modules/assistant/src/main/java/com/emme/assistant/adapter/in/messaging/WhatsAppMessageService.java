@@ -1,5 +1,6 @@
 package com.emme.assistant.adapter.in.messaging;
 
+import com.emme.assistant.adapter.in.webhook.WhatsAppWebhookSignatureVerifier;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.api.command.AddConversationEventCommand;
 import com.emme.assistant.api.command.StartConversationCommand;
@@ -9,6 +10,8 @@ import com.emme.assistant.api.usecase.AddConversationEventUseCase;
 import com.emme.assistant.api.usecase.ListConversationsUseCase;
 import com.emme.assistant.api.usecase.StartConversationUseCase;
 import com.emme.assistant.application.port.out.ChannelParticipantRepository;
+import com.emme.assistant.application.port.out.WhatsAppTenantResolver;
+import com.emme.assistant.application.port.out.WhatsAppWebhookEventRepository;
 import com.emme.assistant.configuration.WhatsAppProperties;
 import com.emme.assistant.domain.model.ChannelParticipant;
 import com.emme.assistant.domain.model.ConversationStatus;
@@ -16,13 +19,9 @@ import com.emme.kernel.type.ChannelType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -42,34 +41,20 @@ public class WhatsAppMessageService {
   private static final Logger log = LoggerFactory.getLogger(WhatsAppMessageService.class);
 
   private final WhatsAppProperties properties;
-  private final UUID defaultTenantId;
   private final StartConversationUseCase startConversation;
   private final ListConversationsUseCase listConversations;
   private final AddConversationEventUseCase addConversationEvent;
   private final ChatUseCase chatUseCase;
   private final ChannelParticipantRepository participantRepository;
+  private final WhatsAppWebhookSignatureVerifier signatureVerifier;
+  private final WhatsAppTenantResolver tenantResolver;
+  private final WhatsAppWebhookEventRepository webhookEvents;
   private final ObjectMapper objectMapper;
   private final OkHttpClient httpClient;
 
-  public WhatsAppMessageService(
-      WhatsAppProperties properties,
-      StartConversationUseCase startConversation,
-      ListConversationsUseCase listConversations,
-      AddConversationEventUseCase addConversationEvent,
-      ChatUseCase chatUseCase,
-      ChannelParticipantRepository participantRepository) {
-    this.properties = properties;
-    this.defaultTenantId = properties.defaultTenantId();
-    this.startConversation = startConversation;
-    this.listConversations = listConversations;
-    this.addConversationEvent = addConversationEvent;
-    this.chatUseCase = chatUseCase;
-    this.participantRepository = participantRepository;
-    this.objectMapper = new ObjectMapper();
-    this.httpClient = new OkHttpClient();
-  }
-
-  /** Test constructor — allows injecting a custom OkHttpClient. */
+  /**
+   * Constructor receives the signature verifier and HTTP client at the adapter composition root.
+   */
   public WhatsAppMessageService(
       WhatsAppProperties properties,
       StartConversationUseCase startConversation,
@@ -77,14 +62,19 @@ public class WhatsAppMessageService {
       AddConversationEventUseCase addConversationEvent,
       ChatUseCase chatUseCase,
       ChannelParticipantRepository participantRepository,
+      WhatsAppWebhookSignatureVerifier signatureVerifier,
+      WhatsAppTenantResolver tenantResolver,
+      WhatsAppWebhookEventRepository webhookEvents,
       OkHttpClient httpClient) {
     this.properties = properties;
-    this.defaultTenantId = properties.defaultTenantId();
     this.startConversation = startConversation;
     this.listConversations = listConversations;
     this.addConversationEvent = addConversationEvent;
     this.chatUseCase = chatUseCase;
     this.participantRepository = participantRepository;
+    this.signatureVerifier = signatureVerifier;
+    this.tenantResolver = tenantResolver;
+    this.webhookEvents = webhookEvents;
     this.objectMapper = new ObjectMapper();
     this.httpClient = httpClient;
   }
@@ -106,8 +96,15 @@ public class WhatsAppMessageService {
       log.debug("Ignoring null or status-update message");
       return;
     }
+    if (msg.eventId() == null || msg.eventId().isBlank()) {
+      throw new SecurityException("WhatsApp webhook event id is required");
+    }
+    if (!webhookEvents.claim(msg.tenantId(), "whatsapp", msg.eventId())) {
+      log.info("Ignoring duplicate WhatsApp webhook event");
+      return;
+    }
 
-    log.info("Processing WhatsApp message from={} text={}", msg.from(), msg.text());
+    log.info("Processing WhatsApp message from={}", msg.from());
 
     // 3. Find or create ChannelParticipant
     ChannelParticipant participant = findOrCreateParticipant(msg.tenantId(), msg.from());
@@ -124,7 +121,7 @@ public class WhatsAppMessageService {
     addConversationEvent.add(
         new AddConversationEventCommand(conv.id(), "MESSAGE_SENT", aiResponse));
 
-    log.info("AI response for conversation={}: {}", conv.id(), aiResponse);
+    log.info("AI response generated for conversation={}", conv.id());
 
     // 7. Send reply via WhatsApp Cloud API
     sendReply(msg.from(), aiResponse);
@@ -136,34 +133,10 @@ public class WhatsAppMessageService {
    */
   public boolean verifySignature(String payload, String signature) {
     if (properties.appSecret().isBlank()) {
-      log.warn("WhatsApp app-secret not configured — skipping signature verification");
-      return true;
-    }
-    if (signature == null || !signature.startsWith("sha256=")) {
-      log.warn("Invalid signature format: {}", signature);
+      log.error("WhatsApp app-secret not configured; refusing webhook processing");
       return false;
     }
-
-    try {
-      Mac mac = Mac.getInstance("HmacSHA256");
-      SecretKeySpec keySpec =
-          new SecretKeySpec(properties.appSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-      mac.init(keySpec);
-      byte[] computed = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
-      String expected = "sha256=" + HexFormat.of().formatHex(computed);
-
-      boolean valid = expected.equals(signature);
-      if (!valid) {
-        log.warn(
-            "Signature mismatch: expected={} received={}",
-            expected.substring(0, 20) + "...",
-            signature.substring(0, 20) + "...");
-      }
-      return valid;
-    } catch (Exception e) {
-      log.error("HMAC verification error", e);
-      return false;
-    }
+    return signatureVerifier.verify(payload, signature, properties.appSecret());
   }
 
   /**
@@ -196,7 +169,12 @@ public class WhatsAppMessageService {
           JsonNode statuses = value.get("statuses");
           if (statuses != null && statuses.isArray() && !statuses.isEmpty()) {
             log.debug("Ignoring status update");
-            return new WhatsAppMessage(defaultTenantId, "", "", true);
+            return new WhatsAppMessage(
+                tenantResolver.resolve(value.path("metadata").path("phone_number_id").asText()),
+                firstStatusId(statuses),
+                "",
+                "",
+                true);
           }
 
           // Inbound text messages
@@ -211,7 +189,7 @@ public class WhatsAppMessageService {
             // Resolve tenant from phone_number_id metadata
             UUID tenantId = resolveTenant(value);
 
-            return new WhatsAppMessage(tenantId, from, text, false);
+            return new WhatsAppMessage(tenantId, msg.path("id").asText(""), from, text, false);
           }
         }
       }
@@ -254,8 +232,11 @@ public class WhatsAppMessageService {
    * Future: lookup by WABA ID.
    */
   private UUID resolveTenant(JsonNode value) {
-    // TODO: map phone_number_id / WABA ID → tenant via config or DB lookup
-    return defaultTenantId;
+    return tenantResolver.resolve(value.path("metadata").path("phone_number_id").asText());
+  }
+
+  private String firstStatusId(JsonNode statuses) {
+    return statuses.path(0).path("id").asText("");
   }
 
   public ChannelParticipant findOrCreateParticipant(UUID tenantId, String fromNumber) {
@@ -292,8 +273,8 @@ public class WhatsAppMessageService {
   }
 
   /**
-   * Send a text reply to a WhatsApp user via the Meta Graph API (v21.0). Requires
-   * WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_ID environment variables.
+   * Send a text reply to a WhatsApp user via the Meta Graph API (v21.0). Requires typed
+   * WhatsAppProperties credentials.
    */
   public void sendReply(String to, String text) {
     sendReply(
@@ -303,7 +284,12 @@ public class WhatsAppMessageService {
   /** Package-private overload for testing with explicit credentials and API base URL. */
   public void sendReply(
       String to, String text, String accessToken, String phoneNumberId, String apiBaseUrl) {
-    if (accessToken == null || phoneNumberId == null) {
+    if (accessToken == null
+        || accessToken.isBlank()
+        || phoneNumberId == null
+        || phoneNumberId.isBlank()
+        || apiBaseUrl == null
+        || apiBaseUrl.isBlank()) {
       log.warn("WhatsApp credentials not configured — cannot send reply");
       return;
     }
@@ -341,5 +327,6 @@ public class WhatsAppMessageService {
     }
   }
 
-  public record WhatsAppMessage(UUID tenantId, String from, String text, boolean isStatusUpdate) {}
+  public record WhatsAppMessage(
+      UUID tenantId, String eventId, String from, String text, boolean isStatusUpdate) {}
 }

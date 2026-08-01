@@ -1,6 +1,7 @@
 package com.emme.assistant.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -11,10 +12,9 @@ class WhatsAppPropertiesTest {
   void appliesSafeDefaultsForOptionalWhatsAppSettings() {
     WhatsAppProperties properties = new WhatsAppProperties(null, null, null, null, null, null);
 
-    assertThat(properties.verifyToken()).isEqualTo("emme_verify_token");
+    assertThat(properties.verifyToken()).isEmpty();
     assertThat(properties.appSecret()).isEmpty();
-    assertThat(properties.defaultTenantId())
-        .isEqualTo(UUID.fromString("00000000-0000-0000-0000-000000000000"));
+    assertThatThrownBy(properties::defaultTenantId).isInstanceOf(IllegalStateException.class);
     assertThat(properties.apiBaseUrl()).isEqualTo("https://graph.facebook.com/v21.0");
   }
 

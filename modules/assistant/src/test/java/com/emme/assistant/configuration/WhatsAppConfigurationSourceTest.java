@@ -15,11 +15,17 @@ class WhatsAppConfigurationSourceTest {
 
     assertThat(Files.readString(root.resolve("adapter/in/messaging/WhatsAppMessageService.java")))
         .doesNotContain("@Value(")
-        .doesNotContain("System.getenv(");
+        .doesNotContain("System.getenv(")
+        .doesNotContain("skipping signature verification");
+    assertThat(Files.readString(root.resolve("adapter/in/webhook/WhatsAppWebhookController.java")))
+        .doesNotContain("@Value(");
+    assertThat(
+            Files.exists(root.resolve("adapter/in/webhook/WhatsAppWebhookSignatureVerifier.java")))
+        .isTrue();
     assertThat(
             Files.readString(
-                root.resolve("adapter/in/web/controller/WhatsAppWebhookController.java")))
-        .doesNotContain("@Value(");
+                root.resolve("adapter/in/webhook/WhatsAppWebhookSignatureVerifier.java")))
+        .contains("MessageDigest.isEqual");
     assertThat(Files.exists(root.resolve("configuration/WhatsAppProperties.java"))).isTrue();
   }
 

@@ -281,3 +281,24 @@
   mismatched tenant.
 - Prevention rule: require tenant identity in module read queries and repository
   ports; adapters must resolve current tenant context before invoking them.
+
+## 2026-08-01 — Webhook secrets must fail closed
+
+- Failure mode: an empty WhatsApp app secret previously disabled signature
+  verification and allowed a forged callback path.
+- Detection signal: a source-boundary test found the explicit
+  `skipping signature verification` branch and a properties test accepted
+  placeholder verify-token and tenant defaults.
+- Prevention rule: disable the webhook until real provider credentials and tenant
+  routing are configured; reject malformed signatures and compare digests with
+  a constant-time primitive.
+
+## 2026-08-01 — Provider account metadata is the tenant boundary
+
+- Failure mode: assigning every WhatsApp message to a configured fallback tenant
+  allowed an unknown provider account to cross tenant boundaries.
+- Detection signal: the webhook parser ignored `phone_number_id` and returned a
+  zero/default tenant for every account.
+- Prevention rule: resolve tenant identity from authenticated provider account
+  metadata through an application-owned port and reject unknown account IDs;
+  never use a placeholder tenant in production routing.

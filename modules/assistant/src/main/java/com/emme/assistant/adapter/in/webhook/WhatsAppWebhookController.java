@@ -1,4 +1,4 @@
-package com.emme.assistant.adapter.in.web.controller;
+package com.emme.assistant.adapter.in.webhook;
 
 import com.emme.assistant.adapter.in.messaging.WhatsAppMessageService;
 import com.emme.assistant.configuration.WhatsAppProperties;

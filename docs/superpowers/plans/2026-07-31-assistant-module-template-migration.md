@@ -848,3 +848,37 @@ verification.
 
 Remaining Assistant work is provider contract coverage, webhook replay/
 idempotency evidence, and final service-wide Modulith/CI verification.
+
+## Completed WhatsApp delivery ownership and replay boundary — 2026-08-01
+
+- [x] Added application-owned `WhatsAppTenantResolver` and a configured-account
+  adapter; unknown `phone_number_id` values are rejected instead of falling
+  back to a zero/default tenant.
+- [x] Added `WhatsAppWebhookEventRepository`, persistence entity/repository/
+  adapter, and Liquibase change `012-assistant-webhook-events.sql`.
+- [x] Required the provider message/status identifier and atomically claim
+  inbound message deliveries before creating conversations or sending replies.
+- [x] Added focused tenant-resolution and webhook-verifier tests and re-ran
+  Assistant formatting and module checks.
+
+Remaining Assistant evidence is provider contract coverage, live PostgreSQL
+replay execution, and final service-wide Modulith/CI verification.
+
+## Completed WhatsApp webhook security boundary slice — 2026-08-01
+
+- [x] Moved `WhatsAppWebhookController` to `adapter/in/webhook` and added
+  package metadata.
+- [x] Extracted `WhatsAppWebhookSignatureVerifier` from the orchestration
+  service and injected it through the adapter composition boundary.
+- [x] Reject missing app secrets, malformed signatures, and invalid digests;
+  verification uses `MessageDigest.isEqual` for constant-time comparison.
+- [x] Removed insecure placeholder verify-token and zero-tenant defaults from
+  deployable application profiles; the webhook bean is disabled until real
+  configuration is supplied.
+- [x] Removed message text and generated AI response content from production
+  logs to avoid accidental personal-data disclosure.
+- [x] Added focused verifier, properties, and source-boundary tests.
+
+Remaining Assistant work is durable WhatsApp event replay/idempotency, provider
+contract coverage, tenant routing by provider account metadata, and final
+service-wide Modulith/CI verification.

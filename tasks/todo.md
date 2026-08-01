@@ -77,6 +77,12 @@ reopened by this backlog.
   conversation/action operation.
 - [ ] Complete Assistant AI provider ports/adapters, WhatsApp participant
   ownership, webhook idempotency/signature evidence, and service-wide checks.
+- [x] Complete Assistant WhatsApp signature verification, fail-closed secret
+  handling, webhook package ownership, and sensitive-log reduction; replay,
+  provider contract, tenant-account routing, and final evidence remain in the
+  Assistant plan.
+- [x] Complete Assistant WhatsApp tenant-account resolution and durable replay
+  claim boundary; provider contract and live database evidence remain.
 
 ### P3 — Provider integrations
 

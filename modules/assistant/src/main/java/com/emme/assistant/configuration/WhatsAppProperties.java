@@ -13,12 +13,10 @@ public record WhatsAppProperties(
     String phoneNumberId,
     String apiBaseUrl) {
 
-  private static final String FALLBACK_TENANT_ID = "00000000-0000-0000-0000-000000000000";
-
   public WhatsAppProperties {
-    verifyToken = verifyToken == null ? "emme_verify_token" : verifyToken;
+    verifyToken = verifyToken == null ? "" : verifyToken;
     appSecret = appSecret == null ? "" : appSecret;
-    tenantId = tenantId == null ? FALLBACK_TENANT_ID : tenantId;
+    tenantId = tenantId == null ? "" : tenantId;
     accessToken = accessToken == null ? "" : accessToken;
     phoneNumberId = phoneNumberId == null ? "" : phoneNumberId;
     apiBaseUrl = apiBaseUrl == null ? "https://graph.facebook.com/v21.0" : apiBaseUrl;
@@ -26,6 +24,13 @@ public record WhatsAppProperties(
 
   /** Returns the configured default tenant, failing fast when the value is malformed. */
   public UUID defaultTenantId() {
-    return UUID.fromString(tenantId);
+    if (tenantId.isBlank()) {
+      throw new IllegalStateException("app.whatsapp.tenant-id must be configured");
+    }
+    try {
+      return UUID.fromString(tenantId);
+    } catch (IllegalArgumentException exception) {
+      throw new IllegalStateException("app.whatsapp.tenant-id must be a UUID", exception);
+    }
   }
 }

@@ -23,7 +23,8 @@ public class RefundPaymentService implements RefundPaymentUseCase {
 
   @Override
   public PaymentInfo refund(RefundPaymentCommand command) {
-    Payment payment = PaymentServiceSupport.load(repository, command.paymentId());
+    Payment payment =
+        PaymentServiceSupport.load(repository, command.tenantId(), command.paymentId());
     PaymentProvider.PaymentResult result =
         provider.refund(payment.providerReference(), payment.amount(), "Refund requested");
     payment.applyProviderStatus(PaymentServiceSupport.status(result.status()));

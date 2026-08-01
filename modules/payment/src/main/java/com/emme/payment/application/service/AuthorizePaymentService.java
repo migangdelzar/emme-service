@@ -23,7 +23,8 @@ public class AuthorizePaymentService implements AuthorizePaymentUseCase {
 
   @Override
   public PaymentInfo authorize(AuthorizePaymentCommand command) {
-    Payment payment = PaymentServiceSupport.load(repository, command.paymentId());
+    Payment payment =
+        PaymentServiceSupport.load(repository, command.tenantId(), command.paymentId());
     PaymentProvider.PaymentResult result = provider.authorize(payment.providerReference());
     payment.applyProviderStatus(PaymentServiceSupport.status(result.status()));
     return PaymentApplicationMapper.toInfo(repository.save(payment));

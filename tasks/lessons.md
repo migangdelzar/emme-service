@@ -312,3 +312,8 @@
   HTTP reads. Commands for delivery, cancellation, retry, and similar actions
   carry the tenant identity, and application ports must not retain unscoped
   lookup methods that make accidental cross-tenant access possible.
+
+- 2026-08-01 — Payment reads and lifecycle mutations are equally sensitive to
+  tenant scope. A controller that scopes list/create but not get/refund still
+  exposes a cross-tenant object reference. Make tenant identity part of every
+  payment command/query and remove bare-ID repository ports.

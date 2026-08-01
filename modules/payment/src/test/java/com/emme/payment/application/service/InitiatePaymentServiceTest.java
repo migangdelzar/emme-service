@@ -56,8 +56,11 @@ class InitiatePaymentServiceTest {
     }
 
     @Override
-    public Optional<Payment> findById(UUID paymentId) {
-      return payments.stream().filter(payment -> payment.id().equals(paymentId)).findFirst();
+    public Optional<Payment> findByTenantIdAndId(UUID tenantId, UUID paymentId) {
+      return payments.stream()
+          .filter(payment -> payment.tenantId().equals(tenantId))
+          .filter(payment -> payment.id().equals(paymentId))
+          .findFirst();
     }
 
     @Override

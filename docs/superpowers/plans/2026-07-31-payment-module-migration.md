@@ -198,3 +198,18 @@ and service-wide verification.
 Remaining Payment evidence is provider contract coverage, tenant-scoped read
 coverage for every endpoint, database/integration execution against the new
 webhook table, and the final service-wide verification gate.
+
+## Completed tenant-scoped payment operation slice — 2026-08-01
+
+- [x] Added tenant identity to payment get, authorize, capture, and refund
+  commands/queries.
+- [x] Removed the unscoped payment repository lookup from the application port
+  and persistence adapter.
+- [x] Updated payment services and controller endpoints to load through tenant
+  predicates and the current tenant context.
+- [x] Added source-boundary coverage and verified Payment formatting, tests, and
+  module checks.
+
+Remaining Payment evidence is provider contract coverage, database/integration
+execution against the webhook table, and the final service-wide verification
+gate.

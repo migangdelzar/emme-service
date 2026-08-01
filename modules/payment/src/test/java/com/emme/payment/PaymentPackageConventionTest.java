@@ -26,6 +26,25 @@ class PaymentPackageConventionTest {
     assertThat(Files.exists(ROOT.resolve("api/usecase/InitiatePaymentUseCase.java"))).isTrue();
   }
 
+  @Test
+  void paymentMutationsAndReadsAreTenantScoped() throws Exception {
+    String repository =
+        Files.readString(ROOT.resolve("application/port/out/PaymentRepository.java"));
+    String controller =
+        Files.readString(ROOT.resolve("adapter/in/web/controller/PaymentController.java"));
+
+    assertThat(repository).doesNotContain("findById(UUID paymentId)");
+    assertThat(Files.readString(ROOT.resolve("api/query/GetPaymentQuery.java")))
+        .contains("UUID tenantId");
+    assertThat(Files.readString(ROOT.resolve("api/command/RefundPaymentCommand.java")))
+        .contains("UUID tenantId");
+    assertThat(Files.readString(ROOT.resolve("api/command/AuthorizePaymentCommand.java")))
+        .contains("UUID tenantId");
+    assertThat(Files.readString(ROOT.resolve("api/command/CapturePaymentCommand.java")))
+        .contains("UUID tenantId");
+    assertThat(controller).contains("withCurrentTenant");
+  }
+
   private static boolean hasJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) return false;
     try (Stream<Path> paths = Files.walk(directory)) {

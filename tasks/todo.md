@@ -39,6 +39,13 @@
 - [x] Made already-delivered notifications idempotent without provider calls.
 - [x] Added boundary and service regression tests.
 
+### Payment tenant-scoped operation correction — 2026-08-01
+
+- [x] Added tenant identity to payment read and mutation contracts.
+- [x] Removed unscoped payment repository access.
+- [x] Enforced current-tenant resolution for payment get and refund endpoints.
+- [x] Verified Payment formatting, tests, and module checks.
+
 - Migrated build-logic packages from type-first buckets into `core/`, `root/`,
   capability-owned packages, and `git/` while preserving plugin IDs.
 - Added the missing `emme.security` convention entry point and registration test.

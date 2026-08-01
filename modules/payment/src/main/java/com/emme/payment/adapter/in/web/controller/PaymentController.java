@@ -64,16 +64,21 @@ public class PaymentController {
 
   @GetMapping("/{id}")
   ResponseEntity<PaymentResponse> get(@PathVariable UUID id) {
-    return getPayment
-        .get(new GetPaymentQuery(id))
-        .map(PaymentResponse::from)
-        .map(ResponseEntity::ok)
-        .orElseGet(() -> ResponseEntity.notFound().build());
+    return withCurrentTenant(
+        tenantId ->
+            getPayment
+                .get(new GetPaymentQuery(tenantId, id))
+                .map(PaymentResponse::from)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build()));
   }
 
   @PostMapping("/{id}/refund")
   ResponseEntity<PaymentResponse> refund(@PathVariable UUID id) {
-    return ResponseEntity.ok(
-        PaymentResponse.from(refundPayment.refund(new RefundPaymentCommand(id))));
+    return withCurrentTenant(
+        tenantId ->
+            ResponseEntity.ok(
+                PaymentResponse.from(
+                    refundPayment.refund(new RefundPaymentCommand(tenantId, id)))));
   }
 }

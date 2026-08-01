@@ -2,4 +2,4 @@ package com.emme.payment.api.command;
 
 import java.util.UUID;
 
-public record AuthorizePaymentCommand(UUID paymentId) {}
+public record AuthorizePaymentCommand(UUID tenantId, UUID paymentId) {}

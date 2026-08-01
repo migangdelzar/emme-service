@@ -23,7 +23,8 @@ public class CapturePaymentService implements CapturePaymentUseCase {
 
   @Override
   public PaymentInfo capture(CapturePaymentCommand command) {
-    Payment payment = PaymentServiceSupport.load(repository, command.paymentId());
+    Payment payment =
+        PaymentServiceSupport.load(repository, command.tenantId(), command.paymentId());
     PaymentProvider.PaymentResult result =
         provider.capture(payment.providerReference(), payment.amount());
     payment.applyProviderStatus(PaymentServiceSupport.status(result.status()));

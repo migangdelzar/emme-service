@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface SpringDataPaymentRepository extends JpaRepository<PaymentEntity, UUID> {
   List<PaymentEntity> findByTenantId(UUID tenantId);
 
+  Optional<PaymentEntity> findByTenantIdAndId(UUID tenantId, UUID paymentId);
+
   Optional<PaymentEntity> findByTenantIdAndProviderReference(
       UUID tenantId, String providerReference);
 }

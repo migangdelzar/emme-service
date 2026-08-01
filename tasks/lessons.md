@@ -240,3 +240,14 @@
   each adapter used a different subset.
 - Prevention rule: expose one public use-case interface per operation and
   inject only the contracts required by each adapter.
+
+## 2026-08-01 — Name technical coordinators by their operation
+
+- Failure mode: a technical audit coordinator was named `AuditService` even
+  though Audit is not a business use-case module and the class records one
+  event operation.
+- Detection signal: the generic service name obscured whether the class owned
+  an aggregate, a public use case, or an infrastructure boundary.
+- Prevention rule: name non-domain coordinators after the operation they own,
+  such as `RecordAuditEventService`, and keep reserved metadata-only modules
+  free of speculative implementation layers.

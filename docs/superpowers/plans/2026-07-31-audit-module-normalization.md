@@ -22,32 +22,32 @@ modules/audit/src/main/java/com/emme/audit/package-info.java
 
 ### Task 1: Ownership and consumer decision
 
-- [ ] Search all production, test, migration, build, and documentation references
+- [x] Search all production, test, migration, build, and documentation references
   to `com.emme.audit` and audit tables/events.
-- [ ] Identify the system of record for audit data currently emitted by Identity,
+- [x] Identify the system of record for audit data currently emitted by Identity,
   Tenancy, Studio, Notification, Payment, and shared infrastructure.
-- [ ] Record owner, data classification, retention, tenant scope, availability,
+- [x] Record owner, data classification, retention, tenant scope, availability,
   RTO/RPO, and whether an independent module is justified.
 
 ### Task 2: Apply the selected outcome
 
-- [ ] If no current capability exists, keep only root metadata and document the
+- [x] If no current capability exists, keep only root metadata and document the
   module as reserved; do not add empty package branches.
-- [ ] If a capability exists, create a separate approved audit design first, then
-  materialize only its real API/domain/application/adapter packages.
-- [ ] If the module is not needed, remove it from settings/build dependencies using
-  a separate explicit deletion plan; do not silently delete it here.
+- [x] Not applicable: no independently owned Audit capability exists; any future
+  capability requires a separate approved design before materialization.
+- [x] Not applicable: the metadata-only reserved boundary remains part of the
+  current Modulith build; deletion would require a separate explicit plan.
 
 ### Task 3: Verify
 
-- [ ] Run `./gradlew :modules:audit:test :applications:studio-api:test --tests '*ModularityTest*' --no-daemon --no-configuration-cache`.
+- [x] Run `./gradlew :modules:audit:test :applications:studio-api:test --tests '*ModularityTest*' --no-daemon --no-configuration-cache`.
 - [ ] Record the decision in an ADR and update the service module registry.
 
 ## Definition of done
 
-- [ ] Audit has an explicit owner and status.
-- [ ] No empty architectural tree is presented as implemented architecture.
-- [ ] Any future audit implementation has a separate approved module plan.
+- [x] Audit has an explicit owner and status.
+- [x] No empty architectural tree is presented as implemented architecture.
+- [x] Any future audit implementation has a separate approved module plan.
 
 ## Decision recorded — 2026-08-01
 

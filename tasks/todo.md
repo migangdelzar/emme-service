@@ -1066,3 +1066,11 @@ limiting, then continue authorization domain/application separation.
 - [x] Update Calendar controllers and Google synchronization adapters to use
   focused contracts.
 - [x] Verify Calendar Checkstyle, Spotless, unit tests, and integration tests.
+
+## Audit ownership and service naming normalization — 2026-08-01
+
+- [x] Close the Audit decision-only plan using ADR 0004 and keep the module
+  metadata-only because Identity and Tenancy own current audit responsibilities.
+- [x] Rename the internal Tenancy audit coordinator to
+  `RecordAuditEventService` and remove the generic `AuditService` name.
+- [x] Verify the Tenancy boundary and package convention tests.

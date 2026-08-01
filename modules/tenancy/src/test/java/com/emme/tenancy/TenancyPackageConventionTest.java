@@ -72,7 +72,7 @@ class TenancyPackageConventionTest {
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/CreateTenantService.java");
   private static final Path AUDIT_SERVICE =
       sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/AuditService.java");
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/RecordAuditEventService.java");
   private static final Path PROVISIONING_SERVICE =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/RequestTenantProvisioningService.java");

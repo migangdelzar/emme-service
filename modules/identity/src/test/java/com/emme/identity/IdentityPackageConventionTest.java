@@ -480,6 +480,16 @@ class IdentityPackageConventionTest {
   }
 
   @Test
+  void keepsProvisioningUseCaseIndependentFromTenancyEventTransport() throws IOException {
+    Path provisioningUseCase =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/api/usecase/ProvisionTenantIdentityUseCase.java");
+
+    assertThat(Files.readString(provisioningUseCase))
+        .doesNotContain("com.emme.tenancy.api.event.TenantCreated");
+  }
+
+  @Test
   void ownsHttpEntryPointsAndWireModelsUnderInboundWebAdapters() {
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "IdentityController.java")).isTrue();
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "AuthController.java")).isTrue();

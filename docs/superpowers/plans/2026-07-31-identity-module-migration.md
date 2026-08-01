@@ -498,6 +498,23 @@ Remaining Identity work is architecture dependency evidence, broader
 authorization hardening, explicit provisioning transaction/event ports, and
 final tenant-isolation and migration/recovery evidence.
 
+## Completed provisioning command boundary slice — 2026-08-01
+
+- [x] Added `ProvisionTenantIdentityCommand` to the grouped Identity API.
+- [x] Mapped the cross-module `TenantCreated` event in the inbound consumer
+  instead of exposing it through the Identity use-case contract.
+- [x] Refactored `ProvisionTenantIdentityUseCase` and
+  `KeycloakRealmProvisioningProcessManager` to consume the Identity-owned
+  command.
+- [x] Preserved after-commit listener behavior, realm naming, and provisioning
+  payload values.
+- [x] Added source-boundary and consumer/process regression coverage.
+- [x] Verified focused Identity tests and Spotless formatting.
+
+Remaining Identity work is architecture dependency evidence, broader
+authorization hardening, explicit provisioning transaction/event ports, and
+final tenant-isolation and migration/recovery evidence.
+
 ## Completed authentication-configuration port slice — 2026-08-01
 
 - [x] Added the application-owned `IdentityRealmConfigurationPort`.

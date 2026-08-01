@@ -1,11 +1,11 @@
 package com.emme.identity.application.process;
 
+import com.emme.identity.api.command.ProvisionTenantIdentityCommand;
 import com.emme.identity.api.usecase.ProvisionTenantIdentityUseCase;
 import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
 import com.emme.identity.application.port.out.IdentityRealmProvisioningConfigurationPort;
 import com.emme.identity.application.port.out.IdentityRealmProvisioningSettings;
 import com.emme.identity.application.port.out.RetryDelayPort;
-import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.tenancy.api.usecase.TenantApi;
 import java.time.Duration;
 import org.slf4j.Logger;
@@ -34,14 +34,14 @@ public class KeycloakRealmProvisioningProcessManager implements ProvisionTenantI
   }
 
   @Override
-  public void provision(TenantCreated event) {
+  public void provision(ProvisionTenantIdentityCommand command) {
     validateConfiguration();
-    String realm = "emme-" + event.slug();
+    String realm = "emme-" + command.slug();
     log.info("Provisioning Keycloak realm: {}", realm);
 
     for (int attempt = 1; attempt <= settings.maxAttempts(); attempt++) {
       try {
-        administrationPort.createRealm(realm, event.name());
+        administrationPort.createRealm(realm, command.name());
         log.info("  Realm created: {}", realm);
 
         administrationPort.createClient(realm, settings.clientId(), settings.redirectUris());
@@ -55,13 +55,13 @@ public class KeycloakRealmProvisioningProcessManager implements ProvisionTenantI
         administrationPort.createUser(
             realm,
             settings.initialAdminUsername(),
-            event.adminEmail(),
+            command.adminEmail(),
             settings.initialAdminPassword(),
             settings.initialAdminRole());
-        log.info("  Admin user created: {}", event.adminEmail());
+        log.info("  Admin user created: {}", command.adminEmail());
 
-        tenantApi.updateIdentityRealm(event.tenantId(), realm);
-        log.info("Tenant {} provisioned with realm {}", event.slug(), realm);
+        tenantApi.updateIdentityRealm(command.tenantId(), realm);
+        log.info("Tenant {} provisioned with realm {}", command.slug(), realm);
         return;
 
       } catch (Exception e) {
@@ -69,12 +69,12 @@ public class KeycloakRealmProvisioningProcessManager implements ProvisionTenantI
             "Realm provisioning attempt {}/{} failed for {}: {}",
             attempt,
             settings.maxAttempts(),
-            event.slug(),
+            command.slug(),
             e.getMessage());
         if (attempt == settings.maxAttempts()) {
           throw new RuntimeException(
               "Failed to provision realm for tenant "
-                  + event.slug()
+                  + command.slug()
                   + " after "
                   + settings.maxAttempts()
                   + " attempts",

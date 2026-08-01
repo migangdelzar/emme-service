@@ -444,6 +444,29 @@ Execution rules and dependencies are maintained in
 - Existing dependency-analysis and Testcontainers/PostgreSQL shutdown warnings
   remain non-blocking and occurred after successful task completion.
 
+## Identity provisioning command boundary slice — 2026-08-01
+
+- [x] Add a failing architecture test preventing the Identity use case from
+  importing the Tenancy event transport type.
+- [x] Add `ProvisionTenantIdentityCommand` to the grouped Identity API.
+- [x] Map `TenantCreated` to the Identity command in the inbound consumer.
+- [x] Refactor the provisioning use case and process manager to consume the
+  Identity-owned command.
+- [x] Preserve after-commit provisioning, realm naming, and all provisioning
+  payload values.
+- [x] Verify focused Identity tests, formatting, and source-boundary checks.
+
+### Results
+
+- Red phase: the architecture test failed because
+  `ProvisionTenantIdentityUseCase` imported `TenantCreated` directly.
+- Green/refactor phase: the inbound consumer now translates the cross-module
+  event into `ProvisionTenantIdentityCommand`; Identity application code no
+  longer depends on the Tenancy event transport type.
+- The `@ApplicationModuleListener` after-commit entry point and provisioning
+  behavior remain unchanged.
+- Focused Identity tests and Spotless formatting passed.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

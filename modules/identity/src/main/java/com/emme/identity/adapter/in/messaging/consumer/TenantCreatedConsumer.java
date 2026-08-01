@@ -1,5 +1,6 @@
 package com.emme.identity.adapter.in.messaging.consumer;
 
+import com.emme.identity.api.command.ProvisionTenantIdentityCommand;
 import com.emme.identity.api.usecase.ProvisionTenantIdentityUseCase;
 import com.emme.tenancy.api.event.TenantCreated;
 import org.springframework.modulith.events.ApplicationModuleListener;
@@ -17,6 +18,8 @@ public class TenantCreatedConsumer {
 
   @ApplicationModuleListener
   public void on(TenantCreated event) {
-    useCase.provision(event);
+    useCase.provision(
+        new ProvisionTenantIdentityCommand(
+            event.tenantId(), event.slug(), event.name(), event.adminEmail()));
   }
 }

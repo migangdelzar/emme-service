@@ -41,6 +41,50 @@
   scan and use the persisted NVD cache; without the secret, the job skips
   deterministically instead of timing out on public NVD rate limits.
 
+## Remaining execution backlog — priority/type order
+
+This is the authoritative order for unfinished work. Detailed checklists remain
+inside each linked migration plan; completed historical slices below are not
+reopened by this backlog.
+
+### P0 — Security and tenant isolation
+
+- [ ] Finish the remaining Identity security/domain/application separation in
+  `docs/superpowers/plans/2026-07-31-identity-module-migration.md`.
+- [ ] Complete the Tenancy boundary migration in
+  `docs/superpowers/plans/2026-07-31-tenancy-module-migration.md`.
+
+### P1 — Cross-cutting ownership and infrastructure
+
+- [ ] Decide and record whether Audit is a real owned capability or should be
+  retired; update the registry and dependencies.
+- [ ] Normalize Shared infrastructure only after the Audit ownership decision,
+  preserving rollback and repository-wide dependency evidence.
+
+### P2 — Domain capabilities
+
+- [ ] Migrate Studio Documents using its approved public contracts and the
+  current module template.
+- [ ] Migrate Studio Subscriptions using its approved public contracts and the
+  current module template.
+- [ ] Migrate Assistant after Identity, Tenancy, and Shared contracts are
+  stable.
+
+### P3 — Provider integrations
+
+- [ ] Migrate Notification with explicit provider ports, idempotency, and retry
+  evidence.
+- [ ] Migrate Payment after Subscription contracts are stable, preserving
+  webhook signature/replay and transaction behavior.
+
+### P4 — Final governance verification
+
+- [ ] Run the final service-wide architecture, Modulith, CI, boot-artifact,
+  documentation, security, and rollback evidence gate.
+
+Execution rules and dependencies are maintained in
+`docs/superpowers/plans/README.md#remaining-execution-order-priority-and-type`.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

@@ -45,6 +45,18 @@ uses `application/port/out` for the persistence capability and
 `adapter/out/persistence/{entity,mapper,repository}` for its Spring-specific
 implementation.
 
+## Current execution status — 2026-08-01
+
+| Area | Status | Evidence or remaining work |
+|---|---|---|
+| Public API and event ownership | Complete | Grouped API packages, named interfaces, past-tense `TenantCreated`, package metadata, and consumer updates |
+| Tenant domain and persistence ownership | Complete | Framework-free `Tenant`, application repository port, entity/mapper/adapter, and repository tests |
+| Application orchestration and inbound web adapters | Complete | Services/process manager, controllers, request/response records, filters, resolver, and web tests |
+| Database registry, routing, and pool ownership | Structurally complete | `DatabaseRegistryAdapter`, `TenantDatabasePoolProvider`, and `TenantRoutingDataSource` are canonical outbound adapters |
+| Typed configuration and secret boundary | Partial | Pooling/rate-limit properties exist; database credentials still use field-level `@Value` in `TenantDatabasePoolProvider` |
+| Provisioning outbound ports | Partial | Registry access has a port; JDBC provisioning still depends directly on `JdbcTemplate` and needs an explicit port boundary |
+| Isolation and operational evidence | Open | Add routing/pool lifecycle/eviction/failure-recovery, replay/idempotency, rollback, and audit-correlation evidence |
+
 ## Public contract and naming decisions
 
 - `TenantApi` remains a public use-case contract or is replaced by grouped
@@ -60,7 +72,7 @@ implementation.
 
 ### Task 1: Tenant isolation baseline
 
-- [ ] Inventory all Tenancy consumers and every context entry/exit path.
+- [x] Inventory all Tenancy consumers and every context entry/exit path.
 - [ ] Capture baseline tests for tenant resolution, cross-tenant rejection,
   connection routing, provisioning retries, pool eviction, and rate limiting.
 - [ ] Add architecture rules that forbid domain/application imports of pool,
@@ -68,53 +80,62 @@ implementation.
 
 ### Task 2: Domain and persistence split
 
-- [ ] Create framework-free Tenant and lifecycle/status models.
-- [ ] Move `Tenant`, `DatabaseRegistry`, and `AuditEvent` database mappings to
+- [x] Create framework-free Tenant and lifecycle/status models.
+- [x] Move `Tenant`, `DatabaseRegistry`, and `AuditEvent` database mappings to
   `adapter/out/persistence/entity` with explicit entities and mappers.
-- [ ] Move Spring Data repositories to `adapter/out/persistence/repository` and
+- [x] Move Spring Data repositories to `adapter/out/persistence/repository` and
   application ports to `application/port/out`.
-- [ ] Preserve schema, tenant status values, registry behavior, and audit fields.
+- [x] Preserve schema, tenant status values, registry behavior, and audit fields.
 
 ### Task 3: Application/provisioning boundaries
 
-- [ ] Move TenantService and provisioning services to `application/service`.
-- [ ] Model the long-running worker as a focused process manager only if its
+- [x] Move TenantService and provisioning services to `application/service`.
+- [x] Model the long-running worker as a focused process manager only if its
   current retry/lifecycle behavior requires that representation.
-- [ ] Add ports for database registry, database creation, pool lifecycle, and
-  event publication.
-- [ ] Keep transaction boundaries and event-after-commit behavior explicit.
+- [ ] Add explicit application ports for database creation, pool lifecycle, and
+  event publication; registry access is already represented by
+  `DatabaseRegistryPort`.
+- [ ] Keep transaction boundaries and event-after-commit behavior explicit for
+  provisioning and audit publication.
 
 ### Task 4: Context and web adapters
 
-- [ ] Move TenantController and TenantProvisioningController to inbound web
+- [x] Move TenantController and TenantProvisioningController to inbound web
   controller packages with request/response/mappers.
-- [ ] Move TenantContextFilter, TenantContextAspect, TrustedTenantResolver, and
+- [x] Move TenantContextFilter, TenantContextAspect, TrustedTenantResolver, and
   rate-limit interception to the correct inbound filter/configuration packages.
-- [ ] Do not put tenant context primitives in public API unless a consumer truly
+- [x] Do not put tenant context primitives in public API unless a consumer truly
   requires them.
 
 ### Task 5: Pool/database technical adapters
 
-- [ ] Move `TenantRoutingDataSource` and `DatabasePoolManager` under outbound
-  database/pool adapter ownership.
-- [ ] Keep connection credentials and pool settings in typed configuration.
+- [x] Move `TenantRoutingDataSource` and the current
+  `TenantDatabasePoolProvider` implementation under outbound database adapter
+  ownership; the legacy `DatabasePoolManager` name does not exist in the current
+  source tree.
+- [ ] Keep connection credentials and pool settings in typed configuration;
+  replace the remaining field-level `@Value` credentials.
 - [ ] Add integration tests for routing, pool lifecycle, eviction, and failure
   recovery; no test may disable tenant filtering to make assertions pass.
 
 ### Task 6: API metadata and verification
 
-- [ ] Normalize API packages, event named interface, package-info files, and
+- [x] Normalize API packages, event named interface, package-info files, and
   allowed dependencies.
-- [ ] Run Tenancy unit/integration/architecture/Modulith/CI checks.
+- [x] Run Tenancy unit/integration checks and Studio Modulith verification.
+- [x] Run Tenancy Checkstyle/Spotless; the service-wide CI gate remains part of
+  the final evidence pass.
 - [ ] Verify migration rollback, provisioning replay/idempotency, audit correlation,
   secret redaction, and cross-tenant isolation evidence.
-- [ ] Update all consumers atomically and record a verification report.
+- [x] Update all consumers atomically.
+- [ ] Record a committed Tenancy verification report.
 
 ## Definition of done
 
 - [ ] Tenant isolation and database routing remain protected by executable tests.
-- [ ] Domain/application code has no direct JPA/pool/web implementation dependency.
-- [ ] Public APIs/events are grouped and named according to the current template.
+- [ ] Domain/application code has no direct JPA/pool/web implementation dependency;
+  provisioning still has a direct `JdbcTemplate` dependency to remove.
+- [x] Public APIs/events are grouped and named according to the current template.
 
 ## Completed incremental slice — 2026-07-31
 
@@ -204,3 +225,22 @@ boundaries are complete.
 
 `TenantContextAspect`, datasource/pool configuration, and database-pool
 implementations remain outbound/configuration work for the next slice.
+
+## Checklist reconciliation — 2026-08-01
+
+The original checklist is now reconciled with the current source tree and
+verification evidence. Completed package, domain, persistence, orchestration,
+web, and contract items are marked complete above. The remaining unchecked items
+are intentional implementation or evidence gaps: provisioning ports and
+transaction/event boundaries, typed database credentials, pool/routing failure
+coverage, architecture rules, final service gates, and the committed evidence
+report.
+
+### Reconciliation evidence
+
+- `:modules:tenancy:test` passed.
+- `:modules:tenancy:integrationTest` passed.
+- `:modules:tenancy:check` passed.
+- Studio Modulith verification passed.
+- Integration teardown emitted existing PostgreSQL/Testcontainers shutdown
+  warnings after successful test completion.

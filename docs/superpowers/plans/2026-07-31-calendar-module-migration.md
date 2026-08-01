@@ -29,6 +29,14 @@ or observability packages are required.
 | Web problem-code parsing and Calendar i18n | Complete | API-client, i18n, app tests, and `bun run quality` |
 | Cross-repository verification and evidence | Complete | service `ci`, Calendar unit/integration/architecture tests, web `quality`, pushed commits |
 
+## Checklist reconciliation — 2026-08-01
+
+The detailed TDD steps below are historical execution traceability for the
+completed migration. They were reconciled against the current status matrix,
+definition of done, repository source tree, and verification evidence; every
+historical step is now marked complete. The plan registry and this status table
+are the authoritative source for future Calendar work.
+
 ## Global Constraints
 
 - Other modules may depend only on Calendar named interfaces and public events.
@@ -163,7 +171,7 @@ code. Database table names and columns remain unchanged.
 - Consumes: current `com.emme.calendar` classes and Spring/ArchUnit metadata.
 - Produces: executable rules that reject Calendar legacy package ownership after migration.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add this test to `CalendarPackageConventionTest.java` before moving production
 classes:
@@ -209,7 +217,7 @@ class CalendarPackageConventionTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -220,19 +228,19 @@ Run:
 Expected: `FAIL` because the current Calendar classes still reside in
 `application`, `entity`, `event`, `infrastructure`, and `web` packages.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Do not weaken the rule. Add only the test source and update the shared
 `LayerConventionTest` wording so the migration target is explicit while the
 legacy allowance remains limited to modules not yet migrated.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run the command from Step 2. Expected: the new test remains red until Task 2–6
 move all Calendar production types. This is the intentional red checkpoint for
 the migration slice.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add applications/studio-api/src/test/java/com/emme/LayerConventionTest.java \
@@ -268,7 +276,7 @@ local TDD checkpoint and the commit is completed after Task 6 makes it green.
 - Consumes: existing public Calendar types and Modulith named interfaces.
 - Produces: `calendar-result`, `calendar-usecases`, `calendar-types`, and `calendar-events` named interfaces with unchanged public record/interface methods.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add a metadata test to `CalendarPackageConventionTest.java`:
 
@@ -282,7 +290,7 @@ void publicContractsAreGroupedByKind() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -292,7 +300,7 @@ Run:
 
 Expected: `FAIL` because the grouped API classes do not exist yet.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Move the four source files, update package declarations and imports, and use
 these package annotations:
@@ -321,7 +329,7 @@ Update `calendar/package-info.java` to allow only the named interfaces needed
 by current consumers. Do not expose the whole `calendar.api` package as a
 single catch-all contract.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
@@ -332,7 +340,7 @@ Run:
 Expected: `PASS` for public contract locations; compilation failures from old
 imports are resolved in the next task.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add modules/calendar/src/main/java modules/calendar/src/test/java
@@ -359,7 +367,7 @@ git commit -m "refactor(calendar): group public contracts by kind"
 - Consumes: `TenantOwnedEntity` behavior only through persistence mapping, not from domain classes.
 - Produces: pure domain models with constructors and methods `markSynced()`, `markFailed()`, `markDeleted()`, and `markStale()`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create tests for business transitions:
 
@@ -404,7 +412,7 @@ class CalendarSyncStateTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -414,7 +422,7 @@ Run:
 
 Expected: `FAIL` because the pure domain model types do not exist.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Implement immutable identity fields and controlled state transitions in the
 domain models. The domain source must contain no `jakarta.persistence`,
@@ -423,7 +431,7 @@ domain models. The domain source must contain no `jakarta.persistence`,
 Move the three enums into `domain.model`. Keep the existing enum constants and
 database string values unchanged.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run the command from Step 2 and then:
 
@@ -434,7 +442,7 @@ Run the command from Step 2 and then:
 Expected: domain transition tests pass and the framework-dependency rule passes
 for the new domain package.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add modules/calendar/src/main/java/com/emme/calendar/domain modules/calendar/src/test/java/com/emme/calendar/domain
@@ -467,7 +475,7 @@ git commit -m "refactor(calendar): extract pure domain models"
 - Consumes: domain `CalendarEventLink` and `CalendarSyncState`.
 - Produces: application-owned repository ports returning domain models; Spring Data repositories returning entities only; `CalendarPersistenceAdapter` implementing both ports.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create a unit test that uses an in-memory fake Spring Data repository and asserts
 domain/entity mapping without exposing entities to the application port:
@@ -500,7 +508,7 @@ class CalendarPersistenceAdapterTest {
 The test double must implement the port or repository interface used by the
 adapter and must not be imported by production code.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -510,7 +518,7 @@ Run:
 
 Expected: `FAIL` because ports, entities, mapper, and adapter do not exist.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create repository ports with these signatures:
 
@@ -533,7 +541,7 @@ Use explicit mappers between pure domain objects and JPA entities. Preserve
 table names, columns, tenant IDs, enum string values, and optimistic/version
 fields inherited from the shared persistence base.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
@@ -545,7 +553,7 @@ Run:
 Expected: adapter mapping and persistence package rules pass; no application
 class imports a Spring Data repository.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add modules/calendar/src/main/java modules/calendar/src/test/java
@@ -577,7 +585,7 @@ git commit -m "refactor(calendar): isolate persistence behind outbound ports"
 - Consumes: public Calendar API, domain models, outbound repository/Google ports.
 - Produces: `CalendarService` as the application workflow for busy-time queries; `CalendarSyncApiService` implementing `CalendarSyncApi`; HTTP controller depending on application use-case/service contracts only.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add an application test that verifies the service delegates through ports and
 returns API results rather than persistence entities:
@@ -601,7 +609,7 @@ void findsEventLinksThroughTheOutboundPort() {
 Add an ArchUnit rule that controllers must not depend on `..adapter.out..`,
 `..entity..`, or `org.springframework.data..`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -613,7 +621,7 @@ Run:
 Expected: `FAIL` because services and controllers still reference legacy entity
 and application packages.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Move services and update imports. Keep transaction boundaries in application
 services. Keep request validation and HTTP status mapping in the controller.
@@ -624,7 +632,7 @@ Replace the nested `CalendarService.TimeRange` transport leak with a result
 type under `api.result` and map that result to the existing HTTP response shape
 inside `CalendarController`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
@@ -636,7 +644,7 @@ Run:
 Expected: Calendar unit and integration tests pass with unchanged endpoint
 behavior for `/api/v1/calendar/busy` and `/api/v1/calendar/sync`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add modules/calendar/src/main/java modules/calendar/src/test/java modules/calendar/src/integrationTest/java
@@ -681,7 +689,7 @@ git commit -m "refactor(calendar): separate application and inbound adapters"
 - Consumes: Google configuration, Calendar public events, application outbound ports, and persistence adapters.
 - Produces: technology-specific adapters that can be replaced by fakes in application tests.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add a Google package rule:
 
@@ -702,7 +710,7 @@ Add focused tests for token encryption and OAuth status under their target
 package. Preserve existing tests for no-token status, unauthorized access, and
 Google redirect behavior.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -713,7 +721,7 @@ Run:
 Expected: `FAIL` because the target packages and port abstractions do not yet
 exist.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Move Google classes and update package declarations. Separate transport clients
 from application adapters where the integration has both responsibilities. The
@@ -729,7 +737,7 @@ its public surface is already limited to the application contract:
 Keep tenant and user context at the adapter boundary. Do not put Google SDK or
 HTTP types in `domain` or `application.port.out`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
@@ -742,7 +750,7 @@ Run:
 Expected: Google focused tests, Calendar integration tests, and one-way Google
 adapter rules pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add modules/calendar applications/studio-api/src/test/java/com/emme/GoogleModuleArchTest.java
@@ -769,7 +777,7 @@ git commit -m "refactor(calendar): isolate Google integrations as adapters"
 - Produces: documented Calendar configuration metadata and strict architecture
   rules with no Calendar-specific legacy exceptions.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Update the architecture test to require all Calendar persistence types under
 `adapter.out.persistence` and all controllers under `adapter.in`:
@@ -788,7 +796,7 @@ void migratedCalendarTypesUseCanonicalPackages() {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -799,7 +807,7 @@ Run:
 Expected: `FAIL` until all Calendar entities, repositories, controllers, and
 configuration classes use the canonical packages.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Keep configuration properties in `GoogleOAuthConfig`; the application-level
 `@ConfigurationPropertiesScan` already registers it, so no empty
@@ -807,7 +815,7 @@ Keep configuration properties in `GoogleOAuthConfig`; the application-level
 services and adapter behavior in adapters. Remove Calendar from the legacy
 allowance in shared architecture tests after all classes have moved.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
@@ -817,7 +825,7 @@ Run:
 
 Expected: `PASS` with no Calendar legacy package exceptions.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add applications/studio-api/src/test/java/com/emme modules/calendar/src/main/java/com/emme/calendar
@@ -851,7 +859,7 @@ git commit -m "test(calendar): remove legacy package allowances"
 - Consumes: existing Calendar and Google HTTP routes and backend problem details.
 - Produces: typed `ApiProblem` error codes and contract factories that remain independent of React and translated copy.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add the stable problem contract:
 
@@ -886,7 +894,7 @@ it("preserves a backend problem code for localized UI mapping", async () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run from `emme-web`:
 
@@ -896,7 +904,7 @@ bun run vitest run packages/api-client/src/client.test.ts packages/contracts/src
 
 Expected: `FAIL` because `ApiHttpError` does not expose a typed problem code.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Extend `ApiHttpError` with `code: string | undefined` derived only from a
 structured problem body. Keep the original `body` for compatibility. Update
@@ -907,7 +915,7 @@ successful response shapes unchanged.
 Add matching translation keys to both locale catalogs and keep their leaf-key
 sets identical.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run from `emme-web`:
 
@@ -919,7 +927,7 @@ bun run quality
 Expected: API client, contract, locale, typecheck, lint, i18n, and production
 quality gates pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/api-client packages/contracts apps/emme-salon-app/src/features/google-workspace apps/emme-salon-app/src/locales
@@ -945,21 +953,21 @@ branch after the service contract tests in Task 9 pass.
 - Consumes: all migrated Calendar service/web changes and repository quality gates.
 - Produces: auditable evidence that the Calendar vertical slice is complete and ready for the next module plan.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add the Calendar completion checklist to `tasks/todo.md` with unchecked gates:
 
 ```markdown
-- [ ] Calendar canonical package migration complete
-- [ ] Calendar domain has no framework imports
-- [ ] Calendar named interfaces expose only grouped API packages
-- [ ] Calendar persistence entities are not imported outside Calendar adapters
-- [ ] Calendar service tests and integration tests pass
-- [ ] Web Calendar contracts preserve stable routes and error codes
-- [ ] Web quality gate passes
+- [x] Calendar canonical package migration complete
+- [x] Calendar domain has no framework imports
+- [x] Calendar named interfaces expose only grouped API packages
+- [x] Calendar persistence entities are not imported outside Calendar adapters
+- [x] Calendar service tests and integration tests pass
+- [x] Web Calendar contracts preserve stable routes and error codes
+- [x] Web quality gate passes
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run the complete gates before marking the checklist:
 
@@ -979,14 +987,14 @@ bun run quality
 Expected: every command exits non-zero until the migration and web alignment
 are complete.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Update the checklist only after the commands pass. Add the final Calendar
 package tree and the stable web error-code mapping to the integration
 architecture document. Record any new failure mode in `tasks/lessons.md` with
 its detection signal and prevention rule.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run the commands from Step 2 again, then verify both feature branches:
 
@@ -998,7 +1006,7 @@ git log --oneline origin/feat/architecture-docs-separation -1
 Expected: clean worktrees, green local gates, and remote refs containing the
 final commits.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Service repository:
 

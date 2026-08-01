@@ -1,6 +1,6 @@
 package com.emme.tenancy.web;
 
-import com.emme.tenancy.service.TenantProvisioningService;
+import com.emme.tenancy.application.service.TenantProvisioningService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

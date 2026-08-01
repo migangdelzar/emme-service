@@ -6,7 +6,7 @@ import com.emme.studio.adapter.out.persistence.repository.SpringDataBusinessProf
 import com.emme.studio.subscriptions.api.PlanType;
 import com.emme.studio.subscriptions.entity.Subscription;
 import com.emme.studio.subscriptions.entity.SubscriptionRepository;
-import com.emme.tenancy.application.TenantService;
+import com.emme.tenancy.application.service.TenantService;
 import com.emme.tenancy.domain.model.Tenant;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

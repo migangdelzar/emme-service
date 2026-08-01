@@ -164,3 +164,24 @@ complete.
 
 Tenant provisioning, database-pool/routing adapters, audit ownership, and the
 remaining Identity security/domain boundary remain future slices.
+
+## Completed application orchestration boundary slice — 2026-07-31
+
+- [x] Moved TenantService, AuditService, and TenantApiService under
+  `application/service` and removed the generic top-level application/service
+  implementation namespaces.
+- [x] Moved the provisioning capability and JDBC implementation under
+  `application/service`, with the technology-specific implementation named
+  `JdbcTenantProvisioningService`.
+- [x] Renamed the scheduled long-running worker to
+  `TenantProvisioningProcessManager` under `application/process`, reserving the
+  process package for real long-running coordination.
+- [x] Updated all production, fixture, and cross-module test consumers without
+  changing HTTP endpoints, provisioning SQL, scheduling, or transaction
+  behavior.
+- [x] Added source-tree ownership assertions and verified the full Tenancy check
+  plus Studio Modulith verification.
+
+The next Tenancy slices are inbound web/context adapter ownership and outbound
+database-pool/registry ports; this slice intentionally does not claim those
+boundaries are complete.

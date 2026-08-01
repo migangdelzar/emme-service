@@ -42,6 +42,38 @@ class TenancyPackageConventionTest {
   private static final Path PERSISTENCE_MAPPER =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/mapper/TenantPersistenceMapper.java");
+  private static final Path APPLICATION_SERVICE_PACKAGE =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/application/service");
+  private static final Path TENANT_SERVICE =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/TenantService.java");
+  private static final Path AUDIT_SERVICE =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/AuditService.java");
+  private static final Path PROVISIONING_SERVICE =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/TenantProvisioningService.java");
+  private static final Path PROVISIONING_IMPLEMENTATION =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/JdbcTenantProvisioningService.java");
+  private static final Path PROCESS_PACKAGE =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/application/process");
+  private static final Path PROVISIONING_PROCESS =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/process/TenantProvisioningProcessManager.java");
+  private static final Path LEGACY_TENANT_SERVICE =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/application/TenantService.java");
+  private static final Path LEGACY_AUDIT_SERVICE =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/application/AuditService.java");
+  private static final Path LEGACY_PROVISIONING_SERVICE =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/service/TenantProvisioningService.java");
+  private static final Path LEGACY_PROVISIONING_IMPLEMENTATION =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/service/DefaultTenantProvisioningService.java");
+  private static final Path LEGACY_PROVISIONING_WORKER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/service/TenantProvisioningWorker.java");
 
   @Test
   void keepsModuleMetadataAtTheModuleRoot() throws IOException {
@@ -77,6 +109,22 @@ class TenancyPackageConventionTest {
     assertThat(Files.exists(PERSISTENCE_REPOSITORY)).isTrue();
     assertThat(Files.exists(PERSISTENCE_ADAPTER)).isTrue();
     assertThat(Files.exists(PERSISTENCE_MAPPER)).isTrue();
+  }
+
+  @Test
+  void ownsOrchestrationByApplicationResponsibility() {
+    assertThat(Files.exists(APPLICATION_SERVICE_PACKAGE)).isTrue();
+    assertThat(Files.exists(TENANT_SERVICE)).isTrue();
+    assertThat(Files.exists(AUDIT_SERVICE)).isTrue();
+    assertThat(Files.exists(PROVISIONING_SERVICE)).isTrue();
+    assertThat(Files.exists(PROVISIONING_IMPLEMENTATION)).isTrue();
+    assertThat(Files.exists(PROCESS_PACKAGE)).isTrue();
+    assertThat(Files.exists(PROVISIONING_PROCESS)).isTrue();
+    assertThat(Files.exists(LEGACY_TENANT_SERVICE)).isFalse();
+    assertThat(Files.exists(LEGACY_AUDIT_SERVICE)).isFalse();
+    assertThat(Files.exists(LEGACY_PROVISIONING_SERVICE)).isFalse();
+    assertThat(Files.exists(LEGACY_PROVISIONING_IMPLEMENTATION)).isFalse();
+    assertThat(Files.exists(LEGACY_PROVISIONING_WORKER)).isFalse();
   }
 
   private static boolean hasJavaSources(Path directory) {

@@ -1,4 +1,4 @@
-package com.emme.tenancy.service;
+package com.emme.tenancy.application.service;
 
 import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.tenancy.api.usecase.TenantApi;
@@ -10,23 +10,24 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/** Implements the public Tenant API with application-owned domain contracts. */
 @Service
 @Transactional(readOnly = true)
-class TenantApiImpl implements TenantApi {
+class TenantApiService implements TenantApi {
 
   private final TenantRepository tenantRepository;
 
-  TenantApiImpl(TenantRepository tenantRepository) {
+  TenantApiService(TenantRepository tenantRepository) {
     this.tenantRepository = tenantRepository;
   }
 
   @Override
   public TenantInfo getTenantInfo(UUID tenantId) {
-    Tenant t =
+    Tenant tenant =
         tenantRepository
             .findById(tenantId)
             .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + tenantId));
-    return toTenantInfo(t);
+    return toTenantInfo(tenant);
   }
 
   @Override
@@ -60,8 +61,14 @@ class TenantApiImpl implements TenantApi {
     tenantRepository.save(tenant);
   }
 
-  private TenantInfo toTenantInfo(Tenant t) {
+  private TenantInfo toTenantInfo(Tenant tenant) {
     return new TenantInfo(
-        t.id(), t.slug(), t.name(), null, t.status().name(), null, t.keycloakRealm());
+        tenant.id(),
+        tenant.slug(),
+        tenant.name(),
+        null,
+        tenant.status().name(),
+        null,
+        tenant.keycloakRealm());
   }
 }

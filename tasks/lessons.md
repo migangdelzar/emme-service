@@ -41,3 +41,14 @@
 - Prevention rule: when a use case needs transport-friendly denormalized data,
   assemble an application result from domain models and ports; never return a
   persistence entity merely to preserve response fields.
+
+## 2026-07-31 — Spring transaction proxies and service naming refactors
+
+- Failure mode: renaming a transactional service and making it `final` prevented
+  Spring's configured CGLIB proxy from being created during context startup.
+- Detection signal: full application-context tests failed with
+  `Cannot subclass final class` even though compilation and focused source-tree
+  tests passed.
+- Prevention rule: after moving or renaming Spring-managed transactional classes,
+  run at least one full context test; keep proxied services non-final unless the
+  project explicitly uses interface-based transaction proxies.

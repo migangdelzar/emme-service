@@ -9,7 +9,7 @@ import com.emme.identity.adapter.out.persistence.repository.FeatureFlagRepositor
 import com.emme.studio.subscriptions.api.PlanType;
 import com.emme.studio.subscriptions.entity.Subscription;
 import com.emme.studio.subscriptions.entity.SubscriptionRepository;
-import com.emme.tenancy.application.TenantService;
+import com.emme.tenancy.application.service.TenantService;
 import com.emme.testing.BaseWebTest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

@@ -1,4 +1,4 @@
-package com.emme.tenancy.application;
+package com.emme.tenancy.application.service;
 
 import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.tenancy.application.port.out.TenantRepository;
@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/** Application service coordinating tenant lifecycle use cases. */
 @Service
 @Transactional
 public class TenantService {

@@ -1,6 +1,6 @@
 package com.emme.testing.tenancy.provisioning;
 
-import com.emme.tenancy.service.TenantProvisioningService;
+import com.emme.tenancy.application.service.TenantProvisioningService;
 import com.emme.testing.tenancy.fixture.TenantFixture;
 import java.util.UUID;
 import org.springframework.stereotype.Component;

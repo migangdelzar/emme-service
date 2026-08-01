@@ -1,6 +1,6 @@
 package com.emme.tenancy.web;
 
-import com.emme.tenancy.application.TenantService;
+import com.emme.tenancy.application.service.TenantService;
 import com.emme.tenancy.domain.model.Tenant;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

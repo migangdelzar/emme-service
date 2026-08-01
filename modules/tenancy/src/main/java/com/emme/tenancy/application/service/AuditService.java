@@ -1,4 +1,4 @@
-package com.emme.tenancy.application;
+package com.emme.tenancy.application.service;
 
 import com.emme.tenancy.adapter.out.persistence.entity.AuditEvent;
 import com.emme.tenancy.adapter.out.persistence.entity.AuditEvent.AuditOutcome;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+/** Application service recording tenant audit outcomes in an independent transaction. */
 @Service
 public class AuditService {
 

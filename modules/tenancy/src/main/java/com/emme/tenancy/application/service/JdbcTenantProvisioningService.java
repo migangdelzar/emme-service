@@ -1,30 +1,29 @@
-package com.emme.tenancy.service;
+package com.emme.tenancy.application.service;
 
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/** JDBC-backed implementation of the tenant provisioning application capability. */
 @Service
 @Transactional
-class DefaultTenantProvisioningService implements TenantProvisioningService {
+class JdbcTenantProvisioningService implements TenantProvisioningService {
 
   private final JdbcTemplate jdbc;
 
-  DefaultTenantProvisioningService(JdbcTemplate jdbc) {
+  JdbcTenantProvisioningService(JdbcTemplate jdbc) {
     this.jdbc = jdbc;
   }
 
   @Override
   public UUID requestProvisioning(String slug, String name, String timeZone, String locale) {
     String schemaName = slug.replace('-', '_').replaceAll("[^a-z0-9_]", "_").toLowerCase();
-    UUID tenantId =
-        jdbc.queryForObject(
-            "INSERT INTO emme_core.tenant_registry (slug, schema_name, status) VALUES (?, ?, 'PROVISIONING') RETURNING tenant_id",
-            UUID.class,
-            slug,
-            schemaName);
-    return tenantId;
+    return jdbc.queryForObject(
+        "INSERT INTO emme_core.tenant_registry (slug, schema_name, status) VALUES (?, ?, 'PROVISIONING') RETURNING tenant_id",
+        UUID.class,
+        slug,
+        schemaName);
   }
 
   @Override

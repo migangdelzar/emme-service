@@ -141,8 +141,12 @@
   aggregate, persistence entity/mapper/adapter, and updated all callers.
 - [x] Verified focused domain/mapper/repository tests plus full Tenancy check and
   Studio Modulith verification.
-- [ ] Next slice: continue Tenancy provisioning/pool boundaries and Identity
-  security/domain separation as independent red-green-refactor slices.
+- [x] Moved Tenancy orchestration into `application/service` and renamed the
+  scheduled worker to `application/process/TenantProvisioningProcessManager`.
+- [x] Verified all Tenancy web/module/repository tests, Checkstyle, Spotless, and
+  Studio Modulith verification after Spring proxy wiring was preserved.
+- [ ] Next slice: move Tenancy inbound web/context adapters and then isolate
+  database-pool/registry ports before continuing Identity security boundaries.
 
 ## Architecture naming contract — 2026-07-31
 

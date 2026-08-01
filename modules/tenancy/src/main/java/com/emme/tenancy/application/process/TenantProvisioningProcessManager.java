@@ -1,4 +1,4 @@
-package com.emme.tenancy.service;
+package com.emme.tenancy.application.process;
 
 import com.emme.functional.unchecked.UConsumer;
 import com.emme.kernel.context.TenantContextHolder;
@@ -6,6 +6,7 @@ import com.emme.kernel.tracing.CorrelationId;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.List;
+import java.util.UUID;
 import javax.sql.DataSource;
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -19,16 +20,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+/** Coordinates the long-running tenant schema provisioning process. */
 @Component
-class TenantProvisioningWorker {
+final class TenantProvisioningProcessManager {
 
-  private static final Logger log = LoggerFactory.getLogger(TenantProvisioningWorker.class);
+  private static final Logger log = LoggerFactory.getLogger(TenantProvisioningProcessManager.class);
   private static final String STUDIO_CHANGELOG = "db/emme-studio/changelog.yaml";
 
   private final JdbcTemplate jdbc;
   private final DataSource dataSource;
 
-  TenantProvisioningWorker(JdbcTemplate jdbc, DataSource dataSource) {
+  TenantProvisioningProcessManager(JdbcTemplate jdbc, DataSource dataSource) {
     this.jdbc = jdbc;
     this.dataSource = dataSource;
   }
@@ -41,7 +43,7 @@ class TenantProvisioningWorker {
             "SELECT tenant_id, slug, schema_name FROM emme_core.tenant_registry WHERE status = 'PROVISIONING'",
             (rs, rowNum) ->
                 new TenantRow(
-                    rs.getObject("tenant_id", java.util.UUID.class),
+                    rs.getObject("tenant_id", UUID.class),
                     rs.getString("slug"),
                     rs.getString("schema_name")));
 
@@ -78,11 +80,9 @@ class TenantProvisioningWorker {
     String schema = row.schemaName;
     withConnection(
         connection -> {
-          // Create schema
           try (Statement stmt = connection.createStatement()) {
             stmt.execute("CREATE SCHEMA IF NOT EXISTS \"" + schema + "\"");
           }
-          // Run emme-studio migrations
           Database database =
               DatabaseFactory.getInstance()
                   .findCorrectDatabaseImplementation(new JdbcConnection(connection));
@@ -106,5 +106,5 @@ class TenantProvisioningWorker {
     }
   }
 
-  private record TenantRow(java.util.UUID tenantId, String slug, String schemaName) {}
+  private record TenantRow(UUID tenantId, String slug, String schemaName) {}
 }

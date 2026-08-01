@@ -1,6 +1,7 @@
 package com.emme.assistant.application;
 
 import com.emme.assistant.ai.application.AiService;
+import com.emme.assistant.configuration.WhatsAppProperties;
 import com.emme.assistant.entity.ChannelParticipant;
 import com.emme.assistant.entity.ChannelParticipantRepository;
 import com.emme.assistant.entity.Conversation;
@@ -23,7 +24,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +35,7 @@ public class WhatsAppMessageService {
 
   private static final Logger log = LoggerFactory.getLogger(WhatsAppMessageService.class);
 
-  private final String appSecret;
+  private final WhatsAppProperties properties;
   private final UUID defaultTenantId;
   private final ConversationService conversationService;
   private final AiService aiService;
@@ -43,25 +43,13 @@ public class WhatsAppMessageService {
   private final ObjectMapper objectMapper;
   private final OkHttpClient httpClient;
 
-  public WhatsAppMessageService() {
-    // Default constructor for Spring proxying — not used in production
-    this.appSecret = "";
-    this.defaultTenantId = UUID.randomUUID();
-    this.conversationService = null;
-    this.aiService = null;
-    this.participantRepo = null;
-    this.objectMapper = new ObjectMapper();
-    this.httpClient = new OkHttpClient();
-  }
-
   public WhatsAppMessageService(
-      @Value("${app.whatsapp.app-secret:}") String appSecret,
-      @Value("${app.whatsapp.tenant-id:00000000-0000-0000-0000-000000000000}") String tenantIdStr,
+      WhatsAppProperties properties,
       ConversationService conversationService,
       AiService aiService,
       ChannelParticipantRepository participantRepo) {
-    this.appSecret = appSecret;
-    this.defaultTenantId = uuidOrFallback(tenantIdStr);
+    this.properties = properties;
+    this.defaultTenantId = properties.defaultTenantId();
     this.conversationService = conversationService;
     this.aiService = aiService;
     this.participantRepo = participantRepo;
@@ -71,31 +59,18 @@ public class WhatsAppMessageService {
 
   /** Test constructor — allows injecting a custom OkHttpClient. */
   public WhatsAppMessageService(
-      String appSecret,
-      String tenantIdStr,
+      WhatsAppProperties properties,
       ConversationService conversationService,
       AiService aiService,
       ChannelParticipantRepository participantRepo,
       OkHttpClient httpClient) {
-    this.appSecret = appSecret;
-    this.defaultTenantId = uuidOrFallback(tenantIdStr);
+    this.properties = properties;
+    this.defaultTenantId = properties.defaultTenantId();
     this.conversationService = conversationService;
     this.aiService = aiService;
     this.participantRepo = participantRepo;
     this.objectMapper = new ObjectMapper();
     this.httpClient = httpClient;
-  }
-
-  private static UUID uuidOrFallback(String s) {
-    if (s == null || s.isBlank() || "00000000-0000-0000-0000-000000000000".equals(s)) {
-      return UUID.fromString("00000000-0000-0000-0000-000000000000");
-    }
-    try {
-      return UUID.fromString(s);
-    } catch (IllegalArgumentException e) {
-      log.warn("Invalid tenant-id '{}', using fallback", s);
-      return UUID.fromString("00000000-0000-0000-0000-000000000000");
-    }
   }
 
   /**
@@ -142,7 +117,7 @@ public class WhatsAppMessageService {
    * — we recompute and compare.
    */
   public boolean verifySignature(String payload, String signature) {
-    if (appSecret == null || appSecret.isBlank()) {
+    if (properties.appSecret().isBlank()) {
       log.warn("WhatsApp app-secret not configured — skipping signature verification");
       return true;
     }
@@ -154,7 +129,7 @@ public class WhatsAppMessageService {
     try {
       Mac mac = Mac.getInstance("HmacSHA256");
       SecretKeySpec keySpec =
-          new SecretKeySpec(appSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+          new SecretKeySpec(properties.appSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
       mac.init(keySpec);
       byte[] computed = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
       String expected = "sha256=" + HexFormat.of().formatHex(computed);
@@ -296,9 +271,8 @@ public class WhatsAppMessageService {
    * WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_ID environment variables.
    */
   public void sendReply(String to, String text) {
-    String accessToken = System.getenv("WHATSAPP_ACCESS_TOKEN");
-    String phoneNumberId = System.getenv("WHATSAPP_PHONE_ID");
-    sendReply(to, text, accessToken, phoneNumberId, "https://graph.facebook.com/v21.0");
+    sendReply(
+        to, text, properties.accessToken(), properties.phoneNumberId(), properties.apiBaseUrl());
   }
 
   /** Package-private overload for testing with explicit credentials and API base URL. */

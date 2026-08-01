@@ -1064,3 +1064,12 @@ After this plan is complete, create separate plans for:
 2. `studio`, `assistant`, and `notification` workflow migration;
 3. `payment`, `audit`, and `shared` integration migration;
 4. final service-wide legacy package removal and strict architecture enforcement.
+
+## Completed typed Calendar configuration slice — 2026-08-01
+
+- [x] Added `CalendarProperties` for the shared `app.calendar.calendar-id`
+  setting.
+- [x] Replaced direct `@Value` injection in `CalendarService` and
+  `StaffCalendarSyncAdapter` with constructor-injected typed properties.
+- [x] Added source-boundary and default/configured-value tests.
+- [x] Verified Calendar unit and integration tests with formatting.

@@ -1,11 +1,11 @@
 package com.emme.assistant.web;
 
 import com.emme.assistant.application.WhatsAppMessageService;
+import com.emme.assistant.configuration.WhatsAppProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,12 +26,12 @@ public class WhatsAppWebhookController {
   private static final Logger log = LoggerFactory.getLogger(WhatsAppWebhookController.class);
 
   private final WhatsAppMessageService messageService;
+  private final WhatsAppProperties properties;
 
-  @Value("${app.whatsapp.verify-token:emme_verify_token}")
-  private String verifyToken;
-
-  public WhatsAppWebhookController(WhatsAppMessageService messageService) {
+  public WhatsAppWebhookController(
+      WhatsAppMessageService messageService, WhatsAppProperties properties) {
     this.messageService = messageService;
+    this.properties = properties;
   }
 
   /** Meta webhook verification — GET with hub.mode, hub.verify_token, hub.challenge */
@@ -42,7 +42,7 @@ public class WhatsAppWebhookController {
       @RequestParam("hub.verify_token") String token,
       @RequestParam("hub.challenge") String challenge) {
 
-    if ("subscribe".equals(mode) && verifyToken.equals(token)) {
+    if ("subscribe".equals(mode) && properties.verifyToken().equals(token)) {
       return ResponseEntity.ok(challenge);
     }
     return ResponseEntity.status(403).body("Verification failed");

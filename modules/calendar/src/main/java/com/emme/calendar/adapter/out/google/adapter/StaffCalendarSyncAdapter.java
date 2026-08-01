@@ -6,6 +6,7 @@ import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleOAut
 import com.emme.calendar.api.event.CalendarSyncRequested;
 import com.emme.calendar.api.result.CalendarEventLinkInfo;
 import com.emme.calendar.api.usecase.CalendarSyncApi;
+import com.emme.calendar.configuration.CalendarProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.time.ZoneOffset;
@@ -19,7 +20,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,12 +42,10 @@ public class StaffCalendarSyncAdapter {
   private static final DateTimeFormatter ISO_INSTANT =
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
 
-  @Value("${app.calendar.calendar-id:primary}")
-  private String calendarId;
-
   private final GoogleOAuthAdapter oauthService;
   private final SpringDataGoogleOAuthTokenRepository tokenRepo;
   private final CalendarSyncApi syncApi;
+  private final CalendarProperties properties;
   private final OkHttpClient httpClient;
   private final ObjectMapper mapper;
 
@@ -55,10 +53,12 @@ public class StaffCalendarSyncAdapter {
       GoogleOAuthAdapter oauthService,
       SpringDataGoogleOAuthTokenRepository tokenRepo,
       CalendarSyncApi syncApi,
+      CalendarProperties properties,
       ObjectMapper mapper) {
     this.oauthService = oauthService;
     this.tokenRepo = tokenRepo;
     this.syncApi = syncApi;
+    this.properties = properties;
     this.httpClient = new OkHttpClient();
     this.mapper = mapper;
   }
@@ -118,7 +118,7 @@ public class StaffCalendarSyncAdapter {
         .put("dateTime", ISO_INSTANT.format(e.endsAt()))
         .put("timeZone", "America/Mexico_City");
 
-    String url = String.format(EVENTS_URL, calendarId);
+    String url = String.format(EVENTS_URL, properties.calendarId());
     Request request =
         new Request.Builder()
             .url(url)
@@ -185,7 +185,7 @@ public class StaffCalendarSyncAdapter {
         .put("dateTime", ISO_INSTANT.format(e.endsAt()))
         .put("timeZone", "America/Mexico_City");
 
-    String url = String.format(EVENTS_URL, calendarId) + "/" + externalEventId;
+    String url = String.format(EVENTS_URL, properties.calendarId()) + "/" + externalEventId;
     Request request =
         new Request.Builder()
             .url(url)
@@ -241,7 +241,8 @@ public class StaffCalendarSyncAdapter {
     }
 
     for (CalendarEventLinkInfo link : links) {
-      String url = String.format(EVENTS_URL, calendarId) + "/" + link.externalEventId();
+      String url =
+          String.format(EVENTS_URL, properties.calendarId()) + "/" + link.externalEventId();
       Request request =
           new Request.Builder()
               .url(url)

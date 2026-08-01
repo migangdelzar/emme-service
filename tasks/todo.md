@@ -124,6 +124,32 @@ transactions and authorization boundaries explicit, and makes each use case
 independently testable. Shared behavior now belongs to named mappers or
 collaborators rather than a compatibility facade.
 
+## Typed external configuration normalization — 2026-08-01
+
+- [x] Add failing property and source-boundary tests for Calendar settings.
+- [x] Bind `app.calendar.calendar-id` through `CalendarProperties` and inject
+  it into Calendar application and Google outbound components.
+- [x] Add failing property and source-boundary tests for Catalog image storage.
+- [x] Bind `app.catalog.image-dir` through
+  `CatalogImageStorageProperties` and inject it into the storage adapter.
+- [x] Add failing property and source-boundary tests for WhatsApp settings.
+- [x] Bind `app.whatsapp.*` through `WhatsAppProperties`, remove direct
+  environment access from the WhatsApp application path, and expose the full
+  property set in both deployable application configurations.
+- [ ] Normalize the remaining provider-specific direct environment reads in
+  Calendar, Assistant AI, Notification, and Payment as separate red-green
+  slices.
+- [ ] Run the final service-wide verification gate after those provider slices
+  are complete.
+
+#### Results
+
+The first three property slices are green at unit, module, and integration
+levels. Source checks now prevent new direct `@Value` injection in the
+normalized components. Remaining provider environment reads are tracked
+separately because each provider has a different existing property model and
+secret-redaction contract.
+
 ## Identity role/permission domain boundary slice — 2026-08-01
 
 - [x] Add failing domain, mapper, and package-ownership tests for `Role` and

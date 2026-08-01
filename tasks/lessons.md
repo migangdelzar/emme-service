@@ -177,3 +177,26 @@
   exactly one use-case interface. Move shared behavior into a named mapper,
   policy, evaluator, loader, or factory; do not retain a multi-use-case facade
   as a workaround for circular dependencies.
+
+## 2026-08-01 — Repository-root source assertions
+
+- Failure mode: a source-boundary test used a repository-relative path directly,
+  but Gradle executed the module test with that module as the working directory.
+- Detection signal: the test failed with `NoSuchFileException` even though the
+  production source existed and compiled.
+- Prevention rule: source-tree tests must locate the repository root by walking
+  upward to `settings.gradle.kts`, then resolve repository-relative paths from
+  that root. Re-run the focused test after adding every source assertion.
+
+## 2026-08-01 — Typed properties must replace every configuration access path
+
+- Failure mode: replacing one `@Value` field left a second constructor or
+  outbound implementation reading the same setting through a separate field or
+  environment variable.
+- Detection signal: a repository-wide search still found direct `@Value` or
+  `System.getenv` usage in the capability being migrated.
+- Prevention rule: model a capability's complete configuration as one typed
+  properties object, inject it into every consumer, and search the whole
+  production tree before marking the slice complete. Keep provider-specific
+  secret migration as an explicit follow-up when its existing property model
+  needs redesign.

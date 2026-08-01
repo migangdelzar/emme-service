@@ -4,6 +4,7 @@ import com.emme.calendar.api.result.CalendarBusyTimeRange;
 import com.emme.calendar.application.port.out.CalendarEventLinkRepository;
 import com.emme.calendar.application.port.out.CalendarSyncStateRepository;
 import com.emme.calendar.application.port.out.GoogleCalendarPort;
+import com.emme.calendar.configuration.CalendarProperties;
 import com.emme.calendar.domain.model.CalendarEventLink;
 import com.emme.calendar.domain.model.CalendarProvider;
 import com.emme.calendar.domain.model.CalendarSyncState;
@@ -16,7 +17,6 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,17 +29,17 @@ public class CalendarService {
   private final CalendarSyncStateRepository syncStateRepository;
   private final CalendarEventLinkRepository eventLinkRepository;
   private final GoogleCalendarPort googleCalendarClient;
-
-  @Value("${app.calendar.calendar-id:primary}")
-  private String calendarId;
+  private final CalendarProperties properties;
 
   public CalendarService(
       CalendarSyncStateRepository syncStateRepository,
       CalendarEventLinkRepository eventLinkRepository,
-      GoogleCalendarPort googleCalendarClient) {
+      GoogleCalendarPort googleCalendarClient,
+      CalendarProperties properties) {
     this.syncStateRepository = syncStateRepository;
     this.eventLinkRepository = eventLinkRepository;
     this.googleCalendarClient = googleCalendarClient;
+    this.properties = properties;
   }
 
   /** Get busy times for an artist on a given date via Google Calendar free/busy API. */
@@ -55,8 +55,12 @@ public class CalendarService {
     String timeMin = date.atStartOfDay(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
     String timeMax =
         date.plusDays(1).atStartOfDay(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
-    log.info("Fetching busy times for artist={}, date={}, calendar={}", artistId, date, calendarId);
-    return googleCalendarClient.freeBusy(calendarId, timeMin, timeMax);
+    log.info(
+        "Fetching busy times for artist={}, date={}, calendar={}",
+        artistId,
+        date,
+        properties.calendarId());
+    return googleCalendarClient.freeBusy(properties.calendarId(), timeMin, timeMax);
   }
 
   /** Trigger calendar sync for a tenant. Stub: marks STALE if never synced. */

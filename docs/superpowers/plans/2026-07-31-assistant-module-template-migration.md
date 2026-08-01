@@ -746,3 +746,18 @@ git log --oneline origin/feat/assistant-module-migration -1
 | More named interfaces can accidentally expose implementation packages | Annotate only materialized API kinds and run custom named-interface closure checks |
 | Existing placeholder RAG behavior may be mistaken for a feature redesign | Preserve current output and record future behavior as a separate capability task |
 | Long migration branch divergence | Keep commits focused by task, push after each verified milestone, and merge within the active service migration window |
+
+## Completed typed WhatsApp configuration slice — 2026-08-01
+
+- [x] Added `WhatsAppProperties` for webhook verification, tenant routing, and
+  Cloud API credentials/endpoints.
+- [x] Replaced direct `@Value` injection and `System.getenv` access in the
+  WhatsApp service/controller path with constructor-injected properties.
+- [x] Added complete `app.whatsapp.*` configuration to both deployable
+  application profiles.
+- [x] Added property and source-boundary regression tests.
+- [x] Verified Assistant unit and integration tests with formatting.
+
+Remaining Assistant migration work includes the broader domain/persistence and
+adapter normalization tasks already listed above, plus provider-specific
+configuration cleanup for AI integrations.

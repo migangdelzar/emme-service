@@ -65,6 +65,17 @@ class CatalogPackageConventionTest {
     }
   }
 
+  @Test
+  void imageStorageUsesTypedConfigurationInsteadOfValueInjection() throws IOException {
+    assertThat(
+            Files.readString(
+                SOURCE_ROOT.resolve("adapter/out/client/storage/LocalImageStorage.java")))
+        .doesNotContain("@Value(");
+    assertThat(
+            Files.exists(SOURCE_ROOT.resolve("configuration/CatalogImageStorageProperties.java")))
+        .isTrue();
+  }
+
   private static String read(Path path) {
     try {
       return Files.readString(path);

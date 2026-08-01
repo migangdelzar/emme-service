@@ -119,7 +119,10 @@ app:
   whatsapp:
     verify-token: ${WHATSAPP_VERIFY_TOKEN:emme_verify_token}
     app-secret: ${WHATSAPP_APP_SECRET:}
+    tenant-id: ${WHATSAPP_TENANT_ID:00000000-0000-0000-0000-000000000000}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
     phone-number-id: ${WHATSAPP_PHONE_ID:}
+    api-base-url: ${WHATSAPP_API_BASE_URL:https://graph.facebook.com/v21.0}
   notification:
     email:
       provider: mock

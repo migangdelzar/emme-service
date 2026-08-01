@@ -99,3 +99,11 @@ service module migrations.
 
 The Catalog baseline now follows the same one-service-per-use-case rule as the
 Identity module without introducing a compatibility facade.
+
+## Completed typed Catalog storage configuration slice — 2026-08-01
+
+- [x] Added `CatalogImageStorageProperties` for `app.catalog.image-dir`.
+- [x] Replaced direct `@Value` injection in `LocalImageStorage` with
+  constructor-injected typed properties.
+- [x] Added source-boundary and default/configured-value tests.
+- [x] Verified Catalog unit and integration tests with formatting.

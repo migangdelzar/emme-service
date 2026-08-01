@@ -1,8 +1,8 @@
 package com.emme.tenancy.application.service;
 
-import com.emme.tenancy.adapter.out.persistence.entity.AuditEvent;
-import com.emme.tenancy.adapter.out.persistence.entity.AuditEvent.AuditOutcome;
-import com.emme.tenancy.adapter.out.persistence.repository.AuditEventRepository;
+import com.emme.tenancy.application.port.out.AuditEventPort;
+import com.emme.tenancy.domain.model.AuditOutcome;
+import com.emme.tenancy.domain.model.AuditRecord;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -12,15 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuditService {
 
-  private final AuditEventRepository repository;
+  private final AuditEventPort auditEventPort;
 
-  public AuditService(AuditEventRepository repository) {
-    this.repository = repository;
+  public AuditService(AuditEventPort auditEventPort) {
+    this.auditEventPort = auditEventPort;
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void record(UUID tenantId, String actorReference, String action, AuditOutcome outcome) {
-    repository.save(new AuditEvent(tenantId, actorReference, action, outcome));
+    auditEventPort.save(new AuditRecord(tenantId, actorReference, action, outcome));
   }
 
   public void succeeded(UUID tenantId, String actor, String action) {

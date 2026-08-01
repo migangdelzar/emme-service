@@ -1,7 +1,7 @@
-package com.emme.calendar.adapter.in.web;
+package com.emme.calendar.adapter.in.web.controller;
 
-import com.emme.calendar.adapter.out.google.adapter.GoogleSheetsAdapter;
-import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleSpreadsheetLinkRepository;
+import com.emme.calendar.application.port.out.GoogleSheetsExportPort;
+import com.emme.calendar.application.port.out.GoogleSpreadsheetLinkQueryPort;
 import com.emme.kernel.context.TenantContextHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Google Sheets")
 public class SheetsController {
 
-  private final GoogleSheetsAdapter exportService;
-  private final SpringDataGoogleSpreadsheetLinkRepository sheetRepo;
+  private final GoogleSheetsExportPort exportService;
+  private final GoogleSpreadsheetLinkQueryPort sheetLinks;
 
   public SheetsController(
-      GoogleSheetsAdapter exportService, SpringDataGoogleSpreadsheetLinkRepository sheetRepo) {
+      GoogleSheetsExportPort exportService, GoogleSpreadsheetLinkQueryPort sheetLinks) {
     this.exportService = exportService;
-    this.sheetRepo = sheetRepo;
+    this.sheetLinks = sheetLinks;
   }
 
   /** Export data to a new Google Sheet. */
@@ -69,7 +69,7 @@ public class SheetsController {
   @Operation(summary = "List exported spreadsheets")
   public ResponseEntity<Object> list() {
     UUID tenantId = TenantContextHolder.requireCurrentTenantId();
-    return ResponseEntity.ok(sheetRepo.findByTenantId(tenantId));
+    return ResponseEntity.ok(sheetLinks.findByTenantId(tenantId));
   }
 
   public record ExportRequest(String exportType) {}

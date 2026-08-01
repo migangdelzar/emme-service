@@ -1032,3 +1032,14 @@ limiting, then continue authorization domain/application separation.
 - [ ] Continue with remaining operational evidence, provider/webhook replay and
   idempotency coverage, then run service-wide Modulith, CI, boot-JAR, security,
   and recovery verification.
+
+## Calendar outbound-boundary correction — 2026-08-01
+
+- [x] Added application ports for Google Sheets export and spreadsheet-link
+  queries.
+- [x] Mapped spreadsheet entities to public result records.
+- [x] Moved SheetsController to the canonical inbound controller package and
+  removed direct outbound adapter imports.
+- [x] Moved Tenancy audit persistence behind an application-owned port and
+  outbound persistence adapter.
+- [x] Verified focused Calendar and Tenancy boundary tests.

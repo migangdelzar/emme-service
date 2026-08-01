@@ -20,4 +20,11 @@ class TenantUseCaseBoundaryTest {
     assertThat(Files.exists(ROOT.resolve("application/service/TenantService.java"))).isFalse();
     assertThat(Files.exists(ROOT.resolve("api/usecase/TenantApi.java"))).isFalse();
   }
+
+  @Test
+  void keepsAuditPersistenceBehindAnApplicationPort() throws Exception {
+    assertThat(Files.exists(ROOT.resolve("application/port/out/AuditEventPort.java"))).isTrue();
+    assertThat(Files.readString(ROOT.resolve("application/service/AuditService.java")))
+        .doesNotContain("adapter.out.persistence");
+  }
 }

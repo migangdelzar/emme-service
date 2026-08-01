@@ -1084,3 +1084,15 @@ After this plan is complete, create separate plans for:
   `service-account-json-base64`.
 - [x] Updated the live integration-test constructor and verified Calendar
   integration tests.
+
+## Completed Google Sheets inbound-boundary slice — 2026-08-01
+
+- [x] Added application-owned export and spreadsheet-link query ports.
+- [x] Added the public `GoogleSpreadsheetInfo` result model and persistence
+  mapping for spreadsheet links.
+- [x] Kept Google Sheets provider and Spring Data implementations in outbound
+  adapters.
+- [x] Moved `SheetsController` under the canonical inbound web controller
+  package and removed direct provider/repository imports.
+- [x] Added a source-boundary regression test and verified the focused Calendar
+  test with formatting.

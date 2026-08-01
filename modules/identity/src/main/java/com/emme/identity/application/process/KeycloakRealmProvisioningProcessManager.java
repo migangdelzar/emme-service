@@ -2,8 +2,9 @@ package com.emme.identity.application.process;
 
 import com.emme.identity.api.usecase.ProvisionTenantIdentityUseCase;
 import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
+import com.emme.identity.application.port.out.IdentityRealmProvisioningConfigurationPort;
+import com.emme.identity.application.port.out.IdentityRealmProvisioningSettings;
 import com.emme.identity.application.port.out.RetryDelayPort;
-import com.emme.identity.configuration.IdentityRealmProvisioningProperties;
 import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.tenancy.api.usecase.TenantApi;
 import java.time.Duration;
@@ -18,17 +19,17 @@ public class KeycloakRealmProvisioningProcessManager implements ProvisionTenantI
       LoggerFactory.getLogger(KeycloakRealmProvisioningProcessManager.class);
   private final IdentityProviderAdministrationPort administrationPort;
   private final TenantApi tenantApi;
-  private final IdentityRealmProvisioningProperties properties;
+  private final IdentityRealmProvisioningSettings settings;
   private final RetryDelayPort retryDelayPort;
 
   public KeycloakRealmProvisioningProcessManager(
       IdentityProviderAdministrationPort administrationPort,
       TenantApi tenantApi,
-      IdentityRealmProvisioningProperties properties,
+      IdentityRealmProvisioningConfigurationPort configuration,
       RetryDelayPort retryDelayPort) {
     this.administrationPort = administrationPort;
     this.tenantApi = tenantApi;
-    this.properties = properties;
+    this.settings = configuration.settings();
     this.retryDelayPort = retryDelayPort;
   }
 
@@ -38,26 +39,25 @@ public class KeycloakRealmProvisioningProcessManager implements ProvisionTenantI
     String realm = "emme-" + event.slug();
     log.info("Provisioning Keycloak realm: {}", realm);
 
-    for (int attempt = 1; attempt <= properties.getMaxAttempts(); attempt++) {
+    for (int attempt = 1; attempt <= settings.maxAttempts(); attempt++) {
       try {
         administrationPort.createRealm(realm, event.name());
         log.info("  Realm created: {}", realm);
 
-        administrationPort.createClient(
-            realm, properties.getClientId(), properties.getRedirectUris());
-        log.info("  Client created: {}", properties.getClientId());
+        administrationPort.createClient(realm, settings.clientId(), settings.redirectUris());
+        log.info("  Client created: {}", settings.clientId());
 
-        for (String role : properties.getDefaultRoles()) {
+        for (String role : settings.defaultRoles()) {
           administrationPort.createRealmRole(realm, role);
         }
-        log.info("  Roles seeded: {}", properties.getDefaultRoles());
+        log.info("  Roles seeded: {}", settings.defaultRoles());
 
         administrationPort.createUser(
             realm,
-            properties.getInitialAdminUsername(),
+            settings.initialAdminUsername(),
             event.adminEmail(),
-            properties.getInitialAdminPassword(),
-            properties.getInitialAdminRole());
+            settings.initialAdminPassword(),
+            settings.initialAdminRole());
         log.info("  Admin user created: {}", event.adminEmail());
 
         tenantApi.updateIdentityRealm(event.tenantId(), realm);
@@ -68,20 +68,20 @@ public class KeycloakRealmProvisioningProcessManager implements ProvisionTenantI
         log.warn(
             "Realm provisioning attempt {}/{} failed for {}: {}",
             attempt,
-            properties.getMaxAttempts(),
+            settings.maxAttempts(),
             event.slug(),
             e.getMessage());
-        if (attempt == properties.getMaxAttempts()) {
+        if (attempt == settings.maxAttempts()) {
           throw new RuntimeException(
               "Failed to provision realm for tenant "
                   + event.slug()
                   + " after "
-                  + properties.getMaxAttempts()
+                  + settings.maxAttempts()
                   + " attempts",
               e);
         }
         try {
-          retryDelayPort.await(Duration.ofMillis(properties.getRetryDelayMillis() * attempt));
+          retryDelayPort.await(Duration.ofMillis(settings.retryDelayMillis() * attempt));
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           return;
@@ -91,14 +91,13 @@ public class KeycloakRealmProvisioningProcessManager implements ProvisionTenantI
   }
 
   private void validateConfiguration() {
-    if (properties.getInitialAdminPassword() == null
-        || properties.getInitialAdminPassword().isBlank()) {
+    if (settings.initialAdminPassword() == null || settings.initialAdminPassword().isBlank()) {
       throw new IllegalStateException("Identity realm provisioning password is not configured");
     }
-    if (properties.getMaxAttempts() < 1) {
+    if (settings.maxAttempts() < 1) {
       throw new IllegalStateException("Identity realm provisioning max attempts must be positive");
     }
-    if (properties.getRetryDelayMillis() < 0) {
+    if (settings.retryDelayMillis() < 0) {
       throw new IllegalStateException("Identity realm provisioning retry delay cannot be negative");
     }
   }

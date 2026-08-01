@@ -469,6 +469,17 @@ class IdentityPackageConventionTest {
   }
 
   @Test
+  void keepsProvisioningProcessIndependentFromConfigurationProperties() throws IOException {
+    Path provisioningProcess =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/application/process/KeycloakRealmProvisioningProcessManager.java");
+
+    assertThat(Files.readString(provisioningProcess))
+        .doesNotContain("com.emme.identity.configuration.IdentityRealmProvisioningProperties")
+        .doesNotContain("org.springframework.boot.context.properties");
+  }
+
+  @Test
   void ownsHttpEntryPointsAndWireModelsUnderInboundWebAdapters() {
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "IdentityController.java")).isTrue();
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "AuthController.java")).isTrue();

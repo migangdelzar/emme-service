@@ -5,8 +5,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
+import com.emme.identity.application.port.out.IdentityRealmProvisioningConfigurationPort;
+import com.emme.identity.application.port.out.IdentityRealmProvisioningSettings;
 import com.emme.identity.application.port.out.RetryDelayPort;
-import com.emme.identity.configuration.IdentityRealmProvisioningProperties;
 import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.tenancy.api.usecase.TenantApi;
 import java.io.IOException;
@@ -26,15 +27,15 @@ class KeycloakRealmProvisioningProcessManagerTest {
   void provisionsTenantIdentityThroughTheApplicationPort() throws Exception {
     UUID tenantId = UUID.randomUUID();
     TenantCreated event = new TenantCreated(tenantId, "demo-salon", "Demo Salon", "owner@test");
-    IdentityRealmProvisioningProperties properties = configuredProperties();
+    IdentityRealmProvisioningSettings settings = configuredSettings();
 
     new KeycloakRealmProvisioningProcessManager(
-            administrationPort, tenantApi, properties, noOpDelay())
+            administrationPort, tenantApi, configuration(settings), noOpDelay())
         .provision(event);
 
     verify(administrationPort).createRealm("emme-demo-salon", "Demo Salon");
     verify(administrationPort)
-        .createClient("emme-demo-salon", properties.getClientId(), properties.getRedirectUris());
+        .createClient("emme-demo-salon", settings.clientId(), settings.redirectUris());
     verify(administrationPort).createRealmRole("emme-demo-salon", "business_owner");
     verify(administrationPort).createRealmRole("emme-demo-salon", "nail_artist");
     verify(administrationPort).createRealmRole("emme-demo-salon", "front_desk");
@@ -42,22 +43,21 @@ class KeycloakRealmProvisioningProcessManagerTest {
     verify(administrationPort)
         .createUser(
             "emme-demo-salon",
-            properties.getInitialAdminUsername(),
+            settings.initialAdminUsername(),
             "owner@test",
-            properties.getInitialAdminPassword(),
-            properties.getInitialAdminRole());
+            settings.initialAdminPassword(),
+            settings.initialAdminRole());
     verify(tenantApi).updateIdentityRealm(tenantId, "emme-demo-salon");
   }
 
   @Test
   void failsBeforeCallingTheProviderWhenProvisioningPasswordIsMissing() {
-    IdentityRealmProvisioningProperties properties = configuredProperties();
-    properties.setInitialAdminPassword("");
+    IdentityRealmProvisioningSettings settings = configuredSettings("", 3, 2_000L);
 
     assertThatThrownBy(
             () ->
                 new KeycloakRealmProvisioningProcessManager(
-                        administrationPort, tenantApi, properties, noOpDelay())
+                        administrationPort, tenantApi, configuration(settings), noOpDelay())
                     .provision(
                         new TenantCreated(
                             UUID.randomUUID(), "demo-salon", "Demo Salon", "owner@test")))
@@ -69,8 +69,7 @@ class KeycloakRealmProvisioningProcessManagerTest {
 
   @Test
   void retriesProviderFailuresWithoutBlockingTheTest() throws Exception {
-    IdentityRealmProvisioningProperties properties = configuredProperties();
-    properties.setMaxAttempts(2);
+    IdentityRealmProvisioningSettings settings = configuredSettings("tenant-password", 2, 2_000L);
     org.mockito.Mockito.doThrow(new IOException("provider unavailable"))
         .when(administrationPort)
         .createRealm("emme-demo-salon", "Demo Salon");
@@ -78,7 +77,7 @@ class KeycloakRealmProvisioningProcessManagerTest {
     assertThatThrownBy(
             () ->
                 new KeycloakRealmProvisioningProcessManager(
-                        administrationPort, tenantApi, properties, noOpDelay())
+                        administrationPort, tenantApi, configuration(settings), noOpDelay())
                     .provision(
                         new TenantCreated(
                             UUID.randomUUID(), "demo-salon", "Demo Salon", "owner@test")))
@@ -89,10 +88,26 @@ class KeycloakRealmProvisioningProcessManagerTest {
         .createRealm("emme-demo-salon", "Demo Salon");
   }
 
-  private static IdentityRealmProvisioningProperties configuredProperties() {
-    IdentityRealmProvisioningProperties properties = new IdentityRealmProvisioningProperties();
-    properties.setInitialAdminPassword("tenant-password");
-    return properties;
+  private static IdentityRealmProvisioningSettings configuredSettings() {
+    return configuredSettings("tenant-password", 3, 2_000L);
+  }
+
+  private static IdentityRealmProvisioningSettings configuredSettings(
+      String initialAdminPassword, int maxAttempts, long retryDelayMillis) {
+    return new IdentityRealmProvisioningSettings(
+        "emme-salon-app",
+        java.util.List.of("http://localhost:8080/*", "http://localhost:3000/*"),
+        "admin",
+        initialAdminPassword,
+        "business_owner",
+        java.util.List.of("business_owner", "nail_artist", "front_desk", "read_only"),
+        maxAttempts,
+        retryDelayMillis);
+  }
+
+  private static IdentityRealmProvisioningConfigurationPort configuration(
+      IdentityRealmProvisioningSettings settings) {
+    return () -> settings;
   }
 
   private static RetryDelayPort noOpDelay() {

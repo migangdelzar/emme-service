@@ -479,6 +479,25 @@ Remaining Identity work is architecture dependency evidence, broader
 authorization hardening, explicit provisioning transaction/event ports, and
 final tenant-isolation and migration/recovery evidence.
 
+## Completed provisioning-configuration port slice — 2026-08-01
+
+- [x] Added the application-owned
+  `IdentityRealmProvisioningConfigurationPort` and immutable
+  `IdentityRealmProvisioningSettings` model.
+- [x] Mapped typed Spring provisioning properties in
+  `IdentityProvisioningConfiguration`.
+- [x] Refactored `KeycloakRealmProvisioningProcessManager` away from Spring
+  configuration-property types.
+- [x] Preserved retry, validation, realm, client, role, and admin-user
+  provisioning behavior.
+- [x] Added source-boundary and process-manager regression coverage.
+- [x] Verified Identity tests/check/integration, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Identity work is architecture dependency evidence, broader
+authorization hardening, explicit provisioning transaction/event ports, and
+final tenant-isolation and migration/recovery evidence.
+
 ## Completed authentication-configuration port slice — 2026-08-01
 
 - [x] Added the application-owned `IdentityRealmConfigurationPort`.

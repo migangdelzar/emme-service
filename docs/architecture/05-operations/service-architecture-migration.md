@@ -95,6 +95,34 @@ explicit persisted preference -> browser language preferences -> en-US fallback
 The locale catalog must have identical leaf keys for every supported locale and the
 test-id catalog must remain independent from translated text.
 
+## Calendar vertical-slice evidence
+
+The Calendar module is the first complete application slice migrated to the module
+template. Its ownership is now explicit:
+
+```mermaid
+flowchart LR
+    WEB[adapter.in web or messaging] --> API[api use case / event]
+    API --> APP[application service]
+    APP --> DOMAIN[domain model]
+    APP --> PORT[application.port.out]
+    PORT --> PERSIST[adapter.out.persistence]
+    PORT --> GOOGLE[adapter.out.google]
+```
+
+- Public contracts are grouped under `api/result`, `api/usecase`, `api/type`, and
+  `api/event`.
+- Domain models are framework-independent and tested in isolation.
+- JPA entities and Spring Data repositories are named with `Entity` and
+  `SpringData...Repository` suffixes and remain under persistence adapters.
+- Application services depend on `application.port.out`, including
+  `GoogleCalendarPort`; they do not import concrete adapter classes.
+- The migration is guarded by `CalendarPackageConventionTest`, Modulith tests,
+  ArchUnit tests, persistence adapter tests, and the Calendar module test suite.
+- The web client parses RFC 9457-compatible `application/problem+json` responses,
+  preserves machine-readable `code` values, and maps Calendar/Google failures to
+  locale-owned messages.
+
 ## Success criteria
 
 - `./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon --no-configuration-cache`

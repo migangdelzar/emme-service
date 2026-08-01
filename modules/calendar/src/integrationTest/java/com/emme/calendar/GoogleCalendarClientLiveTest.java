@@ -2,8 +2,8 @@ package com.emme.calendar;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.calendar.application.CalendarService;
-import com.emme.calendar.application.GoogleCalendarClient;
+import com.emme.calendar.adapter.out.google.client.GoogleCalendarClient;
+import com.emme.calendar.api.result.CalendarBusyTimeRange;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -31,7 +31,7 @@ class GoogleCalendarClientLiveTest {
     // Verify free/busy API works
     String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
     String tomorrow = DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.DAYS));
-    List<CalendarService.TimeRange> busy = client.freeBusy("primary", now, tomorrow);
+    List<CalendarBusyTimeRange> busy = client.freeBusy("primary", now, tomorrow);
 
     assertThat(busy).isNotNull();
     System.out.println("✅ Free/busy OK — " + busy.size() + " busy slots found");

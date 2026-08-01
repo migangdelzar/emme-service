@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
  *
  * <ul>
  *   <li>Calendar module does <b>not</b> depend on google module (one-way dependency)
- *   <li>Google module follows internal package conventions (config, entity, oauth, etc.)
+ *   <li>Calendar Google adapters follow the canonical outbound package conventions
  * </ul>
  *
  * <p>Note: Spring Modulith overall module verification is handled by {@link ModularityTest}.
@@ -30,13 +30,13 @@ class GoogleModuleArchTest {
           .importPackages("com.emme");
 
   private static final Set<String> ALLOWED_GOOGLE_SUB_MODULES =
-      Set.of("config", "entity", "application", "provider", "web");
+      Set.of("adapter", "client", "provider", "model");
 
   // ── One-way dependency: calendar must not depend on google ───────────────
 
   @Test
   void calendarModuleDoesNotDependOnGoogle() {
-    // With the new module structure, google classes live under calendar.infrastructure.google.
+    // Google implementations live under Calendar outbound adapters.
     // The one-way dependency rule now applies within the calendar module itself:
     // calendar core must not depend on calendar infrastructure.
     // This test is informational — skip if no google classes exist on classpath.
@@ -64,7 +64,7 @@ class GoogleModuleArchTest {
             .map(c -> c.getPackageName())
             .filter(
                 pkg ->
-                    pkg.startsWith("com.emme.calendar.infrastructure.google.")
+                    pkg.startsWith("com.emme.calendar.adapter.out.google.")
                         || pkg.startsWith("com.emme.google."))
             .distinct()
             .sorted()
@@ -76,12 +76,11 @@ class GoogleModuleArchTest {
     }
 
     for (String pkg : packages) {
-      // Strip prefix: "com.emme.google." → remainder like "oauth" or "oauth.sub"
-      // Strip google prefix regardless of whether it's under calendar.infrastructure.google or
+      // Strip the Calendar Google adapter prefix, or the legacy standalone Google prefix.
       // com.emme.google
       String remainder =
-          pkg.startsWith("com.emme.calendar.infrastructure.google.")
-              ? pkg.substring("com.emme.calendar.infrastructure.google.".length())
+          pkg.startsWith("com.emme.calendar.adapter.out.google.")
+              ? pkg.substring("com.emme.calendar.adapter.out.google.".length())
               : pkg.substring("com.emme.google.".length());
       String topLevel = remainder.split("\\.")[0];
       assertThat(ALLOWED_GOOGLE_SUB_MODULES)

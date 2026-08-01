@@ -8,6 +8,17 @@
 
 **Tech Stack:** Java 21, Spring Boot, Spring Modulith, Spring Data JPA, ArchUnit, JUnit 5, Gradle, TypeScript, Vitest, Bun.
 
+## Current execution status
+
+| Slice | Status | Evidence |
+|---|---|---|
+| Calendar package and contract normalization | Complete | `CalendarPackageConventionTest`, grouped API packages, package metadata |
+| Calendar domain extraction | Complete | framework-independent domain model tests |
+| Calendar persistence ports/adapters | Complete | mapper/adapter tests and managed-identity regression coverage |
+| Calendar inbound and Google adapter relocation | Complete | module/architecture tests and compile verification |
+| Web problem-code parsing and Calendar i18n | Complete | API-client, i18n, app tests, and `bun run quality` |
+| Cross-repository verification and evidence | In progress | final full service checks and commits |
+
 ## Global Constraints
 
 - Other modules may depend only on Calendar named interfaces and public events.
@@ -74,7 +85,7 @@ modules/calendar/src/main/java/com/emme/calendar/
 │   └── event/CalendarSyncRequested.java
 ├── application/
 │   ├── service/CalendarService.java
-│   ├── service/CalendarSyncListener.java
+│   ├── port/out/GoogleCalendarPort.java
 │   ├── service/CalendarSyncApiService.java
 │   ├── port/out/CalendarEventLinkRepository.java
 │   ├── port/out/CalendarSyncStateRepository.java
@@ -109,13 +120,13 @@ modules/calendar/src/main/java/com/emme/calendar/
 │   ├── google/client/GoogleCalendarClient.java
 │   ├── google/client/GoogleSheetsClient.java
 │   ├── google/client/GoogleOAuthClient.java
-│   ├── google/adapter/GoogleCalendarAdapter.java
 │   ├── google/adapter/GoogleOAuthAdapter.java
+│   ├── google/adapter/ClientCalendarSyncAdapter.java
+│   ├── google/adapter/StaffCalendarSyncAdapter.java
 │   ├── google/adapter/GoogleSheetsAdapter.java
-│   ├── google/config/GoogleOAuthConfig.java
 │   ├── google/provider/OAuthTokenSource.java
 │   └── google/provider/TokenEncryptionService.java
-└── configuration/CalendarConfiguration.java
+└── configuration/GoogleOAuthConfig.java
 ```
 
 The target names are intentionally explicit. `CalendarSyncApi` remains the
@@ -646,8 +657,6 @@ git commit -m "refactor(calendar): separate application and inbound adapters"
 - Move: `infrastructure/google/web/GoogleOAuthController.java` → `adapter/in/web/GoogleOAuthController.java`
 - Move: `infrastructure/google/web/SheetsController.java` → `adapter/in/web/SheetsController.java`
 - Create: `application/port/out/GoogleCalendarPort.java`
-- Create: `application/port/out/GoogleOAuthPort.java`
-- Create: `application/port/out/GoogleSheetsPort.java`
 - Create: `adapter/out/google/package-info.java`
 - Create: `adapter/out/google/client/package-info.java`
 - Create: `adapter/out/google/adapter/package-info.java`
@@ -697,14 +706,15 @@ exist.
 - [ ] **Step 3: Write minimal implementation**
 
 Move Google classes and update package declarations. Separate transport clients
-from application adapters:
+from application adapters where the integration has both responsibilities. The
+Calendar availability client is itself the outbound port implementation because
+its public surface is already limited to the application contract:
 
 - `GoogleCalendarClient` performs Google HTTP requests only.
-- `GoogleCalendarAdapter` implements `GoogleCalendarPort`.
-- `GoogleOAuthClient` performs OAuth HTTP requests only.
-- `GoogleOAuthAdapter` implements `GoogleOAuthPort`.
+- `GoogleCalendarClient` implements `GoogleCalendarPort`.
+- `GoogleOAuthAdapter` owns OAuth orchestration and token persistence.
 - `GoogleSheetsClient` performs Sheets HTTP requests only.
-- `GoogleSheetsAdapter` implements `GoogleSheetsPort`.
+- `GoogleSheetsAdapter` owns export orchestration and persistence.
 
 Keep tenant and user context at the adapter boundary. Do not put Google SDK or
 HTTP types in `domain` or `application.port.out`.
@@ -731,11 +741,10 @@ git commit -m "refactor(calendar): isolate Google integrations as adapters"
 
 ---
 
-## Task 7: Add Calendar configuration and remove legacy package allowances
+## Task 7: Add Calendar configuration metadata and remove legacy package allowances
 
 **Files:**
 
-- Create: `modules/calendar/src/main/java/com/emme/calendar/configuration/CalendarConfiguration.java`
 - Create: `modules/calendar/src/main/java/com/emme/calendar/configuration/package-info.java`
 - Modify: `modules/calendar/src/main/java/com/emme/calendar/package-info.java`
 - Modify: `applications/studio-api/src/test/java/com/emme/LayerConventionTest.java`
@@ -747,7 +756,8 @@ git commit -m "refactor(calendar): isolate Google integrations as adapters"
 **Interfaces:**
 
 - Consumes: all migrated Calendar beans and named interfaces.
-- Produces: explicit Calendar bean wiring and strict architecture rules with no Calendar-specific legacy exceptions.
+- Produces: documented Calendar configuration metadata and strict architecture
+  rules with no Calendar-specific legacy exceptions.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -781,10 +791,11 @@ configuration classes use the canonical packages.
 
 - [ ] **Step 3: Write minimal implementation**
 
-Create `CalendarConfiguration` only for bean registration and configuration
-properties. Keep business behavior in application services and adapter behavior
-in adapters. Remove Calendar from the legacy allowance in shared architecture
-tests after all classes have moved.
+Keep configuration properties in `GoogleOAuthConfig`; the application-level
+`@ConfigurationPropertiesScan` already registers it, so no empty
+`CalendarConfiguration` class is created. Keep business behavior in application
+services and adapter behavior in adapters. Remove Calendar from the legacy
+allowance in shared architecture tests after all classes have moved.
 
 - [ ] **Step 4: Run test to verify it passes**
 

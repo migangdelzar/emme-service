@@ -40,3 +40,15 @@
 - Made OWASP NVD access explicit: configure `NVD_API_KEY` for the dependency
   scan and use the persisted NVD cache; without the secret, the job skips
   deterministically instead of timing out on public NVD rate limits.
+
+## Calendar vertical slice — 2026-07-31
+
+- [x] Calendar canonical package migration complete.
+- [x] Calendar domain has no framework imports.
+- [x] Calendar public contracts are grouped by API kind.
+- [x] Calendar persistence entities are isolated behind application-owned ports.
+- [x] Calendar application services do not depend on concrete outbound adapters.
+- [x] Calendar service and focused architecture/persistence tests pass.
+- [x] Web Calendar/Google error handling preserves stable problem codes.
+- [x] Web Calendar/Google messages are localized in supported locales.
+- [ ] Full cross-repository final commit and remote verification.

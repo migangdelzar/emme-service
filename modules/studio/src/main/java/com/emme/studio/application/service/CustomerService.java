@@ -1,8 +1,7 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.adapter.out.persistence.entity.CustomerEntity;
-import com.emme.studio.adapter.out.persistence.repository.SpringDataCustomerRepository;
-import com.emme.studio.domain.model.CustomerStatus;
+import com.emme.studio.application.port.out.CustomerRepository;
+import com.emme.studio.domain.model.Customer;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,51 +12,51 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CustomerService {
 
-  private final SpringDataCustomerRepository customerRepository;
+  private final CustomerRepository customerRepository;
 
-  public CustomerService(SpringDataCustomerRepository customerRepository) {
+  public CustomerService(CustomerRepository customerRepository) {
     this.customerRepository = customerRepository;
   }
 
-  public CustomerEntity create(UUID tenantId, String name, String phone, String email) {
-    CustomerEntity customer = new CustomerEntity(tenantId, name);
+  public Customer create(UUID tenantId, String name, String phone, String email) {
+    Customer customer = new Customer(tenantId, name);
     customer.setPhone(phone);
     customer.setEmail(email);
     return customerRepository.save(customer);
   }
 
-  public CustomerEntity update(UUID id, String name, String phone, String email) {
-    CustomerEntity customer =
+  public Customer update(UUID id, String name, String phone, String email) {
+    Customer customer =
         customerRepository
             .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("CustomerEntity not found: " + id));
+            .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + id));
     customer.setName(name);
     customer.setPhone(phone);
     customer.setEmail(email);
     return customerRepository.save(customer);
   }
 
-  public CustomerEntity retire(UUID id) {
-    CustomerEntity customer =
+  public Customer retire(UUID id) {
+    Customer customer =
         customerRepository
             .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("CustomerEntity not found: " + id));
-    customer.setStatus(CustomerStatus.RETIRED);
+            .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + id));
+    customer.retire();
     return customerRepository.save(customer);
   }
 
   @Transactional(readOnly = true)
-  public Optional<CustomerEntity> findById(UUID id) {
+  public Optional<Customer> findById(UUID id) {
     return customerRepository.findById(id);
   }
 
   @Transactional(readOnly = true)
-  public List<CustomerEntity> findByTenantId(UUID tenantId) {
+  public List<Customer> findByTenantId(UUID tenantId) {
     return customerRepository.findByTenantId(tenantId);
   }
 
   @Transactional(readOnly = true)
-  public List<CustomerEntity> searchByName(UUID tenantId, String query) {
-    return customerRepository.findByTenantIdAndNameContainingIgnoreCase(tenantId, query);
+  public List<Customer> searchByName(UUID tenantId, String query) {
+    return customerRepository.searchByName(tenantId, query);
   }
 }

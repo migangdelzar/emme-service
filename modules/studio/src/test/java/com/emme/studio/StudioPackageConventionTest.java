@@ -1,5 +1,6 @@
 package com.emme.studio;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tngtech.archunit.core.domain.JavaClass;
@@ -36,6 +37,17 @@ class StudioPackageConventionTest {
     assertThat(hasClass("com.emme.studio.api.result.CustomerInfo")).isTrue();
     assertThat(hasClass("com.emme.studio.api.usecase.SalonApi")).isTrue();
     assertThat(hasClass("com.emme.studio.api.event.DashboardEvent")).isTrue();
+  }
+
+  @Test
+  void migratedCustomerServiceDoesNotDependOnOutboundAdapters() {
+    noClasses()
+        .that()
+        .haveSimpleName("CustomerService")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("com.emme.studio.adapter.out..")
+        .check(CLASSES);
   }
 
   private static boolean hasClass(String className) {

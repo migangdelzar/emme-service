@@ -40,6 +40,8 @@ verified.
 ### 3. Extract core domain models
 
 - ✅ Move framework-independent status and policy enums to `domain/model`.
+- ✅ Extract the Customer domain model with persistence-independent state and
+  lifecycle behavior.
 - Create framework-independent domain models for the core Studio aggregates.
 - Keep domain enums and invariants under `domain/model`.
 - Add pure tests for appointment lifecycle, customer/artist/service status, and
@@ -51,14 +53,19 @@ verified.
 - ✅ Move JPA types to `adapter/out/persistence/entity` with `Entity` suffixes.
 - ✅ Move Spring Data interfaces to `adapter/out/persistence/repository` with
   `SpringData...Repository` names.
-- Create repository ports under `application/port/out`.
-- Add persistence mappers and adapters.
+- ✅ Create the Customer repository port under `application/port/out`.
+- ✅ Add the Customer persistence mapper and adapter, including managed-entity
+  update behavior.
+- Create the remaining repository ports under `application/port/out`.
+- Add the remaining persistence mappers and adapters.
 - Test both new-entity and managed-entity update paths.
 
 ### 5. Move application services and inbound web adapters
 
 - ✅ Relocate services to `application/service` and controllers to
   `adapter/in/web` without changing routes or runtime behavior.
+- ✅ Migrate `CustomerService` to the Customer domain model and repository
+  port; its inbound controller no longer exposes a persistence entity.
 - Make services implement public use-case
   interfaces.
 - Ensure controllers call use cases and do not access repositories.

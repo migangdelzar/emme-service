@@ -3,6 +3,7 @@ package com.emme.tenancy.adapter.out.client.database;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.application.port.out.DatabaseRegistryEntry;
 import com.emme.tenancy.application.port.out.DatabaseRegistryPort;
+import com.emme.tenancy.configuration.TenantDatabaseConnectionProperties;
 import com.emme.tenancy.configuration.TenantPoolingProperties;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -15,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -31,6 +31,7 @@ public class TenantDatabasePoolProvider {
   private static final Logger log = LoggerFactory.getLogger(TenantDatabasePoolProvider.class);
 
   private final TenantPoolingProperties config;
+  private final TenantDatabaseConnectionProperties connectionProperties;
   private final DatabaseRegistryPort databaseRegistryPort;
 
   /** Caffeine cache for tenant database pools — auto-evicts on idle timeout. */
@@ -39,18 +40,12 @@ public class TenantDatabasePoolProvider {
   /** Default database pool — held separately, never evicted. */
   private final AtomicReference<HikariDataSource> defaultPoolRef = new AtomicReference<>();
 
-  @Value("${spring.datasource.username:emme}")
-  private String dbUsername;
-
-  @Value("${spring.datasource.password:emme}")
-  private String dbPassword;
-
-  @Value("${spring.datasource.driver-class-name:org.postgresql.Driver}")
-  private String dbDriverClassName;
-
   public TenantDatabasePoolProvider(
-      TenantPoolingProperties config, DatabaseRegistryPort databaseRegistryPort) {
+      TenantPoolingProperties config,
+      TenantDatabaseConnectionProperties connectionProperties,
+      DatabaseRegistryPort databaseRegistryPort) {
     this.config = config;
+    this.connectionProperties = connectionProperties;
     this.databaseRegistryPort = databaseRegistryPort;
 
     this.poolCache =
@@ -120,9 +115,9 @@ public class TenantDatabasePoolProvider {
 
     HikariConfig hikariConfig = new HikariConfig();
     hikariConfig.setJdbcUrl(db.jdbcUrl());
-    hikariConfig.setUsername(dbUsername);
-    hikariConfig.setPassword(dbPassword);
-    hikariConfig.setDriverClassName(dbDriverClassName);
+    hikariConfig.setUsername(connectionProperties.getUsername());
+    hikariConfig.setPassword(connectionProperties.getPassword());
+    hikariConfig.setDriverClassName(connectionProperties.getDriverClassName());
 
     int minSize = (db.minPoolSize() != null) ? db.minPoolSize() : config.getDefaultMinPoolSize();
     int maxSize = (db.maxPoolSize() != null) ? db.maxPoolSize() : config.getDefaultMaxPoolSize();

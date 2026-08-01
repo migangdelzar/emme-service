@@ -53,7 +53,7 @@ implementation.
 | Tenant domain and persistence ownership | Complete | Framework-free `Tenant`, application repository port, entity/mapper/adapter, and repository tests |
 | Application orchestration and inbound web adapters | Complete | Services/process manager, controllers, request/response records, filters, resolver, and web tests |
 | Database registry, routing, and pool ownership | Structurally complete | `DatabaseRegistryAdapter`, `TenantDatabasePoolProvider`, and `TenantRoutingDataSource` are canonical outbound adapters |
-| Typed configuration and secret boundary | Partial | Pooling/rate-limit properties exist; database credentials still use field-level `@Value` in `TenantDatabasePoolProvider` |
+| Typed configuration and secret boundary | Complete for database connection settings | `TenantDatabaseConnectionProperties` owns the existing `spring.datasource` credential and driver keys; pooling/rate-limit properties remain typed |
 | Provisioning outbound ports | Partial | Registry access has a port; JDBC provisioning still depends directly on `JdbcTemplate` and needs an explicit port boundary |
 | Isolation and operational evidence | Open | Add routing/pool lifecycle/eviction/failure-recovery, replay/idempotency, rollback, and audit-correlation evidence |
 
@@ -113,7 +113,7 @@ implementation.
   `TenantDatabasePoolProvider` implementation under outbound database adapter
   ownership; the legacy `DatabasePoolManager` name does not exist in the current
   source tree.
-- [ ] Keep connection credentials and pool settings in typed configuration;
+- [x] Keep connection credentials and pool settings in typed configuration;
   replace the remaining field-level `@Value` credentials.
 - [ ] Add integration tests for routing, pool lifecycle, eviction, and failure
   recovery; no test may disable tenant filtering to make assertions pass.
@@ -244,3 +244,21 @@ report.
 - Studio Modulith verification passed.
 - Integration teardown emitted existing PostgreSQL/Testcontainers shutdown
   warnings after successful test completion.
+
+## Completed typed database configuration slice — 2026-08-01
+
+- [x] Added `TenantDatabaseConnectionProperties` under `configuration`, bound
+  to the existing `spring.datasource.username`, `spring.datasource.password`,
+  and `spring.datasource.driver-class-name` keys.
+- [x] Replaced field-level `@Value` injection in
+  `TenantDatabasePoolProvider` with constructor-injected typed configuration.
+- [x] Preserved local defaults and existing Hikari pool creation behavior.
+- [x] Added source-boundary and typed-properties regression tests.
+- [x] Verified Tenancy tests, Checkstyle, Spotless, integration tests, Studio
+  Modulith verification, service CI, both boot JARs, Markdown validation, and
+  whitespace checks.
+
+Remaining Tenancy work includes explicit provisioning ports and transaction or
+event-after-commit boundaries, routing/pool lifecycle and failure-recovery
+evidence, replay/idempotency and rollback evidence, architecture dependency
+rules, and the committed final verification report.

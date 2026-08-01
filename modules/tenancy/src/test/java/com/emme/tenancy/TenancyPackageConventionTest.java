@@ -135,6 +135,9 @@ class TenancyPackageConventionTest {
   private static final Path TENANT_POOLING_PROPERTIES =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/configuration/TenantPoolingProperties.java");
+  private static final Path TENANT_DATABASE_CONNECTION_PROPERTIES =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/configuration/TenantDatabaseConnectionProperties.java");
   private static final Path LEGACY_DATA_SOURCE_CONFIG =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/config/DataSourceConfig.java");
   private static final Path LEGACY_TENANT_POOLING_CONFIG =
@@ -264,6 +267,19 @@ class TenancyPackageConventionTest {
     assertThat(Files.exists(DATABASE_POOL_PROVIDER)).isTrue();
     assertThat(Files.exists(TENANT_ROUTING_DATA_SOURCE)).isTrue();
     assertThat(hasJavaSources(LEGACY_POOL_PACKAGE)).isFalse();
+  }
+
+  @Test
+  void ownsDatabaseCredentialsThroughTypedConfiguration() throws IOException {
+    assertThat(Files.exists(TENANT_DATABASE_CONNECTION_PROPERTIES)).isTrue();
+
+    String poolProvider =
+        Files.readString(
+            sourcePath(
+                "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantDatabasePoolProvider.java"));
+    assertThat(poolProvider).contains("TenantDatabaseConnectionProperties");
+    assertThat(poolProvider).doesNotContain("org.springframework.beans.factory.annotation.Value");
+    assertThat(poolProvider).doesNotContain("@Value(");
   }
 
   private static boolean hasJavaSources(Path directory) {

@@ -122,6 +122,28 @@ Execution rules and dependencies are maintained in
   projects because Spring Boot projects currently apply both `java-library` and
   `org.springframework.boot`.
 
+## Tenancy typed database configuration slice — 2026-08-01
+
+- [x] Add failing source and configuration tests for typed database credentials.
+- [x] Introduce `TenantDatabaseConnectionProperties` under the canonical
+  `configuration` package, bound to the existing `spring.datasource` keys.
+- [x] Replace field-level `@Value` injection in `TenantDatabasePoolProvider`
+  with constructor injection of the typed properties.
+- [x] Verify Tenancy tests, Checkstyle, Spotless, integration tests, Modulith,
+  Markdown, whitespace, CI, and boot JARs.
+
+#### Results
+
+- Red phase: the new source-boundary and properties tests failed to compile
+  because `TenantDatabaseConnectionProperties` did not yet exist.
+- Green/refactor phase: typed configuration tests and the source-boundary test
+  passed after constructor injection replaced field-level `@Value` usage.
+- Full verification passed for Tenancy tests/check/integration tests, Studio
+  Modulith verification, service CI, both boot JARs, Markdown validation, and
+  whitespace checks.
+- Integration teardown continues to emit known H2/PostgreSQL and event-
+  publication shutdown warnings after successful completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

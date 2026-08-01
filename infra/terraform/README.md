@@ -31,10 +31,13 @@ Provisions infrastructure for the EMME Modulith platform: VM, networking, DNS, a
    ssh root@<VM_IP> "curl -sfL https://get.k3s.io | sh -"
    ```
 
-6. Pull kubeconfig:
+6. Pull kubeconfig through the SSH tunnel reported by Terraform:
    ```bash
    scp root@<VM_IP>:~/.kube/config ~/.kube/config
    ```
+
+The Kubernetes API port is not exposed publicly. Keep the SSH tunnel running
+while using the copied kubeconfig.
 
 ## Variables
 

@@ -18,7 +18,8 @@ import java.util.UUID;
 
 public final class CatalogWebMapper {
 
-  public static CreateCatalogItemCommand toCommand(UUID tenantId, CreateCatalogItemRequest request) {
+  public static CreateCatalogItemCommand toCommand(
+      UUID tenantId, CreateCatalogItemRequest request) {
     return new CreateCatalogItemCommand(
         tenantId,
         request.serviceId(),
@@ -77,7 +78,10 @@ public final class CatalogWebMapper {
                         m.price(),
                         m.score(),
                         m.matchedImages().stream()
-                            .map(mi -> new CatalogMatchResponse.MatchedImage(mi.imageId(), mi.storageKey()))
+                            .map(
+                                mi ->
+                                    new CatalogMatchResponse.MatchedImage(
+                                        mi.imageId(), mi.storageKey()))
                             .toList()))
             .toList());
   }

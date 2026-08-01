@@ -32,9 +32,17 @@ public final class UserSession implements AutoCloseable {
   /** Session with optional auth. {@code authenticated=false} skips token injection. */
   UserSession(URI baseUrl, TestUser user, boolean authenticated) {
     this.baseUrl = baseUrl;
-    this.user = user != null ? user : new TestUser(
-        "anon", "00000000-0000-0000-0000-100000000000", "Anon",
-        "anon@test.com", "", Role.PLATFORM_ADMIN, System.currentTimeMillis() + 3_600_000);
+    this.user =
+        user != null
+            ? user
+            : new TestUser(
+                "anon",
+                "00000000-0000-0000-0000-100000000000",
+                "Anon",
+                "anon@test.com",
+                "",
+                Role.PLATFORM_ADMIN,
+                System.currentTimeMillis() + 3_600_000);
     this.httpClient = buildClient(authenticated);
   }
 

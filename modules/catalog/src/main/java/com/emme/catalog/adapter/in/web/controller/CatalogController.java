@@ -95,7 +95,8 @@ public class CatalogController {
     return withCurrentTenant(
         tenantId -> {
           CatalogItemImageInfo info =
-              addCatalogItemImageUseCase.addImage(CatalogWebMapper.toCommand(tenantId, id, request));
+              addCatalogItemImageUseCase.addImage(
+                  CatalogWebMapper.toCommand(tenantId, id, request));
           return ResponseEntity.created(
                   URI.create("/api/v1/catalog/items/" + id + "/images/" + info.id()))
               .body(CatalogWebMapper.toResponse(info));

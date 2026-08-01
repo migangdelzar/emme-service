@@ -13,20 +13,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @WithUser(role = Role.PLATFORM_ADMIN)
 class ArtistApiTest {
 
-    @Test
-    void shouldListArtists(UserSession api) {
-        assertThat(api.artists().list()).isNotNull();
-        assertThat(api.artists().list()).startsWith("[");
-    }
+  @Test
+  void shouldListArtists(UserSession api) {
+    assertThat(api.artists().list()).isNotNull();
+    assertThat(api.artists().list()).startsWith("[");
+  }
 
-    @Test
-    void shouldCreateAndGetArtistById(UserSession api) {
-        var result = api.artists().create("E2E Artist");
-        assertThat(result).contains("\"name\":\"E2E Artist\"");
-    }
+  @Test
+  void shouldCreateAndGetArtistById(UserSession api) {
+    var result = api.artists().create("E2E Artist");
+    assertThat(result).contains("\"name\":\"E2E Artist\"");
+  }
 
-    @Test
-    void shouldReturnNotFoundForUnknownId(UserSession api) {
-        api.get("/api/v1/artists/00000000-0000-0000-0000-000000000000", 404);
-    }
+  @Test
+  void shouldReturnNotFoundForUnknownId(UserSession api) {
+    api.get("/api/v1/artists/00000000-0000-0000-0000-000000000000", 404);
+  }
 }

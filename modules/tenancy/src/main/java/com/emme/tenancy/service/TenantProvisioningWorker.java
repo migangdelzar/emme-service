@@ -91,8 +91,7 @@ class TenantProvisioningWorker {
           try (Liquibase liquibase =
               new Liquibase(
                   STUDIO_CHANGELOG,
-                  new ClassLoaderResourceAccessor(
-                      Thread.currentThread().getContextClassLoader()),
+                  new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
                   database)) {
             liquibase.update("dev");
           }

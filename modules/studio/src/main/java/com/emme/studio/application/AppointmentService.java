@@ -1,5 +1,8 @@
 package com.emme.studio.application;
 
+import com.emme.studio.api.event.AppointmentCancelledEvent;
+import com.emme.studio.api.event.AppointmentCreatedEvent;
+import com.emme.studio.api.event.AppointmentRescheduledEvent;
 import com.emme.studio.entity.Appointment;
 import com.emme.studio.entity.AppointmentRepository;
 import com.emme.studio.entity.AppointmentStatus;
@@ -9,9 +12,6 @@ import com.emme.studio.entity.Customer;
 import com.emme.studio.entity.CustomerRepository;
 import com.emme.studio.entity.Service;
 import com.emme.studio.entity.ServiceRepository;
-import com.emme.studio.event.AppointmentCancelledEvent;
-import com.emme.studio.event.AppointmentCreatedEvent;
-import com.emme.studio.event.AppointmentRescheduledEvent;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;

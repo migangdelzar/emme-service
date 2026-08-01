@@ -16,7 +16,8 @@ import org.springframework.context.annotation.Primary;
  * {@code BaseSpringModuleTest.fullSetup()}) triggers this listener through the shared Spring
  * Modulith event bus, regardless of which module's test is running. No Keycloak server is available
  * in this test tier, so this config swaps in a double — mirroring the existing Mock* pattern used
- * for external providers elsewhere (MockPaymentProvider, MockModelProvider, MockEmailProvider, ...).
+ * for external providers elsewhere (MockPaymentProvider, MockModelProvider, MockEmailProvider,
+ * ...).
  */
 @TestConfiguration
 public class MockKeycloakAdminClientConfig {

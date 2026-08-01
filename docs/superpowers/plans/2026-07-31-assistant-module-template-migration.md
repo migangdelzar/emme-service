@@ -199,6 +199,29 @@ These records provide semantic identity at module boundaries. Web request/respon
 
 ## 3. Implementation tasks
 
+### Completed package-boundary slice — 2026-08-01
+
+- [x] Added red/green package guard coverage for legacy-package removal and AI
+  capability materialization.
+- [x] Moved conversation persistence representations under
+  `adapter/out/persistence/entity` and renamed them with the `Entity` suffix.
+- [x] Moved Spring Data repositories under `adapter/out/persistence/repository`
+  and normalized their `SpringData<Aggregate>Repository` names.
+- [x] Moved conversation status/action/consent vocabulary into
+  `domain/model` and added framework-free conversation models.
+- [x] Moved conversation and WhatsApp HTTP/provider entry points into canonical
+  inbound adapter packages.
+- [x] Materialized the initial Assistant and AI use-case package boundaries,
+  including `StartConversationUseCase` and `ChatUseCase`.
+- [x] Updated source guard tests and Assistant tests to the canonical paths.
+- [x] Verified Assistant compilation, formatting, package guard, and module test
+  suite.
+
+The remaining Assistant implementation work is to replace the temporary
+entity-backed conversation orchestration with application-owned ports and
+focused one-use-case services, then complete AI provider ports/adapters,
+webhook normalization, API result mapping, and full Modulith evidence.
+
 ### Task 1: Establish the migration guardrails and package metadata
 
 **Files:**

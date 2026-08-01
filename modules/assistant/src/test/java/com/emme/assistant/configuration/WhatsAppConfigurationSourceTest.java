@@ -13,10 +13,12 @@ class WhatsAppConfigurationSourceTest {
   void webhookComponentsUseTypedConfigurationInsteadOfDirectEnvironmentAccess() throws IOException {
     Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant");
 
-    assertThat(Files.readString(root.resolve("application/WhatsAppMessageService.java")))
+    assertThat(Files.readString(root.resolve("adapter/in/messaging/WhatsAppMessageService.java")))
         .doesNotContain("@Value(")
         .doesNotContain("System.getenv(");
-    assertThat(Files.readString(root.resolve("web/WhatsAppWebhookController.java")))
+    assertThat(
+            Files.readString(
+                root.resolve("adapter/in/web/controller/WhatsAppWebhookController.java")))
         .doesNotContain("@Value(");
     assertThat(Files.exists(root.resolve("configuration/WhatsAppProperties.java"))).isTrue();
   }

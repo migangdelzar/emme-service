@@ -622,6 +622,10 @@ secret-redaction contract.
 
 - [ ] Execute `docs/superpowers/plans/2026-07-31-assistant-module-template-migration.md`.
 - [ ] Keep the latest `docs/templates/module-package-structure-template.md` authoritative.
+- [x] Normalize Assistant persistence names, inbound adapter paths, and initial
+  domain/API package boundaries.
+- [ ] Replace temporary entity-backed orchestration with focused use-case
+  services and application-owned ports.
 - [ ] Preserve Assistant HTTP, webhook, JSON, database, and feature-flag behavior.
 - [ ] Separate pure domain models, persistence entities, ports, adapters, grouped API contracts, and package metadata.
 - [ ] Run the complete Assistant and service verification gates before merging.

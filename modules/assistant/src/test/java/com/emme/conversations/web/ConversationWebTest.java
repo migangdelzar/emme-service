@@ -1,4 +1,4 @@
-package com.emme.assistant.web;
+package com.emme.assistant.adapter.in.web.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;

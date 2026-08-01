@@ -79,6 +79,7 @@ The module's `configuration` package is the composition root that wires concrete
 - Application ports use capability names such as `PricingPort` or `QuoteRepository`.
 - Concrete adapters state the technology or strategy: `PricingClientAdapter`, `QuotePersistenceAdapter`, `KafkaQuoteEventPublisher`.
 - Framework repositories are visibly technical: `SpringDataQuoteRepository`.
+- Persistence-side AOP belongs under `adapter.out.persistence.aspect` and is named for the concern, for example `TenantContextAspect`; it must not become a domain or application dependency.
 - Provider request/response types remain inside that provider's package.
 - Do not use `InfrastructureService`, `RepositoryImpl`, or `DefaultClient`; these names hide the actual adapter role.
 

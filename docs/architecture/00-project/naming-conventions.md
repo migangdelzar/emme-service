@@ -85,6 +85,7 @@ whose management behavior is explicitly defined.
 | `<module>.adapter.in.webhook` | Provider callbacks | `<Provider>WebhookController.java` |
 | `<module>.adapter.in.batch` | Batch triggers | `<Subject>BatchJob.java` |
 | `<module>.adapter.out.persistence.entity` | Database representation | `<Aggregate>Entity.java` |
+| `<module>.adapter.out.persistence.aspect` | Persistence-side cross-cutting behavior | `<Concern>Aspect.java` |
 | `<module>.adapter.out.persistence.repository` | Spring Data/JDBC mechanics | `SpringData<Aggregate>Repository.java` |
 | `<module>.adapter.out.persistence.adapter` | Persistence port implementation | `<Aggregate>PersistenceAdapter.java` |
 | `<module>.adapter.out.persistence.mapper` | Domain/entity translation | `<Aggregate>PersistenceMapper.java` |

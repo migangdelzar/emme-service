@@ -1,4 +1,4 @@
-package com.emme.tenancy;
+package com.emme.tenancy.adapter.out.persistence.aspect;
 
 import com.emme.kernel.context.TenantContext;
 import jakarta.persistence.EntityManager;

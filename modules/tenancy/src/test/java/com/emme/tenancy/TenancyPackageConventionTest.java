@@ -42,6 +42,11 @@ class TenancyPackageConventionTest {
   private static final Path PERSISTENCE_MAPPER =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/mapper/TenantPersistenceMapper.java");
+  private static final Path PERSISTENCE_ASPECT =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/aspect/TenantContextAspect.java");
+  private static final Path LEGACY_TENANT_CONTEXT_ASPECT =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/TenantContextAspect.java");
   private static final Path APPLICATION_SERVICE_PACKAGE =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/application/service");
   private static final Path TENANT_SERVICE =
@@ -118,6 +123,16 @@ class TenancyPackageConventionTest {
   private static final Path WEB_MVC_CONFIGURATION =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/configuration/WebMvcConfiguration.java");
+  private static final Path DATA_SOURCE_CONFIGURATION =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/configuration/DataSourceConfiguration.java");
+  private static final Path TENANT_POOLING_PROPERTIES =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/configuration/TenantPoolingProperties.java");
+  private static final Path LEGACY_DATA_SOURCE_CONFIG =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/config/DataSourceConfig.java");
+  private static final Path LEGACY_TENANT_POOLING_CONFIG =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/config/TenantPoolingConfig.java");
   private static final Path LEGACY_TENANT_CONTEXT_FILTER =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/TenantContextFilter.java");
   private static final Path LEGACY_TRUSTED_TENANT_RESOLVER =
@@ -166,6 +181,12 @@ class TenancyPackageConventionTest {
   }
 
   @Test
+  void ownsTenantContextAspectUnderOutboundPersistence() {
+    assertThat(Files.exists(PERSISTENCE_ASPECT)).isTrue();
+    assertThat(Files.exists(LEGACY_TENANT_CONTEXT_ASPECT)).isFalse();
+  }
+
+  @Test
   void ownsOrchestrationByApplicationResponsibility() {
     assertThat(Files.exists(APPLICATION_SERVICE_PACKAGE)).isTrue();
     assertThat(Files.exists(TENANT_SERVICE)).isTrue();
@@ -203,11 +224,15 @@ class TenancyPackageConventionTest {
     assertThat(Files.exists(CONFIGURATION_PACKAGE)).isTrue();
     assertThat(Files.exists(RATE_LIMIT_PROPERTIES)).isTrue();
     assertThat(Files.exists(WEB_MVC_CONFIGURATION)).isTrue();
+    assertThat(Files.exists(DATA_SOURCE_CONFIGURATION)).isTrue();
+    assertThat(Files.exists(TENANT_POOLING_PROPERTIES)).isTrue();
     assertThat(Files.exists(LEGACY_TENANT_CONTEXT_FILTER)).isFalse();
     assertThat(Files.exists(LEGACY_TRUSTED_TENANT_RESOLVER)).isFalse();
     assertThat(Files.exists(LEGACY_RATE_LIMIT_INTERCEPTOR)).isFalse();
     assertThat(Files.exists(LEGACY_RATE_LIMIT_PROPERTIES)).isFalse();
     assertThat(Files.exists(LEGACY_WEB_MVC_CONFIGURATION)).isFalse();
+    assertThat(Files.exists(LEGACY_DATA_SOURCE_CONFIG)).isFalse();
+    assertThat(Files.exists(LEGACY_TENANT_POOLING_CONFIG)).isFalse();
   }
 
   private static boolean hasJavaSources(Path directory) {

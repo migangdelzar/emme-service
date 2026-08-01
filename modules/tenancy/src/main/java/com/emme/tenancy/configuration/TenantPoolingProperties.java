@@ -1,11 +1,11 @@
-package com.emme.tenancy.config;
+package com.emme.tenancy.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties(prefix = "emme.tenancy.pooling")
-public class TenantPoolingConfig {
+public class TenantPoolingProperties {
 
   /** Maximum total connections across ALL database pools */
   private int globalMaxConnections = 200;

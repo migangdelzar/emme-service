@@ -1,4 +1,4 @@
-package com.emme.tenancy.config;
+package com.emme.tenancy.configuration;
 
 import com.emme.tenancy.pool.TenantRoutingDataSource;
 import javax.sql.DataSource;
@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Primary;
  */
 @Configuration
 @ConditionalOnExpression("!'${spring.datasource.url:}'.contains('h2')")
-public class DataSourceConfig {
+public class DataSourceConfiguration {
 
   /**
    * Exposes the existing {@link TenantRoutingDataSource} component as the primary {@link

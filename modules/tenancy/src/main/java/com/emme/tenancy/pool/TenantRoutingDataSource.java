@@ -1,7 +1,7 @@
 package com.emme.tenancy.pool;
 
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.tenancy.config.TenantPoolingConfig;
+import com.emme.tenancy.configuration.TenantPoolingProperties;
 import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
@@ -23,10 +23,10 @@ import org.springframework.stereotype.Component;
 public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 
   private final DatabasePoolManager poolManager;
-  private final TenantPoolingConfig config;
+  private final TenantPoolingProperties config;
 
   @SuppressWarnings("this-escape")
-  public TenantRoutingDataSource(DatabasePoolManager poolManager, TenantPoolingConfig config) {
+  public TenantRoutingDataSource(DatabasePoolManager poolManager, TenantPoolingProperties config) {
     this.poolManager = poolManager;
     this.config = config;
 
@@ -50,8 +50,8 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
   /**
    * Returns the database UUID that identifies which connection pool to use.
    *
-   * <p>Falls back to {@link TenantPoolingConfig#getDefaultDatabaseId()} when the current thread has
-   * no tenant context set.
+   * <p>Falls back to {@link TenantPoolingProperties#getDefaultDatabaseId()} when the current thread
+   * has no tenant context set.
    */
   @Override
   protected Object determineCurrentLookupKey() {

@@ -150,8 +150,12 @@
   into canonical inbound/configuration packages.
 - [x] Verified full Tenancy tests, Checkstyle, Spotless, and Studio Modulith
   verification after the inbound adapter migration.
-- [ ] Next slice: isolate TenantContextAspect and database-pool/registry ports,
-  then continue Identity security/domain boundaries.
+- [x] Moved `TenantContextAspect` under the outbound persistence aspect package
+  and normalized `DataSourceConfiguration`/`TenantPoolingProperties` under
+  `configuration`.
+- [ ] Next slice: introduce an application-owned database-registry port and
+  infrastructure-owned registry model for the pool manager, then continue
+  Identity security/domain boundaries.
 
 ## Architecture naming contract — 2026-07-31
 

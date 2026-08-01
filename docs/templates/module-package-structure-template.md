@@ -89,6 +89,7 @@ Use this layout when a module's `api` package has grown past a handful of flat f
     │   │
     │   └── out/
     │       ├── persistence/
+    │       │   ├── aspect/                              # C: persistence-side cross-cutting adapter
     │       │   ├── entity/
     │       │   ├── repository/
     │       │   ├── adapter/
@@ -245,6 +246,9 @@ modules/<module>/
     │   │   │       ├── package-info.java
     │   │   │       ├── persistence/
     │   │   │       │   ├── package-info.java
+    │   │   │       │   ├── aspect/                      # C: persistence-side cross-cutting adapter
+    │   │   │       │   │   ├── package-info.java
+    │   │   │       │   │   └── <Concern>Aspect.java
     │   │   │       │   ├── entity/
     │   │   │       │   │   ├── package-info.java
     │   │   │       │   │   ├── <Aggregate>Entity.java

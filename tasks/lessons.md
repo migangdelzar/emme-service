@@ -20,3 +20,13 @@
 - Prevention rule: when an identifier already exists, load and mutate the
   managed entity in place; only create a new entity for new identifiers. Keep a
   persistence adapter regression test for both paths.
+
+## 2026-07-31 — ArchUnit guardrail checkpoints
+
+- Failure mode: a newly added architecture rule initially failed at test
+  compilation because its static rule factory import was missing.
+- Detection signal: the test task failed before executing the architecture
+  assertions with an unresolved `noClasses()` symbol.
+- Prevention rule: compile and execute each new ArchUnit guardrail immediately
+  after adding it; keep intentionally red architectural assertions local until
+  the corresponding production boundary is implemented.

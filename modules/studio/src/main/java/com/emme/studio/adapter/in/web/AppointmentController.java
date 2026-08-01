@@ -2,7 +2,7 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.studio.adapter.out.persistence.entity.AppointmentEntity;
+import com.emme.studio.application.result.AppointmentView;
 import com.emme.studio.application.service.AppointmentService;
 import com.emme.studio.application.service.SlotSearchService;
 import com.emme.studio.subscriptions.application.SubscriptionService;
@@ -55,7 +55,7 @@ public class AppointmentController {
       @RequestParam(required = false) LocalDate date) {
     return withCurrentTenant(
         tenantId -> {
-          List<AppointmentEntity> appointments;
+          List<AppointmentView> appointments;
           if (date != null) {
             appointments = appointmentService.findByTenantAndDate(tenantId, date);
           } else {
@@ -72,7 +72,7 @@ public class AppointmentController {
         tenantId -> {
           subscriptionService.enforce(tenantId, "appointments:write");
           try {
-            AppointmentEntity appointment =
+            AppointmentView appointment =
                 appointmentService.create(
                     tenantId,
                     request.customerId(),
@@ -80,7 +80,7 @@ public class AppointmentController {
                     request.artistId(),
                     request.startsAt(),
                     request.endsAt());
-            var location = URI.create("/api/v1/appointments/" + appointment.getId());
+            var location = URI.create("/api/v1/appointments/" + appointment.id());
             return ResponseEntity.created(location).body(AppointmentResponse.from(appointment));
           } catch (IllegalStateException e) {
             return ResponseEntity.status(409).body(e.getMessage());
@@ -94,7 +94,7 @@ public class AppointmentController {
     return appointmentService
         .findById(id)
         .map(a -> ResponseEntity.ok(AppointmentResponse.from(a)))
-        .orElse(ResponseEntity.notFound().build());
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @PutMapping("/{id}/reschedule")
@@ -102,7 +102,7 @@ public class AppointmentController {
   public ResponseEntity<?> reschedule(
       @PathVariable UUID id, @Valid @RequestBody RescheduleRequest request) {
     try {
-      AppointmentEntity appointment =
+      AppointmentView appointment =
           appointmentService.reschedule(id, request.newStartsAt(), request.newEndsAt());
       return ResponseEntity.ok(AppointmentResponse.from(appointment));
     } catch (IllegalStateException e) {
@@ -145,7 +145,7 @@ public class AppointmentController {
   }
 
   private ResponseEntity<AppointmentResponse> withConflictHandling(
-      Supplier<AppointmentEntity> action) {
+      Supplier<AppointmentView> action) {
     try {
       return ResponseEntity.ok(AppointmentResponse.from(action.get()));
     } catch (IllegalStateException e) {
@@ -178,18 +178,18 @@ public class AppointmentController {
       Instant startsAt,
       Instant endsAt,
       String status) {
-    public static AppointmentResponse from(AppointmentEntity a) {
+    public static AppointmentResponse from(AppointmentView a) {
       return new AppointmentResponse(
-          a.getId(),
-          a.getCustomer().getId(),
-          a.getCustomer().getName(),
-          a.getService().getId(),
-          a.getService().getName(),
-          a.getArtist().getId(),
-          a.getArtist().getName(),
-          a.getStartsAt(),
-          a.getEndsAt(),
-          a.getStatus().name());
+          a.id(),
+          a.customerId(),
+          a.customerName(),
+          a.serviceId(),
+          a.serviceName(),
+          a.artistId(),
+          a.artistName(),
+          a.startsAt(),
+          a.endsAt(),
+          a.status());
     }
   }
 

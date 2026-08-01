@@ -48,6 +48,34 @@ Business modules do not receive `plugin/`, `task/`, or `provider/` packages. Gra
 build logic does not receive `domain/`, `application/`, or `adapter/` packages.
 Both models protect boundaries, but their organizing units are different.
 
+## Studio migration evidence — 2026-07-31
+
+The core Studio migration is incremental. The following vertical slices now use
+the canonical DDD + Hexagonal boundary:
+
+```mermaid
+flowchart LR
+    Web[Inbound web adapter] --> App[Application service]
+    App --> Domain[Appointment / configuration domain]
+    App --> Port[Application-owned outbound port]
+    Port --> Adapter[Persistence or messaging adapter]
+    Adapter --> JPA[(JPA entity / Spring Data)]
+```
+
+- Appointment lifecycle is represented by `domain.model.Appointment`; JPA
+  state is isolated in `adapter.out.persistence.entity.AppointmentEntity`.
+- Appointment, collision detection, operating hours, business profile, and
+  booking policy dependencies are expressed through `application.port.out`.
+- Public appointment events are published through
+  `AppointmentEventPublisher`, implemented by the messaging adapter.
+- `AppointmentController`, `BusinessConfigController`, and `SalonApiImpl` no
+  longer depend on persistence entities or Spring Data repositories.
+- `StudioPackageConventionTest` enforces the application-to-adapter boundary.
+
+The remaining nested `documents` and `subscriptions` capabilities stay
+explicitly deferred until their own public contracts and ownership boundaries
+are migrated; no empty architecture layers are created for them.
+
 ### Migration order
 
 1. Restore deterministic CI prerequisites (dependency verification and dependency

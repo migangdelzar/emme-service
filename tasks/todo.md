@@ -41,6 +41,17 @@
   scan and use the persisted NVD cache; without the secret, the job skips
   deterministically instead of timing out on public NVD rate limits.
 
+## Studio vertical slices — 2026-07-31
+
+- [x] Appointment domain lifecycle and persistence boundary migrated.
+- [x] Collision detection uses an application-owned port.
+- [x] Operating hours, business profile, and booking policy use domain models
+  and application-owned persistence ports.
+- [x] Appointment event publication uses an application-owned port and adapter.
+- [x] `SalonApiImpl` no longer imports Spring Data or persistence entities.
+- [x] Application-layer ArchUnit guardrail passes.
+- [ ] Complete remaining public use-case port normalization and full service CI.
+
 ## Calendar vertical slice — 2026-07-31
 
 - [x] Calendar canonical package migration complete.

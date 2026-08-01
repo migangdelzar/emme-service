@@ -8,7 +8,7 @@
 | Design | [`2026-07-31-studio-module-migration-design.md`](../specs/2026-07-31-studio-module-migration-design.md) |
 | Module | `modules/studio` |
 | Branch | `feat/studio-module-migration` |
-| Status | In progress — public contracts normalized; core migration continuing |
+| Status | In progress — Appointment and configuration slices migrated |
 | Date | 2026-07-31 |
 
 ## Scope
@@ -24,7 +24,7 @@ verified.
 - ✅ Commit `StudioPackageConventionTest` after the core root package move.
 - ✅ Reject root production ownership in `entity`, `event`, and `web`.
 - ✅ Require grouped public API types.
-- Tighten the guardrail to forbid application services from importing
+- ✅ Tighten the guardrail to forbid the application layer from importing
   persistence adapters after application-owned ports are introduced.
 
 ### 2. Normalize public contracts
@@ -46,11 +46,11 @@ verified.
   state and retirement behavior.
 - ✅ Extract Artist and Artist Capability domain models with explicit status and
   relationship lifecycle behavior.
-- Create framework-independent domain models for the core Studio aggregates.
-- Keep domain enums and invariants under `domain/model`.
-- Add pure tests for appointment lifecycle, customer/artist/service status, and
-  tenant ownership invariants.
-- Do not allow Spring, JPA, HTTP, or JSON imports in `domain`.
+- ✅ Create framework-independent domain models for the core Studio aggregates.
+- ✅ Keep domain enums and invariants under `domain/model`.
+- ✅ Add pure tests for appointment lifecycle, configuration invariants, and
+  customer/artist/service status.
+- ✅ Do not allow Spring, JPA, HTTP, or JSON imports in `domain`.
 
 ### 4. Introduce application-owned ports and persistence adapters
 
@@ -64,9 +64,10 @@ verified.
   including managed-entity update behavior.
 - ✅ Create Artist and Artist Capability repository ports and persistence
   mappers/adapters, including managed relationship resolution.
-- Create the remaining repository ports under `application/port/out`.
-- Add the remaining persistence mappers and adapters.
-- Test both new-entity and managed-entity update paths.
+- ✅ Create the remaining core repository ports under `application/port/out`.
+- ✅ Add the remaining Appointment and business-configuration persistence
+  mappers and adapters, plus the application event publisher port/adapter.
+- ✅ Test the Appointment new-entity and managed-entity update paths.
 
 ### 5. Move application services and inbound web adapters
 
@@ -79,9 +80,10 @@ verified.
 - ✅ Migrate `ArtistService` to Artist/Artist Capability domain models and
   repository ports; its inbound controller no longer exposes persistence
   entities.
-- Make services implement public use-case
-  interfaces.
-- Ensure controllers call use cases and do not access repositories.
+- Make services implement public use-case interfaces where a public contract
+  exists.
+- ✅ Ensure the migrated controllers call application services and do not access
+  repositories or persistence entities.
 - Preserve route paths, response shapes, tenant context, and authorization.
 
 The relocation is a green checkpoint; use-case ports and repository isolation
@@ -91,13 +93,14 @@ remain part of the next structural slice.
 
 - ✅ Add `package-info.java` to the newly materialized application and inbound
   adapter packages.
-- Add `package-info.java` to each remaining materialized core package.
+- ✅ Add `package-info.java` to each remaining materialized core package.
 - Preserve `documents` and `subscriptions` as deferred nested capabilities.
 - Update Modulith and layer tests without weakening unrelated module rules.
 
 ### 7. Verify and document
 
-- Run focused Studio unit, repository, web, and integration tests.
+- ✅ Run focused Studio domain, persistence, web compilation, and architecture
+  tests.
 - Run Studio Modulith/layer tests and Calendar regressions.
 - Run `./gradlew ci -x test -x integrationTest -x e2eTest`.
 - Update `docs/architecture/05-operations/service-architecture-migration.md`,
@@ -106,11 +109,11 @@ remain part of the next structural slice.
 
 ## Definition of done
 
-- [ ] Core Studio production classes use canonical packages.
-- [ ] Public contracts are grouped by API kind.
-- [ ] Domain models are framework-independent.
-- [ ] Persistence entities are isolated behind application-owned ports.
-- [ ] Controllers are inbound adapters and preserve HTTP behavior.
+- [x] Core Studio production classes use canonical packages.
+- [x] Public contracts are grouped by API kind.
+- [x] Migrated domain models are framework-independent.
+- [x] Migrated persistence entities are isolated behind application-owned ports.
+- [x] Migrated controllers are inbound adapters and preserve HTTP behavior.
 - [ ] Documents and subscriptions are explicitly deferred, not partially moved.
 - [ ] Studio focused tests, architecture tests, and service CI pass.
 - [ ] Documentation and lessons are updated.

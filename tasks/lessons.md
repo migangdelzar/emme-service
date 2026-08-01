@@ -30,3 +30,14 @@
 - Prevention rule: compile and execute each new ArchUnit guardrail immediately
   after adding it; keep intentionally red architectural assertions local until
   the corresponding production boundary is implemented.
+
+## 2026-07-31 — Application result models at inbound boundaries
+
+- Failure mode: migrating an application service away from JPA entities left the
+  controller without the related display names required by the existing HTTP
+  response.
+- Detection signal: the service compiled only after the adapter response was
+  changed to an application-owned read model carrying IDs, names, and status.
+- Prevention rule: when a use case needs transport-friendly denormalized data,
+  assemble an application result from domain models and ports; never return a
+  persistence entity merely to preserve response fields.

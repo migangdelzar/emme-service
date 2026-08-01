@@ -72,6 +72,17 @@ class StudioPackageConventionTest {
         .check(CLASSES);
   }
 
+  @Test
+  void applicationLayerDoesNotDependOnOutboundAdapters() {
+    noClasses()
+        .that()
+        .resideInAnyPackage("com.emme.studio.application..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("com.emme.studio.adapter.out..")
+        .check(CLASSES);
+  }
+
   private static boolean hasClass(String className) {
     return CLASSES.stream().anyMatch(javaClass -> javaClass.getName().equals(className));
   }

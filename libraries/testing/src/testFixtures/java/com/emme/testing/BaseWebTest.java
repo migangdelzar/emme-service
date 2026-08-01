@@ -2,6 +2,9 @@ package com.emme.testing;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
+import com.emme.tenancy.api.command.CreateTenantCommand;
+import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.usecase.CreateTenantUseCase;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,8 +31,13 @@ import org.springframework.test.web.servlet.MockMvc;
 public abstract class BaseWebTest {
 
   @Autowired protected MockMvc mockMvc;
+  @Autowired protected CreateTenantUseCase createTenantUseCase;
 
   protected UUID tenantId;
+
+  protected TenantInfo createTenant(String slug, String name) {
+    return createTenantUseCase.create(new CreateTenantCommand(slug, name));
+  }
 
   /**
    * Build a JWT RequestPostProcessor with platform_admin role and random tenant. Override in

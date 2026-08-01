@@ -1,7 +1,8 @@
 package com.emme.identity.adapter.out.module.tenancy;
 
 import com.emme.identity.application.port.out.TenantIdentityRealmPort;
-import com.emme.tenancy.api.usecase.TenantApi;
+import com.emme.tenancy.api.command.UpdateTenantIdentityRealmCommand;
+import com.emme.tenancy.api.usecase.UpdateTenantIdentityRealmUseCase;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -9,14 +10,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class TenantIdentityRealmAdapter implements TenantIdentityRealmPort {
 
-  private final TenantApi tenantApi;
+  private final UpdateTenantIdentityRealmUseCase updateTenantIdentityRealm;
 
-  public TenantIdentityRealmAdapter(TenantApi tenantApi) {
-    this.tenantApi = tenantApi;
+  public TenantIdentityRealmAdapter(UpdateTenantIdentityRealmUseCase updateTenantIdentityRealm) {
+    this.updateTenantIdentityRealm = updateTenantIdentityRealm;
   }
 
   @Override
   public void updateRealm(UUID tenantId, String identityRealm) {
-    tenantApi.updateIdentityRealm(tenantId, identityRealm);
+    updateTenantIdentityRealm.update(new UpdateTenantIdentityRealmCommand(tenantId, identityRealm));
   }
 }

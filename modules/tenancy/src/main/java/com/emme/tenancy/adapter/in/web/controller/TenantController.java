@@ -4,8 +4,21 @@ import com.emme.tenancy.adapter.in.web.mapper.TenantWebMapper;
 import com.emme.tenancy.adapter.in.web.request.CreateTenantRequest;
 import com.emme.tenancy.adapter.in.web.request.UpdateTenantRequest;
 import com.emme.tenancy.adapter.in.web.response.TenantResponse;
-import com.emme.tenancy.application.service.TenantService;
-import com.emme.tenancy.domain.model.Tenant;
+import com.emme.tenancy.api.command.CreateTenantCommand;
+import com.emme.tenancy.api.command.ReactivateTenantCommand;
+import com.emme.tenancy.api.command.StageDeleteTenantCommand;
+import com.emme.tenancy.api.command.SuspendTenantCommand;
+import com.emme.tenancy.api.command.UpdateTenantCommand;
+import com.emme.tenancy.api.query.GetTenantQuery;
+import com.emme.tenancy.api.query.ListTenantsQuery;
+import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.usecase.CreateTenantUseCase;
+import com.emme.tenancy.api.usecase.GetTenantUseCase;
+import com.emme.tenancy.api.usecase.ListTenantsUseCase;
+import com.emme.tenancy.api.usecase.ReactivateTenantUseCase;
+import com.emme.tenancy.api.usecase.StageDeleteTenantUseCase;
+import com.emme.tenancy.api.usecase.SuspendTenantUseCase;
+import com.emme.tenancy.api.usecase.UpdateTenantUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,18 +41,39 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Tenants")
 public class TenantController {
 
-  private final TenantService service;
+  private final CreateTenantUseCase createTenant;
+  private final GetTenantUseCase getTenant;
+  private final ListTenantsUseCase listTenants;
+  private final UpdateTenantUseCase updateTenant;
+  private final SuspendTenantUseCase suspendTenant;
+  private final ReactivateTenantUseCase reactivateTenant;
+  private final StageDeleteTenantUseCase stageDeleteTenant;
   private final TenantWebMapper mapper;
 
-  public TenantController(TenantService service, TenantWebMapper mapper) {
-    this.service = service;
+  public TenantController(
+      CreateTenantUseCase createTenant,
+      GetTenantUseCase getTenant,
+      ListTenantsUseCase listTenants,
+      UpdateTenantUseCase updateTenant,
+      SuspendTenantUseCase suspendTenant,
+      ReactivateTenantUseCase reactivateTenant,
+      StageDeleteTenantUseCase stageDeleteTenant,
+      TenantWebMapper mapper) {
+    this.createTenant = createTenant;
+    this.getTenant = getTenant;
+    this.listTenants = listTenants;
+    this.updateTenant = updateTenant;
+    this.suspendTenant = suspendTenant;
+    this.reactivateTenant = reactivateTenant;
+    this.stageDeleteTenant = stageDeleteTenant;
     this.mapper = mapper;
   }
 
   @PostMapping
   @Operation(summary = "Create a new tenant")
   public ResponseEntity<TenantResponse> create(@Valid @RequestBody CreateTenantRequest request) {
-    Tenant tenant = service.create(request.slug(), request.name());
+    TenantInfo tenant =
+        createTenant.create(new CreateTenantCommand(request.slug(), request.name()));
     URI location = URI.create("/api/v1/tenants/" + tenant.id());
     return ResponseEntity.created(location).body(mapper.toResponse(tenant));
   }
@@ -47,8 +81,8 @@ public class TenantController {
   @GetMapping("/{id}")
   @Operation(summary = "Get a tenant by ID")
   public ResponseEntity<TenantResponse> get(@PathVariable UUID id) {
-    return service
-        .findById(id)
+    return getTenant
+        .get(new GetTenantQuery(id))
         .map(tenant -> ResponseEntity.ok(mapper.toResponse(tenant)))
         .orElse(ResponseEntity.notFound().build());
   }
@@ -56,7 +90,8 @@ public class TenantController {
   @GetMapping
   @Operation(summary = "List all tenants")
   public ResponseEntity<List<TenantResponse>> list() {
-    List<TenantResponse> tenants = service.findAll().stream().map(mapper::toResponse).toList();
+    List<TenantResponse> tenants =
+        listTenants.list(new ListTenantsQuery()).stream().map(mapper::toResponse).toList();
     return ResponseEntity.ok(tenants);
   }
 
@@ -64,28 +99,28 @@ public class TenantController {
   @Operation(summary = "Update a tenant name")
   public ResponseEntity<TenantResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateTenantRequest request) {
-    Tenant tenant = service.update(id, request.name());
+    TenantInfo tenant = updateTenant.update(new UpdateTenantCommand(id, request.name()));
     return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 
   @PostMapping("/{id}/suspend")
   @Operation(summary = "Suspend a tenant")
   public ResponseEntity<TenantResponse> suspend(@PathVariable UUID id) {
-    Tenant tenant = service.suspend(id);
+    TenantInfo tenant = suspendTenant.suspend(new SuspendTenantCommand(id));
     return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 
   @PostMapping("/{id}/reactivate")
   @Operation(summary = "Reactivate a suspended tenant")
   public ResponseEntity<TenantResponse> reactivate(@PathVariable UUID id) {
-    Tenant tenant = service.reactivate(id);
+    TenantInfo tenant = reactivateTenant.reactivate(new ReactivateTenantCommand(id));
     return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 
   @DeleteMapping("/{id}")
   @Operation(summary = "Stage-delete a tenant")
   public ResponseEntity<TenantResponse> stageDelete(@PathVariable UUID id) {
-    Tenant tenant = service.stageDelete(id);
+    TenantInfo tenant = stageDeleteTenant.stageDelete(new StageDeleteTenantCommand(id));
     return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 }

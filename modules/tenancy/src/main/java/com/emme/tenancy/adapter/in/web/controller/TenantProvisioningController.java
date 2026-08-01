@@ -1,7 +1,11 @@
 package com.emme.tenancy.adapter.in.web.controller;
 
 import com.emme.tenancy.adapter.in.web.request.ProvisionTenantRequest;
-import com.emme.tenancy.application.service.TenantProvisioningService;
+import com.emme.tenancy.api.command.RequestTenantProvisioningCommand;
+import com.emme.tenancy.api.query.GetTenantProvisioningStatusQuery;
+import com.emme.tenancy.api.result.TenantProvisioningStatus;
+import com.emme.tenancy.api.usecase.GetTenantProvisioningStatusUseCase;
+import com.emme.tenancy.api.usecase.RequestTenantProvisioningUseCase;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.Map;
@@ -19,18 +23,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/tenants")
 class TenantProvisioningController {
 
-  private final TenantProvisioningService service;
+  private final RequestTenantProvisioningUseCase requestProvisioning;
+  private final GetTenantProvisioningStatusUseCase getProvisioningStatus;
 
-  TenantProvisioningController(TenantProvisioningService service) {
-    this.service = service;
+  TenantProvisioningController(
+      RequestTenantProvisioningUseCase requestProvisioning,
+      GetTenantProvisioningStatusUseCase getProvisioningStatus) {
+    this.requestProvisioning = requestProvisioning;
+    this.getProvisioningStatus = getProvisioningStatus;
   }
 
   @PostMapping
   ResponseEntity<Map<String, Object>> requestProvisioning(
       @Valid @RequestBody ProvisionTenantRequest request) {
     UUID tenantId =
-        service.requestProvisioning(
-            request.slug(), request.name(), request.timeZone(), request.locale());
+        requestProvisioning.request(
+            new RequestTenantProvisioningCommand(
+                request.slug(), request.name(), request.timeZone(), request.locale()));
     return ResponseEntity.accepted()
         .location(URI.create("/api/tenants/" + tenantId))
         .body(
@@ -42,7 +51,8 @@ class TenantProvisioningController {
 
   @GetMapping("/{tenantId}")
   ResponseEntity<Map<String, Object>> getStatus(@PathVariable UUID tenantId) {
-    var status = service.getStatus(tenantId);
+    TenantProvisioningStatus status =
+        getProvisioningStatus.get(new GetTenantProvisioningStatusQuery(tenantId));
     return ResponseEntity.ok(
         Map.of(
             "tenantId",

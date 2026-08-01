@@ -7,8 +7,9 @@ import com.emme.identity.api.command.AuthenticateUserCommand;
 import com.emme.identity.api.result.UserTokenResult;
 import com.emme.identity.application.port.out.IdentityRealmConfigurationPort;
 import com.emme.identity.application.port.out.UserAuthenticationPort;
+import com.emme.tenancy.api.query.ListTenantsQuery;
 import com.emme.tenancy.api.result.TenantInfo;
-import com.emme.tenancy.api.usecase.TenantApi;
+import com.emme.tenancy.api.usecase.ListTenantsUseCase;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AuthenticateUserServiceTest {
 
   @Mock private UserAuthenticationPort authenticationPort;
-  @Mock private TenantApi tenantApi;
+  @Mock private ListTenantsUseCase listTenants;
 
   @Test
   void resolvesPlatformUsersToTheConfiguredDefaultRealm() {
@@ -28,7 +29,7 @@ class AuthenticateUserServiceTest {
         .thenReturn(new UserTokenResult("access", "refresh", "id"));
 
     var result =
-        new AuthenticateUserService(authenticationPort, tenantApi, realmConfiguration)
+        new AuthenticateUserService(authenticationPort, listTenants, realmConfiguration)
             .authenticate(new AuthenticateUserCommand("admin@emme.app", "secret"));
 
     assertThat(result.accessToken()).isEqualTo("access");
@@ -37,7 +38,7 @@ class AuthenticateUserServiceTest {
   @Test
   void resolvesTenantUsersFromTheirEmailDomain() {
     IdentityRealmConfigurationPort realmConfiguration = () -> "emme";
-    when(tenantApi.getAllTenants())
+    when(listTenants.list(new ListTenantsQuery()))
         .thenReturn(
             List.of(
                 new TenantInfo(
@@ -46,7 +47,7 @@ class AuthenticateUserServiceTest {
         .thenReturn(new UserTokenResult("access", null, null));
 
     var result =
-        new AuthenticateUserService(authenticationPort, tenantApi, realmConfiguration)
+        new AuthenticateUserService(authenticationPort, listTenants, realmConfiguration)
             .authenticate(new AuthenticateUserCommand("owner@demo-salon.test", "secret"));
 
     assertThat(result.accessToken()).isEqualTo("access");

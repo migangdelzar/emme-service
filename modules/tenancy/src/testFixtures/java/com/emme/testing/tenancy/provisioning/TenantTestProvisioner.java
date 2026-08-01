@@ -1,24 +1,24 @@
 package com.emme.testing.tenancy.provisioning;
 
-import com.emme.tenancy.application.service.TenantProvisioningService;
+import com.emme.tenancy.api.command.RequestTenantProvisioningCommand;
+import com.emme.tenancy.api.usecase.RequestTenantProvisioningUseCase;
 import com.emme.testing.tenancy.fixture.TenantFixture;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Provisions tenants using the <strong>real</strong> production {@link TenantProvisioningService}
- * path (Liquibase migrations included).
+ * Provisions tenants using the <strong>real</strong> production {@link
+ * RequestTenantProvisioningUseCase} path (Liquibase migrations included).
  *
  * <p>Used by consuming modules (booking, catalog, etc.) to set up test tenants. The tenancy
- * module's own integration tests call {@code TenantProvisioningService} directly — never this
- * helper.
+ * module's own integration tests call the provisioning use case directly — never this helper.
  */
 @Component
 public class TenantTestProvisioner {
 
-  private final TenantProvisioningService provisioningService;
+  private final RequestTenantProvisioningUseCase provisioningService;
 
-  public TenantTestProvisioner(TenantProvisioningService provisioningService) {
+  public TenantTestProvisioner(RequestTenantProvisioningUseCase provisioningService) {
     this.provisioningService = provisioningService;
   }
 
@@ -31,7 +31,7 @@ public class TenantTestProvisioner {
    * matters.
    */
   public UUID provision(TenantFixture tenant) {
-    return provisioningService.requestProvisioning(
-        tenant.slug(), tenant.displayName(), "UTC", "en");
+    return provisioningService.request(
+        new RequestTenantProvisioningCommand(tenant.slug(), tenant.displayName(), "UTC", "en"));
   }
 }

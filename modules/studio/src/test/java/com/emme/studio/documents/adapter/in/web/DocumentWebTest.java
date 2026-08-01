@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
 import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
 import com.emme.studio.subscriptions.api.type.PlanType;
-import com.emme.tenancy.application.service.TenantService;
+import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.testing.BaseWebTest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -17,13 +17,11 @@ import org.springframework.http.MediaType;
 
 class DocumentWebTest extends BaseWebTest {
 
-  @Autowired private TenantService tenantService;
-
   @Autowired private SpringDataSubscriptionRepository subscriptionRepo;
 
   @BeforeEach
   void setUp() {
-    var tenant = tenantService.create("doc-web-" + System.nanoTime(), "Doc Web Tenant");
+    TenantInfo tenant = createTenant("doc-web-" + System.nanoTime(), "Doc Web Tenant");
     tenantId = tenant.id();
     subscriptionRepo.save(
         new SubscriptionEntity(

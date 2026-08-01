@@ -16,12 +16,12 @@ database, and pool operations. `TenantCreated` remains a public past-tense event
 
 ```text
 com.emme.tenancy
-├── api/{TenantApi,TenantInfo,event/TenantCreatedEvent}
-├── application/{AuditService,TenantService}
+├── api/{command,query,result,usecase,event}
+├── application/{mapper,service,port/out,process}
 ├── config/{DataSourceConfig,TenantPoolingConfig,WebMvcConfig}
 ├── entity/{Tenant,DatabaseRegistry,AuditEvent and repositories/services}
 ├── pool/{DatabasePoolManager,TenantRoutingDataSource}
-├── service/{TenantApiImpl,provisioning services/worker}
+├── service/{focused tenant and provisioning use cases}
 ├── web/{TenantController,TenantProvisioningController,rate-limit classes}
 └── root context classes/{TenantContextAspect,TenantContextFilter,TrustedTenantResolver}
 ```
@@ -59,8 +59,8 @@ implementation.
 
 ## Public contract and naming decisions
 
-- `TenantApi` remains a public use-case contract or is replaced by grouped
-  `api/usecase` interfaces only with consumer updates in the same commit.
+- The legacy multi-operation `TenantApi` is replaced by focused grouped
+  `api/usecase` interfaces; consumers are updated in the same commit.
 - `TenantInfo` moves to `api/result`.
 - `TenantCreatedEvent` becomes `api/event/TenantCreated` if its consumers and
   event schema permit the normalized name; otherwise record a compatibility ADR.
@@ -89,7 +89,8 @@ implementation.
 
 ### Task 3: Application/provisioning boundaries
 
-- [x] Move TenantService and provisioning services to `application/service`.
+- [x] Split tenant lifecycle, tenant reads, realm updates, and provisioning
+  operations into focused `application/service` implementations.
 - [x] Model the long-running worker as a focused process manager only if its
   current retry/lifecycle behavior requires that representation.
 - [x] Add explicit application ports for database creation and provisioning
@@ -139,8 +140,8 @@ implementation.
 
 ## Completed incremental slice — 2026-07-31
 
-- [x] Grouped `TenantApi` under `api/usecase` and `TenantInfo` under
-  `api/result`.
+- [x] Grouped tenant commands, queries, results, and focused use cases under
+  `api`, with `TenantInfo` under `api/result`.
 - [x] Preserved the `tenant-api` and `tenant-events` named-interface identifiers
   while moving contract ownership to grouped packages.
 - [x] Renamed the public event to the normalized past-tense `TenantCreated` and
@@ -175,7 +176,7 @@ complete.
 - [x] Renamed the Spring Data implementation to `SpringDataTenantRepository` and
   introduced `TenantEntity`, `TenantPersistenceMapper`, and
   `TenantPersistenceAdapter` under the canonical outbound packages.
-- [x] Updated TenantService, TenantApiImpl, tenant resolution infrastructure,
+- [x] Updated focused tenant use-case services, tenant resolution infrastructure,
   HTTP controllers, test fixtures, and consumers to use the domain aggregate or
   application port rather than JPA types.
 - [x] Preserved the `emme_core.tenant` table mapping, status values, UUID/timestamp
@@ -188,12 +189,12 @@ remaining Identity security/domain boundary remain future slices.
 
 ## Completed application orchestration boundary slice — 2026-07-31
 
-- [x] Moved TenantService, AuditService, and TenantApiService under
-  `application/service` and removed the generic top-level application/service
-  implementation namespaces.
-- [x] Moved the provisioning capability and JDBC implementation under
-  `application/service`, with the technology-specific implementation named
-  `TenantProvisioningApplicationService`.
+- [x] Moved tenant orchestration, audit, and tenant lookup capabilities under
+  `application/service` and removed generic top-level implementation
+  namespaces.
+- [x] Split provisioning request and status into focused application services:
+  `RequestTenantProvisioningService` and
+  `GetTenantProvisioningStatusService`.
 - [x] Renamed the scheduled long-running worker to
   `TenantProvisioningProcessManager` under `application/process`, reserving the
   process package for real long-running coordination.
@@ -290,8 +291,8 @@ verification report.
   lookup capabilities.
 - [x] Moved request/status SQL into `JdbcTenantProvisioningRepository`.
 - [x] Removed direct `JdbcTemplate` usage from the application service.
-- [x] Renamed the implementation to `TenantProvisioningApplicationService` so
-  the class name reflects application ownership rather than its adapter.
+- [x] Named provisioning implementations after their individual use cases
+  rather than retaining a multi-operation provisioning service.
 - [x] Added service delegation and source-boundary regression coverage.
 - [x] Reverified Tenancy tests/check/integration, Studio Modulith, service CI,
   boot JARs, Markdown validation, and whitespace checks.
@@ -309,7 +310,7 @@ decisions, architecture rules, and the committed final verification report.
 
 ## Completed event-after-commit boundary slice — 2026-08-01
 
-- [x] Kept `TenantService` event publication inside its transaction.
+- [x] Kept `CreateTenantService` event publication inside its transaction.
 - [x] Changed the Identity `TenantCreated` consumer to
   `@ApplicationModuleListener`, so cross-module realm provisioning is handled
   through the Spring Modulith after-commit event boundary.
@@ -336,3 +337,21 @@ verification report.
 Remaining Tenancy work is live tenant-pool eviction and routing/recovery
 evidence, transaction boundary evidence for provisioning, architecture rules,
 and the committed verification report.
+
+## Completed focused tenant use-case slice — 2026-08-01
+
+- [x] Replaced the multi-operation `TenantService` façade with one application
+  service per tenant lifecycle or read use case.
+- [x] Replaced the legacy `TenantApi` contract with focused public use-case
+  ports for tenant reads, slug resolution, and identity-realm updates.
+- [x] Split provisioning request and provisioning-status operations into
+  separate use-case contracts and services.
+- [x] Updated inbound web adapters, Identity consumers, and test fixtures to
+  depend on canonical contracts.
+- [x] Added grouped commands, queries, result metadata, and focused boundary
+  coverage while preserving existing HTTP and provisioning behavior.
+- [x] Verified Tenancy and Identity unit/integration tests after the split.
+
+Remaining Tenancy work is live routing/eviction/recovery evidence, provisioning
+replay and rollback evidence, architecture dependency rules, and the committed
+final verification report.

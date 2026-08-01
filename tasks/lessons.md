@@ -209,3 +209,14 @@
   represented the canonical package layout.
 - Prevention rule: move or update source-boundary tests in the same slice as
   production package moves, then run the focused package guard before commit.
+
+## 2026-08-01 — Replace cross-module facades with focused public use cases
+
+- Failure mode: a module-level service or API facade bundled lifecycle commands,
+  reads, and cross-module coordination behind one injectable type.
+- Detection signal: callers imported a concrete `*Service` or a legacy API
+  interface with several unrelated methods, making package visibility and
+  responsibility unclear.
+- Prevention rule: expose one command/query/use-case contract per capability,
+  implement each with one application service, and update test fixtures to use
+  the public contract rather than retaining a compatibility facade.

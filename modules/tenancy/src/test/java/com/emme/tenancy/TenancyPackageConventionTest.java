@@ -69,16 +69,16 @@ class TenancyPackageConventionTest {
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/application/service");
   private static final Path TENANT_SERVICE =
       sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/TenantService.java");
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/CreateTenantService.java");
   private static final Path AUDIT_SERVICE =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/AuditService.java");
   private static final Path PROVISIONING_SERVICE =
       sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/TenantProvisioningService.java");
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/RequestTenantProvisioningService.java");
   private static final Path PROVISIONING_IMPLEMENTATION =
       sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/TenantProvisioningApplicationService.java");
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/GetTenantProvisioningStatusService.java");
   private static final Path PROCESS_PACKAGE =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/application/process");
   private static final Path PROVISIONING_PROCESS =
@@ -246,7 +246,7 @@ class TenancyPackageConventionTest {
     String provisioningService =
         Files.readString(
             sourcePath(
-                "modules/tenancy/src/main/java/com/emme/tenancy/application/service/TenantProvisioningApplicationService.java"));
+                "modules/tenancy/src/main/java/com/emme/tenancy/application/service/GetTenantProvisioningStatusService.java"));
     assertThat(provisioningService).contains("TenantProvisioningRepository");
     assertThat(provisioningService).doesNotContain("JdbcTemplate");
   }

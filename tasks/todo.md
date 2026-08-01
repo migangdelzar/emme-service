@@ -1016,3 +1016,19 @@ limiting, then continue authorization domain/application separation.
   passed.
 - Integration teardown emitted existing PostgreSQL/Testcontainers shutdown
   warnings after successful completion.
+
+## Focused use-case and library-boundary normalization slice — 2026-08-01
+
+- [x] Isolated Assistant channel-participant persistence behind an application
+  repository port, mapper, and outbound adapter.
+- [x] Replaced Tenancy's multi-operation `TenantService` and `TenantApi` with
+  grouped commands/queries/results and one service per use case.
+- [x] Split tenant provisioning request and status into separate use-case
+  services and updated Identity, inbound adapters, and test fixtures.
+- [x] Updated the library architecture page to remove the retired
+  `libraries/contracts` model and document module-owned named APIs.
+- [x] Verified Assistant, Tenancy, and Identity checks plus Identity integration
+  tests; shutdown-only Testcontainers/H2 warnings remain documented.
+- [ ] Continue with remaining operational evidence, provider/webhook replay and
+  idempotency coverage, then run service-wide Modulith, CI, boot-JAR, security,
+  and recovery verification.

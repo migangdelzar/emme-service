@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
 import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
 import com.emme.studio.subscriptions.api.type.PlanType;
-import com.emme.tenancy.application.service.TenantService;
+import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.testing.BaseWebTest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -23,8 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class AppointmentWebTest extends BaseWebTest {
 
-  @Autowired private TenantService tenantService;
-
   @Autowired private SpringDataSubscriptionRepository subscriptionRepo;
 
   private UUID artistId;
@@ -33,7 +31,7 @@ class AppointmentWebTest extends BaseWebTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    var tenant = tenantService.create("web-test-" + System.nanoTime(), "Web Test Salon");
+    TenantInfo tenant = createTenant("web-test-" + System.nanoTime(), "Web Test Salon");
     tenantId = tenant.id();
     subscriptionRepo.save(
         new SubscriptionEntity(

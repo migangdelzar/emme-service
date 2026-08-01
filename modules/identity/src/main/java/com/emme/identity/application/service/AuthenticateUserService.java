@@ -7,7 +7,8 @@ import com.emme.identity.api.result.UserTokenResult;
 import com.emme.identity.api.usecase.AuthenticateUserUseCase;
 import com.emme.identity.application.port.out.IdentityRealmConfigurationPort;
 import com.emme.identity.application.port.out.UserAuthenticationPort;
-import com.emme.tenancy.api.usecase.TenantApi;
+import com.emme.tenancy.api.query.ListTenantsQuery;
+import com.emme.tenancy.api.usecase.ListTenantsUseCase;
 import org.springframework.stereotype.Service;
 
 /** Coordinates user authentication and tenant-realm selection. */
@@ -15,15 +16,15 @@ import org.springframework.stereotype.Service;
 public class AuthenticateUserService implements AuthenticateUserUseCase {
 
   private final UserAuthenticationPort authenticationPort;
-  private final TenantApi tenantApi;
+  private final ListTenantsUseCase listTenants;
   private final IdentityRealmConfigurationPort realmConfiguration;
 
   public AuthenticateUserService(
       UserAuthenticationPort authenticationPort,
-      TenantApi tenantApi,
+      ListTenantsUseCase listTenants,
       IdentityRealmConfigurationPort realmConfiguration) {
     this.authenticationPort = authenticationPort;
-    this.tenantApi = tenantApi;
+    this.listTenants = listTenants;
     this.realmConfiguration = realmConfiguration;
   }
 
@@ -46,7 +47,7 @@ public class AuthenticateUserService implements AuthenticateUserUseCase {
     }
 
     String domain = email.substring(email.indexOf('@') + 1);
-    return tenantApi.getAllTenants().stream()
+    return listTenants.list(new ListTenantsQuery()).stream()
         .filter(tenant -> domain.contains(tenant.slug()))
         .map(tenant -> tenant.identityRealm())
         .findFirst()

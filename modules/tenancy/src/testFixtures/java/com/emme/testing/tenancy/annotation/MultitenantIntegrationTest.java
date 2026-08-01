@@ -13,8 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
  * <p>Composes {@link SpringBootTest} with {@link PostgresIntegrationTest} to bootstrap a real
  * PostgreSQL container and a full Spring context.
  *
- * <p>Tenancy module tests call {@code TenantProvisioningService} directly. All other modules use
- * {@link com.emme.testing.tenancy.provisioning.TenantTestProvisioner}.
+ * <p>Tenancy module tests call the provisioning use-case directly. All other modules use {@link
+ * com.emme.testing.tenancy.provisioning.TenantTestProvisioner}.
  *
  * <p>Requires a discoverable {@code @SpringBootConfiguration} in the module under test.
  */

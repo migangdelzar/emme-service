@@ -11,8 +11,9 @@ import com.emme.identity.api.result.MembershipInfo;
 import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
 import com.emme.studio.api.usecase.SalonApi;
+import com.emme.tenancy.api.query.GetTenantQuery;
 import com.emme.tenancy.api.result.TenantInfo;
-import com.emme.tenancy.api.usecase.TenantApi;
+import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -25,17 +26,17 @@ public class CurrentUserController {
 
   private final GetUserPermissionsUseCase permissions;
   private final GetCurrentUserMembershipsUseCase memberships;
-  private final TenantApi tenantApi;
+  private final GetTenantUseCase getTenant;
   private final SalonApi salonApi;
 
   public CurrentUserController(
       GetUserPermissionsUseCase permissions,
       GetCurrentUserMembershipsUseCase memberships,
-      TenantApi tenantApi,
+      GetTenantUseCase getTenant,
       SalonApi salonApi) {
     this.permissions = permissions;
     this.memberships = memberships;
-    this.tenantApi = tenantApi;
+    this.getTenant = getTenant;
     this.salonApi = salonApi;
   }
 
@@ -62,7 +63,11 @@ public class CurrentUserController {
   }
 
   private TenantMembershipResponse toResponse(String subject, MembershipInfo membership) {
-    TenantInfo tenant = tenantApi.getTenantInfo(membership.tenantId());
+    TenantInfo tenant =
+        getTenant
+            .get(new GetTenantQuery(membership.tenantId()))
+            .orElseThrow(
+                () -> new IllegalArgumentException("Tenant not found: " + membership.tenantId()));
     Set<String> permissionCodes = permissions.getPermissions(subject, membership.tenantId());
     return new TenantMembershipResponse(
         membership.tenantId(),

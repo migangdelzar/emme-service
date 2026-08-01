@@ -834,3 +834,17 @@ verification.
 Remaining Assistant work is channel-participant persistence ownership, provider
 contract coverage, webhook replay/idempotency evidence, and final Modulith/CI
 verification.
+
+## Completed channel-participant boundary slice — 2026-08-01
+
+- [x] Added the application-owned `ChannelParticipantRepository` port.
+- [x] Added the persistence mapper and `ChannelParticipantPersistenceAdapter`.
+- [x] Kept `ChannelParticipantEntity` and Spring Data access inside outbound
+  persistence packages.
+- [x] Rewired the WhatsApp inbound adapter to use the domain participant and
+  application port without importing persistence types.
+- [x] Added the source boundary regression test and verified the complete
+  Assistant check.
+
+Remaining Assistant work is provider contract coverage, webhook replay/
+idempotency evidence, and final service-wide Modulith/CI verification.

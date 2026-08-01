@@ -6,8 +6,11 @@ import com.emme.studio.adapter.out.persistence.repository.SpringDataBusinessProf
 import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
 import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
 import com.emme.studio.subscriptions.api.type.PlanType;
-import com.emme.tenancy.application.service.TenantService;
-import com.emme.tenancy.domain.model.Tenant;
+import com.emme.tenancy.api.command.CreateTenantCommand;
+import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.usecase.CreateTenantUseCase;
+import com.emme.tenancy.api.query.GetTenantQuery;
+import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -42,7 +45,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 public abstract class BaseSpringModuleTest {
 
   @Autowired protected MockMvc mockMvc;
-  @Autowired protected TenantService tenantService;
+  @Autowired protected CreateTenantUseCase createTenantUseCase;
+  @Autowired protected GetTenantUseCase getTenantUseCase;
   @Autowired protected SpringDataSubscriptionRepository subscriptionRepo;
   @Autowired protected SpringDataFeatureFlagRepository featureFlagRepo;
   @Autowired protected SpringDataBusinessProfileRepository profileRepo;
@@ -60,7 +64,7 @@ public abstract class BaseSpringModuleTest {
 
   /** Create tenant + ENTERPRISE subscription + global feature flags. */
   protected UUID fullSetup() {
-    Tenant tenant = tenantService.create("test-" + System.nanoTime(), "Test Salon");
+    TenantInfo tenant = createTenant("test-" + System.nanoTime(), "Test Salon");
     UUID tid = tenant.id();
     tenantId = tid;
 
@@ -86,6 +90,14 @@ public abstract class BaseSpringModuleTest {
       }
     }
     return tid;
+  }
+
+  protected TenantInfo createTenant(String slug, String name) {
+    return createTenantUseCase.create(new CreateTenantCommand(slug, name));
+  }
+
+  protected TenantInfo findTenant(UUID tenantId) {
+    return getTenantUseCase.get(new GetTenantQuery(tenantId)).orElseThrow();
   }
 
   /** JWT with platform_admin + tenant_owner roles. */

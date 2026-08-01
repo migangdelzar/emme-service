@@ -66,3 +66,11 @@
 - [x] Web Calendar/Google error handling preserves stable problem codes.
 - [x] Web Calendar/Google messages are localized in supported locales.
 - [x] Full cross-repository final commit and remote verification.
+
+## Assistant canonical module migration — 2026-07-31
+
+- [ ] Execute `docs/superpowers/plans/2026-07-31-assistant-module-template-migration.md`.
+- [ ] Keep the latest `docs/templates/module-package-structure-template.md` authoritative.
+- [ ] Preserve Assistant HTTP, webhook, JSON, database, and feature-flag behavior.
+- [ ] Separate pure domain models, persistence entities, ports, adapters, grouped API contracts, and package metadata.
+- [ ] Run the complete Assistant and service verification gates before merging.

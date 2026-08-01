@@ -2,8 +2,8 @@ package com.emme.identity.web;
 
 import com.emme.identity.UserContext;
 import com.emme.identity.UserContextHolder;
+import com.emme.identity.adapter.out.persistence.entity.Membership;
 import com.emme.identity.application.IdentityService;
-import com.emme.identity.entity.Membership;
 import com.emme.studio.api.result.BusinessProfileInfo;
 import com.emme.studio.api.usecase.SalonApi;
 import com.emme.tenancy.api.result.TenantInfo;

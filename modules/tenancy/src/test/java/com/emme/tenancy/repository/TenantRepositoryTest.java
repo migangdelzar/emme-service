@@ -2,9 +2,9 @@ package com.emme.tenancy.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.tenancy.entity.Tenant;
-import com.emme.tenancy.entity.TenantRepository;
-import com.emme.tenancy.entity.TenantStatus;
+import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
+import com.emme.tenancy.adapter.out.persistence.entity.TenantStatus;
+import com.emme.tenancy.adapter.out.persistence.repository.TenantRepository;
 import com.emme.testing.BaseRepositoryTest;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;

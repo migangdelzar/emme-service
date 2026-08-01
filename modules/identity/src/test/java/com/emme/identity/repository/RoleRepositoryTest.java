@@ -3,9 +3,9 @@ package com.emme.identity.repository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.emme.identity.entity.Role;
-import com.emme.identity.entity.RoleRepository;
-import com.emme.identity.entity.RoleScope;
+import com.emme.identity.adapter.out.persistence.entity.Role;
+import com.emme.identity.adapter.out.persistence.entity.RoleScope;
+import com.emme.identity.adapter.out.persistence.repository.RoleRepository;
 import com.emme.testing.BaseRepositoryTest;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

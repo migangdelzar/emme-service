@@ -1,6 +1,6 @@
 package com.emme.tenancy;
 
-import com.emme.tenancy.entity.TenantRepository;
+import com.emme.tenancy.adapter.out.persistence.repository.TenantRepository;
 import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;

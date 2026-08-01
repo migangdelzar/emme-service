@@ -4,8 +4,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.identity.entity.FeatureFlag;
-import com.emme.identity.entity.FeatureFlagRepository;
+import com.emme.identity.adapter.out.persistence.entity.FeatureFlag;
+import com.emme.identity.adapter.out.persistence.repository.FeatureFlagRepository;
 import com.emme.studio.subscriptions.api.PlanType;
 import com.emme.studio.subscriptions.entity.Subscription;
 import com.emme.studio.subscriptions.entity.SubscriptionRepository;

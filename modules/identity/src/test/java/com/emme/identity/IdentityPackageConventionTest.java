@@ -23,6 +23,16 @@ class IdentityPackageConventionTest {
       sourcePath("modules/identity/src/main/java/com/emme/identity/api/MembershipInfo.java");
   private static final Path LEGACY_USER_RESULT =
       sourcePath("modules/identity/src/main/java/com/emme/identity/api/UserInfo.java");
+  private static final Path LEGACY_PERSISTENCE_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/entity");
+  private static final Path PERSISTENCE_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/adapter/out/persistence");
+  private static final Path PERSISTENCE_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/CustomerIdentity.java");
+  private static final Path PERSISTENCE_REPOSITORY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/MembershipRepository.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -48,6 +58,23 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(LEGACY_API)).isFalse();
     assertThat(Files.exists(LEGACY_MEMBERSHIP_RESULT)).isFalse();
     assertThat(Files.exists(LEGACY_USER_RESULT)).isFalse();
+  }
+
+  @Test
+  void ownsPersistenceTypesUnderOutboundPersistence() {
+    assertThat(hasJavaSources(LEGACY_PERSISTENCE_PACKAGE)).isFalse();
+    assertThat(Files.exists(PERSISTENCE_PACKAGE)).isTrue();
+    assertThat(Files.exists(PERSISTENCE_ENTITY)).isTrue();
+    assertThat(Files.exists(PERSISTENCE_REPOSITORY)).isTrue();
+  }
+
+  private static boolean hasJavaSources(Path directory) {
+    if (!Files.isDirectory(directory)) return false;
+    try (var files = Files.walk(directory)) {
+      return files.anyMatch(path -> path.toString().endsWith(".java"));
+    } catch (IOException e) {
+      throw new IllegalStateException("Cannot inspect source tree: " + directory, e);
+    }
   }
 
   private static Path sourcePath(String relativePath) {

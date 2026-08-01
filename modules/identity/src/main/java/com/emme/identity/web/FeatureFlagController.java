@@ -60,7 +60,8 @@ public class FeatureFlagController {
 
   public record FlagResponse(
       UUID id, String code, boolean enabled, PlanType planRequired, String description) {
-    public static FlagResponse from(com.emme.identity.entity.FeatureFlag f) {
+    public static FlagResponse from(
+        com.emme.identity.adapter.out.persistence.entity.FeatureFlag f) {
       return new FlagResponse(
           f.getId(), f.getCode(), f.isEnabled(), f.getPlanRequired(), f.getDescription());
     }

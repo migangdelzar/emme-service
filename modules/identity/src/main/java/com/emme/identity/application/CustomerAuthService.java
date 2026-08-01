@@ -1,8 +1,8 @@
 package com.emme.identity.application;
 
-import com.emme.identity.entity.CustomerIdentity;
-import com.emme.identity.entity.CustomerIdentity.SocialProvider;
-import com.emme.identity.entity.CustomerIdentityRepository;
+import com.emme.identity.adapter.out.persistence.entity.CustomerIdentity;
+import com.emme.identity.adapter.out.persistence.entity.CustomerIdentity.SocialProvider;
+import com.emme.identity.adapter.out.persistence.repository.CustomerIdentityRepository;
 import com.emme.identity.infrastructure.MultiRealmJwtDecoder;
 import java.util.UUID;
 import org.slf4j.Logger;

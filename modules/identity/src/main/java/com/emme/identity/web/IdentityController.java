@@ -1,8 +1,8 @@
 package com.emme.identity.web;
 
 import com.emme.identity.UserContextHolder;
+import com.emme.identity.adapter.out.persistence.entity.Membership;
 import com.emme.identity.application.IdentityService;
-import com.emme.identity.entity.Membership;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

@@ -142,3 +142,20 @@ context, but they must not become business API types accidentally.
 
 The security/domain/persistence migration remains open; this slice does not
 claim the full Identity plan is complete.
+
+## Completed persistence-ownership slice — 2026-07-31
+
+- [x] Moved Identity JPA entities and persistence enums under
+  `adapter/out/persistence/entity`.
+- [x] Moved Spring Data repository interfaces under
+  `adapter/out/persistence/repository`.
+- [x] Added package metadata and source-tree ownership tests for the new
+  outbound persistence boundary.
+- [x] Updated production, test-fixture, and consumer imports without changing
+  database mappings or public behavior.
+- [x] Verified module tests, Checkstyle, Spotless, compilation, and Studio
+  Modulith verification.
+
+Application-owned repository ports, pure domain models, and persistence mappers
+remain future slices; this move intentionally preserves behavior while making
+the current technical ownership explicit.

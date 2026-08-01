@@ -124,6 +124,22 @@
 - [ ] Continue with Identity security/domain/persistence separation and Tenancy
   isolation/provisioning separation as separate red-green-refactor slices.
 
+## Identity/Tenancy persistence ownership slice — 2026-07-31
+
+- [x] Added failing tests requiring persistence types to live under outbound
+  adapter ownership.
+- [x] Moved Identity entities/enums and Spring Data repositories under
+  `adapter/out/persistence`.
+- [x] Moved Tenancy entities/enums and repositories under
+  `adapter/out/persistence`, plus bootstrap registry access under
+  `adapter/out/client/database`.
+- [x] Updated all production, test, and fixture imports; no legacy entity package
+  Java sources remain.
+- [x] Verified full Identity/Tenancy tests, Checkstyle, Spotless, compilation,
+  and Studio Modulith tests.
+- [ ] Next slice: introduce application-owned repository ports and mappers before
+  extracting pure Identity/Tenancy domain models.
+
 ## Architecture naming contract — 2026-07-31
 
 - [x] Added the canonical naming catalog at

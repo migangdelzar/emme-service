@@ -127,3 +127,22 @@ classes are technical adapters, not domain services.
 The tenant isolation, domain/persistence, provisioning, pool, and web-adapter
 migration remains open; this slice does not claim the full Tenancy plan is
 complete.
+
+## Completed persistence-ownership slice — 2026-07-31
+
+- [x] Moved Tenancy JPA entities and persistence enums under
+  `adapter/out/persistence/entity`.
+- [x] Moved Spring Data repository interfaces under
+  `adapter/out/persistence/repository`.
+- [x] Moved the bootstrap registry integration under
+  `adapter/out/client/database`.
+- [x] Added package metadata and source-tree ownership tests for the new
+  outbound persistence boundary.
+- [x] Updated production, test-fixture, and consumer imports without changing
+  schema mappings or tenant-routing behavior.
+- [x] Verified module tests, Checkstyle, Spotless, compilation, and Studio
+  Modulith verification.
+
+Application-owned repository ports, pure tenant domain models, pool ports, and
+provisioning isolation remain future slices; this move intentionally preserves
+behavior while making current technical ownership explicit.

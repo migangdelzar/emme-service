@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.tenancy.entity.Tenant;
+import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
 import com.emme.testing.BaseSpringModuleTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

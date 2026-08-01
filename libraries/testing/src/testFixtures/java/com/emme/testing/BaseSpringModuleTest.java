@@ -1,13 +1,13 @@
 package com.emme.testing;
 
-import com.emme.identity.entity.FeatureFlag;
-import com.emme.identity.entity.FeatureFlagRepository;
+import com.emme.identity.adapter.out.persistence.entity.FeatureFlag;
+import com.emme.identity.adapter.out.persistence.repository.FeatureFlagRepository;
 import com.emme.studio.adapter.out.persistence.repository.SpringDataBusinessProfileRepository;
 import com.emme.studio.subscriptions.api.PlanType;
 import com.emme.studio.subscriptions.entity.Subscription;
 import com.emme.studio.subscriptions.entity.SubscriptionRepository;
 import com.emme.tenancy.application.TenantService;
-import com.emme.tenancy.entity.Tenant;
+import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -46,8 +46,8 @@ public abstract class BaseSpringModuleTest {
   @Autowired protected SubscriptionRepository subscriptionRepo;
   @Autowired protected FeatureFlagRepository featureFlagRepo;
   @Autowired protected SpringDataBusinessProfileRepository profileRepo;
-  @Autowired protected com.emme.identity.entity.MembershipRepository membershipRepo;
-  @Autowired protected com.emme.identity.entity.RoleRepository roleRepo;
+  @Autowired protected com.emme.identity.adapter.out.persistence.repository.MembershipRepository membershipRepo;
+  @Autowired protected com.emme.identity.adapter.out.persistence.repository.RoleRepository roleRepo;
 
   protected static final String TEST_USER_SUB = "auth0|test-user-123";
   protected static final String TEST_ISSUER = "https://test-issuer/realms/emme";

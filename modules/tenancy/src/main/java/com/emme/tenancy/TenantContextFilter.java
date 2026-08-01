@@ -2,7 +2,7 @@ package com.emme.tenancy;
 
 import com.emme.kernel.context.TenantContext;
 import com.emme.kernel.tracing.CorrelationId;
-import com.emme.tenancy.entity.TenantRepository;
+import com.emme.tenancy.adapter.out.persistence.repository.TenantRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

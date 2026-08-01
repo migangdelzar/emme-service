@@ -1,14 +1,14 @@
 package com.emme.identity.application;
 
-import com.emme.identity.entity.Membership;
-import com.emme.identity.entity.MembershipRepository;
-import com.emme.identity.entity.MembershipStatus;
-import com.emme.identity.entity.Permission;
-import com.emme.identity.entity.PermissionRepository;
-import com.emme.identity.entity.Role;
-import com.emme.identity.entity.RolePermission;
-import com.emme.identity.entity.RolePermissionRepository;
-import com.emme.identity.entity.RoleRepository;
+import com.emme.identity.adapter.out.persistence.entity.Membership;
+import com.emme.identity.adapter.out.persistence.entity.MembershipStatus;
+import com.emme.identity.adapter.out.persistence.entity.Permission;
+import com.emme.identity.adapter.out.persistence.entity.Role;
+import com.emme.identity.adapter.out.persistence.entity.RolePermission;
+import com.emme.identity.adapter.out.persistence.repository.MembershipRepository;
+import com.emme.identity.adapter.out.persistence.repository.PermissionRepository;
+import com.emme.identity.adapter.out.persistence.repository.RolePermissionRepository;
+import com.emme.identity.adapter.out.persistence.repository.RoleRepository;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

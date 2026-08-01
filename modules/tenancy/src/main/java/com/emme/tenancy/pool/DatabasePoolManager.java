@@ -1,9 +1,9 @@
 package com.emme.tenancy.pool;
 
 import com.emme.kernel.context.TenantContextHolder;
+import com.emme.tenancy.adapter.out.client.database.DatabaseRegistryService;
+import com.emme.tenancy.adapter.out.persistence.entity.DatabaseRegistry;
 import com.emme.tenancy.config.TenantPoolingConfig;
-import com.emme.tenancy.entity.DatabaseRegistry;
-import com.emme.tenancy.entity.DatabaseRegistryService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;

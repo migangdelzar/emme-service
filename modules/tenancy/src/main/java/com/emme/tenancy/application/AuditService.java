@@ -1,8 +1,8 @@
 package com.emme.tenancy.application;
 
-import com.emme.tenancy.entity.AuditEvent;
-import com.emme.tenancy.entity.AuditEvent.AuditOutcome;
-import com.emme.tenancy.entity.AuditEventRepository;
+import com.emme.tenancy.adapter.out.persistence.entity.AuditEvent;
+import com.emme.tenancy.adapter.out.persistence.entity.AuditEvent.AuditOutcome;
+import com.emme.tenancy.adapter.out.persistence.repository.AuditEventRepository;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;

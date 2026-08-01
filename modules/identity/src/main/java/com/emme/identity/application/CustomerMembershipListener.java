@@ -1,7 +1,7 @@
 package com.emme.identity.application;
 
-import com.emme.identity.entity.CustomerMembership;
-import com.emme.identity.entity.CustomerMembershipRepository;
+import com.emme.identity.adapter.out.persistence.entity.CustomerMembership;
+import com.emme.identity.adapter.out.persistence.repository.CustomerMembershipRepository;
 import com.emme.studio.api.event.AppointmentCreatedEvent;
 import java.util.UUID;
 import org.slf4j.Logger;

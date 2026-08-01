@@ -8,11 +8,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.identity.entity.Membership;
-import com.emme.identity.entity.MembershipRepository;
-import com.emme.identity.entity.MembershipStatus;
-import com.emme.identity.entity.Role;
-import com.emme.identity.entity.RoleScope;
+import com.emme.identity.adapter.out.persistence.entity.Membership;
+import com.emme.identity.adapter.out.persistence.entity.MembershipStatus;
+import com.emme.identity.adapter.out.persistence.entity.Role;
+import com.emme.identity.adapter.out.persistence.entity.RoleScope;
+import com.emme.identity.adapter.out.persistence.repository.MembershipRepository;
 import com.emme.testing.BaseSpringModuleTest;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

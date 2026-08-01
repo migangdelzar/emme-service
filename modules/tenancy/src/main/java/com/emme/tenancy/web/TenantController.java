@@ -1,7 +1,7 @@
 package com.emme.tenancy.web;
 
+import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
 import com.emme.tenancy.application.TenantService;
-import com.emme.tenancy.entity.Tenant;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

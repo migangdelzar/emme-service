@@ -1,9 +1,9 @@
 package com.emme.tenancy.service;
 
+import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
+import com.emme.tenancy.adapter.out.persistence.repository.TenantRepository;
 import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.tenancy.api.usecase.TenantApi;
-import com.emme.tenancy.entity.Tenant;
-import com.emme.tenancy.entity.TenantRepository;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
 package com.emme.identity.application;
 
-import com.emme.identity.entity.FeatureFlag;
-import com.emme.identity.entity.FeatureFlagRepository;
+import com.emme.identity.adapter.out.persistence.entity.FeatureFlag;
+import com.emme.identity.adapter.out.persistence.repository.FeatureFlagRepository;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.studio.subscriptions.api.PlanType;
 import com.emme.studio.subscriptions.application.SubscriptionService;

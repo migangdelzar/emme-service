@@ -276,6 +276,18 @@ class IdentityPackageConventionTest {
       sourcePath("modules/identity/src/main/java/com/emme/identity/UserContext.java");
   private static final Path LEGACY_USER_CONTEXT_HOLDER =
       sourcePath("modules/identity/src/main/java/com/emme/identity/UserContextHolder.java");
+  private static final Path IDENTITY_AUTHORIZATION_CONFIGURATION =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/configuration/IdentityAuthorizationConfiguration.java");
+  private static final Path IDENTITY_ROLE_AUTHORITY_MAPPER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/security/IdentityRoleAuthorityMapper.java");
+  private static final Path IDENTITY_JWT_AUTHORITIES_CONVERTER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/security/IdentityJwtAuthoritiesConverter.java");
+  private static final Path IDENTITY_USER_AUTHORITIES_MAPPER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/security/IdentityUserAuthoritiesMapper.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -467,6 +479,19 @@ class IdentityPackageConventionTest {
 
     assertThat(Files.readString(packageInfo))
         .contains("@org.springframework.modulith.NamedInterface(\"identity-security\")");
+  }
+
+  @Test
+  void keepsAuthorizationMappingOutsideSecurityChainWiring() throws IOException {
+    String securityConfiguration = Files.readString(SECURITY_CONFIGURATION);
+
+    assertThat(Files.exists(IDENTITY_AUTHORIZATION_CONFIGURATION)).isTrue();
+    assertThat(Files.exists(IDENTITY_ROLE_AUTHORITY_MAPPER)).isTrue();
+    assertThat(Files.exists(IDENTITY_JWT_AUTHORITIES_CONVERTER)).isTrue();
+    assertThat(Files.exists(IDENTITY_USER_AUTHORITIES_MAPPER)).isTrue();
+    assertThat(securityConfiguration).doesNotContain("RoleHierarchyImpl");
+    assertThat(securityConfiguration).doesNotContain("SimpleGrantedAuthority");
+    assertThat(securityConfiguration).doesNotContain("realm_access");
   }
 
   @Test

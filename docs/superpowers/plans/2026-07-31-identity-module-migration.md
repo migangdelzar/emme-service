@@ -461,3 +461,19 @@ evidence gate.
 The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
+
+## Completed authorization wiring separation slice — 2026-08-01
+
+- [x] Moved role hierarchy and method-security bean wiring into
+  `IdentityAuthorizationConfiguration`.
+- [x] Moved JWT and OAuth2/OIDC realm-role conversion into dedicated inbound
+  security components.
+- [x] Preserved role names, `ROLE_` prefixing, OIDC `userinfo` support, and
+  existing security chains.
+- [x] Added unit and source-tree regression coverage.
+- [x] Verified Identity checks and integration tests, Modulith verification,
+  CI, boot JARs, Markdown, and whitespace.
+
+The remaining Identity work is distributed rate-limit state, broader
+authorization domain/application separation, and the final production-readiness
+evidence gate.

@@ -3,28 +3,16 @@ package com.emme.identity.configuration;
 import com.emme.identity.adapter.in.web.filter.LoginRateLimitFilter;
 import com.emme.identity.adapter.out.client.keycloak.MultiRealmJwtDecoder;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
-import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
-import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -41,26 +29,6 @@ public class SecurityConfiguration {
 
   public SecurityConfiguration(IdentitySecurityProperties securityProperties) {
     this.securityProperties = securityProperties;
-  }
-
-  @Bean
-  public RoleHierarchy roleHierarchy() {
-    return RoleHierarchyImpl.fromHierarchy(
-        """
-        ROLE_platform_admin > ROLE_tenant_owner
-        ROLE_tenant_owner > ROLE_business_owner
-        ROLE_business_owner > ROLE_manager
-        ROLE_manager > ROLE_staff
-    """);
-  }
-
-  @Bean
-  @SuppressWarnings("deprecation")
-  static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
-      RoleHierarchy roleHierarchy) {
-    var handler = new DefaultMethodSecurityExpressionHandler();
-    handler.setRoleHierarchy(roleHierarchy);
-    return handler;
   }
 
   @Bean
@@ -81,7 +49,9 @@ public class SecurityConfiguration {
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       LoginRateLimitFilter rateLimitFilter,
-      MultiRealmJwtDecoder multiRealmJwtDecoder)
+      MultiRealmJwtDecoder multiRealmJwtDecoder,
+      JwtAuthenticationConverter jwtAuthenticationConverter,
+      GrantedAuthoritiesMapper userAuthoritiesMapper)
       throws Exception {
     http.securityMatcher(
             request -> {
@@ -153,14 +123,14 @@ public class SecurityConfiguration {
                     .loginPage("/oauth2/authorization/keycloak")
                     .defaultSuccessUrl("http://localhost:3000/#/dashboard", true)
                     .userInfoEndpoint(
-                        userInfo -> userInfo.userAuthoritiesMapper(userAuthoritiesMapper())))
+                        userInfo -> userInfo.userAuthoritiesMapper(userAuthoritiesMapper)))
         .oauth2ResourceServer(
             oauth2 ->
                 oauth2
                     .jwt(
                         jwt ->
                             jwt.decoder(multiRealmJwtDecoder)
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter))
                     .bearerTokenResolver(
                         request -> {
                           String uri = request.getRequestURI();
@@ -216,67 +186,5 @@ public class SecurityConfiguration {
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     return http.build();
-  }
-
-  @Bean
-  public JwtAuthenticationConverter jwtAuthenticationConverter() {
-    JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-    converter.setJwtGrantedAuthoritiesConverter(
-        jwt -> {
-          Set<GrantedAuthority> authorities = new HashSet<>();
-          Object realmAccess = jwt.getClaims().get("realm_access");
-          if (realmAccess instanceof Map<?, ?> ra) {
-            Object roles = ra.get("roles");
-            if (roles instanceof Collection<?> roleList) {
-              for (Object role : roleList) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.toString()));
-              }
-            }
-          }
-          return authorities;
-        });
-    return converter;
-  }
-
-  /**
-   * Maps OAuth2/OIDC user attributes to Spring Security authorities. For OAuth2 login
-   * (session-based), reads realm_access.roles from the ID token or user info claims and prefixes
-   * them with ROLE_.
-   */
-  @Bean
-  public GrantedAuthoritiesMapper userAuthoritiesMapper() {
-    return (authorities) -> {
-      Set<GrantedAuthority> mapped = new HashSet<>(authorities);
-
-      for (GrantedAuthority authority : authorities) {
-        if (authority instanceof OidcUserAuthority oidc) {
-          Map<String, Object> attrs = oidc.getAttributes();
-          extractRealmRoles(attrs, mapped);
-          // Also check userInfo claims
-          @SuppressWarnings("unchecked")
-          Map<String, Object> userInfo = (Map<String, Object>) attrs.get("userinfo");
-          if (userInfo != null) {
-            extractRealmRoles(userInfo, mapped);
-          }
-        } else if (authority instanceof OAuth2UserAuthority oauth2) {
-          extractRealmRoles(oauth2.getAttributes(), mapped);
-        }
-      }
-
-      return mapped;
-    };
-  }
-
-  @SuppressWarnings("unchecked")
-  private static void extractRealmRoles(Map<String, Object> claims, Set<GrantedAuthority> target) {
-    Object realmAccess = claims.get("realm_access");
-    if (realmAccess instanceof Map<?, ?> ra) {
-      Object roles = ra.get("roles");
-      if (roles instanceof Collection<?> roleList) {
-        for (Object role : roleList) {
-          target.add(new SimpleGrantedAuthority("ROLE_" + role.toString()));
-        }
-      }
-    }
   }
 }

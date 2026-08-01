@@ -415,3 +415,28 @@ limiting, then continue authorization domain/application separation.
   CI, both boot JARs, Markdown validation, and whitespace checks passed.
 - Testcontainers teardown emitted existing database/prune warnings after
   successful completion.
+
+## Identity authorization wiring separation slice — 2026-08-01
+
+- [x] Add and run failing tests for extracted role-authority mapping and
+  configuration ownership.
+- [x] Move JWT/OIDC authority mapping and role hierarchy wiring into dedicated
+  Identity authorization components.
+- [x] Keep `SecurityConfiguration` focused on filter-chain and transport
+  security wiring without changing role names or access behavior.
+- [x] Verify Identity security tests, integration tests, Modulith, CI, boot
+  JARs, Markdown, and whitespace.
+
+### Results
+
+- The source-tree convention test first failed because the canonical
+  authorization components were absent.
+- Extracted role claim parsing, JWT conversion, OAuth2/OIDC authority mapping,
+  role hierarchy, and method-security wiring from `SecurityConfiguration`.
+- Preserved `ROLE_` prefixing, the existing role hierarchy, OIDC `userinfo`
+  support, and all existing filter-chain behavior.
+- Identity unit/check/integration tests, Studio Modulith verification, service
+  CI, both application boot JARs, Markdown validation, and `git diff --check`
+  passed.
+- Integration teardown emitted existing PostgreSQL/Testcontainers shutdown
+  warnings after successful completion.

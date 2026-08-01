@@ -21,7 +21,7 @@ public class CancelNotificationService implements CancelNotificationUseCase {
   @Override
   public NotificationInfo cancel(CancelNotificationCommand command) {
     Notification notification =
-        NotificationServiceSupport.load(repository, command.notificationId());
+        NotificationServiceSupport.load(repository, command.tenantId(), command.notificationId());
     notification.markCancelled();
     return NotificationApplicationMapper.toInfo(repository.save(notification));
   }

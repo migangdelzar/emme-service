@@ -214,3 +214,19 @@ provider contract coverage, and full service-wide verification.
 
 Remaining Notification evidence is durable delivery idempotency/retry policy,
 provider contract coverage, and the final service-wide verification gate.
+
+## Completed tenant-scoped mutation and delivery idempotency slice — 2026-08-01
+
+- [x] Added tenant identity to cancellation and delivery commands.
+- [x] Removed the unscoped Notification repository lookup from the application
+  port and persistence adapter.
+- [x] Made cancellation and delivery load through the tenant-scoped repository
+  query.
+- [x] Made delivery idempotent for already-delivered notifications so a replay
+  cannot call an external provider twice.
+- [x] Added source-boundary and service tests for tenant-scoped mutations and
+  duplicate delivery handling.
+- [x] Verified Notification formatting and module checks.
+
+Remaining Notification evidence is provider contract coverage, retry policy for
+transient failures, and the final service-wide verification gate.

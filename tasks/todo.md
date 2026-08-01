@@ -32,6 +32,13 @@
   `assistant-ai-api` named interface.
 - [x] Added red/green delegation and source-boundary tests.
 
+### Notification tenant-scoped mutation and delivery replay correction — 2026-08-01
+
+- [x] Added tenant identity to delivery and cancellation commands.
+- [x] Removed unscoped Notification repository access.
+- [x] Made already-delivered notifications idempotent without provider calls.
+- [x] Added boundary and service regression tests.
+
 - Migrated build-logic packages from type-first buckets into `core/`, `root/`,
   capability-owned packages, and `git/` while preserving plugin IDs.
 - Added the missing `emme.security` convention entry point and registration test.

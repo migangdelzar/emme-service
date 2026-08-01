@@ -307,3 +307,8 @@
   by another module, expose a focused public use case and keep the provider port
   private to its owning module. Verify Modulith dependency names against the
   exact `@NamedInterface` value.
+
+- 2026-08-01 — Tenant isolation must cover every mutating use case, not only
+  HTTP reads. Commands for delivery, cancellation, retry, and similar actions
+  carry the tenant identity, and application ports must not retain unscoped
+  lookup methods that make accidental cross-tenant access possible.

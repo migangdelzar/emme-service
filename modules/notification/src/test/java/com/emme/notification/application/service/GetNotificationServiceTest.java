@@ -34,11 +34,6 @@ class GetNotificationServiceTest {
     }
 
     @Override
-    public Optional<Notification> findById(UUID notificationId) {
-      return Optional.of(notification);
-    }
-
-    @Override
     public Optional<Notification> findByTenantIdAndId(UUID tenantId, UUID notificationId) {
       return notification.tenantId().equals(tenantId) && notification.id().equals(notificationId)
           ? Optional.of(notification)

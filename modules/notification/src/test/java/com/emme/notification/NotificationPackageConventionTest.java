@@ -24,6 +24,21 @@ class NotificationPackageConventionTest {
     assertThat(Files.exists(ROOT.resolve("api/usecase/RequestNotificationUseCase.java"))).isTrue();
   }
 
+  @Test
+  void allNotificationMutationLookupsAreTenantScoped() throws Exception {
+    String repository =
+        Files.readString(ROOT.resolve("application/port/out/NotificationRepository.java"));
+    String support =
+        Files.readString(ROOT.resolve("application/service/NotificationServiceSupport.java"));
+
+    assertThat(repository).doesNotContain("findById(UUID notificationId)");
+    assertThat(support).doesNotContain("findById(notificationId)");
+    assertThat(Files.readString(ROOT.resolve("api/command/CancelNotificationCommand.java")))
+        .contains("UUID tenantId");
+    assertThat(Files.readString(ROOT.resolve("api/command/DeliverNotificationCommand.java")))
+        .contains("UUID tenantId");
+  }
+
   private static boolean hasJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) return false;
     try (Stream<Path> paths = Files.walk(directory)) {

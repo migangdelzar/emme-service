@@ -52,3 +52,13 @@
 - Prevention rule: after moving or renaming Spring-managed transactional classes,
   run at least one full context test; keep proxied services non-final unless the
   project explicitly uses interface-based transaction proxies.
+
+## 2026-08-01 — Boundary validation must run before resource lookup
+
+- Failure mode: a web test tried to prove an oversized update name using an
+  unknown tenant ID, so the request reached the resource lookup and returned
+  `404` before the intended validation assertion.
+- Detection signal: the test failed with `Status expected:<400> but was:<404>`.
+- Prevention rule: test record constraints with a validator unit test, or use a
+  valid resource fixture when verifying the HTTP mapping. Do not rely on an
+  unrelated not-found path to prove boundary validation.

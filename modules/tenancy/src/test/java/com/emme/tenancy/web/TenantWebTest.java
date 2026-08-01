@@ -51,6 +51,21 @@ class TenantWebTest extends BaseWebTest {
   }
 
   @Test
+  @DisplayName("POST /api/v1/tenants with slug longer than 50 characters → 400 Bad Request")
+  void shouldRejectOversizedSlug() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/tenants")
+                .with(auth())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                                {"slug":"%s","name":"Web Test Salon"}"""
+                        .formatted("s".repeat(51))))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   @DisplayName("GET /api/v1/tenants/{unknownId} → 404 Not Found")
   void shouldReturn404ForUnknownTenant() throws Exception {
     UUID unknownId = UUID.randomUUID();

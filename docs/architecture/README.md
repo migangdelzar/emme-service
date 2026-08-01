@@ -60,7 +60,7 @@ single universal folder structure.
 | Area | Contents |
 |---|---|
 | [00 — Project](00-project/project-layout.md) | Repository layout, Gradle settings, mise, and build logic |
-| [01 — Backend](01-backend/module.md) | Modules, APIs, application services, domain, infrastructure, controllers, repositories, and events |
+| [01 — Backend](01-backend/module.md) | Modules, APIs, validation, application services, domain, infrastructure, controllers, repositories, and events |
 | Frontend consumer handbook | [emme-web architecture](https://github.com/migangdelzar/emme-web/tree/main/docs/architecture) |
 | [03 — Integration](03-integration/module-communication.md) | Module communication, service contracts, and frontend/backend boundary |
 | [04 — Delivery](04-delivery/container.md) | Containers, deployment, CI, and releases |
@@ -74,6 +74,7 @@ single universal folder structure.
 - [ADR-0002: Deployment strategy pattern](../adr/0002-deployment-strategy-pattern.md)
 - [Modulith application template](../templates/modulith-application-template.md)
 - [Module package structure template](../templates/module-package-structure-template.md) — canonical future-module tree, package meanings, copy-ready `package-info.java` catalog, file/type naming, and approval controls.
+- [Backend validation conventions](01-backend/validation.md) — Jakarta Bean Validation on records, custom cross-field constraints, domain invariants, error mapping, i18n, and test coverage.
 - [Module and capability build-logic design](../superpowers/specs/2026-07-30-module-architecture-and-capability-build-logic-design.md) — reconciles the two architecture models and migration documentation.
 
 ## Normative policy links
@@ -109,6 +110,7 @@ structure → contracts → verification → tests → artifact → rollout → 
 | Build architecture | [Capability-driven build logic](00-project/build-logic.md) |
 | Backend modules | [Backend module](01-backend/module.md) and [module template](../templates/module-package-structure-template.md) |
 | Backend boundaries | [API](01-backend/api.md), [application](01-backend/application.md), [domain](01-backend/domain.md), [outbound adapters and configuration](01-backend/infrastructure.md) |
+| Backend validation | [Validation conventions](01-backend/validation.md) |
 | Cross-module behavior | [Module communication](03-integration/module-communication.md), [contracts](03-integration/contracts.md), [events](01-backend/events.md) |
 | Frontend consumer | [emme-web architecture](https://github.com/migangdelzar/emme-web/tree/main/docs/architecture) |
 | Delivery | [Container](04-delivery/container.md), [deployment](04-delivery/deployment.md), [CI](04-delivery/ci.md), [release](04-delivery/release.md) |

@@ -24,7 +24,7 @@
 
 ## 2. Purpose
 
-This template defines a Spring Modulith module built with DDD + Hexagonal Architecture, where the module's public `api` package is standardized by **kind** rather than by feature: every command, query, result, use case, event, exception, and type gets its own dedicated subpackage. The goal is that a developer can answer "what is this class for?" from its package alone, without reading the class body.
+This template defines a Spring Modulith module built with DDD + Hexagonal Architecture, where the module's public `api` package is standardized by **kind** rather than by feature: every command, query, result, use case, event, exception, and type gets its own dedicated subpackage. The goal is that a developer can answer "what is this class for?" from its package alone, without reading the class body. Input validation follows the [backend validation conventions](../architecture/01-backend/validation.md): Jakarta Bean Validation on inbound records, custom constraints for cross-field transport rules, and explicit domain/application validation for business truth.
 
 The template covers two contracts at once:
 
@@ -44,6 +44,7 @@ Use this layout when a module's `api` package has grown past a handful of flat f
 5. Both adapter groups point inward; nothing inside `domain` or `application` depends on `adapter`.
 6. Place a small `package-info.java` in every **materialized** architectural package. It is the package's local responsibility contract and, where applicable, carries Spring Modulith metadata.
 7. A package is materialized only when it contains a real type, owns descendants with a real responsibility, or carries required module/named-interface metadata. Do not create optional branches merely to reproduce the full tree.
+8. Validation follows ownership: `adapter.in.*` validates transport shape, `application` validates workflow/external facts, and `domain` protects business invariants. Do not put Jakarta validation annotations on domain types.
 
 ## 4. Full package tree
 
@@ -79,7 +80,8 @@ Use this layout when a module's `api` package has grown past a handful of flat f
     │   │   │   ├── request/
     │   │   │   ├── response/
     │   │   │   ├── mapper/
-    │   │   │   └── advice/
+    │   │   │   ├── advice/
+    │   │   │   └── validation/                         # C: cross-field input constraints
     │   │   ├── messaging/
     │   │   │   ├── consumer/
     │   │   │   └── mapper/
@@ -1849,6 +1851,7 @@ Names communicate architectural role before a file is opened. Use the module's u
 | `adapter.in.web.request` | `<Verb><Resource>Request.java` | `CreateQuoteRequest` | Versioned inbound wire shape |
 | `adapter.in.web.response` | `<Resource><Shape>Response.java` | `QuoteResponse`, `QuotePageResponse` | Outbound wire shape; not an application result |
 | `adapter.in.web.mapper` | `<Resource>WebMapper.java` | `QuoteWebMapper` | Request/response ↔ module API |
+| `adapter.in.web.validation` | `Valid<Concept>.java`, `<Concept>Validator.java` | `ValidQuoteDateRange`, `QuoteDateRangeValidator` | Cross-field transport constraints; stateless and free of I/O |
 | `adapter.in.web.advice` | `<Module>ExceptionHandler.java` | `QuoteExceptionHandler` | Module-specific HTTP failure mapping |
 | `adapter.in.web.filter` | `<Concern>Filter.java` | `QuoteIdempotencyFilter` | Module-owned request-pipeline concern |
 | `adapter.in.messaging.consumer` | `<Fact>Consumer.java` | `CustomerUpdatedConsumer` | Names the fact received, not an imperative operation |
@@ -2132,6 +2135,15 @@ package <base-namespace>.<module>.adapter.in.web.controller;
  */
 package <base-namespace>.<module>.adapter.in.web.request;
 ```
+
+### Web validation
+
+Create `adapter/in/web/validation` only when a request has a real cross-field
+or conditional transport rule that cannot be expressed with field annotations.
+Use a type-level `Valid<Concept>` annotation and a stateless `<Concept>Validator`.
+Keep the validator free of repositories, HTTP clients, authorization, and
+business state transitions. The complete annotation, error, i18n, and testing
+policy is defined in the [backend validation conventions](../architecture/01-backend/validation.md).
 
 ### Web response models
 

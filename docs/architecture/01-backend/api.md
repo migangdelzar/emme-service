@@ -82,6 +82,7 @@ sequenceDiagram
 
 - Version public routes deliberately, for example `/api/v1/...`.
 - Validate syntax and boundary constraints at the edge.
+- Apply the [backend validation conventions](validation.md): Jakarta constraints belong on inbound request/message models, while domain and cross-aggregate rules remain in their owning layers.
 - Resolve authentication and tenant context before entering application behavior.
 - Use request and response DTOs; do not expose persistence entities.
 - Return consistent error envelopes with a correlation identifier.

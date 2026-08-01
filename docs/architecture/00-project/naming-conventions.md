@@ -77,6 +77,7 @@ whose management behavior is explicitly defined.
 | `<module>.adapter.in.web.response` | HTTP output wire models | `<Resource><Shape>Response.java` |
 | `<module>.adapter.in.web.mapper` | HTTP/API translation | `<Resource>WebMapper.java` |
 | `<module>.adapter.in.web.advice` | HTTP failure translation | `<Module>ExceptionHandler.java` |
+| `<module>.adapter.in.web.validation` | HTTP request constraints and cross-field validators | `Valid<Concept>.java`, `<Concept>Validator.java` |
 | `<module>.adapter.in.web.filter` | Module-owned request filters | `<Concern>Filter.java` |
 | `<module>.adapter.in.messaging.consumer` | Inbound facts/messages | `<Fact>Consumer.java` |
 | `<module>.adapter.in.messaging.mapper` | Message/API translation | `<Module>MessageMapper.java` |
@@ -158,6 +159,10 @@ Do not use `Dto` as a default suffix. Use `Request`, `Response`, `Command`,
 | `@interface` | Reusable framework/test annotation | `<Purpose>` or `<Purpose>Test` | Annotation describes policy, not an implementation detail |
 | `abstract class` | Real shared lifecycle with controlled extension | Role name, often `<Role>Support` | Require a documented extension invariant; do not create `Base*` by default |
 | `exception` | Business or boundary failure | `<Subject><Failure>Exception` | Preserve internal cause; never expose vendor exception types |
+
+Validation annotations belong on inbound request/message records, not domain
+types. Type-level cross-field constraints use a `Valid<Concept>` annotation and
+an adjacent `<Concept>Validator`; see the [validation conventions](../01-backend/validation.md).
 
 ### Enum naming
 
@@ -349,4 +354,3 @@ rules below together with this document:
 | External integrations | [Infrastructure](../01-backend/infrastructure.md) |
 | Events and consumers | [Events](../01-backend/events.md) |
 | Gradle build capabilities | [Build logic](build-logic.md) |
-

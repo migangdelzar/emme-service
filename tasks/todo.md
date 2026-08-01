@@ -164,3 +164,18 @@
 - [x] Direct Markdown validation passes with `node scripts/validate-markdown.mjs`.
 - [ ] Run the `mise run docs-check` wrapper after the local `mise.toml` trust
   decision is made; the underlying validator already passes.
+
+## Validation conventions — 2026-08-01
+
+- [x] Add the canonical backend validation page for Jakarta Bean Validation,
+  records, custom cross-field constraints, domain/application ownership, i18n,
+  error mapping, naming, and tests.
+- [x] Link validation guidance from the handbook, backend API/controller pages,
+  module template, and naming catalog.
+- [x] Align Tenancy create/update request records with the persisted slug/name
+  bounds using `@Size` in the inbound adapter.
+- [x] Add focused validation regression coverage and verify the existing web
+  boundary still rejects an oversized slug before persistence.
+- [x] Direct Markdown validation passes with `node scripts/validate-markdown.mjs`.
+- [x] Run the complete Tenancy check and service Modulith verification before
+  committing this slice.

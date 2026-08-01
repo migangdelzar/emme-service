@@ -4,9 +4,14 @@ import com.emme.identity.adapter.in.web.mapper.IdentityWebMapper;
 import com.emme.identity.adapter.in.web.request.AssignMembershipRequest;
 import com.emme.identity.adapter.in.web.response.MembershipResponse;
 import com.emme.identity.adapter.in.web.security.UserContextHolder;
+import com.emme.identity.api.command.AssignMembershipCommand;
+import com.emme.identity.api.command.RevokeMembershipCommand;
+import com.emme.identity.api.query.GetCurrentUserMembershipsQuery;
+import com.emme.identity.api.result.MembershipInfo;
+import com.emme.identity.api.usecase.AssignMembershipUseCase;
+import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
-import com.emme.identity.application.service.MembershipService;
-import com.emme.identity.domain.model.Membership;
+import com.emme.identity.api.usecase.RevokeMembershipUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,12 +33,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/identity")
 public class IdentityController {
 
-  private final MembershipService service;
+  private final AssignMembershipUseCase assignMembership;
+  private final GetCurrentUserMembershipsUseCase currentMemberships;
   private final GetUserPermissionsUseCase permissions;
+  private final RevokeMembershipUseCase revokeMembership;
 
-  public IdentityController(MembershipService service, GetUserPermissionsUseCase permissions) {
-    this.service = service;
+  public IdentityController(
+      AssignMembershipUseCase assignMembership,
+      GetCurrentUserMembershipsUseCase currentMemberships,
+      GetUserPermissionsUseCase permissions,
+      RevokeMembershipUseCase revokeMembership) {
+    this.assignMembership = assignMembership;
+    this.currentMemberships = currentMemberships;
     this.permissions = permissions;
+    this.revokeMembership = revokeMembership;
   }
 
   @GetMapping("/me")
@@ -42,7 +55,9 @@ public class IdentityController {
     return UserContextHolder.withCurrentUser(
         user -> {
           List<MembershipResponse> members =
-              service.findCurrentUserMemberships(user.subject()).stream()
+              currentMemberships
+                  .getMemberships(new GetCurrentUserMembershipsQuery(user.subject()))
+                  .stream()
                   .map(IdentityWebMapper::toMembershipResponse)
                   .toList();
           return ResponseEntity.ok(members);
@@ -64,9 +79,13 @@ public class IdentityController {
   @Tag(name = "Identity")
   public ResponseEntity<MembershipResponse> assignMembership(
       @Valid @RequestBody AssignMembershipRequest request) {
-    Membership m = service.assign(request.tenantId(), request.roleId(), request.userReference());
-    URI location = URI.create("/api/v1/identity/memberships/" + m.id());
-    return ResponseEntity.created(location).body(IdentityWebMapper.toMembershipResponse(m));
+    MembershipInfo membership =
+        assignMembership.assign(
+            new AssignMembershipCommand(
+                request.tenantId(), request.roleId(), request.userReference()));
+    URI location = URI.create("/api/v1/identity/memberships/" + membership.id());
+    return ResponseEntity.created(location)
+        .body(IdentityWebMapper.toMembershipResponse(membership));
   }
 
   @DeleteMapping("/memberships/{id}")
@@ -74,7 +93,7 @@ public class IdentityController {
       summary = "Revoke a membership",
       tags = {"Identity"})
   public ResponseEntity<MembershipResponse> revokeMembership(@PathVariable UUID id) {
-    Membership m = service.revoke(id);
-    return ResponseEntity.ok(IdentityWebMapper.toMembershipResponse(m));
+    MembershipInfo membership = revokeMembership.revoke(new RevokeMembershipCommand(id));
+    return ResponseEntity.ok(IdentityWebMapper.toMembershipResponse(membership));
   }
 }

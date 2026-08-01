@@ -310,6 +310,33 @@ Execution rules and dependencies are maintained in
 - Existing dependency-analysis and Testcontainers/PostgreSQL teardown warnings
   remain non-blocking and occurred after successful task completion.
 
+## Identity membership web-boundary slice — 2026-08-01
+
+- [x] Add failing tests preventing membership web adapters from importing
+  application implementations or domain models.
+- [x] Add grouped membership commands, query, use-case contracts, and result
+  mapping.
+- [x] Refactor Identity and current-user controllers to consume public use cases.
+- [x] Preserve membership routes, status codes, response fields, and tenant
+  selection behavior.
+- [x] Verify Identity web/security tests, Modulith, CI, boot JARs, Markdown, and
+  whitespace.
+
+### Results
+
+- Red phase: the source-boundary test failed because the membership controllers
+  and web mapper imported `MembershipService` and the domain `Membership` type.
+- Green/refactor phase: grouped membership commands, query, use cases, and
+  `MembershipInfo` mapping now form the web-facing boundary. Controllers depend
+  only on public use-case contracts and the web mapper depends only on the
+  public result model.
+- Membership routes, response status codes, response fields, and tenant
+  selection behavior remain unchanged.
+- Identity tests/check/integration, Studio Modulith verification, service CI,
+  both boot JARs, Markdown validation, and `git diff --check` passed.
+- Existing dependency-analysis and Testcontainers/PostgreSQL shutdown warnings
+  remain non-blocking and occurred after successful task completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

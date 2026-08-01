@@ -6,9 +6,10 @@ import com.emme.identity.adapter.in.web.response.CurrentUserResponse;
 import com.emme.identity.adapter.in.web.response.TenantMembershipResponse;
 import com.emme.identity.adapter.in.web.security.UserContext;
 import com.emme.identity.adapter.in.web.security.UserContextHolder;
+import com.emme.identity.api.query.GetCurrentUserMembershipsQuery;
+import com.emme.identity.api.result.MembershipInfo;
+import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
-import com.emme.identity.application.service.MembershipService;
-import com.emme.identity.domain.model.Membership;
 import com.emme.studio.api.usecase.SalonApi;
 import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.tenancy.api.usecase.TenantApi;
@@ -23,17 +24,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class CurrentUserController {
 
   private final GetUserPermissionsUseCase permissions;
-  private final MembershipService membershipService;
+  private final GetCurrentUserMembershipsUseCase memberships;
   private final TenantApi tenantApi;
   private final SalonApi salonApi;
 
   public CurrentUserController(
       GetUserPermissionsUseCase permissions,
-      MembershipService membershipService,
+      GetCurrentUserMembershipsUseCase memberships,
       TenantApi tenantApi,
       SalonApi salonApi) {
     this.permissions = permissions;
-    this.membershipService = membershipService;
+    this.memberships = memberships;
     this.tenantApi = tenantApi;
     this.salonApi = salonApi;
   }
@@ -42,7 +43,8 @@ public class CurrentUserController {
   public CurrentUserResponse currentUser(@AuthenticationPrincipal Object principal) {
     UserContext user = UserContextHolder.fromPrincipal(principal);
 
-    List<Membership> memberships = membershipService.findCurrentUserMemberships(user.subject());
+    List<MembershipInfo> memberships =
+        this.memberships.getMemberships(new GetCurrentUserMembershipsQuery(user.subject()));
     List<TenantMembershipResponse> membershipResponses =
         memberships.stream().map(membership -> toResponse(user.subject(), membership)).toList();
 
@@ -59,7 +61,7 @@ public class CurrentUserController {
         user.subject(), user.email(), user.displayName(), membershipResponses, profile);
   }
 
-  private TenantMembershipResponse toResponse(String subject, Membership membership) {
+  private TenantMembershipResponse toResponse(String subject, MembershipInfo membership) {
     TenantInfo tenant = tenantApi.getTenantInfo(membership.tenantId());
     Set<String> permissionCodes = permissions.getPermissions(subject, membership.tenantId());
     return new TenantMembershipResponse(
@@ -68,11 +70,11 @@ public class CurrentUserController {
         tenant.name(),
         tenant.name(),
         membership.roleCode(),
-        membership.status().name(),
+        membership.status(),
         permissionCodes);
   }
 
-  private static UUID selectedTenantId(List<Membership> memberships, UUID tenantIdFromClaim) {
+  private static UUID selectedTenantId(List<MembershipInfo> memberships, UUID tenantIdFromClaim) {
     if (tenantIdFromClaim != null) {
       if (memberships.stream().anyMatch(m -> m.tenantId().equals(tenantIdFromClaim))) {
         return tenantIdFromClaim;

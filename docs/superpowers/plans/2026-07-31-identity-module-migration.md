@@ -446,6 +446,23 @@ The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
 
+## Completed membership web-boundary slice — 2026-08-01
+
+- [x] Added grouped membership commands, query, use-case contracts, and
+  application result mapping.
+- [x] Refactored Identity and current-user controllers and the web mapper away
+  from `MembershipService` and `domain.model.Membership`.
+- [x] Preserved membership routes, response fields, status codes, and tenant
+  selection behavior.
+- [x] Added source-boundary regression coverage and normalized the query use-case
+  operation name to `getMemberships`.
+- [x] Verified Identity tests/check/integration, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Identity web normalization includes FeatureFlag adapter result mapping,
+then architecture dependency rules and final authorization, tenant-isolation,
+and migration/recovery evidence.
+
 ## Completed provisioning inbound-port slice — 2026-08-01
 
 - [x] Added the public `ProvisionTenantIdentityUseCase` contract under the

@@ -249,6 +249,15 @@ class IdentityPackageConventionTest {
   private static final Path IDENTITY_EXCEPTION_HANDLER =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/in/web/advice/IdentityExceptionHandler.java");
+  private static final Path IDENTITY_CONTROLLER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/IdentityController.java");
+  private static final Path CURRENT_USER_CONTROLLER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/CurrentUserController.java");
+  private static final Path IDENTITY_WEB_MAPPER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/mapper/IdentityWebMapper.java");
   private static final Path IDENTITY_EXCEPTION_PACKAGE =
       sourcePath("modules/identity/src/main/java/com/emme/identity/api/exception");
   private static final Path USER_AUTH_USE_CASE =
@@ -401,6 +410,18 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(LOGIN_ATTEMPT_RATE_LIMITER)).isTrue();
     assertThat(source).contains("LoginAttemptRateLimiter");
     assertThat(source).doesNotContain("ConcurrentHashMap");
+  }
+
+  @Test
+  void keepsMembershipWebAdaptersIndependentFromApplicationImplementations() throws IOException {
+    assertThat(Files.readString(IDENTITY_CONTROLLER))
+        .doesNotContain("com.emme.identity.application.service.MembershipService")
+        .doesNotContain("com.emme.identity.domain.model.Membership");
+    assertThat(Files.readString(CURRENT_USER_CONTROLLER))
+        .doesNotContain("com.emme.identity.application.service.MembershipService")
+        .doesNotContain("com.emme.identity.domain.model.Membership");
+    assertThat(Files.readString(IDENTITY_WEB_MAPPER))
+        .doesNotContain("com.emme.identity.domain.model.Membership");
   }
 
   @Test

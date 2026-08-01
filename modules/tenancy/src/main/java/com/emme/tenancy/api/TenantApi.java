@@ -10,7 +10,11 @@ import java.util.UUID;
 public interface TenantApi {
   TenantInfo getTenantInfo(UUID tenantId);
 
+  List<TenantInfo> getAllTenants();
+
   List<TenantInfo> getActiveTenants();
 
   UUID getTenantIdBySlug(String slug);
+
+  void updateIdentityRealm(UUID tenantId, String identityRealm);
 }

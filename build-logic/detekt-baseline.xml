@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ForbiddenComment:EmmeContainerPlugin.kt:EmmeContainerPlugin$// TODO: add PodmanProvider when implemented; both currently map to DockerProvider</ID>
+    <ID>LongMethod:EmmeContainerPlugin.kt:EmmeContainerPlugin$override fun apply</ID>
+    <ID>MagicNumber:ComposeProvider.kt:ComposeProvider$1000</ID>
+    <ID>MagicNumber:DockerProvider.kt:DockerProvider$1000</ID>
+    <ID>MagicNumber:EmmeQualityExtension.kt:EmmeQualityExtension$0.70</ID>
+    <ID>MagicNumber:GenerateSbomTask.kt:GenerateSbomTask$1000</ID>
+    <ID>MagicNumber:GhcrPublisherProvider.kt:GhcrPublisherProvider$1000</ID>
+    <ID>MagicNumber:KubernetesProvider.kt:KubernetesProvider$1000</ID>
+    <ID>MagicNumber:VerifyContainerImage.kt:VerifyContainerImage$2000</ID>
+    <ID>MaxLineLength:KubernetesProvider.kt:KubernetesProvider$val output = executeCommand("kubectl", listOf("rollout", "status", "deployment/studio-api", "-n", ns, "--timeout=30s"))</ID>
+    <ID>TooGenericExceptionCaught:ComposeProvider.kt:ComposeProvider$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:KubernetesProvider.kt:KubernetesProvider$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:DeployTask.kt:DeployTask$throw RuntimeException("Deployment failed: ${result.message}")</ID>
+    <ID>UnusedParameter:ContainerResult.kt:ScanResult$maxSeverity: String = "CRITICAL"</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -61,7 +61,7 @@ tasks.register<Test>("e2eTest") {
   group = "verification"
   testClassesDirs = e2eTest.output.classesDirs
   classpath = e2eTest.runtimeClasspath
-  shouldRunAfter(tasks.named("integrationTest"))
+  shouldRunAfter(tasks.matching { it.name == "integrationTest" })
   useJUnitPlatform()
   jvmArgs("--enable-preview", "-Djava.net.preferIPv4Stack=true")
   systemProperty(

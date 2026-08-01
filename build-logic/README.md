@@ -49,10 +49,9 @@ build-logic/
     └── functionalTest/kotlin/
 ```
 
-`internal/`, global `plugin/`, `extension/`, `task/`, `provider/`, and `value/`
-packages are transitional implementation buckets. They are migrated by capability
-ownership, not by a blind global rename. `internal/` becomes `core/`; capability
-specific files move into their owning capability.
+The implementation does not use global `plugin/`, `extension/`, `task/`,
+`provider/`, or `value/` buckets. Shared primitives are in `core/`; capability
+specific files live under the capability that owns their behavior.
 
 ## Convention plugins
 
@@ -74,6 +73,7 @@ specific files move into their owning capability.
 | `emme.container` | Container image lifecycle | Containerized applications |
 | `emme.publishing` | SBOM, signing, metadata, releases | Published artifacts |
 | `emme.deployment` | Compose/k3d/Kubernetes strategy dispatch | Deployable applications |
+| `emme.security` | Security scanner task and provider dispatch | Projects requiring security gates |
 
 Convention plugins remain declarative, composable, small, opinionated, and reusable.
 Complex behavior belongs in a capability-owned binary plugin.

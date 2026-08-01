@@ -1,36 +1,37 @@
 package com.emme.catalog.domain.model;
 
-import com.emme.shared.TenantOwnedEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.emme.shared.IdGenerator;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Reference photo of a catalog item's expected result. caption is the gemma3:4b vision description;
- * embedding/caption_tsv are unmapped (see CatalogItem docs).
- */
-@Entity
-@Table(name = "catalog_item_image")
-public class CatalogItemImage extends TenantOwnedEntity {
+/** Pure catalog image reference. Storage and database mapping are owned by the outbound adapter. */
+public class CatalogItemImage {
 
-  @Column(name = "catalog_item_id", nullable = false)
+  private final UUID id;
+  private final UUID tenantId;
   private UUID catalogItemId;
-
-  @Column(name = "storage_key", nullable = false, length = 500)
   private String storageKey;
-
-  @Column(name = "caption", length = 2000)
   private String caption;
 
-  protected CatalogItemImage() {}
-
   public CatalogItemImage(UUID tenantId, UUID catalogItemId, String storageKey, String caption) {
-    super(tenantId);
+    this(IdGenerator.generate(), tenantId, catalogItemId, storageKey, caption);
+  }
+
+  public CatalogItemImage(
+      UUID id, UUID tenantId, UUID catalogItemId, String storageKey, String caption) {
+    this.id = Objects.requireNonNull(id, "id must not be null");
+    this.tenantId = Objects.requireNonNull(tenantId, "tenantId must not be null");
     this.catalogItemId = Objects.requireNonNull(catalogItemId, "catalogItemId must not be null");
     this.storageKey = Objects.requireNonNull(storageKey, "storageKey must not be null");
     this.caption = caption;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public UUID getTenantId() {
+    return tenantId;
   }
 
   public UUID getCatalogItemId() {

@@ -29,6 +29,11 @@ class TenantApiImpl implements TenantApi {
   }
 
   @Override
+  public List<TenantInfo> getAllTenants() {
+    return tenantRepository.findAll().stream().map(this::toTenantInfo).toList();
+  }
+
+  @Override
   public List<TenantInfo> getActiveTenants() {
     return tenantRepository.findByStatus("ACTIVE").stream().map(this::toTenantInfo).toList();
   }
@@ -41,7 +46,24 @@ class TenantApiImpl implements TenantApi {
         .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + slug));
   }
 
+  @Override
+  @Transactional
+  public void updateIdentityRealm(UUID tenantId, String identityRealm) {
+    Tenant tenant =
+        tenantRepository
+            .findById(tenantId)
+            .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + tenantId));
+    tenant.setKeycloakRealm(identityRealm);
+  }
+
   private TenantInfo toTenantInfo(Tenant t) {
-    return new TenantInfo(t.getId(), t.getSlug(), t.getName(), null, t.getStatus().name(), null);
+    return new TenantInfo(
+        t.getId(),
+        t.getSlug(),
+        t.getName(),
+        null,
+        t.getStatus().name(),
+        null,
+        t.getKeycloakRealm());
   }
 }

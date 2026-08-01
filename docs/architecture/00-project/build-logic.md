@@ -277,10 +277,11 @@ This keeps build logic independently compiled and testable while allowing every 
 
 Do not put application code, domain code, secrets, deployment credentials, or environment-specific business decisions in this build.
 
-### 2. Current baseline and target migration
+### 2. Repository implementation
 
-The current repository contains a type-oriented compatibility baseline. The target
-is the capability-owned structure above:
+The repository implements the capability-owned structure above. The public
+precompiled convention plugin IDs remain stable while the Kotlin implementation
+packages are organized by the capability they implement:
 
 ```text
 build-logic/
@@ -307,25 +308,26 @@ build-logic/
     │   ├── emme.container.gradle.kts
     │   ├── emme.publishing.gradle.kts
     │   ├── emme.deployment.gradle.kts
+    │   ├── emme.security.gradle.kts
     │   └── com/emme/buildlogic/
-    │       ├── internal/       # transitional shared primitives
-    │       ├── model/          # transitional global concepts
-    │       ├── extension/      # transitional global DSL bucket
-    │       ├── plugin/         # transitional global plugin bucket
-    │       ├── provider/       # transitional global provider bucket
-    │       ├── task/           # transitional global task bucket
-    │       ├── value/          # transitional ValueSource bucket
-    │       └── dependency/     # dependency catalog access
+    │       ├── core/           # shared build primitives and dependency access
+    │       ├── model/          # genuinely cross-capability concepts
+    │       ├── root/            # repository-wide coordination
+    │       ├── container/       # container capability
+    │       ├── deployment/      # deployment capability
+    │       ├── publishing/      # publishing capability
+    │       ├── registry/        # registry capability
+    │       ├── security/        # security capability
+    │       ├── quality/         # quality capability
+    │       └── git/             # external Git value sources
     ├── test/kotlin/
     └── functionalTest/kotlin/
 ```
 
-The migration is not a mechanical rename. Move each implementation into the
-capability that owns its behavior: `internal/` shared primitives become `core/`,
-global `extension/`, `plugin/`, `provider/`, and `task/` buckets are split into their
-capabilities, and `value/` implementations move into the capability that consumes
-their external state, such as `git/`. Keep only genuinely global models in
-`model/`. Preserve plugin IDs and Gradle API compatibility while moving files.
+The package layout is intentionally not type-first. Each capability owns its
+plugin, extension, models, tasks, providers, and results. Shared primitives live in
+`core/`, and only genuinely cross-capability concepts remain in `model/`. Preserve
+plugin IDs and Gradle API compatibility when adding or moving implementation files.
 
 ### 3. Core versus capability ownership
 
@@ -601,6 +603,13 @@ Unit tests must cover provider selection, model validation, task inputs, and plu
 
 Every new external provider needs provider unit tests, a functional wiring test, and a documented local/CI prerequisite. Every custom task needs input/output validation and a failure-path test.
 
+The quality capability is enforced by the included build itself. Spotless formats
+Kotlin, Kotlin Gradle scripts, and Java with repository-approved formatters;
+Checkstyle validates Java source conventions; and Detekt validates build-logic
+Kotlin. The committed Detekt baseline contains only acknowledged legacy findings:
+new findings fail the build and must be fixed or explicitly reviewed before the
+baseline is changed.
+
 ### 14. Capability ownership and change isolation
 
 | Change | Primary location | Expected cross-cutting impact |
@@ -651,18 +660,18 @@ capability-owned layout has already been implemented.
 |---|---|---|---|
 | Included `build-logic` build | This document, sections 1–2 | `settings.gradle.kts`, `build-logic/` | Unchanged included-build boundary |
 | Precompiled convention plugins | Sections 4 and 11 | `build-logic/src/main/kotlin/emme.*.gradle.kts` | Same precompiled plugin files |
-| Binary Kotlin plugins | Section 5 | `com.emme.buildlogic.plugin` | `com.emme.buildlogic.<capability>` |
-| Typed extensions | Section 6 | `com.emme.buildlogic.extension` | `com.emme.buildlogic.<capability>` |
-| Custom tasks | Section 7 | `com.emme.buildlogic.task.<capability>` | `com.emme.buildlogic.<capability>.task` |
-| Provider ports/adapters | Section 8 | `com.emme.buildlogic.provider.<capability>` | `com.emme.buildlogic.<capability>.provider` |
-| Result models | Sections 8–9 | `provider/<capability>/*Result.kt` | `<capability>/provider/*Result.kt` |
-| Capability-specific models | Section 9 | Global `model/` bucket | Keep only shared concepts in `model/`; move capability concepts beside their capability |
-| Gradle `ValueSource` | Section 9 | `com.emme.buildlogic.value` | `com.emme.buildlogic.git` or the owning capability |
-| Root coordination | Section 10 | `plugin/EmmeRootPlugin.kt`, `extension/EmmeBuildExtension.kt` | `root/EmmeRootPlugin.kt`, `root/EmmeBuildExtension.kt` |
+| Binary Kotlin plugins | Section 5 | `com.emme.buildlogic.<capability>` | Implemented in capability packages |
+| Typed extensions | Section 6 | `com.emme.buildlogic.<capability>` | Implemented in capability packages |
+| Custom tasks | Section 7 | `com.emme.buildlogic.<capability>.task` | Implemented in capability-owned task packages |
+| Provider ports/adapters | Section 8 | `com.emme.buildlogic.<capability>.provider` | Implemented in capability-owned provider packages |
+| Result models | Sections 8–9 | `<capability>/provider/*Result.kt` | Implemented beside the owning provider port |
+| Capability-specific models | Section 9 | Capability-owned packages | Global `model/` retains only shared concepts |
+| Gradle `ValueSource` | Section 9 | `com.emme.buildlogic.git` | Implemented in the owning capability-independent package |
+| Root coordination | Section 10 | `root/EmmeRootPlugin.kt`, `root/EmmeBuildExtension.kt` | Implemented in `root/` |
 | Module types versus capabilities | Section 11 | `model/EmmeModuleType`, convention plugin IDs | Shared module types plus explicit capability plugins |
-| Capability-first naming | Section 12 | Transitional type-first buckets | Capability package and plugin names |
+| Capability-first naming | Section 12 | Capability-owned packages | Implemented; convention IDs remain stable |
 | Unit and TestKit functional tests | Section 13 | `src/test`, `src/functionalTest` | Tests grouped by capability where ownership is clear |
-| Change isolation | Section 14 | Cross-cutting type buckets | Capability-owned files that change together |
+| Change isolation | Section 14 | Capability-owned files | Capability-owned files that change together |
 | Quality controls | Section 15 | Existing task input/output, failure, caching, and secret rules | Same controls enforced during capability migration |
 
 ## Completion checklist

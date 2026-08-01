@@ -1,14 +1,12 @@
 package com.emme.identity.application;
 
-import com.emme.tenancy.entity.Tenant;
-import com.emme.tenancy.entity.TenantRepository;
+import com.emme.tenancy.api.TenantApi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.List;
 import java.util.Map;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -30,17 +28,17 @@ public class KeycloakAuthService {
   private final String baseUrl;
   private final String clientId;
   private final String defaultRealm;
-  private final TenantRepository tenantRepo;
+  private final TenantApi tenantApi;
 
   public KeycloakAuthService(
       @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}") String issuerUri,
       @Value("${spring.security.oauth2.client.registration.keycloak.client-id}") String clientId,
       @Value("${app.keycloak.default-realm:emme}") String defaultRealm,
-      TenantRepository tenantRepo) {
+      TenantApi tenantApi) {
     this.baseUrl = issuerUri.substring(0, issuerUri.indexOf("/realms/"));
     this.clientId = clientId;
     this.defaultRealm = defaultRealm;
-    this.tenantRepo = tenantRepo;
+    this.tenantApi = tenantApi;
   }
 
   public record TokenResult(String accessToken, String refreshToken, String idToken) {}
@@ -112,15 +110,16 @@ public class KeycloakAuthService {
 
   private String resolveRealm(String email) {
     // Platform admin check — if email is in the platform domain
-    if (email.endsWith("@emme.app") && !email.contains("@demo-salon") && !email.contains("@studio-a")) {
+    if (email.endsWith("@emme.app")
+        && !email.contains("@demo-salon")
+        && !email.contains("@studio-a")) {
       return defaultRealm;
     }
     // Try to find tenant by email domain
     String domain = email.substring(email.indexOf('@') + 1);
-    List<Tenant> tenants = tenantRepo.findAll();
-    for (Tenant t : tenants) {
-      if (domain.contains(t.getSlug())) {
-        return t.getKeycloakRealm();
+    for (var tenant : tenantApi.getAllTenants()) {
+      if (domain.contains(tenant.slug())) {
+        return tenant.identityRealm();
       }
     }
     return defaultRealm;

@@ -48,9 +48,14 @@ class LayerConventionTest {
         .or()
         .areAssignableTo(org.springframework.data.repository.Repository.class)
         .should()
-        .resideInAnyPackage("com.emme..entity..", "com.emme.shared..")
+        .resideInAnyPackage(
+            "com.emme..adapter.out.persistence.entity..",
+            "com.emme..adapter.out.persistence.repository..",
+            "com.emme..entity..",
+            "com.emme.shared..")
         .because(
-            "persistence types live in <module>/entity (shared holds base mapped superclasses)")
+            "persistence types live in adapter.out.persistence; legacy entity packages remain "
+                + "temporary migration targets")
         .check(CLASSES);
   }
 

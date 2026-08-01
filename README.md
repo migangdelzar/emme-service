@@ -118,6 +118,8 @@ the environment or deployment secret manager; never commit them to this repo.
 | Backend modules | [`docs/architecture/01-backend/`](docs/architecture/01-backend/) |
 | Frontend/backend contracts | [`docs/architecture/03-integration/`](docs/architecture/03-integration/) |
 | Delivery and release | [`docs/architecture/04-delivery/`](docs/architecture/04-delivery/) |
+| Operations and production evidence | [`docs/architecture/05-operations/`](docs/architecture/05-operations/) |
+| Engineering policies | [`docs/principles.md`](docs/principles.md), [`docs/security.md`](docs/security.md), [`docs/testing.md`](docs/testing.md) |
 | ADRs | [`docs/adr/`](docs/adr/) |
 
 ## License

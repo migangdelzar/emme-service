@@ -1,56 +1,28 @@
 package com.emme.catalog.domain.model;
 
-import com.emme.shared.TenantOwnedEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import com.emme.shared.IdGenerator;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * A priced, sellable subtype of a Service (e.g. "Francés clásico" under "Uñas acrílicas"). The
- * embedding vector and search_tsv columns exist in Postgres but are intentionally NOT mapped here —
- * vector reads/writes go through com.emme.shared.search.HybridSearch (native SQL, Postgres-only).
+ * Pure catalog business model. Database annotations and tenant persistence concerns belong to
+ * {@code adapter.out.persistence.entity}; this type owns the catalog behavior consumed by the
+ * application layer.
  */
-@Entity
-@Table(
-    name = "catalog_item",
-    uniqueConstraints = {@UniqueConstraint(columnNames = {"tenant_id", "service_id", "code"})})
-public class CatalogItem extends TenantOwnedEntity {
+public class CatalogItem {
 
-  @Column(name = "service_id", nullable = false)
+  private final UUID id;
+  private final UUID tenantId;
   private UUID serviceId;
-
-  @Column(name = "code", nullable = false, length = 50)
   private String code;
-
-  @Column(name = "name", nullable = false, length = 200)
   private String name;
-
-  @Column(name = "description", length = 2000)
   private String description;
-
-  @Column(name = "price", nullable = false, precision = 10, scale = 2)
   private BigDecimal price;
-
-  @Column(name = "price_notes", length = 500)
   private String priceNotes;
-
-  @Column(name = "duration_minutes")
   private Integer durationMinutes;
-
-  @Column(name = "materials")
   private String materials;
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "status", nullable = false, length = 10)
   private CatalogItemStatus status = CatalogItemStatus.ACTIVE;
-
-  protected CatalogItem() {}
 
   public CatalogItem(
       UUID tenantId,
@@ -62,7 +34,34 @@ public class CatalogItem extends TenantOwnedEntity {
       String priceNotes,
       Integer durationMinutes,
       String materials) {
-    super(tenantId);
+    this(
+        IdGenerator.generate(),
+        tenantId,
+        serviceId,
+        code,
+        name,
+        description,
+        price,
+        priceNotes,
+        durationMinutes,
+        materials,
+        CatalogItemStatus.ACTIVE);
+  }
+
+  public CatalogItem(
+      UUID id,
+      UUID tenantId,
+      UUID serviceId,
+      String code,
+      String name,
+      String description,
+      BigDecimal price,
+      String priceNotes,
+      Integer durationMinutes,
+      String materials,
+      CatalogItemStatus status) {
+    this.id = Objects.requireNonNull(id, "id must not be null");
+    this.tenantId = Objects.requireNonNull(tenantId, "tenantId must not be null");
     this.serviceId = Objects.requireNonNull(serviceId, "serviceId must not be null");
     this.code = Objects.requireNonNull(code, "code must not be null");
     this.name = Objects.requireNonNull(name, "name must not be null");
@@ -71,6 +70,15 @@ public class CatalogItem extends TenantOwnedEntity {
     this.priceNotes = priceNotes;
     this.durationMinutes = durationMinutes;
     this.materials = materials;
+    this.status = Objects.requireNonNull(status, "status must not be null");
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public UUID getTenantId() {
+    return tenantId;
   }
 
   public UUID getServiceId() {
@@ -109,8 +117,8 @@ public class CatalogItem extends TenantOwnedEntity {
     return status;
   }
 
-  public void setStatus(CatalogItemStatus status) {
-    this.status = status;
+  public void changeStatus(CatalogItemStatus status) {
+    this.status = Objects.requireNonNull(status, "status must not be null");
   }
 
   /** Text that gets embedded for semantic matching. */

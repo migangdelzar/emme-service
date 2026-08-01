@@ -1,0 +1,19 @@
+name: Dependency Review
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    # GitHub Dependency Graph is not enabled for this repository configuration.
+    # Run manually after an administrator enables it; local Gradle verification
+    # and OWASP checks remain blocking CI controls.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

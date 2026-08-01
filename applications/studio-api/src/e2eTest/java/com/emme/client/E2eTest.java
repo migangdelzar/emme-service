@@ -92,13 +92,15 @@ public final class E2eTest {
 
   /** Acquire a user with the specified role. */
   public static void withSession(Role role, Consumer<UserSession> block) {
-    withResult(s -> {
-      if (s.user().role() != role) {
-        throw new IllegalStateException("Expected role " + role + " but got " + s.user().role());
-      }
-      block.accept(s);
-      return null;
-    });
+    withResult(
+        s -> {
+          if (s.user().role() != role) {
+            throw new IllegalStateException(
+                "Expected role " + role + " but got " + s.user().role());
+          }
+          block.accept(s);
+          return null;
+        });
   }
 
   /** Acquire a user with the specified role and tenant. */

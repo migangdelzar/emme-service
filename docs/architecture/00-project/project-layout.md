@@ -5,7 +5,9 @@
 The service repository is a modular monolith with independently understandable
 business modules, shared libraries, deployable applications, and an included
 Gradle build-logic build. The browser application lives in the sibling
-`emme-web` repository.
+`emme-web` repository. Frontend architecture and browser delivery guidance are
+owned by that repository; this repository owns the service contract consumed by
+the web application.
 
 ## Baseline layout
 
@@ -30,7 +32,6 @@ emme/
 ├── database/                     # migrations and database lifecycle
 ├── build-logic/                  # reusable Gradle architecture
 ├── infra/                        # local and environment infrastructure
-├── apps/                         # frontend applications
 ├── docs/                         # architecture, requirements, ADRs, and plans
 ├── settings.gradle.kts
 ├── build.gradle.kts

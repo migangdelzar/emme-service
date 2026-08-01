@@ -9,6 +9,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -65,5 +66,9 @@ public class ChannelParticipantEntity extends TenantOwnedEntity {
 
   public void setConsentStatus(ConsentStatus consentStatus) {
     this.consentStatus = consentStatus;
+  }
+
+  public void restoreIdentity(UUID id, Instant createdAt) {
+    restoreAuditFields(id, createdAt, createdAt);
   }
 }

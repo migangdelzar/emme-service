@@ -1,7 +1,5 @@
 package com.emme.assistant.adapter.in.messaging;
 
-import com.emme.assistant.adapter.out.persistence.entity.ChannelParticipantEntity;
-import com.emme.assistant.adapter.out.persistence.repository.SpringDataChannelParticipantRepository;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.api.command.AddConversationEventCommand;
 import com.emme.assistant.api.command.StartConversationCommand;
@@ -10,7 +8,9 @@ import com.emme.assistant.api.result.ConversationInfo;
 import com.emme.assistant.api.usecase.AddConversationEventUseCase;
 import com.emme.assistant.api.usecase.ListConversationsUseCase;
 import com.emme.assistant.api.usecase.StartConversationUseCase;
+import com.emme.assistant.application.port.out.ChannelParticipantRepository;
 import com.emme.assistant.configuration.WhatsAppProperties;
+import com.emme.assistant.domain.model.ChannelParticipant;
 import com.emme.assistant.domain.model.ConversationStatus;
 import com.emme.kernel.type.ChannelType;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -47,7 +47,7 @@ public class WhatsAppMessageService {
   private final ListConversationsUseCase listConversations;
   private final AddConversationEventUseCase addConversationEvent;
   private final ChatUseCase chatUseCase;
-  private final SpringDataChannelParticipantRepository participantRepo;
+  private final ChannelParticipantRepository participantRepository;
   private final ObjectMapper objectMapper;
   private final OkHttpClient httpClient;
 
@@ -57,14 +57,14 @@ public class WhatsAppMessageService {
       ListConversationsUseCase listConversations,
       AddConversationEventUseCase addConversationEvent,
       ChatUseCase chatUseCase,
-      SpringDataChannelParticipantRepository participantRepo) {
+      ChannelParticipantRepository participantRepository) {
     this.properties = properties;
     this.defaultTenantId = properties.defaultTenantId();
     this.startConversation = startConversation;
     this.listConversations = listConversations;
     this.addConversationEvent = addConversationEvent;
     this.chatUseCase = chatUseCase;
-    this.participantRepo = participantRepo;
+    this.participantRepository = participantRepository;
     this.objectMapper = new ObjectMapper();
     this.httpClient = new OkHttpClient();
   }
@@ -76,7 +76,7 @@ public class WhatsAppMessageService {
       ListConversationsUseCase listConversations,
       AddConversationEventUseCase addConversationEvent,
       ChatUseCase chatUseCase,
-      SpringDataChannelParticipantRepository participantRepo,
+      ChannelParticipantRepository participantRepository,
       OkHttpClient httpClient) {
     this.properties = properties;
     this.defaultTenantId = properties.defaultTenantId();
@@ -84,7 +84,7 @@ public class WhatsAppMessageService {
     this.listConversations = listConversations;
     this.addConversationEvent = addConversationEvent;
     this.chatUseCase = chatUseCase;
-    this.participantRepo = participantRepo;
+    this.participantRepository = participantRepository;
     this.objectMapper = new ObjectMapper();
     this.httpClient = httpClient;
   }
@@ -110,7 +110,7 @@ public class WhatsAppMessageService {
     log.info("Processing WhatsApp message from={} text={}", msg.from(), msg.text());
 
     // 3. Find or create ChannelParticipant
-    ChannelParticipantEntity participant = findOrCreateParticipant(msg.tenantId(), msg.from());
+    ChannelParticipant participant = findOrCreateParticipant(msg.tenantId(), msg.from());
 
     // 4. Find active conversation or create new one
     ConversationInfo conv = findOrCreateConversation(msg.tenantId(), participant);
@@ -258,32 +258,36 @@ public class WhatsAppMessageService {
     return defaultTenantId;
   }
 
-  public ChannelParticipantEntity findOrCreateParticipant(UUID tenantId, String fromNumber) {
-    return participantRepo
+  public ChannelParticipant findOrCreateParticipant(UUID tenantId, String fromNumber) {
+    return participantRepository
         .findByTenantIdAndChannelAndProviderReference(tenantId, ChannelType.WHATSAPP, fromNumber)
         .orElseGet(
             () -> {
               log.info("Creating new ChannelParticipant for {} via WhatsApp", fromNumber);
-              ChannelParticipantEntity p =
-                  new ChannelParticipantEntity(tenantId, ChannelType.WHATSAPP, fromNumber);
-              return participantRepo.save(p);
+              ChannelParticipant participant =
+                  new ChannelParticipant(
+                      null,
+                      tenantId,
+                      ChannelType.WHATSAPP,
+                      fromNumber,
+                      null,
+                      com.emme.assistant.domain.model.ConsentStatus.UNKNOWN);
+              return participantRepository.save(participant);
             });
   }
 
-  public ConversationInfo findOrCreateConversation(
-      UUID tenantId, ChannelParticipantEntity participant) {
+  public ConversationInfo findOrCreateConversation(UUID tenantId, ChannelParticipant participant) {
     List<ConversationInfo> conversations =
         listConversations.list(new ListConversationsQuery(tenantId));
     return conversations.stream()
-        .filter(c -> c.participantId().equals(participant.getId()))
+        .filter(c -> c.participantId().equals(participant.id()))
         .filter(c -> c.status() == ConversationStatus.ACTIVE)
         .findFirst()
         .orElseGet(
             () -> {
-              log.info("Creating new conversation for participant={}", participant.getId());
+              log.info("Creating new conversation for participant={}", participant.id());
               return startConversation.start(
-                  new StartConversationCommand(
-                      tenantId, participant.getId(), ChannelType.WHATSAPP));
+                  new StartConversationCommand(tenantId, participant.id(), ChannelType.WHATSAPP));
             });
   }
 

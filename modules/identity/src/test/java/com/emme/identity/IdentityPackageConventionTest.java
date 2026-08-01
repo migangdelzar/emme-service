@@ -375,6 +375,18 @@ class IdentityPackageConventionTest {
   }
 
   @Test
+  void keepsExceptionAdviceIndependentFromConcreteControllers() throws IOException {
+    String source = Files.readString(IDENTITY_EXCEPTION_HANDLER);
+
+    assertThat(source)
+        .contains(
+            "@RestControllerAdvice(basePackages = \"com.emme.identity.adapter.in.web.controller\")");
+    assertThat(source)
+        .doesNotContain("import com.emme.identity.adapter.in.web.controller.IdentityController;");
+    assertThat(source).doesNotContain("basePackageClasses");
+  }
+
+  @Test
   void ownsHttpEntryPointsAndWireModelsUnderInboundWebAdapters() {
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "IdentityController.java")).isTrue();
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "AuthController.java")).isTrue();

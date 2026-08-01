@@ -245,6 +245,26 @@ Execution rules and dependencies are maintained in
 - Existing dependency-analysis and Testcontainers/PostgreSQL teardown warnings
   remain non-blocking and occurred after successful task completion.
 
+## Identity exception-advice boundary slice — 2026-08-01
+
+- [x] Add a failing source-boundary test for controller-independent exception
+  advice.
+- [x] Scope Identity exception advice by the inbound web controller package,
+  not by importing a concrete controller.
+- [x] Preserve existing Identity problem-detail status and error-code behavior.
+- [x] Verify Identity tests, Modulith, CI, boot JARs, Markdown, and whitespace.
+
+### Results
+
+- The source-boundary test first failed because `IdentityExceptionHandler`
+  imported `IdentityController` through `basePackageClasses`.
+- The advice now uses the controller package name, removing concrete
+  controller coupling while preserving its RFC 9457 problem details.
+- Identity tests/check/integration, Studio Modulith verification, service CI,
+  both boot JARs, Markdown validation, and `git diff --check` passed.
+- Existing dependency-analysis and Testcontainers/PostgreSQL teardown warnings
+  remain non-blocking and occurred after successful task completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

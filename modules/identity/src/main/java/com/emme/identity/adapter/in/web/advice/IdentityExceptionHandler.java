@@ -1,6 +1,5 @@
 package com.emme.identity.adapter.in.web.advice;
 
-import com.emme.identity.adapter.in.web.controller.IdentityController;
 import com.emme.identity.api.exception.CustomerNotFoundException;
 import com.emme.identity.api.exception.InvalidCustomerTokenException;
 import org.springframework.core.annotation.Order;
@@ -10,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /** Maps Identity-owned expected failures to stable RFC 9457 problem details. */
-@RestControllerAdvice(basePackageClasses = IdentityController.class)
+@RestControllerAdvice(basePackages = "com.emme.identity.adapter.in.web.controller")
 @Order(0)
 public class IdentityExceptionHandler {
 

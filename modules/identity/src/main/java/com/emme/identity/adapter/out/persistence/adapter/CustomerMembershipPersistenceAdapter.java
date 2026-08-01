@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 /** Implements customer membership persistence with Spring Data JPA. */
 @Component
-public final class CustomerMembershipPersistenceAdapter implements CustomerMembershipRepository {
+public class CustomerMembershipPersistenceAdapter implements CustomerMembershipRepository {
 
   private final SpringDataCustomerMembershipRepository repository;
   private final CustomerMembershipPersistenceMapper mapper;

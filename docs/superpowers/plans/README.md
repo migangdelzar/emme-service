@@ -35,7 +35,7 @@ scope changes.
 
 | Module | Plan | Current status | Required outcome |
 |---|---|---|---|
-| `catalog` | [catalog baseline verification](2026-07-31-catalog-baseline-verification.md) | Complete baseline pending audit | Keep canonical packages and preserve hybrid-search contracts |
+| `catalog` | [catalog baseline verification](2026-07-31-catalog-baseline-verification.md) | Verified canonical baseline (2026-08-01) | Keep canonical packages and preserve hybrid-search contracts |
 | `customer` | [customer contract normalization](2026-07-31-customer-contract-normalization.md) | Complete boundary slice | Remove legacy named-interface shape without inventing business types |
 | `workforce` | [workforce contract normalization](2026-07-31-workforce-contract-normalization.md) | Complete boundary slice | Keep the empty contract boundary honest and ready for real types |
 | `booking` | [booking contract normalization](2026-07-31-booking-contract-normalization.md) | Complete boundary slice | Normalize API/event ownership and preserve declared consumers |

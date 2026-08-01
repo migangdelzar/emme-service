@@ -6,6 +6,7 @@ import com.emme.tenancy.application.port.out.DatabaseRegistryEntry;
 import com.emme.tenancy.application.port.out.DatabaseRegistryPort;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 
 class DatabaseRegistryAdapterTest {
 
@@ -14,8 +15,24 @@ class DatabaseRegistryAdapterTest {
 
   @Test
   void exposesDefaultDatabaseThroughApplicationPortModel() {
-    DatabaseRegistryPort port =
-        new DatabaseRegistryAdapter("jdbc:h2:mem:bootstrap", "emme", "secret");
+    JdbcConnectionDetails connectionDetails =
+        new JdbcConnectionDetails() {
+          @Override
+          public String getUsername() {
+            return "emme";
+          }
+
+          @Override
+          public String getPassword() {
+            return "secret";
+          }
+
+          @Override
+          public String getJdbcUrl() {
+            return "jdbc:h2:mem:bootstrap";
+          }
+        };
+    DatabaseRegistryPort port = new DatabaseRegistryAdapter(connectionDetails);
 
     assertThat(port.findById(DEFAULT_DATABASE_ID))
         .get()

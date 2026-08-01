@@ -8,10 +8,10 @@ import com.emme.catalog.api.result.MatchedImageInfo;
 import com.emme.catalog.api.usecase.MatchCatalogItemsUseCase;
 import com.emme.catalog.application.port.out.CatalogItemImageRepository;
 import com.emme.catalog.application.port.out.CatalogItemRepository;
+import com.emme.catalog.application.port.out.CatalogSearchHit;
+import com.emme.catalog.application.port.out.CatalogSearchPort;
 import com.emme.catalog.domain.model.CatalogItem;
 import com.emme.catalog.domain.model.CatalogItemImage;
-import com.emme.shared.search.HybridSearch;
-import com.emme.shared.search.SearchTarget;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -33,17 +33,17 @@ public class CatalogMatchService implements MatchCatalogItemsUseCase {
   private static final int BRANCH_K = 10;
 
   private final ModelProvider modelProvider;
-  private final HybridSearch hybridSearch;
+  private final CatalogSearchPort searchPort;
   private final CatalogItemRepository itemRepository;
   private final CatalogItemImageRepository imageRepository;
 
   public CatalogMatchService(
       ModelProvider modelProvider,
-      HybridSearch hybridSearch,
+      CatalogSearchPort searchPort,
       CatalogItemRepository itemRepository,
       CatalogItemImageRepository imageRepository) {
     this.modelProvider = modelProvider;
-    this.hybridSearch = hybridSearch;
+    this.searchPort = searchPort;
     this.itemRepository = itemRepository;
     this.imageRepository = imageRepository;
   }
@@ -64,28 +64,27 @@ public class CatalogMatchService implements MatchCatalogItemsUseCase {
     List<Float> queryVec = modelProvider.embed(queryText);
 
     // 3. Hybrid search over catalog items
-    List<HybridSearch.Scored> itemHits =
-        hybridSearch.search(SearchTarget.CATALOG_ITEM, tenantId, queryVec, queryText, BRANCH_K);
+    List<CatalogSearchHit> itemHits =
+        searchPort.searchCatalogItems(tenantId, queryVec, queryText, BRANCH_K);
 
     // 4. Hybrid search over catalog item images
-    List<HybridSearch.Scored> imageHits =
-        hybridSearch.search(
-            SearchTarget.CATALOG_ITEM_IMAGE, tenantId, queryVec, queryText, BRANCH_K);
+    List<CatalogSearchHit> imageHits =
+        searchPort.searchCatalogItemImages(tenantId, queryVec, queryText, BRANCH_K);
 
     // 5. Aggregate scores: item hits + image hits (mapped to their parent item)
     Map<UUID, Double> itemScores = new HashMap<>();
     Map<UUID, List<MatchedImageInfo>> itemImages = new HashMap<>();
 
-    for (HybridSearch.Scored s : itemHits) {
-      itemScores.merge(s.id(), s.score(), Double::sum);
+    for (CatalogSearchHit hit : itemHits) {
+      itemScores.merge(hit.id(), hit.score(), Double::sum);
     }
 
     if (!imageHits.isEmpty()) {
       Map<UUID, Double> imageScoreMap = new HashMap<>();
-      for (HybridSearch.Scored s : imageHits) imageScoreMap.put(s.id(), s.score());
+      for (CatalogSearchHit hit : imageHits) imageScoreMap.put(hit.id(), hit.score());
 
       for (CatalogItemImage img :
-          imageRepository.findAllById(imageHits.stream().map(HybridSearch.Scored::id).toList())) {
+          imageRepository.findAllById(imageHits.stream().map(CatalogSearchHit::id).toList())) {
         UUID parentId = img.getCatalogItemId();
         double imgScore = imageScoreMap.getOrDefault(img.getId(), 0.0);
         itemScores.merge(parentId, imgScore, Double::sum);

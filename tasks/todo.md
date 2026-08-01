@@ -344,3 +344,17 @@ Remaining Identity follow-up: complete the broader security hardening review.
 
 Remaining Identity follow-up: decide trusted proxy handling for login rate
 limiting, then continue authorization domain/application separation.
+
+## Catalog canonical baseline verification slice — 2026-08-01
+
+- [x] Added package-level metadata and a convention test for every materialized
+  Catalog package while preserving the Modulith root and named API annotations.
+- [x] Hid Shared hybrid search behind Catalog-owned `CatalogSearchPort` and
+  `HybridCatalogSearchAdapter`, with mapping coverage.
+- [x] Corrected the shared JDBC connection-details boundary so Testcontainers
+  `@ServiceConnection` integration tests receive the bootstrap URL.
+- [x] Removed proxy-blocking `final` declarations from Identity persistence
+  adapters and corrected stale Studio tenant accessor tests discovered by CI.
+- [x] Verified Catalog tests/integration, Studio Modulith, service CI, boot JARs,
+  Markdown validation, source-boundary checks, and whitespace.
+- [x] Updated the plan registry and Catalog verification report.

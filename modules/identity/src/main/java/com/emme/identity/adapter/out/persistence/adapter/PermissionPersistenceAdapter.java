@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 /** Resolves tenant-scoped permission codes from Identity persistence models. */
 @Component
-public final class PermissionPersistenceAdapter implements PermissionPort {
+public class PermissionPersistenceAdapter implements PermissionPort {
 
   private final SpringDataMembershipRepository membershipRepository;
   private final RolePermissionRepository rolePermissionRepository;

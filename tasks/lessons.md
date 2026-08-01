@@ -112,3 +112,24 @@
   assertion after all source moves and compilation succeeded.
 - Prevention rule: architecture tests should assert the absence of legacy source
   files (`hasJavaSources`) rather than the incidental existence of directories.
+
+## 2026-08-01 — Verify BOM module availability before dependency alignment
+
+- Failure mode: aligning the Testcontainers version to Spring Boot's resolved
+  core version assumed that the PostgreSQL and JUnit integration modules existed
+  at the same version.
+- Detection signal: Gradle could resolve `testcontainers:2.0.5` transitively but
+  could not resolve `postgresql:2.0.5` or `junit-jupiter:2.0.5`.
+- Prevention rule: inspect the published module set before changing a dependency
+  BOM; revert speculative alignment changes when the artifact coordinates do not
+  exist and record the shared-infrastructure issue separately.
+
+## 2026-08-01 — Spring proxyability applies to persistence adapters
+
+- Failure mode: a Spring-managed persistence adapter declared `final` and could
+  not be proxied by the configured class-based AOP infrastructure during a full
+  application-context test.
+- Detection signal: context startup failed with `Cannot subclass final class`
+  and the failing adapter changed as each earlier final adapter was corrected.
+- Prevention rule: keep Spring-managed adapters non-final when class-based
+  proxies are enabled, and verify the complete context after package migrations.

@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,13 +27,10 @@ public class DatabaseRegistryAdapter implements DatabaseRegistryPort {
   private final String username;
   private final String password;
 
-  public DatabaseRegistryAdapter(
-      @Value("${spring.datasource.url}") String bootstrapUrl,
-      @Value("${spring.datasource.username:emme}") String username,
-      @Value("${spring.datasource.password:emme}") String password) {
-    this.bootstrapUrl = bootstrapUrl;
-    this.username = username;
-    this.password = password;
+  public DatabaseRegistryAdapter(JdbcConnectionDetails connectionDetails) {
+    this.bootstrapUrl = connectionDetails.getJdbcUrl();
+    this.username = connectionDetails.getUsername();
+    this.password = connectionDetails.getPassword();
   }
 
   @Override

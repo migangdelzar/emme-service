@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 /** Implements customer identity persistence with Spring Data JPA. */
 @Component
-public final class CustomerIdentityPersistenceAdapter implements CustomerIdentityRepository {
+public class CustomerIdentityPersistenceAdapter implements CustomerIdentityRepository {
 
   private final SpringDataCustomerIdentityRepository repository;
   private final CustomerIdentityPersistenceMapper mapper;

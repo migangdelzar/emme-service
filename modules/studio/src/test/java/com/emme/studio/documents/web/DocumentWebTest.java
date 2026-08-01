@@ -24,7 +24,7 @@ class DocumentWebTest extends BaseWebTest {
   @BeforeEach
   void setUp() {
     var tenant = tenantService.create("doc-web-" + System.nanoTime(), "Doc Web Tenant");
-    tenantId = tenant.getId();
+    tenantId = tenant.id();
     subscriptionRepo.save(
         new Subscription(tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
   }

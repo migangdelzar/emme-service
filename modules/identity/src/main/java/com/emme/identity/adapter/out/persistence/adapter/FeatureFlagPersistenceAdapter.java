@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 /** Implements feature-flag persistence without exposing JPA to the application layer. */
 @Component
-public final class FeatureFlagPersistenceAdapter implements FeatureFlagRepository {
+public class FeatureFlagPersistenceAdapter implements FeatureFlagRepository {
 
   private final SpringDataFeatureFlagRepository repository;
   private final FeatureFlagPersistenceMapper mapper;

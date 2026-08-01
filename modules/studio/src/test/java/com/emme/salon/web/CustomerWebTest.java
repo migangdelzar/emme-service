@@ -25,7 +25,7 @@ class CustomerWebTest extends BaseWebTest {
   @BeforeEach
   void setUp() {
     var tenant = tenantService.create("web-cust-" + System.nanoTime(), "Web Customer Tenant");
-    tenantId = tenant.getId();
+    tenantId = tenant.id();
     subscriptionRepo.save(
         new Subscription(tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
   }

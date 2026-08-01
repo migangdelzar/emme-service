@@ -37,11 +37,12 @@ class BookingPackageConventionTest {
     assertThat(source).contains("@org.springframework.modulith.ApplicationModule");
     assertThat(source).contains("\"shared\"");
     assertThat(source).contains("\"tenancy\"");
-    assertThat(source).doesNotContain(
-        "studio :: studio-api",
-        "customer :: customer-api",
-        "workforce :: workforce-api",
-        "catalog :: catalog-api");
+    assertThat(source)
+        .doesNotContain(
+            "studio :: studio-api",
+            "customer :: customer-api",
+            "workforce :: workforce-api",
+            "catalog :: catalog-api");
   }
 
   @Test

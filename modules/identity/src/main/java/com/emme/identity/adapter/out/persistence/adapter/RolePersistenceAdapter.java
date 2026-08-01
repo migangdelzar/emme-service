@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 /** Implements Identity role lookup through the persistence adapter boundary. */
 @Component
-public final class RolePersistenceAdapter implements RoleRepository {
+public class RolePersistenceAdapter implements RoleRepository {
 
   private final SpringDataRoleRepository repository;
 

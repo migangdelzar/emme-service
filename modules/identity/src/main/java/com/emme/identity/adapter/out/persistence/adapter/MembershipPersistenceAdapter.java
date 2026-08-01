@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 /** Implements the Membership repository port with Spring Data JPA. */
 @Component
-public final class MembershipPersistenceAdapter implements MembershipRepository {
+public class MembershipPersistenceAdapter implements MembershipRepository {
 
   private final SpringDataMembershipRepository repository;
   private final SpringDataRoleRepository roleRepository;

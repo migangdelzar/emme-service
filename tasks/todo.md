@@ -123,3 +123,15 @@
   Modulith verification.
 - [ ] Continue with Identity security/domain/persistence separation and Tenancy
   isolation/provisioning separation as separate red-green-refactor slices.
+
+## Architecture naming contract — 2026-07-31
+
+- [x] Added the canonical naming catalog at
+  `docs/architecture/00-project/naming-conventions.md`.
+- [x] Documented naming for packages, files, classes, records, enums, interfaces,
+  exceptions, methods, fields, constants, module contracts, adapters,
+  repositories, controllers, events, tests, and CDD build-logic types.
+- [x] Linked all 33 other architecture Markdown files to the canonical catalog.
+- [x] Direct Markdown validation passes with `node scripts/validate-markdown.mjs`.
+- [ ] Run the `mise run docs-check` wrapper after the local `mise.toml` trust
+  decision is made; the underlying validator already passes.

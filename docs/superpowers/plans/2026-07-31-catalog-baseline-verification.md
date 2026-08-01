@@ -71,3 +71,17 @@ integration. This plan checks conformance and fixes only documented gaps.
   passed.
 - `node scripts/validate-markdown.mjs`, source-boundary checks, and
   `git diff --check`: passed.
+
+## Reverification checkpoint — 2026-08-01
+
+- `:modules:catalog:test` passed.
+- `:modules:catalog:integrationTest` passed.
+- Studio Modulith verification passed.
+- Service `ci`, `:applications:studio-api:bootJar`, and
+  `:applications:emme-platform:bootJar` passed.
+- Markdown validation and `git diff --check` passed.
+- Integration teardown emitted existing PostgreSQL/Testcontainers shutdown
+  warnings after successful test completion.
+
+Catalog is the verified canonical implementation baseline for the remaining
+service module migrations.

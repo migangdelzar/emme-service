@@ -49,7 +49,7 @@ reopened by this backlog.
 
 ### P0 — Architecture baseline, security, and tenant isolation
 
-- [ ] Complete Catalog baseline verification and commit its verification report.
+- [x] Complete Catalog baseline verification and commit its verification report.
 - [ ] Finish the remaining Identity security/domain/application separation in
   `docs/superpowers/plans/2026-07-31-identity-module-migration.md`.
 - [ ] Complete the Tenancy boundary migration in
@@ -94,8 +94,8 @@ Execution rules and dependencies are maintained in
   leave only genuine port, typed-configuration, operational-evidence, and final
   verification gaps open.
 - [x] Verify Tenancy unit tests, integration tests, and Studio Modulith tests.
-- [ ] Complete the remaining Catalog baseline verification before Identity's
-  next implementation slice.
+- [x] Complete Catalog baseline verification before Identity's next
+  implementation slice.
 
 ## Studio vertical slices — 2026-07-31
 

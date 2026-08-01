@@ -35,7 +35,7 @@ below is the authoritative order for open work.
 
 | Module | Plan | Current status | Required outcome |
 |---|---|---|---|
-| `catalog` | [catalog baseline verification](2026-07-31-catalog-baseline-verification.md) | Canonical baseline; verification closure open | Keep canonical packages and preserve hybrid-search contracts |
+| `catalog` | [catalog baseline verification](2026-07-31-catalog-baseline-verification.md) | Verified canonical baseline (reverified 2026-08-01) | Keep canonical packages and preserve hybrid-search contracts |
 | `customer` | [customer contract normalization](2026-07-31-customer-contract-normalization.md) | Complete boundary slice | Remove legacy named-interface shape without inventing business types |
 | `workforce` | [workforce contract normalization](2026-07-31-workforce-contract-normalization.md) | Complete boundary slice | Keep the empty contract boundary honest and ready for real types |
 | `booking` | [booking contract normalization](2026-07-31-booking-contract-normalization.md) | Complete boundary slice | Normalize API/event ownership and preserve declared consumers |
@@ -59,7 +59,6 @@ not move to the next priority band until its exit criteria are met.
 
 | Priority | Type | Work item | Plan | Why this order | Exit gate |
 |---|---|---|---|---|---|
-| P0 | Architecture baseline verification | Close Catalog canonical-baseline evidence | [Catalog](2026-07-31-catalog-baseline-verification.md) | Catalog is already the strongest implementation baseline; closing its guardrails gives later migrations an executable reference | Catalog package, dependency-direction, persistence/search, integration, Modulith, CI, formatting, Checkstyle, boot-JAR, and verification-report gates pass |
 | P0 | Security and tenant isolation | Finish Identity security/domain/application separation | [Identity](2026-07-31-identity-module-migration.md) | Authentication, authorization, privilege boundaries, and public identity contracts protect every downstream capability | Identity security tests, architecture rules, integration tests, Modulith, CI, and production-readiness evidence pass |
 | P0 | Security and tenant isolation | Complete Tenancy boundary migration | [Tenancy](2026-07-31-tenancy-module-migration.md) | Tenant resolution, routing, pool lifecycle, and provisioning are isolation-critical and must be stable before adding more tenant-owned behavior | Tenant isolation, routing/pool lifecycle, provisioning replay/idempotency, integration, Modulith, and CI evidence pass |
 | P1 | Cross-cutting decision | Decide Audit ownership or retirement | [Audit](2026-07-31-audit-module-normalization.md) | Prevents an empty module or duplicated audit system from becoming an architectural dependency | ADR records the owner/status and the registry reflects the decision |

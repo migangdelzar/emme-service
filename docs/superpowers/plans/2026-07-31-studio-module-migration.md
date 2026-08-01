@@ -11,6 +11,18 @@
 | Status | Core Studio migration complete; nested capabilities explicitly deferred |
 | Date | 2026-07-31 |
 
+**Canonical template:** [`../../templates/module-package-structure-template.md`](../../templates/module-package-structure-template.md), reviewed 2026-07-31.
+
+**Template conformance:** Core Studio is complete against the current template.
+`SalonApi` remains a compatibility-preserving use-case name in `api/usecase`, and
+the existing public event contracts remain under `api/event`. `documents` and
+`subscriptions` are not counted as migrated: each requires its own plan before
+its JPA entities, repositories, controllers, and configuration can leave the
+nested legacy packages. Those follow-up plans are
+[`2026-07-31-studio-documents-module-migration.md`](2026-07-31-studio-documents-module-migration.md)
+and
+[`2026-07-31-studio-subscriptions-module-migration.md`](2026-07-31-studio-subscriptions-module-migration.md).
+
 ## Scope
 
 Migrate the core Studio capability. `documents` and `subscriptions` remain

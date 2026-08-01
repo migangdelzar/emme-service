@@ -74,3 +74,25 @@
 - [ ] Preserve Assistant HTTP, webhook, JSON, database, and feature-flag behavior.
 - [ ] Separate pure domain models, persistence entities, ports, adapters, grouped API contracts, and package metadata.
 - [ ] Run the complete Assistant and service verification gates before merging.
+
+## Module migration plan registry — 2026-07-31
+
+- [x] Normalize contract-only plans for `customer`, `workforce`, and `booking`.
+- [x] Keep Calendar and core Studio plans explicitly marked conformance-complete;
+  track Studio `documents` and `subscriptions` separately.
+- [x] Create canonical migration plans for `identity`, `tenancy`, `notification`,
+  `payment`, `audit`, and `shared`.
+- [x] Keep Catalog as the verified implementation baseline and do not treat the
+  CDD build-logic plan as a business-module migration.
+- [ ] Run service-wide architecture verification after every module plan reaches
+  implementation completion.
+
+### Plan update results
+
+- Added the plan registry at `docs/superpowers/plans/README.md`.
+- Added canonical plans for Customer, Workforce, Booking, Identity, Tenancy,
+  Notification, Payment, Audit, Shared, Catalog baseline verification, Studio
+  Documents, and Studio Subscriptions.
+- Updated Calendar and Studio plans with current-template conformance notes.
+- Corrected the service migration design so Identity and Tenancy are not falsely
+  reported as completed baselines.

@@ -51,9 +51,12 @@ flowchart TD
     INTEGRATIONS --> VERIFY
 ```
 
-The already migrated catalog, identity, and tenancy work remains the baseline.
-No wholesale rename or compatibility-breaking public contract change is part of
-this design.
+Catalog is the current verified implementation baseline. Identity and Tenancy
+still require explicit canonical-package normalization plans because their current
+source trees retain mixed `entity`, `application`, `web`, `config`, `service`, or
+`infrastructure` ownership. No wholesale rename or compatibility-breaking public
+contract change is part of this design; their public contracts must be migrated
+atomically with their consumers.
 
 ## 3. Repository responsibilities
 
@@ -197,7 +200,7 @@ events are consumed outside the owning module.
 
 ### Phase C — integration-heavy modules
 
-Migrate `payment`, `audit`, and `shared` with extra care. `shared` is not treated
+Migrate `payment`, `audit`, `shared`, `identity`, and `tenancy` with extra care. `shared` is not treated
 as a dumping ground: only genuinely cross-cutting technical primitives remain
 there. Business concepts must move to their owning module.
 

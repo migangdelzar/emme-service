@@ -8,6 +8,16 @@
 
 **Tech Stack:** Java 21, Spring Boot, Spring Modulith, Spring Data JPA, ArchUnit, JUnit 5, Gradle, TypeScript, Vitest, Bun.
 
+**Canonical template:** [`../../templates/module-package-structure-template.md`](../../templates/module-package-structure-template.md), reviewed 2026-07-31.
+
+**Template conformance:** Calendar is complete against the current template. The
+existing `CalendarSyncApi` name is retained as a compatibility exception because
+it is an established cross-module contract; its package is `api/usecase` and the
+exception is enforced by the module naming test. Google integration is a
+capability-owned child under `adapter/out`, not a generic infrastructure layer.
+Only real Calendar branches are materialized; no empty process, factory, cache,
+or observability packages are required.
+
 ## Current execution status
 
 | Slice | Status | Evidence |

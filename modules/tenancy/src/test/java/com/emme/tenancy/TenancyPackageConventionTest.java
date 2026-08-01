@@ -160,6 +160,9 @@ class TenancyPackageConventionTest {
   private static final Path TENANT_ROUTING_DATA_SOURCE =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantRoutingDataSource.java");
+  private static final Path DATABASE_POOL_PROVIDER_TEST =
+      sourcePath(
+          "modules/tenancy/src/test/java/com/emme/tenancy/adapter/out/client/database/TenantDatabasePoolProviderTest.java");
   private static final Path LEGACY_POOL_PACKAGE =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/pool");
   private static final Path LEGACY_TENANT_CONTEXT_FILTER =
@@ -304,6 +307,11 @@ class TenancyPackageConventionTest {
     assertThat(Files.exists(DATABASE_POOL_PROVIDER)).isTrue();
     assertThat(Files.exists(TENANT_ROUTING_DATA_SOURCE)).isTrue();
     assertThat(hasJavaSources(LEGACY_POOL_PACKAGE)).isFalse();
+  }
+
+  @Test
+  void hasOperationalPoolFailureCoverage() {
+    assertThat(Files.exists(DATABASE_POOL_PROVIDER_TEST)).isTrue();
   }
 
   @Test

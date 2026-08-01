@@ -298,3 +298,11 @@ verification report.
 
 Remaining Tenancy work is operational evidence, transaction/event-after-commit
 decisions, architecture rules, and the committed final verification report.
+
+## Completed pool failure baseline slice — 2026-08-01
+
+- [x] Added deterministic coverage for unresolved database registry lookup.
+- [x] Added empty pool lifecycle and shutdown coverage.
+- [x] Preserved the remaining integration-level routing, eviction, and recovery
+  scenarios as open evidence work rather than treating unit coverage as a
+  substitute.

@@ -190,6 +190,21 @@ Execution rules and dependencies are maintained in
 - Focused service/source tests and the full Tenancy/service verification gates
   passed.
 
+## Tenancy pool failure baseline slice — 2026-08-01
+
+- [x] Add deterministic tests for unresolved database routing and empty pool
+  lifecycle shutdown.
+- [x] Record the failure behavior as part of the Tenancy operational evidence.
+- [x] Verify Tenancy tests, Checkstyle, Spotless, Markdown, and whitespace.
+
+#### Results
+
+- An unresolved registry entry fails with the database identifier in the
+  exception before a pool is created.
+- Empty pool state reports zero active pools and remains safe after shutdown.
+- The remaining live routing, eviction, and recovery scenarios remain open for
+  integration-level evidence.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

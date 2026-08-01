@@ -165,3 +165,15 @@
 - Prevention rule: when introducing a public result record, update adapters to
   use its exact record component names (`enabled()` here) and run the focused
   compile immediately after the boundary move.
+
+## 2026-08-01 — One application service per use case
+
+- Failure mode: application services grouped multiple unrelated public use
+  cases behind a convenience facade.
+- Detection signal: a source-level architecture guard found more than one
+  `*UseCase` interface on the same application service.
+- Prevention rule: every public use-case interface has one focused concrete
+  application-service implementation, and every application service implements
+  exactly one use-case interface. Move shared behavior into a named mapper,
+  policy, evaluator, loader, or factory; do not retain a multi-use-case facade
+  as a workaround for circular dependencies.

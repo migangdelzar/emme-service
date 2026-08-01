@@ -51,6 +51,28 @@ class CatalogPackageConventionTest {
         .contains("@org.springframework.modulith.NamedInterface(\"catalog-api\")");
   }
 
+  @Test
+  void eachCatalogApplicationServiceImplementsAtMostOneUseCase() throws IOException {
+    Path applicationServices = SOURCE_ROOT.resolve("application/service");
+    try (Stream<Path> files = Files.walk(applicationServices)) {
+      files
+          .filter(path -> path.toString().endsWith("Service.java"))
+          .forEach(
+              path ->
+                  assertThat(read(path))
+                      .as("one use case per application service: %s", path)
+                      .doesNotMatch("(?s).*implements\\s+[^\\{]*UseCase\\s*,.*"));
+    }
+  }
+
+  private static String read(Path path) {
+    try {
+      return Files.readString(path);
+    } catch (IOException exception) {
+      throw new IllegalStateException("Unable to read Catalog source " + path, exception);
+    }
+  }
+
   private boolean containsProductionJavaSource(Path directory) {
     try (Stream<Path> files = Files.list(directory)) {
       return files.anyMatch(

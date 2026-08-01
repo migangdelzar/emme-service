@@ -718,7 +718,20 @@ application/
 
 ### `application.service`
 
-Implementations of the public use cases. Application services may handle transactions, aggregate loading, invoking domain behavior, saving aggregates, calling external ports, publishing events, and use-case-level authorization. They should not contain detailed business invariants — those belong in `domain`.
+Implementations of the public use cases. Each application service implements
+exactly one `api.usecase` interface and is named after that use case.
+Application services may handle transactions, aggregate loading, invoking
+domain behavior, saving aggregates, calling external ports, publishing events,
+and use-case-level authorization. They should not contain detailed business
+invariants — those belong in `domain`.
+
+Do not create a module-wide application façade that implements several use
+cases. If multiple use cases share logic, extract a named non-use-case
+collaborator such as an application mapper, evaluator, policy, loader, or
+factory. This keeps transaction boundaries, authorization, dependencies, and
+tests specific to one operation. It is a cohesion rule, not a circular-
+dependency workaround; circular dependencies require ports, events, or a
+dedicated collaborator.
 
 ```java
 @Service
@@ -1844,7 +1857,7 @@ Names communicate architectural role before a file is opened. Use the module's u
 | `api.exception` | `<Subject><Failure>Exception.java` | `QuoteNotFoundException`, `QuoteUnavailableException` | Expected caller-visible failure |
 | `api.type` | `<Concept><Qualifier>.java` | `QuoteId`, `QuoteStatusView` | Stable semantic public vocabulary |
 | `application.service` | `<Verb><Subject>Service.java` | `SubmitQuoteService`, `SearchQuotesService` | Implements the matching use case; never `*ServiceImpl` |
-| `application.service` | `<Subject>ApplicationService.java` | `PaymentApplicationService`, `FeatureFlagApplicationService` | Approved only for a cohesive aggregate/application façade implementing multiple tightly related use cases; never a generic dumping ground |
+| `application.service` | `<Subject>ApplicationService.java` | `PaymentApplicationService` | Only when the class is one explicitly named use-case implementation; never a multi-use-case façade or compatibility name |
 | `application.port.out` | `<Capability>Port.java` | `PricingPort`, `CustomerVerificationPort` | External capability with no technology in the name |
 | `application.port.out` | `<Capability>Entry.java` | `DatabaseRegistryEntry` | Immutable port data returned by an outbound capability; never a JPA entity or provider DTO |
 | `application.port.out` | `<Aggregate>Repository.java` | `QuoteRepository` | Aggregate persistence port |
@@ -2054,7 +2067,7 @@ Test method names describe observable behavior, for example `rejectsSubmissionWh
 |---|---|
 | API data types | Prefer immutable `record` types when identity/behavior does not require a class |
 | API interfaces | One cohesive use case per interface; avoid module-wide god facades |
-| Application services | One implementation per use case; constructor injection only; package-private with component scanning or public for cross-package `@Bean` wiring; `final` only when the proxy strategy permits |
+| Application services | Exactly one implementation per use case and exactly one use-case interface per service; constructor injection only; package-private with component scanning or public for cross-package `@Bean` wiring; `final` only when the proxy strategy permits |
 | Domain aggregates | Classes with behavior and private mutation; no public field setters |
 | Value objects | Immutable, validated at construction, equality by value |
 | Collections | Never return `null`; return immutable snapshots or unmodifiable views |

@@ -97,6 +97,33 @@ Execution rules and dependencies are maintained in
 - [x] Complete Catalog baseline verification before Identity's next
   implementation slice.
 
+## One-service-per-use-case application boundary — 2026-08-01
+
+- [x] Add failing Identity and Catalog architecture tests that reject
+  multi-use-case application-service facades.
+- [x] Split Identity membership operations into
+  `AssignMembershipService`, `GetCurrentUserMembershipsService`, and
+  `RevokeMembershipService`.
+- [x] Split Identity feature-flag operations into one service per public use
+  case while preserving the `featureFlagService` SpEL bean for evaluation.
+- [x] Split Catalog item operations into one service per public use case.
+- [x] Extract shared mapping/evaluation behavior into named collaborators
+  instead of retaining a multi-use-case facade.
+- [x] Update architecture documentation, naming conventions, and migration
+  evidence to make the rule explicit.
+- [ ] Run the final service-wide verification gate after the remaining module
+  migrations are complete.
+
+#### Results
+
+The initial red architecture tests identified three multi-use-case facades:
+Identity membership, Identity feature flags, and Catalog item operations. Each
+was replaced with focused application services. The refactor was not required
+to break a circular dependency; it enforces interface segregation, keeps
+transactions and authorization boundaries explicit, and makes each use case
+independently testable. Shared behavior now belongs to named mappers or
+collaborators rather than a compatibility facade.
+
 ## Identity role/permission domain boundary slice — 2026-08-01
 
 - [x] Add failing domain, mapper, and package-ownership tests for `Role` and

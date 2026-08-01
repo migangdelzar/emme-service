@@ -85,3 +85,17 @@ integration. This plan checks conformance and fixes only documented gaps.
 
 Catalog is the verified canonical implementation baseline for the remaining
 service module migrations.
+
+## Reverification: one-service-per-use-case normalization — 2026-08-01
+
+- [x] Added a Catalog convention test rejecting multi-use-case application
+  service facades.
+- [x] Split Catalog item operations into
+  `CreateCatalogItemService`, `DeleteCatalogItemService`,
+  `ListCatalogItemsService`, and `AddCatalogItemImageService`.
+- [x] Preserved tenant ownership checks, persistence ports, image storage, and
+  model-provider behavior.
+- [x] Re-ran the focused Catalog test and formatting gates.
+
+The Catalog baseline now follows the same one-service-per-use-case rule as the
+Identity module without introducing a compatibility facade.

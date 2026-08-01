@@ -512,6 +512,19 @@ class IdentityPackageConventionTest {
   }
 
   @Test
+  void eachIdentityApplicationServiceImplementsAtMostOneUseCase() throws IOException {
+    try (var files = Files.walk(APPLICATION_SERVICE_PACKAGE)) {
+      files
+          .filter(path -> path.toString().endsWith("Service.java"))
+          .forEach(
+              path ->
+                  assertThat(read(path))
+                      .as("one use case per application service: %s", path)
+                      .doesNotMatch("(?s).*implements\\s+[^\\{]*UseCase\\s*,.*"));
+    }
+  }
+
+  @Test
   void ownsHttpEntryPointsAndWireModelsUnderInboundWebAdapters() {
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "IdentityController.java")).isTrue();
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "AuthController.java")).isTrue();
@@ -540,11 +553,22 @@ class IdentityPackageConventionTest {
     assertThat(hasJavaSources(LEGACY_WEB_PACKAGE)).isFalse();
   }
 
+  private static String read(Path path) {
+    try {
+      return Files.readString(path);
+    } catch (IOException exception) {
+      throw new IllegalStateException("Unable to read Identity source " + path, exception);
+    }
+  }
+
   @Test
   void ownsMembershipBusinessBehaviorAndPersistenceBehindApplicationPorts() {
     assertThat(hasJavaSource(DOMAIN_MODEL_PACKAGE, "Membership.java")).isTrue();
     assertThat(hasJavaSource(DOMAIN_MODEL_PACKAGE, "MembershipStatus.java")).isTrue();
-    assertThat(hasJavaSource(APPLICATION_SERVICE_PACKAGE, "MembershipService.java")).isTrue();
+    assertThat(hasJavaSource(APPLICATION_SERVICE_PACKAGE, "AssignMembershipService.java")).isTrue();
+    assertThat(hasJavaSource(APPLICATION_SERVICE_PACKAGE, "GetCurrentUserMembershipsService.java"))
+        .isTrue();
+    assertThat(hasJavaSource(APPLICATION_SERVICE_PACKAGE, "RevokeMembershipService.java")).isTrue();
     assertThat(hasJavaSource(APPLICATION_PORT_PACKAGE, "MembershipRepository.java")).isTrue();
     assertThat(hasJavaSource(APPLICATION_PORT_PACKAGE, "RoleRepository.java")).isTrue();
     assertThat(hasJavaSource(PERSISTENCE_ADAPTER_PACKAGE, "MembershipPersistenceAdapter.java"))
@@ -571,7 +595,18 @@ class IdentityPackageConventionTest {
         .isTrue();
     assertThat(hasJavaSource(FEATURE_FLAG_APPLICATION_PORT_PACKAGE, "SubscriptionPlanPort.java"))
         .isTrue();
-    assertThat(hasJavaSource(FEATURE_FLAG_APPLICATION_SERVICE_PACKAGE, "FeatureFlagService.java"))
+    assertThat(
+            hasJavaSource(
+                FEATURE_FLAG_APPLICATION_SERVICE_PACKAGE, "GetEffectiveFeatureFlagsService.java"))
+        .isTrue();
+    assertThat(
+            hasJavaSource(
+                FEATURE_FLAG_APPLICATION_SERVICE_PACKAGE, "SetPlatformFeatureFlagService.java"))
+        .isTrue();
+    assertThat(
+            hasJavaSource(
+                FEATURE_FLAG_APPLICATION_SERVICE_PACKAGE,
+                "SetTenantFeatureFlagOverrideService.java"))
         .isTrue();
     assertThat(Files.exists(FEATURE_FLAG_ENTITY)).isTrue();
     assertThat(Files.exists(FEATURE_FLAG_REPOSITORY)).isTrue();

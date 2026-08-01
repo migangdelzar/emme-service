@@ -446,6 +446,25 @@ The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
 
+## Completed one-service-per-use-case normalization — 2026-08-01
+
+- [x] Added a source-level convention test rejecting application services that
+  implement multiple use-case interfaces.
+- [x] Replaced the membership facade with
+  `AssignMembershipService`, `GetCurrentUserMembershipsService`, and
+  `RevokeMembershipService`.
+- [x] Replaced the feature-flag facade with focused services for evaluation,
+  effective-flag queries, platform updates, and tenant overrides.
+- [x] Extracted membership and feature-flag mapping into application-owned
+  mappers while preserving public results and the `featureFlagService` SpEL
+  bean name.
+- [x] Verified Identity formatting and tests, including the new convention and
+  focused feature-flag service tests.
+
+This is a cohesion and interface-segregation rule, not a circular-dependency
+workaround. Circular dependencies remain prohibited and must be resolved with
+ports, events, or focused collaborators.
+
 ## Completed membership web-boundary slice — 2026-08-01
 
 - [x] Added grouped membership commands, query, use-case contracts, and

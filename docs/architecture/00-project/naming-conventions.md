@@ -39,6 +39,7 @@ with an owner, removal trigger, and verification evidence.
 | Initialisms | Treat initialisms as words in type names | `HttpClient`, `JsonMapper`, `QuoteId`, `Uuid` | `HTTPClient`, `JSONMapper`, `QuoteID`, `UUID` |
 | Public data | Prefer immutable records/value types | `QuoteDetails.java` | Mutable public entity |
 | Implementation | Name the responsibility or technology | `QuotePersistenceAdapter` | `QuoteRepositoryImpl` |
+| Application service | One concrete service implements one matching use-case interface | `SubmitQuoteService implements SubmitQuoteUseCase` | `MembershipService implements AssignMembershipUseCase, RevokeMembershipUseCase` |
 | Package metadata | Always use `package-info.java` | `api/event/package-info.java` | `PackageInfo.java` |
 | Module name | Business capability or bounded context | `booking`, `identity` | `database`, `web`, `misc` |
 | Build capability | Delivery/build capability | `container`, `deployment`, `security` | Global `plugin`, `task`, `provider` buckets |

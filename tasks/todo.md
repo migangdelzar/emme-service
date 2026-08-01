@@ -51,4 +51,4 @@
 - [x] Calendar service and focused architecture/persistence tests pass.
 - [x] Web Calendar/Google error handling preserves stable problem codes.
 - [x] Web Calendar/Google messages are localized in supported locales.
-- [ ] Full cross-repository final commit and remote verification.
+- [x] Full cross-repository final commit and remote verification.

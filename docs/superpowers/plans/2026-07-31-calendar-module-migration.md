@@ -17,7 +17,7 @@
 | Calendar persistence ports/adapters | Complete | mapper/adapter tests and managed-identity regression coverage |
 | Calendar inbound and Google adapter relocation | Complete | module/architecture tests and compile verification |
 | Web problem-code parsing and Calendar i18n | Complete | API-client, i18n, app tests, and `bun run quality` |
-| Cross-repository verification and evidence | In progress | final full service checks and commits |
+| Cross-repository verification and evidence | Complete | service `ci`, Calendar unit/integration/architecture tests, web `quality`, pushed commits |
 
 ## Global Constraints
 
@@ -1027,16 +1027,16 @@ must be adjusted. Task 9 updates evidence in both repositories.
 
 ## Definition of done
 
-- [ ] Calendar no longer contains production classes in `application`, `entity`, `event`, `infrastructure`, or `web`.
-- [ ] Calendar public types are grouped by API kind and exposed through named interfaces.
-- [ ] Calendar domain models are framework-independent and tested in isolation.
-- [ ] Calendar persistence and Google integrations are outbound adapters behind application ports.
-- [ ] Controllers and listeners are inbound adapters and do not access persistence directly.
-- [ ] Existing Calendar and Google endpoint tests pass without route regressions.
-- [ ] Service Modulith, ArchUnit, unit, integration, quality, and infrastructure gates pass.
-- [ ] Web API client preserves machine-readable backend problem codes.
-- [ ] Web Calendar/Google messages are localized in every supported locale.
-- [ ] Both repositories are clean, committed, pushed, and independently verifiable.
+- [x] Calendar no longer contains production classes in `application`, `entity`, `event`, `infrastructure`, or `web`.
+- [x] Calendar public types are grouped by API kind and exposed through named interfaces.
+- [x] Calendar domain models are framework-independent and tested in isolation.
+- [x] Calendar persistence and Google integrations are outbound adapters behind application ports.
+- [x] Controllers and listeners are inbound adapters and do not access persistence directly.
+- [x] Existing Calendar and Google endpoint tests pass without route regressions.
+- [x] Service Modulith, ArchUnit, unit, integration, quality, and infrastructure gates pass.
+- [x] Web API client preserves machine-readable backend problem codes.
+- [x] Web Calendar/Google messages are localized in every supported locale.
+- [x] Both repositories are clean, committed, pushed, and independently verifiable.
 
 ## Follow-up plans
 

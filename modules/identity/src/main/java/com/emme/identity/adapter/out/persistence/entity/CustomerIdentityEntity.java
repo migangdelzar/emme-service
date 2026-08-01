@@ -1,5 +1,6 @@
 package com.emme.identity.adapter.out.persistence.entity;
 
+import com.emme.identity.domain.model.SocialProvider;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,9 +12,10 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
+/** JPA representation of the Identity-owned customer identity aggregate. */
 @Entity
 @Table(name = "customer_identity", schema = "emme_core")
-public class CustomerIdentity {
+public class CustomerIdentityEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -44,81 +46,62 @@ public class CustomerIdentity {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt = Instant.now();
 
-  public enum SocialProvider {
-    GOOGLE,
-    FACEBOOK,
-    TWITTER
+  public CustomerIdentityEntity() {}
+
+  public CustomerIdentityEntity(
+      UUID id,
+      String email,
+      String name,
+      String phone,
+      SocialProvider provider,
+      String providerId,
+      String avatarUrl,
+      Instant createdAt,
+      Instant updatedAt) {
+    this.id = id;
+    this.email = email;
+    this.name = name;
+    this.phone = phone;
+    this.provider = provider;
+    this.providerId = providerId;
+    this.avatarUrl = avatarUrl;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
   }
 
   public UUID getId() {
     return id;
   }
 
-  public void setId(UUID id) {
-    this.id = id;
-  }
-
   public String getEmail() {
     return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
   }
 
   public String getName() {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public String getPhone() {
     return phone;
-  }
-
-  public void setPhone(String phone) {
-    this.phone = phone;
   }
 
   public SocialProvider getProvider() {
     return provider;
   }
 
-  public void setProvider(SocialProvider provider) {
-    this.provider = provider;
-  }
-
   public String getProviderId() {
     return providerId;
-  }
-
-  public void setProviderId(String providerId) {
-    this.providerId = providerId;
   }
 
   public String getAvatarUrl() {
     return avatarUrl;
   }
 
-  public void setAvatarUrl(String avatarUrl) {
-    this.avatarUrl = avatarUrl;
-  }
-
   public Instant getCreatedAt() {
     return createdAt;
   }
 
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
-  }
-
   public Instant getUpdatedAt() {
     return updatedAt;
-  }
-
-  public void setUpdatedAt(Instant updatedAt) {
-    this.updatedAt = updatedAt;
   }
 }

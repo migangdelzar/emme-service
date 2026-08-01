@@ -274,8 +274,26 @@ failure advice remain open slices.
   existing JWT customer-role filtering behavior.
 - [x] Added service, mapper, consumer, and source-tree boundary tests.
 
-Customer authentication, typed security configuration, Identity-specific
-failure advice, and the final security hardening gate remain open slices.
+## Completed customer authentication slice — 2026-08-01
 
-Customer authentication, customer-membership event ownership, typed security
-configuration, and Identity-specific failure advice remain open slices.
+- [x] Introduced the framework-free `CustomerIdentity` aggregate and
+  `SocialProvider` vocabulary.
+- [x] Added grouped customer authentication/profile commands, results, and
+  public use-case interfaces.
+- [x] Added `CustomerIdentityRepository`, `CustomerTokenDecoder`, and
+  transport-neutral `CustomerTokenClaims` application ports.
+- [x] Moved customer authentication and phone updates into
+  `AuthenticateCustomerService` and `UpdateCustomerProfileService`.
+- [x] Renamed technical persistence types to `CustomerIdentityEntity` and
+  `SpringDataCustomerIdentityRepository`, with mapper and persistence adapter.
+- [x] Added `CustomerTokenDecoderAdapter` to keep Keycloak JWT types outside the
+  application service.
+- [x] Rewired `AuthController` through public use cases and web response mapper
+  types without exposing persistence entities.
+- [x] Preserved customer-realm issuer validation, provider fallback, profile
+  update behavior, route paths, and response fields.
+- [x] Added domain, application, persistence-mapper, package-boundary, and
+  invalid-realm regression coverage.
+
+Typed security configuration, Identity-specific failure advice, and the final
+security hardening gate remain open slices.

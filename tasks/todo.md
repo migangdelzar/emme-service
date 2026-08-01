@@ -127,7 +127,20 @@
 - [x] Rename and isolate the composite-key JPA entity and Spring Data repository.
 - [x] Move appointment event handling to the inbound messaging consumer package.
 - [x] Verify Identity tests, architecture checks, and affected application tests.
-- [ ] Continue with customer authentication application separation.
+- [x] Continue with customer authentication application separation.
+
+### Identity customer authentication slice — 2026-08-01
+
+- [x] Add failing tests for customer identity domain and use-case boundaries.
+- [x] Introduce public customer authentication/profile commands, results, and
+  use cases.
+- [x] Move provider-token decoding and customer identity persistence behind
+  application-owned ports.
+- [x] Rename CustomerIdentity technical persistence types and add mapper/adapter
+  implementations.
+- [x] Rewire AuthController without exposing JPA entities.
+- [x] Verify Identity checks and login/profile regression coverage.
+- [ ] Continue with typed security configuration and Identity failure advice.
 
 ### Plan update results
 

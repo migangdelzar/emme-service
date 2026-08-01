@@ -29,7 +29,7 @@ class IdentityPackageConventionTest {
       sourcePath("modules/identity/src/main/java/com/emme/identity/adapter/out/persistence");
   private static final Path PERSISTENCE_ENTITY =
       sourcePath(
-          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/CustomerIdentity.java");
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/CustomerIdentityEntity.java");
   private static final Path PERSISTENCE_REPOSITORY =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/SpringDataMembershipRepository.java");
@@ -153,6 +153,69 @@ class IdentityPackageConventionTest {
   private static final Path LEGACY_CUSTOMER_MEMBERSHIP_LISTENER =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/application/CustomerMembershipListener.java");
+  private static final Path CUSTOMER_IDENTITY_DOMAIN =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/domain/model/CustomerIdentity.java");
+  private static final Path CUSTOMER_IDENTITY_PROVIDER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/domain/model/SocialProvider.java");
+  private static final Path CUSTOMER_AUTH_COMMAND =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/api/command/AuthenticateCustomerCommand.java");
+  private static final Path CUSTOMER_PROFILE_COMMAND =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/api/command/UpdateCustomerPhoneCommand.java");
+  private static final Path CUSTOMER_DETAILS_RESULT =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/api/result/CustomerDetails.java");
+  private static final Path CUSTOMER_LOGIN_RESULT =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/api/result/CustomerLoginResult.java");
+  private static final Path CUSTOMER_AUTH_USE_CASE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/api/usecase/AuthenticateCustomerUseCase.java");
+  private static final Path CUSTOMER_PROFILE_USE_CASE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/api/usecase/UpdateCustomerProfileUseCase.java");
+  private static final Path CUSTOMER_IDENTITY_PORT =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/port/out/CustomerIdentityRepository.java");
+  private static final Path CUSTOMER_TOKEN_DECODER_PORT =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/port/out/CustomerTokenDecoder.java");
+  private static final Path CUSTOMER_TOKEN_CLAIMS =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/port/out/CustomerTokenClaims.java");
+  private static final Path CUSTOMER_AUTH_SERVICE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/service/AuthenticateCustomerService.java");
+  private static final Path CUSTOMER_PROFILE_SERVICE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/service/UpdateCustomerProfileService.java");
+  private static final Path CUSTOMER_IDENTITY_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/CustomerIdentityEntity.java");
+  private static final Path CUSTOMER_IDENTITY_REPOSITORY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/SpringDataCustomerIdentityRepository.java");
+  private static final Path CUSTOMER_IDENTITY_MAPPER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/mapper/CustomerIdentityPersistenceMapper.java");
+  private static final Path CUSTOMER_IDENTITY_ADAPTER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/adapter/CustomerIdentityPersistenceAdapter.java");
+  private static final Path CUSTOMER_TOKEN_ADAPTER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/CustomerTokenDecoderAdapter.java");
+  private static final Path LEGACY_CUSTOMER_AUTH_SERVICE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/CustomerAuthService.java");
+  private static final Path LEGACY_CUSTOMER_IDENTITY_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/CustomerIdentity.java");
+  private static final Path LEGACY_CUSTOMER_IDENTITY_REPOSITORY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/CustomerIdentityRepository.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -221,9 +284,12 @@ class IdentityPackageConventionTest {
     assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "MembershipResponse.java")).isTrue();
     assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "FeatureFlagResponse.java")).isTrue();
     assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "TokenLoginResponse.java")).isTrue();
+    assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "CustomerLoginResponse.java")).isTrue();
+    assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "CustomerProfileResponse.java")).isTrue();
 
     assertThat(hasJavaSource(WEB_MAPPER_PACKAGE, "IdentityWebMapper.java")).isTrue();
     assertThat(hasJavaSource(WEB_MAPPER_PACKAGE, "FeatureFlagWebMapper.java")).isTrue();
+    assertThat(hasJavaSource(WEB_MAPPER_PACKAGE, "CustomerWebMapper.java")).isTrue();
     assertThat(hasJavaSources(LEGACY_WEB_PACKAGE)).isFalse();
   }
 
@@ -283,6 +349,31 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(LEGACY_CUSTOMER_MEMBERSHIP_ENTITY)).isFalse();
     assertThat(Files.exists(LEGACY_CUSTOMER_MEMBERSHIP_REPOSITORY)).isFalse();
     assertThat(Files.exists(LEGACY_CUSTOMER_MEMBERSHIP_LISTENER)).isFalse();
+  }
+
+  @Test
+  void ownsCustomerAuthenticationBehindPublicApplicationAndTechnicalBoundaries() {
+    assertThat(Files.exists(CUSTOMER_IDENTITY_DOMAIN)).isTrue();
+    assertThat(Files.exists(CUSTOMER_IDENTITY_PROVIDER)).isTrue();
+    assertThat(Files.exists(CUSTOMER_AUTH_COMMAND)).isTrue();
+    assertThat(Files.exists(CUSTOMER_PROFILE_COMMAND)).isTrue();
+    assertThat(Files.exists(CUSTOMER_DETAILS_RESULT)).isTrue();
+    assertThat(Files.exists(CUSTOMER_LOGIN_RESULT)).isTrue();
+    assertThat(Files.exists(CUSTOMER_AUTH_USE_CASE)).isTrue();
+    assertThat(Files.exists(CUSTOMER_PROFILE_USE_CASE)).isTrue();
+    assertThat(Files.exists(CUSTOMER_IDENTITY_PORT)).isTrue();
+    assertThat(Files.exists(CUSTOMER_TOKEN_DECODER_PORT)).isTrue();
+    assertThat(Files.exists(CUSTOMER_TOKEN_CLAIMS)).isTrue();
+    assertThat(Files.exists(CUSTOMER_AUTH_SERVICE)).isTrue();
+    assertThat(Files.exists(CUSTOMER_PROFILE_SERVICE)).isTrue();
+    assertThat(Files.exists(CUSTOMER_IDENTITY_ENTITY)).isTrue();
+    assertThat(Files.exists(CUSTOMER_IDENTITY_REPOSITORY)).isTrue();
+    assertThat(Files.exists(CUSTOMER_IDENTITY_MAPPER)).isTrue();
+    assertThat(Files.exists(CUSTOMER_IDENTITY_ADAPTER)).isTrue();
+    assertThat(Files.exists(CUSTOMER_TOKEN_ADAPTER)).isTrue();
+    assertThat(Files.exists(LEGACY_CUSTOMER_AUTH_SERVICE)).isFalse();
+    assertThat(Files.exists(LEGACY_CUSTOMER_IDENTITY_ENTITY)).isFalse();
+    assertThat(Files.exists(LEGACY_CUSTOMER_IDENTITY_REPOSITORY)).isFalse();
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

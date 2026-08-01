@@ -1,10 +1,13 @@
 package com.emme.identity.adapter.in.web.controller;
 
+import com.emme.identity.adapter.in.web.mapper.CustomerWebMapper;
 import com.emme.identity.adapter.in.web.request.LoginRequest;
 import com.emme.identity.adapter.in.web.response.TokenLoginResponse;
-import com.emme.identity.application.CustomerAuthService;
+import com.emme.identity.api.command.AuthenticateCustomerCommand;
+import com.emme.identity.api.command.UpdateCustomerPhoneCommand;
+import com.emme.identity.api.usecase.AuthenticateCustomerUseCase;
+import com.emme.identity.api.usecase.UpdateCustomerProfileUseCase;
 import com.emme.identity.application.KeycloakAuthService;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -24,15 +27,18 @@ public class AuthController {
 
   private static final Logger log = LoggerFactory.getLogger(AuthController.class);
   private final KeycloakAuthService authService;
-  private final CustomerAuthService customerAuthService;
+  private final AuthenticateCustomerUseCase authenticateCustomerUseCase;
+  private final UpdateCustomerProfileUseCase updateCustomerProfileUseCase;
   private final CurrentUserController currentUserController;
 
   public AuthController(
       KeycloakAuthService authService,
-      CustomerAuthService customerAuthService,
+      AuthenticateCustomerUseCase authenticateCustomerUseCase,
+      UpdateCustomerProfileUseCase updateCustomerProfileUseCase,
       CurrentUserController currentUserController) {
     this.authService = authService;
-    this.customerAuthService = customerAuthService;
+    this.authenticateCustomerUseCase = authenticateCustomerUseCase;
+    this.updateCustomerProfileUseCase = updateCustomerProfileUseCase;
     this.currentUserController = currentUserController;
   }
 
@@ -132,20 +138,9 @@ public class AuthController {
       if (decoded != null) providerToken = decoded;
     }
     try {
-      var result = customerAuthService.authenticate(providerToken);
-      var customer = result.customer();
-      Map<String, Object> response = new LinkedHashMap<>();
-      response.put("needsPhone", result.needsPhone());
-      response.put(
-          "customer",
-          Map.of(
-              "id", customer.getId().toString(),
-              "email", customer.getEmail() != null ? customer.getEmail() : "",
-              "name", customer.getName() != null ? customer.getName() : "",
-              "phone", customer.getPhone() != null ? customer.getPhone() : "",
-              "provider",
-                  customer.getProvider() != null ? customer.getProvider().name() : "UNKNOWN"));
-      return ResponseEntity.ok(response);
+      var result =
+          authenticateCustomerUseCase.authenticate(new AuthenticateCustomerCommand(providerToken));
+      return ResponseEntity.ok(CustomerWebMapper.toLoginResponse(result));
     } catch (Exception e) {
       log.error("Customer login failed", e);
       return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
@@ -165,7 +160,9 @@ public class AuthController {
     if (phone == null || phone.isBlank()) {
       return ResponseEntity.badRequest().body(Map.of("error", "phone required"));
     }
-    var customer = customerAuthService.updatePhone(UUID.fromString(customerId), phone);
-    return ResponseEntity.ok(Map.of("phone", customer.getPhone()));
+    var customer =
+        updateCustomerProfileUseCase.updatePhone(
+            new UpdateCustomerPhoneCommand(UUID.fromString(customerId), phone));
+    return ResponseEntity.ok(Map.of("phone", customer.phone()));
   }
 }

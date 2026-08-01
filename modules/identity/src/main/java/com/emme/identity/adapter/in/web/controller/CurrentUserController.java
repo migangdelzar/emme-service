@@ -1,10 +1,13 @@
-package com.emme.identity.web;
+package com.emme.identity.adapter.in.web.controller;
 
 import com.emme.identity.UserContext;
 import com.emme.identity.UserContextHolder;
+import com.emme.identity.adapter.in.web.mapper.IdentityWebMapper;
+import com.emme.identity.adapter.in.web.response.BusinessProfileResponse;
+import com.emme.identity.adapter.in.web.response.CurrentUserResponse;
+import com.emme.identity.adapter.in.web.response.TenantMembershipResponse;
 import com.emme.identity.adapter.out.persistence.entity.Membership;
 import com.emme.identity.application.IdentityService;
-import com.emme.studio.api.result.BusinessProfileInfo;
 import com.emme.studio.api.usecase.SalonApi;
 import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.tenancy.api.usecase.TenantApi;
@@ -43,7 +46,7 @@ public class CurrentUserController {
             ? null
             : salonApi
                 .getBusinessProfile(selectedTenantId)
-                .map(BusinessProfileResponse::from)
+                .map(IdentityWebMapper::toBusinessProfileResponse)
                 .orElse(null);
 
     return new CurrentUserResponse(
@@ -71,35 +74,5 @@ public class CurrentUserController {
       }
     }
     return memberships.size() == 1 ? memberships.getFirst().getTenantId() : null;
-  }
-
-  public record CurrentUserResponse(
-      String userId,
-      String email,
-      String displayName,
-      List<TenantMembershipResponse> memberships,
-      BusinessProfileResponse profile) {}
-
-  public record TenantMembershipResponse(
-      UUID tenantId,
-      String tenantSlug,
-      String tenantName,
-      String displayName,
-      String role,
-      String status,
-      Set<String> permissions) {}
-
-  public record BusinessProfileResponse(
-      UUID tenantId,
-      String businessName,
-      String ownerName,
-      String monthlyGoal,
-      String workingHours,
-      String language,
-      boolean notificationsEnabled) {
-    static BusinessProfileResponse from(BusinessProfileInfo profile) {
-      return new BusinessProfileResponse(
-          profile.tenantId(), profile.displayName(), null, null, null, profile.locale(), true);
-    }
   }
 }

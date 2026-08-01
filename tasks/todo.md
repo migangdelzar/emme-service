@@ -164,7 +164,13 @@
   an application process manager.
 - [x] Verified Identity tests/checks and Studio Modulith verification after the
   security boundary migration.
-- [ ] Next slice: continue Identity web contract/application/domain separation.
+- [x] Moved Identity controllers and the web test into
+  `adapter/in/web/controller`.
+- [x] Extracted named request/response records and web mappers under the inbound
+  web adapter, preserving existing HTTP contracts.
+- [x] Verified the full Identity test suite after the HTTP boundary migration.
+- [ ] Next slice: continue Identity application/domain separation and failure
+  advice.
 
 ## Architecture naming contract — 2026-07-31
 

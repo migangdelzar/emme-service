@@ -1,15 +1,16 @@
-package com.emme.identity.web;
+package com.emme.identity.adapter.in.web.controller;
 
 import com.emme.identity.UserContextHolder;
+import com.emme.identity.adapter.in.web.mapper.IdentityWebMapper;
+import com.emme.identity.adapter.in.web.request.AssignMembershipRequest;
+import com.emme.identity.adapter.in.web.response.MembershipResponse;
 import com.emme.identity.adapter.out.persistence.entity.Membership;
 import com.emme.identity.application.IdentityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
-import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -39,7 +40,7 @@ public class IdentityController {
         user -> {
           List<MembershipResponse> members =
               service.getCurrentUserMemberships(user.subject()).stream()
-                  .map(MembershipResponse::from)
+                  .map(IdentityWebMapper::toMembershipResponse)
                   .toList();
           return ResponseEntity.ok(members);
         });
@@ -63,7 +64,7 @@ public class IdentityController {
     Membership m =
         service.assignMembership(request.tenantId(), request.roleId(), request.userReference());
     URI location = URI.create("/api/v1/identity/memberships/" + m.getId());
-    return ResponseEntity.created(location).body(MembershipResponse.from(m));
+    return ResponseEntity.created(location).body(IdentityWebMapper.toMembershipResponse(m));
   }
 
   @DeleteMapping("/memberships/{id}")
@@ -72,25 +73,6 @@ public class IdentityController {
       tags = {"Identity"})
   public ResponseEntity<MembershipResponse> revokeMembership(@PathVariable UUID id) {
     Membership m = service.revokeMembership(id);
-    return ResponseEntity.ok(MembershipResponse.from(m));
-  }
-
-  // --- DTOs ---
-
-  record AssignMembershipRequest(
-      @NotNull UUID tenantId, @NotNull UUID roleId, @NotBlank String userReference) {}
-
-  record MembershipResponse(
-      UUID id, UUID tenantId, String role, String userReference, String status, Instant createdAt) {
-
-    static MembershipResponse from(Membership m) {
-      return new MembershipResponse(
-          m.getId(),
-          m.getTenantId(),
-          m.getRole().getCode(),
-          m.getUserReference(),
-          m.getStatus().name(),
-          m.getCreatedAt());
-    }
+    return ResponseEntity.ok(IdentityWebMapper.toMembershipResponse(m));
   }
 }

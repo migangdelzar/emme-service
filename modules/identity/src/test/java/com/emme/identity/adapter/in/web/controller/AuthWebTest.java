@@ -1,4 +1,4 @@
-package com.emme.identity.web;
+package com.emme.identity.adapter.in.web.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

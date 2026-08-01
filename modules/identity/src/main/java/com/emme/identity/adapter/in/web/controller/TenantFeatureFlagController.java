@@ -1,7 +1,8 @@
-package com.emme.identity.web;
+package com.emme.identity.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.identity.adapter.in.web.request.OverrideFeatureFlagRequest;
 import com.emme.identity.application.FeatureFlagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,7 +36,7 @@ public class TenantFeatureFlagController {
   @PutMapping("/{code}")
   @Operation(summary = "Set tenant-specific feature flag override")
   public ResponseEntity<Map<String, Object>> setOverride(
-      @PathVariable String code, @RequestBody OverrideRequest request) {
+      @PathVariable String code, @RequestBody OverrideFeatureFlagRequest request) {
     return withCurrentTenant(
         tenantId -> {
           var flag = featureFlagService.setOverride(tenantId, code, request.enabled());
@@ -45,8 +46,4 @@ public class TenantFeatureFlagController {
                   "enabled", flag.isEnabled()));
         });
   }
-
-  // --- DTOs ---
-
-  public record OverrideRequest(boolean enabled) {}
 }

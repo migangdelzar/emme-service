@@ -1,5 +1,7 @@
-package com.emme.identity.web;
+package com.emme.identity.adapter.in.web.controller;
 
+import com.emme.identity.adapter.in.web.request.LoginRequest;
+import com.emme.identity.adapter.in.web.response.TokenLoginResponse;
 import com.emme.identity.application.CustomerAuthService;
 import com.emme.identity.application.KeycloakAuthService;
 import java.util.LinkedHashMap;
@@ -33,11 +35,6 @@ public class AuthController {
     this.customerAuthService = customerAuthService;
     this.currentUserController = currentUserController;
   }
-
-  public record LoginRequest(String email, String password) {}
-
-  public record TokenLoginResponse(
-      String accessToken, String refreshToken, CurrentUserController.CurrentUserResponse user) {}
 
   @PostMapping("/api/auth/login")
   public ResponseEntity<?> login(@RequestBody LoginRequest request) {

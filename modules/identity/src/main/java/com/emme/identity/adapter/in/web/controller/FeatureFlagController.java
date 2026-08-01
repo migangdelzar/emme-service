@@ -1,11 +1,13 @@
-package com.emme.identity.web;
+package com.emme.identity.adapter.in.web.controller;
 
+import com.emme.identity.adapter.in.web.mapper.FeatureFlagWebMapper;
+import com.emme.identity.adapter.in.web.request.CreateFeatureFlagRequest;
+import com.emme.identity.adapter.in.web.request.UpdateFeatureFlagRequest;
+import com.emme.identity.adapter.in.web.response.FeatureFlagResponse;
 import com.emme.identity.application.FeatureFlagService;
-import com.emme.studio.subscriptions.api.PlanType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +32,7 @@ public class FeatureFlagController {
 
   @GetMapping
   @Operation(summary = "List all global feature flags")
-  public ResponseEntity<List<FlagResponse>> listAll() {
+  public ResponseEntity<List<FeatureFlagResponse>> listAll() {
     // Platform admin sees all global flags
     // For a complete view, return effective for a dummy tenant (TODO: admin-wide view)
     return ResponseEntity.ok(List.of());
@@ -38,32 +40,17 @@ public class FeatureFlagController {
 
   @PostMapping
   @Operation(summary = "Create a global feature flag")
-  public ResponseEntity<FlagResponse> create(@RequestBody CreateFlagRequest request) {
+  public ResponseEntity<FeatureFlagResponse> create(@RequestBody CreateFeatureFlagRequest request) {
     var flag =
         featureFlagService.platformSet(request.code(), request.enabled(), request.planRequired());
-    return ResponseEntity.ok(FlagResponse.from(flag));
+    return ResponseEntity.ok(FeatureFlagWebMapper.toResponse(flag));
   }
 
   @PutMapping("/{code}")
   @Operation(summary = "Update a global feature flag")
-  public ResponseEntity<FlagResponse> update(
-      @PathVariable String code, @RequestBody UpdateFlagRequest request) {
+  public ResponseEntity<FeatureFlagResponse> update(
+      @PathVariable String code, @RequestBody UpdateFeatureFlagRequest request) {
     var flag = featureFlagService.platformSet(code, request.enabled(), request.planRequired());
-    return ResponseEntity.ok(FlagResponse.from(flag));
-  }
-
-  // --- DTOs ---
-
-  public record CreateFlagRequest(String code, boolean enabled, PlanType planRequired) {}
-
-  public record UpdateFlagRequest(boolean enabled, PlanType planRequired) {}
-
-  public record FlagResponse(
-      UUID id, String code, boolean enabled, PlanType planRequired, String description) {
-    public static FlagResponse from(
-        com.emme.identity.adapter.out.persistence.entity.FeatureFlag f) {
-      return new FlagResponse(
-          f.getId(), f.getCode(), f.isEnabled(), f.getPlanRequired(), f.getDescription());
-    }
+    return ResponseEntity.ok(FeatureFlagWebMapper.toResponse(flag));
   }
 }

@@ -105,13 +105,15 @@ context, but they must not become business API types accidentally.
 
 ### Task 6: HTTP adapters and public API
 
-- [ ] Extract request/response records and web mappers from all controllers.
-- [ ] Move controllers to `adapter/in/web/controller` and add module advice only
-  for Identity-owned expected failures.
-- [ ] Update all cross-module imports to named API packages in the same commits as
+- [x] Extract request/response records and web mappers from all controllers.
+- [x] Move controllers to `adapter/in/web/controller`; Identity-owned exception
+  advice remains a follow-up because the current controllers preserve existing
+  response behavior without a module-specific handler.
+- [x] Update all cross-module imports to named API packages in the same commits as
   contract moves.
-- [ ] Preserve route paths, status codes, token response shapes, tenant behavior,
+- [x] Preserve route paths, status codes, token response shapes, tenant behavior,
   and security annotations.
+- [ ] Add module advice only for Identity-owned expected failures.
 
 ### Task 7: Verification and hardening
 
@@ -177,3 +179,22 @@ the current technical ownership explicit.
 
 The Identity HTTP contract extraction and application/domain separation remain
 open tasks; this slice does not claim the full Identity plan is complete.
+
+## Completed HTTP-boundary slice — 2026-08-01
+
+- [x] Moved Identity controllers and the web-slice test under
+  `adapter/in/web/controller`.
+- [x] Extracted HTTP request records under `adapter/in/web/request` with
+  resource-specific names such as `CreateFeatureFlagRequest` and
+  `OverrideFeatureFlagRequest`.
+- [x] Extracted HTTP response records under `adapter/in/web/response`.
+- [x] Added `IdentityWebMapper` and `FeatureFlagWebMapper` for transport mapping.
+- [x] Preserved existing route paths, response fields, status codes, validation
+  annotations, authorization annotations, and customer-login behavior.
+- [x] Added source-tree guardrails for controller/request/response/mapper
+  ownership and removed Java sources from the legacy `web` package.
+- [x] Verified the full Identity test suite and formatting; application Modulith
+  verification remains part of the final cross-module gate.
+
+Application service/domain separation, controller-to-controller orchestration,
+and Identity-specific failure advice remain future slices.

@@ -58,6 +58,16 @@ class IdentityPackageConventionTest {
       sourcePath("modules/identity/src/main/java/com/emme/identity/config/SecurityConfig.java");
   private static final Path LEGACY_INFRASTRUCTURE =
       sourcePath("modules/identity/src/main/java/com/emme/identity/infrastructure");
+  private static final Path WEB_CONTROLLER_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller");
+  private static final Path WEB_REQUEST_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/adapter/in/web/request");
+  private static final Path WEB_RESPONSE_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/adapter/in/web/response");
+  private static final Path WEB_MAPPER_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/adapter/in/web/mapper");
+  private static final Path LEGACY_WEB_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/web");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -104,6 +114,36 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(TENANT_CREATED_CONSUMER)).isTrue();
     assertThat(Files.exists(LEGACY_SECURITY_CONFIGURATION)).isFalse();
     assertThat(hasJavaSources(LEGACY_INFRASTRUCTURE)).isFalse();
+  }
+
+  @Test
+  void ownsHttpEntryPointsAndWireModelsUnderInboundWebAdapters() {
+    assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "IdentityController.java")).isTrue();
+    assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "AuthController.java")).isTrue();
+    assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "CurrentUserController.java")).isTrue();
+    assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "FeatureFlagController.java")).isTrue();
+    assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "TenantFeatureFlagController.java")).isTrue();
+
+    assertThat(hasJavaSource(WEB_REQUEST_PACKAGE, "LoginRequest.java")).isTrue();
+    assertThat(hasJavaSource(WEB_REQUEST_PACKAGE, "AssignMembershipRequest.java")).isTrue();
+    assertThat(hasJavaSource(WEB_REQUEST_PACKAGE, "CreateFeatureFlagRequest.java")).isTrue();
+    assertThat(hasJavaSource(WEB_REQUEST_PACKAGE, "UpdateFeatureFlagRequest.java")).isTrue();
+    assertThat(hasJavaSource(WEB_REQUEST_PACKAGE, "OverrideFeatureFlagRequest.java")).isTrue();
+
+    assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "CurrentUserResponse.java")).isTrue();
+    assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "TenantMembershipResponse.java")).isTrue();
+    assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "BusinessProfileResponse.java")).isTrue();
+    assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "MembershipResponse.java")).isTrue();
+    assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "FeatureFlagResponse.java")).isTrue();
+    assertThat(hasJavaSource(WEB_RESPONSE_PACKAGE, "TokenLoginResponse.java")).isTrue();
+
+    assertThat(hasJavaSource(WEB_MAPPER_PACKAGE, "IdentityWebMapper.java")).isTrue();
+    assertThat(hasJavaSource(WEB_MAPPER_PACKAGE, "FeatureFlagWebMapper.java")).isTrue();
+    assertThat(hasJavaSources(LEGACY_WEB_PACKAGE)).isFalse();
+  }
+
+  private static boolean hasJavaSource(Path directory, String filename) {
+    return Files.exists(directory.resolve(filename));
   }
 
   private static boolean hasJavaSources(Path directory) {

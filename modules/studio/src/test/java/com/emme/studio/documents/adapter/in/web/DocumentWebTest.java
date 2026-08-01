@@ -1,4 +1,4 @@
-package com.emme.studio.documents.web;
+package com.emme.studio.documents.adapter.in.web;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;

@@ -6,8 +6,19 @@ import com.emme.studio.documents.adapter.in.web.mapper.DocumentWebMapper;
 import com.emme.studio.documents.adapter.in.web.request.UploadDocumentRequest;
 import com.emme.studio.documents.adapter.in.web.response.DocumentChunkResponse;
 import com.emme.studio.documents.adapter.in.web.response.DocumentResponse;
-import com.emme.studio.documents.application.DocumentService;
-import com.emme.studio.documents.domain.model.Document;
+import com.emme.studio.documents.api.command.ProcessDocumentCommand;
+import com.emme.studio.documents.api.command.RetireDocumentCommand;
+import com.emme.studio.documents.api.command.UploadDocumentCommand;
+import com.emme.studio.documents.api.query.GetDocumentChunksQuery;
+import com.emme.studio.documents.api.query.GetDocumentQuery;
+import com.emme.studio.documents.api.query.ListDocumentsQuery;
+import com.emme.studio.documents.api.result.DocumentInfo;
+import com.emme.studio.documents.api.usecase.GetDocumentChunksUseCase;
+import com.emme.studio.documents.api.usecase.GetDocumentUseCase;
+import com.emme.studio.documents.api.usecase.ListDocumentsUseCase;
+import com.emme.studio.documents.api.usecase.ProcessDocumentUseCase;
+import com.emme.studio.documents.api.usecase.RetireDocumentUseCase;
+import com.emme.studio.documents.api.usecase.UploadDocumentUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,11 +38,28 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Documents")
 public class DocumentController {
 
-  private final DocumentService documentService;
+  private final UploadDocumentUseCase uploadDocument;
+  private final ListDocumentsUseCase listDocuments;
+  private final GetDocumentUseCase getDocument;
+  private final ProcessDocumentUseCase processDocument;
+  private final RetireDocumentUseCase retireDocument;
+  private final GetDocumentChunksUseCase getDocumentChunks;
   private final DocumentWebMapper mapper;
 
-  public DocumentController(DocumentService documentService, DocumentWebMapper mapper) {
-    this.documentService = documentService;
+  public DocumentController(
+      UploadDocumentUseCase uploadDocument,
+      ListDocumentsUseCase listDocuments,
+      GetDocumentUseCase getDocument,
+      ProcessDocumentUseCase processDocument,
+      RetireDocumentUseCase retireDocument,
+      GetDocumentChunksUseCase getDocumentChunks,
+      DocumentWebMapper mapper) {
+    this.uploadDocument = uploadDocument;
+    this.listDocuments = listDocuments;
+    this.getDocument = getDocument;
+    this.processDocument = processDocument;
+    this.retireDocument = retireDocument;
+    this.getDocumentChunks = getDocumentChunks;
     this.mapper = mapper;
   }
 
@@ -41,8 +69,9 @@ public class DocumentController {
       @Valid @RequestBody UploadDocumentRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          Document document =
-              documentService.upload(tenantId, request.name(), request.sourceType());
+          DocumentInfo document =
+              uploadDocument.upload(
+                  new UploadDocumentCommand(tenantId, request.name(), request.sourceType()));
           URI location = URI.create("/api/v1/documents/" + document.id());
           return ResponseEntity.created(location).body(mapper.toResponse(document));
         });
@@ -54,7 +83,7 @@ public class DocumentController {
     return withCurrentTenant(
         tenantId ->
             ResponseEntity.ok(
-                documentService.findByTenantId(tenantId).stream()
+                listDocuments.list(new ListDocumentsQuery(tenantId)).stream()
                     .map(mapper::toResponse)
                     .toList()));
   }
@@ -62,21 +91,21 @@ public class DocumentController {
   @GetMapping("/{id}")
   @Operation(summary = "Get a document by ID")
   public ResponseEntity<DocumentResponse> get(@PathVariable UUID id) {
-    Document document = documentService.findById(id);
+    DocumentInfo document = getDocument.get(new GetDocumentQuery(id));
     return ResponseEntity.ok(mapper.toResponse(document));
   }
 
   @PostMapping("/{id}/process")
   @Operation(summary = "Trigger document processing")
   public ResponseEntity<DocumentResponse> process(@PathVariable UUID id) {
-    Document document = documentService.process(id);
+    DocumentInfo document = processDocument.process(new ProcessDocumentCommand(id));
     return ResponseEntity.ok(mapper.toResponse(document));
   }
 
   @PostMapping("/{id}/retire")
   @Operation(summary = "Retire a document")
   public ResponseEntity<DocumentResponse> retire(@PathVariable UUID id) {
-    Document document = documentService.retire(id);
+    DocumentInfo document = retireDocument.retire(new RetireDocumentCommand(id));
     return ResponseEntity.ok(mapper.toResponse(document));
   }
 
@@ -84,7 +113,9 @@ public class DocumentController {
   @Operation(summary = "Get document chunks")
   public ResponseEntity<List<DocumentChunkResponse>> getChunks(@PathVariable UUID id) {
     List<DocumentChunkResponse> chunks =
-        documentService.getChunks(id).stream().map(mapper::toResponse).toList();
+        getDocumentChunks.getChunks(new GetDocumentChunksQuery(id)).stream()
+            .map(mapper::toResponse)
+            .toList();
     return ResponseEntity.ok(chunks);
   }
 }

@@ -36,9 +36,6 @@ class DocumentsPackageConventionTest {
     assertThat(Files.readString(ROOT.resolve("domain/model/Document.java")))
         .doesNotContain("jakarta.persistence")
         .doesNotContain("org.springframework");
-    assertThat(Files.readString(ROOT.resolve("application/DocumentService.java")))
-        .doesNotContain("adapter.out")
-        .doesNotContain("jakarta.persistence");
     noClasses()
         .that()
         .resideInAnyPackage(

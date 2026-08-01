@@ -2,25 +2,25 @@ package com.emme.studio.documents.adapter.in.web.mapper;
 
 import com.emme.studio.documents.adapter.in.web.response.DocumentChunkResponse;
 import com.emme.studio.documents.adapter.in.web.response.DocumentResponse;
-import com.emme.studio.documents.domain.model.Document;
-import com.emme.studio.documents.domain.model.DocumentChunk;
+import com.emme.studio.documents.api.result.DocumentChunkInfo;
+import com.emme.studio.documents.api.result.DocumentInfo;
 import org.springframework.stereotype.Component;
 
 /** Maps document application models to HTTP response models. */
 @Component
 public class DocumentWebMapper {
 
-  public DocumentResponse toResponse(Document document) {
+  public DocumentResponse toResponse(DocumentInfo document) {
     return new DocumentResponse(
         document.id(),
         document.tenantId(),
         document.name(),
         document.sourceType(),
-        document.status().name(),
+        document.status(),
         document.version());
   }
 
-  public DocumentChunkResponse toResponse(DocumentChunk chunk) {
+  public DocumentChunkResponse toResponse(DocumentChunkInfo chunk) {
     return new DocumentChunkResponse(
         chunk.id(),
         chunk.documentId(),

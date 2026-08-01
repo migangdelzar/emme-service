@@ -39,10 +39,11 @@ is added under the owning outbound port/adapter, not as a generic helper package
   rules; move JPA classes to `DocumentEntity`/`DocumentChunkEntity`.
 - [ ] Split repositories into `application/port/out`, Spring Data repositories,
   persistence adapters, mappers, and projections.
-- [ ] Define grouped commands, queries, results, use cases, and exceptions only
-  for existing document operations; do not invent upload/processing endpoints.
-- [ ] Move `DocumentService` to application services and `DocumentController` to
-  inbound web adapters with dedicated DTOs/mappers.
+- [x] Define grouped commands, queries, results, and exceptions only for
+  existing document operations; do not invent upload/processing endpoints.
+- [x] Replace the multi-use-case `DocumentService` façade with one focused
+  application service per use case and move `DocumentController` to inbound web
+  adapters with dedicated DTOs/mappers.
 - [ ] Isolate embedding/search calls behind ports and provider adapters if the
   current implementation has a direct technical dependency.
 - [ ] Add package-info to each materialized package and update Studio Modulith
@@ -74,7 +75,18 @@ is added under the owning outbound port/adapter, not as a generic helper package
 - [x] Verified focused document unit/module tests, compilation, formatting, and
   whitespace.
 
-The remaining Documents work is use-case contract/service splitting, search and
-embedding port ownership, full Studio integration evidence, and final Modulith
-verification.
+## Completed public contract and focused service slice — 2026-08-01
+
+- [x] Added grouped command, query, result, exception, and use-case contracts.
+- [x] Added one application service per document use case and removed the
+  multi-use-case `DocumentService` façade.
+- [x] Updated the inbound controller to depend directly on focused use-case
+  ports and moved the web test into the canonical adapter package.
+- [x] Exposed only `documents-api` through Spring Modulith's named interface.
+- [x] Added source-tree regression coverage preventing the façade and multiple
+  use-case implementations from returning.
+- [x] Verified focused Documents tests, formatting, compilation, and whitespace.
+
+The remaining Documents work is search and embedding port ownership, full Studio
+integration evidence, and final Modulith verification.
   regression tests.

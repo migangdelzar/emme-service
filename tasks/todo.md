@@ -85,8 +85,9 @@ reopened by this backlog.
 - [x] Extract document HTTP DTOs/mapper and move the controller to inbound
   adapter ownership.
 - [x] Add package metadata and dependency-direction regression coverage.
-- [ ] Split application operations into one service per use case and complete
+- [x] Split application operations into one service per use case and complete
   grouped public contracts.
+- [x] Expose only the Documents API through a Spring Modulith named interface.
 - [ ] Complete Studio integration, Modulith, and service-wide verification.
 
 ### P4 — Final governance verification

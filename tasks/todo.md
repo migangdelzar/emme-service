@@ -23,6 +23,15 @@
 
 ## Results
 
+### Public Assistant AI boundary correction — 2026-08-01
+
+- [x] Replaced Catalog's removed legacy `ModelProvider` import with public
+  `CaptionImageUseCase` and `EmbedTextUseCase` contracts.
+- [x] Added one focused Assistant application service per AI use case.
+- [x] Corrected Catalog's Modulith dependency to the exact
+  `assistant-ai-api` named interface.
+- [x] Added red/green delegation and source-boundary tests.
+
 - Migrated build-logic packages from type-first buckets into `core/`, `root/`,
   capability-owned packages, and `git/` while preserving plugin IDs.
 - Added the missing `emme.security` convention entry point and registration test.

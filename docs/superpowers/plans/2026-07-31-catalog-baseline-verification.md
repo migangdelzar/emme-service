@@ -107,3 +107,14 @@ Identity module without introducing a compatibility facade.
   constructor-injected typed properties.
 - [x] Added source-boundary and default/configured-value tests.
 - [x] Verified Catalog unit and integration tests with formatting.
+
+## Completed public Assistant AI boundary slice — 2026-08-01
+
+- [x] Exposed image captioning and text embedding as separate Assistant AI
+  use-case contracts.
+- [x] Kept provider implementation details behind Assistant application ports
+  and services.
+- [x] Updated Catalog to depend only on the public AI use cases.
+- [x] Corrected Catalog's Modulith dependency to the exact
+  `assistant-ai-api` named interface.
+- [x] Added source-boundary and delegation tests for the new public contracts.

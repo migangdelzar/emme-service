@@ -52,6 +52,29 @@ class CatalogPackageConventionTest {
   }
 
   @Test
+  void assistantDependencyUsesTheExactPublishedAiNamedInterface() throws IOException {
+    String moduleMetadata = Files.readString(SOURCE_ROOT.resolve("package-info.java"));
+
+    assertThat(moduleMetadata).contains("assistant :: assistant-ai-api");
+    assertThat(moduleMetadata).doesNotContain("assistant :: ai-api");
+  }
+
+  @Test
+  void catalogUsesAssistantPublicAiUseCasesInsteadOfProviderInternals() throws IOException {
+    String imageService =
+        Files.readString(
+            SOURCE_ROOT.resolve("application/service/AddCatalogItemImageService.java"));
+    String matchService =
+        Files.readString(SOURCE_ROOT.resolve("application/service/CatalogMatchService.java"));
+
+    assertThat(imageService).contains("com.emme.assistant.ai.api.usecase.CaptionImageUseCase");
+    assertThat(imageService).doesNotContain("com.emme.assistant.ai.application");
+    assertThat(matchService).contains("com.emme.assistant.ai.api.usecase.CaptionImageUseCase");
+    assertThat(matchService).contains("com.emme.assistant.ai.api.usecase.EmbedTextUseCase");
+    assertThat(matchService).doesNotContain("com.emme.assistant.ai.application");
+  }
+
+  @Test
   void eachCatalogApplicationServiceImplementsAtMostOneUseCase() throws IOException {
     Path applicationServices = SOURCE_ROOT.resolve("application/service");
     try (Stream<Path> files = Files.walk(applicationServices)) {

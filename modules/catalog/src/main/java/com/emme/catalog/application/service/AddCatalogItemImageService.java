@@ -1,6 +1,6 @@
 package com.emme.catalog.application.service;
 
-import com.emme.assistant.ai.application.ModelProvider;
+import com.emme.assistant.ai.api.usecase.CaptionImageUseCase;
 import com.emme.catalog.api.command.AddCatalogItemImageCommand;
 import com.emme.catalog.api.exception.CatalogItemNotFoundException;
 import com.emme.catalog.api.result.CatalogItemImageInfo;
@@ -24,17 +24,17 @@ public class AddCatalogItemImageService implements AddCatalogItemImageUseCase {
   private final CatalogItemRepository itemRepository;
   private final CatalogItemImageRepository imageRepository;
   private final ImageStorage imageStorage;
-  private final ModelProvider modelProvider;
+  private final CaptionImageUseCase captionImageUseCase;
 
   public AddCatalogItemImageService(
       CatalogItemRepository itemRepository,
       CatalogItemImageRepository imageRepository,
       ImageStorage imageStorage,
-      ModelProvider modelProvider) {
+      CaptionImageUseCase captionImageUseCase) {
     this.itemRepository = itemRepository;
     this.imageRepository = imageRepository;
     this.imageStorage = imageStorage;
-    this.modelProvider = modelProvider;
+    this.captionImageUseCase = captionImageUseCase;
   }
 
   @Override
@@ -42,7 +42,7 @@ public class AddCatalogItemImageService implements AddCatalogItemImageUseCase {
     CatalogItem item = findOwned(command.tenantId(), command.itemId());
     byte[] bytes = Base64.getDecoder().decode(command.imageBase64());
     String storageKey = imageStorage.store(command.tenantId(), bytes);
-    String caption = modelProvider.caption(command.imageBase64());
+    String caption = captionImageUseCase.caption(command.imageBase64());
     CatalogItemImage image =
         new CatalogItemImage(
             command.tenantId(), item.getId(), storageKey, caption.isBlank() ? null : caption);

@@ -25,6 +25,13 @@
 - No `application/process`, `domain/factory`, `domain/specification`, `adapter/in/messaging`, `adapter/in/scheduler`, `adapter/out/messaging`, `adapter/out/observability`, `adapter/out/cache`, `adapter/out/search`, or `adapter/out/storage` package is created because the current Assistant source has no durable responsibility for those branches.
 - WhatsApp webhook handling is a provider callback and therefore belongs under `adapter/in/webhook`, not `adapter/in/web/controller`.
 - The migration is structural and must not invent new Assistant capabilities. Any behavior that is currently a placeholder remains a placeholder while its boundary is normalized.
+
+## Completed public AI capability boundary slice — 2026-08-01
+
+- [x] Exposed captioning and embedding through separate public use-case ports.
+- [x] Added one focused application service per AI use case.
+- [x] Kept `ModelProvider` private to the Assistant AI application boundary.
+- [x] Added delegation tests and source-tree convention coverage.
 - Tests are moved to mirror the canonical production package layout. Existing HTTP assertions remain unchanged.
 - Each implementation task follows Red → Green → Refactor, with a focused commit after verification. No implementation code is written without a failing or boundary-regression test first.
 

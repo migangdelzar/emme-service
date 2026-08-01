@@ -15,6 +15,10 @@ class AiCapabilityConventionTest {
     assertThat(Files.exists(root.resolve("adapter/out/provider/GroqModelProvider.java"))).isTrue();
     assertThat(Files.exists(root.resolve("application/service/DetectIntentService.java"))).isTrue();
     assertThat(Files.exists(root.resolve("api/usecase/DetectIntentUseCase.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("api/usecase/CaptionImageUseCase.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("api/usecase/EmbedTextUseCase.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("application/service/CaptionImageService.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("application/service/EmbedTextService.java"))).isTrue();
   }
 
   private static Path sourcePath(String relativePath) {

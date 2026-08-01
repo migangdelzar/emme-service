@@ -1,6 +1,7 @@
 package com.emme.catalog.application.service;
 
-import com.emme.assistant.ai.application.ModelProvider;
+import com.emme.assistant.ai.api.usecase.CaptionImageUseCase;
+import com.emme.assistant.ai.api.usecase.EmbedTextUseCase;
 import com.emme.catalog.api.query.MatchCatalogItemsQuery;
 import com.emme.catalog.api.result.CatalogMatchInfo;
 import com.emme.catalog.api.result.CatalogMatchListInfo;
@@ -32,17 +33,20 @@ public class CatalogMatchService implements MatchCatalogItemsUseCase {
 
   private static final int BRANCH_K = 10;
 
-  private final ModelProvider modelProvider;
+  private final CaptionImageUseCase captionImageUseCase;
+  private final EmbedTextUseCase embedTextUseCase;
   private final CatalogSearchPort searchPort;
   private final CatalogItemRepository itemRepository;
   private final CatalogItemImageRepository imageRepository;
 
   public CatalogMatchService(
-      ModelProvider modelProvider,
+      CaptionImageUseCase captionImageUseCase,
+      EmbedTextUseCase embedTextUseCase,
       CatalogSearchPort searchPort,
       CatalogItemRepository itemRepository,
       CatalogItemImageRepository imageRepository) {
-    this.modelProvider = modelProvider;
+    this.captionImageUseCase = captionImageUseCase;
+    this.embedTextUseCase = embedTextUseCase;
     this.searchPort = searchPort;
     this.itemRepository = itemRepository;
     this.imageRepository = imageRepository;
@@ -56,12 +60,12 @@ public class CatalogMatchService implements MatchCatalogItemsUseCase {
     String queryText = query.query();
     String imageBase64 = query.imageBase64();
     if (imageBase64 != null && !imageBase64.isBlank()) {
-      String caption = modelProvider.caption(imageBase64);
+      String caption = captionImageUseCase.caption(imageBase64);
       if (!caption.isBlank()) queryText = queryText + " " + caption;
     }
 
     // 2. Embed the combined query
-    List<Float> queryVec = modelProvider.embed(queryText);
+    List<Float> queryVec = embedTextUseCase.embed(queryText);
 
     // 3. Hybrid search over catalog items
     List<CatalogSearchHit> itemHits =

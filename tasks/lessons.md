@@ -302,3 +302,8 @@
 - Prevention rule: resolve tenant identity from authenticated provider account
   metadata through an application-owned port and reject unknown account IDs;
   never use a placeholder tenant in production routing.
+- 2026-08-01 — Cross-module consumers must use published use-case contracts,
+  never application-owned provider ports. When a provider capability is needed
+  by another module, expose a focused public use case and keep the provider port
+  private to its owning module. Verify Modulith dependency names against the
+  exact `@NamedInterface` value.

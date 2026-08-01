@@ -1,12 +1,11 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.adapter.out.persistence.entity.ArtistCapabilityEntity;
-import com.emme.studio.adapter.out.persistence.entity.ArtistEntity;
-import com.emme.studio.adapter.out.persistence.entity.ServiceEntity;
-import com.emme.studio.adapter.out.persistence.repository.SpringDataArtistCapabilityRepository;
-import com.emme.studio.adapter.out.persistence.repository.SpringDataArtistRepository;
-import com.emme.studio.adapter.out.persistence.repository.SpringDataServiceRepository;
-import com.emme.studio.domain.model.ArtistStatus;
+import com.emme.studio.application.port.out.ArtistCapabilityRepository;
+import com.emme.studio.application.port.out.ArtistRepository;
+import com.emme.studio.application.port.out.ServiceRepository;
+import com.emme.studio.domain.model.Artist;
+import com.emme.studio.domain.model.ArtistCapability;
+import com.emme.studio.domain.model.Service;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
@@ -17,78 +16,77 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ArtistService {
 
-  private final SpringDataArtistRepository artistRepository;
-  private final SpringDataArtistCapabilityRepository artistCapabilityRepository;
-  private final SpringDataServiceRepository serviceRepository;
+  private final ArtistRepository artistRepository;
+  private final ArtistCapabilityRepository artistCapabilityRepository;
+  private final ServiceRepository serviceRepository;
 
   public ArtistService(
-      SpringDataArtistRepository artistRepository,
-      SpringDataArtistCapabilityRepository artistCapabilityRepository,
-      SpringDataServiceRepository serviceRepository) {
+      ArtistRepository artistRepository,
+      ArtistCapabilityRepository artistCapabilityRepository,
+      ServiceRepository serviceRepository) {
     this.artistRepository = artistRepository;
     this.artistCapabilityRepository = artistCapabilityRepository;
     this.serviceRepository = serviceRepository;
   }
 
   @Transactional(readOnly = true)
-  public Optional<ArtistEntity> findById(UUID id) {
+  public Optional<Artist> findById(UUID id) {
     return artistRepository.findById(id);
   }
 
   @Transactional(readOnly = true)
-  public List<ArtistEntity> findByTenantId(UUID tenantId) {
+  public List<Artist> findByTenantId(UUID tenantId) {
     return artistRepository.findByTenantId(tenantId);
   }
 
-  public ArtistEntity create(UUID tenantId, String name) {
-    ArtistEntity artist = new ArtistEntity(tenantId, name);
+  public Artist create(UUID tenantId, String name) {
+    Artist artist = new Artist(tenantId, name);
     return artistRepository.save(artist);
   }
 
-  public ArtistEntity update(UUID id, String name) {
-    ArtistEntity artist =
+  public Artist update(UUID id, String name) {
+    Artist artist =
         artistRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("ArtistEntity not found: " + id));
+            .orElseThrow(() -> new EntityNotFoundException("Artist not found: " + id));
     artist.setName(name);
     return artistRepository.save(artist);
   }
 
-  public ArtistEntity deactivate(UUID id) {
-    ArtistEntity artist =
+  public Artist deactivate(UUID id) {
+    Artist artist =
         artistRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("ArtistEntity not found: " + id));
-    artist.setStatus(ArtistStatus.INACTIVE);
+            .orElseThrow(() -> new EntityNotFoundException("Artist not found: " + id));
+    artist.deactivate();
     return artistRepository.save(artist);
   }
 
-  public ArtistCapabilityEntity addCapability(UUID artistId, UUID serviceId, UUID tenantId) {
-    ArtistEntity artist =
+  public ArtistCapability addCapability(UUID artistId, UUID serviceId, UUID tenantId) {
+    Artist artist =
         artistRepository
             .findById(artistId)
-            .orElseThrow(() -> new EntityNotFoundException("ArtistEntity not found: " + artistId));
-    ServiceEntity service =
+            .orElseThrow(() -> new EntityNotFoundException("Artist not found: " + artistId));
+    Service service =
         serviceRepository
             .findById(serviceId)
-            .orElseThrow(
-                () -> new EntityNotFoundException("ServiceEntity not found: " + serviceId));
-    ArtistCapabilityEntity capability = new ArtistCapabilityEntity(tenantId, artist, service);
+            .orElseThrow(() -> new EntityNotFoundException("Service not found: " + serviceId));
+    ArtistCapability capability = new ArtistCapability(tenantId, artist, service);
     return artistCapabilityRepository.save(capability);
   }
 
-  public ArtistCapabilityEntity removeCapability(UUID capabilityId) {
-    ArtistCapabilityEntity capability =
+  public ArtistCapability removeCapability(UUID capabilityId) {
+    ArtistCapability capability =
         artistCapabilityRepository
             .findById(capabilityId)
             .orElseThrow(
                 () -> new EntityNotFoundException("Capability not found: " + capabilityId));
-    capability.setActive(false);
+    capability.deactivate();
     return artistCapabilityRepository.save(capability);
   }
 
   @Transactional(readOnly = true)
-  public List<ArtistCapabilityEntity> getCapabilities(UUID artistId) {
+  public List<ArtistCapability> getCapabilities(UUID artistId) {
     return artistCapabilityRepository.findByArtistId(artistId);
   }
 }

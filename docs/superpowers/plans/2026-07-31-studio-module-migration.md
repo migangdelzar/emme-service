@@ -44,6 +44,8 @@ verified.
   lifecycle behavior.
 - ✅ Extract the Service Catalog domain model with persistence-independent
   state and retirement behavior.
+- ✅ Extract Artist and Artist Capability domain models with explicit status and
+  relationship lifecycle behavior.
 - Create framework-independent domain models for the core Studio aggregates.
 - Keep domain enums and invariants under `domain/model`.
 - Add pure tests for appointment lifecycle, customer/artist/service status, and
@@ -60,6 +62,8 @@ verified.
   update behavior.
 - ✅ Create the Service repository port and persistence mapper/adapter,
   including managed-entity update behavior.
+- ✅ Create Artist and Artist Capability repository ports and persistence
+  mappers/adapters, including managed relationship resolution.
 - Create the remaining repository ports under `application/port/out`.
 - Add the remaining persistence mappers and adapters.
 - Test both new-entity and managed-entity update paths.
@@ -72,6 +76,9 @@ verified.
   port; its inbound controller no longer exposes a persistence entity.
 - ✅ Migrate `ServiceCatalogService` to the Service domain model and repository
   port; its inbound controller no longer exposes a persistence entity.
+- ✅ Migrate `ArtistService` to Artist/Artist Capability domain models and
+  repository ports; its inbound controller no longer exposes persistence
+  entities.
 - Make services implement public use-case
   interfaces.
 - Ensure controllers call use cases and do not access repositories.

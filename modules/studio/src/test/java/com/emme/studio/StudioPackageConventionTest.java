@@ -61,6 +61,17 @@ class StudioPackageConventionTest {
         .check(CLASSES);
   }
 
+  @Test
+  void migratedArtistServiceDoesNotDependOnOutboundAdapters() {
+    noClasses()
+        .that()
+        .haveSimpleName("ArtistService")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("com.emme.studio.adapter.out..")
+        .check(CLASSES);
+  }
+
   private static boolean hasClass(String className) {
     return CLASSES.stream().anyMatch(javaClass -> javaClass.getName().equals(className));
   }

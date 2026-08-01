@@ -388,3 +388,20 @@ Identity security hardening surface.
   validation, whitespace checks, and the security source scan.
 
 Remaining follow-up: complete the wider Identity security hardening surface.
+
+## Completed security audit hardening slice — 2026-08-01
+
+- [x] Added regression coverage for audit failure redaction,
+  control-character sanitization, bounded log values, and forwarded-header
+  spoofing.
+- [x] Changed authentication-failure audit output to record the exception type,
+  never the exception message.
+- [x] Sanitized and bounded principals, authorities, decisions, URIs, and
+  client addresses before logging them.
+- [x] Changed audit IP attribution to use the socket peer address rather than
+  trusting an unverified `X-Forwarded-For` header.
+- [x] Verified Identity checks, Studio Modulith verification, Markdown
+  validation, whitespace checks, and the source-level secret scan.
+
+Remaining follow-up: decide trusted proxy handling for the login rate-limit
+filter, then continue authorization domain/application separation.

@@ -327,3 +327,20 @@ Remaining Identity follow-up: complete the broader security hardening review.
 - [x] Direct Markdown validation passes with `node scripts/validate-markdown.mjs`.
 - [x] Run the complete Tenancy check and service Modulith verification before
   committing this slice.
+
+### Identity security audit hardening slice — 2026-08-01
+
+- [x] Add failing regression tests for exception-message redaction,
+  control-character sanitization, bounded audit values, and forwarded-header
+  spoofing.
+- [x] Log authentication failure types instead of exception messages so secrets
+  and provider details cannot enter audit output.
+- [x] Sanitize and bound user-controlled audit values before structured fields
+  are written to logs.
+- [x] Use the socket peer address for audit IP attribution; retain the separate
+  forwarded-header/rate-limit policy as an explicit follow-up decision.
+- [x] Verify focused audit tests, full Identity checks, Studio Modulith,
+  Markdown validation, whitespace, and source-level secret scanning.
+
+Remaining Identity follow-up: decide trusted proxy handling for login rate
+limiting, then continue authorization domain/application separation.

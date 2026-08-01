@@ -68,6 +68,12 @@ class CalendarPackageConventionTest {
                 SOURCE_ROOT.resolve("adapter/out/google/adapter/StaffCalendarSyncAdapter.java")))
         .doesNotContain("@Value(");
     assertThat(Files.exists(SOURCE_ROOT.resolve("configuration/CalendarProperties.java"))).isTrue();
+    assertThat(
+            Files.readString(
+                SOURCE_ROOT.resolve("adapter/out/google/client/GoogleCalendarClient.java")))
+        .doesNotContain("System.getenv(");
+    assertThat(Files.exists(SOURCE_ROOT.resolve("configuration/GoogleCalendarProperties.java")))
+        .isTrue();
   }
 
   private static boolean hasClass(String className) {

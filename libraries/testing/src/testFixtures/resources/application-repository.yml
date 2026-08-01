@@ -45,7 +45,7 @@ app:
     provider: mock
   calendar:
     google:
-      service-account: ""
+      service-account-json-base64: ""
     calendar-id: test-calendar
 
 emme:

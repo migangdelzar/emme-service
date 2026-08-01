@@ -136,8 +136,11 @@ collaborators rather than a compatibility facade.
 - [x] Bind `app.whatsapp.*` through `WhatsAppProperties`, remove direct
   environment access from the WhatsApp application path, and expose the full
   property set in both deployable application configurations.
+- [x] Bind Google Calendar service-account credentials and endpoints through
+  `GoogleCalendarProperties`; no Calendar production adapter reads the process
+  environment directly.
 - [ ] Normalize the remaining provider-specific direct environment reads in
-  Calendar, Assistant AI, Notification, and Payment as separate red-green
+  Assistant AI, Notification, and Payment as separate red-green
   slices.
 - [ ] Run the final service-wide verification gate after those provider slices
   are complete.

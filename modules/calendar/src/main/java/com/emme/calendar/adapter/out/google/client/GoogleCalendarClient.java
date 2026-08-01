@@ -3,6 +3,7 @@ package com.emme.calendar.adapter.out.google.client;
 import com.emme.calendar.api.result.CalendarBusyTimeRange;
 import com.emme.calendar.api.type.TokenSource;
 import com.emme.calendar.application.port.out.GoogleCalendarPort;
+import com.emme.calendar.configuration.GoogleCalendarProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
@@ -38,9 +39,6 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
 
   private static final Logger log = LoggerFactory.getLogger(GoogleCalendarClient.class);
 
-  private static final String PRODUCTION_TOKEN_URL = "https://oauth2.googleapis.com/token";
-  private static final String PRODUCTION_FREE_BUSY_URL =
-      "https://www.googleapis.com/calendar/v3/freeBusy";
   private static final String SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
   private static final long TOKEN_CACHE_SECONDS = 59 * 60; // 59 min (1h with buffer)
   private static final MediaType FORM_URLENCODED =
@@ -60,18 +58,16 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
   private String cachedToken;
   private long tokenExpiresAt;
 
-  /**
-   * Production constructor — reads GOOGLE_SA_JSON_BASE64 env var, with optional user OAuth token
-   * source.
-   */
+  /** Production constructor with optional user OAuth token source. */
   @Autowired
-  public GoogleCalendarClient(Optional<TokenSource> userTokenSource) {
+  public GoogleCalendarClient(
+      Optional<TokenSource> userTokenSource, GoogleCalendarProperties properties) {
     this(
         new OkHttpClient(),
         new ObjectMapper(),
-        System.getenv("GOOGLE_SA_JSON_BASE64"),
-        PRODUCTION_TOKEN_URL,
-        PRODUCTION_FREE_BUSY_URL);
+        properties.serviceAccountJsonBase64(),
+        properties.tokenUrl(),
+        properties.freeBusyUrl());
     this.userTokenSource = userTokenSource.orElse(null);
   }
 
@@ -98,11 +94,11 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
         this.tokenExpiresAt = 0;
         log.info("GoogleCalendarClient configured for {}", clientEmail);
       } catch (Exception e) {
-        log.error("Failed to parse GOOGLE_SA_JSON_BASE64: {}", e.getMessage());
+        log.error("Failed to parse Google service-account configuration: {}", e.getMessage());
         throw new RuntimeException("Invalid Google service account JSON", e);
       }
     } else {
-      log.warn("GOOGLE_SA_JSON_BASE64 not set — Google Calendar integration disabled");
+      log.warn("Google service-account configuration not set — integration disabled");
       this.clientEmail = null;
       this.privateKey = null;
       this.configured = false;

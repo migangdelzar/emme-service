@@ -1073,3 +1073,14 @@ After this plan is complete, create separate plans for:
   `StaffCalendarSyncAdapter` with constructor-injected typed properties.
 - [x] Added source-boundary and default/configured-value tests.
 - [x] Verified Calendar unit and integration tests with formatting.
+
+## Completed typed Google Calendar configuration slice — 2026-08-01
+
+- [x] Added `GoogleCalendarProperties` for the service-account payload and
+  token/free-busy endpoints.
+- [x] Replaced direct `GOOGLE_SA_JSON_BASE64` access in
+  `GoogleCalendarClient` with constructor-injected typed properties.
+- [x] Normalized deployable and test profile property names to
+  `service-account-json-base64`.
+- [x] Updated the live integration-test constructor and verified Calendar
+  integration tests.

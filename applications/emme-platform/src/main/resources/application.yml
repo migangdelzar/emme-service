@@ -160,7 +160,9 @@ app:
       bundle-id: ${APNS_BUNDLE_ID:com.emme.salon}
   calendar:
     google:
-      service-account: ${GOOGLE_SA_JSON_BASE64:}
+      service-account-json-base64: ${GOOGLE_SA_JSON_BASE64:}
+      token-url: https://oauth2.googleapis.com/token
+      free-busy-url: https://www.googleapis.com/calendar/v3/freeBusy
     calendar-id: ${GOOGLE_CALENDAR_ID:primary}
   google:
     oauth:

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.calendar.adapter.out.google.client.GoogleCalendarClient;
 import com.emme.calendar.api.result.CalendarBusyTimeRange;
+import com.emme.calendar.configuration.GoogleCalendarProperties;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -21,7 +22,9 @@ class GoogleCalendarClientLiveTest {
       return;
     }
 
-    GoogleCalendarClient client = new GoogleCalendarClient(Optional.empty());
+    GoogleCalendarClient client =
+        new GoogleCalendarClient(
+            Optional.empty(), new GoogleCalendarProperties(saJson, null, null));
 
     // Verify auth works (token obtained)
     String token = client.getAccessToken(false);

@@ -99,6 +99,16 @@
 - [ ] Continue with permission/identity service separation and typed security
   configuration.
 
+### Identity permission application slice — 2026-08-01
+
+- [x] Add failing tests for the permission use case and package boundary.
+- [x] Introduce `PermissionPort` and `GetUserPermissionsUseCase`.
+- [x] Move permission traversal into `PermissionPersistenceAdapter`.
+- [x] Rewire permission consumers and remove legacy `IdentityService`.
+- [x] Verify unit, integration, architecture, formatting, and Modulith gates.
+- [ ] Continue with customer authentication and feature-flag application
+  separation.
+
 ### Plan update results
 
 - Added the plan registry at `docs/superpowers/plans/README.md`.

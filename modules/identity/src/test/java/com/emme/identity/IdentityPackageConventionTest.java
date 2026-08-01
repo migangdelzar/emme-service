@@ -74,6 +74,8 @@ class IdentityPackageConventionTest {
       sourcePath("modules/identity/src/main/java/com/emme/identity/application/service");
   private static final Path APPLICATION_PORT_PACKAGE =
       sourcePath("modules/identity/src/main/java/com/emme/identity/application/port/out");
+  private static final Path API_USE_CASE_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/api/usecase");
   private static final Path PERSISTENCE_ADAPTER_PACKAGE =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/adapter");
@@ -82,6 +84,12 @@ class IdentityPackageConventionTest {
   private static final Path LEGACY_MEMBERSHIP_ENTITY =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/Membership.java");
+  private static final Path PERMISSION_PERSISTENCE_ADAPTER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/adapter/PermissionPersistenceAdapter.java");
+  private static final Path LEGACY_IDENTITY_SERVICE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/IdentityService.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -168,6 +176,16 @@ class IdentityPackageConventionTest {
     assertThat(hasJavaSource(PERSISTENCE_MAPPER_PACKAGE, "MembershipPersistenceMapper.java"))
         .isTrue();
     assertThat(Files.exists(LEGACY_MEMBERSHIP_ENTITY)).isFalse();
+  }
+
+  @Test
+  void ownsPermissionResolutionBehindAnApplicationUseCaseAndPort() {
+    assertThat(hasJavaSource(API_USE_CASE_PACKAGE, "GetUserPermissionsUseCase.java")).isTrue();
+    assertThat(hasJavaSource(APPLICATION_PORT_PACKAGE, "PermissionPort.java")).isTrue();
+    assertThat(hasJavaSource(APPLICATION_SERVICE_PACKAGE, "GetUserPermissionsService.java"))
+        .isTrue();
+    assertThat(Files.exists(PERMISSION_PERSISTENCE_ADAPTER)).isTrue();
+    assertThat(Files.exists(LEGACY_IDENTITY_SERVICE)).isFalse();
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

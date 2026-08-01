@@ -4,7 +4,7 @@ import com.emme.identity.UserContextHolder;
 import com.emme.identity.adapter.in.web.mapper.IdentityWebMapper;
 import com.emme.identity.adapter.in.web.request.AssignMembershipRequest;
 import com.emme.identity.adapter.in.web.response.MembershipResponse;
-import com.emme.identity.application.IdentityService;
+import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
 import com.emme.identity.application.service.MembershipService;
 import com.emme.identity.domain.model.Membership;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,11 +29,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class IdentityController {
 
   private final MembershipService service;
-  private final IdentityService identityService;
+  private final GetUserPermissionsUseCase permissions;
 
-  public IdentityController(MembershipService service, IdentityService identityService) {
+  public IdentityController(MembershipService service, GetUserPermissionsUseCase permissions) {
     this.service = service;
-    this.identityService = identityService;
+    this.permissions = permissions;
   }
 
   @GetMapping("/me")
@@ -54,7 +54,7 @@ public class IdentityController {
   public ResponseEntity<Set<String>> currentPermissions(
       @NotNull @org.springframework.web.bind.annotation.RequestParam UUID tenantId) {
     return UserContextHolder.withCurrentUser(
-        user -> ResponseEntity.ok(identityService.getPermissionsForUser(user.subject(), tenantId)));
+        user -> ResponseEntity.ok(permissions.getPermissions(user.subject(), tenantId)));
   }
 
   @PostMapping("/memberships")

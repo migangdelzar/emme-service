@@ -220,3 +220,21 @@ and Identity-specific failure advice remain future slices.
 The remaining Identity work is the permission/identity/authentication
 application split, feature-flag ownership, typed security configuration, and
 Identity-specific failure advice.
+
+## Completed permission application slice — 2026-08-01
+
+- [x] Added `PermissionPort` as the application-owned authorization boundary.
+- [x] Added `GetUserPermissionsUseCase` and
+  `GetUserPermissionsService` under the grouped API/application packages.
+- [x] Added `PermissionPersistenceAdapter`, which keeps JPA membership,
+  role-permission, and permission traversal outside application services.
+- [x] Rewired the Identity and current-user controllers to the use-case
+  contract; no controller imports the legacy `IdentityService`.
+- [x] Removed the legacy mixed-responsibility `IdentityService`.
+- [x] Preserved active-membership and tenant filtering semantics and the
+  existing `Set<String>` HTTP response shape.
+- [x] Added unit, source-tree, and integration coverage for permission
+  resolution.
+
+Customer authentication, feature flags, typed security configuration, and
+Identity-specific failure advice remain open slices.

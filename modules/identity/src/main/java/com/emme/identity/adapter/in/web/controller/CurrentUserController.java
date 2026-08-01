@@ -6,7 +6,7 @@ import com.emme.identity.adapter.in.web.mapper.IdentityWebMapper;
 import com.emme.identity.adapter.in.web.response.BusinessProfileResponse;
 import com.emme.identity.adapter.in.web.response.CurrentUserResponse;
 import com.emme.identity.adapter.in.web.response.TenantMembershipResponse;
-import com.emme.identity.application.IdentityService;
+import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
 import com.emme.identity.application.service.MembershipService;
 import com.emme.identity.domain.model.Membership;
 import com.emme.studio.api.usecase.SalonApi;
@@ -22,17 +22,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class CurrentUserController {
 
-  private final IdentityService identityService;
+  private final GetUserPermissionsUseCase permissions;
   private final MembershipService membershipService;
   private final TenantApi tenantApi;
   private final SalonApi salonApi;
 
   public CurrentUserController(
-      IdentityService identityService,
+      GetUserPermissionsUseCase permissions,
       MembershipService membershipService,
       TenantApi tenantApi,
       SalonApi salonApi) {
-    this.identityService = identityService;
+    this.permissions = permissions;
     this.membershipService = membershipService;
     this.tenantApi = tenantApi;
     this.salonApi = salonApi;
@@ -61,7 +61,7 @@ public class CurrentUserController {
 
   private TenantMembershipResponse toResponse(String subject, Membership membership) {
     TenantInfo tenant = tenantApi.getTenantInfo(membership.tenantId());
-    Set<String> permissions = identityService.getPermissionsForUser(subject, membership.tenantId());
+    Set<String> permissionCodes = permissions.getPermissions(subject, membership.tenantId());
     return new TenantMembershipResponse(
         membership.tenantId(),
         tenant.slug(),
@@ -69,7 +69,7 @@ public class CurrentUserController {
         tenant.name(),
         membership.roleCode(),
         membership.status().name(),
-        permissions);
+        permissionCodes);
   }
 
   private static UUID selectedTenantId(List<Membership> memberships, UUID tenantIdFromClaim) {

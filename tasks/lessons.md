@@ -10,6 +10,17 @@
   active repository root before editing, then verify the target with `git
   status` immediately afterward.
 
+## 2026-08-01 — Shared-context integration test isolation
+
+- Failure mode: a new permission integration test reused the subject from an
+  existing current-user test, leaving two active memberships in the shared
+  application context.
+- Detection signal: the existing current-user assertion expected one result
+  but received two after the new test was added.
+- Prevention rule: integration fixtures that persist state across test methods
+  must use dedicated subject/resource identifiers unless the test explicitly
+  owns cleanup or rollback.
+
 ## 2026-07-31 — GitHub Actions job conditions and secrets
 
 - Failure mode: referencing a job-level `env` value in `jobs.<job>.if` caused

@@ -1,5 +1,6 @@
 package com.emme.identity.module;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -9,8 +10,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.emme.identity.adapter.out.persistence.entity.MembershipEntity;
+import com.emme.identity.adapter.out.persistence.entity.Permission;
 import com.emme.identity.adapter.out.persistence.entity.Role;
+import com.emme.identity.adapter.out.persistence.entity.RolePermission;
 import com.emme.identity.adapter.out.persistence.entity.RoleScope;
+import com.emme.identity.adapter.out.persistence.repository.PermissionRepository;
+import com.emme.identity.adapter.out.persistence.repository.RolePermissionRepository;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository;
 import com.emme.identity.domain.model.MembershipStatus;
 import com.emme.testing.BaseSpringModuleTest;
@@ -22,7 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 /** L3 module tests for identity endpoints (memberships CRUD, current user, permissions). */
 class IdentityModuleTest extends BaseSpringModuleTest {
 
+  private static final String PERMISSIONS_TEST_USER = "auth0|permissions-test-user";
+
   @Autowired private SpringDataMembershipRepository membershipRepo;
+  @Autowired private PermissionRepository permissionRepo;
+  @Autowired private RolePermissionRepository rolePermissionRepo;
 
   private UUID tenantId;
   private Role savedRole;
@@ -89,12 +98,18 @@ class IdentityModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldGetCurrentUserPermissions() throws Exception {
+    Permission permission =
+        permissionRepo.save(new Permission("quotes.read", "Read quotes", "Read quote data"));
+    rolePermissionRepo.save(new RolePermission(savedRole, permission));
+    membershipRepo.save(new MembershipEntity(tenantId, savedRole, PERMISSIONS_TEST_USER));
+
     mockMvc
         .perform(
             get("/api/v1/identity/me/permissions")
-                .with(tenantJwt())
+                .with(tenantJwt(tenantId, PERMISSIONS_TEST_USER, "tenant_owner"))
                 .param("tenantId", tenantId.toString()))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").value(hasItem("quotes.read")));
   }
 
   @Test

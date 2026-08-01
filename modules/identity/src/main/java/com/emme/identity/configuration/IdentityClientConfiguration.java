@@ -1,5 +1,6 @@
 package com.emme.identity.configuration;
 
+import com.emme.identity.application.port.out.IdentityRealmConfigurationPort;
 import com.emme.identity.application.port.out.RetryDelayPort;
 import java.time.Duration;
 import okhttp3.OkHttpClient;
@@ -21,5 +22,11 @@ public class IdentityClientConfiguration {
   @Bean
   public RetryDelayPort identityRetryDelayPort() {
     return delay -> Thread.sleep(delay.toMillis());
+  }
+
+  @Bean
+  public IdentityRealmConfigurationPort identityRealmConfiguration(
+      IdentityKeycloakProperties properties) {
+    return properties::getDefaultRealm;
   }
 }

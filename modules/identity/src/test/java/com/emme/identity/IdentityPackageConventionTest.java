@@ -457,6 +457,18 @@ class IdentityPackageConventionTest {
   }
 
   @Test
+  void keepsAuthenticationApplicationServiceIndependentFromConfigurationProperties()
+      throws IOException {
+    Path authenticateUserService =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/application/service/AuthenticateUserService.java");
+
+    assertThat(Files.readString(authenticateUserService))
+        .doesNotContain("com.emme.identity.configuration.IdentityKeycloakProperties")
+        .doesNotContain("org.springframework.boot.context.properties");
+  }
+
+  @Test
   void ownsHttpEntryPointsAndWireModelsUnderInboundWebAdapters() {
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "IdentityController.java")).isTrue();
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "AuthController.java")).isTrue();

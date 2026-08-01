@@ -391,6 +391,30 @@ Execution rules and dependencies are maintained in
 - Existing dependency-analysis and Testcontainers/PostgreSQL shutdown warnings
   remain non-blocking and occurred after successful task completion.
 
+## Identity authentication-configuration port slice — 2026-08-01
+
+- [x] Add a failing architecture test preventing application authentication
+  services from importing Spring configuration properties.
+- [x] Add an application-owned realm-configuration port and composition-root
+  adapter.
+- [x] Refactor `AuthenticateUserService` and its tests to consume the port.
+- [x] Preserve platform and tenant realm selection behavior.
+- [x] Verify Identity tests/check/integration, Modulith, CI, boot JARs, Markdown,
+  and whitespace.
+
+### Results
+
+- Red phase: the architecture test failed because `AuthenticateUserService`
+  imported `IdentityKeycloakProperties` directly.
+- Green/refactor phase: the service now depends on the application-owned
+  `IdentityRealmConfigurationPort`; `IdentityClientConfiguration` adapts the
+  typed Spring properties at the composition root.
+- Platform and tenant realm selection behavior remains unchanged.
+- Identity tests/check/integration, Studio Modulith verification, service CI,
+  both boot JARs, Markdown validation, and `git diff --check` passed.
+- Existing dependency-analysis and Testcontainers/PostgreSQL shutdown warnings
+  remain non-blocking and occurred after successful task completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

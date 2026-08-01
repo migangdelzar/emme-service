@@ -5,8 +5,8 @@ import com.emme.identity.api.query.GetUserInfoQuery;
 import com.emme.identity.api.result.UserInfoResult;
 import com.emme.identity.api.result.UserTokenResult;
 import com.emme.identity.api.usecase.AuthenticateUserUseCase;
+import com.emme.identity.application.port.out.IdentityRealmConfigurationPort;
 import com.emme.identity.application.port.out.UserAuthenticationPort;
-import com.emme.identity.configuration.IdentityKeycloakProperties;
 import com.emme.tenancy.api.usecase.TenantApi;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +16,15 @@ public class AuthenticateUserService implements AuthenticateUserUseCase {
 
   private final UserAuthenticationPort authenticationPort;
   private final TenantApi tenantApi;
-  private final IdentityKeycloakProperties properties;
+  private final IdentityRealmConfigurationPort realmConfiguration;
 
   public AuthenticateUserService(
       UserAuthenticationPort authenticationPort,
       TenantApi tenantApi,
-      IdentityKeycloakProperties properties) {
+      IdentityRealmConfigurationPort realmConfiguration) {
     this.authenticationPort = authenticationPort;
     this.tenantApi = tenantApi;
-    this.properties = properties;
+    this.realmConfiguration = realmConfiguration;
   }
 
   @Override
@@ -42,7 +42,7 @@ public class AuthenticateUserService implements AuthenticateUserUseCase {
     if (email.endsWith("@emme.app")
         && !email.contains("@demo-salon")
         && !email.contains("@studio-a")) {
-      return properties.getDefaultRealm();
+      return realmConfiguration.defaultRealm();
     }
 
     String domain = email.substring(email.indexOf('@') + 1);
@@ -50,6 +50,6 @@ public class AuthenticateUserService implements AuthenticateUserUseCase {
         .filter(tenant -> domain.contains(tenant.slug()))
         .map(tenant -> tenant.identityRealm())
         .findFirst()
-        .orElse(properties.getDefaultRealm());
+        .orElse(realmConfiguration.defaultRealm());
   }
 }

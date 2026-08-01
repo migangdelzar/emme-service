@@ -479,6 +479,22 @@ Remaining Identity work is architecture dependency evidence, broader
 authorization hardening, explicit provisioning transaction/event ports, and
 final tenant-isolation and migration/recovery evidence.
 
+## Completed authentication-configuration port slice — 2026-08-01
+
+- [x] Added the application-owned `IdentityRealmConfigurationPort`.
+- [x] Adapted `IdentityKeycloakProperties` to that port in the composition
+  root.
+- [x] Refactored `AuthenticateUserService` away from configuration-property
+  implementation types.
+- [x] Preserved platform and tenant realm selection behavior.
+- [x] Added source-boundary and authentication-service regression coverage.
+- [x] Verified Identity tests/check/integration, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Identity work is architecture dependency evidence, broader
+authorization hardening, explicit provisioning transaction/event ports, and
+final tenant-isolation and migration/recovery evidence.
+
 ## Completed appointment-consumer inbound-port slice — 2026-08-01
 
 - [x] Added `EnsureCustomerMembershipCommand` and

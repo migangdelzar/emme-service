@@ -22,8 +22,7 @@ import org.springframework.stereotype.Component;
  * API: POST /v2/checkout/orders (intent=CAPTURE) Refund: POST
  * /v2/payments/captures/{captureId}/refund Webhook: POST /v1/notifications/verify-webhook-signature
  *
- * <p>Configure via: app.payment.provider: paypal PAYPAL_CLIENT_ID=<sandbox-client-id>
- * PAYPAL_CLIENT_SECRET=<sandbox-secret>
+ * <p>Configure via: app.payment.provider: paypal and app.payment.paypal.* typed properties.
  */
 @Component
 @ConditionalOnProperty(name = "app.payment.provider", havingValue = "paypal")
@@ -42,10 +41,10 @@ public class PayPalProvider implements PaymentProvider {
   private String accessToken;
   private Instant tokenExpiry;
 
-  /** Production constructor — reads credentials from environment. */
-  public PayPalProvider() {
-    this.clientId = System.getenv("PAYPAL_CLIENT_ID");
-    this.clientSecret = System.getenv("PAYPAL_CLIENT_SECRET");
+  /** Production constructor — receives typed credentials from application configuration. */
+  public PayPalProvider(PaymentProperties properties) {
+    this.clientId = properties.paypal().clientId();
+    this.clientSecret = properties.paypal().clientSecret();
     this.client = new OkHttpClient();
     this.mapper = new ObjectMapper();
     this.apiBase = API_BASE;
@@ -72,7 +71,8 @@ public class PayPalProvider implements PaymentProvider {
       return accessToken;
     }
     if (clientId == null || clientId.isBlank() || clientSecret == null || clientSecret.isBlank()) {
-      throw new PaymentProviderException("PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET not configured");
+      throw new PaymentProviderException(
+          "app.payment.paypal.client-id or app.payment.paypal.client-secret not configured");
     }
 
     String credentials =

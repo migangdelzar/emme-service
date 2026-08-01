@@ -19,8 +19,7 @@ import org.springframework.stereotype.Component;
  * <p>Auth: Private API key via Basic base64(key:). API: POST /charges → create charge POST
  * /charges/{id}/refund → refund charge Webhook: HMAC-SHA256 signature verification.
  *
- * <p>Configure via: app.payment.provider: conekta CONEKTA_PRIVATE_KEY=<private-key>
- * CONEKTA_WEBHOOK_SECRET=<webhook-secret>
+ * <p>Configure via: app.payment.provider: conekta and app.payment.conekta.* typed properties.
  */
 @Component
 @ConditionalOnProperty(name = "app.payment.provider", havingValue = "conekta")
@@ -31,9 +30,9 @@ public class ConektaProvider implements PaymentProvider {
   private final ObjectMapper mapper;
   private String apiBase;
 
-  /** Production constructor — reads credentials from environment. */
-  public ConektaProvider() {
-    this.privateKey = System.getenv("CONEKTA_PRIVATE_KEY");
+  /** Production constructor — receives typed credentials from application configuration. */
+  public ConektaProvider(PaymentProperties properties) {
+    this.privateKey = properties.conekta().privateKey();
     this.client = new OkHttpClient();
     this.mapper = new ObjectMapper();
     this.apiBase = "https://api.conekta.io";
@@ -54,7 +53,7 @@ public class ConektaProvider implements PaymentProvider {
 
   private String authHeader() {
     if (privateKey == null || privateKey.isBlank()) {
-      throw new PaymentProviderException("CONEKTA_PRIVATE_KEY not configured");
+      throw new PaymentProviderException("app.payment.conekta.private-key not configured");
     }
     return "Basic " + Base64.getEncoder().encodeToString((privateKey + ":").getBytes());
   }

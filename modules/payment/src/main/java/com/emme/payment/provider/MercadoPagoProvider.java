@@ -17,11 +17,11 @@ import org.springframework.stereotype.Component;
  * MercadoPago Checkout API integration via REST.
  *
  * <p>Supported in: Mexico, Brazil, Argentina, Chile, Colombia, Peru, Uruguay. Auth: Bearer token
- * via MP_ACCESS_TOKEN env var. API: POST /checkout/preferences (Checkout Pro) Webhook: POST
- * /v1/payments/{id}/refunds
+ * via app.payment.mercadopago.access-token. API: POST /checkout/preferences (Checkout Pro) Webhook:
+ * POST /v1/payments/{id}/refunds
  *
- * <p>Configure via: app.payment.provider: mercadopago MP_ACCESS_TOKEN=<sandbox-token>
- * MP_PUBLIC_KEY=<sandbox-key>
+ * <p>Configure via: app.payment.provider: mercadopago and app.payment.mercadopago.* typed
+ * properties.
  */
 @Component
 @ConditionalOnProperty(name = "app.payment.provider", havingValue = "mercadopago")
@@ -33,10 +33,10 @@ public class MercadoPagoProvider implements PaymentProvider {
   private final ObjectMapper mapper;
   private String apiBase;
 
-  /** Production constructor — reads credentials from environment. */
-  public MercadoPagoProvider() {
-    this.accessToken = System.getenv("MP_ACCESS_TOKEN");
-    this.publicKey = System.getenv("MP_PUBLIC_KEY");
+  /** Production constructor — receives typed credentials from application configuration. */
+  public MercadoPagoProvider(PaymentProperties properties) {
+    this.accessToken = properties.mercadopago().accessToken();
+    this.publicKey = properties.mercadopago().publicKey();
     this.client = new OkHttpClient();
     this.mapper = new ObjectMapper();
     this.apiBase = "https://api.mercadopago.com";
@@ -61,7 +61,7 @@ public class MercadoPagoProvider implements PaymentProvider {
   public PaymentResult initiate(
       String idempotencyKey, BigDecimal amount, String currency, String description) {
     if (accessToken == null || accessToken.isBlank()) {
-      throw new PaymentProviderException("MP_ACCESS_TOKEN not configured");
+      throw new PaymentProviderException("app.payment.mercadopago.access-token not configured");
     }
 
     try {
@@ -135,7 +135,7 @@ public class MercadoPagoProvider implements PaymentProvider {
   @Override
   public PaymentResult refund(String providerTransactionId, BigDecimal amount, String reason) {
     if (accessToken == null || accessToken.isBlank()) {
-      throw new PaymentProviderException("MP_ACCESS_TOKEN not configured");
+      throw new PaymentProviderException("app.payment.mercadopago.access-token not configured");
     }
 
     try {

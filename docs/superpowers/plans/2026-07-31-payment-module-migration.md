@@ -127,3 +127,18 @@ only performs transport. Provider DTOs remain inside their external-system packa
 - [ ] Payment public contracts are grouped and implementation packages are private.
 - [ ] Payment domain is framework-free and providers are replaceable adapters.
 - [ ] Existing HTTP, webhook, provider, and database behavior is regression-tested.
+
+## Completed typed provider configuration slice — 2026-08-01
+
+- [x] Reused `PaymentProperties` as the constructor boundary for Conekta,
+  Mercado Pago, PayPal, and Stripe credentials.
+- [x] Bound the Mercado Pago webhook secret through typed configuration.
+- [x] Removed all direct process-environment reads from Payment providers and
+  the Mercado Pago webhook controller.
+- [x] Preserved provider selection, error semantics, and webhook verification
+  behavior while changing only configuration ownership.
+- [x] Added a source-boundary regression test and verified Payment unit and
+  integration tests.
+
+The broader Payment package/domain/application migration remains tracked above;
+this slice changes only configuration ownership.

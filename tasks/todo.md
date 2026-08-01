@@ -144,8 +144,9 @@ collaborators rather than a compatibility facade.
 - [x] Normalize Notification provider credentials and options through
   `NotificationProperties`; no Notification production provider reads the
   process environment directly.
-- [ ] Normalize the remaining provider-specific direct environment reads in
-  Payment as a separate red-green slice.
+- [x] Normalize Payment provider credentials and the Mercado Pago webhook
+  secret through `PaymentProperties`; no Payment production provider or
+  webhook reads the process environment directly.
 - [ ] Run the final service-wide verification gate after those provider slices
   are complete.
 

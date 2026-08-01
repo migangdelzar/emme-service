@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
  * <p>Configure via: app.payment.provider: stripe app.payment.stripe.secret-key: sk_...
  * app.payment.stripe.webhook-secret: whsec_...
  *
- * <p>Env vars: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET.
+ * <p>Secrets are read from app.payment.stripe.* typed configuration.
  */
 @Component
 @ConditionalOnProperty(name = "app.payment.provider", havingValue = "stripe")
@@ -45,9 +45,8 @@ public class StripeProvider implements PaymentProvider {
 
   /** Test constructor — accepts custom API base URL and HTTP client. */
   public StripeProvider(PaymentProperties props, OkHttpClient client, String apiBase) {
-    this.secretKey = defaultIfBlank(props.stripe().secretKey(), System.getenv("STRIPE_SECRET_KEY"));
-    this.webhookSecret =
-        defaultIfBlank(props.stripe().webhookSecret(), System.getenv("STRIPE_WEBHOOK_SECRET"));
+    this.secretKey = props.stripe().secretKey();
+    this.webhookSecret = props.stripe().webhookSecret();
     this.client = client;
     this.apiBase = apiBase;
     this.mapper = new ObjectMapper();
@@ -158,9 +157,5 @@ public class StripeProvider implements PaymentProvider {
     // controller layer.
     String eventId = payload.getOrDefault("id", "unknown");
     return new PaymentResult(eventId, "PENDING", Map.of("provider", "stripe", "source", "webhook"));
-  }
-
-  private static String defaultIfBlank(String value, String fallback) {
-    return value != null && !value.isBlank() ? value : fallback;
   }
 }

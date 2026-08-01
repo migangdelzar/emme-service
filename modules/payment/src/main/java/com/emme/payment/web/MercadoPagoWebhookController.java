@@ -35,7 +35,7 @@ class MercadoPagoWebhookController {
 
   MercadoPagoWebhookController(PaymentService paymentService, PaymentProperties props) {
     this.paymentService = paymentService;
-    this.webhookSecret = System.getenv("MP_WEBHOOK_SECRET");
+    this.webhookSecret = props.mercadopago().webhookSecret();
   }
 
   @PostMapping("/api/v1/callbacks/payments")
@@ -61,7 +61,8 @@ class MercadoPagoWebhookController {
         return ResponseEntity.status(401).body("Invalid signature");
       }
     } else {
-      log.warn("MP_WEBHOOK_SECRET not configured — skipping signature verification");
+      log.warn(
+          "app.payment.mercadopago.webhook-secret not configured — skipping signature verification");
     }
 
     UUID tenantId =

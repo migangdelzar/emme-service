@@ -479,6 +479,23 @@ Remaining Identity work is architecture dependency evidence, broader
 authorization hardening, explicit provisioning transaction/event ports, and
 final tenant-isolation and migration/recovery evidence.
 
+## Completed appointment-consumer inbound-port slice — 2026-08-01
+
+- [x] Added `EnsureCustomerMembershipCommand` and
+  `EnsureCustomerMembershipUseCase` under the grouped Identity API.
+- [x] Made `EnsureCustomerMembershipService` implement the use case.
+- [x] Changed `AppointmentCreatedConsumer` to depend on the use-case contract
+  rather than the concrete application service.
+- [x] Preserved CUSTOMER-role filtering, JWT subject parsing, idempotency, and
+  appointment event handling.
+- [x] Added source-boundary and consumer delegation regression coverage.
+- [x] Verified Identity tests/check/integration, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Identity work is architecture dependency evidence, broader
+authorization hardening, explicit provisioning transaction/event ports, and
+final tenant-isolation and migration/recovery evidence.
+
 ## Completed provisioning inbound-port slice — 2026-08-01
 
 - [x] Added the public `ProvisionTenantIdentityUseCase` contract under the

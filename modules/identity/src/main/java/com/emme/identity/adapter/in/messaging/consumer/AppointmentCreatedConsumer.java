@@ -1,6 +1,7 @@
 package com.emme.identity.adapter.in.messaging.consumer;
 
-import com.emme.identity.application.service.EnsureCustomerMembershipService;
+import com.emme.identity.api.command.EnsureCustomerMembershipCommand;
+import com.emme.identity.api.usecase.EnsureCustomerMembershipUseCase;
 import com.emme.studio.api.event.AppointmentCreatedEvent;
 import java.util.UUID;
 import org.springframework.context.event.EventListener;
@@ -12,10 +13,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class AppointmentCreatedConsumer {
 
-  private final EnsureCustomerMembershipService membershipService;
+  private final EnsureCustomerMembershipUseCase ensureCustomerMembership;
 
-  public AppointmentCreatedConsumer(EnsureCustomerMembershipService membershipService) {
-    this.membershipService = membershipService;
+  public AppointmentCreatedConsumer(EnsureCustomerMembershipUseCase ensureCustomerMembership) {
+    this.ensureCustomerMembership = ensureCustomerMembership;
   }
 
   @EventListener
@@ -29,6 +30,7 @@ public class AppointmentCreatedConsumer {
     }
 
     UUID customerId = UUID.fromString(jwt.getSubject());
-    membershipService.ensureForCustomer(customerId, event.tenantId());
+    ensureCustomerMembership.ensure(
+        new EnsureCustomerMembershipCommand(customerId, event.tenantId()));
   }
 }

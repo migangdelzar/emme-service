@@ -3,7 +3,8 @@ package com.emme.identity.adapter.in.messaging.consumer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.emme.identity.application.service.EnsureCustomerMembershipService;
+import com.emme.identity.api.command.EnsureCustomerMembershipCommand;
+import com.emme.identity.api.usecase.EnsureCustomerMembershipUseCase;
 import com.emme.studio.api.event.AppointmentCreatedEvent;
 import java.time.Instant;
 import java.util.UUID;
@@ -19,7 +20,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 @ExtendWith(MockitoExtension.class)
 class AppointmentCreatedConsumerTest {
 
-  @Mock private EnsureCustomerMembershipService membershipService;
+  @Mock private EnsureCustomerMembershipUseCase ensureCustomerMembership;
 
   @AfterEach
   void clearSecurityContext() {
@@ -32,19 +33,20 @@ class AppointmentCreatedConsumerTest {
     UUID tenantId = UUID.randomUUID();
     authenticate(customerId, "CUSTOMER");
 
-    new AppointmentCreatedConsumer(membershipService).on(event(tenantId));
+    new AppointmentCreatedConsumer(ensureCustomerMembership).on(event(tenantId));
 
-    verify(membershipService).ensureForCustomer(customerId, tenantId);
+    verify(ensureCustomerMembership)
+        .ensure(new EnsureCustomerMembershipCommand(customerId, tenantId));
   }
 
   @Test
   void ignoresAppointmentsCreatedByNonCustomers() {
     authenticate(UUID.randomUUID(), "STAFF");
 
-    new AppointmentCreatedConsumer(membershipService).on(event(UUID.randomUUID()));
+    new AppointmentCreatedConsumer(ensureCustomerMembership).on(event(UUID.randomUUID()));
 
-    verify(membershipService, never())
-        .ensureForCustomer(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    verify(ensureCustomerMembership, never())
+        .ensure(org.mockito.ArgumentMatchers.any(EnsureCustomerMembershipCommand.class));
   }
 
   private static void authenticate(UUID customerId, String role) {

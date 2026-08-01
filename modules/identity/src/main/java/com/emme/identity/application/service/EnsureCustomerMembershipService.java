@@ -1,5 +1,7 @@
 package com.emme.identity.application.service;
 
+import com.emme.identity.api.command.EnsureCustomerMembershipCommand;
+import com.emme.identity.api.usecase.EnsureCustomerMembershipUseCase;
 import com.emme.identity.application.port.out.CustomerMembershipRepository;
 import com.emme.identity.domain.model.CustomerMembership;
 import java.util.UUID;
@@ -11,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 /** Idempotently establishes a customer's membership in a tenant. */
 @Service
 @Transactional
-public class EnsureCustomerMembershipService {
+public class EnsureCustomerMembershipService implements EnsureCustomerMembershipUseCase {
 
   private static final Logger log = LoggerFactory.getLogger(EnsureCustomerMembershipService.class);
 
@@ -19,6 +21,11 @@ public class EnsureCustomerMembershipService {
 
   public EnsureCustomerMembershipService(CustomerMembershipRepository repository) {
     this.repository = repository;
+  }
+
+  @Override
+  public void ensure(EnsureCustomerMembershipCommand command) {
+    ensureForCustomer(command.customerId(), command.tenantId());
   }
 
   public void ensureForCustomer(UUID customerId, UUID tenantId) {

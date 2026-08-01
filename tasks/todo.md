@@ -365,6 +365,32 @@ Execution rules and dependencies are maintained in
 - Existing dependency-analysis and Testcontainers/PostgreSQL shutdown warnings
   remain non-blocking and occurred after successful task completion.
 
+## Identity appointment-consumer inbound-port slice — 2026-08-01
+
+- [x] Add a failing source-boundary test for the appointment consumer.
+- [x] Add a grouped customer-membership command and use-case contract.
+- [x] Make the application service implement the contract and decouple the
+  consumer from the concrete service.
+- [x] Preserve CUSTOMER-role filtering, JWT subject parsing, idempotency, and
+  appointment event behavior.
+- [x] Verify Identity tests/check/integration, Modulith, CI, boot JARs, Markdown,
+  and whitespace.
+
+### Results
+
+- Red phase: the architecture test failed because the appointment consumer
+  imported `EnsureCustomerMembershipService` directly.
+- Green/refactor phase: the consumer now depends on the grouped
+  `EnsureCustomerMembershipUseCase` and sends an
+  `EnsureCustomerMembershipCommand`; the application service remains the
+  idempotent implementation.
+- CUSTOMER-role filtering, JWT subject parsing, and membership persistence
+  behavior remain unchanged.
+- Identity tests/check/integration, Studio Modulith verification, service CI,
+  both boot JARs, Markdown validation, and `git diff --check` passed.
+- Existing dependency-analysis and Testcontainers/PostgreSQL shutdown warnings
+  remain non-blocking and occurred after successful task completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

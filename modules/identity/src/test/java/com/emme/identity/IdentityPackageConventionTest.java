@@ -446,6 +446,17 @@ class IdentityPackageConventionTest {
   }
 
   @Test
+  void keepsAppointmentConsumerIndependentFromApplicationImplementations() throws IOException {
+    Path appointmentConsumer =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/AppointmentCreatedConsumer.java");
+
+    assertThat(Files.readString(appointmentConsumer))
+        .doesNotContain("com.emme.identity.application.service.EnsureCustomerMembershipService")
+        .doesNotContain("com.emme.identity.domain.model.CustomerMembership");
+  }
+
+  @Test
   void ownsHttpEntryPointsAndWireModelsUnderInboundWebAdapters() {
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "IdentityController.java")).isTrue();
     assertThat(hasJavaSource(WEB_CONTROLLER_PACKAGE, "AuthController.java")).isTrue();

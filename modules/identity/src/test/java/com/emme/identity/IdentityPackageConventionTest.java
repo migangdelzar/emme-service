@@ -51,6 +51,9 @@ class IdentityPackageConventionTest {
   private static final Path REALM_PROVISIONING_PROCESS =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/application/process/KeycloakRealmProvisioningProcessManager.java");
+  private static final Path IDENTITY_PROVIDER_ADMINISTRATION_PORT =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/port/out/IdentityProviderAdministrationPort.java");
   private static final Path TENANT_CREATED_CONSUMER =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/TenantCreatedConsumer.java");
@@ -437,6 +440,15 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(IDENTITY_KEYCLOAK_PROPERTIES)).isTrue();
     assertThat(userAdapter).doesNotContain("@Value");
     assertThat(adminAdapter).doesNotContain("@Value");
+  }
+
+  @Test
+  void keepsRealmProvisioningDependentOnAnApplicationPort() throws IOException {
+    String processSource = Files.readString(REALM_PROVISIONING_PROCESS);
+
+    assertThat(Files.exists(IDENTITY_PROVIDER_ADMINISTRATION_PORT)).isTrue();
+    assertThat(processSource).contains("IdentityProviderAdministrationPort");
+    assertThat(processSource).doesNotContain("KeycloakAdminClient");
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

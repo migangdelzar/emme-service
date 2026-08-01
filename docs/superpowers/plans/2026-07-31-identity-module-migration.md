@@ -356,3 +356,19 @@ separation.
   verification, Markdown validation, and whitespace checks.
 
 Remaining follow-up: complete the broader Identity security hardening review.
+
+## Completed realm provisioning port slice — 2026-08-01
+
+- [x] Added `IdentityProviderAdministrationPort` under
+  `application/port/out` with only the realm, client, role, and user operations
+  required by provisioning.
+- [x] Rewired `KeycloakRealmProvisioningProcessManager` to depend on the
+  application port instead of `KeycloakAdminClient`.
+- [x] Kept Keycloak HTTP administration inside the outbound adapter, which now
+  implements the port.
+- [x] Added process behavior and source-tree boundary coverage.
+- [x] Verified Identity checks, Studio Modulith verification, Markdown
+  validation, and whitespace checks.
+
+Remaining follow-up: review provisioning secrets, retry policy, and the wider
+Identity security hardening surface.

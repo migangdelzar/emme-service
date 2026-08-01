@@ -185,6 +185,20 @@
 
 Remaining Identity follow-up: complete the broader security hardening review.
 
+### Identity realm provisioning port slice — 2026-08-01
+
+- [x] Add failing process and package-boundary tests for the outbound
+  administration capability.
+- [x] Introduce `IdentityProviderAdministrationPort` under
+  `application/port/out`.
+- [x] Rewire `KeycloakRealmProvisioningProcessManager` to depend only on the
+  application port.
+- [x] Keep Keycloak HTTP administration inside the outbound adapter.
+- [x] Verify full Identity checks, Studio Modulith verification, Markdown
+  validation, and whitespace checks.
+
+Remaining Identity follow-up: complete the broader security hardening review.
+
 ### Plan update results
 
 - Added the plan registry at `docs/superpowers/plans/README.md`.

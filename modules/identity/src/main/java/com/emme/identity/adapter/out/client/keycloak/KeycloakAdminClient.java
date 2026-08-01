@@ -1,5 +1,6 @@
 package com.emme.identity.adapter.out.client.keycloak;
 
+import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
 import com.emme.identity.configuration.IdentityKeycloakProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -13,7 +14,7 @@ import okhttp3.RequestBody;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KeycloakAdminClient {
+public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
 
   private final OkHttpClient httpClient;
   private final ObjectMapper objectMapper;
@@ -54,6 +55,7 @@ public class KeycloakAdminClient {
   }
 
   /** Create a new realm. */
+  @Override
   public void createRealm(String realmName, String displayName) throws IOException {
     var token = getAdminToken();
     var body =
@@ -77,6 +79,7 @@ public class KeycloakAdminClient {
   }
 
   /** Create an OAuth2 client in the given realm. */
+  @Override
   public void createClient(String realm, String clientId, List<String> redirectUris)
       throws IOException {
     var token = getAdminToken();
@@ -104,6 +107,7 @@ public class KeycloakAdminClient {
   }
 
   /** Create a realm-level role. */
+  @Override
   public void createRealmRole(String realm, String roleName) throws IOException {
     var token = getAdminToken();
     var body = Map.of("name", roleName);
@@ -123,6 +127,7 @@ public class KeycloakAdminClient {
   }
 
   /** Create a user with password and assign a realm role. Returns user ID. */
+  @Override
   public String createUser(
       String realm, String username, String email, String password, String roleName)
       throws IOException {

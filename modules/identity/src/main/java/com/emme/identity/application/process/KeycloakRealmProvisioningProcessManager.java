@@ -1,6 +1,6 @@
 package com.emme.identity.application.process;
 
-import com.emme.identity.adapter.out.client.keycloak.KeycloakAdminClient;
+import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
 import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.tenancy.api.usecase.TenantApi;
 import java.util.List;
@@ -17,12 +17,12 @@ public class KeycloakRealmProvisioningProcessManager {
       List.of("business_owner", "nail_artist", "front_desk", "read_only");
   private static final int MAX_RETRIES = 3;
 
-  private final KeycloakAdminClient keycloakAdminClient;
+  private final IdentityProviderAdministrationPort administrationPort;
   private final TenantApi tenantApi;
 
   public KeycloakRealmProvisioningProcessManager(
-      KeycloakAdminClient keycloakAdminClient, TenantApi tenantApi) {
-    this.keycloakAdminClient = keycloakAdminClient;
+      IdentityProviderAdministrationPort administrationPort, TenantApi tenantApi) {
+    this.administrationPort = administrationPort;
     this.tenantApi = tenantApi;
   }
 
@@ -32,19 +32,19 @@ public class KeycloakRealmProvisioningProcessManager {
 
     for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        keycloakAdminClient.createRealm(realm, event.name());
+        administrationPort.createRealm(realm, event.name());
         log.info("  Realm created: {}", realm);
 
-        keycloakAdminClient.createClient(
+        administrationPort.createClient(
             realm, "emme-salon-app", List.of("http://localhost:8080/*", "http://localhost:3000/*"));
         log.info("  Client created: emme-salon-app");
 
         for (String role : DEFAULT_ROLES) {
-          keycloakAdminClient.createRealmRole(realm, role);
+          administrationPort.createRealmRole(realm, role);
         }
         log.info("  Roles seeded: {}", DEFAULT_ROLES);
 
-        keycloakAdminClient.createUser(
+        administrationPort.createUser(
             realm, "admin", event.adminEmail(), "admin123", "business_owner");
         log.info("  Admin user created: {}", event.adminEmail());
 

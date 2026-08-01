@@ -50,6 +50,17 @@ class StudioPackageConventionTest {
         .check(CLASSES);
   }
 
+  @Test
+  void migratedServiceCatalogDoesNotDependOnOutboundAdapters() {
+    noClasses()
+        .that()
+        .haveSimpleName("ServiceCatalogService")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("com.emme.studio.adapter.out..")
+        .check(CLASSES);
+  }
+
   private static boolean hasClass(String className) {
     return CLASSES.stream().anyMatch(javaClass -> javaClass.getName().equals(className));
   }

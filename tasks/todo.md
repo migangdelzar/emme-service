@@ -139,9 +139,10 @@ collaborators rather than a compatibility facade.
 - [x] Bind Google Calendar service-account credentials and endpoints through
   `GoogleCalendarProperties`; no Calendar production adapter reads the process
   environment directly.
+- [x] Normalize the Assistant Groq API key through `AiProperties`; no
+  Assistant production AI provider reads the process environment directly.
 - [ ] Normalize the remaining provider-specific direct environment reads in
-  Assistant AI, Notification, and Payment as separate red-green
-  slices.
+  Notification and Payment as separate red-green slices.
 - [ ] Run the final service-wide verification gate after those provider slices
   are complete.
 

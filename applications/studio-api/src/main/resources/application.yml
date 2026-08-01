@@ -111,10 +111,11 @@ app:
   ai:
     provider: mock
     # provider: ollama  # switch to Ollama (needs ollama running)
-    # provider: groq   # switch to Groq (needs GROQ_API_KEY env var)
+    # provider: groq   # switch to Groq
     chat:
       model: llama-3.3-70b-versatile
       base-url: https://api.groq.com/openai/v1
+      api-key: ${GROQ_API_KEY:}
       temperature: 0.7
       # model: gemma3:4b          # Ollama chat model
       # base-url: http://localhost:11434  # Ollama base URL

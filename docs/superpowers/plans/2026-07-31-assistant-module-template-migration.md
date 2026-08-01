@@ -759,5 +759,21 @@ git log --oneline origin/feat/assistant-module-migration -1
 - [x] Verified Assistant unit and integration tests with formatting.
 
 Remaining Assistant migration work includes the broader domain/persistence and
-adapter normalization tasks already listed above, plus provider-specific
-configuration cleanup for AI integrations.
+adapter normalization tasks already listed above. The Groq provider-specific
+configuration cleanup is complete: its API key now enters through typed
+`AiProperties` and the deployable application profiles.
+
+## Completed typed Groq configuration slice — 2026-08-01
+
+- [x] Reused `AiProperties.ProviderConfig.apiKey` as the single configuration
+  boundary for the Groq API key.
+- [x] Removed direct `System.getenv` access from `GroqModelProvider`.
+- [x] Added `app.ai.chat.api-key` placeholders to both deployable application
+  configurations without storing secret material.
+- [x] Updated the missing-key diagnostic to refer to the typed property path.
+- [x] Added a source-boundary regression test and verified Assistant formatting
+  plus the focused test.
+
+The remaining Assistant provider work is the broader adapter/package migration
+described in the approved tasks above; this slice deliberately changes only
+configuration ownership.

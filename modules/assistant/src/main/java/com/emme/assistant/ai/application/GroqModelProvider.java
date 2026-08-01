@@ -28,9 +28,11 @@ import org.springframework.stereotype.Component;
  * limit: ~30 req/min
  *
  * <p>Configure via application.yml: app.ai.provider: groq app.ai.chat.model:
- * llama-3.3-70b-versatile app.ai.chat.base-url: https://api.groq.com/openai/v1
+ * llama-3.3-70b-versatile app.ai.chat.base-url: https://api.groq.com/openai/v1 app.ai.chat.api-key:
+ * ${GROQ_API_KEY:}
  *
- * <p>Requires GROQ_API_KEY environment variable (set in .env).
+ * <p>The secret is supplied through {@link AiProperties}; the provider does not read process
+ * environment variables directly.
  */
 @Component
 @ConditionalOnProperty(name = "app.ai.provider", havingValue = "groq")
@@ -51,7 +53,8 @@ public class GroqModelProvider implements ModelProvider {
   private final ObjectMapper mapper;
 
   public GroqModelProvider(AiProperties props) {
-    this.apiKey = System.getenv("GROQ_API_KEY");
+    this.apiKey =
+        props.chat() != null && props.chat().apiKey() != null ? props.chat().apiKey() : "";
     this.model =
         props.chat() != null && props.chat().model() != null ? props.chat().model() : DEFAULT_MODEL;
     this.baseUrl =
@@ -76,7 +79,7 @@ public class GroqModelProvider implements ModelProvider {
   @Override
   public String chat(String context, String userMessage) {
     if (apiKey == null || apiKey.isBlank()) {
-      return "[Groq] API key not configured. Set GROQ_API_KEY environment variable.";
+      return "[Groq] API key not configured. Set app.ai.chat.api-key.";
     }
 
     try {

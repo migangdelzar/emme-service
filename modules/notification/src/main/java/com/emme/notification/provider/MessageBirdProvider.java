@@ -1,5 +1,6 @@
 package com.emme.notification.provider;
 
+import com.emme.notification.config.NotificationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Activated when app.notification.sms.provider=messagebird. Auth: AccessKey header.
  *
- * <p>Env vars: MESSAGEBIRD_API_KEY, MESSAGEBIRD_ORIGINATOR (optional, fallback "Emme")
+ * <p>Configuration: app.notification.messagebird.*
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.sms.provider", havingValue = "messagebird")
@@ -35,12 +36,12 @@ public class MessageBirdProvider implements SmsProvider {
   private final String apiBase;
   private final ObjectMapper mapper;
 
-  public MessageBirdProvider() {
+  public MessageBirdProvider(NotificationProperties properties) {
     this(
         new OkHttpClient(),
         PRODUCTION_API_BASE,
-        System.getenv("MESSAGEBIRD_API_KEY"),
-        System.getenv("MESSAGEBIRD_ORIGINATOR"));
+        properties.messagebird().apiKey(),
+        properties.messagebird().originator());
   }
 
   /** Package-private constructor for testing with custom API base, client, and credentials. */

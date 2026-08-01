@@ -28,13 +28,14 @@ public record NotificationProperties(
 
   public record Twilio(String accountSid, String authToken, String fromNumber) {}
 
-  public record Messagebird(String apiKey) {}
+  public record Messagebird(String apiKey, String originator) {}
 
-  public record Vonage(String apiKey, String apiSecret) {}
+  public record Vonage(String apiKey, String apiSecret, String fromNumber) {}
 
   public record Push(String provider) {}
 
-  public record Fcm(String serviceAccount) {}
+  public record Fcm(String serviceAccount, String projectId) {}
 
-  public record Apns(String keyId, String teamId, String privateKey, String bundleId) {}
+  public record Apns(
+      String keyId, String teamId, String privateKey, String bundleId, boolean sandbox) {}
 }

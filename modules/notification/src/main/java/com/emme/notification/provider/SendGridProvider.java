@@ -1,5 +1,6 @@
 package com.emme.notification.provider;
 
+import com.emme.notification.config.NotificationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
@@ -17,10 +18,10 @@ import org.springframework.stereotype.Component;
 /**
  * SendGrid Mail Send API v3 integration.
  *
- * <p>Auth: Bearer token via SENDGRID_API_KEY env var. API: POST
+ * <p>Auth: Bearer token via app.notification.sendgrid.api-key. API: POST
  * https://api.sendgrid.com/v3/mail/send
  *
- * <p>Configure via: app.notification.email.provider: sendgrid SENDGRID_API_KEY=<your-api-key>
+ * <p>Configure via: app.notification.email.provider: sendgrid
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.email.provider", havingValue = "sendgrid")
@@ -33,9 +34,9 @@ public class SendGridProvider implements EmailProvider {
   private final ObjectMapper mapper;
   private String apiBase;
 
-  /** Production constructor — reads API key from environment. */
-  public SendGridProvider() {
-    this.apiKey = System.getenv("SENDGRID_API_KEY");
+  /** Production constructor — receives typed credentials from application configuration. */
+  public SendGridProvider(NotificationProperties properties) {
+    this.apiKey = properties.sendgrid().apiKey();
     this.client = new OkHttpClient();
     this.mapper = new ObjectMapper();
     this.apiBase = "https://api.sendgrid.com";

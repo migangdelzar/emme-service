@@ -1,5 +1,6 @@
 package com.emme.notification.provider;
 
+import com.emme.notification.config.NotificationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -25,10 +26,7 @@ import org.springframework.stereotype.Component;
  * Apple Push Notification service (APNs) provider using pure HTTP + JWT. No Apple Push SDK
  * dependency. Authenticates via ES256-signed JWT token using the .p8 private key.
  *
- * <p>Env vars: APNS_KEY_ID — Key ID from Apple Developer Console APNS_TEAM_ID — Team ID from Apple
- * Developer membership APNS_PRIVATE_KEY_BASE64 — base64-encoded .p8 private key (PKCS#8)
- * APNS_BUNDLE_ID — App bundle ID (used as apns-topic) APNS_USE_SANDBOX — set to "true" for sandbox
- * endpoint (optional)
+ * <p>Configuration: app.notification.apns.*
  *
  * <p>Property: app.notification.push.provider=apns
  */
@@ -49,16 +47,17 @@ public class ApnsPushProvider implements PushProvider {
   private final OkHttpClient client;
   private final ObjectMapper mapper;
 
-  /** Production constructor — reads credentials from environment variables. */
-  public ApnsPushProvider() {
+  /** Production constructor — receives typed credentials from application configuration. */
+  public ApnsPushProvider(NotificationProperties properties) {
     this(
         new OkHttpClient(),
         new ObjectMapper(),
-        resolveApnsBase(),
-        requireEnv("APNS_KEY_ID"),
-        requireEnv("APNS_TEAM_ID"),
-        requireEnv("APNS_BUNDLE_ID"),
-        loadECPrivateKey(requireEnv("APNS_PRIVATE_KEY_BASE64")));
+        resolveApnsBase(properties.apns()),
+        requireProperty(properties.apns().keyId(), "app.notification.apns.key-id"),
+        requireProperty(properties.apns().teamId(), "app.notification.apns.team-id"),
+        requireProperty(properties.apns().bundleId(), "app.notification.apns.bundle-id"),
+        loadECPrivateKey(
+            requireProperty(properties.apns().privateKey(), "app.notification.apns.private-key")));
   }
 
   /** Full constructor for testing — all values injected directly. */
@@ -83,9 +82,8 @@ public class ApnsPushProvider implements PushProvider {
         "APNs push provider initialized — team={} bundle={} sandbox={}", teamId, bundleId, sandbox);
   }
 
-  private static String resolveApnsBase() {
-    boolean sandbox = "true".equalsIgnoreCase(System.getenv("APNS_USE_SANDBOX"));
-    return sandbox ? SANDBOX_URL : PROD_URL;
+  private static String resolveApnsBase(NotificationProperties.Apns apns) {
+    return apns.sandbox() ? SANDBOX_URL : PROD_URL;
   }
 
   // ── PushProvider contract ──
@@ -201,10 +199,10 @@ public class ApnsPushProvider implements PushProvider {
     }
   }
 
-  static String requireEnv(String name) {
-    String value = System.getenv(name);
+  static String requireProperty(String value, String propertyName) {
     if (value == null || value.isBlank()) {
-      throw new PushProviderException("APNs env var '" + name + "' is required but not set");
+      throw new PushProviderException(
+          "APNs property '" + propertyName + "' is required but not set");
     }
     return value;
   }

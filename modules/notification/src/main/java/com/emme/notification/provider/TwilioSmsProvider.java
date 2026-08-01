@@ -1,5 +1,6 @@
 package com.emme.notification.provider;
 
+import com.emme.notification.config.NotificationProperties;
 import java.io.IOException;
 import java.util.Base64;
 import okhttp3.FormBody;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Component;
  * <p>Activated when app.notification.sms.provider=twilio. Auth: HTTP Basic with
  * AccountSID:AuthToken.
  *
- * <p>Env vars: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER
+ * <p>Configuration: app.notification.twilio.*
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.sms.provider", havingValue = "twilio")
@@ -32,13 +33,13 @@ public class TwilioSmsProvider implements SmsProvider {
   private final OkHttpClient client;
   private final String apiBase;
 
-  public TwilioSmsProvider() {
+  public TwilioSmsProvider(NotificationProperties properties) {
     this(
         new OkHttpClient(),
         PRODUCTION_API_BASE,
-        System.getenv("TWILIO_ACCOUNT_SID"),
-        System.getenv("TWILIO_AUTH_TOKEN"),
-        System.getenv("TWILIO_FROM_NUMBER"));
+        properties.twilio().accountSid(),
+        properties.twilio().authToken(),
+        properties.twilio().fromNumber());
   }
 
   /** Package-private constructor for testing with custom API base, HTTP client, and credentials. */

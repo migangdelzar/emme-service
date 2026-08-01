@@ -1,5 +1,6 @@
 package com.emme.notification.provider;
 
+import com.emme.notification.config.NotificationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,8 +28,7 @@ import org.springframework.stereotype.Component;
 /**
  * AWS SES v2 email provider using Signature V4 auth (pure Java, no AWS SDK).
  *
- * <p>Credentials read from environment: AWS_ACCESS_KEY_ID — AWS access key AWS_SECRET_ACCESS_KEY —
- * AWS secret key AWS_REGION — AWS region (e.g. us-east-1)
+ * <p>Credentials are read from app.notification.ses.* typed configuration.
  *
  * <p>API: POST https://email.{region}.amazonaws.com/v2/email/outbound-emails
  *
@@ -53,11 +53,11 @@ public class SesEmailProvider implements EmailProvider {
   private final ObjectMapper mapper;
   private String apiBase;
 
-  /** Production constructor — reads credentials from environment. */
-  public SesEmailProvider() {
-    this.accessKey = System.getenv("AWS_ACCESS_KEY_ID");
-    this.secretKey = System.getenv("AWS_SECRET_ACCESS_KEY");
-    this.region = System.getenv("AWS_REGION");
+  /** Production constructor — receives typed credentials from application configuration. */
+  public SesEmailProvider(NotificationProperties properties) {
+    this.accessKey = properties.ses().accessKey();
+    this.secretKey = properties.ses().secretKey();
+    this.region = properties.ses().region();
     this.client = new OkHttpClient();
     this.mapper = new ObjectMapper();
 

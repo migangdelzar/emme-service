@@ -1,5 +1,6 @@
 package com.emme.notification.provider;
 
+import com.emme.notification.config.NotificationProperties;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
@@ -16,9 +17,7 @@ import org.springframework.stereotype.Component;
 /**
  * SMTP email provider using Jakarta Mail directly.
  *
- * <p>Credentials read from environment: SMTP_HOST — SMTP server hostname (default: localhost)
- * SMTP_PORT — SMTP port (default: 587) SMTP_USERNAME — SMTP auth username SMTP_PASSWORD — SMTP auth
- * password
+ * <p>Credentials are read from app.notification.smtp.* typed configuration.
  *
  * <p>Falls back to mock when credentials are absent.
  */
@@ -34,14 +33,12 @@ public class SmtpEmailProvider implements EmailProvider {
   private final String password;
   private final boolean configured;
 
-  /** Production constructor — reads credentials from environment. */
-  public SmtpEmailProvider() {
-    this.host = System.getenv("SMTP_HOST");
-    this.username = System.getenv("SMTP_USERNAME");
-    this.password = System.getenv("SMTP_PASSWORD");
-
-    String portEnv = System.getenv("SMTP_PORT");
-    this.port = portEnv != null && !portEnv.isBlank() ? Integer.parseInt(portEnv) : 587;
+  /** Production constructor — receives typed credentials from application configuration. */
+  public SmtpEmailProvider(NotificationProperties properties) {
+    this.host = properties.smtp().host();
+    this.username = properties.smtp().username();
+    this.password = properties.smtp().password();
+    this.port = properties.smtp().port();
 
     this.configured =
         host != null

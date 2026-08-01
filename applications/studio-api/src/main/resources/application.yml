@@ -154,18 +154,22 @@ app:
       from-number: ${TWILIO_FROM_NUMBER:}
     messagebird:
       api-key: ${MESSAGEBIRD_API_KEY:}
+      originator: ${MESSAGEBIRD_ORIGINATOR:Emme}
     vonage:
       api-key: ${VONAGE_API_KEY:}
       api-secret: ${VONAGE_API_SECRET:}
+      from-number: ${VONAGE_FROM_NUMBER:Emme}
     push:
       provider: mock
     fcm:
       service-account: ${FCM_SERVICE_ACCOUNT_BASE64:}
+      project-id: ${FCM_PROJECT_ID:}
     apns:
       key-id: ${APNS_KEY_ID:}
       team-id: ${APNS_TEAM_ID:}
       private-key: ${APNS_PRIVATE_KEY_BASE64:}
       bundle-id: ${APNS_BUNDLE_ID:com.emme.salon}
+      sandbox: ${APNS_USE_SANDBOX:false}
   calendar:
     google:
       service-account-json-base64: ${GOOGLE_SA_JSON_BASE64:}

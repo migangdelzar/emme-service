@@ -1,5 +1,6 @@
 package com.emme.notification.provider;
 
+import com.emme.notification.config.NotificationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Activated when app.notification.sms.provider=vonage.
  *
- * <p>Env vars: VONAGE_API_KEY, VONAGE_API_SECRET, VONAGE_FROM_NUMBER (optional)
+ * <p>Configuration: app.notification.vonage.*
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.sms.provider", havingValue = "vonage")
@@ -36,13 +37,13 @@ public class VonageProvider implements SmsProvider {
   private final String apiBase;
   private final ObjectMapper mapper;
 
-  public VonageProvider() {
+  public VonageProvider(NotificationProperties properties) {
     this(
         new OkHttpClient(),
         PRODUCTION_API_BASE,
-        System.getenv("VONAGE_API_KEY"),
-        System.getenv("VONAGE_API_SECRET"),
-        System.getenv("VONAGE_FROM_NUMBER"));
+        properties.vonage().apiKey(),
+        properties.vonage().apiSecret(),
+        properties.vonage().fromNumber());
   }
 
   /** Package-private constructor for testing with custom API base, client, and credentials. */

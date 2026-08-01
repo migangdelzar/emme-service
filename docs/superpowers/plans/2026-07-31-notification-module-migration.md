@@ -144,3 +144,19 @@ content unless an approved contract changes that behavior.
 - [ ] Domain, persistence, provider, and web boundaries are executable rules.
 - [ ] Studio's event consumer uses only the public event contract.
 - [ ] Existing behavior and provider semantics are preserved and verified.
+
+## Completed typed provider configuration slice — 2026-08-01
+
+- [x] Reused `NotificationProperties` as the constructor boundary for all
+  external Notification providers.
+- [x] Removed direct process-environment access from APNs, FCM, SMTP, SendGrid,
+  SES, Twilio, MessageBird, and Vonage implementations.
+- [x] Added typed provider settings for FCM project ID, APNs sandbox mode,
+  MessageBird originator, and Vonage sender number.
+- [x] Added configuration placeholders to both deployable application profiles
+  without committing secret material.
+- [x] Added a source-boundary regression test and verified Notification unit and
+  integration tests.
+
+The broader package/domain/application migration remains tracked above; this
+slice changes only configuration ownership and preserves provider contracts.

@@ -1,5 +1,6 @@
 package com.emme.notification.provider;
 
+import com.emme.notification.config.NotificationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -25,8 +26,8 @@ import org.springframework.stereotype.Component;
  * Firebase Cloud Messaging (FCM) push provider using pure HTTP + OAuth2. No Firebase Admin SDK
  * dependency. Authenticates via service account JWT assertion exchanged for an OAuth2 access token.
  *
- * <p>Env vars: FCM_SERVICE_ACCOUNT_BASE64 — base64-encoded service account JSON FCM_PROJECT_ID —
- * GCP project ID (falls back to reading from JSON)
+ * <p>Configuration: app.notification.fcm.service-account and app.notification.fcm.project-id. The
+ * project ID falls back to the service-account JSON when it is not configured.
  *
  * <p>Property: app.notification.push.provider=fcm
  */
@@ -49,16 +50,16 @@ public class FcmPushProvider implements PushProvider {
   private final OkHttpClient client;
   private final ObjectMapper mapper;
 
-  /** Production constructor — reads credentials from environment variables. */
-  public FcmPushProvider() {
+  /** Production constructor — receives typed credentials from application configuration. */
+  public FcmPushProvider(NotificationProperties properties) {
     this(
         new OkHttpClient(),
         new ObjectMapper(),
         DEFAULT_TOKEN_URL,
         null,
-        loadClientEmail(),
-        loadProjectId(),
-        loadPrivateKey());
+        loadClientEmail(properties.fcm()),
+        loadProjectId(properties.fcm()),
+        loadPrivateKey(properties.fcm()));
   }
 
   /** Full constructor for testing — all values injected directly. */
@@ -81,25 +82,27 @@ public class FcmPushProvider implements PushProvider {
     log.info("FCM push provider initialized — project={} email={}", projectId, clientEmail);
   }
 
-  private static String loadClientEmail() {
-    return safeGet(loadServiceAccount(), "client_email", String.class);
+  private static String loadClientEmail(NotificationProperties.Fcm properties) {
+    return safeGet(loadServiceAccount(properties), "client_email", String.class);
   }
 
-  private static String loadProjectId() {
-    Map<String, Object> sa = loadServiceAccount();
-    return System.getenv().getOrDefault("FCM_PROJECT_ID", safeGet(sa, "project_id", String.class));
+  private static String loadProjectId(NotificationProperties.Fcm properties) {
+    Map<String, Object> sa = loadServiceAccount(properties);
+    return properties.projectId() != null && !properties.projectId().isBlank()
+        ? properties.projectId()
+        : safeGet(sa, "project_id", String.class);
   }
 
-  private static PrivateKey loadPrivateKey() {
-    return loadPrivateKey(safeGet(loadServiceAccount(), "private_key", String.class));
+  private static PrivateKey loadPrivateKey(NotificationProperties.Fcm properties) {
+    return loadPrivateKey(safeGet(loadServiceAccount(properties), "private_key", String.class));
   }
 
-  /** Parses service account JSON from FCM_SERVICE_ACCOUNT_BASE64 env var. */
-  private static Map<String, Object> loadServiceAccount() {
-    String saBase64 = System.getenv("FCM_SERVICE_ACCOUNT_BASE64");
+  /** Parses service account JSON from typed application configuration. */
+  private static Map<String, Object> loadServiceAccount(NotificationProperties.Fcm properties) {
+    String saBase64 = properties.serviceAccount();
     if (saBase64 == null || saBase64.isBlank()) {
       throw new PushProviderException(
-          "FCM_SERVICE_ACCOUNT_BASE64 env var is required for FCM push provider");
+          "app.notification.fcm.service-account is required for FCM push provider");
     }
     try {
       byte[] json = Base64.getDecoder().decode(saBase64);

@@ -84,6 +84,7 @@ verified.
   exists.
 - ✅ Ensure the migrated controllers call application services and do not access
   repositories or persistence entities.
+- ✅ Move the dashboard SSE broadcaster into the inbound web adapter boundary.
 - Preserve route paths, response shapes, tenant context, and authorization.
 
 The relocation is a green checkpoint; use-case ports and repository isolation

@@ -70,6 +70,8 @@ flowchart LR
   `AppointmentEventPublisher`, implemented by the messaging adapter.
 - `AppointmentController`, `BusinessConfigController`, and `SalonApiImpl` no
   longer depend on persistence entities or Spring Data repositories.
+- Dashboard SSE projection is kept under `adapter.in.web.sse`; transport
+  concerns do not live in `application.service`.
 - `StudioPackageConventionTest` enforces the application-to-adapter boundary.
 
 The remaining nested `documents` and `subscriptions` capabilities stay

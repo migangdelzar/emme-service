@@ -49,6 +49,7 @@
   and application-owned persistence ports.
 - [x] Appointment event publication uses an application-owned port and adapter.
 - [x] `SalonApiImpl` no longer imports Spring Data or persistence entities.
+- [x] Dashboard SSE transport is owned by `adapter.in.web.sse`.
 - [x] Application-layer ArchUnit guardrail passes.
 - [ ] Complete remaining public use-case port normalization and full service CI.
 

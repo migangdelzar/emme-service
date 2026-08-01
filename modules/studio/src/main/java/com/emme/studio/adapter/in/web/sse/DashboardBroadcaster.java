@@ -1,4 +1,4 @@
-package com.emme.studio.application.service;
+package com.emme.studio.adapter.in.web.sse;
 
 import com.emme.notification.event.NotificationDeliveredEvent;
 import com.emme.studio.api.event.AppointmentCancelledEvent;
@@ -13,6 +13,7 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+/** Inbound web adapter that projects module events to dashboard SSE subscribers. */
 @Component
 public class DashboardBroadcaster {
 

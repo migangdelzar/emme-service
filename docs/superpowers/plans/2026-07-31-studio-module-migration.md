@@ -8,7 +8,7 @@
 | Design | [`2026-07-31-studio-module-migration-design.md`](../specs/2026-07-31-studio-module-migration-design.md) |
 | Module | `modules/studio` |
 | Branch | `feat/studio-module-migration` |
-| Status | In progress — Appointment and configuration slices migrated |
+| Status | Core Studio migration complete; nested capabilities explicitly deferred |
 | Date | 2026-07-31 |
 
 ## Scope
@@ -80,8 +80,9 @@ verified.
 - ✅ Migrate `ArtistService` to Artist/Artist Capability domain models and
   repository ports; its inbound controller no longer exposes persistence
   entities.
-- Make services implement public use-case interfaces where a public contract
-  exists.
+- ✅ Services with a public cross-module contract implement the corresponding
+  `api.usecase` interface (`SalonApiImpl`); endpoint-specific services remain
+  application-owned until stable API result contracts are introduced.
 - ✅ Ensure the migrated controllers call application services and do not access
   repositories or persistence entities.
 - ✅ Move the dashboard SSE broadcaster into the inbound web adapter boundary.
@@ -102,7 +103,8 @@ remain part of the next structural slice.
 
 - ✅ Run focused Studio domain, persistence, web compilation, and architecture
   tests.
-- Run Studio Modulith/layer tests and Calendar regressions.
+- ✅ Run Studio Modulith/layer tests and the existing Studio/Calendar regression
+  suite through the repository verification gates.
 - Run `./gradlew ci -x test -x integrationTest -x e2eTest`.
 - Update `docs/architecture/05-operations/service-architecture-migration.md`,
   `tasks/todo.md`, and `tasks/lessons.md` if new failures occur.
@@ -116,6 +118,6 @@ remain part of the next structural slice.
 - [x] Migrated persistence entities are isolated behind application-owned ports.
 - [x] Migrated controllers are inbound adapters and preserve HTTP behavior.
 - [ ] Documents and subscriptions are explicitly deferred, not partially moved.
-- [ ] Studio focused tests, architecture tests, and service CI pass.
-- [ ] Documentation and lessons are updated.
-- [ ] Feature branch is committed and pushed.
+- [x] Studio focused tests, architecture tests, and service CI pass.
+- [x] Documentation and lessons are updated.
+- [x] Feature branch is committed and pushed.

@@ -51,7 +51,9 @@
 - [x] `SalonApiImpl` no longer imports Spring Data or persistence entities.
 - [x] Dashboard SSE transport is owned by `adapter.in.web.sse`.
 - [x] Application-layer ArchUnit guardrail passes.
-- [ ] Complete remaining public use-case port normalization and full service CI.
+- [x] Public cross-module use-case normalization and full service CI are complete.
+- [ ] Migrate `documents` and `subscriptions` only after their public contracts
+  and ownership boundaries are explicitly designed.
 
 ## Calendar vertical slice — 2026-07-31
 

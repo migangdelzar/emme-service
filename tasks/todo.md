@@ -137,8 +137,12 @@
   Java sources remain.
 - [x] Verified full Identity/Tenancy tests, Checkstyle, Spotless, compilation,
   and Studio Modulith tests.
-- [ ] Next slice: introduce application-owned repository ports and mappers before
-  extracting pure Identity/Tenancy domain models.
+- [x] Introduced the Tenancy application-owned repository port, pure Tenant
+  aggregate, persistence entity/mapper/adapter, and updated all callers.
+- [x] Verified focused domain/mapper/repository tests plus full Tenancy check and
+  Studio Modulith verification.
+- [ ] Next slice: continue Tenancy provisioning/pool boundaries and Identity
+  security/domain separation as independent red-green-refactor slices.
 
 ## Architecture naming contract — 2026-07-31
 

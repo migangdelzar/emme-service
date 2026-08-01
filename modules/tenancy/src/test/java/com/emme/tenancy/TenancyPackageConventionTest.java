@@ -32,10 +32,16 @@ class TenancyPackageConventionTest {
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence");
   private static final Path PERSISTENCE_ENTITY =
       sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/entity/Tenant.java");
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/entity/TenantEntity.java");
   private static final Path PERSISTENCE_REPOSITORY =
       sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/repository/TenantRepository.java");
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/repository/SpringDataTenantRepository.java");
+  private static final Path PERSISTENCE_ADAPTER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/TenantPersistenceAdapter.java");
+  private static final Path PERSISTENCE_MAPPER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/mapper/TenantPersistenceMapper.java");
 
   @Test
   void keepsModuleMetadataAtTheModuleRoot() throws IOException {
@@ -69,6 +75,8 @@ class TenancyPackageConventionTest {
     assertThat(Files.exists(PERSISTENCE_PACKAGE)).isTrue();
     assertThat(Files.exists(PERSISTENCE_ENTITY)).isTrue();
     assertThat(Files.exists(PERSISTENCE_REPOSITORY)).isTrue();
+    assertThat(Files.exists(PERSISTENCE_ADAPTER)).isTrue();
+    assertThat(Files.exists(PERSISTENCE_MAPPER)).isTrue();
   }
 
   private static boolean hasJavaSources(Path directory) {

@@ -40,7 +40,10 @@ com.emme.tenancy
 
 `application/process` is materialized only for the existing long-running
 provisioning worker; it is not a generic process bucket. Database pool and routing
-classes are technical adapters, not domain services.
+classes are technical adapters, not domain services. The current Tenant aggregate
+uses `application/port/out` for the persistence capability and
+`adapter/out/persistence/{entity,mapper,repository}` for its Spring-specific
+implementation.
 
 ## Public contract and naming decisions
 
@@ -143,6 +146,21 @@ complete.
 - [x] Verified module tests, Checkstyle, Spotless, compilation, and Studio
   Modulith verification.
 
-Application-owned repository ports, pure tenant domain models, pool ports, and
-provisioning isolation remain future slices; this move intentionally preserves
-behavior while making current technical ownership explicit.
+## Completed Tenant aggregate boundary slice — 2026-07-31
+
+- [x] Added framework-free `domain/model/Tenant` and `TenantStatus` with explicit
+  lifecycle behavior and rehydration semantics.
+- [x] Added the application-owned `application/port/out/TenantRepository`.
+- [x] Renamed the Spring Data implementation to `SpringDataTenantRepository` and
+  introduced `TenantEntity`, `TenantPersistenceMapper`, and
+  `TenantPersistenceAdapter` under the canonical outbound packages.
+- [x] Updated TenantService, TenantApiImpl, tenant resolution infrastructure,
+  HTTP controllers, test fixtures, and consumers to use the domain aggregate or
+  application port rather than JPA types.
+- [x] Preserved the `emme_core.tenant` table mapping, status values, UUID/timestamp
+  lifecycle, public HTTP response shape, and tenant lookup behavior.
+- [x] Added domain and mapper tests, updated persistence/architecture tests, and
+  verified Tenancy check plus Studio Modulith verification.
+
+Tenant provisioning, database-pool/routing adapters, audit ownership, and the
+remaining Identity security/domain boundary remain future slices.

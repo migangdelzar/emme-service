@@ -29,7 +29,7 @@ class AiWebTest extends BaseWebTest {
   @BeforeEach
   void setUp() {
     var tenant = tenantService.create("ai-web-" + System.nanoTime(), "AI Web Tenant");
-    tenantId = tenant.getId();
+    tenantId = tenant.id();
     subscriptionRepo.save(
         new Subscription(tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
     featureFlagRepo.save(new FeatureFlag(null, "ai_chat", true, null, "global"));

@@ -1,17 +1,19 @@
 package com.emme.tenancy.adapter.out.persistence.entity;
 
 import com.emme.shared.BaseEntity;
+import com.emme.tenancy.domain.model.TenantStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.util.Objects;
+import java.time.Instant;
 import java.util.UUID;
 
+/** Persistence representation of the Tenancy tenant aggregate. */
 @Entity
 @Table(name = "tenant", schema = "emme_core")
-public class Tenant extends BaseEntity {
+public class TenantEntity extends BaseEntity {
 
   @Column(name = "slug", nullable = false, unique = true, length = 50)
   private String slug;
@@ -29,16 +31,33 @@ public class Tenant extends BaseEntity {
   @Column(name = "keycloak_realm", nullable = false, length = 100)
   private String keycloakRealm = "emme";
 
-  protected Tenant() {}
+  public TenantEntity() {}
 
-  public Tenant(String slug, String name) {
-    this.slug = Objects.requireNonNull(slug, "slug must not be null");
-    this.name = Objects.requireNonNull(name, "name must not be null");
-    this.status = TenantStatus.ACTIVE;
+  public static TenantEntity restore(
+      UUID id,
+      String slug,
+      String name,
+      TenantStatus status,
+      UUID databaseId,
+      String keycloakRealm,
+      Instant createdAt,
+      Instant updatedAt) {
+    TenantEntity entity = new TenantEntity();
+    entity.slug = slug;
+    entity.name = name;
+    entity.status = status;
+    entity.databaseId = databaseId;
+    entity.keycloakRealm = keycloakRealm;
+    entity.restoreAuditFields(id, createdAt, updatedAt);
+    return entity;
   }
 
   public String getSlug() {
     return slug;
+  }
+
+  public void setSlug(String slug) {
+    this.slug = slug;
   }
 
   public String getName() {
@@ -53,16 +72,8 @@ public class Tenant extends BaseEntity {
     return status;
   }
 
-  public void suspend() {
-    this.status = TenantStatus.SUSPENDED;
-  }
-
-  public void reactivate() {
-    this.status = TenantStatus.ACTIVE;
-  }
-
-  public void markDeleted() {
-    this.status = TenantStatus.DELETED;
+  public void setStatus(TenantStatus status) {
+    this.status = status;
   }
 
   public UUID getDatabaseId() {

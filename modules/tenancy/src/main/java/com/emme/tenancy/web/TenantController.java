@@ -1,7 +1,7 @@
 package com.emme.tenancy.web;
 
-import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
 import com.emme.tenancy.application.TenantService;
+import com.emme.tenancy.domain.model.Tenant;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -35,7 +35,7 @@ public class TenantController {
   @Operation(summary = "Create a new tenant")
   public ResponseEntity<TenantResponse> create(@Valid @RequestBody CreateTenantRequest request) {
     Tenant tenant = service.create(request.slug(), request.name());
-    URI location = URI.create("/api/v1/tenants/" + tenant.getId());
+    URI location = URI.create("/api/v1/tenants/" + tenant.id());
     return ResponseEntity.created(location).body(TenantResponse.from(tenant));
   }
 
@@ -93,8 +93,7 @@ public class TenantController {
   record TenantResponse(UUID id, String slug, String name, String status, Instant createdAt) {
 
     static TenantResponse from(Tenant t) {
-      return new TenantResponse(
-          t.getId(), t.getSlug(), t.getName(), t.getStatus().name(), t.getCreatedAt());
+      return new TenantResponse(t.id(), t.slug(), t.name(), t.status().name(), t.createdAt());
     }
   }
 }

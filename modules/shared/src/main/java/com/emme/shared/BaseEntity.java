@@ -42,6 +42,13 @@ public abstract class BaseEntity {
     this.id = Objects.requireNonNull(id, "id must not be null");
   }
 
+  /** Restores persisted identity and audit fields when mapping a domain aggregate to an entity. */
+  protected void restoreAuditFields(UUID id, Instant createdAt, Instant updatedAt) {
+    this.id = Objects.requireNonNull(id, "id must not be null");
+    this.createdAt = Objects.requireNonNull(createdAt, "createdAt must not be null");
+    this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt must not be null");
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }

@@ -7,7 +7,7 @@ import com.emme.studio.subscriptions.api.PlanType;
 import com.emme.studio.subscriptions.entity.Subscription;
 import com.emme.studio.subscriptions.entity.SubscriptionRepository;
 import com.emme.tenancy.application.TenantService;
-import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
+import com.emme.tenancy.domain.model.Tenant;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -56,7 +56,7 @@ public abstract class BaseSpringModuleTest {
   /** Create tenant + ENTERPRISE subscription + global feature flags. */
   protected UUID fullSetup() {
     Tenant tenant = tenantService.create("test-" + System.nanoTime(), "Test Salon");
-    UUID tid = tenant.getId();
+    UUID tid = tenant.id();
     tenantId = tid;
 
     if (subscriptionRepo.findByTenantId(tid).isEmpty()) {

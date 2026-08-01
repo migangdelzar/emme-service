@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
+import com.emme.tenancy.domain.model.Tenant;
 import com.emme.testing.BaseSpringModuleTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,8 +58,8 @@ class TenantModuleTest extends BaseSpringModuleTest {
         .perform(get("/api/v1/tenants").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
-        .andExpect(jsonPath("$[*].id", hasItems(t1.getId().toString(), t2.getId().toString())))
-        .andExpect(jsonPath("$[*].slug", hasItems(t1.getSlug(), t2.getSlug())));
+        .andExpect(jsonPath("$[*].id", hasItems(t1.id().toString(), t2.id().toString())))
+        .andExpect(jsonPath("$[*].slug", hasItems(t1.slug(), t2.slug())));
   }
 
   @Test
@@ -69,11 +69,11 @@ class TenantModuleTest extends BaseSpringModuleTest {
     Tenant tenant = tenantService.create("test-tenant-2-" + System.nanoTime(), "Test Salon Two");
 
     mockMvc
-        .perform(get("/api/v1/tenants/" + tenant.getId()).with(tenantJwt()))
+        .perform(get("/api/v1/tenants/" + tenant.id()).with(tenantJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(tenant.getId().toString()))
-        .andExpect(jsonPath("$.slug").value(tenant.getSlug()))
-        .andExpect(jsonPath("$.name").value(tenant.getName()))
+        .andExpect(jsonPath("$.id").value(tenant.id().toString()))
+        .andExpect(jsonPath("$.slug").value(tenant.slug()))
+        .andExpect(jsonPath("$.name").value(tenant.name()))
         .andExpect(jsonPath("$.status").value("ACTIVE"));
   }
 
@@ -85,14 +85,14 @@ class TenantModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/tenants/" + tenant.getId())
+            patch("/api/v1/tenants/" + tenant.id())
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                                 {"name":"Updated Salon Name"}"""))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(tenant.getId().toString()))
+        .andExpect(jsonPath("$.id").value(tenant.id().toString()))
         .andExpect(jsonPath("$.name").value("Updated Salon Name"));
   }
 

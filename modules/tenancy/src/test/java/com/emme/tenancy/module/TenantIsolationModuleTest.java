@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
+import com.emme.tenancy.domain.model.Tenant;
 import com.emme.testing.BaseSpringModuleTest;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,23 +37,23 @@ class TenantIsolationModuleTest extends BaseSpringModuleTest {
   void shouldFilterByTenant() throws Exception {
     // Verify tenant A is accessible with its own data
     mockMvc
-        .perform(get("/api/v1/tenants/" + tenantA.getId()).with(tenantJwt()))
+        .perform(get("/api/v1/tenants/" + tenantA.id()).with(tenantJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(tenantA.getId().toString()))
-        .andExpect(jsonPath("$.slug").value(tenantA.getSlug()))
+        .andExpect(jsonPath("$.id").value(tenantA.id().toString()))
+        .andExpect(jsonPath("$.slug").value(tenantA.slug()))
         .andExpect(jsonPath("$.name").value("Isolation Salon A"));
 
     // Verify tenant B is accessible with its own data
     mockMvc
-        .perform(get("/api/v1/tenants/" + tenantB.getId()).with(tenantJwt()))
+        .perform(get("/api/v1/tenants/" + tenantB.id()).with(tenantJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(tenantB.getId().toString()))
-        .andExpect(jsonPath("$.slug").value(tenantB.getSlug()))
+        .andExpect(jsonPath("$.id").value(tenantB.id().toString()))
+        .andExpect(jsonPath("$.slug").value(tenantB.slug()))
         .andExpect(jsonPath("$.name").value("Isolation Salon B"));
 
     // Verify they are different tenants
-    assertThat(tenantA.getId()).isNotEqualTo(tenantB.getId());
-    assertThat(tenantA.getSlug()).isNotEqualTo(tenantB.getSlug());
+    assertThat(tenantA.id()).isNotEqualTo(tenantB.id());
+    assertThat(tenantA.slug()).isNotEqualTo(tenantB.slug());
   }
 
   @Test
@@ -87,7 +87,7 @@ class TenantIsolationModuleTest extends BaseSpringModuleTest {
   @DisplayName("TenantContext is populated from JWT tenant_id claim during request")
   void shouldEnforceTenantContext() throws Exception {
     // Create tenant with a specific ID as JWT claim
-    UUID specificTenantId = tenantA.getId();
+    UUID specificTenantId = tenantA.id();
 
     // Make a request with JWT containing that tenant_id
     mockMvc
@@ -99,7 +99,7 @@ class TenantIsolationModuleTest extends BaseSpringModuleTest {
 
     // Verify the tenant exists independently
     Tenant found = tenantService.findById(specificTenantId).orElseThrow();
-    assertThat(found.getSlug()).isEqualTo(tenantA.getSlug());
-    assertThat(found.getName()).isEqualTo("Isolation Salon A");
+    assertThat(found.slug()).isEqualTo(tenantA.slug());
+    assertThat(found.name()).isEqualTo("Isolation Salon A");
   }
 }

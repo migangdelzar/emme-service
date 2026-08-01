@@ -1,9 +1,8 @@
 package com.emme.tenancy.application;
 
-import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
-import com.emme.tenancy.adapter.out.persistence.entity.TenantStatus;
-import com.emme.tenancy.adapter.out.persistence.repository.TenantRepository;
 import com.emme.tenancy.api.event.TenantCreated;
+import com.emme.tenancy.application.port.out.TenantRepository;
+import com.emme.tenancy.domain.model.Tenant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,10 +29,7 @@ public class TenantService {
     Tenant saved = repository.save(new Tenant(slug, name));
     eventPublisher.publishEvent(
         new TenantCreated(
-            saved.getId(),
-            saved.getSlug(),
-            saved.getName(),
-            "admin@" + saved.getSlug() + ".emme.app"));
+            saved.id(), saved.slug(), saved.name(), "admin@" + saved.slug() + ".emme.app"));
     return saved;
   }
 
@@ -42,7 +38,7 @@ public class TenantService {
         repository
             .findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + id));
-    tenant.setName(name);
+    tenant.rename(name);
     return repository.save(tenant);
   }
 
@@ -51,9 +47,6 @@ public class TenantService {
         repository
             .findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + id));
-    if (tenant.getStatus() != TenantStatus.ACTIVE) {
-      throw new IllegalStateException("Cannot suspend tenant with status: " + tenant.getStatus());
-    }
     tenant.suspend();
     return repository.save(tenant);
   }
@@ -63,10 +56,6 @@ public class TenantService {
         repository
             .findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + id));
-    if (tenant.getStatus() != TenantStatus.SUSPENDED) {
-      throw new IllegalStateException(
-          "Cannot reactivate tenant with status: " + tenant.getStatus());
-    }
     tenant.reactivate();
     return repository.save(tenant);
   }

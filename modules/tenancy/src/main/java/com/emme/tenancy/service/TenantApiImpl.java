@@ -1,9 +1,10 @@
 package com.emme.tenancy.service;
 
-import com.emme.tenancy.adapter.out.persistence.entity.Tenant;
-import com.emme.tenancy.adapter.out.persistence.repository.TenantRepository;
 import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.tenancy.api.usecase.TenantApi;
+import com.emme.tenancy.application.port.out.TenantRepository;
+import com.emme.tenancy.domain.model.Tenant;
+import com.emme.tenancy.domain.model.TenantStatus;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -35,14 +36,16 @@ class TenantApiImpl implements TenantApi {
 
   @Override
   public List<TenantInfo> getActiveTenants() {
-    return tenantRepository.findByStatus("ACTIVE").stream().map(this::toTenantInfo).toList();
+    return tenantRepository.findByStatus(TenantStatus.ACTIVE).stream()
+        .map(this::toTenantInfo)
+        .toList();
   }
 
   @Override
   public UUID getTenantIdBySlug(String slug) {
     return tenantRepository
         .findBySlug(slug)
-        .map(Tenant::getId)
+        .map(Tenant::id)
         .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + slug));
   }
 
@@ -53,17 +56,12 @@ class TenantApiImpl implements TenantApi {
         tenantRepository
             .findById(tenantId)
             .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + tenantId));
-    tenant.setKeycloakRealm(identityRealm);
+    tenant.changeIdentityRealm(identityRealm);
+    tenantRepository.save(tenant);
   }
 
   private TenantInfo toTenantInfo(Tenant t) {
     return new TenantInfo(
-        t.getId(),
-        t.getSlug(),
-        t.getName(),
-        null,
-        t.getStatus().name(),
-        null,
-        t.getKeycloakRealm());
+        t.id(), t.slug(), t.name(), null, t.status().name(), null, t.keycloakRealm());
   }
 }

@@ -1,6 +1,6 @@
 package com.emme.tenancy;
 
-import com.emme.tenancy.adapter.out.persistence.repository.TenantRepository;
+import com.emme.tenancy.application.port.out.TenantRepository;
 import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -67,13 +67,13 @@ public final class TrustedTenantResolver {
   public static UUID fromHost(String host, TenantRepository tenantRepository) {
     String slug = slugFromHost(host);
     if (slug == null) return null;
-    return tenantRepository.findBySlug(slug).map(t -> t.getId()).orElse(null);
+    return tenantRepository.findBySlug(slug).map(t -> t.id()).orElse(null);
   }
 
   /** Resolves tenant from query parameter (dev convenience). e.g. ?tenant=studio-a → UUID lookup */
   public static UUID fromQueryParam(String tenantParam, TenantRepository tenantRepository) {
     if (tenantParam == null || tenantParam.isBlank()) return null;
-    return tenantRepository.findBySlug(tenantParam.trim()).map(t -> t.getId()).orElse(null);
+    return tenantRepository.findBySlug(tenantParam.trim()).map(t -> t.id()).orElse(null);
   }
 
   /**

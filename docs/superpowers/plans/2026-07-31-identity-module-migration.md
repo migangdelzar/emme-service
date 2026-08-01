@@ -463,6 +463,22 @@ Remaining Identity web normalization includes FeatureFlag adapter result mapping
 then architecture dependency rules and final authorization, tenant-isolation,
 and migration/recovery evidence.
 
+## Completed feature-flag web-boundary slice — 2026-08-01
+
+- [x] Added grouped feature-flag commands, query, use-case contracts, and
+  public result models.
+- [x] Refactored platform and tenant feature-flag controllers and the web
+  mapper away from `FeatureFlagService` and `domain.model.FeatureFlag`.
+- [x] Preserved routes, JSON response fields, effective override behavior, and
+  platform-admin authorization.
+- [x] Added source-boundary and application-result regression coverage.
+- [x] Verified Identity tests/check/integration, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Identity work is architecture dependency evidence, broader
+authorization hardening, explicit provisioning transaction/event ports, and
+final tenant-isolation and migration/recovery evidence.
+
 ## Completed provisioning inbound-port slice — 2026-08-01
 
 - [x] Added the public `ProvisionTenantIdentityUseCase` contract under the

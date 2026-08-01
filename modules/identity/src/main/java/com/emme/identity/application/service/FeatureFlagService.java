@@ -1,5 +1,13 @@
 package com.emme.identity.application.service;
 
+import com.emme.identity.api.command.SetPlatformFeatureFlagCommand;
+import com.emme.identity.api.command.SetTenantFeatureFlagOverrideCommand;
+import com.emme.identity.api.query.GetEffectiveFeatureFlagsQuery;
+import com.emme.identity.api.result.EffectiveFeatureFlags;
+import com.emme.identity.api.result.FeatureFlagInfo;
+import com.emme.identity.api.usecase.GetEffectiveFeatureFlagsUseCase;
+import com.emme.identity.api.usecase.SetPlatformFeatureFlagUseCase;
+import com.emme.identity.api.usecase.SetTenantFeatureFlagOverrideUseCase;
 import com.emme.identity.application.port.out.FeatureFlagRepository;
 import com.emme.identity.application.port.out.SubscriptionPlanPort;
 import com.emme.identity.domain.model.FeatureFlag;
@@ -16,7 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 /** Resolves and manages feature flags through application-owned capabilities. */
 @Service("featureFlagService")
 @Transactional
-public class FeatureFlagService {
+public class FeatureFlagService
+    implements GetEffectiveFeatureFlagsUseCase,
+        SetPlatformFeatureFlagUseCase,
+        SetTenantFeatureFlagOverrideUseCase {
 
   private final FeatureFlagRepository repository;
   private final SubscriptionPlanPort subscriptionPlanPort;
@@ -75,6 +86,22 @@ public class FeatureFlagService {
     return effective;
   }
 
+  @Override
+  public EffectiveFeatureFlags get(GetEffectiveFeatureFlagsQuery query) {
+    return new EffectiveFeatureFlags(getEffective(query.tenantId()));
+  }
+
+  @Override
+  public FeatureFlagInfo set(SetTenantFeatureFlagOverrideCommand command) {
+    return toFeatureFlagInfo(setOverride(command.tenantId(), command.code(), command.enabled()));
+  }
+
+  @Override
+  public FeatureFlagInfo set(SetPlatformFeatureFlagCommand command) {
+    return toFeatureFlagInfo(
+        platformSet(command.code(), command.enabled(), command.planRequired()));
+  }
+
   public FeatureFlag setOverride(UUID tenantId, String code, boolean enabled) {
     Optional<FeatureFlag> existing = repository.findTenantOverride(tenantId, code);
     if (existing.isPresent()) {
@@ -96,5 +123,14 @@ public class FeatureFlagService {
       return repository.save(flag);
     }
     return repository.save(new FeatureFlag(null, code, enabled, planRequired, null));
+  }
+
+  private static FeatureFlagInfo toFeatureFlagInfo(FeatureFlag featureFlag) {
+    return new FeatureFlagInfo(
+        featureFlag.id(),
+        featureFlag.code(),
+        featureFlag.isEnabled(),
+        featureFlag.planRequired(),
+        featureFlag.description());
   }
 }

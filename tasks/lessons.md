@@ -143,3 +143,14 @@
 - Prevention rule: use forwarded client identity only when the immediate peer
   matches configured proxy networks; default to the socket peer and keep the
   proxy list typed and validated.
+
+## 2026-08-01 — Result-model accessors must match transport vocabulary
+
+- Failure mode: a web mapper migrated from the domain `isEnabled()` accessor to
+  the API result model but retained the domain accessor name, causing compilation
+  to fail.
+- Detection signal: the focused Identity build reported that `FeatureFlagInfo`
+  had no `isEnabled()` method.
+- Prevention rule: when introducing a public result record, update adapters to
+  use its exact record component names (`enabled()` here) and run the focused
+  compile immediately after the boundary move.

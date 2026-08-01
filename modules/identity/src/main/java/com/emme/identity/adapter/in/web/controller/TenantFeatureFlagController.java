@@ -3,7 +3,11 @@ package com.emme.identity.adapter.in.web.controller;
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
 import com.emme.identity.adapter.in.web.request.OverrideFeatureFlagRequest;
-import com.emme.identity.application.service.FeatureFlagService;
+import com.emme.identity.api.command.SetTenantFeatureFlagOverrideCommand;
+import com.emme.identity.api.query.GetEffectiveFeatureFlagsQuery;
+import com.emme.identity.api.result.FeatureFlagInfo;
+import com.emme.identity.api.usecase.GetEffectiveFeatureFlagsUseCase;
+import com.emme.identity.api.usecase.SetTenantFeatureFlagOverrideUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
@@ -20,17 +24,25 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Tenant Features")
 public class TenantFeatureFlagController {
 
-  private final FeatureFlagService featureFlagService;
+  private final GetEffectiveFeatureFlagsUseCase getEffectiveFeatureFlags;
+  private final SetTenantFeatureFlagOverrideUseCase setTenantFeatureFlagOverride;
 
-  public TenantFeatureFlagController(FeatureFlagService featureFlagService) {
-    this.featureFlagService = featureFlagService;
+  public TenantFeatureFlagController(
+      GetEffectiveFeatureFlagsUseCase getEffectiveFeatureFlags,
+      SetTenantFeatureFlagOverrideUseCase setTenantFeatureFlagOverride) {
+    this.getEffectiveFeatureFlags = getEffectiveFeatureFlags;
+    this.setTenantFeatureFlagOverride = setTenantFeatureFlagOverride;
   }
 
   @GetMapping
   @Operation(summary = "Get effective feature flags for current tenant")
   public ResponseEntity<Map<String, Boolean>> getEffective() {
     return withCurrentTenant(
-        tenantId -> ResponseEntity.ok(featureFlagService.getEffective(tenantId)));
+        tenantId ->
+            ResponseEntity.ok(
+                getEffectiveFeatureFlags
+                    .get(new GetEffectiveFeatureFlagsQuery(tenantId))
+                    .values()));
   }
 
   @PutMapping("/{code}")
@@ -39,11 +51,13 @@ public class TenantFeatureFlagController {
       @PathVariable String code, @RequestBody OverrideFeatureFlagRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          var flag = featureFlagService.setOverride(tenantId, code, request.enabled());
+          FeatureFlagInfo featureFlag =
+              setTenantFeatureFlagOverride.set(
+                  new SetTenantFeatureFlagOverrideCommand(tenantId, code, request.enabled()));
           return ResponseEntity.ok(
               Map.of(
-                  "code", flag.code(),
-                  "enabled", flag.isEnabled()));
+                  "code", featureFlag.code(),
+                  "enabled", featureFlag.enabled()));
         });
   }
 }

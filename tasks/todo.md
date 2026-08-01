@@ -337,6 +337,34 @@ Execution rules and dependencies are maintained in
 - Existing dependency-analysis and Testcontainers/PostgreSQL shutdown warnings
   remain non-blocking and occurred after successful task completion.
 
+## Identity feature-flag web-boundary slice — 2026-08-01
+
+- [x] Add failing tests preventing feature-flag web adapters from importing
+  application implementations or domain models.
+- [x] Add grouped feature-flag commands, query, use-case contracts, and result
+  mapping.
+- [x] Refactor platform and tenant feature-flag controllers to consume public
+  use cases.
+- [x] Preserve feature-flag routes, response fields, effective-value behavior,
+  and authorization behavior.
+- [x] Verify Identity tests/check/integration, Modulith, CI, boot JARs, Markdown,
+  and whitespace.
+
+### Results
+
+- Red phase: the source-boundary test failed because both feature-flag
+  controllers imported `FeatureFlagService`, and the web mapper imported the
+  domain `FeatureFlag` model.
+- Green/refactor phase: feature-flag commands, query, use cases, and public
+  results now isolate the web adapters from application implementations and
+  domain models. Effective values are returned through an immutable result.
+- Feature-flag routes, JSON fields, effective override behavior, and platform
+  admin authorization remain unchanged.
+- Identity tests/check/integration, Studio Modulith verification, service CI,
+  both boot JARs, Markdown validation, and `git diff --check` passed.
+- Existing dependency-analysis and Testcontainers/PostgreSQL shutdown warnings
+  remain non-blocking and occurred after successful task completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

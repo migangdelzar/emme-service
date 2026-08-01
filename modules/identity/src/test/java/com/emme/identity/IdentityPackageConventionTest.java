@@ -258,6 +258,15 @@ class IdentityPackageConventionTest {
   private static final Path IDENTITY_WEB_MAPPER =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/in/web/mapper/IdentityWebMapper.java");
+  private static final Path FEATURE_FLAG_CONTROLLER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/FeatureFlagController.java");
+  private static final Path TENANT_FEATURE_FLAG_CONTROLLER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/TenantFeatureFlagController.java");
+  private static final Path FEATURE_FLAG_WEB_MAPPER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/mapper/FeatureFlagWebMapper.java");
   private static final Path IDENTITY_EXCEPTION_PACKAGE =
       sourcePath("modules/identity/src/main/java/com/emme/identity/api/exception");
   private static final Path USER_AUTH_USE_CASE =
@@ -422,6 +431,18 @@ class IdentityPackageConventionTest {
         .doesNotContain("com.emme.identity.domain.model.Membership");
     assertThat(Files.readString(IDENTITY_WEB_MAPPER))
         .doesNotContain("com.emme.identity.domain.model.Membership");
+  }
+
+  @Test
+  void keepsFeatureFlagWebAdaptersIndependentFromApplicationImplementations() throws IOException {
+    assertThat(Files.readString(FEATURE_FLAG_CONTROLLER))
+        .doesNotContain("com.emme.identity.application.service.FeatureFlagService")
+        .doesNotContain("com.emme.identity.domain.model.FeatureFlag");
+    assertThat(Files.readString(TENANT_FEATURE_FLAG_CONTROLLER))
+        .doesNotContain("com.emme.identity.application.service.FeatureFlagService")
+        .doesNotContain("com.emme.identity.domain.model.FeatureFlag");
+    assertThat(Files.readString(FEATURE_FLAG_WEB_MAPPER))
+        .doesNotContain("com.emme.identity.domain.model.FeatureFlag");
   }
 
   @Test

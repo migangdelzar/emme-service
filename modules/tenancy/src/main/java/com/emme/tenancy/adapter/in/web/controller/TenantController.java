@@ -1,13 +1,15 @@
-package com.emme.tenancy.web;
+package com.emme.tenancy.adapter.in.web.controller;
 
+import com.emme.tenancy.adapter.in.web.mapper.TenantWebMapper;
+import com.emme.tenancy.adapter.in.web.request.CreateTenantRequest;
+import com.emme.tenancy.adapter.in.web.request.UpdateTenantRequest;
+import com.emme.tenancy.adapter.in.web.response.TenantResponse;
 import com.emme.tenancy.application.service.TenantService;
 import com.emme.tenancy.domain.model.Tenant;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import java.net.URI;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +22,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/** HTTP entry point for the Tenant lifecycle use cases. */
 @RestController
 @RequestMapping("/api/v1/tenants")
 @Tag(name = "Tenants")
 public class TenantController {
 
   private final TenantService service;
+  private final TenantWebMapper mapper;
 
-  public TenantController(TenantService service) {
+  public TenantController(TenantService service, TenantWebMapper mapper) {
     this.service = service;
+    this.mapper = mapper;
   }
 
   @PostMapping
@@ -36,7 +41,7 @@ public class TenantController {
   public ResponseEntity<TenantResponse> create(@Valid @RequestBody CreateTenantRequest request) {
     Tenant tenant = service.create(request.slug(), request.name());
     URI location = URI.create("/api/v1/tenants/" + tenant.id());
-    return ResponseEntity.created(location).body(TenantResponse.from(tenant));
+    return ResponseEntity.created(location).body(mapper.toResponse(tenant));
   }
 
   @GetMapping("/{id}")
@@ -44,14 +49,14 @@ public class TenantController {
   public ResponseEntity<TenantResponse> get(@PathVariable UUID id) {
     return service
         .findById(id)
-        .map(tenant -> ResponseEntity.ok(TenantResponse.from(tenant)))
+        .map(tenant -> ResponseEntity.ok(mapper.toResponse(tenant)))
         .orElse(ResponseEntity.notFound().build());
   }
 
   @GetMapping
   @Operation(summary = "List all tenants")
   public ResponseEntity<List<TenantResponse>> list() {
-    List<TenantResponse> tenants = service.findAll().stream().map(TenantResponse::from).toList();
+    List<TenantResponse> tenants = service.findAll().stream().map(mapper::toResponse).toList();
     return ResponseEntity.ok(tenants);
   }
 
@@ -60,40 +65,27 @@ public class TenantController {
   public ResponseEntity<TenantResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateTenantRequest request) {
     Tenant tenant = service.update(id, request.name());
-    return ResponseEntity.ok(TenantResponse.from(tenant));
+    return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 
   @PostMapping("/{id}/suspend")
   @Operation(summary = "Suspend a tenant")
   public ResponseEntity<TenantResponse> suspend(@PathVariable UUID id) {
     Tenant tenant = service.suspend(id);
-    return ResponseEntity.ok(TenantResponse.from(tenant));
+    return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 
   @PostMapping("/{id}/reactivate")
   @Operation(summary = "Reactivate a suspended tenant")
   public ResponseEntity<TenantResponse> reactivate(@PathVariable UUID id) {
     Tenant tenant = service.reactivate(id);
-    return ResponseEntity.ok(TenantResponse.from(tenant));
+    return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 
   @DeleteMapping("/{id}")
   @Operation(summary = "Stage-delete a tenant")
   public ResponseEntity<TenantResponse> stageDelete(@PathVariable UUID id) {
     Tenant tenant = service.stageDelete(id);
-    return ResponseEntity.ok(TenantResponse.from(tenant));
-  }
-
-  // --- DTOs ---
-
-  record CreateTenantRequest(@NotBlank String slug, @NotBlank String name) {}
-
-  record UpdateTenantRequest(@NotBlank String name) {}
-
-  record TenantResponse(UUID id, String slug, String name, String status, Instant createdAt) {
-
-    static TenantResponse from(Tenant t) {
-      return new TenantResponse(t.id(), t.slug(), t.name(), t.status().name(), t.createdAt());
-    }
+    return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 }

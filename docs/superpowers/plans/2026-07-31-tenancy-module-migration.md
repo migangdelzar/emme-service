@@ -185,3 +185,22 @@ remaining Identity security/domain boundary remain future slices.
 The next Tenancy slices are inbound web/context adapter ownership and outbound
 database-pool/registry ports; this slice intentionally does not claim those
 boundaries are complete.
+
+## Completed inbound HTTP adapter slice — 2026-07-31
+
+- [x] Moved TenantController and TenantProvisioningController under
+  `adapter/in/web/controller` without changing endpoint paths, status codes, or
+  accepted provisioning payload fields.
+- [x] Extracted HTTP request and response records into canonical `request` and
+  `response` packages and added `TenantWebMapper` for domain-to-wire mapping.
+- [x] Moved tenant context resolution, trusted hostname/JWT resolution, and
+  tenant rate limiting under `adapter/in/web/filter`.
+- [x] Moved rate-limit properties and MVC interceptor registration into the
+  canonical `configuration` package, using explicit responsibility names.
+- [x] Added package metadata and source-tree ownership assertions for the
+  inbound web boundary.
+- [x] Verified full Tenancy tests, formatting, Checkstyle, integration-test
+  compilation, and Studio Modulith verification.
+
+`TenantContextAspect`, datasource/pool configuration, and database-pool
+implementations remain outbound/configuration work for the next slice.

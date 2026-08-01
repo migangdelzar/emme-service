@@ -1,7 +1,8 @@
-package com.emme.tenancy.web;
+package com.emme.tenancy.adapter.in.web.filter;
 
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.tracing.CorrelationId;
+import com.emme.tenancy.configuration.RateLimitProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,27 +19,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-/**
- * Per-tenant IP-based rate limiting interceptor.
- *
- * <p>Uses Redis atomic increment to track request counts in a sliding time window. Returns HTTP 429
- * with RFC 9457 Problem Detail when the limit is exceeded.
- *
- * <p>Disabled automatically when Redis is unavailable or when {@code app.rate-limit.enabled=false}.
- */
+/** Applies per-tenant IP-based rate limiting to inbound API requests. */
 @Component
 @ConditionalOnBean(RedisTemplate.class)
 @ConditionalOnProperty(name = "app.rate-limit.enabled", havingValue = "true", matchIfMissing = true)
-public class RateLimitInterceptor implements HandlerInterceptor {
+public class TenantRateLimitInterceptor implements HandlerInterceptor {
 
-  private static final Logger log = LoggerFactory.getLogger(RateLimitInterceptor.class);
+  private static final Logger log = LoggerFactory.getLogger(TenantRateLimitInterceptor.class);
   private static final String KEY_PREFIX = "rate_limit:";
 
   private final RedisTemplate<String, String> redis;
   private final RateLimitProperties properties;
   private final ObjectMapper objectMapper;
 
-  public RateLimitInterceptor(
+  public TenantRateLimitInterceptor(
       RedisTemplate<String, String> redis,
       RateLimitProperties properties,
       ObjectMapper objectMapper) {
@@ -92,7 +86,6 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     return true;
   }
 
-  /** Builds the composite rate-limit key from tenant ID and client IP. */
   private String resolveClientId(HttpServletRequest request) {
     String tenantId =
         TenantContextHolder.currentTenantOptional().map(UUID::toString).orElse("anonymous");

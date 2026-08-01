@@ -1,4 +1,4 @@
-package com.emme.tenancy;
+package com.emme.tenancy.adapter.in.web.filter;
 
 import com.emme.kernel.context.TenantContext;
 import com.emme.kernel.tracing.CorrelationId;
@@ -17,10 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/**
- * Tenant resolution order: 1. JWT tenant_id claim (secure, authenticated users) 2. ?tenant= query
- * parameter (dev convenience) 3. Hostname subdomain (production, pre-login)
- */
+/** Resolves trusted tenant context before an HTTP request reaches application use cases. */
 @Component
 public class TenantContextFilter extends OncePerRequestFilter {
 
@@ -43,18 +40,15 @@ public class TenantContextFilter extends OncePerRequestFilter {
     try {
       UUID tenantId = null;
 
-      // 1. JWT claim (secure, authenticated users)
       var authentication = SecurityContextHolder.getContext().getAuthentication();
       tenantId = TrustedTenantResolver.fromAuthentication(authentication);
 
-      // 2. Query parameter (dev convenience)
       if (tenantId == null) {
         tenantId =
             TrustedTenantResolver.fromQueryParam(request.getParameter("tenant"), tenantRepository);
         if (tenantId != null) log.debug("Tenant from ?tenant= param: {}", tenantId);
       }
 
-      // 3. Hostname subdomain (production, pre-login)
       if (tenantId == null) {
         tenantId = TrustedTenantResolver.fromHost(request.getServerName(), tenantRepository);
         if (tenantId != null) log.debug("Tenant from hostname: {}", tenantId);
@@ -65,7 +59,6 @@ public class TenantContextFilter extends OncePerRequestFilter {
         MDC.put("tenantId", tenantId.toString());
       }
 
-      // Resolve and store databaseId (null = use default database)
       UUID databaseId = null;
       try {
         databaseId = TrustedTenantResolver.resolveDatabaseId(tenantId, tenantRepository);

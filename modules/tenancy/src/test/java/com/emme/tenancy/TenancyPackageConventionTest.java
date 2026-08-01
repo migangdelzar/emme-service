@@ -74,6 +74,60 @@ class TenancyPackageConventionTest {
   private static final Path LEGACY_PROVISIONING_WORKER =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/service/TenantProvisioningWorker.java");
+  private static final Path WEB_CONTROLLER_PACKAGE =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/controller");
+  private static final Path TENANT_CONTROLLER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/controller/TenantController.java");
+  private static final Path PROVISIONING_CONTROLLER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/controller/TenantProvisioningController.java");
+  private static final Path CREATE_TENANT_REQUEST =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/request/CreateTenantRequest.java");
+  private static final Path UPDATE_TENANT_REQUEST =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/request/UpdateTenantRequest.java");
+  private static final Path TENANT_RESPONSE =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/response/TenantResponse.java");
+  private static final Path PROVISION_TENANT_REQUEST =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/request/ProvisionTenantRequest.java");
+  private static final Path LEGACY_TENANT_CONTROLLER =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/web/TenantController.java");
+  private static final Path LEGACY_PROVISIONING_CONTROLLER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/web/TenantProvisioningController.java");
+  private static final Path WEB_FILTER_PACKAGE =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/filter");
+  private static final Path TENANT_CONTEXT_FILTER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/filter/TenantContextFilter.java");
+  private static final Path TRUSTED_TENANT_RESOLVER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/filter/TrustedTenantResolver.java");
+  private static final Path TENANT_RATE_LIMIT_INTERCEPTOR =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/filter/TenantRateLimitInterceptor.java");
+  private static final Path CONFIGURATION_PACKAGE =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/configuration");
+  private static final Path RATE_LIMIT_PROPERTIES =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/configuration/RateLimitProperties.java");
+  private static final Path WEB_MVC_CONFIGURATION =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/configuration/WebMvcConfiguration.java");
+  private static final Path LEGACY_TENANT_CONTEXT_FILTER =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/TenantContextFilter.java");
+  private static final Path LEGACY_TRUSTED_TENANT_RESOLVER =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/TrustedTenantResolver.java");
+  private static final Path LEGACY_RATE_LIMIT_INTERCEPTOR =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/web/RateLimitInterceptor.java");
+  private static final Path LEGACY_RATE_LIMIT_PROPERTIES =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/web/RateLimitProperties.java");
+  private static final Path LEGACY_WEB_MVC_CONFIGURATION =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/config/WebMvcConfig.java");
 
   @Test
   void keepsModuleMetadataAtTheModuleRoot() throws IOException {
@@ -125,6 +179,35 @@ class TenancyPackageConventionTest {
     assertThat(Files.exists(LEGACY_PROVISIONING_SERVICE)).isFalse();
     assertThat(Files.exists(LEGACY_PROVISIONING_IMPLEMENTATION)).isFalse();
     assertThat(Files.exists(LEGACY_PROVISIONING_WORKER)).isFalse();
+  }
+
+  @Test
+  void ownsHttpEntryPointsUnderInboundWebAdapters() {
+    assertThat(Files.exists(WEB_CONTROLLER_PACKAGE)).isTrue();
+    assertThat(Files.exists(TENANT_CONTROLLER)).isTrue();
+    assertThat(Files.exists(PROVISIONING_CONTROLLER)).isTrue();
+    assertThat(Files.exists(CREATE_TENANT_REQUEST)).isTrue();
+    assertThat(Files.exists(UPDATE_TENANT_REQUEST)).isTrue();
+    assertThat(Files.exists(PROVISION_TENANT_REQUEST)).isTrue();
+    assertThat(Files.exists(TENANT_RESPONSE)).isTrue();
+    assertThat(Files.exists(LEGACY_TENANT_CONTROLLER)).isFalse();
+    assertThat(Files.exists(LEGACY_PROVISIONING_CONTROLLER)).isFalse();
+  }
+
+  @Test
+  void ownsRequestPipelineAndWebConfigurationByResponsibility() {
+    assertThat(Files.exists(WEB_FILTER_PACKAGE)).isTrue();
+    assertThat(Files.exists(TENANT_CONTEXT_FILTER)).isTrue();
+    assertThat(Files.exists(TRUSTED_TENANT_RESOLVER)).isTrue();
+    assertThat(Files.exists(TENANT_RATE_LIMIT_INTERCEPTOR)).isTrue();
+    assertThat(Files.exists(CONFIGURATION_PACKAGE)).isTrue();
+    assertThat(Files.exists(RATE_LIMIT_PROPERTIES)).isTrue();
+    assertThat(Files.exists(WEB_MVC_CONFIGURATION)).isTrue();
+    assertThat(Files.exists(LEGACY_TENANT_CONTEXT_FILTER)).isFalse();
+    assertThat(Files.exists(LEGACY_TRUSTED_TENANT_RESOLVER)).isFalse();
+    assertThat(Files.exists(LEGACY_RATE_LIMIT_INTERCEPTOR)).isFalse();
+    assertThat(Files.exists(LEGACY_RATE_LIMIT_PROPERTIES)).isFalse();
+    assertThat(Files.exists(LEGACY_WEB_MVC_CONFIGURATION)).isFalse();
   }
 
   private static boolean hasJavaSources(Path directory) {

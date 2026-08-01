@@ -1,9 +1,8 @@
-package com.emme.tenancy.web;
+package com.emme.tenancy.adapter.in.web.controller;
 
+import com.emme.tenancy.adapter.in.web.request.ProvisionTenantRequest;
 import com.emme.tenancy.application.service.TenantProvisioningService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/** HTTP entry point for asynchronous tenant provisioning requests and status. */
 @RestController
 @RequestMapping("/api/tenants")
 class TenantProvisioningController {
@@ -27,9 +27,10 @@ class TenantProvisioningController {
 
   @PostMapping
   ResponseEntity<Map<String, Object>> requestProvisioning(
-      @Valid @RequestBody ProvisioningRequest request) {
+      @Valid @RequestBody ProvisionTenantRequest request) {
     UUID tenantId =
-        service.requestProvisioning(request.slug, request.name, request.timeZone, request.locale);
+        service.requestProvisioning(
+            request.slug(), request.name(), request.timeZone(), request.locale());
     return ResponseEntity.accepted()
         .location(URI.create("/api/tenants/" + tenantId))
         .body(
@@ -55,10 +56,4 @@ class TenantProvisioningController {
             "error",
             status.error() != null ? status.error() : ""));
   }
-
-  public record ProvisioningRequest(
-      @NotBlank @Size(min = 1, max = 50) String slug,
-      @NotBlank @Size(min = 1, max = 150) String name,
-      String timeZone,
-      String locale) {}
 }

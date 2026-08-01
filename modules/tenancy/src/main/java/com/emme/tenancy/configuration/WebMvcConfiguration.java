@@ -1,27 +1,18 @@
-package com.emme.tenancy.config;
+package com.emme.tenancy.configuration;
 
-import com.emme.tenancy.web.RateLimitInterceptor;
+import com.emme.tenancy.adapter.in.web.filter.TenantRateLimitInterceptor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * Registers the {@link RateLimitInterceptor} for API paths.
- *
- * <p>Actuator, API docs, and Swagger UI endpoints are excluded from rate limiting to avoid blocking
- * operational tooling.
- *
- * <p>The interceptor is resolved lazily via {@link ObjectProvider}: contexts that do not register
- * it (e.g. module test slices without the web layer) simply run without rate limiting instead of
- * failing to start.
- */
+/** Registers optional Tenancy HTTP pipeline concerns for API paths. */
 @Configuration
-public class WebMvcConfig implements WebMvcConfigurer {
+public class WebMvcConfiguration implements WebMvcConfigurer {
 
-  private final ObjectProvider<RateLimitInterceptor> rateLimitInterceptor;
+  private final ObjectProvider<TenantRateLimitInterceptor> rateLimitInterceptor;
 
-  public WebMvcConfig(ObjectProvider<RateLimitInterceptor> rateLimitInterceptor) {
+  public WebMvcConfiguration(ObjectProvider<TenantRateLimitInterceptor> rateLimitInterceptor) {
     this.rateLimitInterceptor = rateLimitInterceptor;
   }
 

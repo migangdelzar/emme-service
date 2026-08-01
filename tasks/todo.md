@@ -145,8 +145,13 @@
   scheduled worker to `application/process/TenantProvisioningProcessManager`.
 - [x] Verified all Tenancy web/module/repository tests, Checkstyle, Spotless, and
   Studio Modulith verification after Spring proxy wiring was preserved.
-- [ ] Next slice: move Tenancy inbound web/context adapters and then isolate
-  database-pool/registry ports before continuing Identity security boundaries.
+- [x] Moved Tenancy controllers, HTTP request/response models, web mapper,
+  request-context filters, trusted resolver, rate limiting, and MVC configuration
+  into canonical inbound/configuration packages.
+- [x] Verified full Tenancy tests, Checkstyle, Spotless, and Studio Modulith
+  verification after the inbound adapter migration.
+- [ ] Next slice: isolate TenantContextAspect and database-pool/registry ports,
+  then continue Identity security/domain boundaries.
 
 ## Architecture naming contract — 2026-07-31
 

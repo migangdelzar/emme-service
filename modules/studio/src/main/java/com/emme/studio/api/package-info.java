@@ -1,2 +1,2 @@
-@org.springframework.modulith.NamedInterface("studio-api")
+/** Public Studio contract namespace; child packages classify contracts by kind. */
 package com.emme.studio.api;

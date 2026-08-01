@@ -1,4 +1,4 @@
-package com.emme.studio.event;
+package com.emme.studio.api.event;
 
 public record DashboardEvent(String type, String payload) {
   public static DashboardEvent appointmentCreated(String payload) {

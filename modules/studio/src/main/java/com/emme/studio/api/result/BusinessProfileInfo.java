@@ -1,4 +1,4 @@
-package com.emme.studio.api;
+package com.emme.studio.api.result;
 
 import java.util.UUID;
 

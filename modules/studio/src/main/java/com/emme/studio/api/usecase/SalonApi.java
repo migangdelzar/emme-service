@@ -1,5 +1,8 @@
-package com.emme.studio.api;
+package com.emme.studio.api.usecase;
 
+import com.emme.studio.api.result.AppointmentInfo;
+import com.emme.studio.api.result.BusinessProfileInfo;
+import com.emme.studio.api.result.CustomerInfo;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

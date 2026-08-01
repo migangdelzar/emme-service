@@ -1,9 +1,9 @@
 package com.emme.studio.application;
 
-import com.emme.studio.api.AppointmentInfo;
-import com.emme.studio.api.BusinessProfileInfo;
-import com.emme.studio.api.CustomerInfo;
-import com.emme.studio.api.SalonApi;
+import com.emme.studio.api.result.AppointmentInfo;
+import com.emme.studio.api.result.BusinessProfileInfo;
+import com.emme.studio.api.result.CustomerInfo;
+import com.emme.studio.api.usecase.SalonApi;
 import com.emme.studio.entity.AppointmentRepository;
 import com.emme.studio.entity.BusinessProfileRepository;
 import com.emme.studio.entity.CustomerRepository;

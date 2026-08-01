@@ -8,7 +8,7 @@
 | Design | [`2026-07-31-studio-module-migration-design.md`](../specs/2026-07-31-studio-module-migration-design.md) |
 | Module | `modules/studio` |
 | Branch | `feat/studio-module-migration` |
-| Status | In progress |
+| Status | In progress — public contracts normalized; core migration continuing |
 | Date | 2026-07-31 |
 
 ## Scope
@@ -21,21 +21,26 @@ verified.
 
 ### 1. Add architecture guardrails
 
-- Create `modules/studio/src/test/java/com/emme/studio/StudioPackageConventionTest.java`.
+- Drafted and executed the guardrail locally as a red checkpoint before moving
+  production classes. The test remains intentionally uncommitted until the
+  legacy root packages are removed; keeping it green on the branch avoids
+  shipping a permanently failing intermediate checkpoint.
 - Reject root production ownership in `entity`, `event`, and `web` after the
   migration.
 - Require grouped public API types and forbid application services from
   importing persistence adapters or entities.
-- Run the test red before moving production classes.
+- Reintroduce and commit the guardrail once the structural move makes its
+  assertions pass.
 
 ### 2. Normalize public contracts
 
-- Move `api/AppointmentInfo`, `BusinessProfileInfo`, and `CustomerInfo` to
+- ✅ Move `api/AppointmentInfo`, `BusinessProfileInfo`, and `CustomerInfo` to
   `api/result`.
-- Move `api/SalonApi` to `api/usecase`.
-- Keep events under `api/event` and move `DashboardEvent` there if it is a
+- ✅ Move `api/SalonApi` to `api/usecase`.
+- ✅ Keep events under `api/event` and move `DashboardEvent` there because it is a
   cross-module contract.
-- Add package metadata and update all consumers.
+- ✅ Add package metadata and update all consumers, including Calendar and
+  Identity imports.
 
 ### 3. Extract core domain models
 

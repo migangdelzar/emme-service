@@ -3,7 +3,7 @@ package com.emme.studio.application;
 import com.emme.notification.event.NotificationDeliveredEvent;
 import com.emme.studio.api.event.AppointmentCancelledEvent;
 import com.emme.studio.api.event.AppointmentCreatedEvent;
-import com.emme.studio.event.DashboardEvent;
+import com.emme.studio.api.event.DashboardEvent;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;

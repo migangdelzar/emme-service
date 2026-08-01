@@ -144,6 +144,31 @@ Execution rules and dependencies are maintained in
 - Integration teardown continues to emit known H2/PostgreSQL and event-
   publication shutdown warnings after successful completion.
 
+## Tenancy provisioning port boundary slice — 2026-08-01
+
+- [x] Add failing process-manager, port-ownership, and adapter tests.
+- [x] Introduce application-owned provisioning request and schema-migration
+  ports.
+- [x] Move JDBC registry lifecycle updates into an outbound persistence adapter.
+- [x] Move schema creation and Liquibase execution into an outbound database
+  adapter.
+- [x] Keep scheduling, correlation, provisioning success/failure transitions,
+  and error bounding in `TenantProvisioningProcessManager`.
+- [x] Verify Tenancy tests, Checkstyle, Spotless, integration tests, Modulith,
+  CI, boot JARs, Markdown, and whitespace.
+
+#### Results
+
+- Red phase: the new process-manager test failed to compile because the
+  provisioning ports did not yet exist.
+- Green/refactor phase: the process manager now depends only on application
+  ports; JDBC and Liquibase implementations are outbound adapters.
+- Full verification passed for Tenancy tests/check/integration tests, Studio
+  Modulith verification, service CI, both boot JARs, Markdown validation, and
+  whitespace checks.
+- Integration teardown continues to emit known H2/PostgreSQL and event-
+  publication shutdown warnings after successful completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

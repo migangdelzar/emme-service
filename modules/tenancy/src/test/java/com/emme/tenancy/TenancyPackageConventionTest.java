@@ -45,6 +45,18 @@ class TenancyPackageConventionTest {
   private static final Path DATABASE_REGISTRY_ENTRY =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/application/port/out/DatabaseRegistryEntry.java");
+  private static final Path TENANT_PROVISIONING_REPOSITORY =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/port/out/TenantProvisioningRepository.java");
+  private static final Path TENANT_SCHEMA_MIGRATION_PORT =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/port/out/TenantSchemaMigrationPort.java");
+  private static final Path JDBC_TENANT_PROVISIONING_REPOSITORY =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/JdbcTenantProvisioningRepository.java");
+  private static final Path LIQUIBASE_TENANT_SCHEMA_MIGRATION_ADAPTER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java");
   private static final Path PERSISTENCE_MAPPER =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/mapper/TenantPersistenceMapper.java");
@@ -209,6 +221,24 @@ class TenancyPackageConventionTest {
     assertThat(poolManager).contains("DatabaseRegistryPort");
     assertThat(poolManager).doesNotContain("DatabaseRegistryService");
     assertThat(poolManager).doesNotContain("adapter.out.persistence.entity.DatabaseRegistry");
+  }
+
+  @Test
+  void keepsProvisioningProcessIndependentOfDatabaseImplementations() throws IOException {
+    assertThat(Files.exists(TENANT_PROVISIONING_REPOSITORY)).isTrue();
+    assertThat(Files.exists(TENANT_SCHEMA_MIGRATION_PORT)).isTrue();
+    assertThat(Files.exists(JDBC_TENANT_PROVISIONING_REPOSITORY)).isTrue();
+    assertThat(Files.exists(LIQUIBASE_TENANT_SCHEMA_MIGRATION_ADAPTER)).isTrue();
+
+    String processManager =
+        Files.readString(
+            sourcePath(
+                "modules/tenancy/src/main/java/com/emme/tenancy/application/process/TenantProvisioningProcessManager.java"));
+    assertThat(processManager).contains("TenantProvisioningRepository");
+    assertThat(processManager).contains("TenantSchemaMigrationPort");
+    assertThat(processManager).doesNotContain("JdbcTemplate");
+    assertThat(processManager).doesNotContain("javax.sql.DataSource");
+    assertThat(processManager).doesNotContain("liquibase.");
   }
 
   @Test

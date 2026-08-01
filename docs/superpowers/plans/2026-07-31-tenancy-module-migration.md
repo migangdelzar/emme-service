@@ -54,7 +54,7 @@ implementation.
 | Application orchestration and inbound web adapters | Complete | Services/process manager, controllers, request/response records, filters, resolver, and web tests |
 | Database registry, routing, and pool ownership | Structurally complete | `DatabaseRegistryAdapter`, `TenantDatabasePoolProvider`, and `TenantRoutingDataSource` are canonical outbound adapters |
 | Typed configuration and secret boundary | Complete for database connection settings | `TenantDatabaseConnectionProperties` owns the existing `spring.datasource` credential and driver keys; pooling/rate-limit properties remain typed |
-| Provisioning outbound ports | Partial | Registry access has a port; JDBC provisioning still depends directly on `JdbcTemplate` and needs an explicit port boundary |
+| Provisioning outbound ports | Complete for registry and schema migration | `TenantProvisioningRepository` and `TenantSchemaMigrationPort` isolate registry lifecycle and Liquibase/schema work from the process manager |
 | Isolation and operational evidence | Open | Add routing/pool lifecycle/eviction/failure-recovery, replay/idempotency, rollback, and audit-correlation evidence |
 
 ## Public contract and naming decisions
@@ -92,8 +92,8 @@ implementation.
 - [x] Move TenantService and provisioning services to `application/service`.
 - [x] Model the long-running worker as a focused process manager only if its
   current retry/lifecycle behavior requires that representation.
-- [ ] Add explicit application ports for database creation, pool lifecycle, and
-  event publication; registry access is already represented by
+- [x] Add explicit application ports for database creation and provisioning
+  registry lifecycle; registry lookup remains represented by
   `DatabaseRegistryPort`.
 - [ ] Keep transaction boundaries and event-after-commit behavior explicit for
   provisioning and audit publication.
@@ -133,8 +133,8 @@ implementation.
 ## Definition of done
 
 - [ ] Tenant isolation and database routing remain protected by executable tests.
-- [ ] Domain/application code has no direct JPA/pool/web implementation dependency;
-  provisioning still has a direct `JdbcTemplate` dependency to remove.
+- [x] Domain/application code has no direct JPA/pool/web implementation
+  dependency; provisioning database work is isolated behind application ports.
 - [x] Public APIs/events are grouped and named according to the current template.
 
 ## Completed incremental slice — 2026-07-31
@@ -231,9 +231,8 @@ implementations remain outbound/configuration work for the next slice.
 The original checklist is now reconciled with the current source tree and
 verification evidence. Completed package, domain, persistence, orchestration,
 web, and contract items are marked complete above. The remaining unchecked items
-are intentional implementation or evidence gaps: provisioning ports and
-transaction/event boundaries, typed database credentials, pool/routing failure
-coverage, architecture rules, final service gates, and the committed evidence
+are intentional implementation or evidence gaps: transaction/event boundaries,
+pool/routing failure coverage, architecture rules, and the committed evidence
 report.
 
 ### Reconciliation evidence
@@ -258,7 +257,28 @@ report.
   Modulith verification, service CI, both boot JARs, Markdown validation, and
   whitespace checks.
 
-Remaining Tenancy work includes explicit provisioning ports and transaction or
-event-after-commit boundaries, routing/pool lifecycle and failure-recovery
+Remaining Tenancy work includes transaction or event-after-commit boundaries,
+routing/pool lifecycle and failure-recovery
 evidence, replay/idempotency and rollback evidence, architecture dependency
 rules, and the committed final verification report.
+
+## Completed provisioning port boundary slice — 2026-08-01
+
+- [x] Added `TenantProvisioningRepository` for pending-request lookup and
+  registry lifecycle transitions.
+- [x] Added `TenantSchemaMigrationPort` for schema creation and Liquibase
+  migration.
+- [x] Moved JDBC registry updates into `JdbcTenantProvisioningRepository`.
+- [x] Moved schema creation and Liquibase execution into
+  `LiquibaseTenantSchemaMigrationAdapter`.
+- [x] Kept scheduling, tenant correlation, success/failure transitions, and
+  bounded error messages in `TenantProvisioningProcessManager`.
+- [x] Added process-manager, source-boundary, and unsafe-schema regression
+  tests.
+- [x] Verified Tenancy tests/check/integration, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Tenancy work includes explicit transaction/event-after-commit
+behavior, pool lifecycle and routing failure evidence, replay/idempotency and
+rollback evidence, architecture dependency rules, and the committed final
+verification report.

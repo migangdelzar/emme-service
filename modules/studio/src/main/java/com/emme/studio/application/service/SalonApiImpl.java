@@ -1,12 +1,12 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.adapter.out.persistence.repository.SpringDataAppointmentRepository;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataBusinessProfileRepository;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataCustomerRepository;
 import com.emme.studio.api.result.AppointmentInfo;
 import com.emme.studio.api.result.BusinessProfileInfo;
 import com.emme.studio.api.result.CustomerInfo;
 import com.emme.studio.api.usecase.SalonApi;
-import com.emme.studio.entity.AppointmentRepository;
-import com.emme.studio.entity.BusinessProfileRepository;
-import com.emme.studio.entity.CustomerRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,14 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 class SalonApiImpl implements SalonApi {
 
-  private final BusinessProfileRepository profileRepository;
-  private final AppointmentRepository appointmentRepository;
-  private final CustomerRepository customerRepository;
+  private final SpringDataBusinessProfileRepository profileRepository;
+  private final SpringDataAppointmentRepository appointmentRepository;
+  private final SpringDataCustomerRepository customerRepository;
 
   SalonApiImpl(
-      BusinessProfileRepository profileRepository,
-      AppointmentRepository appointmentRepository,
-      CustomerRepository customerRepository) {
+      SpringDataBusinessProfileRepository profileRepository,
+      SpringDataAppointmentRepository appointmentRepository,
+      SpringDataCustomerRepository customerRepository) {
     this.profileRepository = profileRepository;
     this.appointmentRepository = appointmentRepository;
     this.customerRepository = customerRepository;

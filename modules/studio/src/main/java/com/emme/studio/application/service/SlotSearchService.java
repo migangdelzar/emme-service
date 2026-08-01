@@ -1,13 +1,13 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.entity.ArtistCapability;
-import com.emme.studio.entity.ArtistCapabilityRepository;
-import com.emme.studio.entity.BookingPolicyRepository;
-import com.emme.studio.entity.DayOfWeek;
-import com.emme.studio.entity.OperatingHours;
-import com.emme.studio.entity.OperatingHoursRepository;
-import com.emme.studio.entity.Service;
-import com.emme.studio.entity.ServiceRepository;
+import com.emme.studio.adapter.out.persistence.entity.ArtistCapabilityEntity;
+import com.emme.studio.adapter.out.persistence.entity.OperatingHoursEntity;
+import com.emme.studio.adapter.out.persistence.entity.ServiceEntity;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataArtistCapabilityRepository;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataBookingPolicyRepository;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataOperatingHoursRepository;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataServiceRepository;
+import com.emme.studio.domain.model.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -25,17 +25,17 @@ public class SlotSearchService {
 
   private static final int SLOT_INTERVAL_MINUTES = 15;
 
-  private final ArtistCapabilityRepository artistCapabilityRepo;
-  private final OperatingHoursRepository operatingHoursRepo;
-  private final BookingPolicyRepository bookingPolicyRepo;
-  private final ServiceRepository serviceRepo;
+  private final SpringDataArtistCapabilityRepository artistCapabilityRepo;
+  private final SpringDataOperatingHoursRepository operatingHoursRepo;
+  private final SpringDataBookingPolicyRepository bookingPolicyRepo;
+  private final SpringDataServiceRepository serviceRepo;
   private final CollisionDetector collisionDetector;
 
   public SlotSearchService(
-      ArtistCapabilityRepository artistCapabilityRepo,
-      OperatingHoursRepository operatingHoursRepo,
-      BookingPolicyRepository bookingPolicyRepo,
-      ServiceRepository serviceRepo,
+      SpringDataArtistCapabilityRepository artistCapabilityRepo,
+      SpringDataOperatingHoursRepository operatingHoursRepo,
+      SpringDataBookingPolicyRepository bookingPolicyRepo,
+      SpringDataServiceRepository serviceRepo,
       CollisionDetector collisionDetector) {
     this.artistCapabilityRepo = artistCapabilityRepo;
     this.operatingHoursRepo = operatingHoursRepo;
@@ -45,23 +45,24 @@ public class SlotSearchService {
   }
 
   public List<Slot> findAvailableSlots(UUID tenantId, UUID serviceId, LocalDate date) {
-    Service service =
+    ServiceEntity service =
         serviceRepo
             .findById(serviceId)
-            .orElseThrow(() -> new IllegalArgumentException("Service not found: " + serviceId));
+            .orElseThrow(
+                () -> new IllegalArgumentException("ServiceEntity not found: " + serviceId));
     int durationMinutes = service.getDurationMinutes();
 
     DayOfWeek salonDay = toSalonDayOfWeek(date.getDayOfWeek());
-    Optional<OperatingHours> hours =
+    Optional<OperatingHoursEntity> hours =
         operatingHoursRepo.findByTenantIdAndDayOfWeek(tenantId, salonDay);
     if (hours.isEmpty() || !hours.get().isActive()) {
       return List.of();
     }
 
-    OperatingHours operatingHours = hours.get();
+    OperatingHoursEntity operatingHours = hours.get();
     ZoneId zone = ZoneId.of("America/Mexico_City");
 
-    List<ArtistCapability> capabilities =
+    List<ArtistCapabilityEntity> capabilities =
         artistCapabilityRepo.findByServiceIdAndActiveTrue(serviceId);
     List<UUID> artistIds = capabilities.stream().map(c -> c.getArtist().getId()).toList();
 

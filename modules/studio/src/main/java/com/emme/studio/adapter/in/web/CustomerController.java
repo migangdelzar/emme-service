@@ -2,8 +2,8 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.studio.adapter.out.persistence.entity.CustomerEntity;
 import com.emme.studio.application.service.CustomerService;
-import com.emme.studio.entity.Customer;
 import com.emme.studio.subscriptions.application.SubscriptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -54,7 +54,7 @@ public class CustomerController {
     return withCurrentTenant(
         tenantId -> {
           subscriptionService.enforce(tenantId, "customers:write");
-          Customer customer =
+          CustomerEntity customer =
               customerService.create(tenantId, request.name(), request.phone(), request.email());
           var location = URI.create("/api/v1/customers/" + customer.getId());
           return ResponseEntity.created(location).body(CustomerResponse.from(customer));
@@ -74,7 +74,7 @@ public class CustomerController {
   @Operation(summary = "Update a customer")
   public ResponseEntity<CustomerResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateCustomerRequest request) {
-    Customer customer =
+    CustomerEntity customer =
         customerService.update(id, request.name(), request.phone(), request.email());
     return ResponseEntity.ok(CustomerResponse.from(customer));
   }
@@ -82,7 +82,7 @@ public class CustomerController {
   @PostMapping("/{id}/retire")
   @Operation(summary = "Retire a customer")
   public ResponseEntity<CustomerResponse> retire(@PathVariable UUID id) {
-    Customer customer = customerService.retire(id);
+    CustomerEntity customer = customerService.retire(id);
     return ResponseEntity.ok(CustomerResponse.from(customer));
   }
 
@@ -100,7 +100,7 @@ public class CustomerController {
   // --- DTOs ---
 
   public record CustomerResponse(UUID id, String name, String phone, String email, String status) {
-    public static CustomerResponse from(Customer c) {
+    public static CustomerResponse from(CustomerEntity c) {
       return new CustomerResponse(
           c.getId(), c.getName(), c.getPhone(), c.getEmail(), c.getStatus().name());
     }

@@ -2,7 +2,7 @@ package com.emme.testing;
 
 import com.emme.identity.entity.FeatureFlag;
 import com.emme.identity.entity.FeatureFlagRepository;
-import com.emme.studio.entity.BusinessProfileRepository;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataBusinessProfileRepository;
 import com.emme.studio.subscriptions.api.PlanType;
 import com.emme.studio.subscriptions.entity.Subscription;
 import com.emme.studio.subscriptions.entity.SubscriptionRepository;
@@ -45,7 +45,7 @@ public abstract class BaseSpringModuleTest {
   @Autowired protected TenantService tenantService;
   @Autowired protected SubscriptionRepository subscriptionRepo;
   @Autowired protected FeatureFlagRepository featureFlagRepo;
-  @Autowired protected BusinessProfileRepository profileRepo;
+  @Autowired protected SpringDataBusinessProfileRepository profileRepo;
   @Autowired protected com.emme.identity.entity.MembershipRepository membershipRepo;
   @Autowired protected com.emme.identity.entity.RoleRepository roleRepo;
 

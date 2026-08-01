@@ -2,9 +2,9 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.studio.adapter.out.persistence.entity.AppointmentEntity;
 import com.emme.studio.application.service.AppointmentService;
 import com.emme.studio.application.service.SlotSearchService;
-import com.emme.studio.entity.Appointment;
 import com.emme.studio.subscriptions.application.SubscriptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,7 +55,7 @@ public class AppointmentController {
       @RequestParam(required = false) LocalDate date) {
     return withCurrentTenant(
         tenantId -> {
-          List<Appointment> appointments;
+          List<AppointmentEntity> appointments;
           if (date != null) {
             appointments = appointmentService.findByTenantAndDate(tenantId, date);
           } else {
@@ -72,7 +72,7 @@ public class AppointmentController {
         tenantId -> {
           subscriptionService.enforce(tenantId, "appointments:write");
           try {
-            Appointment appointment =
+            AppointmentEntity appointment =
                 appointmentService.create(
                     tenantId,
                     request.customerId(),
@@ -102,7 +102,7 @@ public class AppointmentController {
   public ResponseEntity<?> reschedule(
       @PathVariable UUID id, @Valid @RequestBody RescheduleRequest request) {
     try {
-      Appointment appointment =
+      AppointmentEntity appointment =
           appointmentService.reschedule(id, request.newStartsAt(), request.newEndsAt());
       return ResponseEntity.ok(AppointmentResponse.from(appointment));
     } catch (IllegalStateException e) {
@@ -144,7 +144,8 @@ public class AppointmentController {
     return withConflictHandling(() -> appointmentService.noShow(id));
   }
 
-  private ResponseEntity<AppointmentResponse> withConflictHandling(Supplier<Appointment> action) {
+  private ResponseEntity<AppointmentResponse> withConflictHandling(
+      Supplier<AppointmentEntity> action) {
     try {
       return ResponseEntity.ok(AppointmentResponse.from(action.get()));
     } catch (IllegalStateException e) {
@@ -177,7 +178,7 @@ public class AppointmentController {
       Instant startsAt,
       Instant endsAt,
       String status) {
-    public static AppointmentResponse from(Appointment a) {
+    public static AppointmentResponse from(AppointmentEntity a) {
       return new AppointmentResponse(
           a.getId(),
           a.getCustomer().getId(),

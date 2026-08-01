@@ -1,4 +1,4 @@
-package com.emme.studio.entity;
+package com.emme.studio.adapter.out.persistence.entity;
 
 import com.emme.shared.TenantOwnedEntity;
 import jakarta.persistence.Column;
@@ -16,38 +16,38 @@ import java.util.UUID;
 @Table(
     name = "artist_capability",
     uniqueConstraints = {@UniqueConstraint(columnNames = {"artist_id", "service_id"})})
-public class ArtistCapability extends TenantOwnedEntity {
+public class ArtistCapabilityEntity extends TenantOwnedEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(
       name = "artist_id",
       nullable = false,
       foreignKey = @ForeignKey(name = "fk_artist_capability_artist"))
-  private Artist artist;
+  private ArtistEntity artist;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(
       name = "service_id",
       nullable = false,
       foreignKey = @ForeignKey(name = "fk_artist_capability_service"))
-  private Service service;
+  private ServiceEntity service;
 
   @Column(name = "active", nullable = false)
   private boolean active = true;
 
-  protected ArtistCapability() {}
+  protected ArtistCapabilityEntity() {}
 
-  public ArtistCapability(UUID tenantId, Artist artist, Service service) {
+  public ArtistCapabilityEntity(UUID tenantId, ArtistEntity artist, ServiceEntity service) {
     super(tenantId);
     this.artist = Objects.requireNonNull(artist, "artist must not be null");
     this.service = Objects.requireNonNull(service, "service must not be null");
   }
 
-  public Artist getArtist() {
+  public ArtistEntity getArtist() {
     return artist;
   }
 
-  public Service getService() {
+  public ServiceEntity getService() {
     return service;
   }
 

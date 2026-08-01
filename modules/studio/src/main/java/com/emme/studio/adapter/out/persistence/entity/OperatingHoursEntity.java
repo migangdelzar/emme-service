@@ -1,6 +1,7 @@
-package com.emme.studio.entity;
+package com.emme.studio.adapter.out.persistence.entity;
 
 import com.emme.shared.TenantOwnedEntity;
+import com.emme.studio.domain.model.DayOfWeek;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Table(
     name = "operating_hours",
     uniqueConstraints = {@UniqueConstraint(columnNames = {"tenant_id", "day_of_week"})})
-public class OperatingHours extends TenantOwnedEntity {
+public class OperatingHoursEntity extends TenantOwnedEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "day_of_week", nullable = false, length = 3)
@@ -30,9 +31,10 @@ public class OperatingHours extends TenantOwnedEntity {
   @Column(name = "active", nullable = false)
   private boolean active = true;
 
-  protected OperatingHours() {}
+  protected OperatingHoursEntity() {}
 
-  public OperatingHours(UUID tenantId, DayOfWeek dayOfWeek, LocalTime opensAt, LocalTime closesAt) {
+  public OperatingHoursEntity(
+      UUID tenantId, DayOfWeek dayOfWeek, LocalTime opensAt, LocalTime closesAt) {
     super(tenantId);
     this.dayOfWeek = Objects.requireNonNull(dayOfWeek, "dayOfWeek must not be null");
     this.opensAt = Objects.requireNonNull(opensAt, "opensAt must not be null");

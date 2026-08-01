@@ -1,6 +1,7 @@
-package com.emme.studio.entity;
+package com.emme.studio.adapter.out.persistence.entity;
 
 import com.emme.shared.TenantOwnedEntity;
+import com.emme.studio.domain.model.ServiceStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Table(
     name = "service",
     uniqueConstraints = {@UniqueConstraint(columnNames = {"tenant_id", "code"})})
-public class Service extends TenantOwnedEntity {
+public class ServiceEntity extends TenantOwnedEntity {
 
   @Column(name = "code", nullable = false, length = 50)
   private String code;
@@ -39,14 +40,14 @@ public class Service extends TenantOwnedEntity {
   @Column(name = "status", nullable = false, length = 10)
   private ServiceStatus status = ServiceStatus.ACTIVE;
 
-  protected Service() {}
+  protected ServiceEntity() {}
 
-  public Service(
+  public ServiceEntity(
       UUID tenantId, String code, String name, int durationMinutes, BigDecimal basePrice) {
     this(tenantId, code, name, "Servicios Complementarios", null, durationMinutes, basePrice);
   }
 
-  public Service(
+  public ServiceEntity(
       UUID tenantId,
       String code,
       String name,

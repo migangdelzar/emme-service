@@ -1,4 +1,4 @@
-package com.emme.studio.entity;
+package com.emme.studio.adapter.out.persistence.entity;
 
 import com.emme.shared.TenantOwnedEntity;
 import jakarta.persistence.Column;
@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "booking_policy")
-public class BookingPolicy extends TenantOwnedEntity {
+public class BookingPolicyEntity extends TenantOwnedEntity {
 
   @Column(name = "min_notice_minutes", nullable = false)
   private int minNoticeMinutes = 60;
@@ -22,9 +22,9 @@ public class BookingPolicy extends TenantOwnedEntity {
   @Column(name = "allow_overlap", nullable = false)
   private boolean allowOverlap = false;
 
-  protected BookingPolicy() {}
+  protected BookingPolicyEntity() {}
 
-  public BookingPolicy(
+  public BookingPolicyEntity(
       UUID tenantId,
       int minNoticeMinutes,
       int maxAdvanceDays,

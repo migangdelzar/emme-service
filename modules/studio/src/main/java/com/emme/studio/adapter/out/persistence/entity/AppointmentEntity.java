@@ -1,6 +1,8 @@
-package com.emme.studio.entity;
+package com.emme.studio.adapter.out.persistence.entity;
 
 import com.emme.shared.TenantOwnedEntity;
+import com.emme.studio.domain.model.AppointmentStatus;
+import com.emme.studio.domain.model.ExternalCalendarStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,28 +18,28 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "appointment")
-public class Appointment extends TenantOwnedEntity {
+public class AppointmentEntity extends TenantOwnedEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(
       name = "customer_id",
       nullable = false,
       foreignKey = @ForeignKey(name = "fk_appointment_customer"))
-  private Customer customer;
+  private CustomerEntity customer;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(
       name = "service_id",
       nullable = false,
       foreignKey = @ForeignKey(name = "fk_appointment_service"))
-  private Service service;
+  private ServiceEntity service;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(
       name = "artist_id",
       nullable = false,
       foreignKey = @ForeignKey(name = "fk_appointment_artist"))
-  private Artist artist;
+  private ArtistEntity artist;
 
   @Column(name = "starts_at", nullable = false)
   private Instant startsAt;
@@ -53,13 +55,13 @@ public class Appointment extends TenantOwnedEntity {
   @Column(name = "external_calendar_status", nullable = false, length = 15)
   private ExternalCalendarStatus externalCalendarStatus = ExternalCalendarStatus.NOT_SYNCED;
 
-  protected Appointment() {}
+  protected AppointmentEntity() {}
 
-  public Appointment(
+  public AppointmentEntity(
       UUID tenantId,
-      Customer customer,
-      Service service,
-      Artist artist,
+      CustomerEntity customer,
+      ServiceEntity service,
+      ArtistEntity artist,
       Instant startsAt,
       Instant endsAt) {
     super(tenantId);
@@ -70,15 +72,15 @@ public class Appointment extends TenantOwnedEntity {
     this.endsAt = Objects.requireNonNull(endsAt, "endsAt must not be null");
   }
 
-  public Customer getCustomer() {
+  public CustomerEntity getCustomer() {
     return customer;
   }
 
-  public Service getService() {
+  public ServiceEntity getService() {
     return service;
   }
 
-  public Artist getArtist() {
+  public ArtistEntity getArtist() {
     return artist;
   }
 

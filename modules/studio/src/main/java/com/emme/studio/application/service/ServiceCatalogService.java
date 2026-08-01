@@ -1,8 +1,8 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.entity.Service;
-import com.emme.studio.entity.ServiceRepository;
-import com.emme.studio.entity.ServiceStatus;
+import com.emme.studio.adapter.out.persistence.entity.ServiceEntity;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataServiceRepository;
+import com.emme.studio.domain.model.ServiceStatus;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -13,19 +13,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ServiceCatalogService {
 
-  private final ServiceRepository serviceRepository;
+  private final SpringDataServiceRepository serviceRepository;
 
-  public ServiceCatalogService(ServiceRepository serviceRepository) {
+  public ServiceCatalogService(SpringDataServiceRepository serviceRepository) {
     this.serviceRepository = serviceRepository;
   }
 
-  public Service create(
+  public ServiceEntity create(
       UUID tenantId, String code, String name, int durationMinutes, BigDecimal basePrice) {
     return create(
         tenantId, code, name, "Servicios Complementarios", null, durationMinutes, basePrice);
   }
 
-  public Service create(
+  public ServiceEntity create(
       UUID tenantId,
       String code,
       String name,
@@ -33,31 +33,31 @@ public class ServiceCatalogService {
       String description,
       int durationMinutes,
       BigDecimal basePrice) {
-    Service service =
-        new Service(tenantId, code, name, category, description, durationMinutes, basePrice);
+    ServiceEntity service =
+        new ServiceEntity(tenantId, code, name, category, description, durationMinutes, basePrice);
     return serviceRepository.save(service);
   }
 
-  public Service update(UUID id, String name, int durationMinutes, BigDecimal basePrice) {
-    Service existing =
+  public ServiceEntity update(UUID id, String name, int durationMinutes, BigDecimal basePrice) {
+    ServiceEntity existing =
         serviceRepository
             .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Service not found: " + id));
+            .orElseThrow(() -> new IllegalArgumentException("ServiceEntity not found: " + id));
     return update(
         id, name, existing.getCategory(), existing.getDescription(), durationMinutes, basePrice);
   }
 
-  public Service update(
+  public ServiceEntity update(
       UUID id,
       String name,
       String category,
       String description,
       int durationMinutes,
       BigDecimal basePrice) {
-    Service service =
+    ServiceEntity service =
         serviceRepository
             .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Service not found: " + id));
+            .orElseThrow(() -> new IllegalArgumentException("ServiceEntity not found: " + id));
     service.setName(name);
     service.setCategory(category);
     service.setDescription(description);
@@ -66,27 +66,27 @@ public class ServiceCatalogService {
     return serviceRepository.save(service);
   }
 
-  public Service retire(UUID id) {
-    Service service =
+  public ServiceEntity retire(UUID id) {
+    ServiceEntity service =
         serviceRepository
             .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Service not found: " + id));
+            .orElseThrow(() -> new IllegalArgumentException("ServiceEntity not found: " + id));
     service.setStatus(ServiceStatus.RETIRED);
     return serviceRepository.save(service);
   }
 
   @Transactional(readOnly = true)
-  public Optional<Service> findById(UUID id) {
+  public Optional<ServiceEntity> findById(UUID id) {
     return serviceRepository.findById(id);
   }
 
   @Transactional(readOnly = true)
-  public List<Service> findByTenantId(UUID tenantId, ServiceStatus status) {
+  public List<ServiceEntity> findByTenantId(UUID tenantId, ServiceStatus status) {
     return serviceRepository.findByTenantIdAndStatus(tenantId, status);
   }
 
   @Transactional(readOnly = true)
-  public List<Service> findActiveServices(UUID tenantId) {
+  public List<ServiceEntity> findActiveServices(UUID tenantId) {
     return serviceRepository.findByTenantIdAndStatus(tenantId, ServiceStatus.ACTIVE);
   }
 }

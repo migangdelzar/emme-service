@@ -1,4 +1,4 @@
-package com.emme.studio.entity;
+package com.emme.studio.domain.model;
 
 public enum TemplatePolicy {
   DEFAULT,

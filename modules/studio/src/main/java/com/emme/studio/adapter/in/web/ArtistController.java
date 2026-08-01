@@ -2,9 +2,9 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.studio.adapter.out.persistence.entity.ArtistCapabilityEntity;
+import com.emme.studio.adapter.out.persistence.entity.ArtistEntity;
 import com.emme.studio.application.service.ArtistService;
-import com.emme.studio.entity.Artist;
-import com.emme.studio.entity.ArtistCapability;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
@@ -47,7 +47,7 @@ public class ArtistController {
   public ResponseEntity<ArtistResponse> create(@RequestBody CreateArtistRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          Artist artist = artistService.create(tenantId, request.name());
+          ArtistEntity artist = artistService.create(tenantId, request.name());
           var location = URI.create("/api/v1/artists/" + artist.getId());
           return ResponseEntity.created(location).body(ArtistResponse.from(artist));
         });
@@ -66,14 +66,14 @@ public class ArtistController {
   @Operation(summary = "Update an artist")
   public ResponseEntity<ArtistResponse> update(
       @PathVariable UUID id, @RequestBody UpdateArtistRequest request) {
-    Artist artist = artistService.update(id, request.name());
+    ArtistEntity artist = artistService.update(id, request.name());
     return ResponseEntity.ok(ArtistResponse.from(artist));
   }
 
   @PostMapping("/{id}/deactivate")
   @Operation(summary = "Deactivate an artist")
   public ResponseEntity<ArtistResponse> deactivate(@PathVariable UUID id) {
-    Artist artist = artistService.deactivate(id);
+    ArtistEntity artist = artistService.deactivate(id);
     return ResponseEntity.ok(ArtistResponse.from(artist));
   }
 
@@ -83,7 +83,7 @@ public class ArtistController {
       @PathVariable UUID id, @RequestBody AddCapabilityRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          ArtistCapability capability =
+          ArtistCapabilityEntity capability =
               artistService.addCapability(id, request.serviceId(), tenantId);
           return ResponseEntity.ok(ArtistCapabilityResponse.from(capability));
         });
@@ -92,14 +92,14 @@ public class ArtistController {
   @DeleteMapping("/capabilities/{id}")
   @Operation(summary = "Remove a capability")
   public ResponseEntity<ArtistCapabilityResponse> removeCapability(@PathVariable UUID id) {
-    ArtistCapability capability = artistService.removeCapability(id);
+    ArtistCapabilityEntity capability = artistService.removeCapability(id);
     return ResponseEntity.ok(ArtistCapabilityResponse.from(capability));
   }
 
   // --- DTOs ---
 
   public record ArtistResponse(UUID id, String name, String status) {
-    public static ArtistResponse from(Artist a) {
+    public static ArtistResponse from(ArtistEntity a) {
       return new ArtistResponse(a.getId(), a.getName(), a.getStatus().name());
     }
   }
@@ -111,7 +111,7 @@ public class ArtistController {
       UUID serviceId,
       String serviceName,
       boolean active) {
-    public static ArtistCapabilityResponse from(ArtistCapability ac) {
+    public static ArtistCapabilityResponse from(ArtistCapabilityEntity ac) {
       return new ArtistCapabilityResponse(
           ac.getId(),
           ac.getArtist().getId(),

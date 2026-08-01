@@ -1,6 +1,7 @@
-package com.emme.studio.entity;
+package com.emme.studio.adapter.out.persistence.entity;
 
 import com.emme.shared.TenantOwnedEntity;
+import com.emme.studio.domain.model.CustomerStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,7 +12,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "customer")
-public class Customer extends TenantOwnedEntity {
+public class CustomerEntity extends TenantOwnedEntity {
 
   @Column(name = "name", nullable = false, length = 200)
   private String name;
@@ -26,9 +27,9 @@ public class Customer extends TenantOwnedEntity {
   @Column(name = "status", nullable = false, length = 10)
   private CustomerStatus status = CustomerStatus.ACTIVE;
 
-  protected Customer() {}
+  protected CustomerEntity() {}
 
-  public Customer(UUID tenantId, String name) {
+  public CustomerEntity(UUID tenantId, String name) {
     super(tenantId);
     this.name = Objects.requireNonNull(name, "name must not be null");
   }

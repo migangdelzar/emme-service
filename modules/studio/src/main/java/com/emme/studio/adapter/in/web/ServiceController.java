@@ -2,8 +2,8 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.studio.adapter.out.persistence.entity.ServiceEntity;
 import com.emme.studio.application.service.ServiceCatalogService;
-import com.emme.studio.entity.Service;
 import com.emme.studio.subscriptions.application.SubscriptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -53,7 +53,7 @@ public class ServiceController {
     return withCurrentTenant(
         tenantId -> {
           subscriptionService.enforce(tenantId, "services:write");
-          Service service =
+          ServiceEntity service =
               request.category() == null && request.description() == null
                   ? serviceCatalogService.create(
                       tenantId,
@@ -87,7 +87,7 @@ public class ServiceController {
   @Operation(summary = "Update a service")
   public ResponseEntity<ServiceResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateServiceRequest request) {
-    Service service =
+    ServiceEntity service =
         request.category() == null && request.description() == null
             ? serviceCatalogService.update(
                 id, request.name(), request.durationMinutes(), request.basePrice())
@@ -104,7 +104,7 @@ public class ServiceController {
   @PostMapping("/{id}/retire")
   @Operation(summary = "Retire a service")
   public ResponseEntity<ServiceResponse> retire(@PathVariable UUID id) {
-    Service service = serviceCatalogService.retire(id);
+    ServiceEntity service = serviceCatalogService.retire(id);
     return ResponseEntity.ok(ServiceResponse.from(service));
   }
 
@@ -119,7 +119,7 @@ public class ServiceController {
       int durationMinutes,
       BigDecimal basePrice,
       String status) {
-    public static ServiceResponse from(Service s) {
+    public static ServiceResponse from(ServiceEntity s) {
       return new ServiceResponse(
           s.getId(),
           s.getCode(),

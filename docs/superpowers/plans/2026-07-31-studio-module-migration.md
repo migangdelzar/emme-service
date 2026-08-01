@@ -21,16 +21,11 @@ verified.
 
 ### 1. Add architecture guardrails
 
-- Drafted and executed the guardrail locally as a red checkpoint before moving
-  production classes. The test remains intentionally uncommitted until the
-  legacy root packages are removed; keeping it green on the branch avoids
-  shipping a permanently failing intermediate checkpoint.
-- Reject root production ownership in `entity`, `event`, and `web` after the
-  migration.
-- Require grouped public API types and forbid application services from
-  importing persistence adapters or entities.
-- Reintroduce and commit the guardrail once the structural move makes its
-  assertions pass.
+- ✅ Commit `StudioPackageConventionTest` after the core root package move.
+- ✅ Reject root production ownership in `entity`, `event`, and `web`.
+- ✅ Require grouped public API types.
+- Tighten the guardrail to forbid application services from importing
+  persistence adapters after application-owned ports are introduced.
 
 ### 2. Normalize public contracts
 
@@ -44,6 +39,7 @@ verified.
 
 ### 3. Extract core domain models
 
+- ✅ Move framework-independent status and policy enums to `domain/model`.
 - Create framework-independent domain models for the core Studio aggregates.
 - Keep domain enums and invariants under `domain/model`.
 - Add pure tests for appointment lifecycle, customer/artist/service status, and
@@ -52,10 +48,10 @@ verified.
 
 ### 4. Introduce application-owned ports and persistence adapters
 
-- Create repository ports under `application/port/out`.
-- Move JPA types to `adapter/out/persistence/entity` with `Entity` suffixes.
-- Move Spring Data interfaces to `adapter/out/persistence/repository` with
+- ✅ Move JPA types to `adapter/out/persistence/entity` with `Entity` suffixes.
+- ✅ Move Spring Data interfaces to `adapter/out/persistence/repository` with
   `SpringData...Repository` names.
+- Create repository ports under `application/port/out`.
 - Add persistence mappers and adapters.
 - Test both new-entity and managed-entity update paths.
 

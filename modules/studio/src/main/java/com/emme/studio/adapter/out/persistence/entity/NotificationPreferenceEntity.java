@@ -1,7 +1,8 @@
-package com.emme.studio.entity;
+package com.emme.studio.adapter.out.persistence.entity;
 
 import com.emme.kernel.type.NotificationChannel;
 import com.emme.shared.TenantOwnedEntity;
+import com.emme.studio.domain.model.TemplatePolicy;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,7 +15,7 @@ import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "notification_preference")
-public class NotificationPreference extends TenantOwnedEntity {
+public class NotificationPreferenceEntity extends TenantOwnedEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "channel", nullable = false, length = 30)
@@ -31,9 +32,9 @@ public class NotificationPreference extends TenantOwnedEntity {
   @Column(name = "metadata")
   private String metadata;
 
-  protected NotificationPreference() {}
+  protected NotificationPreferenceEntity() {}
 
-  public NotificationPreference(UUID tenantId, NotificationChannel channel) {
+  public NotificationPreferenceEntity(UUID tenantId, NotificationChannel channel) {
     super(tenantId);
     this.channel = Objects.requireNonNull(channel, "channel must not be null");
   }

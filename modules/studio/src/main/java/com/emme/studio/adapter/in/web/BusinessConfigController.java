@@ -2,11 +2,11 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.studio.adapter.out.persistence.entity.BookingPolicyEntity;
+import com.emme.studio.adapter.out.persistence.entity.BusinessProfileEntity;
+import com.emme.studio.adapter.out.persistence.entity.OperatingHoursEntity;
 import com.emme.studio.application.service.BusinessConfigService;
-import com.emme.studio.entity.BookingPolicy;
-import com.emme.studio.entity.BusinessProfile;
-import com.emme.studio.entity.DayOfWeek;
-import com.emme.studio.entity.OperatingHours;
+import com.emme.studio.domain.model.DayOfWeek;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalTime;
@@ -49,7 +49,7 @@ public class BusinessConfigController {
       @RequestBody UpdateProfileRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          BusinessProfile profile =
+          BusinessProfileEntity profile =
               businessConfigService.updateProfile(
                   tenantId, request.displayName(), request.timeZone(), request.locale());
           return ResponseEntity.ok(BusinessProfileResponse.from(profile));
@@ -75,7 +75,7 @@ public class BusinessConfigController {
       @RequestBody UpdateHoursRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          OperatingHours hours =
+          OperatingHoursEntity hours =
               businessConfigService.updateOperatingHours(
                   tenantId, request.day(), request.opensAt(), request.closesAt(), request.active());
           return ResponseEntity.ok(OperatingHoursResponse.from(hours));
@@ -101,7 +101,7 @@ public class BusinessConfigController {
       @RequestBody UpdatePolicyRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          BookingPolicy policy =
+          BookingPolicyEntity policy =
               businessConfigService.updateBookingPolicy(
                   tenantId,
                   request.minNoticeMinutes(),
@@ -116,7 +116,7 @@ public class BusinessConfigController {
 
   public record BusinessProfileResponse(
       UUID id, String displayName, String timeZone, String locale) {
-    public static BusinessProfileResponse from(BusinessProfile p) {
+    public static BusinessProfileResponse from(BusinessProfileEntity p) {
       return new BusinessProfileResponse(
           p.getId(), p.getDisplayName(), p.getTimeZone(), p.getLocale());
     }
@@ -124,7 +124,7 @@ public class BusinessConfigController {
 
   public record OperatingHoursResponse(
       UUID id, DayOfWeek dayOfWeek, LocalTime opensAt, LocalTime closesAt, boolean active) {
-    public static OperatingHoursResponse from(OperatingHours oh) {
+    public static OperatingHoursResponse from(OperatingHoursEntity oh) {
       return new OperatingHoursResponse(
           oh.getId(), oh.getDayOfWeek(), oh.getOpensAt(), oh.getClosesAt(), oh.isActive());
     }
@@ -136,7 +136,7 @@ public class BusinessConfigController {
       int maxAdvanceDays,
       int cancellationWindowMinutes,
       boolean allowOverlap) {
-    public static BookingPolicyResponse from(BookingPolicy bp) {
+    public static BookingPolicyResponse from(BookingPolicyEntity bp) {
       return new BookingPolicyResponse(
           bp.getId(),
           bp.getMinNoticeMinutes(),

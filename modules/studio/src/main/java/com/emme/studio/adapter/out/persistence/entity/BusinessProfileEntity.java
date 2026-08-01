@@ -1,4 +1,4 @@
-package com.emme.studio.entity;
+package com.emme.studio.adapter.out.persistence.entity;
 
 import com.emme.shared.TenantOwnedEntity;
 import jakarta.persistence.Column;
@@ -11,7 +11,7 @@ import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "business_profile")
-public class BusinessProfile extends TenantOwnedEntity {
+public class BusinessProfileEntity extends TenantOwnedEntity {
 
   @Column(name = "time_zone", nullable = false, length = 50)
   private String timeZone;
@@ -26,9 +26,9 @@ public class BusinessProfile extends TenantOwnedEntity {
   @Column(name = "metadata")
   private String metadata;
 
-  protected BusinessProfile() {}
+  protected BusinessProfileEntity() {}
 
-  public BusinessProfile(UUID tenantId, String timeZone, String locale, String displayName) {
+  public BusinessProfileEntity(UUID tenantId, String timeZone, String locale, String displayName) {
     super(tenantId);
     this.timeZone = Objects.requireNonNull(timeZone, "timeZone must not be null");
     this.locale = Objects.requireNonNull(locale, "locale must not be null");

@@ -1,4 +1,4 @@
-package com.emme.studio.application;
+package com.emme.studio.application.service;
 
 import com.emme.studio.api.event.AppointmentCancelledEvent;
 import com.emme.studio.api.event.AppointmentCreatedEvent;

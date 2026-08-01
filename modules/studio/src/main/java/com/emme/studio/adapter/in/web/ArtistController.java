@@ -1,8 +1,8 @@
-package com.emme.studio.web;
+package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.studio.application.ArtistService;
+import com.emme.studio.application.service.ArtistService;
 import com.emme.studio.entity.Artist;
 import com.emme.studio.entity.ArtistCapability;
 import io.swagger.v3.oas.annotations.Operation;

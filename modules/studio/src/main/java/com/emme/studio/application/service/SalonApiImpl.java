@@ -1,4 +1,4 @@
-package com.emme.studio.application;
+package com.emme.studio.application.service;
 
 import com.emme.studio.api.result.AppointmentInfo;
 import com.emme.studio.api.result.BusinessProfileInfo;

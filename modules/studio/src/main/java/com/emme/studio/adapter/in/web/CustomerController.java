@@ -1,8 +1,8 @@
-package com.emme.studio.web;
+package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.studio.application.CustomerService;
+import com.emme.studio.application.service.CustomerService;
 import com.emme.studio.entity.Customer;
 import com.emme.studio.subscriptions.application.SubscriptionService;
 import io.swagger.v3.oas.annotations.Operation;

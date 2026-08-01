@@ -1,4 +1,4 @@
-package com.emme.studio.application;
+package com.emme.studio.application.service;
 
 import com.emme.studio.entity.Customer;
 import com.emme.studio.entity.CustomerRepository;

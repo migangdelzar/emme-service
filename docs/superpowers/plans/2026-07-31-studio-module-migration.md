@@ -61,15 +61,21 @@ verified.
 
 ### 5. Move application services and inbound web adapters
 
-- Move services to `application/service` and make them implement public use-case
+- ✅ Relocate services to `application/service` and controllers to
+  `adapter/in/web` without changing routes or runtime behavior.
+- Make services implement public use-case
   interfaces.
-- Move controllers to `adapter/in/web`.
 - Ensure controllers call use cases and do not access repositories.
 - Preserve route paths, response shapes, tenant context, and authorization.
 
+The relocation is a green checkpoint; use-case ports and repository isolation
+remain part of the next structural slice.
+
 ### 6. Normalize nested metadata and architecture rules
 
-- Add `package-info.java` to each materialized core package.
+- ✅ Add `package-info.java` to the newly materialized application and inbound
+  adapter packages.
+- Add `package-info.java` to each remaining materialized core package.
 - Preserve `documents` and `subscriptions` as deferred nested capabilities.
 - Update Modulith and layer tests without weakening unrelated module rules.
 

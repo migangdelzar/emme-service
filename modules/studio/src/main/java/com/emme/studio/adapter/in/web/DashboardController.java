@@ -1,6 +1,6 @@
-package com.emme.studio.web;
+package com.emme.studio.adapter.in.web;
 
-import com.emme.studio.application.DashboardBroadcaster;
+import com.emme.studio.application.service.DashboardBroadcaster;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;

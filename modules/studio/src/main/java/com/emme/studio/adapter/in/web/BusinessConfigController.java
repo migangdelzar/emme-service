@@ -1,8 +1,8 @@
-package com.emme.studio.web;
+package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.studio.application.BusinessConfigService;
+import com.emme.studio.application.service.BusinessConfigService;
 import com.emme.studio.entity.BookingPolicy;
 import com.emme.studio.entity.BusinessProfile;
 import com.emme.studio.entity.DayOfWeek;

@@ -5,7 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.emme.notification.event.NotificationDeliveredEvent;
-import com.emme.studio.application.DashboardBroadcaster;
+import com.emme.studio.application.service.DashboardBroadcaster;
 import com.emme.testing.BaseSpringModuleTest;
 import java.io.IOException;
 import org.junit.jupiter.api.AfterEach;

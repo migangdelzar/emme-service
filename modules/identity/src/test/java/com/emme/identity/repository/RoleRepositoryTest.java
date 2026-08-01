@@ -3,7 +3,7 @@ package com.emme.identity.repository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.emme.identity.adapter.out.persistence.entity.Role;
+import com.emme.identity.adapter.out.persistence.entity.RoleEntity;
 import com.emme.identity.adapter.out.persistence.entity.RoleScope;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository;
 import com.emme.testing.BaseRepositoryTest;
@@ -18,9 +18,9 @@ class RoleRepositoryTest extends BaseRepositoryTest {
 
   @Test
   void shouldSaveAndFindRole() {
-    Role role = roleRepo.save(new Role("admin", "Administrator", RoleScope.PLATFORM));
+    RoleEntity role = roleRepo.save(new RoleEntity("admin", "Administrator", RoleScope.PLATFORM));
 
-    Optional<Role> found = roleRepo.findById(role.getId());
+    Optional<RoleEntity> found = roleRepo.findById(role.getId());
     assertTrue(found.isPresent());
     assertEquals("admin", found.get().getCode());
     assertEquals("Administrator", found.get().getName());
@@ -29,8 +29,8 @@ class RoleRepositoryTest extends BaseRepositoryTest {
 
   @Test
   void shouldFindByScope() {
-    roleRepo.save(new Role("manager", "Manager", RoleScope.TENANT));
-    roleRepo.save(new Role("superadmin", "Super Admin", RoleScope.PLATFORM));
+    roleRepo.save(new RoleEntity("manager", "Manager", RoleScope.TENANT));
+    roleRepo.save(new RoleEntity("superadmin", "Super Admin", RoleScope.PLATFORM));
 
     // Query all and filter by scope (SpringDataRoleRepository has no findByScope method)
     long tenantRoles =

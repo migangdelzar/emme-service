@@ -378,3 +378,20 @@ limiting, then continue authorization domain/application separation.
   PostgreSQL/Testcontainers shutdown I/O warnings after test completion.
 - Studio Modulith verification, service CI, both application boot JARs,
   Markdown validation, and `git diff --check` passed.
+
+## Identity persistence entity naming slice — 2026-08-01
+
+- [x] Add and run the failing source-tree test for normalized `*Entity` names.
+- [x] Rename Identity role/permission JPA types and update all repository,
+  adapter, mapper, fixture, and integration-test references.
+- [x] Verify Identity tests, integration tests, Modulith, CI, boot JARs,
+  Markdown, and whitespace.
+
+### Results
+
+- The convention test first failed on the missing normalized entity files.
+- Identity unit tests, Checkstyle, Spotless, and integration tests passed.
+- Studio Modulith verification, service CI, both application boot JARs,
+  Markdown validation, and `git diff --check` passed.
+- Integration teardown emitted existing Testcontainers/PostgreSQL shutdown
+  warnings after successful test completion.

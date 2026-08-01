@@ -30,6 +30,24 @@ class IdentityPackageConventionTest {
   private static final Path PERSISTENCE_ENTITY =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/CustomerIdentityEntity.java");
+  private static final Path ROLE_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/RoleEntity.java");
+  private static final Path PERMISSION_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/PermissionEntity.java");
+  private static final Path ROLE_PERMISSION_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/RolePermissionEntity.java");
+  private static final Path LEGACY_ROLE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/Role.java");
+  private static final Path LEGACY_PERMISSION =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/Permission.java");
+  private static final Path LEGACY_ROLE_PERMISSION =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/RolePermission.java");
   private static final Path PERSISTENCE_REPOSITORY =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/SpringDataMembershipRepository.java");
@@ -281,6 +299,16 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(PERSISTENCE_PACKAGE)).isTrue();
     assertThat(Files.exists(PERSISTENCE_ENTITY)).isTrue();
     assertThat(Files.exists(PERSISTENCE_REPOSITORY)).isTrue();
+  }
+
+  @Test
+  void namesJpaRoleAndPermissionRepresentationsAsEntities() {
+    assertThat(Files.exists(ROLE_ENTITY)).isTrue();
+    assertThat(Files.exists(PERMISSION_ENTITY)).isTrue();
+    assertThat(Files.exists(ROLE_PERMISSION_ENTITY)).isTrue();
+    assertThat(Files.exists(LEGACY_ROLE)).isFalse();
+    assertThat(Files.exists(LEGACY_PERMISSION)).isFalse();
+    assertThat(Files.exists(LEGACY_ROLE_PERMISSION)).isFalse();
   }
 
   @Test

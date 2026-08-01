@@ -1,7 +1,7 @@
 package com.emme.identity.adapter.out.persistence.adapter;
 
 import com.emme.identity.adapter.out.persistence.entity.MembershipEntity;
-import com.emme.identity.adapter.out.persistence.entity.Role;
+import com.emme.identity.adapter.out.persistence.entity.RoleEntity;
 import com.emme.identity.adapter.out.persistence.mapper.MembershipPersistenceMapper;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository;
@@ -31,7 +31,7 @@ public class MembershipPersistenceAdapter implements MembershipRepository {
 
   @Override
   public Membership save(Membership membership) {
-    Role role =
+    RoleEntity role =
         roleRepository
             .findById(membership.roleId())
             .orElseThrow(

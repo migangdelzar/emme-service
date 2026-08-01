@@ -1,7 +1,7 @@
 package com.emme.identity.adapter.out.persistence.mapper;
 
 import com.emme.identity.adapter.out.persistence.entity.MembershipEntity;
-import com.emme.identity.adapter.out.persistence.entity.Role;
+import com.emme.identity.adapter.out.persistence.entity.RoleEntity;
 import com.emme.identity.domain.model.Membership;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public final class MembershipPersistenceMapper {
 
-  public MembershipEntity toEntity(Membership membership, Role role) {
+  public MembershipEntity toEntity(Membership membership, RoleEntity role) {
     if (membership.id() == null) {
       return new MembershipEntity(membership.tenantId(), role, membership.userReference());
     }

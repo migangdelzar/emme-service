@@ -401,7 +401,7 @@ Remaining follow-up: complete the wider Identity security hardening surface.
 - [x] Added focused configuration and filter regression tests for spoofed and
   trusted forwarded headers.
 - [x] Recorded the security decision in
-  `docs/adr/0001-identity-login-rate-limit-client-ip.md`.
+  `docs/adr/0003-identity-login-rate-limit-client-ip.md`.
 
 The remaining Identity work is distributed rate-limit state, broader
 authorization review, and the final production-readiness evidence gate.
@@ -430,3 +430,18 @@ separation, and the final production-readiness evidence gate.
 
 Remaining follow-up: decide trusted proxy handling for the login rate-limit
 filter, then continue authorization domain/application separation.
+
+## Completed persistence entity naming slice — 2026-08-01
+
+- [x] Renamed the role, permission, and role-permission JPA representations to
+  `RoleEntity`, `PermissionEntity`, and `RolePermissionEntity`.
+- [x] Updated Spring Data repositories, persistence adapters, membership
+  mapping, repository tests, and module integration fixtures.
+- [x] Added a source-tree regression test that rejects the ambiguous legacy
+  entity names.
+- [x] Preserved the existing table names, columns, relationships, and runtime
+  behavior.
+
+The remaining Identity work is distributed rate-limit state, broader
+authorization domain/application separation, and the final production-readiness
+evidence gate.

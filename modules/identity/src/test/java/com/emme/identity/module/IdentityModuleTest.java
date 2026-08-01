@@ -10,9 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.emme.identity.adapter.out.persistence.entity.MembershipEntity;
-import com.emme.identity.adapter.out.persistence.entity.Permission;
-import com.emme.identity.adapter.out.persistence.entity.Role;
-import com.emme.identity.adapter.out.persistence.entity.RolePermission;
+import com.emme.identity.adapter.out.persistence.entity.PermissionEntity;
+import com.emme.identity.adapter.out.persistence.entity.RoleEntity;
+import com.emme.identity.adapter.out.persistence.entity.RolePermissionEntity;
 import com.emme.identity.adapter.out.persistence.entity.RoleScope;
 import com.emme.identity.adapter.out.persistence.repository.PermissionRepository;
 import com.emme.identity.adapter.out.persistence.repository.RolePermissionRepository;
@@ -34,13 +34,14 @@ class IdentityModuleTest extends BaseSpringModuleTest {
   @Autowired private RolePermissionRepository rolePermissionRepo;
 
   private UUID tenantId;
-  private Role savedRole;
+  private RoleEntity savedRole;
 
   @BeforeEach
   void setUp() {
     tenantId = fullSetup();
     savedRole =
-        roleRepo.save(new Role("test-role-" + System.nanoTime(), "Test Role", RoleScope.TENANT));
+        roleRepo.save(
+            new RoleEntity("test-role-" + System.nanoTime(), "Test Role", RoleScope.TENANT));
   }
 
   @Test
@@ -98,9 +99,9 @@ class IdentityModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldGetCurrentUserPermissions() throws Exception {
-    Permission permission =
-        permissionRepo.save(new Permission("quotes.read", "Read quotes", "Read quote data"));
-    rolePermissionRepo.save(new RolePermission(savedRole, permission));
+    PermissionEntity permission =
+        permissionRepo.save(new PermissionEntity("quotes.read", "Read quotes", "Read quote data"));
+    rolePermissionRepo.save(new RolePermissionEntity(savedRole, permission));
     membershipRepo.save(new MembershipEntity(tenantId, savedRole, PERMISSIONS_TEST_USER));
 
     mockMvc

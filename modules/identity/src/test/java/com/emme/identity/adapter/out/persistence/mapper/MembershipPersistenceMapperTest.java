@@ -3,7 +3,7 @@ package com.emme.identity.adapter.out.persistence.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.identity.adapter.out.persistence.entity.MembershipEntity;
-import com.emme.identity.adapter.out.persistence.entity.Role;
+import com.emme.identity.adapter.out.persistence.entity.RoleEntity;
 import com.emme.identity.adapter.out.persistence.entity.RoleScope;
 import com.emme.identity.domain.model.Membership;
 import com.emme.identity.domain.model.MembershipStatus;
@@ -21,7 +21,7 @@ class MembershipPersistenceMapperTest {
     UUID tenantId = UUID.randomUUID();
     Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
     Instant updatedAt = Instant.parse("2026-01-01T01:00:00Z");
-    Role role = new Role("tenant-owner", "Tenant owner", RoleScope.TENANT);
+    RoleEntity role = new RoleEntity("tenant-owner", "Tenant owner", RoleScope.TENANT);
     role.onCreate();
 
     Membership domain =

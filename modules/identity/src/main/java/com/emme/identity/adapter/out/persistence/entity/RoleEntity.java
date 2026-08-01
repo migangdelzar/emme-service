@@ -8,9 +8,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.util.Objects;
 
+/** JPA representation of an Identity role. */
 @Entity
 @Table(name = "role", schema = "emme_core")
-public class Role extends BaseEntity {
+public class RoleEntity extends BaseEntity {
 
   @Column(name = "code", nullable = false, unique = true, length = 50)
   private String code;
@@ -25,9 +26,9 @@ public class Role extends BaseEntity {
   @Column(name = "active", nullable = false)
   private boolean active = true;
 
-  protected Role() {}
+  protected RoleEntity() {}
 
-  public Role(String code, String name, RoleScope scope) {
+  public RoleEntity(String code, String name, RoleScope scope) {
     this.code = Objects.requireNonNull(code, "code must not be null");
     this.name = Objects.requireNonNull(name, "name must not be null");
     this.scope = Objects.requireNonNull(scope, "scope must not be null");

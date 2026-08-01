@@ -1,7 +1,7 @@
 package com.emme.identity.adapter.out.persistence.adapter;
 
-import com.emme.identity.adapter.out.persistence.entity.Permission;
-import com.emme.identity.adapter.out.persistence.entity.RolePermission;
+import com.emme.identity.adapter.out.persistence.entity.PermissionEntity;
+import com.emme.identity.adapter.out.persistence.entity.RolePermissionEntity;
 import com.emme.identity.adapter.out.persistence.repository.PermissionRepository;
 import com.emme.identity.adapter.out.persistence.repository.RolePermissionRepository;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository;
@@ -45,11 +45,11 @@ public class PermissionPersistenceAdapter implements PermissionPort {
 
     Set<UUID> permissionIds =
         rolePermissionRepository.findByRoleIdIn(roleIds).stream()
-            .map(RolePermission::getPermission)
-            .map(Permission::getId)
+            .map(RolePermissionEntity::getPermission)
+            .map(PermissionEntity::getId)
             .collect(Collectors.toSet());
     return permissionRepository.findAllById(permissionIds).stream()
-        .map(Permission::getCode)
+        .map(PermissionEntity::getCode)
         .collect(Collectors.toSet());
   }
 }

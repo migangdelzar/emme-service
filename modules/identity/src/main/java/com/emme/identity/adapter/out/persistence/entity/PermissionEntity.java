@@ -6,9 +6,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import java.util.Objects;
 
+/** JPA representation of an Identity permission. */
 @Entity
 @Table(name = "permission", schema = "emme_core")
-public class Permission extends BaseEntity {
+public class PermissionEntity extends BaseEntity {
 
   @Column(name = "code", nullable = false, unique = true, length = 100)
   private String code;
@@ -22,9 +23,9 @@ public class Permission extends BaseEntity {
   @Column(name = "active", nullable = false)
   private boolean active = true;
 
-  protected Permission() {}
+  protected PermissionEntity() {}
 
-  public Permission(String code, String name, String description) {
+  public PermissionEntity(String code, String name, String description) {
     this.code = Objects.requireNonNull(code, "code must not be null");
     this.name = Objects.requireNonNull(name, "name must not be null");
     this.description = description;

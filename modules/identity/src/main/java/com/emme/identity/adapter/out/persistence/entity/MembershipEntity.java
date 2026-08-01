@@ -27,7 +27,7 @@ public class MembershipEntity extends BaseEntity {
       name = "role_id",
       nullable = false,
       foreignKey = @ForeignKey(name = "fk_membership_role"))
-  private Role role;
+  private RoleEntity role;
 
   @Column(name = "user_reference", nullable = false, length = 150)
   private String userReference;
@@ -38,7 +38,7 @@ public class MembershipEntity extends BaseEntity {
 
   protected MembershipEntity() {}
 
-  public MembershipEntity(UUID tenantId, Role role, String userReference) {
+  public MembershipEntity(UUID tenantId, RoleEntity role, String userReference) {
     this.tenantId = Objects.requireNonNull(tenantId, "tenantId must not be null");
     this.role = Objects.requireNonNull(role, "role must not be null");
     this.userReference = Objects.requireNonNull(userReference, "userReference must not be null");
@@ -47,7 +47,7 @@ public class MembershipEntity extends BaseEntity {
   public static MembershipEntity restore(
       UUID id,
       UUID tenantId,
-      Role role,
+      RoleEntity role,
       String userReference,
       MembershipStatus status,
       java.time.Instant createdAt,
@@ -62,7 +62,7 @@ public class MembershipEntity extends BaseEntity {
     return tenantId;
   }
 
-  public Role getRole() {
+  public RoleEntity getRole() {
     return role;
   }
 

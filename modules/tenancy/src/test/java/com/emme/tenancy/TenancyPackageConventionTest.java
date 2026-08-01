@@ -78,7 +78,7 @@ class TenancyPackageConventionTest {
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/TenantProvisioningService.java");
   private static final Path PROVISIONING_IMPLEMENTATION =
       sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/JdbcTenantProvisioningService.java");
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/TenantProvisioningApplicationService.java");
   private static final Path PROCESS_PACKAGE =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/application/process");
   private static final Path PROVISIONING_PROCESS =
@@ -239,6 +239,13 @@ class TenancyPackageConventionTest {
     assertThat(processManager).doesNotContain("JdbcTemplate");
     assertThat(processManager).doesNotContain("javax.sql.DataSource");
     assertThat(processManager).doesNotContain("liquibase.");
+
+    String provisioningService =
+        Files.readString(
+            sourcePath(
+                "modules/tenancy/src/main/java/com/emme/tenancy/application/service/TenantProvisioningApplicationService.java"));
+    assertThat(provisioningService).contains("TenantProvisioningRepository");
+    assertThat(provisioningService).doesNotContain("JdbcTemplate");
   }
 
   @Test

@@ -17,6 +17,30 @@ public final class JdbcTenantProvisioningRepository implements TenantProvisionin
   }
 
   @Override
+  public UUID requestProvisioning(String slug, String schemaName) {
+    return jdbc.queryForObject(
+        "INSERT INTO emme_core.tenant_registry (slug, schema_name, status) VALUES (?, ?, 'PROVISIONING') RETURNING tenant_id",
+        UUID.class,
+        slug,
+        schemaName);
+  }
+
+  @Override
+  public TenantProvisioningStatus findStatus(UUID tenantId) {
+    return jdbc.queryForObject(
+        "SELECT status, schema_name, last_migrated_at, migration_error FROM emme_core.tenant_registry WHERE tenant_id = ?",
+        (rs, rowNum) ->
+            new TenantProvisioningStatus(
+                rs.getString("status"),
+                rs.getString("schema_name"),
+                rs.getTimestamp("last_migrated_at") != null
+                    ? rs.getTimestamp("last_migrated_at").toInstant()
+                    : null,
+                rs.getString("migration_error")),
+        tenantId);
+  }
+
+  @Override
   public List<TenantProvisioningRequest> findPending() {
     return jdbc.query(
         "SELECT tenant_id, slug, schema_name FROM emme_core.tenant_registry WHERE status = 'PROVISIONING'",

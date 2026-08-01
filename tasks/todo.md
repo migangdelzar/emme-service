@@ -169,6 +169,27 @@ Execution rules and dependencies are maintained in
 - Integration teardown continues to emit known H2/PostgreSQL and event-
   publication shutdown warnings after successful completion.
 
+## Tenancy provisioning service JDBC boundary slice — 2026-08-01
+
+- [x] Add failing service and source-boundary tests for request/status access.
+- [x] Extend `TenantProvisioningRepository` with request creation and status
+  lookup capabilities.
+- [x] Move request/status SQL into `JdbcTenantProvisioningRepository`.
+- [x] Remove `JdbcTemplate` from `TenantProvisioningApplicationService`.
+- [x] Verify Tenancy tests, Checkstyle, Spotless, integration tests, Modulith,
+  CI, boot JARs, Markdown, and whitespace.
+
+#### Results
+
+- Red phase: the new service test failed to compile because request/status
+  capabilities were not yet part of the provisioning repository port.
+- Green/refactor phase: request creation and status mapping now use the
+  application-owned port; JDBC remains only in the outbound adapter.
+- The application implementation was normalized from
+  `JdbcTenantProvisioningService` to `TenantProvisioningApplicationService`.
+- Focused service/source tests and the full Tenancy/service verification gates
+  passed.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

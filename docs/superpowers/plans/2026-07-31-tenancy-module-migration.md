@@ -193,7 +193,7 @@ remaining Identity security/domain boundary remain future slices.
   implementation namespaces.
 - [x] Moved the provisioning capability and JDBC implementation under
   `application/service`, with the technology-specific implementation named
-  `JdbcTenantProvisioningService`.
+  `TenantProvisioningApplicationService`.
 - [x] Renamed the scheduled long-running worker to
   `TenantProvisioningProcessManager` under `application/process`, reserving the
   process package for real long-running coordination.
@@ -264,7 +264,8 @@ rules, and the committed final verification report.
 
 ## Completed provisioning port boundary slice — 2026-08-01
 
-- [x] Added `TenantProvisioningRepository` for pending-request lookup and
+- [x] Added `TenantProvisioningRepository` for request creation, status lookup,
+  pending-request lookup and
   registry lifecycle transitions.
 - [x] Added `TenantSchemaMigrationPort` for schema creation and Liquibase
   migration.
@@ -282,3 +283,18 @@ Remaining Tenancy work includes explicit transaction/event-after-commit
 behavior, pool lifecycle and routing failure evidence, replay/idempotency and
 rollback evidence, architecture dependency rules, and the committed final
 verification report.
+
+## Completed provisioning service boundary slice — 2026-08-01
+
+- [x] Extended `TenantProvisioningRepository` with request creation and status
+  lookup capabilities.
+- [x] Moved request/status SQL into `JdbcTenantProvisioningRepository`.
+- [x] Removed direct `JdbcTemplate` usage from the application service.
+- [x] Renamed the implementation to `TenantProvisioningApplicationService` so
+  the class name reflects application ownership rather than its adapter.
+- [x] Added service delegation and source-boundary regression coverage.
+- [x] Reverified Tenancy tests/check/integration, Studio Modulith, service CI,
+  boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Tenancy work is operational evidence, transaction/event-after-commit
+decisions, architecture rules, and the committed final verification report.

@@ -1,9 +1,9 @@
 package com.emme.identity.application.service;
 
 import com.emme.identity.application.port.out.MembershipRepository;
-import com.emme.identity.application.port.out.RoleReference;
 import com.emme.identity.application.port.out.RoleRepository;
 import com.emme.identity.domain.model.Membership;
+import com.emme.identity.domain.model.Role;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class MembershipService {
   }
 
   public Membership assign(UUID tenantId, UUID roleId, String userReference) {
-    RoleReference role =
+    Role role =
         roleRepository
             .findById(roleId)
             .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleId));

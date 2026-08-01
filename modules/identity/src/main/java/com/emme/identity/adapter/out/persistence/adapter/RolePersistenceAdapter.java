@@ -1,8 +1,9 @@
 package com.emme.identity.adapter.out.persistence.adapter;
 
+import com.emme.identity.adapter.out.persistence.mapper.RolePersistenceMapper;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository;
-import com.emme.identity.application.port.out.RoleReference;
 import com.emme.identity.application.port.out.RoleRepository;
+import com.emme.identity.domain.model.Role;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -12,13 +13,15 @@ import org.springframework.stereotype.Component;
 public class RolePersistenceAdapter implements RoleRepository {
 
   private final SpringDataRoleRepository repository;
+  private final RolePersistenceMapper mapper;
 
-  public RolePersistenceAdapter(SpringDataRoleRepository repository) {
+  public RolePersistenceAdapter(SpringDataRoleRepository repository, RolePersistenceMapper mapper) {
     this.repository = repository;
+    this.mapper = mapper;
   }
 
   @Override
-  public Optional<RoleReference> findById(UUID roleId) {
-    return repository.findById(roleId).map(role -> new RoleReference(role.getId(), role.getCode()));
+  public Optional<Role> findById(UUID roleId) {
+    return repository.findById(roleId).map(mapper::toDomain);
   }
 }

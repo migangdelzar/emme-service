@@ -2,6 +2,7 @@ package com.emme.identity.adapter.out.persistence.adapter;
 
 import com.emme.identity.adapter.out.persistence.entity.PermissionEntity;
 import com.emme.identity.adapter.out.persistence.entity.RolePermissionEntity;
+import com.emme.identity.adapter.out.persistence.mapper.PermissionPersistenceMapper;
 import com.emme.identity.adapter.out.persistence.repository.PermissionRepository;
 import com.emme.identity.adapter.out.persistence.repository.RolePermissionRepository;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository;
@@ -20,14 +21,17 @@ public class PermissionPersistenceAdapter implements PermissionPort {
   private final SpringDataMembershipRepository membershipRepository;
   private final RolePermissionRepository rolePermissionRepository;
   private final PermissionRepository permissionRepository;
+  private final PermissionPersistenceMapper permissionMapper;
 
   public PermissionPersistenceAdapter(
       SpringDataMembershipRepository membershipRepository,
       RolePermissionRepository rolePermissionRepository,
-      PermissionRepository permissionRepository) {
+      PermissionRepository permissionRepository,
+      PermissionPersistenceMapper permissionMapper) {
     this.membershipRepository = membershipRepository;
     this.rolePermissionRepository = rolePermissionRepository;
     this.permissionRepository = permissionRepository;
+    this.permissionMapper = permissionMapper;
   }
 
   @Override
@@ -49,7 +53,8 @@ public class PermissionPersistenceAdapter implements PermissionPort {
             .map(PermissionEntity::getId)
             .collect(Collectors.toSet());
     return permissionRepository.findAllById(permissionIds).stream()
-        .map(PermissionEntity::getCode)
+        .map(permissionMapper::toDomain)
+        .map(permission -> permission.code())
         .collect(Collectors.toSet());
   }
 }

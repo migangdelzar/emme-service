@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.identity.adapter.out.persistence.entity.MembershipEntity;
 import com.emme.identity.adapter.out.persistence.entity.RoleEntity;
-import com.emme.identity.adapter.out.persistence.entity.RoleScope;
 import com.emme.identity.domain.model.Membership;
 import com.emme.identity.domain.model.MembershipStatus;
+import com.emme.identity.domain.model.RoleScope;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

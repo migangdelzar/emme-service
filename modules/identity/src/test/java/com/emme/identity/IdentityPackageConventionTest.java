@@ -288,6 +288,21 @@ class IdentityPackageConventionTest {
   private static final Path IDENTITY_USER_AUTHORITIES_MAPPER =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/in/web/security/IdentityUserAuthoritiesMapper.java");
+  private static final Path ROLE_DOMAIN_MODEL =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/domain/model/Role.java");
+  private static final Path PERMISSION_DOMAIN_MODEL =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/domain/model/Permission.java");
+  private static final Path ROLE_SCOPE_DOMAIN_MODEL =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/domain/model/RoleScope.java");
+  private static final Path ROLE_PERSISTENCE_MAPPER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/mapper/RolePersistenceMapper.java");
+  private static final Path PERMISSION_PERSISTENCE_MAPPER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/mapper/PermissionPersistenceMapper.java");
+  private static final Path LEGACY_ROLE_SCOPE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/RoleScope.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -331,6 +346,16 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(LEGACY_ROLE)).isFalse();
     assertThat(Files.exists(LEGACY_PERMISSION)).isFalse();
     assertThat(Files.exists(LEGACY_ROLE_PERMISSION)).isFalse();
+  }
+
+  @Test
+  void ownsRoleAndPermissionBusinessModelsOutsidePersistence() {
+    assertThat(Files.exists(ROLE_DOMAIN_MODEL)).isTrue();
+    assertThat(Files.exists(PERMISSION_DOMAIN_MODEL)).isTrue();
+    assertThat(Files.exists(ROLE_SCOPE_DOMAIN_MODEL)).isTrue();
+    assertThat(Files.exists(ROLE_PERSISTENCE_MAPPER)).isTrue();
+    assertThat(Files.exists(PERMISSION_PERSISTENCE_MAPPER)).isTrue();
+    assertThat(Files.exists(LEGACY_ROLE_SCOPE)).isFalse();
   }
 
   @Test

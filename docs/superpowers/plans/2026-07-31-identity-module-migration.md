@@ -446,6 +446,24 @@ The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
 
+## Completed role and permission domain boundary slice — 2026-08-01
+
+- [x] Added framework-free `Role`, `Permission`, and domain-owned `RoleScope`.
+- [x] Added `RolePersistenceMapper` and `PermissionPersistenceMapper`.
+- [x] Kept JPA representations as `RoleEntity`, `PermissionEntity`, and
+  `RolePermissionEntity`; preserved existing table, column, and enum mappings.
+- [x] Rewired `RolePersistenceAdapter`, `MembershipService`, and
+  `PermissionPersistenceAdapter` to consume domain models or mapper boundaries.
+- [x] Removed obsolete `RoleReference` and persistence-owned `RoleScope`.
+- [x] Added domain, mapper, and source-tree regression coverage.
+- [x] Verified Identity tests/check/integration, Studio Modulith, service CI,
+  boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Identity work includes distributed rate-limit state, architecture
+dependency rules, explicit provisioning transaction/event ports, broader
+authorization hardening, and final tenant-isolation and migration/recovery
+evidence.
+
 ## Completed inbound security-context ownership slice — 2026-08-01
 
 - [x] Moved `UserContext` and `UserContextHolder` out of the Identity root

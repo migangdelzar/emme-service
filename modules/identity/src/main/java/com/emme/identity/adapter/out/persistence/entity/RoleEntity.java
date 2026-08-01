@@ -1,12 +1,15 @@
 package com.emme.identity.adapter.out.persistence.entity;
 
+import com.emme.identity.domain.model.RoleScope;
 import com.emme.shared.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.util.Objects;
+import java.util.UUID;
 
 /** JPA representation of an Identity role. */
 @Entity
@@ -32,6 +35,20 @@ public class RoleEntity extends BaseEntity {
     this.code = Objects.requireNonNull(code, "code must not be null");
     this.name = Objects.requireNonNull(name, "name must not be null");
     this.scope = Objects.requireNonNull(scope, "scope must not be null");
+  }
+
+  public static RoleEntity restore(
+      UUID id,
+      String code,
+      String name,
+      RoleScope scope,
+      boolean active,
+      Instant createdAt,
+      Instant updatedAt) {
+    RoleEntity entity = new RoleEntity(code, name, scope);
+    entity.setActive(active);
+    entity.restoreAuditFields(id, createdAt, updatedAt);
+    return entity;
   }
 
   public String getCode() {

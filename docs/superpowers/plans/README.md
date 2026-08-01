@@ -43,7 +43,7 @@ below is the authoritative order for open work.
 | `studio` | [studio migration](2026-07-31-studio-module-migration.md) | Core complete | Keep nested capabilities in separate plans |
 | `studio.documents` | [documents capability migration](2026-07-31-studio-documents-module-migration.md) | Planned | Normalize nested document and chunk ownership |
 | `studio.subscriptions` | [subscriptions capability migration](2026-07-31-studio-subscriptions-module-migration.md) | Planned | Normalize nested subscription ownership |
-| `identity` | [identity module migration](2026-07-31-identity-module-migration.md) | In progress: security hardening and authorization | Separate security domain, persistence, inbound security, and Keycloak adapters |
+| `identity` | [identity module migration](2026-07-31-identity-module-migration.md) | In progress: remaining authorization separation and production evidence | Separate security domain, persistence, inbound security, and Keycloak adapters |
 | `tenancy` | [tenancy module migration](2026-07-31-tenancy-module-migration.md) | In progress: operational evidence and port cleanup | Separate tenant domain, provisioning, database pool, and web infrastructure |
 | `assistant` | [assistant module migration](2026-07-31-assistant-module-template-migration.md) | Planned | Normalize AI providers, conversations, and WhatsApp webhook boundaries |
 | `notification` | [notification module migration](2026-07-31-notification-module-migration.md) | Planned | Isolate notification persistence and email/SMS/push provider adapters |

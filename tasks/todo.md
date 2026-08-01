@@ -97,6 +97,31 @@ Execution rules and dependencies are maintained in
 - [x] Complete Catalog baseline verification before Identity's next
   implementation slice.
 
+## Identity role/permission domain boundary slice — 2026-08-01
+
+- [x] Add failing domain, mapper, and package-ownership tests for `Role` and
+  `Permission`.
+- [x] Introduce framework-free `Role`, `Permission`, and `RoleScope` models.
+- [x] Add persistence mappers and rewire role/permission adapters through the
+  domain models without changing schema or permission results.
+- [x] Remove the obsolete `RoleReference` port model after all consumers use
+  the domain `Role`.
+- [x] Verify Identity tests, Checkstyle, Spotless, integration tests, Modulith,
+  CI, boot JARs, Markdown, and whitespace.
+
+#### Results
+
+- Red phase: the new source-tree and domain/mapper tests failed to compile
+  because the canonical models and mappers did not yet exist.
+- Green/refactor phase: focused domain and mapper tests passed after the
+  framework-free models and persistence boundary were introduced.
+- Full verification passed for Identity check/integration tests, Studio
+  Modulith verification, service CI, both boot JARs, Markdown validation, and
+  whitespace checks.
+- Known non-blocking dependency-analysis warnings remain in the application
+  projects because Spring Boot projects currently apply both `java-library` and
+  `org.springframework.boot`.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

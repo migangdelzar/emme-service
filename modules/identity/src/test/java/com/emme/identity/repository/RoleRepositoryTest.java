@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.emme.identity.adapter.out.persistence.entity.RoleEntity;
-import com.emme.identity.adapter.out.persistence.entity.RoleScope;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository;
+import com.emme.identity.domain.model.RoleScope;
 import com.emme.testing.BaseRepositoryTest;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

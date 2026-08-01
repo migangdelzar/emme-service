@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class MembershipTest {
 
   @Test
-  void createsAnActiveMembershipWithItsRoleReference() {
+  void createsAnActiveMembershipWithItsRole() {
     UUID tenantId = UUID.randomUUID();
     UUID roleId = UUID.randomUUID();
 

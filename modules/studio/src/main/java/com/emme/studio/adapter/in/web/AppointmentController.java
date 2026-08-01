@@ -5,7 +5,8 @@ import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 import com.emme.studio.application.result.AppointmentView;
 import com.emme.studio.application.service.AppointmentService;
 import com.emme.studio.application.service.SlotSearchService;
-import com.emme.studio.subscriptions.application.SubscriptionService;
+import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
+import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -37,15 +38,15 @@ public class AppointmentController {
 
   private final AppointmentService appointmentService;
   private final SlotSearchService slotSearchService;
-  private final SubscriptionService subscriptionService;
+  private final EnforceEntitlementUseCase enforceEntitlement;
 
   public AppointmentController(
       AppointmentService appointmentService,
       SlotSearchService slotSearchService,
-      SubscriptionService subscriptionService) {
+      EnforceEntitlementUseCase enforceEntitlement) {
     this.appointmentService = appointmentService;
     this.slotSearchService = slotSearchService;
-    this.subscriptionService = subscriptionService;
+    this.enforceEntitlement = enforceEntitlement;
   }
 
   @GetMapping
@@ -70,7 +71,7 @@ public class AppointmentController {
   public ResponseEntity<?> create(@Valid @RequestBody CreateAppointmentRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          subscriptionService.enforce(tenantId, "appointments:write");
+          enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "appointments:write"));
           try {
             AppointmentView appointment =
                 appointmentService.create(
@@ -115,7 +116,7 @@ public class AppointmentController {
   public ResponseEntity<AppointmentResponse> cancel(@PathVariable UUID id) {
     return withCurrentTenant(
         tenantId -> {
-          subscriptionService.enforce(tenantId, "appointments:write");
+          enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "appointments:write"));
           return withConflictHandling(() -> appointmentService.cancel(id));
         });
   }

@@ -4,7 +4,8 @@ import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
 import com.emme.studio.application.service.CustomerService;
 import com.emme.studio.domain.model.Customer;
-import com.emme.studio.subscriptions.application.SubscriptionService;
+import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
+import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,12 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class CustomerController {
 
   private final CustomerService customerService;
-  private final SubscriptionService subscriptionService;
+  private final EnforceEntitlementUseCase enforceEntitlement;
 
   public CustomerController(
-      CustomerService customerService, SubscriptionService subscriptionService) {
+      CustomerService customerService, EnforceEntitlementUseCase enforceEntitlement) {
     this.customerService = customerService;
-    this.subscriptionService = subscriptionService;
+    this.enforceEntitlement = enforceEntitlement;
   }
 
   @GetMapping
@@ -53,7 +54,7 @@ public class CustomerController {
       @Valid @RequestBody CreateCustomerRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          subscriptionService.enforce(tenantId, "customers:write");
+          enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "customers:write"));
           Customer customer =
               customerService.create(tenantId, request.name(), request.phone(), request.email());
           var location = URI.create("/api/v1/customers/" + customer.getId());

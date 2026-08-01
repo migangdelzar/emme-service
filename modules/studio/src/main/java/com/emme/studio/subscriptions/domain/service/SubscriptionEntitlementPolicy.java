@@ -1,11 +1,12 @@
-package com.emme.studio.subscriptions.application;
+package com.emme.studio.subscriptions.domain.service;
 
-import com.emme.studio.subscriptions.api.PlanType;
+import com.emme.studio.subscriptions.api.type.PlanType;
+import com.emme.studio.subscriptions.domain.exception.EntitlementViolationException;
 import java.util.Set;
 
-public final class EntitlementEnforcer {
-
-  private EntitlementEnforcer() {}
+/** Pure subscription policy for plan-gated capabilities. */
+public final class SubscriptionEntitlementPolicy {
+  private SubscriptionEntitlementPolicy() {}
 
   public static Set<String> getEntitlements(PlanType plan) {
     return switch (plan) {

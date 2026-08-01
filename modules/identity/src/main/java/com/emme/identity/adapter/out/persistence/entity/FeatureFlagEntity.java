@@ -1,7 +1,7 @@
 package com.emme.identity.adapter.out.persistence.entity;
 
 import com.emme.shared.BaseEntity;
-import com.emme.studio.subscriptions.api.PlanType;
+import com.emme.studio.subscriptions.api.type.PlanType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

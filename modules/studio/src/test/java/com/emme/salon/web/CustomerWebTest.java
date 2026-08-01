@@ -4,9 +4,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.studio.subscriptions.api.PlanType;
-import com.emme.studio.subscriptions.entity.Subscription;
-import com.emme.studio.subscriptions.entity.SubscriptionRepository;
+import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
+import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
+import com.emme.studio.subscriptions.api.type.PlanType;
 import com.emme.tenancy.application.service.TenantService;
 import com.emme.testing.BaseWebTest;
 import java.time.Instant;
@@ -20,14 +20,15 @@ class CustomerWebTest extends BaseWebTest {
 
   @Autowired private TenantService tenantService;
 
-  @Autowired private SubscriptionRepository subscriptionRepo;
+  @Autowired private SpringDataSubscriptionRepository subscriptionRepo;
 
   @BeforeEach
   void setUp() {
     var tenant = tenantService.create("web-cust-" + System.nanoTime(), "Web Customer Tenant");
     tenantId = tenant.id();
     subscriptionRepo.save(
-        new Subscription(tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
+        new SubscriptionEntity(
+            tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
   }
 
   @Test

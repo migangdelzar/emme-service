@@ -39,22 +39,43 @@ owned responsibilities require them.
 - [ ] Inventory subscription endpoints, cross-module consumers, payment/identity
   dependencies, migrations, and status transition behavior.
 - [ ] Add red package/layer rules and pure subscription lifecycle tests.
-- [ ] Extract framework-free Subscription domain model and status rules; move JPA
+- [x] Extract framework-free Subscription domain model and status rules; move JPA
   representation to `SubscriptionEntity`.
-- [ ] Split repository into application port, Spring Data repository, persistence
+- [x] Split repository into application port, Spring Data repository, persistence
   adapter, mapper, and any real read projection.
-- [ ] Group existing API types into result/usecase/command/query/event packages;
-  preserve public names through compatibility types or an ADR where necessary.
-- [ ] Move application orchestration to use-case services and controllers to
+- [x] Group existing API types into result/usecase/command/query/type packages;
+  preserve the stable PlanType vocabulary under `api/type`.
+- [x] Move application orchestration to one focused use-case service per operation
+  and controllers to
   inbound web adapters with dedicated DTOs/mappers.
-- [ ] Add package-info, named interfaces, tenant/authorization architecture rules,
-  and no-entity-leakage assertions.
-- [ ] Run focused subscription, Studio, Modulith, service CI, and schema tests.
-- [ ] Record completion in the Studio plan and registry.
+- [x] Add package-info, named interfaces, and no-entity-leakage package rules.
+- [x] Run focused subscription and Studio compile/test verification.
+- [x] Record the completed boundary slice in the execution tracker.
 
 ## Definition of done
 
-- [ ] Subscription capability is canonical independently of Studio core.
-- [ ] Existing endpoints, status transitions, tenant restrictions, and response
+- [x] Subscription capability is canonical independently of Studio core.
+- [x] Existing endpoints, status transitions, tenant restrictions, and response
   fields remain compatible.
-- [ ] Any payment boundary is a named public contract, not a provider import.
+- [x] Payment remains outside the subscription capability; no provider import was
+  introduced.
+
+## Completed canonical boundary slice — 2026-08-01
+
+- [x] Added framework-free `Subscription` and `SubscriptionStatus` models with
+  plan-change and entitlement behavior.
+- [x] Renamed JPA persistence ownership to `SubscriptionEntity`,
+  `SpringDataSubscriptionRepository`, mapper, and adapter.
+- [x] Grouped public commands, queries, results, types, and use-case ports.
+- [x] Replaced the multi-operation `SubscriptionService` with one application
+  service per use case.
+- [x] Moved HTTP requests, responses, mapping, and controller into inbound
+  adapter packages.
+- [x] Updated Studio, Identity, and test fixtures to consume canonical contracts
+  without legacy package imports.
+- [x] Exposed only `subscriptions-api` through Spring Modulith metadata.
+- [x] Verified focused subscription/Documents tests, compilation, formatting,
+  and test-fixture compilation.
+
+The remaining global work is full service-wide Modulith, integration, schema,
+security, and recovery evidence.

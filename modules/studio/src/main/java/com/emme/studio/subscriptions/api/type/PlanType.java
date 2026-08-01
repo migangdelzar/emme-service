@@ -1,4 +1,4 @@
-package com.emme.studio.subscriptions.api;
+package com.emme.studio.subscriptions.api.type;
 
 public enum PlanType {
   STARTER,

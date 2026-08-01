@@ -1,8 +1,9 @@
 package com.emme.identity.adapter.out.client.subscription;
 
 import com.emme.identity.application.port.out.SubscriptionPlanPort;
-import com.emme.studio.subscriptions.api.PlanType;
-import com.emme.studio.subscriptions.application.SubscriptionService;
+import com.emme.studio.subscriptions.api.query.GetSubscriptionPlanQuery;
+import com.emme.studio.subscriptions.api.type.PlanType;
+import com.emme.studio.subscriptions.api.usecase.GetSubscriptionPlanUseCase;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -11,14 +12,14 @@ import org.springframework.stereotype.Component;
 @Component
 public final class SubscriptionPlanAdapter implements SubscriptionPlanPort {
 
-  private final SubscriptionService subscriptionService;
+  private final GetSubscriptionPlanUseCase getSubscriptionPlan;
 
-  public SubscriptionPlanAdapter(SubscriptionService subscriptionService) {
-    this.subscriptionService = subscriptionService;
+  public SubscriptionPlanAdapter(GetSubscriptionPlanUseCase getSubscriptionPlan) {
+    this.getSubscriptionPlan = getSubscriptionPlan;
   }
 
   @Override
   public Optional<PlanType> findPlanForTenant(UUID tenantId) {
-    return subscriptionService.getPlanForTenant(tenantId);
+    return getSubscriptionPlan.getPlan(new GetSubscriptionPlanQuery(tenantId));
   }
 }

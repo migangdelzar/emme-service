@@ -6,9 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.emme.identity.adapter.out.persistence.entity.FeatureFlagEntity;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataFeatureFlagRepository;
-import com.emme.studio.subscriptions.api.PlanType;
-import com.emme.studio.subscriptions.entity.Subscription;
-import com.emme.studio.subscriptions.entity.SubscriptionRepository;
+import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
+import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
+import com.emme.studio.subscriptions.api.type.PlanType;
 import com.emme.tenancy.application.service.TenantService;
 import com.emme.testing.BaseWebTest;
 import java.time.Instant;
@@ -22,7 +22,7 @@ class AiWebTest extends BaseWebTest {
 
   @Autowired private TenantService tenantService;
 
-  @Autowired private SubscriptionRepository subscriptionRepo;
+  @Autowired private SpringDataSubscriptionRepository subscriptionRepo;
 
   @Autowired private SpringDataFeatureFlagRepository featureFlagRepo;
 
@@ -31,7 +31,8 @@ class AiWebTest extends BaseWebTest {
     var tenant = tenantService.create("ai-web-" + System.nanoTime(), "AI Web Tenant");
     tenantId = tenant.id();
     subscriptionRepo.save(
-        new Subscription(tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
+        new SubscriptionEntity(
+            tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
     featureFlagRepo.save(new FeatureFlagEntity(null, "ai_chat", true, null, "global"));
   }
 

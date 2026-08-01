@@ -1,4 +1,4 @@
-package com.emme.studio.subscriptions.entity;
+package com.emme.studio.subscriptions.domain.model;
 
 public enum SubscriptionStatus {
   TRIAL,

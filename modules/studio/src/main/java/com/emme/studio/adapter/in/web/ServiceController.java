@@ -4,7 +4,8 @@ import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
 import com.emme.studio.application.service.ServiceCatalogService;
 import com.emme.studio.domain.model.Service;
-import com.emme.studio.subscriptions.application.SubscriptionService;
+import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
+import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,12 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ServiceController {
 
   private final ServiceCatalogService serviceCatalogService;
-  private final SubscriptionService subscriptionService;
+  private final EnforceEntitlementUseCase enforceEntitlement;
 
   public ServiceController(
-      ServiceCatalogService serviceCatalogService, SubscriptionService subscriptionService) {
+      ServiceCatalogService serviceCatalogService, EnforceEntitlementUseCase enforceEntitlement) {
     this.serviceCatalogService = serviceCatalogService;
-    this.subscriptionService = subscriptionService;
+    this.enforceEntitlement = enforceEntitlement;
   }
 
   @GetMapping
@@ -52,7 +53,7 @@ public class ServiceController {
   public ResponseEntity<ServiceResponse> create(@Valid @RequestBody CreateServiceRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          subscriptionService.enforce(tenantId, "services:write");
+          enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "services:write"));
           Service service =
               request.category() == null && request.description() == null
                   ? serviceCatalogService.create(

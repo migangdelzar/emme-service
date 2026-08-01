@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.identity.adapter.out.persistence.entity.FeatureFlagEntity;
 import com.emme.identity.domain.model.FeatureFlag;
-import com.emme.studio.subscriptions.api.PlanType;
+import com.emme.studio.subscriptions.api.type.PlanType;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

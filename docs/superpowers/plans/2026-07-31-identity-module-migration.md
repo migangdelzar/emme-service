@@ -129,3 +129,16 @@ context, but they must not become business API types accidentally.
 - [ ] Security boundaries are executable and no persistence entity leaks into API
   or web responses.
 - [ ] Existing authentication and authorization behavior is preserved.
+
+## Completed incremental slice — 2026-07-31
+
+- [x] Grouped the existing public use-case contract under `api/usecase`.
+- [x] Grouped `MembershipInfo` and `UserInfo` under `api/result`.
+- [x] Preserved the `identity-api` named-interface identifier while moving its
+  ownership to the grouped packages.
+- [x] Updated Identity's Tenancy contract imports and added a source-tree
+  convention test.
+- [x] Verified Identity tests and Studio Modulith verification.
+
+The security/domain/persistence migration remains open; this slice does not
+claim the full Identity plan is complete.

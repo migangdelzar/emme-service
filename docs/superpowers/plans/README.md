@@ -36,15 +36,15 @@ scope changes.
 | Module | Plan | Current status | Required outcome |
 |---|---|---|---|
 | `catalog` | [catalog baseline verification](2026-07-31-catalog-baseline-verification.md) | Complete baseline pending audit | Keep canonical packages and preserve hybrid-search contracts |
-| `customer` | [customer contract normalization](2026-07-31-customer-contract-normalization.md) | Planned | Remove legacy named-interface shape without inventing business types |
-| `workforce` | [workforce contract normalization](2026-07-31-workforce-contract-normalization.md) | Planned | Keep the empty contract boundary honest and ready for real types |
-| `booking` | [booking contract normalization](2026-07-31-booking-contract-normalization.md) | Planned | Normalize API/event ownership and preserve declared consumers |
+| `customer` | [customer contract normalization](2026-07-31-customer-contract-normalization.md) | Complete boundary slice | Remove legacy named-interface shape without inventing business types |
+| `workforce` | [workforce contract normalization](2026-07-31-workforce-contract-normalization.md) | Complete boundary slice | Keep the empty contract boundary honest and ready for real types |
+| `booking` | [booking contract normalization](2026-07-31-booking-contract-normalization.md) | Complete boundary slice | Normalize API/event ownership and preserve declared consumers |
 | `calendar` | [calendar migration](2026-07-31-calendar-module-migration.md) | Complete | Record conformance to the latest template and preserve Google adapters |
 | `studio` | [studio migration](2026-07-31-studio-module-migration.md) | Core complete | Keep nested capabilities in separate plans |
 | `studio.documents` | [documents capability migration](2026-07-31-studio-documents-module-migration.md) | Planned | Normalize nested document and chunk ownership |
 | `studio.subscriptions` | [subscriptions capability migration](2026-07-31-studio-subscriptions-module-migration.md) | Planned | Normalize nested subscription ownership |
-| `identity` | [identity module migration](2026-07-31-identity-module-migration.md) | Planned | Separate security domain, persistence, inbound security, and Keycloak adapters |
-| `tenancy` | [tenancy module migration](2026-07-31-tenancy-module-migration.md) | Planned | Separate tenant domain, provisioning, database pool, and web infrastructure |
+| `identity` | [identity module migration](2026-07-31-identity-module-migration.md) | In progress: contract boundary slice | Separate security domain, persistence, inbound security, and Keycloak adapters |
+| `tenancy` | [tenancy module migration](2026-07-31-tenancy-module-migration.md) | In progress: contract boundary slice | Separate tenant domain, provisioning, database pool, and web infrastructure |
 | `assistant` | [assistant module migration](2026-07-31-assistant-module-template-migration.md) | Planned | Normalize AI providers, conversations, and WhatsApp webhook boundaries |
 | `notification` | [notification module migration](2026-07-31-notification-module-migration.md) | Planned | Isolate notification persistence and email/SMS/push provider adapters |
 | `payment` | [payment module migration](2026-07-31-payment-module-migration.md) | Planned | Isolate payment persistence, provider ports, and webhook adapters |

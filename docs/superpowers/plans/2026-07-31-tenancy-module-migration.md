@@ -112,3 +112,18 @@ classes are technical adapters, not domain services.
 - [ ] Tenant isolation and database routing remain protected by executable tests.
 - [ ] Domain/application code has no direct JPA/pool/web implementation dependency.
 - [ ] Public APIs/events are grouped and named according to the current template.
+
+## Completed incremental slice — 2026-07-31
+
+- [x] Grouped `TenantApi` under `api/usecase` and `TenantInfo` under
+  `api/result`.
+- [x] Preserved the `tenant-api` and `tenant-events` named-interface identifiers
+  while moving contract ownership to grouped packages.
+- [x] Renamed the public event to the normalized past-tense `TenantCreated` and
+  updated its Identity consumer.
+- [x] Added a source-tree convention test and verified Tenancy tests plus Studio
+  Modulith verification.
+
+The tenant isolation, domain/persistence, provisioning, pool, and web-adapter
+migration remains open; this slice does not claim the full Tenancy plan is
+complete.

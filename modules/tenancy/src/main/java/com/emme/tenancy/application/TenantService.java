@@ -1,6 +1,6 @@
 package com.emme.tenancy.application;
 
-import com.emme.tenancy.api.event.TenantCreatedEvent;
+import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.tenancy.entity.Tenant;
 import com.emme.tenancy.entity.TenantRepository;
 import com.emme.tenancy.entity.TenantStatus;
@@ -29,7 +29,7 @@ public class TenantService {
     }
     Tenant saved = repository.save(new Tenant(slug, name));
     eventPublisher.publishEvent(
-        new TenantCreatedEvent(
+        new TenantCreated(
             saved.getId(),
             saved.getSlug(),
             saved.getName(),

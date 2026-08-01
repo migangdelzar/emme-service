@@ -1,7 +1,7 @@
 package com.emme.identity.infrastructure;
 
-import com.emme.tenancy.api.TenantApi;
-import com.emme.tenancy.api.event.TenantCreatedEvent;
+import com.emme.tenancy.api.event.TenantCreated;
+import com.emme.tenancy.api.usecase.TenantApi;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class KeycloakRealmProvisioner {
 
   @EventListener
   @Transactional
-  public void onTenantCreated(TenantCreatedEvent event) {
+  public void onTenantCreated(TenantCreated event) {
     String realm = "emme-" + event.slug();
     log.info("Provisioning Keycloak realm: {}", realm);
 

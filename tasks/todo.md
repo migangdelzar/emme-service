@@ -108,4 +108,18 @@
 - [x] Added source-tree convention tests for all three contract-only modules.
 - [x] Verified focused module tests and `applications:studio-api` Modulith tests.
 - [ ] Continue with the next dependency-safe migration slice from the registry
-  (`identity`/`tenancy` boundary inventory, then the dependent modules).
+  (Identity/Tenancy security and persistence inventory).
+
+## Identity/Tenancy contract boundary slice — 2026-07-31
+
+- [x] Added failing package-boundary tests for grouped public contracts and
+  normalized event naming.
+- [x] Grouped Identity use-case/results and Tenancy use-case/results under the
+  current module template.
+- [x] Renamed `TenantCreatedEvent` to `TenantCreated` and updated its consumer.
+- [x] Preserved existing Modulith named-interface identifiers and dependency
+  semantics while moving package ownership.
+- [x] Verified focused tests, full Identity/Tenancy module tests, and Studio
+  Modulith verification.
+- [ ] Continue with Identity security/domain/persistence separation and Tenancy
+  isolation/provisioning separation as separate red-green-refactor slices.

@@ -1,6 +1,6 @@
 package com.emme.identity.application;
 
-import com.emme.tenancy.api.TenantApi;
+import com.emme.tenancy.api.usecase.TenantApi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.JWT;

@@ -1,7 +1,7 @@
 package com.emme.tenancy.service;
 
-import com.emme.tenancy.api.TenantApi;
-import com.emme.tenancy.api.TenantInfo;
+import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.usecase.TenantApi;
 import com.emme.tenancy.entity.Tenant;
 import com.emme.tenancy.entity.TenantRepository;
 import java.util.List;

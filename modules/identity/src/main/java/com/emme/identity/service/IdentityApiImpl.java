@@ -1,11 +1,11 @@
 package com.emme.identity.service;
 
-import com.emme.identity.api.IdentityApi;
-import com.emme.identity.api.MembershipInfo;
-import com.emme.identity.api.UserInfo;
+import com.emme.identity.api.result.MembershipInfo;
+import com.emme.identity.api.result.UserInfo;
+import com.emme.identity.api.usecase.IdentityApi;
 import com.emme.identity.entity.Membership;
 import com.emme.identity.entity.MembershipRepository;
-import com.emme.tenancy.api.TenantApi;
+import com.emme.tenancy.api.usecase.TenantApi;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;

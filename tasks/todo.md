@@ -265,6 +265,28 @@ Execution rules and dependencies are maintained in
 - Existing dependency-analysis and Testcontainers/PostgreSQL teardown warnings
   remain non-blocking and occurred after successful task completion.
 
+## Identity distributed login-rate-limit slice — 2026-08-01
+
+- [x] Add failing tests for an application-owned login rate-limit port.
+- [x] Move attempt state out of `LoginRateLimitFilter`.
+- [x] Add an atomic Redis-backed adapter and a local fallback for environments
+  without Redis.
+- [x] Preserve trusted-proxy client-key resolution and HTTP 429 behavior.
+- [x] Verify Identity security tests, Modulith, CI, boot JARs, Markdown, and
+  whitespace.
+
+### Results
+
+- Red phase: tests failed to compile because the application-owned limiter port
+  and injected filter boundary did not yet exist.
+- Green/refactor phase: the filter now delegates to `LoginAttemptRateLimiter`,
+  Redis uses an atomic increment-plus-expiry Lua script, and environments
+  without Redis use an explicit local fallback.
+- Identity tests/check/integration, Studio Modulith verification, service CI,
+  both boot JARs, Markdown validation, and `git diff --check` passed.
+- Existing dependency-analysis and Testcontainers/PostgreSQL teardown warnings
+  remain non-blocking and occurred after successful task completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

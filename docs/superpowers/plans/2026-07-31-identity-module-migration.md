@@ -446,6 +446,22 @@ The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
 
+## Completed distributed login-rate-limit slice — 2026-08-01
+
+- [x] Added the application-owned `LoginAttemptRateLimiter` outbound port.
+- [x] Removed attempt storage from `LoginRateLimitFilter` and preserved trusted
+  proxy client-key resolution and HTTP 429 behavior.
+- [x] Added an atomic Redis Lua-script adapter with a process-local fallback
+  when Redis is not configured.
+- [x] Declared Identity's Spring Data Redis production dependency explicitly.
+- [x] Added filter-boundary, Redis adapter, and source-tree regression coverage.
+- [x] Verified Identity tests/check/integration, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Identity work is architecture dependency evidence, provisioning
+transaction/event ports, broader authorization hardening, and final
+tenant-isolation and migration/recovery evidence.
+
 ## Completed exception-advice boundary slice — 2026-08-01
 
 - [x] Added a source-boundary regression test preventing advice from importing

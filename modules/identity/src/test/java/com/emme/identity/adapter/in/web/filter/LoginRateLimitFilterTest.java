@@ -2,8 +2,11 @@ package com.emme.identity.adapter.in.web.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.identity.application.port.out.LoginAttemptRateLimiter;
 import com.emme.identity.configuration.IdentityRateLimitProperties;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -14,7 +17,7 @@ class LoginRateLimitFilterTest {
   @Test
   void ignoresForwardedClientIpWhenImmediatePeerIsNotTrusted() throws Exception {
     IdentityRateLimitProperties properties = properties(1, List.of());
-    LoginRateLimitFilter filter = new LoginRateLimitFilter(properties);
+    LoginRateLimitFilter filter = new LoginRateLimitFilter(properties, new SingleUseLimiter());
 
     MockHttpServletRequest first = loginRequest("10.0.0.5", "203.0.113.10");
     MockHttpServletResponse firstResponse = new MockHttpServletResponse();
@@ -31,7 +34,7 @@ class LoginRateLimitFilterTest {
   @Test
   void usesForwardedClientIpWhenImmediatePeerMatchesTrustedNetwork() throws Exception {
     IdentityRateLimitProperties properties = properties(1, List.of("10.0.0.0/8"));
-    LoginRateLimitFilter filter = new LoginRateLimitFilter(properties);
+    LoginRateLimitFilter filter = new LoginRateLimitFilter(properties, new SingleUseLimiter());
 
     MockHttpServletResponse firstResponse = new MockHttpServletResponse();
     filter.doFilter(loginRequest("10.0.0.5", "203.0.113.10"), firstResponse, new MockFilterChain());
@@ -64,5 +67,15 @@ class LoginRateLimitFilterTest {
     request.setRemoteAddr(remoteAddress);
     request.addHeader("X-Forwarded-For", forwardedFor);
     return request;
+  }
+
+  private static final class SingleUseLimiter implements LoginAttemptRateLimiter {
+
+    private final Set<String> keys = new HashSet<>();
+
+    @Override
+    public boolean tryAcquire(String key, int maxAttempts, long windowMs) {
+      return keys.add(key);
+    }
   }
 }

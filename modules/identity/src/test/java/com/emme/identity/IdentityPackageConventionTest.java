@@ -57,6 +57,9 @@ class IdentityPackageConventionTest {
   private static final Path LOGIN_RATE_LIMIT_FILTER =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/in/web/filter/LoginRateLimitFilter.java");
+  private static final Path LOGIN_ATTEMPT_RATE_LIMITER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/port/out/LoginAttemptRateLimiter.java");
   private static final Path MULTI_REALM_JWT_DECODER =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/MultiRealmJwtDecoder.java");
@@ -384,6 +387,15 @@ class IdentityPackageConventionTest {
     assertThat(source)
         .doesNotContain("import com.emme.identity.adapter.in.web.controller.IdentityController;");
     assertThat(source).doesNotContain("basePackageClasses");
+  }
+
+  @Test
+  void keepsLoginRateLimitStateOutsideTheInboundFilter() throws IOException {
+    String source = Files.readString(LOGIN_RATE_LIMIT_FILTER);
+
+    assertThat(Files.exists(LOGIN_ATTEMPT_RATE_LIMITER)).isTrue();
+    assertThat(source).contains("LoginAttemptRateLimiter");
+    assertThat(source).doesNotContain("ConcurrentHashMap");
   }
 
   @Test

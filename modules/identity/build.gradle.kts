@@ -16,6 +16,7 @@ dependencies {
   implementation(libs.spring.boot.starter.oauth2.resource.server)
   implementation(libs.spring.boot.starter.oauth2.client)
   implementation(libs.spring.boot.starter.validation)
+  implementation(libs.spring.boot.starter.data.redis)
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
   implementation(libs.okhttp)
   implementation(libs.jackson.databind)

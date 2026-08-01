@@ -1,38 +1,38 @@
 package com.emme.identity.adapter.in.web.filter;
 
+import com.emme.identity.application.port.out.LoginAttemptRateLimiter;
 import com.emme.identity.configuration.IdentityRateLimitProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * In-memory rate limiter for the login endpoint.
+ * Rate limiter for the login endpoint.
  *
  * <p>Limits POST /api/auth/login to 5 attempts per IP per 60-second sliding window.
  *
- * <p>The map grows unbounded — acceptable for MVP enterprise hardening since login endpoints are
- * low-traffic and IP diversity is bounded by the client base.
+ * <p>Attempt state is delegated to an application-owned port so deployments can use atomic,
+ * distributed Redis state while local tests and non-Redis environments retain a safe fallback.
  */
 @Component
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
+  private static final String KEY_PREFIX = "identity:login-rate-limit:";
+
   private final IdentityRateLimitProperties properties;
+  private final LoginAttemptRateLimiter rateLimiter;
   private final List<IpAddressMatcher> trustedProxyMatchers;
 
-  /** IP → list of attempt timestamps (epoch ms). */
-  private final ConcurrentHashMap<String, List<Long>> attempts = new ConcurrentHashMap<>();
-
-  public LoginRateLimitFilter(IdentityRateLimitProperties properties) {
+  public LoginRateLimitFilter(
+      IdentityRateLimitProperties properties, LoginAttemptRateLimiter rateLimiter) {
     this.properties = properties;
+    this.rateLimiter = rateLimiter;
     this.trustedProxyMatchers =
         properties.getTrustedProxies().stream().map(IpAddressMatcher::new).toList();
   }
@@ -50,27 +50,20 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws IOException, ServletException {
     String ip = getClientIp(request);
-    long now = System.currentTimeMillis();
+    boolean allowed =
+        rateLimiter.tryAcquire(
+            KEY_PREFIX + ip, properties.getMaxAttempts(), properties.getWindowMs());
 
-    List<Long> timestamps =
-        attempts.computeIfAbsent(ip, k -> Collections.synchronizedList(new ArrayList<>()));
-
-    synchronized (timestamps) {
-      timestamps.removeIf(ts -> now - ts > properties.getWindowMs());
-
-      if (timestamps.size() >= properties.getMaxAttempts()) {
-        response.setStatus(429);
-        response.setContentType("application/problem+json");
-        response
-            .getWriter()
-            .write(
-                """
-                {"type":"about:blank","title":"Too Many Requests",\
-                "status":429,"detail":"Too many login attempts. Try again later."}""");
-        return;
-      }
-
-      timestamps.add(now);
+    if (!allowed) {
+      response.setStatus(429);
+      response.setContentType("application/problem+json");
+      response
+          .getWriter()
+          .write(
+              """
+              {"type":"about:blank","title":"Too Many Requests",\
+              "status":429,"detail":"Too many login attempts. Try again later."}""");
+      return;
     }
 
     chain.doFilter(request, response);

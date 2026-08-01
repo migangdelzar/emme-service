@@ -238,3 +238,25 @@ Identity-specific failure advice.
 
 Customer authentication, feature flags, typed security configuration, and
 Identity-specific failure advice remain open slices.
+
+## Completed feature-flag application slice — 2026-08-01
+
+- [x] Introduced the framework-free `domain/model/FeatureFlag` model with
+  explicit enabled-state behavior.
+- [x] Added application-owned `FeatureFlagRepository` and
+  `SubscriptionPlanPort` contracts.
+- [x] Moved feature-flag orchestration to `application/service/FeatureFlagService`
+  while preserving the `featureFlagService` bean name used by SpEL guards.
+- [x] Renamed technical persistence types to `FeatureFlagEntity` and
+  `SpringDataFeatureFlagRepository`.
+- [x] Added `FeatureFlagPersistenceMapper`, `FeatureFlagPersistenceAdapter`,
+  and `SubscriptionPlanAdapter`.
+- [x] Rewired feature-flag controllers, shared test fixtures, and Assistant
+  tests without changing routes, payloads, plan gating, override precedence,
+  or schema names.
+- [x] Added domain, application, mapper, and package-boundary coverage.
+- [x] Verified the full Identity test suite and compilation of Assistant test
+  sources.
+
+Customer authentication, customer-membership event ownership, typed security
+configuration, and Identity-specific failure advice remain open slices.

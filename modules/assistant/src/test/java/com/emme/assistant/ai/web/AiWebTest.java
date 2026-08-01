@@ -4,8 +4,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.identity.adapter.out.persistence.entity.FeatureFlag;
-import com.emme.identity.adapter.out.persistence.repository.FeatureFlagRepository;
+import com.emme.identity.adapter.out.persistence.entity.FeatureFlagEntity;
+import com.emme.identity.adapter.out.persistence.repository.SpringDataFeatureFlagRepository;
 import com.emme.studio.subscriptions.api.PlanType;
 import com.emme.studio.subscriptions.entity.Subscription;
 import com.emme.studio.subscriptions.entity.SubscriptionRepository;
@@ -24,7 +24,7 @@ class AiWebTest extends BaseWebTest {
 
   @Autowired private SubscriptionRepository subscriptionRepo;
 
-  @Autowired private FeatureFlagRepository featureFlagRepo;
+  @Autowired private SpringDataFeatureFlagRepository featureFlagRepo;
 
   @BeforeEach
   void setUp() {
@@ -32,7 +32,7 @@ class AiWebTest extends BaseWebTest {
     tenantId = tenant.id();
     subscriptionRepo.save(
         new Subscription(tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
-    featureFlagRepo.save(new FeatureFlag(null, "ai_chat", true, null, "global"));
+    featureFlagRepo.save(new FeatureFlagEntity(null, "ai_chat", true, null, "global"));
   }
 
   @Test

@@ -3,7 +3,7 @@ package com.emme.identity.adapter.in.web.controller;
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
 import com.emme.identity.adapter.in.web.request.OverrideFeatureFlagRequest;
-import com.emme.identity.application.FeatureFlagService;
+import com.emme.identity.application.service.FeatureFlagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
@@ -42,7 +42,7 @@ public class TenantFeatureFlagController {
           var flag = featureFlagService.setOverride(tenantId, code, request.enabled());
           return ResponseEntity.ok(
               Map.of(
-                  "code", flag.getCode(),
+                  "code", flag.code(),
                   "enabled", flag.isEnabled()));
         });
   }

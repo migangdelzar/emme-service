@@ -1,7 +1,7 @@
 package com.emme.testing;
 
-import com.emme.identity.adapter.out.persistence.entity.FeatureFlag;
-import com.emme.identity.adapter.out.persistence.repository.FeatureFlagRepository;
+import com.emme.identity.adapter.out.persistence.entity.FeatureFlagEntity;
+import com.emme.identity.adapter.out.persistence.repository.SpringDataFeatureFlagRepository;
 import com.emme.studio.adapter.out.persistence.repository.SpringDataBusinessProfileRepository;
 import com.emme.studio.subscriptions.api.PlanType;
 import com.emme.studio.subscriptions.entity.Subscription;
@@ -44,7 +44,7 @@ public abstract class BaseSpringModuleTest {
   @Autowired protected MockMvc mockMvc;
   @Autowired protected TenantService tenantService;
   @Autowired protected SubscriptionRepository subscriptionRepo;
-  @Autowired protected FeatureFlagRepository featureFlagRepo;
+  @Autowired protected SpringDataFeatureFlagRepository featureFlagRepo;
   @Autowired protected SpringDataBusinessProfileRepository profileRepo;
 
   @Autowired
@@ -81,7 +81,7 @@ public abstract class BaseSpringModuleTest {
     for (String code : flags) {
       if (featureFlagRepo.findByTenantIdIsNull().stream()
           .noneMatch(f -> f.getCode().equals(code))) {
-        featureFlagRepo.save(new FeatureFlag(null, code, true, null, "global default"));
+        featureFlagRepo.save(new FeatureFlagEntity(null, code, true, null, "global default"));
       }
     }
     return tid;

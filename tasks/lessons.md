@@ -21,6 +21,16 @@
   must use dedicated subject/resource identifiers unless the test explicitly
   owns cleanup or rollback.
 
+## 2026-08-01 — Cross-module technical type renames
+
+- Failure mode: renaming a persistence entity/repository left shared fixtures
+  and a downstream module test importing the old technical names.
+- Detection signal: targeted production compilation passed, but downstream test
+  compilation failed on stale imports.
+- Prevention rule: after a persistence type rename, search the entire repository
+  for both the old fully-qualified type and simple type name, then compile all
+  known consumers before declaring the slice complete.
+
 ## 2026-07-31 — GitHub Actions job conditions and secrets
 
 - Failure mode: referencing a job-level `env` value in `jobs.<job>.if` caused

@@ -4,7 +4,7 @@ import com.emme.identity.adapter.in.web.mapper.FeatureFlagWebMapper;
 import com.emme.identity.adapter.in.web.request.CreateFeatureFlagRequest;
 import com.emme.identity.adapter.in.web.request.UpdateFeatureFlagRequest;
 import com.emme.identity.adapter.in.web.response.FeatureFlagResponse;
-import com.emme.identity.application.FeatureFlagService;
+import com.emme.identity.application.service.FeatureFlagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;

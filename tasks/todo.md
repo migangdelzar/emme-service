@@ -106,8 +106,19 @@
 - [x] Move permission traversal into `PermissionPersistenceAdapter`.
 - [x] Rewire permission consumers and remove legacy `IdentityService`.
 - [x] Verify unit, integration, architecture, formatting, and Modulith gates.
-- [ ] Continue with customer authentication and feature-flag application
-  separation.
+- [ ] Continue with customer authentication and customer-membership event
+  application separation.
+
+### Identity Feature Flag application slice — 2026-08-01
+
+- [x] Add failing domain, application, and package-boundary tests.
+- [x] Introduce the Feature Flag domain model and application repository ports.
+- [x] Isolate JPA persistence behind entity, mapper, and adapter types.
+- [x] Isolate subscription plan lookup behind `SubscriptionPlanPort`.
+- [x] Preserve the SpEL bean name and feature-flag HTTP behavior.
+- [x] Verify Identity tests and Assistant test compilation.
+- [ ] Continue with customer authentication and customer-membership event
+  application separation.
 
 ### Plan update results
 

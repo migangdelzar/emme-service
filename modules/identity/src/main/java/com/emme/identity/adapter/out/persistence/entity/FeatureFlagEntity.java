@@ -7,11 +7,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
+/** JPA representation of a global or tenant-specific feature flag. */
 @Entity
 @Table(name = "feature_flag", schema = "emme_core")
-public class FeatureFlag extends BaseEntity {
+public class FeatureFlagEntity extends BaseEntity {
 
   @Column(name = "tenant_id")
   private UUID tenantId;
@@ -29,15 +32,30 @@ public class FeatureFlag extends BaseEntity {
   @Column(name = "description", length = 255)
   private String description;
 
-  protected FeatureFlag() {}
+  protected FeatureFlagEntity() {}
 
-  public FeatureFlag(
+  public FeatureFlagEntity(
       UUID tenantId, String code, boolean enabled, PlanType planRequired, String description) {
     this.tenantId = tenantId;
-    this.code = code;
+    this.code = Objects.requireNonNull(code, "code must not be null");
     this.enabled = enabled;
     this.planRequired = planRequired;
     this.description = description;
+  }
+
+  public static FeatureFlagEntity restore(
+      UUID id,
+      UUID tenantId,
+      String code,
+      boolean enabled,
+      PlanType planRequired,
+      String description,
+      Instant createdAt,
+      Instant updatedAt) {
+    FeatureFlagEntity entity =
+        new FeatureFlagEntity(tenantId, code, enabled, planRequired, description);
+    entity.restoreAuditFields(id, createdAt, updatedAt);
+    return entity;
   }
 
   public UUID getTenantId() {

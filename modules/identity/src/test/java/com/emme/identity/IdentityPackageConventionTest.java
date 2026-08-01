@@ -90,6 +90,33 @@ class IdentityPackageConventionTest {
   private static final Path LEGACY_IDENTITY_SERVICE =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/application/IdentityService.java");
+  private static final Path FEATURE_FLAG_DOMAIN_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/domain/model");
+  private static final Path FEATURE_FLAG_APPLICATION_PORT_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/application/port/out");
+  private static final Path FEATURE_FLAG_APPLICATION_SERVICE_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/application/service");
+  private static final Path FEATURE_FLAG_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/FeatureFlagEntity.java");
+  private static final Path FEATURE_FLAG_REPOSITORY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/SpringDataFeatureFlagRepository.java");
+  private static final Path FEATURE_FLAG_MAPPER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/mapper/FeatureFlagPersistenceMapper.java");
+  private static final Path FEATURE_FLAG_ADAPTER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/adapter/FeatureFlagPersistenceAdapter.java");
+  private static final Path SUBSCRIPTION_PLAN_PORT =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/port/out/SubscriptionPlanPort.java");
+  private static final Path SUBSCRIPTION_PLAN_ADAPTER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/client/subscription/SubscriptionPlanAdapter.java");
+  private static final Path LEGACY_FEATURE_FLAG_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/FeatureFlag.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -186,6 +213,24 @@ class IdentityPackageConventionTest {
         .isTrue();
     assertThat(Files.exists(PERMISSION_PERSISTENCE_ADAPTER)).isTrue();
     assertThat(Files.exists(LEGACY_IDENTITY_SERVICE)).isFalse();
+  }
+
+  @Test
+  void ownsFeatureFlagsBehindDomainApplicationAndPersistenceBoundaries() {
+    assertThat(hasJavaSource(FEATURE_FLAG_DOMAIN_PACKAGE, "FeatureFlag.java")).isTrue();
+    assertThat(hasJavaSource(FEATURE_FLAG_APPLICATION_PORT_PACKAGE, "FeatureFlagRepository.java"))
+        .isTrue();
+    assertThat(hasJavaSource(FEATURE_FLAG_APPLICATION_PORT_PACKAGE, "SubscriptionPlanPort.java"))
+        .isTrue();
+    assertThat(hasJavaSource(FEATURE_FLAG_APPLICATION_SERVICE_PACKAGE, "FeatureFlagService.java"))
+        .isTrue();
+    assertThat(Files.exists(FEATURE_FLAG_ENTITY)).isTrue();
+    assertThat(Files.exists(FEATURE_FLAG_REPOSITORY)).isTrue();
+    assertThat(Files.exists(FEATURE_FLAG_MAPPER)).isTrue();
+    assertThat(Files.exists(FEATURE_FLAG_ADAPTER)).isTrue();
+    assertThat(Files.exists(SUBSCRIPTION_PLAN_PORT)).isTrue();
+    assertThat(Files.exists(SUBSCRIPTION_PLAN_ADAPTER)).isTrue();
+    assertThat(Files.exists(LEGACY_FEATURE_FLAG_ENTITY)).isFalse();
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

@@ -17,6 +17,8 @@ Do not use a README as a substitute for an ADR, or an ADR as a runbook.
 
 ## ADR lifecycle
 
+The repository ADR index is [docs/adr/README.md](../../adr/README.md).
+
 ```mermaid
 stateDiagram-v2
     [*] --> Proposed

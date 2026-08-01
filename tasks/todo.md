@@ -358,3 +358,23 @@ limiting, then continue authorization domain/application separation.
 - [x] Verified Catalog tests/integration, Studio Modulith, service CI, boot JARs,
   Markdown validation, source-boundary checks, and whitespace.
 - [x] Updated the plan registry and Catalog verification report.
+
+## Identity trusted-proxy rate-limit slice — 2026-08-01
+
+- [x] Add failing tests for typed rate-limit settings and forwarded-header
+  spoofing resistance.
+- [x] Replace `@Value` rate-limit fields with `IdentityRateLimitProperties`.
+- [x] Accept `X-Forwarded-For` only when the immediate peer matches configured
+  trusted proxy networks; preserve the remote address as the secure default.
+- [x] Document the decision in an ADR and the Identity migration plan.
+- [x] Verify focused Identity tests, full Identity checks, Identity integration,
+  Modulith, CI, Markdown, whitespace, and boot-JAR gates.
+
+### Results
+
+- Focused typed-properties and forwarded-header filter tests passed.
+- `:modules:identity:check` passed.
+- `:modules:identity:integrationTest` passed; teardown emitted existing
+  PostgreSQL/Testcontainers shutdown I/O warnings after test completion.
+- Studio Modulith verification, service CI, both application boot JARs,
+  Markdown validation, and `git diff --check` passed.

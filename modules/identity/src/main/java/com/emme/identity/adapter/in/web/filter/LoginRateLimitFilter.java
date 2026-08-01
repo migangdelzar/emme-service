@@ -1,5 +1,6 @@
 package com.emme.identity.adapter.in.web.filter;
 
+import com.emme.identity.configuration.IdentityRateLimitProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -24,14 +25,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
-  @Value("${app.identity.login-rate-limit.max-attempts:5}")
-  private int maxAttempts;
-
-  @Value("${app.identity.login-rate-limit.window-ms:60000}")
-  private long windowMs;
+  private final IdentityRateLimitProperties properties;
+  private final List<IpAddressMatcher> trustedProxyMatchers;
 
   /** IP → list of attempt timestamps (epoch ms). */
   private final ConcurrentHashMap<String, List<Long>> attempts = new ConcurrentHashMap<>();
+
+  public LoginRateLimitFilter(IdentityRateLimitProperties properties) {
+    this.properties = properties;
+    this.trustedProxyMatchers =
+        properties.getTrustedProxies().stream().map(IpAddressMatcher::new).toList();
+  }
 
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -52,9 +56,9 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         attempts.computeIfAbsent(ip, k -> Collections.synchronizedList(new ArrayList<>()));
 
     synchronized (timestamps) {
-      timestamps.removeIf(ts -> now - ts > windowMs);
+      timestamps.removeIf(ts -> now - ts > properties.getWindowMs());
 
-      if (timestamps.size() >= maxAttempts) {
+      if (timestamps.size() >= properties.getMaxAttempts()) {
         response.setStatus(429);
         response.setContentType("application/problem+json");
         response
@@ -72,11 +76,20 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     chain.doFilter(request, response);
   }
 
-  private static String getClientIp(HttpServletRequest request) {
+  private String getClientIp(HttpServletRequest request) {
+    String remoteAddress = request.getRemoteAddr();
+    if (!isTrustedProxy(remoteAddress)) {
+      return remoteAddress;
+    }
+
     String xff = request.getHeader("X-Forwarded-For");
     if (xff != null && !xff.isBlank()) {
       return xff.split(",")[0].trim();
     }
-    return request.getRemoteAddr();
+    return remoteAddress;
+  }
+
+  private boolean isTrustedProxy(String remoteAddress) {
+    return trustedProxyMatchers.stream().anyMatch(matcher -> matcher.matches(remoteAddress));
   }
 }

@@ -133,3 +133,13 @@
   and the failing adapter changed as each earlier final adapter was corrected.
 - Prevention rule: keep Spring-managed adapters non-final when class-based
   proxies are enabled, and verify the complete context after package migrations.
+
+## 2026-08-01 — Forwarded headers require an explicit trust boundary
+
+- Failure mode: using the first `X-Forwarded-For` value unconditionally allowed
+  a direct caller to rotate the rate-limit key.
+- Detection signal: a focused filter regression test could submit a second
+  request with a different forwarded address while keeping the same socket peer.
+- Prevention rule: use forwarded client identity only when the immediate peer
+  matches configured proxy networks; default to the socket peer and keep the
+  proxy list typed and validated.

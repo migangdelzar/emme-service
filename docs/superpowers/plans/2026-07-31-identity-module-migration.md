@@ -389,6 +389,31 @@ Identity security hardening surface.
 
 Remaining follow-up: complete the wider Identity security hardening surface.
 
+## Completed trusted-proxy rate-limit slice — 2026-08-01
+
+- [x] Replaced field-level `@Value` login rate-limit settings with typed
+  `IdentityRateLimitProperties` under `configuration`.
+- [x] Made the secure direct-deployment default explicit: the limiter uses the
+  socket peer address and ignores `X-Forwarded-For` unless the peer matches a
+  configured trusted proxy network.
+- [x] Preserved the existing login route, default limit, response status, and
+  in-memory limiter behavior.
+- [x] Added focused configuration and filter regression tests for spoofed and
+  trusted forwarded headers.
+- [x] Recorded the security decision in
+  `docs/adr/0001-identity-login-rate-limit-client-ip.md`.
+
+The remaining Identity work is distributed rate-limit state, broader
+authorization review, and the final production-readiness evidence gate.
+
+## Current migration status — 2026-08-01
+
+The current Identity baseline includes typed security and provisioning
+configuration, separated provider ports and adapters, redacted audit output,
+and a trusted-proxy boundary for login rate limiting. The remaining scope is
+distributed rate-limit state, broader authorization domain/application
+separation, and the final production-readiness evidence gate.
+
 ## Completed security audit hardening slice — 2026-08-01
 
 - [x] Added regression coverage for audit failure redaction,

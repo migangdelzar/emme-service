@@ -36,6 +36,9 @@ flowchart TD
 - Use persisted idempotency for external effects that can be duplicated.
 - Optimistic locking failures are business conflicts, not generic server errors.
 - Model stale, partial, and degraded states explicitly.
+- Trust forwarded client-IP headers only when the immediate peer belongs to an
+  explicitly configured proxy network; otherwise use the socket peer address.
+  See [ADR-0003](../../adr/0003-identity-login-rate-limit-client-ip.md).
 
 ## Verification
 

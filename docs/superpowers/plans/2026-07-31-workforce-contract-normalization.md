@@ -34,13 +34,13 @@ placed in `api`.
 
 ### Task 1: Normalize the empty boundary
 
-- [ ] Verify no production or test class imports `com.emme.workforce.api`.
-- [ ] Replace `@NamedInterface("workforce-api")` with namespace documentation
+- [x] Verify no production or test class imports `com.emme.workforce.api`.
+- [x] Replace `@NamedInterface("workforce-api")` with namespace documentation
   until a concrete API-kind child exists.
-- [ ] Preserve root allowed dependencies `shared` and `tenancy`.
-- [ ] Add a source-tree convention test for root ownership and grouped API types.
-- [ ] Run `./gradlew :modules:workforce:test :applications:studio-api:test --tests '*ModularityTest*' --no-daemon --no-configuration-cache`.
-- [ ] Commit `chore(workforce): normalize empty module contract boundary`.
+- [x] Preserve root allowed dependencies `shared` and `tenancy`.
+- [x] Add a source-tree convention test for root ownership and grouped API types.
+- [x] Run focused Workforce tests and Studio Modulith verification.
+- [x] Commit the normalization in the shared contract-boundary commit.
 
 ### Task 2: Define the first capability gate
 
@@ -51,6 +51,6 @@ placed in `api`.
 
 ## Definition of done
 
-- [ ] Workforce has no fake business architecture.
-- [ ] The legacy `workforce-api` named interface is removed.
-- [ ] Modulith verification and the source-tree convention test pass.
+- [x] Workforce has no fake business architecture.
+- [x] The legacy `workforce-api` named interface is removed.
+- [x] Modulith verification and the source-tree convention test pass.

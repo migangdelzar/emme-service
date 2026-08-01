@@ -96,3 +96,16 @@
 - Updated Calendar and Studio plans with current-template conformance notes.
 - Corrected the service migration design so Identity and Tenancy are not falsely
   reported as completed baselines.
+
+## Contract-only module implementation slice — 2026-07-31
+
+- [x] Normalized Customer's empty API namespace and retained its root Modulith
+  metadata.
+- [x] Normalized Workforce's empty API namespace and retained its root Modulith
+  metadata.
+- [x] Removed Booking's obsolete top-level `events` metadata and stale named
+  interface dependencies; retained only actual shared/tenancy dependencies.
+- [x] Added source-tree convention tests for all three contract-only modules.
+- [x] Verified focused module tests and `applications:studio-api` Modulith tests.
+- [ ] Continue with the next dependency-safe migration slice from the registry
+  (`identity`/`tenancy` boundary inventory, then the dependent modules).

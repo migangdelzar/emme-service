@@ -51,14 +51,14 @@ Annotate each materialized API-kind child with `@NamedInterface("api")`; add
 
 ### Task 1: Remove the legacy empty named-interface shape
 
-- [ ] Confirm no Java type or external consumer imports `com.emme.customer.api`.
-- [ ] Replace `@NamedInterface("customer-api")` in `api/package-info.java` with
+- [x] Confirm no Java type or external consumer imports `com.emme.customer.api`.
+- [x] Replace `@NamedInterface("customer-api")` in `api/package-info.java` with
   responsibility-only Javadoc; do not expose an empty named interface.
-- [ ] Preserve `@ApplicationModule(displayName = "Customer", allowedDependencies = {"shared", "tenancy"})`.
-- [ ] Add a source-tree test that rejects business classes directly in the module
+- [x] Preserve `@ApplicationModule(displayName = "Customer", allowedDependencies = {"shared", "tenancy"})`.
+- [x] Add a source-tree test that rejects business classes directly in the module
   root and rejects API types outside grouped child packages.
-- [ ] Run `./gradlew :modules:customer:test :applications:studio-api:test --tests '*ModularityTest*' --no-daemon --no-configuration-cache`.
-- [ ] Commit `chore(customer): normalize empty module contract boundary`.
+- [x] Run focused Customer tests and Studio Modulith verification.
+- [x] Commit the normalization in the shared contract-boundary commit.
 
 ### Task 2: Establish the first-contract procedure
 
@@ -71,9 +71,9 @@ Annotate each materialized API-kind child with `@NamedInterface("api")`; add
 
 ## Definition of done
 
-- [ ] Customer contains no invented empty `domain`, `application`, `adapter`, or
+- [x] Customer contains no invented empty `domain`, `application`, `adapter`, or
   `configuration` tree.
-- [ ] No legacy `customer-api` named interface remains.
-- [ ] The module passes Modulith verification and has an auditable first-contract
+- [x] No legacy `customer-api` named interface remains.
+- [x] The module passes Modulith verification and has an auditable first-contract
   procedure.
-- [ ] No behavior or public type was invented by this normalization.
+- [x] No behavior or public type was invented by this normalization.

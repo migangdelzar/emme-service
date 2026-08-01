@@ -32,7 +32,7 @@ class IdentityPackageConventionTest {
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/CustomerIdentity.java");
   private static final Path PERSISTENCE_REPOSITORY =
       sourcePath(
-          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/MembershipRepository.java");
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/SpringDataMembershipRepository.java");
   private static final Path SECURITY_CONFIGURATION =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/configuration/SecurityConfiguration.java");
@@ -68,6 +68,20 @@ class IdentityPackageConventionTest {
       sourcePath("modules/identity/src/main/java/com/emme/identity/adapter/in/web/mapper");
   private static final Path LEGACY_WEB_PACKAGE =
       sourcePath("modules/identity/src/main/java/com/emme/identity/web");
+  private static final Path DOMAIN_MODEL_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/domain/model");
+  private static final Path APPLICATION_SERVICE_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/application/service");
+  private static final Path APPLICATION_PORT_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/application/port/out");
+  private static final Path PERSISTENCE_ADAPTER_PACKAGE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/adapter");
+  private static final Path PERSISTENCE_MAPPER_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/mapper");
+  private static final Path LEGACY_MEMBERSHIP_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/Membership.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -140,6 +154,20 @@ class IdentityPackageConventionTest {
     assertThat(hasJavaSource(WEB_MAPPER_PACKAGE, "IdentityWebMapper.java")).isTrue();
     assertThat(hasJavaSource(WEB_MAPPER_PACKAGE, "FeatureFlagWebMapper.java")).isTrue();
     assertThat(hasJavaSources(LEGACY_WEB_PACKAGE)).isFalse();
+  }
+
+  @Test
+  void ownsMembershipBusinessBehaviorAndPersistenceBehindApplicationPorts() {
+    assertThat(hasJavaSource(DOMAIN_MODEL_PACKAGE, "Membership.java")).isTrue();
+    assertThat(hasJavaSource(DOMAIN_MODEL_PACKAGE, "MembershipStatus.java")).isTrue();
+    assertThat(hasJavaSource(APPLICATION_SERVICE_PACKAGE, "MembershipService.java")).isTrue();
+    assertThat(hasJavaSource(APPLICATION_PORT_PACKAGE, "MembershipRepository.java")).isTrue();
+    assertThat(hasJavaSource(APPLICATION_PORT_PACKAGE, "RoleRepository.java")).isTrue();
+    assertThat(hasJavaSource(PERSISTENCE_ADAPTER_PACKAGE, "MembershipPersistenceAdapter.java"))
+        .isTrue();
+    assertThat(hasJavaSource(PERSISTENCE_MAPPER_PACKAGE, "MembershipPersistenceMapper.java"))
+        .isTrue();
+    assertThat(Files.exists(LEGACY_MEMBERSHIP_ENTITY)).isFalse();
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

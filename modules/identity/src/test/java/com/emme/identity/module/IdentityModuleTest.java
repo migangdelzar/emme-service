@@ -8,11 +8,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.identity.adapter.out.persistence.entity.Membership;
-import com.emme.identity.adapter.out.persistence.entity.MembershipStatus;
+import com.emme.identity.adapter.out.persistence.entity.MembershipEntity;
 import com.emme.identity.adapter.out.persistence.entity.Role;
 import com.emme.identity.adapter.out.persistence.entity.RoleScope;
-import com.emme.identity.adapter.out.persistence.repository.MembershipRepository;
+import com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository;
+import com.emme.identity.domain.model.MembershipStatus;
 import com.emme.testing.BaseSpringModuleTest;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /** L3 module tests for identity endpoints (memberships CRUD, current user, permissions). */
 class IdentityModuleTest extends BaseSpringModuleTest {
 
-  @Autowired private MembershipRepository membershipRepo;
+  @Autowired private SpringDataMembershipRepository membershipRepo;
 
   private UUID tenantId;
   private Role savedRole;
@@ -62,7 +62,8 @@ class IdentityModuleTest extends BaseSpringModuleTest {
   @Test
   void shouldRevokeMembership() throws Exception {
     // Create membership via repository (role loaded eagerly via constructor)
-    Membership m = membershipRepo.save(new Membership(tenantId, savedRole, "revoke-test-user"));
+    MembershipEntity m =
+        membershipRepo.save(new MembershipEntity(tenantId, savedRole, "revoke-test-user"));
 
     mockMvc
         .perform(delete("/api/v1/identity/memberships/{id}", m.getId()).with(tenantJwt()))
@@ -70,14 +71,14 @@ class IdentityModuleTest extends BaseSpringModuleTest {
         .andExpect(jsonPath("$.status").value("REVOKED"));
 
     // Verify DB state
-    Membership revoked = membershipRepo.findById(m.getId()).orElseThrow();
+    MembershipEntity revoked = membershipRepo.findById(m.getId()).orElseThrow();
     assertEquals(MembershipStatus.REVOKED, revoked.getStatus());
   }
 
   @Test
   void shouldGetCurrentUserMemberships() throws Exception {
     // Create a membership so the user has something
-    membershipRepo.save(new Membership(tenantId, savedRole, TEST_USER_SUB));
+    membershipRepo.save(new MembershipEntity(tenantId, savedRole, TEST_USER_SUB));
 
     mockMvc
         .perform(get("/api/v1/identity/me").with(tenantJwt()))

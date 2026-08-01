@@ -2,7 +2,7 @@ package com.emme.identity.adapter.in.web.mapper;
 
 import com.emme.identity.adapter.in.web.response.BusinessProfileResponse;
 import com.emme.identity.adapter.in.web.response.MembershipResponse;
-import com.emme.identity.adapter.out.persistence.entity.Membership;
+import com.emme.identity.domain.model.Membership;
 import com.emme.studio.api.result.BusinessProfileInfo;
 
 /** Maps Identity application data into HTTP response models. */
@@ -12,12 +12,12 @@ public final class IdentityWebMapper {
 
   public static MembershipResponse toMembershipResponse(Membership membership) {
     return new MembershipResponse(
-        membership.getId(),
-        membership.getTenantId(),
-        membership.getRole().getCode(),
-        membership.getUserReference(),
-        membership.getStatus().name(),
-        membership.getCreatedAt());
+        membership.id(),
+        membership.tenantId(),
+        membership.roleCode(),
+        membership.userReference(),
+        membership.status().name(),
+        membership.createdAt());
   }
 
   public static BusinessProfileResponse toBusinessProfileResponse(BusinessProfileInfo profile) {

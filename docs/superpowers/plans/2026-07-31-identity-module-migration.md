@@ -198,3 +198,25 @@ open tasks; this slice does not claim the full Identity plan is complete.
 
 Application service/domain separation, controller-to-controller orchestration,
 and Identity-specific failure advice remain future slices.
+
+## Completed Membership domain/application slice — 2026-08-01
+
+- [x] Introduced the framework-free `domain/model/Membership` aggregate and
+  `MembershipStatus` lifecycle vocabulary.
+- [x] Moved membership persistence representation to `MembershipEntity` and
+  technical Spring Data types to `SpringDataMembershipRepository` and
+  `SpringDataRoleRepository` to distinguish adapters from application ports.
+- [x] Added application-owned `MembershipRepository` and `RoleRepository`
+  outbound ports with `MembershipService` orchestration.
+- [x] Added `MembershipPersistenceMapper`, `MembershipPersistenceAdapter`,
+  and `RolePersistenceAdapter`; managed entities are updated in place when an
+  existing identifier is saved.
+- [x] Rewired Identity membership HTTP and public API flows to consume domain
+  models/application services while preserving routes, response fields, and
+  database schema.
+- [x] Added domain lifecycle, package ownership, and persistence mapper tests.
+- [x] Verified the full Identity test suite and test compilation.
+
+The remaining Identity work is the permission/identity/authentication
+application split, feature-flag ownership, typed security configuration, and
+Identity-specific failure advice.

@@ -1,14 +1,14 @@
 package com.emme.identity.application;
 
-import com.emme.identity.adapter.out.persistence.entity.Membership;
-import com.emme.identity.adapter.out.persistence.entity.MembershipStatus;
+import com.emme.identity.adapter.out.persistence.entity.MembershipEntity;
 import com.emme.identity.adapter.out.persistence.entity.Permission;
 import com.emme.identity.adapter.out.persistence.entity.Role;
 import com.emme.identity.adapter.out.persistence.entity.RolePermission;
-import com.emme.identity.adapter.out.persistence.repository.MembershipRepository;
 import com.emme.identity.adapter.out.persistence.repository.PermissionRepository;
 import com.emme.identity.adapter.out.persistence.repository.RolePermissionRepository;
-import com.emme.identity.adapter.out.persistence.repository.RoleRepository;
+import com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository;
+import com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository;
+import com.emme.identity.domain.model.MembershipStatus;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -20,14 +20,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class IdentityService {
 
-  private final MembershipRepository membershipRepo;
-  private final RoleRepository roleRepo;
+  private final SpringDataMembershipRepository membershipRepo;
+  private final SpringDataRoleRepository roleRepo;
   private final PermissionRepository permissionRepo;
   private final RolePermissionRepository rolePermissionRepo;
 
   public IdentityService(
-      MembershipRepository mRepo,
-      RoleRepository rRepo,
+      SpringDataMembershipRepository mRepo,
+      SpringDataRoleRepository rRepo,
       PermissionRepository pRepo,
       RolePermissionRepository rpRepo) {
     this.membershipRepo = mRepo;
@@ -36,17 +36,17 @@ public class IdentityService {
     this.rolePermissionRepo = rpRepo;
   }
 
-  public Membership assignMembership(UUID tenantId, UUID roleId, String userReference) {
+  public MembershipEntity assignMembership(UUID tenantId, UUID roleId, String userReference) {
     Role role =
         roleRepo
             .findById(roleId)
             .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleId));
-    Membership membership = new Membership(tenantId, role, userReference);
+    MembershipEntity membership = new MembershipEntity(tenantId, role, userReference);
     return membershipRepo.save(membership);
   }
 
-  public Membership revokeMembership(UUID membershipId) {
-    Membership m =
+  public MembershipEntity revokeMembership(UUID membershipId) {
+    MembershipEntity m =
         membershipRepo
             .findById(membershipId)
             .orElseThrow(() -> new IllegalArgumentException("Membership not found"));
@@ -57,7 +57,7 @@ public class IdentityService {
 
   @Transactional(readOnly = true)
   public Set<String> getPermissionsForUser(String userReference, UUID tenantId) {
-    List<Membership> memberships =
+    List<MembershipEntity> memberships =
         membershipRepo.findByUserReferenceAndStatus(userReference, MembershipStatus.ACTIVE);
     if (memberships.isEmpty()) return Set.of();
 
@@ -77,7 +77,7 @@ public class IdentityService {
   }
 
   @Transactional(readOnly = true)
-  public List<Membership> getCurrentUserMemberships(String userReference) {
+  public List<MembershipEntity> getCurrentUserMemberships(String userReference) {
     return membershipRepo.findByUserReferenceAndStatus(userReference, MembershipStatus.ACTIVE);
   }
 }

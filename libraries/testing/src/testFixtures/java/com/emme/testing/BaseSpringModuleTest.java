@@ -48,10 +48,11 @@ public abstract class BaseSpringModuleTest {
   @Autowired protected SpringDataBusinessProfileRepository profileRepo;
 
   @Autowired
-  protected com.emme.identity.adapter.out.persistence.repository.MembershipRepository
+  protected com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository
       membershipRepo;
 
-  @Autowired protected com.emme.identity.adapter.out.persistence.repository.RoleRepository roleRepo;
+  @Autowired
+  protected com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository roleRepo;
 
   protected static final String TEST_USER_SUB = "auth0|test-user-123";
   protected static final String TEST_ISSUER = "https://test-issuer/realms/emme";

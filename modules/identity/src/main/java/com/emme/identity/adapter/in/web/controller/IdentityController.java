@@ -4,8 +4,9 @@ import com.emme.identity.UserContextHolder;
 import com.emme.identity.adapter.in.web.mapper.IdentityWebMapper;
 import com.emme.identity.adapter.in.web.request.AssignMembershipRequest;
 import com.emme.identity.adapter.in.web.response.MembershipResponse;
-import com.emme.identity.adapter.out.persistence.entity.Membership;
 import com.emme.identity.application.IdentityService;
+import com.emme.identity.application.service.MembershipService;
+import com.emme.identity.domain.model.Membership;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,10 +28,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/identity")
 public class IdentityController {
 
-  private final IdentityService service;
+  private final MembershipService service;
+  private final IdentityService identityService;
 
-  public IdentityController(IdentityService service) {
+  public IdentityController(MembershipService service, IdentityService identityService) {
     this.service = service;
+    this.identityService = identityService;
   }
 
   @GetMapping("/me")
@@ -39,7 +42,7 @@ public class IdentityController {
     return UserContextHolder.withCurrentUser(
         user -> {
           List<MembershipResponse> members =
-              service.getCurrentUserMemberships(user.subject()).stream()
+              service.findCurrentUserMemberships(user.subject()).stream()
                   .map(IdentityWebMapper::toMembershipResponse)
                   .toList();
           return ResponseEntity.ok(members);
@@ -51,7 +54,7 @@ public class IdentityController {
   public ResponseEntity<Set<String>> currentPermissions(
       @NotNull @org.springframework.web.bind.annotation.RequestParam UUID tenantId) {
     return UserContextHolder.withCurrentUser(
-        user -> ResponseEntity.ok(service.getPermissionsForUser(user.subject(), tenantId)));
+        user -> ResponseEntity.ok(identityService.getPermissionsForUser(user.subject(), tenantId)));
   }
 
   @PostMapping("/memberships")
@@ -61,9 +64,8 @@ public class IdentityController {
   @Tag(name = "Identity")
   public ResponseEntity<MembershipResponse> assignMembership(
       @Valid @RequestBody AssignMembershipRequest request) {
-    Membership m =
-        service.assignMembership(request.tenantId(), request.roleId(), request.userReference());
-    URI location = URI.create("/api/v1/identity/memberships/" + m.getId());
+    Membership m = service.assign(request.tenantId(), request.roleId(), request.userReference());
+    URI location = URI.create("/api/v1/identity/memberships/" + m.id());
     return ResponseEntity.created(location).body(IdentityWebMapper.toMembershipResponse(m));
   }
 
@@ -72,7 +74,7 @@ public class IdentityController {
       summary = "Revoke a membership",
       tags = {"Identity"})
   public ResponseEntity<MembershipResponse> revokeMembership(@PathVariable UUID id) {
-    Membership m = service.revokeMembership(id);
+    Membership m = service.revoke(id);
     return ResponseEntity.ok(IdentityWebMapper.toMembershipResponse(m));
   }
 }

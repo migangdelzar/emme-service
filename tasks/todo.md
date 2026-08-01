@@ -87,6 +87,18 @@
 - [ ] Run service-wide architecture verification after every module plan reaches
   implementation completion.
 
+### Identity Membership domain/application slice — 2026-08-01
+
+- [x] Add failing package guardrails for the Membership domain and persistence
+  boundary.
+- [x] Introduce framework-free Membership lifecycle behavior.
+- [x] Add application-owned membership/role ports and MembershipService.
+- [x] Add persistence mapper and adapters while preserving managed JPA identity.
+- [x] Rewire Identity membership/current-user/public API flows.
+- [x] Verify Identity tests and mapper round-trip coverage.
+- [ ] Continue with permission/identity service separation and typed security
+  configuration.
+
 ### Plan update results
 
 - Added the plan registry at `docs/superpowers/plans/README.md`.

@@ -6,8 +6,9 @@ import com.emme.identity.adapter.in.web.mapper.IdentityWebMapper;
 import com.emme.identity.adapter.in.web.response.BusinessProfileResponse;
 import com.emme.identity.adapter.in.web.response.CurrentUserResponse;
 import com.emme.identity.adapter.in.web.response.TenantMembershipResponse;
-import com.emme.identity.adapter.out.persistence.entity.Membership;
 import com.emme.identity.application.IdentityService;
+import com.emme.identity.application.service.MembershipService;
+import com.emme.identity.domain.model.Membership;
 import com.emme.studio.api.usecase.SalonApi;
 import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.tenancy.api.usecase.TenantApi;
@@ -22,12 +23,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class CurrentUserController {
 
   private final IdentityService identityService;
+  private final MembershipService membershipService;
   private final TenantApi tenantApi;
   private final SalonApi salonApi;
 
   public CurrentUserController(
-      IdentityService identityService, TenantApi tenantApi, SalonApi salonApi) {
+      IdentityService identityService,
+      MembershipService membershipService,
+      TenantApi tenantApi,
+      SalonApi salonApi) {
     this.identityService = identityService;
+    this.membershipService = membershipService;
     this.tenantApi = tenantApi;
     this.salonApi = salonApi;
   }
@@ -36,7 +42,7 @@ public class CurrentUserController {
   public CurrentUserResponse currentUser(@AuthenticationPrincipal Object principal) {
     UserContext user = UserContextHolder.fromPrincipal(principal);
 
-    List<Membership> memberships = identityService.getCurrentUserMemberships(user.subject());
+    List<Membership> memberships = membershipService.findCurrentUserMemberships(user.subject());
     List<TenantMembershipResponse> membershipResponses =
         memberships.stream().map(membership -> toResponse(user.subject(), membership)).toList();
 
@@ -54,25 +60,24 @@ public class CurrentUserController {
   }
 
   private TenantMembershipResponse toResponse(String subject, Membership membership) {
-    TenantInfo tenant = tenantApi.getTenantInfo(membership.getTenantId());
-    Set<String> permissions =
-        identityService.getPermissionsForUser(subject, membership.getTenantId());
+    TenantInfo tenant = tenantApi.getTenantInfo(membership.tenantId());
+    Set<String> permissions = identityService.getPermissionsForUser(subject, membership.tenantId());
     return new TenantMembershipResponse(
-        membership.getTenantId(),
+        membership.tenantId(),
         tenant.slug(),
         tenant.name(),
         tenant.name(),
-        membership.getRole().getCode(),
-        membership.getStatus().name(),
+        membership.roleCode(),
+        membership.status().name(),
         permissions);
   }
 
   private static UUID selectedTenantId(List<Membership> memberships, UUID tenantIdFromClaim) {
     if (tenantIdFromClaim != null) {
-      if (memberships.stream().anyMatch(m -> m.getTenantId().equals(tenantIdFromClaim))) {
+      if (memberships.stream().anyMatch(m -> m.tenantId().equals(tenantIdFromClaim))) {
         return tenantIdFromClaim;
       }
     }
-    return memberships.size() == 1 ? memberships.getFirst().getTenantId() : null;
+    return memberships.size() == 1 ? memberships.getFirst().tenantId() : null;
   }
 }

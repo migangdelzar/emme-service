@@ -1,5 +1,15 @@
 # Engineering lessons
 
+## 2026-08-01 — Patch target validation
+
+- Failure mode: an edit was accidentally targeted at a similarly named path
+  outside the active repository.
+- Detection signal: the patch result referenced a path outside the current
+  workspace even though the intended repository file was unchanged.
+- Prevention rule: validate every absolute `apply_patch` target against the
+  active repository root before editing, then verify the target with `git
+  status` immediately afterward.
+
 ## 2026-07-31 — GitHub Actions job conditions and secrets
 
 - Failure mode: referencing a job-level `env` value in `jobs.<job>.if` caused

@@ -1,5 +1,6 @@
 package com.emme.identity.adapter.out.persistence.entity;
 
+import com.emme.identity.domain.model.MembershipStatus;
 import com.emme.shared.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,9 +14,10 @@ import jakarta.persistence.Table;
 import java.util.Objects;
 import java.util.UUID;
 
+/** JPA representation of the Identity membership aggregate. */
 @Entity
 @Table(name = "membership", schema = "emme_core")
-public class Membership extends BaseEntity {
+public class MembershipEntity extends BaseEntity {
 
   @Column(name = "tenant_id", nullable = false)
   private UUID tenantId;
@@ -34,12 +36,26 @@ public class Membership extends BaseEntity {
   @Column(name = "status", nullable = false, length = 20)
   private MembershipStatus status = MembershipStatus.ACTIVE;
 
-  protected Membership() {}
+  protected MembershipEntity() {}
 
-  public Membership(UUID tenantId, Role role, String userReference) {
+  public MembershipEntity(UUID tenantId, Role role, String userReference) {
     this.tenantId = Objects.requireNonNull(tenantId, "tenantId must not be null");
     this.role = Objects.requireNonNull(role, "role must not be null");
     this.userReference = Objects.requireNonNull(userReference, "userReference must not be null");
+  }
+
+  public static MembershipEntity restore(
+      UUID id,
+      UUID tenantId,
+      Role role,
+      String userReference,
+      MembershipStatus status,
+      java.time.Instant createdAt,
+      java.time.Instant updatedAt) {
+    MembershipEntity entity = new MembershipEntity(tenantId, role, userReference);
+    entity.status = Objects.requireNonNull(status, "status must not be null");
+    entity.restoreAuditFields(id, createdAt, updatedAt);
+    return entity;
   }
 
   public UUID getTenantId() {
@@ -56,6 +72,10 @@ public class Membership extends BaseEntity {
 
   public MembershipStatus getStatus() {
     return status;
+  }
+
+  public void setStatus(MembershipStatus status) {
+    this.status = Objects.requireNonNull(status, "status must not be null");
   }
 
   public void suspend() {

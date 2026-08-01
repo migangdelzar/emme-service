@@ -150,6 +150,17 @@
 - [x] Verify Identity checks and security configuration regression coverage.
 - [ ] Continue with Identity-specific failure advice.
 
+### Identity failure advice slice — 2026-08-01
+
+- [x] Add failing tests for Identity-owned expected exceptions and ProblemDetail
+  mapping.
+- [x] Introduce public customer authentication/profile exception types.
+- [x] Add scoped Identity web advice without replacing shared global handling.
+- [x] Rewire application services to raise stable Identity failures.
+- [x] Verify Identity checks and HTTP error regression coverage.
+- [ ] Continue with final Identity security hardening and Keycloak application
+  boundary separation.
+
 ### Plan update results
 
 - Added the plan registry at `docs/superpowers/plans/README.md`.

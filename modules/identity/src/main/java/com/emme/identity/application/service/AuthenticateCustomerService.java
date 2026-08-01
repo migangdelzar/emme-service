@@ -1,6 +1,7 @@
 package com.emme.identity.application.service;
 
 import com.emme.identity.api.command.AuthenticateCustomerCommand;
+import com.emme.identity.api.exception.InvalidCustomerTokenException;
 import com.emme.identity.api.result.CustomerDetails;
 import com.emme.identity.api.result.CustomerLoginResult;
 import com.emme.identity.api.usecase.AuthenticateCustomerUseCase;
@@ -35,7 +36,7 @@ public class AuthenticateCustomerService implements AuthenticateCustomerUseCase 
   public CustomerLoginResult authenticate(AuthenticateCustomerCommand command) {
     CustomerTokenClaims claims = tokenDecoder.decode(command.providerToken());
     if (claims.issuer() == null || !claims.issuer().contains(CUSTOMERS_ISSUER_SUFFIX)) {
-      throw new IllegalArgumentException("Token not from customers realm");
+      throw new InvalidCustomerTokenException();
     }
 
     SocialProvider provider = resolveProvider(claims.identityProvider());

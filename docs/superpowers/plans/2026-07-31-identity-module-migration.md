@@ -311,3 +311,19 @@ security hardening gate remain open slices.
 
 Identity-specific failure advice and the final security hardening gate remain
 open slices.
+
+## Completed Identity failure advice slice — 2026-08-01
+
+- [x] Added public `InvalidCustomerTokenException` and
+  `CustomerNotFoundException` types under `api/exception`.
+- [x] Added scoped `IdentityExceptionHandler` under the inbound web advice
+  adapter using RFC 9457 `ProblemDetail` responses and stable error codes.
+- [x] Rewired customer authentication/profile services to raise the typed
+  Identity failures while preserving existing controller translations.
+- [x] Added exception mapping and package-ownership coverage.
+- [x] Verified Identity checks, Studio Modulith verification, Markdown
+  validation, and whitespace checks.
+
+The final Identity hardening work remains: move the password-grant Keycloak
+orchestration out of the legacy application class, type the remaining Keycloak
+client configuration, and complete security regression coverage.

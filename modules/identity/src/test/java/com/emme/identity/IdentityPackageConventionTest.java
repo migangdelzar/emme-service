@@ -219,6 +219,11 @@ class IdentityPackageConventionTest {
   private static final Path IDENTITY_SECURITY_PROPERTIES =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/configuration/IdentitySecurityProperties.java");
+  private static final Path IDENTITY_EXCEPTION_HANDLER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/advice/IdentityExceptionHandler.java");
+  private static final Path IDENTITY_EXCEPTION_PACKAGE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/api/exception");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -382,6 +387,15 @@ class IdentityPackageConventionTest {
   @Test
   void ownsSecurityDefaultsInTypedIdentityConfiguration() {
     assertThat(Files.exists(IDENTITY_SECURITY_PROPERTIES)).isTrue();
+  }
+
+  @Test
+  void ownsExpectedFailuresAndHttpTranslationAtIdentityBoundaries() {
+    assertThat(Files.exists(IDENTITY_EXCEPTION_HANDLER)).isTrue();
+    assertThat(hasJavaSource(IDENTITY_EXCEPTION_PACKAGE, "CustomerNotFoundException.java"))
+        .isTrue();
+    assertThat(hasJavaSource(IDENTITY_EXCEPTION_PACKAGE, "InvalidCustomerTokenException.java"))
+        .isTrue();
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

@@ -1,6 +1,7 @@
 package com.emme.identity.application.service;
 
 import com.emme.identity.api.command.UpdateCustomerPhoneCommand;
+import com.emme.identity.api.exception.CustomerNotFoundException;
 import com.emme.identity.api.result.CustomerDetails;
 import com.emme.identity.api.usecase.UpdateCustomerProfileUseCase;
 import com.emme.identity.application.port.out.CustomerIdentityRepository;
@@ -25,7 +26,7 @@ public class UpdateCustomerProfileService implements UpdateCustomerProfileUseCas
     var customer =
         repository
             .findById(customerId)
-            .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + customerId));
+            .orElseThrow(() -> new CustomerNotFoundException(customerId));
     customer.updatePhone(command.phone());
     return AuthenticateCustomerService.toDetails(repository.save(customer));
   }

@@ -1,6 +1,7 @@
-package com.emme.assistant.ai.application;
+package com.emme.assistant.ai.adapter.out.provider;
 
-import com.emme.assistant.ai.config.AiProperties;
+import com.emme.assistant.ai.application.port.out.ModelProvider;
+import com.emme.assistant.ai.configuration.AiProperties;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;

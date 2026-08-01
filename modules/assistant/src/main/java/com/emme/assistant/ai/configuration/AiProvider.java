@@ -1,4 +1,4 @@
-package com.emme.assistant.ai.config;
+package com.emme.assistant.ai.configuration;
 
 public enum AiProvider {
   OLLAMA,

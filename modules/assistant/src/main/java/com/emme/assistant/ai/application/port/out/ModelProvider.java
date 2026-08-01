@@ -1,4 +1,4 @@
-package com.emme.assistant.ai.application;
+package com.emme.assistant.ai.application.port.out;
 
 import java.util.List;
 import java.util.Map;

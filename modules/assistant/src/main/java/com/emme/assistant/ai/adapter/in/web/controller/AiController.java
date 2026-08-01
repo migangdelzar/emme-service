@@ -2,10 +2,10 @@ package com.emme.assistant.ai.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.assistant.ai.api.result.IntentInfo;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
-import com.emme.assistant.ai.application.AiService;
-import com.emme.assistant.ai.application.ModelProvider.IntentResult;
-import com.emme.assistant.ai.application.RagService;
+import com.emme.assistant.ai.api.usecase.DetectIntentUseCase;
+import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
@@ -22,13 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class AiController {
 
   private final ChatUseCase chatUseCase;
-  private final AiService aiService;
-  private final RagService ragService;
+  private final DetectIntentUseCase detectIntent;
+  private final RagQueryUseCase ragQuery;
 
-  public AiController(ChatUseCase chatUseCase, AiService aiService, RagService ragService) {
+  public AiController(
+      ChatUseCase chatUseCase, DetectIntentUseCase detectIntent, RagQueryUseCase ragQuery) {
     this.chatUseCase = chatUseCase;
-    this.aiService = aiService;
-    this.ragService = ragService;
+    this.detectIntent = detectIntent;
+    this.ragQuery = ragQuery;
   }
 
   @PostMapping("/chat")
@@ -45,8 +46,8 @@ public class AiController {
   @PostMapping("/intent")
   @Operation(summary = "Detect intent from user message")
   @PreAuthorize("@featureFlagService.isEnabled('ai_chat')")
-  public ResponseEntity<IntentResult> detectIntent(@RequestBody IntentRequest request) {
-    IntentResult result = aiService.routeIntent(request.message());
+  public ResponseEntity<IntentInfo> detectIntent(@RequestBody IntentRequest request) {
+    IntentInfo result = detectIntent.detect(request.message());
     return ResponseEntity.ok(result);
   }
 
@@ -56,7 +57,7 @@ public class AiController {
   public ResponseEntity<Map<String, String>> ragQuery(@RequestBody RagRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          String answer = ragService.query(tenantId, request.question());
+          String answer = ragQuery.query(tenantId, request.question());
           return ResponseEntity.ok(Map.of("answer", answer));
         });
   }

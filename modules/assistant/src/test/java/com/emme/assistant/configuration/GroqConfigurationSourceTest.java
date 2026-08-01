@@ -13,7 +13,7 @@ class GroqConfigurationSourceTest {
   void groqProviderUsesTypedAiConfigurationInsteadOfDirectEnvironmentAccess() throws IOException {
     Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant");
 
-    assertThat(Files.readString(root.resolve("ai/application/GroqModelProvider.java")))
+    assertThat(Files.readString(root.resolve("ai/adapter/out/provider/GroqModelProvider.java")))
         .doesNotContain("System.getenv(")
         .contains("props.chat().apiKey()");
   }

@@ -1,15 +1,16 @@
-package com.emme.assistant.ai.application;
+package com.emme.assistant.ai.application.service;
 
-import com.emme.assistant.ai.config.AiProperties;
+import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
+import com.emme.assistant.ai.configuration.AiProperties;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RagService {
+public class RagQueryService implements RagQueryUseCase {
 
   private final AiProperties properties;
 
-  public RagService(AiProperties properties) {
+  public RagQueryService(AiProperties properties) {
     this.properties = properties;
   }
 

@@ -2,7 +2,7 @@ package com.emme.assistant.adapter.in.messaging;
 
 import com.emme.assistant.adapter.out.persistence.entity.ChannelParticipantEntity;
 import com.emme.assistant.adapter.out.persistence.repository.SpringDataChannelParticipantRepository;
-import com.emme.assistant.ai.application.AiService;
+import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.api.command.AddConversationEventCommand;
 import com.emme.assistant.api.command.StartConversationCommand;
 import com.emme.assistant.api.query.ListConversationsQuery;
@@ -46,7 +46,7 @@ public class WhatsAppMessageService {
   private final StartConversationUseCase startConversation;
   private final ListConversationsUseCase listConversations;
   private final AddConversationEventUseCase addConversationEvent;
-  private final AiService aiService;
+  private final ChatUseCase chatUseCase;
   private final SpringDataChannelParticipantRepository participantRepo;
   private final ObjectMapper objectMapper;
   private final OkHttpClient httpClient;
@@ -56,14 +56,14 @@ public class WhatsAppMessageService {
       StartConversationUseCase startConversation,
       ListConversationsUseCase listConversations,
       AddConversationEventUseCase addConversationEvent,
-      AiService aiService,
+      ChatUseCase chatUseCase,
       SpringDataChannelParticipantRepository participantRepo) {
     this.properties = properties;
     this.defaultTenantId = properties.defaultTenantId();
     this.startConversation = startConversation;
     this.listConversations = listConversations;
     this.addConversationEvent = addConversationEvent;
-    this.aiService = aiService;
+    this.chatUseCase = chatUseCase;
     this.participantRepo = participantRepo;
     this.objectMapper = new ObjectMapper();
     this.httpClient = new OkHttpClient();
@@ -75,7 +75,7 @@ public class WhatsAppMessageService {
       StartConversationUseCase startConversation,
       ListConversationsUseCase listConversations,
       AddConversationEventUseCase addConversationEvent,
-      AiService aiService,
+      ChatUseCase chatUseCase,
       SpringDataChannelParticipantRepository participantRepo,
       OkHttpClient httpClient) {
     this.properties = properties;
@@ -83,7 +83,7 @@ public class WhatsAppMessageService {
     this.startConversation = startConversation;
     this.listConversations = listConversations;
     this.addConversationEvent = addConversationEvent;
-    this.aiService = aiService;
+    this.chatUseCase = chatUseCase;
     this.participantRepo = participantRepo;
     this.objectMapper = new ObjectMapper();
     this.httpClient = httpClient;
@@ -120,7 +120,7 @@ public class WhatsAppMessageService {
         new AddConversationEventCommand(conv.id(), "MESSAGE_RECEIVED", msg.text()));
 
     // 6. Trigger AI response
-    String aiResponse = aiService.chat("", msg.text());
+    String aiResponse = chatUseCase.chat("", msg.text());
     addConversationEvent.add(
         new AddConversationEventCommand(conv.id(), "MESSAGE_SENT", aiResponse));
 

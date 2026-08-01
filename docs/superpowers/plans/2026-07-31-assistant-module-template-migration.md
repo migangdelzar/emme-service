@@ -819,3 +819,18 @@ configuration ownership.
 Remaining work is AI provider capability isolation, channel-participant port
 ownership, WhatsApp webhook replay/idempotency evidence, and complete service
 verification.
+
+## Completed AI capability boundary slice — 2026-08-01
+
+- [x] Moved `ModelProvider` into the AI application outbound-port package.
+- [x] Moved Mock, Groq, and Ollama implementations into AI outbound provider
+  adapters and typed configuration into `ai/configuration`.
+- [x] Replaced the multi-operation AI facade with focused Chat, Detect Intent,
+  and RAG query use-case boundaries.
+- [x] Rewired HTTP and WhatsApp inbound adapters to public AI use cases.
+- [x] Updated source-boundary tests and verified Assistant formatting,
+  compilation, and tests.
+
+Remaining Assistant work is channel-participant persistence ownership, provider
+contract coverage, webhook replay/idempotency evidence, and final Modulith/CI
+verification.

@@ -643,8 +643,10 @@ secret-redaction contract.
 - [ ] Keep the latest `docs/templates/module-package-structure-template.md` authoritative.
 - [x] Normalize Assistant persistence names, inbound adapter paths, and initial
   domain/API package boundaries.
-- [ ] Replace temporary entity-backed orchestration with focused use-case
+- [x] Replace temporary entity-backed orchestration with focused use-case
   services and application-owned ports.
+- [x] Isolate Assistant AI providers behind `ai/application/port/out` and
+  `ai/adapter/out/provider`, with focused chat, intent, and RAG use cases.
 - [ ] Preserve Assistant HTTP, webhook, JSON, database, and feature-flag behavior.
 - [ ] Separate pure domain models, persistence entities, ports, adapters, grouped API contracts, and package metadata.
 - [ ] Run the complete Assistant and service verification gates before merging.

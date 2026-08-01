@@ -1,2 +1,2 @@
-/** Application orchestration for Assistant conversation use cases. */
+/** One focused application service per public Assistant use case. */
 package com.emme.assistant.application.service;

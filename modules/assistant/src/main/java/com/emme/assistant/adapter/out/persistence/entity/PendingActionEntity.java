@@ -87,4 +87,8 @@ public class PendingActionEntity extends TenantOwnedEntity {
   public Instant getCreatedAtOverride() {
     return createdAtOverride;
   }
+
+  public void restoreIdentity(UUID id, Instant createdAt) {
+    restoreAuditFields(id, createdAt, createdAt);
+  }
 }

@@ -800,3 +800,22 @@ configuration cleanup is complete: its API key now enters through typed
 The remaining Assistant provider work is the broader adapter/package migration
 described in the approved tasks above; this slice deliberately changes only
 configuration ownership.
+
+## Completed conversation boundary slice — 2026-08-01
+
+- [x] Added grouped conversation commands, queries, results, exceptions, and
+  use-case contracts.
+- [x] Added application-owned conversation, event, and pending-action ports.
+- [x] Added persistence mappers and adapters so application code no longer
+  imports JPA entities or Spring Data repositories.
+- [x] Replaced the legacy multi-operation `ConversationService` with focused
+  services for start, close, event append, action proposal/confirmation/
+  rejection, conversation reads, history, and active-action reads.
+- [x] Extracted HTTP request/response/mapper types and rewired the WhatsApp
+  inbound adapter to public use cases.
+- [x] Added application dependency-direction coverage and verified Assistant
+  formatting, compilation, and tests.
+
+Remaining work is AI provider capability isolation, channel-participant port
+ownership, WhatsApp webhook replay/idempotency evidence, and complete service
+verification.

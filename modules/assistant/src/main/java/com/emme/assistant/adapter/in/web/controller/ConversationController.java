@@ -2,16 +2,29 @@ package com.emme.assistant.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.assistant.adapter.out.persistence.entity.ConversationEntity;
-import com.emme.assistant.adapter.out.persistence.entity.ConversationEventEntity;
-import com.emme.assistant.adapter.out.persistence.entity.PendingActionEntity;
-import com.emme.assistant.application.service.ConversationService;
-import com.emme.assistant.domain.model.ActionType;
-import com.emme.kernel.type.ChannelType;
+import com.emme.assistant.adapter.in.web.mapper.AssistantWebMapper;
+import com.emme.assistant.adapter.in.web.request.ProposeActionRequest;
+import com.emme.assistant.adapter.in.web.request.StartConversationRequest;
+import com.emme.assistant.adapter.in.web.response.ConversationResponse;
+import com.emme.assistant.adapter.in.web.response.EventResponse;
+import com.emme.assistant.adapter.in.web.response.PendingActionResponse;
+import com.emme.assistant.api.command.CloseConversationCommand;
+import com.emme.assistant.api.command.ConfirmPendingActionCommand;
+import com.emme.assistant.api.command.RejectPendingActionCommand;
+import com.emme.assistant.api.query.GetConversationHistoryQuery;
+import com.emme.assistant.api.query.GetConversationQuery;
+import com.emme.assistant.api.query.ListConversationsQuery;
+import com.emme.assistant.api.usecase.CloseConversationUseCase;
+import com.emme.assistant.api.usecase.ConfirmPendingActionUseCase;
+import com.emme.assistant.api.usecase.GetConversationHistoryUseCase;
+import com.emme.assistant.api.usecase.GetConversationUseCase;
+import com.emme.assistant.api.usecase.ListConversationsUseCase;
+import com.emme.assistant.api.usecase.ProposePendingActionUseCase;
+import com.emme.assistant.api.usecase.RejectPendingActionUseCase;
+import com.emme.assistant.api.usecase.StartConversationUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +39,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/conversations")
 @Tag(name = "Conversations")
 public class ConversationController {
+  private final StartConversationUseCase start;
+  private final ListConversationsUseCase list;
+  private final GetConversationUseCase get;
+  private final CloseConversationUseCase close;
+  private final GetConversationHistoryUseCase history;
+  private final ProposePendingActionUseCase propose;
+  private final ConfirmPendingActionUseCase confirm;
+  private final RejectPendingActionUseCase reject;
 
-  private final ConversationService conversationService;
-
-  public ConversationController(ConversationService conversationService) {
-    this.conversationService = conversationService;
+  public ConversationController(
+      StartConversationUseCase start,
+      ListConversationsUseCase list,
+      GetConversationUseCase get,
+      CloseConversationUseCase close,
+      GetConversationHistoryUseCase history,
+      ProposePendingActionUseCase propose,
+      ConfirmPendingActionUseCase confirm,
+      RejectPendingActionUseCase reject) {
+    this.start = start;
+    this.list = list;
+    this.get = get;
+    this.close = close;
+    this.history = history;
+    this.propose = propose;
+    this.confirm = confirm;
+    this.reject = reject;
   }
 
   @PostMapping
@@ -38,131 +72,60 @@ public class ConversationController {
   public ResponseEntity<ConversationResponse> start(@RequestBody StartConversationRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          ConversationEntity conversation =
-              conversationService.startConversation(
-                  tenantId, request.participantId(), request.channel());
-          var location = URI.create("/api/v1/conversations/" + conversation.getId());
-          return ResponseEntity.created(location).body(ConversationResponse.from(conversation));
+          var conversation = start.start(AssistantWebMapper.toCommand(tenantId, request));
+          return ResponseEntity.created(URI.create("/api/v1/conversations/" + conversation.id()))
+              .body(ConversationResponse.from(conversation));
         });
   }
 
   @GetMapping
-  @Operation(summary = "List conversations for current tenant")
   public ResponseEntity<List<ConversationResponse>> list() {
     return withCurrentTenant(
         tenantId ->
             ResponseEntity.ok(
-                conversationService.findByTenantId(tenantId).stream()
+                list.list(new ListConversationsQuery(tenantId)).stream()
                     .map(ConversationResponse::from)
                     .toList()));
   }
 
   @GetMapping("/{id}")
-  @Operation(summary = "Get conversation by ID")
   public ResponseEntity<ConversationResponse> get(@PathVariable UUID id) {
-    ConversationEntity conversation = conversationService.findById(id);
-    return ResponseEntity.ok(ConversationResponse.from(conversation));
+    return get.get(new GetConversationQuery(id))
+        .map(ConversationResponse::from)
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @PostMapping("/{id}/close")
-  @Operation(summary = "Close a conversation")
   public ResponseEntity<ConversationResponse> close(@PathVariable UUID id) {
-    ConversationEntity conversation = conversationService.closeConversation(id);
-    return ResponseEntity.ok(ConversationResponse.from(conversation));
+    return ResponseEntity.ok(
+        ConversationResponse.from(close.close(new CloseConversationCommand(id))));
   }
 
   @GetMapping("/{id}/events")
-  @Operation(summary = "Get conversation event history")
   public ResponseEntity<List<EventResponse>> getHistory(@PathVariable UUID id) {
     return ResponseEntity.ok(
-        conversationService.getHistory(id).stream().map(EventResponse::from).toList());
+        history.get(new GetConversationHistoryQuery(id)).stream()
+            .map(EventResponse::from)
+            .toList());
   }
 
   @PostMapping("/{id}/actions")
-  @Operation(summary = "Propose an action in a conversation")
   public ResponseEntity<PendingActionResponse> proposeAction(
       @PathVariable UUID id, @RequestBody ProposeActionRequest request) {
-    PendingActionEntity action =
-        conversationService.proposeAction(
-            id, request.actionType(), request.details(), request.expiresAt());
-    return ResponseEntity.ok(PendingActionResponse.from(action));
+    return ResponseEntity.ok(
+        PendingActionResponse.from(propose.propose(AssistantWebMapper.toCommand(id, request))));
   }
 
   @PostMapping("/actions/{id}/confirm")
-  @Operation(summary = "Confirm a pending action")
   public ResponseEntity<PendingActionResponse> confirmAction(@PathVariable UUID id) {
-    PendingActionEntity action = conversationService.confirmAction(id);
-    return ResponseEntity.ok(PendingActionResponse.from(action));
+    return ResponseEntity.ok(
+        PendingActionResponse.from(confirm.confirm(new ConfirmPendingActionCommand(id))));
   }
 
   @PostMapping("/actions/{id}/reject")
-  @Operation(summary = "Reject a pending action")
   public ResponseEntity<PendingActionResponse> rejectAction(@PathVariable UUID id) {
-    PendingActionEntity action = conversationService.rejectAction(id);
-    return ResponseEntity.ok(PendingActionResponse.from(action));
+    return ResponseEntity.ok(
+        PendingActionResponse.from(reject.reject(new RejectPendingActionCommand(id))));
   }
-
-  // --- DTOs ---
-
-  public record ConversationResponse(
-      UUID id,
-      UUID tenantId,
-      UUID participantId,
-      String channel,
-      String status,
-      Instant startedAt,
-      Instant createdAt) {
-    public static ConversationResponse from(ConversationEntity c) {
-      return new ConversationResponse(
-          c.getId(),
-          c.getTenantId(),
-          c.getParticipantId(),
-          c.getChannel().name(),
-          c.getStatus().name(),
-          c.getStartedAt(),
-          c.getCreatedAt());
-    }
-  }
-
-  public record EventResponse(
-      UUID id,
-      UUID conversationId,
-      Integer sequenceNumber,
-      String eventType,
-      String payload,
-      Instant occurredAt) {
-    public static EventResponse from(ConversationEventEntity e) {
-      return new EventResponse(
-          e.getId(),
-          e.getConversationId(),
-          e.getSequenceNumber(),
-          e.getEventType(),
-          e.getPayload(),
-          e.getOccurredAt());
-    }
-  }
-
-  public record PendingActionResponse(
-      UUID id,
-      UUID conversationId,
-      String actionType,
-      String status,
-      String details,
-      Instant expiresAt,
-      Instant createdAt) {
-    public static PendingActionResponse from(PendingActionEntity a) {
-      return new PendingActionResponse(
-          a.getId(),
-          a.getConversationId(),
-          a.getActionType().name(),
-          a.getStatus().name(),
-          a.getDetails(),
-          a.getExpiresAt(),
-          a.getCreatedAtOverride());
-    }
-  }
-
-  public record StartConversationRequest(UUID participantId, ChannelType channel) {}
-
-  public record ProposeActionRequest(ActionType actionType, String details, Instant expiresAt) {}
 }

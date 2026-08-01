@@ -1,10 +1,15 @@
 package com.emme.assistant.adapter.in.messaging;
 
 import com.emme.assistant.adapter.out.persistence.entity.ChannelParticipantEntity;
-import com.emme.assistant.adapter.out.persistence.entity.ConversationEntity;
 import com.emme.assistant.adapter.out.persistence.repository.SpringDataChannelParticipantRepository;
 import com.emme.assistant.ai.application.AiService;
-import com.emme.assistant.application.service.ConversationService;
+import com.emme.assistant.api.command.AddConversationEventCommand;
+import com.emme.assistant.api.command.StartConversationCommand;
+import com.emme.assistant.api.query.ListConversationsQuery;
+import com.emme.assistant.api.result.ConversationInfo;
+import com.emme.assistant.api.usecase.AddConversationEventUseCase;
+import com.emme.assistant.api.usecase.ListConversationsUseCase;
+import com.emme.assistant.api.usecase.StartConversationUseCase;
 import com.emme.assistant.configuration.WhatsAppProperties;
 import com.emme.assistant.domain.model.ConversationStatus;
 import com.emme.kernel.type.ChannelType;
@@ -38,7 +43,9 @@ public class WhatsAppMessageService {
 
   private final WhatsAppProperties properties;
   private final UUID defaultTenantId;
-  private final ConversationService conversationService;
+  private final StartConversationUseCase startConversation;
+  private final ListConversationsUseCase listConversations;
+  private final AddConversationEventUseCase addConversationEvent;
   private final AiService aiService;
   private final SpringDataChannelParticipantRepository participantRepo;
   private final ObjectMapper objectMapper;
@@ -46,12 +53,16 @@ public class WhatsAppMessageService {
 
   public WhatsAppMessageService(
       WhatsAppProperties properties,
-      ConversationService conversationService,
+      StartConversationUseCase startConversation,
+      ListConversationsUseCase listConversations,
+      AddConversationEventUseCase addConversationEvent,
       AiService aiService,
       SpringDataChannelParticipantRepository participantRepo) {
     this.properties = properties;
     this.defaultTenantId = properties.defaultTenantId();
-    this.conversationService = conversationService;
+    this.startConversation = startConversation;
+    this.listConversations = listConversations;
+    this.addConversationEvent = addConversationEvent;
     this.aiService = aiService;
     this.participantRepo = participantRepo;
     this.objectMapper = new ObjectMapper();
@@ -61,13 +72,17 @@ public class WhatsAppMessageService {
   /** Test constructor — allows injecting a custom OkHttpClient. */
   public WhatsAppMessageService(
       WhatsAppProperties properties,
-      ConversationService conversationService,
+      StartConversationUseCase startConversation,
+      ListConversationsUseCase listConversations,
+      AddConversationEventUseCase addConversationEvent,
       AiService aiService,
       SpringDataChannelParticipantRepository participantRepo,
       OkHttpClient httpClient) {
     this.properties = properties;
     this.defaultTenantId = properties.defaultTenantId();
-    this.conversationService = conversationService;
+    this.startConversation = startConversation;
+    this.listConversations = listConversations;
+    this.addConversationEvent = addConversationEvent;
     this.aiService = aiService;
     this.participantRepo = participantRepo;
     this.objectMapper = new ObjectMapper();
@@ -98,16 +113,18 @@ public class WhatsAppMessageService {
     ChannelParticipantEntity participant = findOrCreateParticipant(msg.tenantId(), msg.from());
 
     // 4. Find active conversation or create new one
-    ConversationEntity conv = findOrCreateConversation(msg.tenantId(), participant);
+    ConversationInfo conv = findOrCreateConversation(msg.tenantId(), participant);
 
     // 5. Store inbound message as ConversationEvent
-    conversationService.addEvent(conv.getId(), "MESSAGE_RECEIVED", msg.text());
+    addConversationEvent.add(
+        new AddConversationEventCommand(conv.id(), "MESSAGE_RECEIVED", msg.text()));
 
     // 6. Trigger AI response
     String aiResponse = aiService.chat("", msg.text());
-    conversationService.addEvent(conv.getId(), "MESSAGE_SENT", aiResponse);
+    addConversationEvent.add(
+        new AddConversationEventCommand(conv.id(), "MESSAGE_SENT", aiResponse));
 
-    log.info("AI response for conversation={}: {}", conv.getId(), aiResponse);
+    log.info("AI response for conversation={}: {}", conv.id(), aiResponse);
 
     // 7. Send reply via WhatsApp Cloud API
     sendReply(msg.from(), aiResponse);
@@ -253,18 +270,20 @@ public class WhatsAppMessageService {
             });
   }
 
-  public ConversationEntity findOrCreateConversation(
+  public ConversationInfo findOrCreateConversation(
       UUID tenantId, ChannelParticipantEntity participant) {
-    List<ConversationEntity> conversations = conversationService.findByTenantId(tenantId);
+    List<ConversationInfo> conversations =
+        listConversations.list(new ListConversationsQuery(tenantId));
     return conversations.stream()
-        .filter(c -> c.getParticipantId().equals(participant.getId()))
-        .filter(c -> c.getStatus() == ConversationStatus.ACTIVE)
+        .filter(c -> c.participantId().equals(participant.getId()))
+        .filter(c -> c.status() == ConversationStatus.ACTIVE)
         .findFirst()
         .orElseGet(
             () -> {
               log.info("Creating new conversation for participant={}", participant.getId());
-              return conversationService.startConversation(
-                  tenantId, participant.getId(), ChannelType.WHATSAPP);
+              return startConversation.start(
+                  new StartConversationCommand(
+                      tenantId, participant.getId(), ChannelType.WHATSAPP));
             });
   }
 

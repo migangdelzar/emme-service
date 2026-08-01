@@ -32,6 +32,23 @@ class AssistantPackageConventionTest {
         .isTrue();
   }
 
+  @Test
+  void keepsApplicationFreeOfPersistenceAndAdapterDependencies() throws Exception {
+    Path application = ROOT.resolve("application");
+    assertThat(Files.exists(application.resolve("port/out/ConversationRepository.java"))).isTrue();
+    assertThat(Files.exists(application.resolve("service/StartConversationService.java"))).isTrue();
+    assertThat(Files.exists(application.resolve("service/CloseConversationService.java"))).isTrue();
+    try (Stream<Path> paths = Files.walk(application)) {
+      for (Path path : paths.filter(candidate -> candidate.toString().endsWith(".java")).toList()) {
+        assertThat(Files.readString(path))
+            .as("application source: %s", path)
+            .doesNotContain("com.emme.assistant.adapter.out.persistence")
+            .doesNotContain("jakarta.persistence")
+            .doesNotContain("org.springframework.data");
+      }
+    }
+  }
+
   private static boolean hasJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) {
       return false;

@@ -58,4 +58,8 @@ public class ConversationEntity extends TenantOwnedEntity {
   public Instant getStartedAt() {
     return startedAt;
   }
+
+  public void restoreIdentity(UUID id, Instant startedAt) {
+    restoreAuditFields(id, startedAt, startedAt);
+  }
 }

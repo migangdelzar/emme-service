@@ -72,6 +72,11 @@ reopened by this backlog.
   current module template.
 - [ ] Migrate Assistant after Identity, Tenancy, and Shared contracts are
   stable.
+- [x] Normalize Assistant conversation persistence and replace the legacy
+  multi-operation conversation service with one use-case service per current
+  conversation/action operation.
+- [ ] Complete Assistant AI provider ports/adapters, WhatsApp participant
+  ownership, webhook idempotency/signature evidence, and service-wide checks.
 
 ### P3 — Provider integrations
 

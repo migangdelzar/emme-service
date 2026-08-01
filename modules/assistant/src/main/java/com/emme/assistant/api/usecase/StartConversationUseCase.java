@@ -1,9 +1,8 @@
 package com.emme.assistant.api.usecase;
 
-import com.emme.assistant.domain.model.Conversation;
-import com.emme.kernel.type.ChannelType;
-import java.util.UUID;
+import com.emme.assistant.api.command.StartConversationCommand;
+import com.emme.assistant.api.result.ConversationInfo;
 
 public interface StartConversationUseCase {
-  Conversation start(UUID tenantId, UUID participantId, ChannelType channel);
+  ConversationInfo start(StartConversationCommand command);
 }

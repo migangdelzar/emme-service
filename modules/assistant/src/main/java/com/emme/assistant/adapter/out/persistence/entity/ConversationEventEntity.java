@@ -65,4 +65,8 @@ public class ConversationEventEntity extends TenantOwnedEntity {
   public Instant getOccurredAt() {
     return occurredAt;
   }
+
+  public void restoreIdentity(UUID id, Instant occurredAt) {
+    restoreAuditFields(id, occurredAt, occurredAt);
+  }
 }

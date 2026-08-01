@@ -1,0 +1,42 @@
+package com.emme.assistant.application.service;
+
+import com.emme.assistant.api.command.ProposePendingActionCommand;
+import com.emme.assistant.api.result.PendingActionInfo;
+import com.emme.assistant.api.usecase.ProposePendingActionUseCase;
+import com.emme.assistant.application.mapper.AssistantApplicationMapper;
+import com.emme.assistant.application.port.out.ConversationRepository;
+import com.emme.assistant.application.port.out.PendingActionRepository;
+import com.emme.assistant.domain.model.PendingAction;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+public class ProposePendingActionService implements ProposePendingActionUseCase {
+  private final ConversationRepository conversations;
+  private final PendingActionRepository actions;
+
+  public ProposePendingActionService(
+      ConversationRepository conversations, PendingActionRepository actions) {
+    this.conversations = conversations;
+    this.actions = actions;
+  }
+
+  @Override
+  public PendingActionInfo propose(ProposePendingActionCommand command) {
+    var conversation =
+        AssistantServiceSupport.conversation(conversations, command.conversationId());
+    return AssistantApplicationMapper.toInfo(
+        actions.save(
+            new PendingAction(
+                UUID.randomUUID(),
+                conversation.tenantId(),
+                command.conversationId(),
+                command.actionType(),
+                com.emme.assistant.domain.model.ActionStatus.PENDING,
+                command.details(),
+                command.expiresAt(),
+                java.time.Instant.now())));
+  }
+}

@@ -39,6 +39,12 @@ class TenancyPackageConventionTest {
   private static final Path PERSISTENCE_ADAPTER =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/TenantPersistenceAdapter.java");
+  private static final Path DATABASE_REGISTRY_PORT =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/port/out/DatabaseRegistryPort.java");
+  private static final Path DATABASE_REGISTRY_ENTRY =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/port/out/DatabaseRegistryEntry.java");
   private static final Path PERSISTENCE_MAPPER =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/mapper/TenantPersistenceMapper.java");
@@ -133,6 +139,14 @@ class TenancyPackageConventionTest {
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/config/DataSourceConfig.java");
   private static final Path LEGACY_TENANT_POOLING_CONFIG =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/config/TenantPoolingConfig.java");
+  private static final Path DATABASE_POOL_PROVIDER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantDatabasePoolProvider.java");
+  private static final Path TENANT_ROUTING_DATA_SOURCE =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantRoutingDataSource.java");
+  private static final Path LEGACY_POOL_PACKAGE =
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/pool");
   private static final Path LEGACY_TENANT_CONTEXT_FILTER =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/TenantContextFilter.java");
   private static final Path LEGACY_TRUSTED_TENANT_RESOLVER =
@@ -178,6 +192,20 @@ class TenancyPackageConventionTest {
     assertThat(Files.exists(PERSISTENCE_REPOSITORY)).isTrue();
     assertThat(Files.exists(PERSISTENCE_ADAPTER)).isTrue();
     assertThat(Files.exists(PERSISTENCE_MAPPER)).isTrue();
+  }
+
+  @Test
+  void exposesDatabaseRegistryThroughApplicationPort() throws IOException {
+    assertThat(Files.exists(DATABASE_REGISTRY_PORT)).isTrue();
+    assertThat(Files.exists(DATABASE_REGISTRY_ENTRY)).isTrue();
+
+    String poolManager =
+        Files.readString(
+            sourcePath(
+                "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantDatabasePoolProvider.java"));
+    assertThat(poolManager).contains("DatabaseRegistryPort");
+    assertThat(poolManager).doesNotContain("DatabaseRegistryService");
+    assertThat(poolManager).doesNotContain("adapter.out.persistence.entity.DatabaseRegistry");
   }
 
   @Test
@@ -233,6 +261,9 @@ class TenancyPackageConventionTest {
     assertThat(Files.exists(LEGACY_WEB_MVC_CONFIGURATION)).isFalse();
     assertThat(Files.exists(LEGACY_DATA_SOURCE_CONFIG)).isFalse();
     assertThat(Files.exists(LEGACY_TENANT_POOLING_CONFIG)).isFalse();
+    assertThat(Files.exists(DATABASE_POOL_PROVIDER)).isTrue();
+    assertThat(Files.exists(TENANT_ROUTING_DATA_SOURCE)).isTrue();
+    assertThat(hasJavaSources(LEGACY_POOL_PACKAGE)).isFalse();
   }
 
   private static boolean hasJavaSources(Path directory) {

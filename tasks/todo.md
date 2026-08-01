@@ -153,9 +153,11 @@
 - [x] Moved `TenantContextAspect` under the outbound persistence aspect package
   and normalized `DataSourceConfiguration`/`TenantPoolingProperties` under
   `configuration`.
-- [ ] Next slice: introduce an application-owned database-registry port and
-  infrastructure-owned registry model for the pool manager, then continue
-  Identity security/domain boundaries.
+- [x] Introduced `DatabaseRegistryPort` and immutable `DatabaseRegistryEntry`,
+  renamed the JDBC implementation to `DatabaseRegistryAdapter`, and moved the
+  pool/routing datasource under the database client adapter with
+  `TenantDatabasePoolProvider`.
+- [ ] Next slice: continue Identity security/domain boundaries.
 
 ## Architecture naming contract — 2026-07-31
 

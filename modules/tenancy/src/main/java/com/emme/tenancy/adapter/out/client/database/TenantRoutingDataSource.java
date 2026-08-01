@@ -1,4 +1,4 @@
-package com.emme.tenancy.pool;
+package com.emme.tenancy.adapter.out.client.database;
 
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.configuration.TenantPoolingProperties;
@@ -11,23 +11,25 @@ import org.springframework.stereotype.Component;
 
 /**
  * Spring {@link AbstractRoutingDataSource} that resolves the current tenant's database UUID via
- * {@link TenantContextHolder} and delegates connection acquisition to {@link DatabasePoolManager}.
+ * {@link TenantContextHolder} and delegates connection acquisition to {@link
+ * TenantDatabasePoolProvider}.
  *
  * <p>Unlike standard {@code AbstractRoutingDataSource} usage, this implementation does not
  * pre-register all possible DataSources. Instead, it overrides {@link #determineTargetDataSource()}
- * to call {@link DatabasePoolManager#getDataSource()} directly, enabling lazy pool creation per
- * tenant database.
+ * to call {@link TenantDatabasePoolProvider#getDataSource()} directly, enabling lazy pool creation
+ * per tenant database.
  */
 @Component
 @ConditionalOnExpression("!'${spring.datasource.url:}'.contains('h2')")
 public class TenantRoutingDataSource extends AbstractRoutingDataSource {
 
-  private final DatabasePoolManager poolManager;
+  private final TenantDatabasePoolProvider poolProvider;
   private final TenantPoolingProperties config;
 
   @SuppressWarnings("this-escape")
-  public TenantRoutingDataSource(DatabasePoolManager poolManager, TenantPoolingProperties config) {
-    this.poolManager = poolManager;
+  public TenantRoutingDataSource(
+      TenantDatabasePoolProvider poolProvider, TenantPoolingProperties config) {
+    this.poolProvider = poolProvider;
     this.config = config;
 
     // AbstractRoutingDataSource requires a non-null targetDataSources map.
@@ -35,7 +37,7 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
     setTargetDataSources(Map.of());
     // Deliberately NOT calling afterPropertiesSet() — it eagerly resolves
     // the target DataSource via determineTargetDataSource() which would
-    // trigger DatabasePoolManager → JPA → circular dependency.
+    // trigger TenantDatabasePoolProvider → JPA → circular dependency.
     // Resolution happens lazily on first connection request instead.
   }
 
@@ -43,7 +45,7 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
   public void afterPropertiesSet() {
     // Must call super to satisfy DataSourceHealthContributor validation.
     // The default DB pool is resolved lazily via determineTargetDataSource().
-    // DatabaseRegistryService hardcodes the default DB entry so no JPA cycle occurs.
+    // DatabaseRegistryAdapter hardcodes the default DB entry so no JPA cycle occurs.
     super.afterPropertiesSet();
   }
 
@@ -60,14 +62,14 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
   }
 
   /**
-   * Resolves the target DataSource by delegating to {@link DatabasePoolManager}.
+   * Resolves the target DataSource by delegating to {@link TenantDatabasePoolProvider}.
    *
    * <p>This override bypasses the standard {@code resolvedDataSources} map lookup because pools are
-   * created lazily at runtime and cannot be pre-registered. {@link DatabasePoolManager} handles
-   * creation, caching, eviction, and dynamic resizing of HikariCP pools.
+   * created lazily at runtime and cannot be pre-registered. {@link TenantDatabasePoolProvider}
+   * handles creation, caching, eviction, and dynamic resizing of HikariCP pools.
    */
   @Override
   protected DataSource determineTargetDataSource() {
-    return poolManager.getDataSource();
+    return poolProvider.getDataSource();
   }
 }

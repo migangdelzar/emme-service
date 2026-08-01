@@ -1,6 +1,6 @@
 package com.emme.tenancy.configuration;
 
-import com.emme.tenancy.pool.TenantRoutingDataSource;
+import com.emme.tenancy.adapter.out.client.database.TenantRoutingDataSource;
 import javax.sql.DataSource;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;

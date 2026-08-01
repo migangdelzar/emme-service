@@ -63,7 +63,7 @@ whose management behavior is explicitly defined.
 | `<module>.api.exception` | Caller-visible expected failures | `<Subject><Failure>Exception.java` |
 | `<module>.api.type` | Small stable public vocabulary | `<Concept><Qualifier>.java` |
 | `<module>.application.service` | Use-case orchestration | `<Verb><Subject>Service.java` |
-| `<module>.application.port.out` | External capabilities required by application | `<Capability>Port.java`, `<Aggregate>Repository.java`, `<Fact>Publisher.java` |
+| `<module>.application.port.out` | External capabilities required by application | `<Capability>Port.java`, `<Capability>Entry.java`, `<Aggregate>Repository.java`, `<Fact>Publisher.java` |
 | `<module>.application.mapper` | API/domain translation | `<Module>ApplicationMapper.java` |
 | `<module>.application.process` | Long-running business workflow | `<BusinessProcess>ProcessManager.java` |
 | `<module>.domain.model` | Aggregates, entities, value objects | Business noun or `<Concept>Id.java` |

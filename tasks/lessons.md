@@ -62,3 +62,12 @@
 - Prevention rule: test record constraints with a validator unit test, or use a
   valid resource fixture when verifying the HTTP mapping. Do not rely on an
   unrelated not-found path to prove boundary validation.
+
+## 2026-08-01 — Rename-aware architecture tests
+
+- Failure mode: a package-convention test retained the old source path after a
+  technical type was moved and renamed.
+- Detection signal: the test failed with `NoSuchFileException` while reading the
+  legacy path, even though compilation and the new package checks were correct.
+- Prevention rule: update source-tree assertions in the same red-green slice as
+  a rename, and run the focused convention test before the broader module gate.

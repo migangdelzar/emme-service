@@ -1,8 +1,8 @@
-package com.emme.tenancy.pool;
+package com.emme.tenancy.adapter.out.client.database;
 
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.tenancy.adapter.out.client.database.DatabaseRegistryService;
-import com.emme.tenancy.adapter.out.persistence.entity.DatabaseRegistry;
+import com.emme.tenancy.application.port.out.DatabaseRegistryEntry;
+import com.emme.tenancy.application.port.out.DatabaseRegistryPort;
 import com.emme.tenancy.configuration.TenantPoolingProperties;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -26,12 +26,12 @@ import org.springframework.stereotype.Component;
  * separately and never evicted.
  */
 @Component
-public class DatabasePoolManager {
+public class TenantDatabasePoolProvider {
 
-  private static final Logger log = LoggerFactory.getLogger(DatabasePoolManager.class);
+  private static final Logger log = LoggerFactory.getLogger(TenantDatabasePoolProvider.class);
 
   private final TenantPoolingProperties config;
-  private final DatabaseRegistryService databaseRegistryService;
+  private final DatabaseRegistryPort databaseRegistryPort;
 
   /** Caffeine cache for tenant database pools — auto-evicts on idle timeout. */
   private final Cache<UUID, HikariDataSource> poolCache;
@@ -48,10 +48,10 @@ public class DatabasePoolManager {
   @Value("${spring.datasource.driver-class-name:org.postgresql.Driver}")
   private String dbDriverClassName;
 
-  public DatabasePoolManager(
-      TenantPoolingProperties config, DatabaseRegistryService databaseRegistryService) {
+  public TenantDatabasePoolProvider(
+      TenantPoolingProperties config, DatabaseRegistryPort databaseRegistryPort) {
     this.config = config;
-    this.databaseRegistryService = databaseRegistryService;
+    this.databaseRegistryPort = databaseRegistryPort;
 
     this.poolCache =
         Caffeine.newBuilder()
@@ -107,27 +107,25 @@ public class DatabasePoolManager {
   /**
    * Creates a new HikariCP pool for the given database.
    *
-   * <p>Resolves the JDBC URL and pool sizing from {@link DatabaseRegistry}. Applies dynamic sizing
-   * based on the global connection cap and number of active pools. Higher-priority databases
+   * <p>Resolves the JDBC URL and pool sizing from {@link DatabaseRegistryEntry}. Applies dynamic
+   * sizing based on the global connection cap and number of active pools. Higher-priority databases
    * receive a connection bonus.
    */
   private HikariDataSource createPool(UUID databaseId) {
-    DatabaseRegistry db =
-        databaseRegistryService
+    DatabaseRegistryEntry db =
+        databaseRegistryPort
             .findById(databaseId)
             .orElseThrow(
                 () -> new IllegalStateException("Database not found in registry: " + databaseId));
 
     HikariConfig hikariConfig = new HikariConfig();
-    hikariConfig.setJdbcUrl(db.getJdbcUrl());
+    hikariConfig.setJdbcUrl(db.jdbcUrl());
     hikariConfig.setUsername(dbUsername);
     hikariConfig.setPassword(dbPassword);
     hikariConfig.setDriverClassName(dbDriverClassName);
 
-    int minSize =
-        (db.getMinPoolSize() != null) ? db.getMinPoolSize() : config.getDefaultMinPoolSize();
-    int maxSize =
-        (db.getMaxPoolSize() != null) ? db.getMaxPoolSize() : config.getDefaultMaxPoolSize();
+    int minSize = (db.minPoolSize() != null) ? db.minPoolSize() : config.getDefaultMinPoolSize();
+    int maxSize = (db.maxPoolSize() != null) ? db.maxPoolSize() : config.getDefaultMaxPoolSize();
 
     // Dynamic sizing: divide global budget across active pools
     long estimatedActivePools = poolCache.estimatedSize() + 1;
@@ -139,14 +137,14 @@ public class DatabasePoolManager {
     int effectiveMax = Math.min(maxSize, dynamicMax);
 
     // Priority bonus for high-priority databases
-    if (db.getPriority() != null && db.getPriority() > 0) {
-      int priorityBonus = db.getPriority();
+    if (db.priority() != null && db.priority() > 0) {
+      int priorityBonus = db.priority();
       effectiveMax = Math.min(effectiveMax + priorityBonus, maxSize);
     }
 
     hikariConfig.setMinimumIdle(minSize);
     hikariConfig.setMaximumPoolSize(effectiveMax);
-    hikariConfig.setPoolName("emme-pool-" + db.getName());
+    hikariConfig.setPoolName("emme-pool-" + db.name());
 
     HikariDataSource ds = new HikariDataSource(hikariConfig);
 
@@ -155,7 +153,7 @@ public class DatabasePoolManager {
         hikariConfig.getPoolName(),
         minSize,
         effectiveMax,
-        db.getPriority() != null ? db.getPriority() : 0,
+        db.priority() != null ? db.priority() : 0,
         databaseId);
 
     return ds;

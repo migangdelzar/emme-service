@@ -50,6 +50,26 @@ flowchart LR
 
 The module's `configuration` package is the composition root that wires concrete adapters. Dependency injection is the default; services depend on application-owned ports rather than instantiate providers internally. `@ApplicationModule` remains in the module-root `package-info.java`, not in `configuration`.
 
+### Bootstrap infrastructure example
+
+Technical metadata used to initialize infrastructure still follows the same
+port/adapter boundary:
+
+```text
+application/port/out/DatabaseRegistryPort.java
+application/port/out/DatabaseRegistryEntry.java
+        ▲
+        │ implements
+adapter/out/client/database/DatabaseRegistryAdapter.java
+adapter/out/client/database/TenantDatabasePoolProvider.java
+adapter/out/client/database/TenantRoutingDataSource.java
+```
+
+`DatabaseRegistryEntry` is an immutable port model. The JPA
+`DatabaseRegistry` entity and direct JDBC details remain inside outbound
+adapters; a future HTTP registry implementation can replace the JDBC adapter
+without changing pool management or application-facing contracts.
+
 ## Adapter guardrails
 
 ### Persistence

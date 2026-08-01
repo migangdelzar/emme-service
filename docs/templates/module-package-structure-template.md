@@ -152,6 +152,7 @@ modules/<module>/
     │   │   │   │   └── out/
     │   │   │   │       ├── package-info.java
     │   │   │   │       ├── <Capability>Port.java
+    │   │   │   │       ├── <Capability>Entry.java
     │   │   │   │       ├── <Aggregate>Repository.java
     │   │   │   │       ├── <ReadCapability>Port.java
     │   │   │   │       └── <Fact>Publisher.java
@@ -1838,6 +1839,7 @@ Names communicate architectural role before a file is opened. Use the module's u
 | `application.service` | `<Verb><Subject>Service.java` | `SubmitQuoteService`, `SearchQuotesService` | Implements the matching use case; never `*ServiceImpl` |
 | `application.service` | `<Subject>ApplicationService.java` | `PaymentApplicationService`, `FeatureFlagApplicationService` | Approved only for a cohesive aggregate/application façade implementing multiple tightly related use cases; never a generic dumping ground |
 | `application.port.out` | `<Capability>Port.java` | `PricingPort`, `CustomerVerificationPort` | External capability with no technology in the name |
+| `application.port.out` | `<Capability>Entry.java` | `DatabaseRegistryEntry` | Immutable port data returned by an outbound capability; never a JPA entity or provider DTO |
 | `application.port.out` | `<Aggregate>Repository.java` | `QuoteRepository` | Aggregate persistence port |
 | `application.port.out` | `<ReadCapability>Port.java` | `SearchQuotesPort` | Read capability returning application/API results without exposing database projections |
 | `application.port.out` | `<Fact>Publisher.java` | `QuoteEventPublisher` | Publication capability |
@@ -1880,6 +1882,7 @@ Names communicate architectural role before a file is opened. Use the module's u
 | `adapter.out.client.<provider>` | `<Operation>Response.java` | `PricingResponse` | Provider wire response |
 | `adapter.out.client.<provider>` | `<Provider>ClientMapper.java` | `PricingClientMapper` | Provider contract ↔ internal contract |
 | `adapter.out.client.<provider>` | `<Provider><Capability>Adapter.java` | `PricingClientAdapter` | Implements application port |
+| `adapter.out.client.database` | `<Capability>Adapter.java`, `<Capability>Provider.java` | `DatabaseRegistryAdapter`, `TenantDatabasePoolProvider` | Database bootstrap/client and pool infrastructure; no application orchestration |
 | `adapter.out.observability` | `<Module>MetricsAdapter.java` | `QuoteMetricsAdapter` | Module-specific metrics implementation |
 | `adapter.out.observability` | `<Module>TracingAdapter.java` | `QuoteTracingAdapter` | Module-specific trace enrichment/instrumentation |
 | `adapter.out.cache` | `<Technology><Subject>CacheAdapter.java` | `RedisQuoteCacheAdapter` | Implements an application cache port |

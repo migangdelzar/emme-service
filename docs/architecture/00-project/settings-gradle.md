@@ -1,5 +1,7 @@
 # Gradle Settings
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 `settings.gradle.kts` is the repository composition root. It defines plugin resolution, dependency repositories, project identity, included builds, and the set of Gradle projects.
 
 ## Required responsibilities

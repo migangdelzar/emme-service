@@ -1,5 +1,7 @@
 # Backend Module
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 A backend module owns one cohesive business capability or bounded context. It owns its language, rules, data, public contracts, events, and operational behavior while hiding implementation details.

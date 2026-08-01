@@ -1,5 +1,7 @@
 # Capability-Driven Build Logic
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 `build-logic` contains the reusable build architecture of the platform. It owns project conventions, Gradle capabilities, custom plugins, tasks, lazy providers, external build-tool integrations, quality gates, release behavior, and deployment behavior.

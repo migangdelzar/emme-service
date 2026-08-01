@@ -1,5 +1,7 @@
 # Outbound Adapters and Configuration
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 Infrastructure is a concern, not a top-level package in the canonical module layout. Technical implementations live under `adapter.out`; Spring composition lives under `configuration`. Together they contain persistence, messaging, provider, framework, and operational integrations while keeping technology outside the application/domain core.

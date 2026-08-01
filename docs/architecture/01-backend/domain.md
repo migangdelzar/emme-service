@@ -1,5 +1,7 @@
 # Domain Layer
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 The domain layer owns business language, invariants, policies, and state transitions. It should not depend on Spring MVC, JPA annotations where avoidable, vendor SDKs, or deployment details.

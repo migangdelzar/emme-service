@@ -1,5 +1,7 @@
 # Baseline Gaps
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 This is a dated audit, not an architecture rule. Update it when evidence changes.
 
 | Gap | Risk | Owner | Exit evidence |

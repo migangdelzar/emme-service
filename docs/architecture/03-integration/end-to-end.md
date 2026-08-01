@@ -1,5 +1,7 @@
 # End-to-End Architecture
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 End-to-end tests prove a small set of critical journeys across the independent

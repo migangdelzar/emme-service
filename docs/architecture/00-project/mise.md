@@ -1,5 +1,7 @@
 # mise
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 mise is the developer-facing tool and task entry point for the service
 repository. Gradle remains the source of truth for JVM build behavior; mise
 provides reproducible tool versions and memorable commands without duplicating

@@ -1,5 +1,7 @@
 # Documentation and Architecture Decisions
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Document ownership
 
 | Artifact | Answers | Update trigger |

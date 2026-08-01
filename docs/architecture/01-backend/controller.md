@@ -1,5 +1,7 @@
 # Controllers
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 Controllers are thin inbound adapters. They handle protocol concerns and delegate to application use cases.

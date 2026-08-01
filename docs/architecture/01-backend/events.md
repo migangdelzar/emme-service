@@ -1,5 +1,7 @@
 # Backend Events
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 Events communicate completed facts across module boundaries. Event meaning and delivery mode are separate decisions: delivery may be synchronous in-memory, asynchronous best-effort, or durable after commit. An event is not automatically asynchronous, durable, or retried, and it is not a substitute for a synchronous decision the caller needs immediately.

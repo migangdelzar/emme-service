@@ -1,5 +1,7 @@
 # Project Layout
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 The service repository is a modular monolith with independently understandable

@@ -446,6 +446,15 @@ The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
 
+## Completed TenantCreated after-commit consumer slice — 2026-08-01
+
+- [x] Added consumer delegation and source-boundary regression coverage.
+- [x] Replaced plain `@EventListener` and method-level `@Transactional` with
+  `@ApplicationModuleListener`.
+- [x] Preserved the `TenantCreated` payload and realm-provisioning delegation.
+- [x] Verified Identity tests/check/integration, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and whitespace checks.
+
 ## Completed role and permission domain boundary slice — 2026-08-01
 
 - [x] Added framework-free `Role`, `Permission`, and domain-owned `RoleScope`.

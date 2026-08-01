@@ -306,3 +306,19 @@ decisions, architecture rules, and the committed final verification report.
 - [x] Preserved the remaining integration-level routing, eviction, and recovery
   scenarios as open evidence work rather than treating unit coverage as a
   substitute.
+
+## Completed event-after-commit boundary slice — 2026-08-01
+
+- [x] Kept `TenantService` event publication inside its transaction.
+- [x] Changed the Identity `TenantCreated` consumer to
+  `@ApplicationModuleListener`, so cross-module realm provisioning is handled
+  through the Spring Modulith after-commit event boundary.
+- [x] Preserved the `TenantCreated` event schema and Identity realm-provisioning
+  delegation.
+- [x] Added delegation and source-boundary regression coverage.
+- [x] Verified Identity/Tenancy tests, Modulith verification, service CI, both
+  boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Tenancy work is live routing/eviction/recovery evidence, transaction
+boundary evidence for provisioning, architecture rules, and the committed
+verification report.

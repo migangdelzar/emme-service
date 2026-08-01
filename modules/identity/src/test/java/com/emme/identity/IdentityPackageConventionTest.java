@@ -359,7 +359,7 @@ class IdentityPackageConventionTest {
   }
 
   @Test
-  void ownsSecurityAdaptersUnderCanonicalBoundaries() {
+  void ownsSecurityAdaptersUnderCanonicalBoundaries() throws IOException {
     assertThat(Files.exists(SECURITY_CONFIGURATION)).isTrue();
     assertThat(Files.exists(LOGIN_RATE_LIMIT_FILTER)).isTrue();
     assertThat(Files.exists(MULTI_REALM_JWT_DECODER)).isTrue();
@@ -367,6 +367,9 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(KEYCLOAK_ADMIN_CLIENT)).isTrue();
     assertThat(Files.exists(REALM_PROVISIONING_PROCESS)).isTrue();
     assertThat(Files.exists(TENANT_CREATED_CONSUMER)).isTrue();
+    String tenantCreatedConsumer = Files.readString(TENANT_CREATED_CONSUMER);
+    assertThat(tenantCreatedConsumer).contains("@ApplicationModuleListener");
+    assertThat(tenantCreatedConsumer).doesNotContain("@EventListener");
     assertThat(Files.exists(LEGACY_SECURITY_CONFIGURATION)).isFalse();
     assertThat(hasJavaSources(LEGACY_INFRASTRUCTURE)).isFalse();
   }

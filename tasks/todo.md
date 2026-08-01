@@ -205,6 +205,26 @@ Execution rules and dependencies are maintained in
 - The remaining live routing, eviction, and recovery scenarios remain open for
   integration-level evidence.
 
+## Tenancy event-after-commit boundary slice — 2026-08-01
+
+- [x] Add failing consumer annotation and delegation tests.
+- [x] Handle `TenantCreated` through Spring Modulith's application-module
+  listener boundary.
+- [x] Preserve Identity realm provisioning delegation and public event schema.
+- [x] Verify Identity/Tenancy tests, Modulith, CI, boot JARs, Markdown, and
+  whitespace.
+
+### Results
+
+- The source-boundary test first failed because the consumer used plain
+  `@EventListener` instead of the Modulith listener boundary.
+- The consumer now delegates through `@ApplicationModuleListener`, preserving
+  the existing event payload and process-manager behavior.
+- Identity/Tenancy tests and integration tests, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and `git diff --check` passed.
+- Existing dependency-analysis and Testcontainers/PostgreSQL teardown warnings
+  remain non-blocking and occurred after successful task completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

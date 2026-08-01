@@ -43,9 +43,24 @@ class CalendarPackageConventionTest {
   @Test
   void publicContractsAreGroupedByKind() {
     assertThat(hasClass("com.emme.calendar.api.result.CalendarEventLinkInfo")).isTrue();
-    assertThat(hasClass("com.emme.calendar.api.usecase.CalendarSyncApi")).isTrue();
+    assertThat(hasClass("com.emme.calendar.api.usecase.GetBusyTimesUseCase")).isTrue();
+    assertThat(hasClass("com.emme.calendar.api.usecase.SyncCalendarEventsUseCase")).isTrue();
+    assertThat(hasClass("com.emme.calendar.api.usecase.FindCalendarEventLinksUseCase")).isTrue();
     assertThat(hasClass("com.emme.calendar.api.type.TokenSource")).isTrue();
     assertThat(hasClass("com.emme.calendar.api.event.CalendarSyncRequested")).isTrue();
+  }
+
+  @Test
+  void applicationServicesAreOneUseCasePerClass() {
+    Set<String> legacyServices =
+        Set.of("CalendarService", "CalendarSyncApiService", "CalendarSyncApi");
+
+    assertThat(CLASSES.stream())
+        .extracting(JavaClass::getSimpleName)
+        .doesNotContainAnyElementsOf(legacyServices);
+    assertThat(hasClass("com.emme.calendar.application.service.GetBusyTimesService")).isTrue();
+    assertThat(hasClass("com.emme.calendar.application.service.SyncCalendarEventsService"))
+        .isTrue();
   }
 
   @Test
@@ -61,7 +76,8 @@ class CalendarPackageConventionTest {
 
   @Test
   void calendarAdaptersUseTypedConfigurationInsteadOfValueInjection() throws IOException {
-    assertThat(Files.readString(SOURCE_ROOT.resolve("application/service/CalendarService.java")))
+    assertThat(
+            Files.readString(SOURCE_ROOT.resolve("application/service/GetBusyTimesService.java")))
         .doesNotContain("@Value(");
     assertThat(
             Files.readString(

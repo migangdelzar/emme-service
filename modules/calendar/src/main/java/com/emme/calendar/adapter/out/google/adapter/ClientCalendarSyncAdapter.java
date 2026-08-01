@@ -2,7 +2,11 @@ package com.emme.calendar.adapter.out.google.adapter;
 
 import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.calendar.api.result.CalendarEventLinkInfo;
-import com.emme.calendar.api.usecase.CalendarSyncApi;
+import com.emme.calendar.api.usecase.CreateCalendarEventLinkUseCase;
+import com.emme.calendar.api.usecase.FindCalendarEventLinkUseCase;
+import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
+import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
+import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
 import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -24,8 +28,8 @@ import org.springframework.stereotype.Service;
  * Syncs a client's own appointments to their personal Google Calendar.
  *
  * <p>Uses {@code PersonaType.CLIENT} when obtaining OAuth tokens and targets the user's {@code
- * primary} calendar. Event links are tracked via {@link CalendarSyncApi} so that unsync can locate
- * and delete the corresponding Google Calendar event.
+ * primary} calendar. Event links are tracked via focused Calendar use cases so that unsync can
+ * locate and delete the corresponding Google Calendar event.
  */
 @Service
 public class ClientCalendarSyncAdapter {
@@ -38,14 +42,28 @@ public class ClientCalendarSyncAdapter {
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
 
   private final GoogleOAuthAdapter oauthService;
-  private final CalendarSyncApi syncApi;
+  private final FindCalendarEventLinkUseCase findCalendarEventLink;
+  private final CreateCalendarEventLinkUseCase createCalendarEventLink;
+  private final MarkCalendarEventLinkSyncedUseCase markCalendarEventLinkSynced;
+  private final MarkCalendarEventLinksDeletedUseCase markCalendarEventLinksDeleted;
+  private final MarkCalendarEventLinksFailedUseCase markCalendarEventLinksFailed;
   private final OkHttpClient httpClient;
   private final ObjectMapper mapper;
 
   public ClientCalendarSyncAdapter(
-      GoogleOAuthAdapter oauthService, CalendarSyncApi syncApi, ObjectMapper mapper) {
+      GoogleOAuthAdapter oauthService,
+      FindCalendarEventLinkUseCase findCalendarEventLink,
+      CreateCalendarEventLinkUseCase createCalendarEventLink,
+      MarkCalendarEventLinkSyncedUseCase markCalendarEventLinkSynced,
+      MarkCalendarEventLinksDeletedUseCase markCalendarEventLinksDeleted,
+      MarkCalendarEventLinksFailedUseCase markCalendarEventLinksFailed,
+      ObjectMapper mapper) {
     this.oauthService = oauthService;
-    this.syncApi = syncApi;
+    this.findCalendarEventLink = findCalendarEventLink;
+    this.createCalendarEventLink = createCalendarEventLink;
+    this.markCalendarEventLinkSynced = markCalendarEventLinkSynced;
+    this.markCalendarEventLinksDeleted = markCalendarEventLinksDeleted;
+    this.markCalendarEventLinksFailed = markCalendarEventLinksFailed;
     this.httpClient = new OkHttpClient();
     this.mapper = mapper;
   }
@@ -95,8 +113,7 @@ public class ClientCalendarSyncAdapter {
         summary);
 
     // Check for existing link to avoid duplicates
-    Optional<CalendarEventLinkInfo> existing =
-        syncApi.findByTenantIdAndAppointmentId(tenantId, appointmentId);
+    Optional<CalendarEventLinkInfo> existing = findCalendarEventLink.find(tenantId, appointmentId);
     if (existing.isPresent()) {
       log.info(
           "Appointment {} already linked to event {} — reusing",
@@ -144,8 +161,8 @@ public class ClientCalendarSyncAdapter {
         String eventId = created.get("id").asText();
         String etag = created.has("etag") ? created.get("etag").asText() : null;
 
-        syncApi.createLink(tenantId, appointmentId, "GOOGLE_CALENDAR", eventId);
-        syncApi.markSynced(tenantId, appointmentId, etag);
+        createCalendarEventLink.create(tenantId, appointmentId, "GOOGLE_CALENDAR", eventId);
+        markCalendarEventLinkSynced.markSynced(tenantId, appointmentId, etag);
 
         log.info(
             "Created Google Calendar event {} for client appointment {}", eventId, appointmentId);
@@ -155,7 +172,7 @@ public class ClientCalendarSyncAdapter {
       throw e;
     } catch (Exception e) {
       log.error("Failed to sync appointment {} to client calendar", appointmentId, e);
-      syncApi.markFailed(tenantId, appointmentId);
+      markCalendarEventLinksFailed.markFailed(tenantId, appointmentId);
       throw new RuntimeException("Failed to sync appointment to Google Calendar", e);
     }
   }
@@ -175,8 +192,7 @@ public class ClientCalendarSyncAdapter {
         appointmentId,
         userId);
 
-    Optional<CalendarEventLinkInfo> existing =
-        syncApi.findByTenantIdAndAppointmentId(tenantId, appointmentId);
+    Optional<CalendarEventLinkInfo> existing = findCalendarEventLink.find(tenantId, appointmentId);
     if (existing.isEmpty()) {
       log.warn(
           "No calendar event link found for appointment {} — nothing to unsync", appointmentId);
@@ -197,7 +213,7 @@ public class ClientCalendarSyncAdapter {
 
       try (Response response = httpClient.newCall(request).execute()) {
         if (response.isSuccessful() || response.code() == 410) {
-          syncApi.markDeleted(tenantId, appointmentId);
+          markCalendarEventLinksDeleted.markDeleted(tenantId, appointmentId);
           log.info(
               "Deleted Google Calendar event {} for client appointment {}", eventId, appointmentId);
         } else {
@@ -207,7 +223,7 @@ public class ClientCalendarSyncAdapter {
               eventId,
               response.code(),
               errorBody);
-          syncApi.markFailed(tenantId, appointmentId);
+          markCalendarEventLinksFailed.markFailed(tenantId, appointmentId);
           throw new RuntimeException(
               "Google Calendar event deletion failed: HTTP " + response.code());
         }
@@ -216,7 +232,7 @@ public class ClientCalendarSyncAdapter {
       throw e;
     } catch (Exception e) {
       log.error("Failed to unsync appointment {} from client calendar", appointmentId, e);
-      syncApi.markFailed(tenantId, appointmentId);
+      markCalendarEventLinksFailed.markFailed(tenantId, appointmentId);
       throw new RuntimeException("Failed to unsync appointment from Google Calendar", e);
     }
   }

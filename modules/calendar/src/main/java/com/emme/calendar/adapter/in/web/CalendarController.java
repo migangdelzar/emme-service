@@ -3,7 +3,8 @@ package com.emme.calendar.adapter.in.web;
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
 import com.emme.calendar.api.result.CalendarBusyTimeRange;
-import com.emme.calendar.application.service.CalendarService;
+import com.emme.calendar.api.usecase.GetBusyTimesUseCase;
+import com.emme.calendar.api.usecase.SyncCalendarEventsUseCase;
 import com.emme.calendar.domain.model.CalendarSyncState;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,10 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Calendar")
 public class CalendarController {
 
-  private final CalendarService calendarService;
+  private final GetBusyTimesUseCase getBusyTimes;
+  private final SyncCalendarEventsUseCase syncCalendarEvents;
 
-  public CalendarController(CalendarService calendarService) {
-    this.calendarService = calendarService;
+  public CalendarController(
+      GetBusyTimesUseCase getBusyTimes, SyncCalendarEventsUseCase syncCalendarEvents) {
+    this.getBusyTimes = getBusyTimes;
+    this.syncCalendarEvents = syncCalendarEvents;
   }
 
   @GetMapping("/busy")
@@ -38,7 +42,7 @@ public class CalendarController {
     return withCurrentTenant(
         tenantId -> {
           List<CalendarBusyTimeRange> busyTimes =
-              calendarService.getBusyTimes(tenantId, artistId, date);
+              getBusyTimes.getBusyTimes(tenantId, artistId, date);
           return ResponseEntity.ok(busyTimes.stream().map(TimeRangeResponse::from).toList());
         });
   }
@@ -49,7 +53,7 @@ public class CalendarController {
   public ResponseEntity<SyncStateResponse> sync() {
     return withCurrentTenant(
         tenantId -> {
-          var state = calendarService.syncEvents(tenantId);
+          var state = syncCalendarEvents.sync(tenantId);
           return ResponseEntity.ok(SyncStateResponse.from(state));
         });
   }

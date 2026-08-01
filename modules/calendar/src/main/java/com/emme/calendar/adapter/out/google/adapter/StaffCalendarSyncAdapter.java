@@ -5,7 +5,12 @@ import com.emme.calendar.adapter.out.persistence.entity.GoogleOAuthTokenEntity;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleOAuthTokenRepository;
 import com.emme.calendar.api.event.CalendarSyncRequested;
 import com.emme.calendar.api.result.CalendarEventLinkInfo;
-import com.emme.calendar.api.usecase.CalendarSyncApi;
+import com.emme.calendar.api.usecase.CreateCalendarEventLinkUseCase;
+import com.emme.calendar.api.usecase.FindCalendarEventLinkUseCase;
+import com.emme.calendar.api.usecase.FindCalendarEventLinksUseCase;
+import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
+import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
+import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
 import com.emme.calendar.configuration.CalendarProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -28,8 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Listens for {@link CalendarSyncRequested} events and executes Google Calendar event CRUD
  * operations using user OAuth tokens.
  *
- * <p>No direct dependency on the calendar module's {@code CalendarService} stubs — this service
- * replaces the TODO stubs with real API calls via the Modulith event bus.
+ * <p>No direct dependency on the calendar module's application services — this adapter executes
+ * provider calls from the Modulith event bus.
  */
 @Service
 @Transactional
@@ -44,7 +49,12 @@ public class StaffCalendarSyncAdapter {
 
   private final GoogleOAuthAdapter oauthService;
   private final SpringDataGoogleOAuthTokenRepository tokenRepo;
-  private final CalendarSyncApi syncApi;
+  private final FindCalendarEventLinkUseCase findCalendarEventLink;
+  private final FindCalendarEventLinksUseCase findCalendarEventLinks;
+  private final CreateCalendarEventLinkUseCase createCalendarEventLink;
+  private final MarkCalendarEventLinkSyncedUseCase markCalendarEventLinkSynced;
+  private final MarkCalendarEventLinksDeletedUseCase markCalendarEventLinksDeleted;
+  private final MarkCalendarEventLinksFailedUseCase markCalendarEventLinksFailed;
   private final CalendarProperties properties;
   private final OkHttpClient httpClient;
   private final ObjectMapper mapper;
@@ -52,12 +62,22 @@ public class StaffCalendarSyncAdapter {
   public StaffCalendarSyncAdapter(
       GoogleOAuthAdapter oauthService,
       SpringDataGoogleOAuthTokenRepository tokenRepo,
-      CalendarSyncApi syncApi,
+      FindCalendarEventLinkUseCase findCalendarEventLink,
+      FindCalendarEventLinksUseCase findCalendarEventLinks,
+      CreateCalendarEventLinkUseCase createCalendarEventLink,
+      MarkCalendarEventLinkSyncedUseCase markCalendarEventLinkSynced,
+      MarkCalendarEventLinksDeletedUseCase markCalendarEventLinksDeleted,
+      MarkCalendarEventLinksFailedUseCase markCalendarEventLinksFailed,
       CalendarProperties properties,
       ObjectMapper mapper) {
     this.oauthService = oauthService;
     this.tokenRepo = tokenRepo;
-    this.syncApi = syncApi;
+    this.findCalendarEventLink = findCalendarEventLink;
+    this.findCalendarEventLinks = findCalendarEventLinks;
+    this.createCalendarEventLink = createCalendarEventLink;
+    this.markCalendarEventLinkSynced = markCalendarEventLinkSynced;
+    this.markCalendarEventLinksDeleted = markCalendarEventLinksDeleted;
+    this.markCalendarEventLinksFailed = markCalendarEventLinksFailed;
     this.properties = properties;
     this.httpClient = new OkHttpClient();
     this.mapper = mapper;
@@ -79,7 +99,7 @@ public class StaffCalendarSyncAdapter {
       }
     } catch (Exception e) {
       log.error("Calendar sync failed for appointment {}", event.appointmentId(), e);
-      syncApi.markFailed(event.tenantId(), event.appointmentId());
+      markCalendarEventLinksFailed.markFailed(event.tenantId(), event.appointmentId());
     }
   }
 
@@ -89,7 +109,7 @@ public class StaffCalendarSyncAdapter {
 
   private void createEvent(CalendarSyncRequested e) throws Exception {
     // Check for existing link to avoid duplicates
-    var existing = syncApi.findByTenantIdAndAppointmentId(e.tenantId(), e.appointmentId());
+    var existing = findCalendarEventLink.find(e.tenantId(), e.appointmentId());
     if (existing.isPresent()) {
       log.info(
           "Appointment {} already linked to event {} — skipping CREATE",
@@ -102,7 +122,7 @@ public class StaffCalendarSyncAdapter {
     if (token == null) {
       log.warn(
           "No OAuth token available for tenant {} — cannot create calendar event", e.tenantId());
-      syncApi.markFailed(e.tenantId(), e.appointmentId());
+      markCalendarEventLinksFailed.markFailed(e.tenantId(), e.appointmentId());
       return;
     }
 
@@ -131,7 +151,7 @@ public class StaffCalendarSyncAdapter {
       if (!response.isSuccessful()) {
         String errorBody = response.body() != null ? response.body().string() : "";
         log.error("Google Calendar event CREATE failed: HTTP {} — {}", response.code(), errorBody);
-        syncApi.markFailed(e.tenantId(), e.appointmentId());
+        markCalendarEventLinksFailed.markFailed(e.tenantId(), e.appointmentId());
         return;
       }
 
@@ -139,8 +159,8 @@ public class StaffCalendarSyncAdapter {
       String eventId = created.get("id").asText();
       String etag = created.has("etag") ? created.get("etag").asText() : null;
 
-      syncApi.createLink(e.tenantId(), e.appointmentId(), "GOOGLE_CALENDAR", eventId);
-      syncApi.markSynced(e.tenantId(), e.appointmentId(), etag);
+      createCalendarEventLink.create(e.tenantId(), e.appointmentId(), "GOOGLE_CALENDAR", eventId);
+      markCalendarEventLinkSynced.markSynced(e.tenantId(), e.appointmentId(), etag);
       log.info("Created Google Calendar event {} for appointment {}", eventId, e.appointmentId());
     }
   }
@@ -153,14 +173,14 @@ public class StaffCalendarSyncAdapter {
     String externalEventId = e.oldExternalEventId();
     if (externalEventId == null || externalEventId.isBlank()) {
       // Try to find existing link
-      var existing = syncApi.findByTenantIdAndAppointmentId(e.tenantId(), e.appointmentId());
+      var existing = findCalendarEventLink.find(e.tenantId(), e.appointmentId());
       if (existing.isPresent()) {
         externalEventId = existing.get().externalEventId();
       } else {
         log.warn(
             "No existing calendar event link for appointment {} — cannot UPDATE",
             e.appointmentId());
-        syncApi.markFailed(e.tenantId(), e.appointmentId());
+        markCalendarEventLinksFailed.markFailed(e.tenantId(), e.appointmentId());
         return;
       }
     }
@@ -169,7 +189,7 @@ public class StaffCalendarSyncAdapter {
     if (token == null) {
       log.warn(
           "No OAuth token available for tenant {} — cannot update calendar event", e.tenantId());
-      syncApi.markFailed(e.tenantId(), e.appointmentId());
+      markCalendarEventLinksFailed.markFailed(e.tenantId(), e.appointmentId());
       return;
     }
 
@@ -202,7 +222,7 @@ public class StaffCalendarSyncAdapter {
             externalEventId,
             response.code(),
             errorBody);
-        syncApi.markFailed(e.tenantId(), e.appointmentId());
+        markCalendarEventLinksFailed.markFailed(e.tenantId(), e.appointmentId());
         return;
       }
 
@@ -210,7 +230,7 @@ public class StaffCalendarSyncAdapter {
       String etag = updated.has("etag") ? updated.get("etag").asText() : null;
 
       if (etag != null) {
-        syncApi.markSynced(e.tenantId(), e.appointmentId(), etag);
+        markCalendarEventLinkSynced.markSynced(e.tenantId(), e.appointmentId(), etag);
       }
       log.info(
           "Updated Google Calendar event {} for appointment {}",
@@ -224,7 +244,8 @@ public class StaffCalendarSyncAdapter {
   // ---------------------------------------------------------------------------
 
   private void deleteEvent(CalendarSyncRequested e) throws Exception {
-    List<CalendarEventLinkInfo> links = syncApi.findByAppointmentId(e.appointmentId());
+    List<CalendarEventLinkInfo> links =
+        findCalendarEventLinks.findByAppointmentId(e.appointmentId());
     if (links.isEmpty()) {
       log.warn(
           "No calendar event links found for appointment {} — nothing to DELETE",
@@ -236,7 +257,7 @@ public class StaffCalendarSyncAdapter {
     if (token == null) {
       log.warn(
           "No OAuth token available for tenant {} — cannot delete calendar events", e.tenantId());
-      syncApi.markFailed(e.tenantId(), e.appointmentId());
+      markCalendarEventLinksFailed.markFailed(e.tenantId(), e.appointmentId());
       return;
     }
 
@@ -252,7 +273,7 @@ public class StaffCalendarSyncAdapter {
 
       try (Response response = httpClient.newCall(request).execute()) {
         if (response.isSuccessful() || response.code() == 410) {
-          syncApi.markDeleted(e.tenantId(), e.appointmentId());
+          markCalendarEventLinksDeleted.markDeleted(e.tenantId(), e.appointmentId());
           log.info(
               "Deleted Google Calendar event {} (appointment {})",
               link.externalEventId(),
@@ -264,7 +285,7 @@ public class StaffCalendarSyncAdapter {
               link.externalEventId(),
               response.code(),
               errorBody);
-          syncApi.markFailed(e.tenantId(), e.appointmentId());
+          markCalendarEventLinksFailed.markFailed(e.tenantId(), e.appointmentId());
         }
       }
     }

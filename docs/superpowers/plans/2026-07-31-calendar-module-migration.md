@@ -1069,8 +1069,8 @@ After this plan is complete, create separate plans for:
 
 - [x] Added `CalendarProperties` for the shared `app.calendar.calendar-id`
   setting.
-- [x] Replaced direct `@Value` injection in `CalendarService` and
-  `StaffCalendarSyncAdapter` with constructor-injected typed properties.
+- [x] Replaced direct `@Value` injection in the Calendar availability service
+  and `StaffCalendarSyncAdapter` with constructor-injected typed properties.
 - [x] Added source-boundary and default/configured-value tests.
 - [x] Verified Calendar unit and integration tests with formatting.
 
@@ -1096,3 +1096,16 @@ After this plan is complete, create separate plans for:
   package and removed direct provider/repository imports.
 - [x] Added a source-boundary regression test and verified the focused Calendar
   test with formatting.
+
+## Completed one-use-case-per-service normalization — 2026-08-01
+
+- [x] Replace the multi-operation `CalendarService` with focused busy-times and
+  calendar-sync application services.
+- [x] Replace the multi-operation `CalendarSyncApi` with focused link query,
+  creation, synchronization, deletion, and failure use-case contracts.
+- [x] Update inbound controllers and Google synchronization adapters to depend
+  only on the individual use cases they invoke.
+- [x] Add an executable convention test rejecting the removed Calendar service
+  and facade names.
+- [x] Verify Calendar compilation, Spotless, Checkstyle, unit tests, and
+  integration tests.

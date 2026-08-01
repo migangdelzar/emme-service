@@ -230,3 +230,13 @@
 - Prevention rule: use a fully qualified domain type or a named mapper at the
   boundary, and run the module compile immediately after introducing a new
   application service.
+
+## 2026-08-01 — Split public integration facades by operation
+
+- Failure mode: a public calendar synchronization facade bundled unrelated
+  link queries and lifecycle mutations, forcing every provider adapter to
+  depend on all operations.
+- Detection signal: adapters imported one API with six methods even though
+  each adapter used a different subset.
+- Prevention rule: expose one public use-case interface per operation and
+  inject only the contracts required by each adapter.

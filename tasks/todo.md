@@ -1055,3 +1055,14 @@ limiting, then continue authorization domain/application separation.
 - [x] Update Studio controllers, Identity, and Calendar consumers to use
   canonical use-case interfaces.
 - [x] Verify Studio Checkstyle, Spotless, unit tests, and integration tests.
+
+## Calendar one-use-case-per-service normalization — 2026-08-01
+
+- [x] Add a failing architecture test for focused Calendar use-case services
+  and removal of aggregate service/facade names.
+- [x] Split busy-time and synchronization operations into individual services.
+- [x] Split calendar-link queries and lifecycle mutations into individual
+  public use-case contracts and services.
+- [x] Update Calendar controllers and Google synchronization adapters to use
+  focused contracts.
+- [x] Verify Calendar Checkstyle, Spotless, unit tests, and integration tests.

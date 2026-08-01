@@ -77,7 +77,7 @@ public class TenantDatabasePoolProvider {
       HikariDataSource pool = defaultPoolRef.get();
       if (pool == null || pool.isClosed()) {
         HikariDataSource newPool = createPool(defaultId);
-        if (defaultPoolRef.compareAndSet(null, newPool)) {
+        if (defaultPoolRef.compareAndSet(pool, newPool)) {
           pool = newPool;
         } else {
           // Another thread won the race — close our unused pool

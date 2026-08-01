@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.emme.kernel.context.TenantContext;
+import com.emme.tenancy.application.port.out.DatabaseRegistryEntry;
 import com.emme.tenancy.application.port.out.DatabaseRegistryPort;
 import com.emme.tenancy.configuration.TenantDatabaseConnectionProperties;
 import com.emme.tenancy.configuration.TenantPoolingProperties;
@@ -48,6 +49,38 @@ class TenantDatabasePoolProviderTest {
     assertThatThrownBy(provider::getDataSource)
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining(defaultDatabaseId.toString());
+
+    provider.shutdown();
+  }
+
+  @Test
+  void replacesAClosedDefaultPoolOnTheNextLookup() {
+    UUID defaultDatabaseId = UUID.fromString(poolingProperties.getDefaultDatabaseId());
+    when(registry.findById(defaultDatabaseId))
+        .thenReturn(
+            Optional.of(
+                new DatabaseRegistryEntry(
+                    defaultDatabaseId,
+                    "default",
+                    "jdbc:h2:mem:default-pool-recovery",
+                    0,
+                    1,
+                    0,
+                    true)));
+    poolingProperties.setDefaultMinPoolSize(0);
+    poolingProperties.setDefaultMaxPoolSize(1);
+    connectionProperties.setDriverClassName("org.h2.Driver");
+
+    TenantDatabasePoolProvider provider =
+        new TenantDatabasePoolProvider(poolingProperties, connectionProperties, registry);
+
+    var firstPool = provider.getDataSource();
+    firstPool.close();
+
+    var recoveredPool = provider.getDataSource();
+
+    assertThat(recoveredPool).isNotSameAs(firstPool);
+    assertThat(recoveredPool.isClosed()).isFalse();
 
     provider.shutdown();
   }

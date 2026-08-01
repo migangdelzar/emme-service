@@ -322,3 +322,17 @@ decisions, architecture rules, and the committed final verification report.
 Remaining Tenancy work is live routing/eviction/recovery evidence, transaction
 boundary evidence for provisioning, architecture rules, and the committed
 verification report.
+
+## Completed default-pool recovery slice — 2026-08-01
+
+- [x] Added a regression test proving that an externally closed default pool is
+  replaced on the next lookup.
+- [x] Changed the default-pool compare-and-set operation to replace the exact
+  stale reference, preserving safe concurrent initialization.
+- [x] Preserved the non-evictable default-pool behavior and safe shutdown.
+- [x] Verified Tenancy tests/check/integration, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and whitespace checks.
+
+Remaining Tenancy work is live tenant-pool eviction and routing/recovery
+evidence, transaction boundary evidence for provisioning, architecture rules,
+and the committed verification report.

@@ -225,6 +225,26 @@ Execution rules and dependencies are maintained in
 - Existing dependency-analysis and Testcontainers/PostgreSQL teardown warnings
   remain non-blocking and occurred after successful task completion.
 
+## Tenancy default-pool recovery slice — 2026-08-01
+
+- [x] Add a failing regression test for recovery after the default pool closes.
+- [x] Replace a closed default pool with a fresh pool on the next lookup.
+- [x] Preserve the non-evictable default-pool behavior and safe shutdown.
+- [x] Verify Tenancy tests, integration tests, Modulith, CI, boot JARs,
+  Markdown, and whitespace.
+
+### Results
+
+- The regression test first failed because the provider returned the same closed
+  Hikari pool after external shutdown.
+- The provider now replaces the exact stale default-pool reference with a fresh
+  pool, including the concurrent compare-and-set path.
+- Focused Tenancy tests, Tenancy check/integration tests, Studio Modulith
+  verification, service CI, both boot JARs, Markdown validation, and
+  `git diff --check` passed.
+- Existing dependency-analysis and Testcontainers/PostgreSQL teardown warnings
+  remain non-blocking and occurred after successful task completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

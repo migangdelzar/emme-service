@@ -41,15 +41,15 @@ below is the authoritative order for open work.
 | `booking` | [booking contract normalization](2026-07-31-booking-contract-normalization.md) | Complete boundary slice | Normalize API/event ownership and preserve declared consumers |
 | `calendar` | [calendar migration](2026-07-31-calendar-module-migration.md) | Complete | Record conformance to the latest template and preserve Google adapters |
 | `studio` | [studio migration](2026-07-31-studio-module-migration.md) | Core complete | Keep nested capabilities in separate plans |
-| `studio.documents` | [documents capability migration](2026-07-31-studio-documents-module-migration.md) | Planned | Normalize nested document and chunk ownership |
-| `studio.subscriptions` | [subscriptions capability migration](2026-07-31-studio-subscriptions-module-migration.md) | Planned | Normalize nested subscription ownership |
+| `studio.documents` | [documents capability migration](2026-07-31-studio-documents-module-migration.md) | Core complete | Finish search/embedding evidence and service-wide verification |
+| `studio.subscriptions` | [subscriptions capability migration](2026-07-31-studio-subscriptions-module-migration.md) | Core boundary complete | Finish authorization/payment boundary and service-wide verification |
 | `identity` | [identity module migration](2026-07-31-identity-module-migration.md) | In progress: remaining authorization separation and production evidence | Separate security domain, persistence, inbound security, and Keycloak adapters |
 | `tenancy` | [tenancy module migration](2026-07-31-tenancy-module-migration.md) | In progress: operational evidence and port cleanup | Separate tenant domain, provisioning, database pool, and web infrastructure |
 | `assistant` | [assistant module migration](2026-07-31-assistant-module-template-migration.md) | Planned | Normalize AI providers, conversations, and WhatsApp webhook boundaries |
-| `notification` | [notification module migration](2026-07-31-notification-module-migration.md) | Planned | Isolate notification persistence and email/SMS/push provider adapters |
-| `payment` | [payment module migration](2026-07-31-payment-module-migration.md) | Planned | Isolate payment persistence, provider ports, and webhook adapters |
-| `audit` | [audit module decision](2026-07-31-audit-module-normalization.md) | Planned | Decide whether the empty module is materialized or retired; create no fake layers |
-| `shared` | [shared infrastructure normalization](2026-07-31-shared-infrastructure-normalization.md) | Planned | Keep cross-cutting primitives owned and prevent Shared from becoming a business dump |
+| `notification` | [notification module migration](2026-07-31-notification-module-migration.md) | Core complete | Finish retry/idempotency evidence and service-wide verification |
+| `payment` | [payment module migration](2026-07-31-payment-module-migration.md) | Core complete | Finish webhook replay/signature evidence and service-wide verification |
+| `audit` | [audit module decision](2026-07-31-audit-module-normalization.md) | Decision complete | Keep metadata-only until a separately approved audit capability exists |
+| `shared` | [shared infrastructure normalization](2026-07-31-shared-infrastructure-normalization.md) | Ownership complete | Finish search evidence and service-wide dependency verification |
 
 ## Remaining execution order: priority and type
 

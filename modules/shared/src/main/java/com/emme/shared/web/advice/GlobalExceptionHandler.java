@@ -1,4 +1,4 @@
-package com.emme.shared.web;
+package com.emme.shared.web.advice;
 
 import com.emme.kernel.tracing.CorrelationId;
 import org.springframework.http.HttpStatus;

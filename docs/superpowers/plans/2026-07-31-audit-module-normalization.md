@@ -48,3 +48,12 @@ modules/audit/src/main/java/com/emme/audit/package-info.java
 - [ ] Audit has an explicit owner and status.
 - [ ] No empty architectural tree is presented as implemented architecture.
 - [ ] Any future audit implementation has a separate approved module plan.
+
+## Decision recorded — 2026-08-01
+
+- [x] Confirmed durable `AuditEvent` persistence is currently owned by Tenancy
+  and security audit logging is owned by Identity.
+- [x] Recorded ADR 0004 for Shared and Audit ownership.
+- [x] Kept Audit as a metadata-only reserved Modulith boundary; no empty
+  architectural layers were scaffolded.
+- [x] Preserved a separate future decision before extracting Audit.

@@ -57,10 +57,12 @@ reopened by this backlog.
 
 ### P1 — Cross-cutting ownership and infrastructure
 
-- [ ] Decide and record whether Audit is a real owned capability or should be
+- [x] Decide and record whether Audit is a real owned capability or should be
   retired; update the registry and dependencies.
-- [ ] Normalize Shared infrastructure only after the Audit ownership decision,
+- [x] Normalize Shared infrastructure after the Audit ownership decision,
   preserving rollback and repository-wide dependency evidence.
+- [ ] Complete Shared search integration/tenant-predicate evidence and run the
+  service-wide dependency-cycle verification.
 
 ### P2 — Domain capabilities
 

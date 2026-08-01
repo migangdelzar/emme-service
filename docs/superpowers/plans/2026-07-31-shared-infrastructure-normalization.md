@@ -86,3 +86,14 @@ business API results or domain aggregates.
   dumping ground.
 - [ ] Technical primitives remain reusable and domain models remain owned locally.
 - [ ] Search and global web advice have tests and documented boundaries.
+
+## Completed ownership decision slice — 2026-08-01
+
+- [x] Recorded the consumer/ownership decision in ADR 0004.
+- [x] Added capability package metadata for persistence, time, identity, and
+  web infrastructure without introducing fake domain/application layers.
+- [x] Moved global advice to `shared.web.advice`.
+- [x] Added Shared ownership regression coverage.
+
+Remaining work is search integration evidence, full dependency-cycle checks, and
+the service-wide verification gate.

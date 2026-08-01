@@ -3,7 +3,7 @@ package com.emme.calendar.adapter.out.google.adapter;
 import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.calendar.api.result.CalendarEventLinkInfo;
 import com.emme.calendar.api.usecase.CalendarSyncApi;
-import com.emme.identity.UserContextHolder;
+import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.time.Instant;

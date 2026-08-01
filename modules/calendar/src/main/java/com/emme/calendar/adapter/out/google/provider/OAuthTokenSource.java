@@ -3,7 +3,7 @@ package com.emme.calendar.adapter.out.google.provider;
 import com.emme.calendar.adapter.out.google.adapter.GoogleOAuthAdapter;
 import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.calendar.api.type.TokenSource;
-import com.emme.identity.UserContextHolder;
+import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.emme.kernel.context.TenantContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

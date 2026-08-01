@@ -266,6 +266,16 @@ class IdentityPackageConventionTest {
   private static final Path LEGACY_KEYCLOAK_AUTH_SERVICE =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/application/KeycloakAuthService.java");
+  private static final Path USER_CONTEXT_SECURITY_PACKAGE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/security/UserContext.java");
+  private static final Path USER_CONTEXT_HOLDER_SECURITY_PACKAGE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/security/UserContextHolder.java");
+  private static final Path LEGACY_USER_CONTEXT =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/UserContext.java");
+  private static final Path LEGACY_USER_CONTEXT_HOLDER =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/UserContextHolder.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -439,6 +449,24 @@ class IdentityPackageConventionTest {
   @Test
   void ownsSecurityDefaultsInTypedIdentityConfiguration() {
     assertThat(Files.exists(IDENTITY_SECURITY_PROPERTIES)).isTrue();
+  }
+
+  @Test
+  void ownsUserSecurityContextUnderInboundWebSecurity() {
+    assertThat(Files.exists(USER_CONTEXT_SECURITY_PACKAGE)).isTrue();
+    assertThat(Files.exists(USER_CONTEXT_HOLDER_SECURITY_PACKAGE)).isTrue();
+    assertThat(Files.exists(LEGACY_USER_CONTEXT)).isFalse();
+    assertThat(Files.exists(LEGACY_USER_CONTEXT_HOLDER)).isFalse();
+  }
+
+  @Test
+  void exposesOnlyTheExplicitSecurityNamedInterface() throws IOException {
+    Path packageInfo =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/adapter/in/web/security/package-info.java");
+
+    assertThat(Files.readString(packageInfo))
+        .contains("@org.springframework.modulith.NamedInterface(\"identity-security\")");
   }
 
   @Test

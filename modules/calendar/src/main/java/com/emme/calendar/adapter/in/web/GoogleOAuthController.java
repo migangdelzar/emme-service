@@ -4,7 +4,7 @@ import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
 import com.emme.calendar.adapter.out.google.adapter.GoogleOAuthAdapter;
 import com.emme.calendar.adapter.out.google.model.PersonaType;
-import com.emme.identity.UserContextHolder;
+import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;

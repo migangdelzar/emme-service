@@ -1,4 +1,4 @@
-package com.emme.identity;
+package com.emme.identity.adapter.in.web.security;
 
 import com.emme.functional.unchecked.UFunction;
 import java.util.UUID;
@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+/** Reads the authenticated user context from Spring Security's request context. */
 public final class UserContextHolder {
 
   private UserContextHolder() {

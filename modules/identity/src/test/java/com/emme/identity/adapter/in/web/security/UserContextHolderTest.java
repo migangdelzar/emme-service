@@ -1,4 +1,4 @@
-package com.emme.identity;
+package com.emme.identity.adapter.in.web.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

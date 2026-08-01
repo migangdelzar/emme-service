@@ -445,3 +445,19 @@ filter, then continue authorization domain/application separation.
 The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
+
+## Completed inbound security-context ownership slice — 2026-08-01
+
+- [x] Moved `UserContext` and `UserContextHolder` out of the Identity root
+  package and into `adapter/in/web/security`.
+- [x] Preserved JWT/OIDC parsing, missing-authentication failures, and the
+  existing static access methods used by Identity and Calendar.
+- [x] Declared the package as the explicit `identity-security` named interface
+  and narrowed Calendar's Modulith dependency to that interface.
+- [x] Added source-tree, security-context, Calendar, integration, and Modulith
+  regression coverage.
+- [x] Verified service CI, boot JARs, Markdown, and whitespace checks.
+
+The remaining Identity work is distributed rate-limit state, broader
+authorization domain/application separation, and the final production-readiness
+evidence gate.

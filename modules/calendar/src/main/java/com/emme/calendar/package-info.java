@@ -3,7 +3,7 @@
     allowedDependencies = {
       "shared",
       "tenancy",
-      "identity",
+      "identity :: identity-security",
       "studio",
       "studio :: studio-api",
       "studio :: studio-events"

@@ -1,11 +1,11 @@
 package com.emme.identity.adapter.in.web.controller;
 
-import com.emme.identity.UserContext;
-import com.emme.identity.UserContextHolder;
 import com.emme.identity.adapter.in.web.mapper.IdentityWebMapper;
 import com.emme.identity.adapter.in.web.response.BusinessProfileResponse;
 import com.emme.identity.adapter.in.web.response.CurrentUserResponse;
 import com.emme.identity.adapter.in.web.response.TenantMembershipResponse;
+import com.emme.identity.adapter.in.web.security.UserContext;
+import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
 import com.emme.identity.application.service.MembershipService;
 import com.emme.identity.domain.model.Membership;

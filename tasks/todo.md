@@ -395,3 +395,23 @@ limiting, then continue authorization domain/application separation.
   Markdown validation, and `git diff --check` passed.
 - Integration teardown emitted existing Testcontainers/PostgreSQL shutdown
   warnings after successful test completion.
+
+## Identity inbound security-context ownership slice — 2026-08-01
+
+- [x] Add and run the failing source-tree test for moving `UserContext` and
+  `UserContextHolder` out of the Identity root package.
+- [x] Move the security-context types under `adapter/in/web/security` and
+  update Identity and Calendar consumers without changing behavior.
+- [x] Verify Identity tests, Calendar tests, Modulith, CI, boot JARs,
+  Markdown, and whitespace.
+
+### Results
+
+- The source-tree test first failed because the canonical security package was
+  absent.
+- Moved `UserContext` and `UserContextHolder` under inbound web security and
+  exposed only the `identity-security` named interface for Calendar.
+- Identity and Calendar unit/integration checks, Modulith verification, service
+  CI, both boot JARs, Markdown validation, and whitespace checks passed.
+- Testcontainers teardown emitted existing database/prune warnings after
+  successful completion.

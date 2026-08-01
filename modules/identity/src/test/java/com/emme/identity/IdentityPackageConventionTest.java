@@ -239,6 +239,9 @@ class IdentityPackageConventionTest {
   private static final Path IDENTITY_CLIENT_CONFIGURATION =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/configuration/IdentityClientConfiguration.java");
+  private static final Path IDENTITY_KEYCLOAK_PROPERTIES =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/configuration/IdentityKeycloakProperties.java");
   private static final Path LEGACY_KEYCLOAK_AUTH_SERVICE =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/application/KeycloakAuthService.java");
@@ -424,6 +427,16 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(KEYCLOAK_USER_ADAPTER)).isTrue();
     assertThat(Files.exists(IDENTITY_CLIENT_CONFIGURATION)).isTrue();
     assertThat(Files.exists(LEGACY_KEYCLOAK_AUTH_SERVICE)).isFalse();
+  }
+
+  @Test
+  void keepsKeycloakClientSettingsTypedAndAdapterOwned() throws IOException {
+    String userAdapter = Files.readString(KEYCLOAK_USER_ADAPTER);
+    String adminAdapter = Files.readString(KEYCLOAK_ADMIN_CLIENT);
+
+    assertThat(Files.exists(IDENTITY_KEYCLOAK_PROPERTIES)).isTrue();
+    assertThat(userAdapter).doesNotContain("@Value");
+    assertThat(adminAdapter).doesNotContain("@Value");
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

@@ -171,8 +171,19 @@
 - [x] Remove the legacy application KeycloakAuthService.
 - [x] Verify Identity checks, login regression coverage, and Modulith boundaries.
 
-Remaining Identity follow-up: type the remaining issuer/client Keycloak
-configuration and complete the broader security hardening review.
+### Identity typed Keycloak configuration slice — 2026-08-01
+
+- [x] Add failing tests for typed user/admin client settings and adapter
+  ownership.
+- [x] Extend `IdentityKeycloakProperties` across user authentication, admin
+  provisioning, issuer, realm, and client settings.
+- [x] Inject the configured Identity HTTP client into both Keycloak adapters.
+- [x] Update application, local, platform, integration-test, and shared-test
+  fixture configuration.
+- [x] Verify focused Identity regressions, full Identity checks, Studio
+  Modulith verification, Markdown validation, and whitespace checks.
+
+Remaining Identity follow-up: complete the broader security hardening review.
 
 ### Plan update results
 

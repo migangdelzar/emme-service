@@ -39,6 +39,12 @@ spring:
       host: ${EMME_REDIS_HOST:localhost}
       port: ${EMME_REDIS_PORT:16379}
 
+app:
+  keycloak:
+    base-url: ${EMME_KEYCLOAK_URL:http://localhost:18080}
+    issuer-uri: ${EMME_KEYCLOAK_URL:http://localhost:18080}/realms/emme
+    client-id: ${EMME_KEYCLOAK_CLIENT_ID:emme-salon-app}
+
 logging:
   level:
     com.emme: DEBUG

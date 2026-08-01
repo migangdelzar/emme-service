@@ -1,8 +1,8 @@
 package com.emme.identity.adapter.out.client.keycloak;
 
+import com.emme.identity.configuration.IdentityKeycloakProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import okhttp3.FormBody;
@@ -10,35 +10,26 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class KeycloakAdminClient {
 
-  private final OkHttpClient http;
-  private final ObjectMapper json;
+  private final OkHttpClient httpClient;
+  private final ObjectMapper objectMapper;
   private final String baseUrl;
   private final String adminRealm;
   private final String adminUser;
   private final String adminPassword;
 
   public KeycloakAdminClient(
-      @Value("${app.keycloak.base-url}") String baseUrl,
-      @Value("${app.keycloak.admin-realm:master}") String adminRealm,
-      @Value("${app.keycloak.admin-username:admin}") String adminUser,
-      @Value("${app.keycloak.admin-password:admin}") String adminPassword,
-      ObjectMapper json) {
-    this.baseUrl = baseUrl;
-    this.adminRealm = adminRealm;
-    this.adminUser = adminUser;
-    this.adminPassword = adminPassword;
-    this.json = json;
-    this.http =
-        new OkHttpClient.Builder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .readTimeout(Duration.ofSeconds(30))
-            .build();
+      IdentityKeycloakProperties properties, ObjectMapper objectMapper, OkHttpClient httpClient) {
+    this.baseUrl = properties.getBaseUrl();
+    this.adminRealm = properties.getAdminRealm();
+    this.adminUser = properties.getAdminUsername();
+    this.adminPassword = properties.getAdminPassword();
+    this.objectMapper = objectMapper;
+    this.httpClient = httpClient;
   }
 
   /** Get admin token from master realm. */
@@ -55,9 +46,9 @@ public class KeycloakAdminClient {
             .url(baseUrl + "/realms/" + adminRealm + "/protocol/openid-connect/token")
             .post(body)
             .build();
-    try (var resp = http.newCall(req).execute()) {
+    try (var resp = httpClient.newCall(req).execute()) {
       if (!resp.isSuccessful()) throw new IOException("Admin token failed: HTTP " + resp.code());
-      var node = json.readTree(resp.body().string());
+      var node = objectMapper.readTree(resp.body().string());
       return node.get("access_token").asText();
     }
   }
@@ -77,9 +68,9 @@ public class KeycloakAdminClient {
             .header("Content-Type", "application/json")
             .post(
                 RequestBody.create(
-                    json.writeValueAsString(body), MediaType.get("application/json")))
+                    objectMapper.writeValueAsString(body), MediaType.get("application/json")))
             .build();
-    try (var resp = http.newCall(req).execute()) {
+    try (var resp = httpClient.newCall(req).execute()) {
       if (resp.code() == 409) return; // realm already exists
       if (resp.code() != 201) throw new IOException("Realm create failed: HTTP " + resp.code());
     }
@@ -104,9 +95,9 @@ public class KeycloakAdminClient {
             .header("Content-Type", "application/json")
             .post(
                 RequestBody.create(
-                    json.writeValueAsString(body), MediaType.get("application/json")))
+                    objectMapper.writeValueAsString(body), MediaType.get("application/json")))
             .build();
-    try (var resp = http.newCall(req).execute()) {
+    try (var resp = httpClient.newCall(req).execute()) {
       if (resp.code() == 409) return;
       if (resp.code() != 201) throw new IOException("Client create failed: HTTP " + resp.code());
     }
@@ -123,9 +114,9 @@ public class KeycloakAdminClient {
             .header("Content-Type", "application/json")
             .post(
                 RequestBody.create(
-                    json.writeValueAsString(body), MediaType.get("application/json")))
+                    objectMapper.writeValueAsString(body), MediaType.get("application/json")))
             .build();
-    try (var resp = http.newCall(req).execute()) {
+    try (var resp = httpClient.newCall(req).execute()) {
       if (resp.code() == 409) return;
       if (resp.code() != 201) throw new IOException("Role create failed: HTTP " + resp.code());
     }
@@ -162,9 +153,9 @@ public class KeycloakAdminClient {
             .header("Content-Type", "application/json")
             .post(
                 RequestBody.create(
-                    json.writeValueAsString(userBody), MediaType.get("application/json")))
+                    objectMapper.writeValueAsString(userBody), MediaType.get("application/json")))
             .build();
-    try (var resp = http.newCall(userReq).execute()) {
+    try (var resp = httpClient.newCall(userReq).execute()) {
       if (resp.code() == 409) {
         // User already exists — look up their ID
         var searchReq =
@@ -173,8 +164,8 @@ public class KeycloakAdminClient {
                 .header("Authorization", "Bearer " + token)
                 .get()
                 .build();
-        try (var searchResp = http.newCall(searchReq).execute()) {
-          var results = json.readTree(searchResp.body().string());
+        try (var searchResp = httpClient.newCall(searchReq).execute()) {
+          var results = objectMapper.readTree(searchResp.body().string());
           if (results.size() > 0) {
             userId = results.get(0).get("id").asText();
           } else {
@@ -199,9 +190,9 @@ public class KeycloakAdminClient {
             .header("Content-Type", "application/json")
             .put(
                 RequestBody.create(
-                    json.writeValueAsString(pwdBody), MediaType.get("application/json")))
+                    objectMapper.writeValueAsString(pwdBody), MediaType.get("application/json")))
             .build();
-    try (var resp = http.newCall(pwdReq).execute()) {
+    try (var resp = httpClient.newCall(pwdReq).execute()) {
       if (resp.code() != 204) throw new IOException("Password set failed: HTTP " + resp.code());
     }
 
@@ -213,9 +204,9 @@ public class KeycloakAdminClient {
             .get()
             .build();
     String roleId;
-    try (var resp = http.newCall(roleReq).execute()) {
+    try (var resp = httpClient.newCall(roleReq).execute()) {
       if (!resp.isSuccessful()) throw new IOException("Role lookup failed: HTTP " + resp.code());
-      var node = json.readTree(resp.body().string());
+      var node = objectMapper.readTree(resp.body().string());
       roleId = node.get("id").asText();
     }
 
@@ -228,9 +219,9 @@ public class KeycloakAdminClient {
             .header("Content-Type", "application/json")
             .post(
                 RequestBody.create(
-                    json.writeValueAsString(assignBody), MediaType.get("application/json")))
+                    objectMapper.writeValueAsString(assignBody), MediaType.get("application/json")))
             .build();
-    try (var resp = http.newCall(assignReq).execute()) {
+    try (var resp = httpClient.newCall(assignReq).execute()) {
       if (resp.code() != 204) throw new IOException("Role assignment failed: HTTP " + resp.code());
     }
     return userId;

@@ -295,8 +295,8 @@ failure advice remain open slices.
 - [x] Added domain, application, persistence-mapper, package-boundary, and
   invalid-realm regression coverage.
 
-Typed security configuration, Identity-specific failure advice, and the final
-security hardening gate remain open slices.
+Typed security configuration, Identity-specific failure advice, and Keycloak
+boundary slices are recorded below; the broader security hardening gate remains.
 
 ## Completed typed security configuration slice — 2026-08-01
 
@@ -309,8 +309,8 @@ security hardening gate remain open slices.
 - [x] Verified Identity checks, Studio Modulith verification, Markdown
   validation, and diff whitespace checks.
 
-Identity-specific failure advice and the final security hardening gate remain
-open slices.
+Identity-specific failure advice and the Keycloak boundary slices are recorded
+below; the broader security hardening gate remains.
 
 ## Completed Identity failure advice slice — 2026-08-01
 
@@ -324,9 +324,9 @@ open slices.
 - [x] Verified Identity checks, Studio Modulith verification, Markdown
   validation, and whitespace checks.
 
-The next Identity hardening slice is to move the password-grant Keycloak
-orchestration out of the legacy application class, type the remaining Keycloak
-client configuration, and complete security regression coverage.
+The following Keycloak boundary and typed-configuration slices preserve the
+existing authentication behavior while completing the remaining structural
+separation.
 
 ## Completed Keycloak application boundary slice — 2026-08-01
 
@@ -347,5 +347,12 @@ client configuration, and complete security regression coverage.
 - [x] Verified Identity checks, Studio Modulith verification, Markdown
   validation, and whitespace checks.
 
-Remaining follow-up: type the remaining issuer/client Keycloak configuration
-and complete the broader Identity security hardening review.
+- [x] Typed user, admin, issuer, realm, and client settings under
+  `IdentityKeycloakProperties` and updated application/test profiles.
+- [x] Injected the configured Identity HTTP client into both Keycloak adapters;
+  neither adapter constructs transport clients or reads `@Value` settings.
+- [x] Added typed-property, package-boundary, and shared-test-fixture coverage.
+- [x] Verified Identity checks, AuthWebTest login regressions, Studio Modulith
+  verification, Markdown validation, and whitespace checks.
+
+Remaining follow-up: complete the broader Identity security hardening review.

@@ -31,6 +31,8 @@ server:
 app:
   keycloak:
     base-url: http://localhost:18080
+    issuer-uri: http://localhost:18080/realms/emme
+    client-id: emme-salon-app
     admin-realm: master
     admin-username: admin
     admin-password: admin
@@ -50,4 +52,3 @@ logging:
   level:
     com.emme: DEBUG
     org.springframework.security: INFO
-

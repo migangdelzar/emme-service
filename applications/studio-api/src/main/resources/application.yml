@@ -91,7 +91,9 @@ otel:
 # App-specific configuration
 app:
   keycloak:
-    base-url: http://keycloak:18080
+    base-url: ${EMME_KEYCLOAK_URL:http://keycloak:18080}
+    issuer-uri: ${EMME_KEYCLOAK_URL:http://keycloak:18080}/realms/emme
+    client-id: ${EMME_KEYCLOAK_CLIENT_ID:emme-salon-app}
     admin-realm: master
     admin-username: admin
     admin-password: admin

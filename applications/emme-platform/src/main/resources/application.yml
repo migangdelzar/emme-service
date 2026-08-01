@@ -94,6 +94,10 @@ otel:
 
 # App-specific configuration
 app:
+  keycloak:
+    base-url: http://localhost:8080
+    issuer-uri: http://localhost:8080/realms/emme
+    client-id: emme-salon-app
   ai:
     provider: mock
     # provider: ollama  # switch to Ollama (needs ollama running)

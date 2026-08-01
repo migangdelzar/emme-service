@@ -18,7 +18,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /** Keycloak adapter for password grants and user-info retrieval. */
@@ -32,19 +31,15 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
   private final IdentityKeycloakProperties properties;
 
   public KeycloakUserAuthenticationAdapter(
-      OkHttpClient httpClient,
-      ObjectMapper objectMapper,
-      @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}") String issuerUri,
-      @Value("${spring.security.oauth2.client.registration.keycloak.client-id}") String clientId,
-      IdentityKeycloakProperties properties) {
-    int realmIndex = issuerUri.indexOf("/realms/");
+      OkHttpClient httpClient, ObjectMapper objectMapper, IdentityKeycloakProperties properties) {
+    int realmIndex = properties.getIssuerUri().indexOf("/realms/");
     if (realmIndex < 0) {
       throw new IllegalArgumentException("Keycloak issuer URI must contain /realms/");
     }
     this.httpClient = httpClient;
     this.objectMapper = objectMapper;
-    this.baseUrl = issuerUri.substring(0, realmIndex);
-    this.clientId = clientId;
+    this.baseUrl = properties.getIssuerUri().substring(0, realmIndex);
+    this.clientId = properties.getClientId();
     this.properties = properties;
   }
 

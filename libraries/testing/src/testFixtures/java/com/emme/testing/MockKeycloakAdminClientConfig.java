@@ -1,9 +1,11 @@
 package com.emme.testing;
 
 import com.emme.identity.adapter.out.client.keycloak.KeycloakAdminClient;
+import com.emme.identity.configuration.IdentityKeycloakProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.UUID;
+import okhttp3.OkHttpClient;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -24,14 +26,16 @@ public class MockKeycloakAdminClientConfig {
 
   @Bean
   @Primary
-  KeycloakAdminClient keycloakAdminClient(ObjectMapper json) {
-    return new NoOpKeycloakAdminClient(json);
+  KeycloakAdminClient keycloakAdminClient(
+      ObjectMapper json, OkHttpClient httpClient, IdentityKeycloakProperties properties) {
+    return new NoOpKeycloakAdminClient(json, httpClient, properties);
   }
 
   private static final class NoOpKeycloakAdminClient extends KeycloakAdminClient {
 
-    NoOpKeycloakAdminClient(ObjectMapper json) {
-      super("http://mock-keycloak.invalid", "master", "admin", "admin", json);
+    NoOpKeycloakAdminClient(
+        ObjectMapper json, OkHttpClient httpClient, IdentityKeycloakProperties properties) {
+      super(properties, json, httpClient);
     }
 
     @Override

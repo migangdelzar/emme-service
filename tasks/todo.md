@@ -488,6 +488,27 @@ Execution rules and dependencies are maintained in
   released consumer, persisted/serialized contract, or approved migration
   window with documented evidence.
 
+## Identity tenant-realm outbound port slice — 2026-08-01
+
+- [x] Add a failing architecture test preventing provisioning orchestration
+  from importing the Tenancy application service contract directly.
+- [x] Add the application-owned `TenantIdentityRealmPort`.
+- [x] Add `TenantIdentityRealmAdapter` under the outbound module adapter and
+  delegate to the Tenancy public contract there.
+- [x] Refactor `KeycloakRealmProvisioningProcessManager` and tests to consume
+  the outbound port.
+- [x] Add adapter delegation regression coverage and package metadata.
+- [x] Verify focused Identity tests and Spotless formatting.
+
+### Results
+
+- Red phase: the source-boundary test and adapter test failed because the
+  provisioning process had no application port or adapter implementation.
+- Green/refactor phase: Tenancy realm updates now cross the explicit
+  `TenantIdentityRealmPort`; only the outbound adapter imports `TenantApi`.
+- Realm provisioning behavior and after-commit listener ownership remain
+  unchanged.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

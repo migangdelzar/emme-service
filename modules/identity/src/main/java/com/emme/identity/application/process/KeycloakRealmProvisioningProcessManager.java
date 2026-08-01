@@ -6,7 +6,7 @@ import com.emme.identity.application.port.out.IdentityProviderAdministrationPort
 import com.emme.identity.application.port.out.IdentityRealmProvisioningConfigurationPort;
 import com.emme.identity.application.port.out.IdentityRealmProvisioningSettings;
 import com.emme.identity.application.port.out.RetryDelayPort;
-import com.emme.tenancy.api.usecase.TenantApi;
+import com.emme.identity.application.port.out.TenantIdentityRealmPort;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,17 +18,17 @@ public class KeycloakRealmProvisioningProcessManager implements ProvisionTenantI
   private static final Logger log =
       LoggerFactory.getLogger(KeycloakRealmProvisioningProcessManager.class);
   private final IdentityProviderAdministrationPort administrationPort;
-  private final TenantApi tenantApi;
+  private final TenantIdentityRealmPort tenantIdentityRealmPort;
   private final IdentityRealmProvisioningSettings settings;
   private final RetryDelayPort retryDelayPort;
 
   public KeycloakRealmProvisioningProcessManager(
       IdentityProviderAdministrationPort administrationPort,
-      TenantApi tenantApi,
+      TenantIdentityRealmPort tenantIdentityRealmPort,
       IdentityRealmProvisioningConfigurationPort configuration,
       RetryDelayPort retryDelayPort) {
     this.administrationPort = administrationPort;
-    this.tenantApi = tenantApi;
+    this.tenantIdentityRealmPort = tenantIdentityRealmPort;
     this.settings = configuration.settings();
     this.retryDelayPort = retryDelayPort;
   }
@@ -60,7 +60,7 @@ public class KeycloakRealmProvisioningProcessManager implements ProvisionTenantI
             settings.initialAdminRole());
         log.info("  Admin user created: {}", command.adminEmail());
 
-        tenantApi.updateIdentityRealm(command.tenantId(), realm);
+        tenantIdentityRealmPort.updateRealm(command.tenantId(), realm);
         log.info("Tenant {} provisioned with realm {}", command.slug(), realm);
         return;
 

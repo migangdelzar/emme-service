@@ -495,6 +495,16 @@ class IdentityPackageConventionTest {
   }
 
   @Test
+  void keepsProvisioningProcessIndependentFromTenantModuleService() throws IOException {
+    Path provisioningProcess =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/application/process/KeycloakRealmProvisioningProcessManager.java");
+
+    assertThat(Files.readString(provisioningProcess))
+        .doesNotContain("com.emme.tenancy.api.usecase.TenantApi");
+  }
+
+  @Test
   void removesLegacyIdentityApiContractsAndImplementation() {
     assertThat(Files.exists(LEGACY_API)).isFalse();
     assertThat(Files.exists(LEGACY_USE_CASE_API)).isFalse();

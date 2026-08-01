@@ -531,6 +531,21 @@ The remaining Identity work is authorization hardening, explicit provisioning
 transaction/event ports, and final tenant-isolation and migration/recovery
 evidence.
 
+## Completed tenant-realm outbound port slice — 2026-08-01
+
+- [x] Added the application-owned `TenantIdentityRealmPort`.
+- [x] Added `TenantIdentityRealmAdapter` under the outbound module adapter;
+  only that adapter imports the Tenancy public contract.
+- [x] Refactored `KeycloakRealmProvisioningProcessManager` and its tests to
+  consume the outbound port.
+- [x] Added source-boundary and adapter delegation regression coverage.
+- [x] Preserved realm provisioning behavior and after-commit listener ownership.
+- [x] Verified focused Identity tests and Spotless formatting.
+
+The remaining Identity work is authorization hardening, explicit provisioning
+transaction/event ports, and final tenant-isolation and migration/recovery
+evidence.
+
 ## Completed authentication-configuration port slice — 2026-08-01
 
 - [x] Added the application-owned `IdentityRealmConfigurationPort`.

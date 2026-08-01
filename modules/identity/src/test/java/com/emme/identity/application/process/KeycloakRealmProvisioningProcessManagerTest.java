@@ -9,7 +9,7 @@ import com.emme.identity.application.port.out.IdentityProviderAdministrationPort
 import com.emme.identity.application.port.out.IdentityRealmProvisioningConfigurationPort;
 import com.emme.identity.application.port.out.IdentityRealmProvisioningSettings;
 import com.emme.identity.application.port.out.RetryDelayPort;
-import com.emme.tenancy.api.usecase.TenantApi;
+import com.emme.identity.application.port.out.TenantIdentityRealmPort;
 import java.io.IOException;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class KeycloakRealmProvisioningProcessManagerTest {
 
   @Mock private IdentityProviderAdministrationPort administrationPort;
-  @Mock private TenantApi tenantApi;
+  @Mock private TenantIdentityRealmPort tenantIdentityRealmPort;
 
   @Test
   void provisionsTenantIdentityThroughTheApplicationPort() throws Exception {
@@ -31,7 +31,7 @@ class KeycloakRealmProvisioningProcessManagerTest {
     IdentityRealmProvisioningSettings settings = configuredSettings();
 
     new KeycloakRealmProvisioningProcessManager(
-            administrationPort, tenantApi, configuration(settings), noOpDelay())
+            administrationPort, tenantIdentityRealmPort, configuration(settings), noOpDelay())
         .provision(command);
 
     verify(administrationPort).createRealm("emme-demo-salon", "Demo Salon");
@@ -48,7 +48,7 @@ class KeycloakRealmProvisioningProcessManagerTest {
             "owner@test",
             settings.initialAdminPassword(),
             settings.initialAdminRole());
-    verify(tenantApi).updateIdentityRealm(tenantId, "emme-demo-salon");
+    verify(tenantIdentityRealmPort).updateRealm(tenantId, "emme-demo-salon");
   }
 
   @Test
@@ -58,14 +58,17 @@ class KeycloakRealmProvisioningProcessManagerTest {
     assertThatThrownBy(
             () ->
                 new KeycloakRealmProvisioningProcessManager(
-                        administrationPort, tenantApi, configuration(settings), noOpDelay())
+                        administrationPort,
+                        tenantIdentityRealmPort,
+                        configuration(settings),
+                        noOpDelay())
                     .provision(
                         new ProvisionTenantIdentityCommand(
                             UUID.randomUUID(), "demo-salon", "Demo Salon", "owner@test")))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Identity realm provisioning password is not configured");
 
-    verifyNoInteractions(administrationPort, tenantApi);
+    verifyNoInteractions(administrationPort, tenantIdentityRealmPort);
   }
 
   @Test
@@ -78,7 +81,10 @@ class KeycloakRealmProvisioningProcessManagerTest {
     assertThatThrownBy(
             () ->
                 new KeycloakRealmProvisioningProcessManager(
-                        administrationPort, tenantApi, configuration(settings), noOpDelay())
+                        administrationPort,
+                        tenantIdentityRealmPort,
+                        configuration(settings),
+                        noOpDelay())
                     .provision(
                         new ProvisionTenantIdentityCommand(
                             UUID.randomUUID(), "demo-salon", "Demo Salon", "owner@test")))

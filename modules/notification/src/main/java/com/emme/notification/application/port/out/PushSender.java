@@ -1,4 +1,4 @@
-package com.emme.notification.adapter.out.provider;
+package com.emme.notification.application.port.out;
 
 import java.util.Map;
 
@@ -6,7 +6,7 @@ import java.util.Map;
  * Abstraction for push notification providers (FCM, APNs, Mock). Implementations handle the full
  * send lifecycle — token-based auth, message construction, and delivery to the platform gateway.
  */
-public interface PushProvider {
+public interface PushSender {
 
   /** Provider identifier (e.g. "fcm", "apns", "mock") */
   String name();

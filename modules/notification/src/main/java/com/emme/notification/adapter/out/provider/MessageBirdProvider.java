@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.sms.provider", havingValue = "messagebird")
-public class MessageBirdProvider implements SmsProvider {
+public class MessageBirdProvider implements com.emme.notification.application.port.out.SmsSender {
 
   private static final Logger log = LoggerFactory.getLogger(MessageBirdProvider.class);
   private static final String PRODUCTION_API_BASE = "https://rest.messagebird.com";

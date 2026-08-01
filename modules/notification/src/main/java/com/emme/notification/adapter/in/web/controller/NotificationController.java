@@ -2,16 +2,18 @@ package com.emme.notification.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.kernel.type.NotificationChannel;
-import com.emme.notification.adapter.out.persistence.entity.NotificationEntity;
-import com.emme.notification.application.service.NotificationService;
+import com.emme.notification.adapter.in.web.mapper.NotificationWebMapper;
+import com.emme.notification.adapter.in.web.request.RequestNotificationRequest;
+import com.emme.notification.adapter.in.web.response.NotificationResponse;
+import com.emme.notification.api.query.GetNotificationQuery;
+import com.emme.notification.api.query.ListNotificationsQuery;
+import com.emme.notification.api.usecase.GetNotificationUseCase;
+import com.emme.notification.api.usecase.ListNotificationsUseCase;
+import com.emme.notification.api.usecase.RequestNotificationUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.net.URI;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +28,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/notifications")
 @Tag(name = "Notifications")
 public class NotificationController {
+  private final RequestNotificationUseCase requestNotification;
+  private final ListNotificationsUseCase listNotifications;
+  private final GetNotificationUseCase getNotification;
 
-  private final NotificationService notificationService;
-
-  public NotificationController(NotificationService notificationService) {
-    this.notificationService = notificationService;
+  public NotificationController(
+      RequestNotificationUseCase requestNotification,
+      ListNotificationsUseCase listNotifications,
+      GetNotificationUseCase getNotification) {
+    this.requestNotification = requestNotification;
+    this.listNotifications = listNotifications;
+    this.getNotification = getNotification;
   }
 
   @PostMapping
@@ -39,11 +47,10 @@ public class NotificationController {
       @Valid @RequestBody RequestNotificationRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          NotificationEntity notification =
-              notificationService.request(
-                  tenantId, request.channel(), request.recipient(), request.message());
-          var location = URI.create("/api/v1/notifications/" + notification.getId());
-          return ResponseEntity.created(location).body(NotificationResponse.from(notification));
+          var notification =
+              requestNotification.request(NotificationWebMapper.toCommand(tenantId, request));
+          return ResponseEntity.created(URI.create("/api/v1/notifications/" + notification.id()))
+              .body(NotificationResponse.from(notification));
         });
   }
 
@@ -53,7 +60,7 @@ public class NotificationController {
     return withCurrentTenant(
         tenantId ->
             ResponseEntity.ok(
-                notificationService.findByTenantId(tenantId).stream()
+                listNotifications.list(new ListNotificationsQuery(tenantId)).stream()
                     .map(NotificationResponse::from)
                     .toList()));
   }
@@ -61,30 +68,10 @@ public class NotificationController {
   @GetMapping("/{id}")
   @Operation(summary = "Get a notification by ID")
   public ResponseEntity<NotificationResponse> get(@PathVariable UUID id) {
-    NotificationEntity notification = notificationService.findById(id);
-    return ResponseEntity.ok(NotificationResponse.from(notification));
-  }
-
-  // --- DTOs ---
-
-  public record RequestNotificationRequest(
-      @NotNull NotificationChannel channel, @NotBlank String recipient, @NotBlank String message) {}
-
-  public record NotificationResponse(
-      UUID id,
-      UUID tenantId,
-      String channel,
-      String recipientReference,
-      String status,
-      Instant createdAt) {
-    public static NotificationResponse from(NotificationEntity n) {
-      return new NotificationResponse(
-          n.getId(),
-          n.getTenantId(),
-          n.getChannel().name(),
-          n.getRecipientReference(),
-          n.getStatus().name(),
-          n.getCreatedAt());
-    }
+    return getNotification
+        .get(new GetNotificationQuery(id))
+        .map(NotificationResponse::from)
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 }

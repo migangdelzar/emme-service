@@ -77,8 +77,10 @@ reopened by this backlog.
   evidence.
 - [x] Normalize Notification persistence, provider, event, configuration, and
   inbound adapter package boundaries.
-- [ ] Replace Notification's temporary multi-operation service with focused
+- [x] Replace Notification's temporary multi-operation service with focused
   use-case services and application-owned delivery ports.
+- [ ] Complete Notification retry/idempotency, tenant-scoped reads, delivery
+  evidence, provider contract tests, and service-wide integration verification.
 - [ ] Migrate Payment after Subscription contracts are stable, preserving
   webhook signature/replay and transaction behavior.
 - [x] Normalize Payment persistence, provider, configuration, and inbound

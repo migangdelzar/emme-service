@@ -183,3 +183,19 @@ The remaining Notification work is to replace the temporary entity-backed
 application service with focused use-case services and application-owned
 delivery ports, then complete DTO mapping, provider contract evidence,
 idempotency/retry evidence, and service-wide Modulith verification.
+
+## Completed domain/application boundary slice — 2026-08-01
+
+- [x] Added grouped Notification commands, queries, results, exceptions, and
+  use-case contracts.
+- [x] Added framework-free persistence mapping and an application-owned
+  repository port/adapter.
+- [x] Moved email, SMS, and push capability ports into the application layer.
+- [x] Replaced the multi-operation `NotificationService` with focused request,
+  delivery, cancellation, get, and list services.
+- [x] Added an event publisher port with a Spring outbound adapter.
+- [x] Extracted web request, response, and mapper types.
+- [x] Verified Notification formatting, compilation, package guards, and tests.
+
+Remaining work is retry/idempotency evidence, tenant-scoped endpoint enforcement,
+provider contract coverage, and full service-wide verification.

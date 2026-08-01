@@ -69,6 +69,10 @@ public class NotificationEntity extends TenantOwnedEntity {
     return super.getCreatedAt();
   }
 
+  public void restoreIdentity(UUID id, Instant createdAt) {
+    restoreAuditFields(id, createdAt, createdAt);
+  }
+
   /** Transition from REQUESTED to SENT (stub delivery) */
   public void markSent() {
     if (status != NotificationStatus.REQUESTED) {

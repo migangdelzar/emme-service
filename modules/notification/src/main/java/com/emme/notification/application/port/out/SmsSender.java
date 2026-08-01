@@ -1,4 +1,4 @@
-package com.emme.notification.adapter.out.provider;
+package com.emme.notification.application.port.out;
 
 /**
  * Abstraction for SMS notification providers (Twilio, MessageBird, Vonage, Mock). Implementations
@@ -7,7 +7,7 @@ package com.emme.notification.adapter.out.provider;
  * <p>Use {@code app.notification.sms.provider} to select: mock (default), twilio, messagebird,
  * vonage
  */
-public interface SmsProvider {
+public interface SmsSender {
 
   /** Provider identifier (e.g. "twilio", "messagebird", "mock") */
   String name();

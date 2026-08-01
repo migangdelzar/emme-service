@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
     name = "app.notification.push.provider",
     havingValue = "mock",
     matchIfMissing = true)
-public class MockPushProvider implements PushProvider {
+public class MockPushProvider implements com.emme.notification.application.port.out.PushSender {
 
   private static final Logger log = LoggerFactory.getLogger(MockPushProvider.class);
 

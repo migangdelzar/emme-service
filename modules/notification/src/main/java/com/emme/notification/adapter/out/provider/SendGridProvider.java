@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.email.provider", havingValue = "sendgrid")
-public class SendGridProvider implements EmailProvider {
+public class SendGridProvider implements com.emme.notification.application.port.out.EmailSender {
 
   private static final Logger log = LoggerFactory.getLogger(SendGridProvider.class);
 

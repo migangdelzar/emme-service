@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.sms.provider", havingValue = "vonage")
-public class VonageProvider implements SmsProvider {
+public class VonageProvider implements com.emme.notification.application.port.out.SmsSender {
 
   private static final Logger log = LoggerFactory.getLogger(VonageProvider.class);
   private static final String PRODUCTION_API_BASE = "https://rest.nexmo.com";

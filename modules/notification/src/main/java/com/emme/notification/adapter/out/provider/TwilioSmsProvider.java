@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.sms.provider", havingValue = "twilio")
-public class TwilioSmsProvider implements SmsProvider {
+public class TwilioSmsProvider implements com.emme.notification.application.port.out.SmsSender {
 
   private static final Logger log = LoggerFactory.getLogger(TwilioSmsProvider.class);
   private static final String PRODUCTION_API_BASE = "https://api.twilio.com/2010-04-01";

@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.push.provider", havingValue = "fcm")
-public class FcmPushProvider implements PushProvider {
+public class FcmPushProvider implements com.emme.notification.application.port.out.PushSender {
 
   private static final Logger log = LoggerFactory.getLogger(FcmPushProvider.class);
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");

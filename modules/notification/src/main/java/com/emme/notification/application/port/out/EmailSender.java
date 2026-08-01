@@ -1,10 +1,10 @@
-package com.emme.notification.adapter.out.provider;
+package com.emme.notification.application.port.out;
 
 /**
  * Abstraction for email notification providers (SMTP, SendGrid, AWS SES, Mock). Implementations
  * handle sending transactional and marketing emails.
  */
-public interface EmailProvider {
+public interface EmailSender {
 
   /** Provider identifier (e.g. "smtp", "sendgrid", "ses", "mock") */
   String name();

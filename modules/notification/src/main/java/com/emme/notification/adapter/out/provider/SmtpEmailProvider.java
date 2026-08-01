@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.email.provider", havingValue = "smtp")
-public class SmtpEmailProvider implements EmailProvider {
+public class SmtpEmailProvider implements com.emme.notification.application.port.out.EmailSender {
 
   private static final Logger log = LoggerFactory.getLogger(SmtpEmailProvider.class);
 

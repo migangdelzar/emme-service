@@ -1,8 +1,8 @@
 package com.emme.notification.api.usecase;
 
-import com.emme.kernel.type.NotificationChannel;
-import java.util.UUID;
+import com.emme.notification.api.command.RequestNotificationCommand;
+import com.emme.notification.api.result.NotificationInfo;
 
 public interface RequestNotificationUseCase {
-  UUID request(UUID tenantId, NotificationChannel channel, String recipient, String message);
+  NotificationInfo request(RequestNotificationCommand command);
 }

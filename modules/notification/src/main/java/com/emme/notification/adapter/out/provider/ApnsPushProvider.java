@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.push.provider", havingValue = "apns")
-public class ApnsPushProvider implements PushProvider {
+public class ApnsPushProvider implements com.emme.notification.application.port.out.PushSender {
 
   private static final Logger log = LoggerFactory.getLogger(ApnsPushProvider.class);
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");

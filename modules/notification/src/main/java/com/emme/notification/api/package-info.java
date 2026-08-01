@@ -1,2 +1,2 @@
-/** Public Notification contracts grouped by capability and contract kind. */
+@org.springframework.modulith.NamedInterface("notification-api")
 package com.emme.notification.api;

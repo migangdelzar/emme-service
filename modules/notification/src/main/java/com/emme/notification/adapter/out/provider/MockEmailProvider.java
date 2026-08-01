@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
     name = "app.notification.email.provider",
     havingValue = "mock",
     matchIfMissing = true)
-public class MockEmailProvider implements EmailProvider {
+public class MockEmailProvider implements com.emme.notification.application.port.out.EmailSender {
 
   private static final Logger log = LoggerFactory.getLogger(MockEmailProvider.class);
 

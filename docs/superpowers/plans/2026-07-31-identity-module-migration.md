@@ -236,8 +236,8 @@ Identity-specific failure advice.
 - [x] Added unit, source-tree, and integration coverage for permission
   resolution.
 
-Customer authentication, feature flags, typed security configuration, and
-Identity-specific failure advice remain open slices.
+Customer authentication, typed security configuration, and Identity-specific
+failure advice remain open slices.
 
 ## Completed feature-flag application slice — 2026-08-01
 
@@ -257,6 +257,25 @@ Identity-specific failure advice remain open slices.
 - [x] Added domain, application, mapper, and package-boundary coverage.
 - [x] Verified the full Identity test suite and compilation of Assistant test
   sources.
+
+## Completed customer-membership event slice — 2026-08-01
+
+- [x] Introduced the framework-free `domain/model/CustomerMembership` model.
+- [x] Added the application-owned `CustomerMembershipRepository` port and
+  idempotent `EnsureCustomerMembershipService`.
+- [x] Renamed the technical composite-key types to
+  `CustomerMembershipEntity`, `CustomerMembershipId`, and
+  `SpringDataCustomerMembershipRepository`.
+- [x] Added `CustomerMembershipPersistenceMapper` and
+  `CustomerMembershipPersistenceAdapter` so application code does not depend
+  on JPA types.
+- [x] Moved appointment handling to the inbound
+  `adapter/in/messaging/consumer/AppointmentCreatedConsumer` and preserved the
+  existing JWT customer-role filtering behavior.
+- [x] Added service, mapper, consumer, and source-tree boundary tests.
+
+Customer authentication, typed security configuration, Identity-specific
+failure advice, and the final security hardening gate remain open slices.
 
 Customer authentication, customer-membership event ownership, typed security
 configuration, and Identity-specific failure advice remain open slices.

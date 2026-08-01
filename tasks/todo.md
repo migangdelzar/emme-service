@@ -117,8 +117,17 @@
 - [x] Isolate subscription plan lookup behind `SubscriptionPlanPort`.
 - [x] Preserve the SpEL bean name and feature-flag HTTP behavior.
 - [x] Verify Identity tests and Assistant test compilation.
-- [ ] Continue with customer authentication and customer-membership event
-  application separation.
+- [x] Continue with customer-membership event application separation.
+
+### Identity customer-membership event slice — 2026-08-01
+
+- [x] Add failing tests for the membership event application boundary.
+- [x] Introduce the framework-free CustomerMembership model and repository port.
+- [x] Move idempotent membership creation into EnsureCustomerMembershipService.
+- [x] Rename and isolate the composite-key JPA entity and Spring Data repository.
+- [x] Move appointment event handling to the inbound messaging consumer package.
+- [x] Verify Identity tests, architecture checks, and affected application tests.
+- [ ] Continue with customer authentication application separation.
 
 ### Plan update results
 

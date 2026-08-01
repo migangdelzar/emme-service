@@ -117,6 +117,42 @@ class IdentityPackageConventionTest {
   private static final Path LEGACY_FEATURE_FLAG_ENTITY =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/FeatureFlag.java");
+  private static final Path CUSTOMER_MEMBERSHIP_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/CustomerMembershipEntity.java");
+  private static final Path CUSTOMER_MEMBERSHIP_ID =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/CustomerMembershipId.java");
+  private static final Path CUSTOMER_MEMBERSHIP_REPOSITORY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/SpringDataCustomerMembershipRepository.java");
+  private static final Path CUSTOMER_MEMBERSHIP_MAPPER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/mapper/CustomerMembershipPersistenceMapper.java");
+  private static final Path CUSTOMER_MEMBERSHIP_ADAPTER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/adapter/CustomerMembershipPersistenceAdapter.java");
+  private static final Path CUSTOMER_MEMBERSHIP_CONSUMER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/AppointmentCreatedConsumer.java");
+  private static final Path CUSTOMER_MEMBERSHIP_DOMAIN =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/domain/model/CustomerMembership.java");
+  private static final Path CUSTOMER_MEMBERSHIP_PORT =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/port/out/CustomerMembershipRepository.java");
+  private static final Path CUSTOMER_MEMBERSHIP_SERVICE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/service/EnsureCustomerMembershipService.java");
+  private static final Path LEGACY_CUSTOMER_MEMBERSHIP_ENTITY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/entity/CustomerMembership.java");
+  private static final Path LEGACY_CUSTOMER_MEMBERSHIP_REPOSITORY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/CustomerMembershipRepository.java");
+  private static final Path LEGACY_CUSTOMER_MEMBERSHIP_LISTENER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/CustomerMembershipListener.java");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -231,6 +267,22 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(SUBSCRIPTION_PLAN_PORT)).isTrue();
     assertThat(Files.exists(SUBSCRIPTION_PLAN_ADAPTER)).isTrue();
     assertThat(Files.exists(LEGACY_FEATURE_FLAG_ENTITY)).isFalse();
+  }
+
+  @Test
+  void ownsCustomerMembershipEventsBehindApplicationAndAdapterBoundaries() {
+    assertThat(Files.exists(CUSTOMER_MEMBERSHIP_DOMAIN)).isTrue();
+    assertThat(Files.exists(CUSTOMER_MEMBERSHIP_PORT)).isTrue();
+    assertThat(Files.exists(CUSTOMER_MEMBERSHIP_SERVICE)).isTrue();
+    assertThat(Files.exists(CUSTOMER_MEMBERSHIP_ENTITY)).isTrue();
+    assertThat(Files.exists(CUSTOMER_MEMBERSHIP_ID)).isTrue();
+    assertThat(Files.exists(CUSTOMER_MEMBERSHIP_REPOSITORY)).isTrue();
+    assertThat(Files.exists(CUSTOMER_MEMBERSHIP_MAPPER)).isTrue();
+    assertThat(Files.exists(CUSTOMER_MEMBERSHIP_ADAPTER)).isTrue();
+    assertThat(Files.exists(CUSTOMER_MEMBERSHIP_CONSUMER)).isTrue();
+    assertThat(Files.exists(LEGACY_CUSTOMER_MEMBERSHIP_ENTITY)).isFalse();
+    assertThat(Files.exists(LEGACY_CUSTOMER_MEMBERSHIP_REPOSITORY)).isFalse();
+    assertThat(Files.exists(LEGACY_CUSTOMER_MEMBERSHIP_LISTENER)).isFalse();
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

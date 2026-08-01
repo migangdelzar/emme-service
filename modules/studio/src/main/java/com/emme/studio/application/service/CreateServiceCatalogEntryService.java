@@ -1,6 +1,6 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.api.usecase.CreateCatalogServiceUseCase;
+import com.emme.studio.api.usecase.CreateServiceCatalogEntryUseCase;
 import com.emme.studio.application.port.out.ServiceRepository;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -10,12 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 /** Application service for service-catalog creation. */
 @Service
 @Transactional
-public class CreateCatalogServiceService implements CreateCatalogServiceUseCase {
+public class CreateServiceCatalogEntryService implements CreateServiceCatalogEntryUseCase {
 
   private static final String DEFAULT_CATEGORY = "Servicios Complementarios";
   private final ServiceRepository serviceRepository;
 
-  public CreateCatalogServiceService(ServiceRepository serviceRepository) {
+  public CreateServiceCatalogEntryService(ServiceRepository serviceRepository) {
     this.serviceRepository = serviceRepository;
   }
 

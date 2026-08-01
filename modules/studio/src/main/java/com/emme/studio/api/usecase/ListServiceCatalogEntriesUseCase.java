@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 /** Lists service-catalog entries for a tenant. */
-public interface ListCatalogServicesUseCase {
+public interface ListServiceCatalogEntriesUseCase {
 
   List<Service> list(UUID tenantId, ServiceStatus status);
 }

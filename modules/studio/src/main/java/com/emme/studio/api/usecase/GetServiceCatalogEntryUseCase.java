@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /** Retrieves a service-catalog entry. */
-public interface GetCatalogServiceUseCase {
+public interface GetServiceCatalogEntryUseCase {
 
   Optional<Service> get(UUID id);
 }

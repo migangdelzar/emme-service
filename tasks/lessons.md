@@ -251,3 +251,12 @@
 - Prevention rule: name non-domain coordinators after the operation they own,
   such as `RecordAuditEventService`, and keep reserved metadata-only modules
   free of speculative implementation layers.
+
+## 2026-08-01 — Avoid repeated responsibility nouns in type names
+
+- Failure mode: service-catalog use cases initially produced names such as
+  `CreateCatalogServiceService`.
+- Detection signal: the class name repeated the generic technical suffix and
+  obscured that the operation targeted a catalog entry.
+- Prevention rule: name the business target explicitly (`CreateServiceCatalogEntryService`)
+  and apply the same normalized vocabulary to its use-case interface.

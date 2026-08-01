@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 /** Updates a service-catalog entry. */
-public interface UpdateCatalogServiceUseCase {
+public interface UpdateServiceCatalogEntryUseCase {
 
   Service update(
       UUID id,

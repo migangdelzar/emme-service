@@ -1,6 +1,6 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.api.usecase.ListActiveCatalogServicesUseCase;
+import com.emme.studio.api.usecase.ListActiveServiceCatalogEntriesUseCase;
 import com.emme.studio.application.port.out.ServiceRepository;
 import com.emme.studio.domain.model.ServiceStatus;
 import java.util.List;
@@ -11,11 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 /** Application service for active service-catalog listing. */
 @Service
 @Transactional(readOnly = true)
-public class ListActiveCatalogServicesService implements ListActiveCatalogServicesUseCase {
+public class ListActiveServiceCatalogEntriesService
+    implements ListActiveServiceCatalogEntriesUseCase {
 
   private final ServiceRepository serviceRepository;
 
-  public ListActiveCatalogServicesService(ServiceRepository serviceRepository) {
+  public ListActiveServiceCatalogEntriesService(ServiceRepository serviceRepository) {
     this.serviceRepository = serviceRepository;
   }
 

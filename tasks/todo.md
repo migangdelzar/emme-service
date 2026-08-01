@@ -1074,3 +1074,10 @@ limiting, then continue authorization domain/application separation.
 - [x] Rename the internal Tenancy audit coordinator to
   `RecordAuditEventService` and remove the generic `AuditService` name.
 - [x] Verify the Tenancy boundary and package convention tests.
+
+## Studio service-catalog naming normalization — 2026-08-01
+
+- [x] Replace awkward `*CatalogServiceService` names with explicit
+  `*ServiceCatalogEntryService` names.
+- [x] Align the corresponding use-case interface names and controller imports.
+- [x] Verify the Studio package convention test and formatting.

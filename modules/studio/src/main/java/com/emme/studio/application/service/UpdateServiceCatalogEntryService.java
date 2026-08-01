@@ -1,6 +1,6 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.api.usecase.UpdateCatalogServiceUseCase;
+import com.emme.studio.api.usecase.UpdateServiceCatalogEntryUseCase;
 import com.emme.studio.application.port.out.ServiceRepository;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -10,11 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 /** Application service for service-catalog updates. */
 @Service
 @Transactional
-public class UpdateCatalogServiceService implements UpdateCatalogServiceUseCase {
+public class UpdateServiceCatalogEntryService implements UpdateServiceCatalogEntryUseCase {
 
   private final ServiceRepository serviceRepository;
 
-  public UpdateCatalogServiceService(ServiceRepository serviceRepository) {
+  public UpdateServiceCatalogEntryService(ServiceRepository serviceRepository) {
     this.serviceRepository = serviceRepository;
   }
 

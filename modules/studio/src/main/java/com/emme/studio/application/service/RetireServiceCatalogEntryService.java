@@ -1,6 +1,6 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.api.usecase.RetireCatalogServiceUseCase;
+import com.emme.studio.api.usecase.RetireServiceCatalogEntryUseCase;
 import com.emme.studio.application.port.out.ServiceRepository;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -9,11 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 /** Application service for service-catalog retirement. */
 @Service
 @Transactional
-public class RetireCatalogServiceService implements RetireCatalogServiceUseCase {
+public class RetireServiceCatalogEntryService implements RetireServiceCatalogEntryUseCase {
 
   private final ServiceRepository serviceRepository;
 
-  public RetireCatalogServiceService(ServiceRepository serviceRepository) {
+  public RetireServiceCatalogEntryService(ServiceRepository serviceRepository) {
     this.serviceRepository = serviceRepository;
   }
 

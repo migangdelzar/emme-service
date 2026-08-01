@@ -2,11 +2,11 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.studio.api.usecase.CreateCatalogServiceUseCase;
-import com.emme.studio.api.usecase.GetCatalogServiceUseCase;
-import com.emme.studio.api.usecase.ListActiveCatalogServicesUseCase;
-import com.emme.studio.api.usecase.RetireCatalogServiceUseCase;
-import com.emme.studio.api.usecase.UpdateCatalogServiceUseCase;
+import com.emme.studio.api.usecase.CreateServiceCatalogEntryUseCase;
+import com.emme.studio.api.usecase.GetServiceCatalogEntryUseCase;
+import com.emme.studio.api.usecase.ListActiveServiceCatalogEntriesUseCase;
+import com.emme.studio.api.usecase.RetireServiceCatalogEntryUseCase;
+import com.emme.studio.api.usecase.UpdateServiceCatalogEntryUseCase;
 import com.emme.studio.domain.model.Service;
 import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
 import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
@@ -32,19 +32,19 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Services")
 public class ServiceController {
 
-  private final ListActiveCatalogServicesUseCase listActiveServices;
-  private final CreateCatalogServiceUseCase createService;
-  private final GetCatalogServiceUseCase getService;
-  private final UpdateCatalogServiceUseCase updateService;
-  private final RetireCatalogServiceUseCase retireService;
+  private final ListActiveServiceCatalogEntriesUseCase listActiveServices;
+  private final CreateServiceCatalogEntryUseCase createService;
+  private final GetServiceCatalogEntryUseCase getService;
+  private final UpdateServiceCatalogEntryUseCase updateService;
+  private final RetireServiceCatalogEntryUseCase retireService;
   private final EnforceEntitlementUseCase enforceEntitlement;
 
   public ServiceController(
-      ListActiveCatalogServicesUseCase listActiveServices,
-      CreateCatalogServiceUseCase createService,
-      GetCatalogServiceUseCase getService,
-      UpdateCatalogServiceUseCase updateService,
-      RetireCatalogServiceUseCase retireService,
+      ListActiveServiceCatalogEntriesUseCase listActiveServices,
+      CreateServiceCatalogEntryUseCase createService,
+      GetServiceCatalogEntryUseCase getService,
+      UpdateServiceCatalogEntryUseCase updateService,
+      RetireServiceCatalogEntryUseCase retireService,
       EnforceEntitlementUseCase enforceEntitlement) {
     this.listActiveServices = listActiveServices;
     this.createService = createService;

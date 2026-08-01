@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 /** Creates a service-catalog entry. */
-public interface CreateCatalogServiceUseCase {
+public interface CreateServiceCatalogEntryUseCase {
 
   Service create(
       UUID tenantId,

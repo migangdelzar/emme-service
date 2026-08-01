@@ -72,6 +72,9 @@ class IdentityPackageConventionTest {
   private static final Path REALM_PROVISIONING_PROCESS =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/application/process/KeycloakRealmProvisioningProcessManager.java");
+  private static final Path PROVISION_TENANT_IDENTITY_USE_CASE =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/api/usecase/ProvisionTenantIdentityUseCase.java");
   private static final Path IDENTITY_PROVIDER_ADMINISTRATION_PORT =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/application/port/out/IdentityProviderAdministrationPort.java");
@@ -373,6 +376,8 @@ class IdentityPackageConventionTest {
     String tenantCreatedConsumer = Files.readString(TENANT_CREATED_CONSUMER);
     assertThat(tenantCreatedConsumer).contains("@ApplicationModuleListener");
     assertThat(tenantCreatedConsumer).doesNotContain("@EventListener");
+    assertThat(tenantCreatedConsumer).contains("ProvisionTenantIdentityUseCase");
+    assertThat(tenantCreatedConsumer).doesNotContain("KeycloakRealmProvisioningProcessManager");
     assertThat(Files.exists(LEGACY_SECURITY_CONFIGURATION)).isFalse();
     assertThat(hasJavaSources(LEGACY_INFRASTRUCTURE)).isFalse();
   }
@@ -580,6 +585,7 @@ class IdentityPackageConventionTest {
     String processSource = Files.readString(REALM_PROVISIONING_PROCESS);
 
     assertThat(Files.exists(IDENTITY_PROVIDER_ADMINISTRATION_PORT)).isTrue();
+    assertThat(Files.exists(PROVISION_TENANT_IDENTITY_USE_CASE)).isTrue();
     assertThat(processSource).contains("IdentityProviderAdministrationPort");
     assertThat(processSource).doesNotContain("KeycloakAdminClient");
     assertThat(processSource).doesNotContain("admin123");

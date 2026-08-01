@@ -1,5 +1,6 @@
 package com.emme.identity.application.process;
 
+import com.emme.identity.api.usecase.ProvisionTenantIdentityUseCase;
 import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
 import com.emme.identity.application.port.out.RetryDelayPort;
 import com.emme.identity.configuration.IdentityRealmProvisioningProperties;
@@ -11,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class KeycloakRealmProvisioningProcessManager {
+public class KeycloakRealmProvisioningProcessManager implements ProvisionTenantIdentityUseCase {
 
   private static final Logger log =
       LoggerFactory.getLogger(KeycloakRealmProvisioningProcessManager.class);
@@ -31,6 +32,7 @@ public class KeycloakRealmProvisioningProcessManager {
     this.retryDelayPort = retryDelayPort;
   }
 
+  @Override
   public void provision(TenantCreated event) {
     validateConfiguration();
     String realm = "emme-" + event.slug();

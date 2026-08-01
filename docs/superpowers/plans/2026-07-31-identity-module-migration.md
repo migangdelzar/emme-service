@@ -446,6 +446,18 @@ The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
 
+## Completed provisioning inbound-port slice — 2026-08-01
+
+- [x] Added the public `ProvisionTenantIdentityUseCase` contract under the
+  grouped Identity API.
+- [x] Made `KeycloakRealmProvisioningProcessManager` implement the use case.
+- [x] Changed the Modulith `TenantCreated` consumer to depend on the use-case
+  abstraction rather than the concrete process manager.
+- [x] Preserved after-commit listener behavior and realm-provisioning semantics.
+- [x] Added delegation and source-boundary regression coverage.
+- [x] Verified Identity tests/check/integration, Studio Modulith verification,
+  service CI, both boot JARs, Markdown validation, and whitespace checks.
+
 ## Completed distributed login-rate-limit slice — 2026-08-01
 
 - [x] Added the application-owned `LoginAttemptRateLimiter` outbound port.

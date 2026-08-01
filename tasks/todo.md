@@ -287,6 +287,29 @@ Execution rules and dependencies are maintained in
 - Existing dependency-analysis and Testcontainers/PostgreSQL teardown warnings
   remain non-blocking and occurred after successful task completion.
 
+## Identity provisioning inbound-port slice — 2026-08-01
+
+- [x] Add failing tests for the tenant-created consumer's inbound use-case
+  dependency.
+- [x] Expose `ProvisionTenantIdentityUseCase` under the grouped Identity API.
+- [x] Make the provisioning process manager implement the use case.
+- [x] Make the Modulith consumer depend on the use-case abstraction, preserving
+  after-commit behavior and provisioning semantics.
+- [x] Verify Identity security tests, Modulith, CI, boot JARs, Markdown, and
+  whitespace.
+
+### Results
+
+- Red phase: the consumer test failed to compile because the inbound use-case
+  contract did not yet exist.
+- Green/refactor phase: the consumer now depends on
+  `ProvisionTenantIdentityUseCase`; the process manager remains the concrete
+  application implementation.
+- Identity tests/check/integration, Studio Modulith verification, service CI,
+  both boot JARs, Markdown validation, and `git diff --check` passed.
+- Existing dependency-analysis and Testcontainers/PostgreSQL teardown warnings
+  remain non-blocking and occurred after successful task completion.
+
 ## Studio vertical slices — 2026-07-31
 
 - [x] Appointment domain lifecycle and persistence boundary migrated.

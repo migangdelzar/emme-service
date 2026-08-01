@@ -1,6 +1,6 @@
 package com.emme.identity.adapter.in.messaging.consumer;
 
-import com.emme.identity.application.process.KeycloakRealmProvisioningProcessManager;
+import com.emme.identity.api.usecase.ProvisionTenantIdentityUseCase;
 import com.emme.tenancy.api.event.TenantCreated;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
@@ -9,14 +9,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class TenantCreatedConsumer {
 
-  private final KeycloakRealmProvisioningProcessManager processManager;
+  private final ProvisionTenantIdentityUseCase useCase;
 
-  public TenantCreatedConsumer(KeycloakRealmProvisioningProcessManager processManager) {
-    this.processManager = processManager;
+  public TenantCreatedConsumer(ProvisionTenantIdentityUseCase useCase) {
+    this.useCase = useCase;
   }
 
   @ApplicationModuleListener
   public void on(TenantCreated event) {
-    processManager.provision(event);
+    useCase.provision(event);
   }
 }

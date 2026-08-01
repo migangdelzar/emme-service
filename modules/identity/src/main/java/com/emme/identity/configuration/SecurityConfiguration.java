@@ -1,7 +1,7 @@
-package com.emme.identity.config;
+package com.emme.identity.configuration;
 
-import com.emme.identity.infrastructure.LoginRateLimitFilter;
-import com.emme.identity.infrastructure.MultiRealmJwtDecoder;
+import com.emme.identity.adapter.in.web.filter.LoginRateLimitFilter;
+import com.emme.identity.adapter.out.client.keycloak.MultiRealmJwtDecoder;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,7 +36,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class SecurityConfig {
+public class SecurityConfiguration {
 
   @Bean
   public RoleHierarchy roleHierarchy() {

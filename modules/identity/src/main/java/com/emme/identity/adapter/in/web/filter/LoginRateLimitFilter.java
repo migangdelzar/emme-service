@@ -1,4 +1,4 @@
-package com.emme.identity.infrastructure;
+package com.emme.identity.adapter.in.web.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

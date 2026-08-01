@@ -21,10 +21,10 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
  * Provides minimal OAuth2 beans for tests when {@code OAuth2ClientAutoConfiguration} and {@code
  * OAuth2ResourceServerAutoConfiguration} are excluded.
  *
- * <p>Supplies a dummy {@code ClientRegistrationRepository} so {@code SecurityConfig.oauth2Login()}
- * works, a symmetric-key {@code JwtDecoder} so {@code SecurityConfig.oauth2ResourceServer()} works
- * without reaching a real issuer, and an {@link ObjectMapper} for modules that parse JSON outside
- * the web layer.
+ * <p>Supplies a dummy {@code ClientRegistrationRepository} so {@code
+ * SecurityConfiguration.oauth2Login()} works, a symmetric-key {@code JwtDecoder} so {@code
+ * SecurityConfiguration.oauth2ResourceServer()} works without reaching a real issuer, and an {@link
+ * ObjectMapper} for modules that parse JSON outside the web layer.
  */
 @TestConfiguration
 public class TestSecurityConfig {

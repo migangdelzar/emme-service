@@ -1,4 +1,4 @@
-package com.emme.identity.infrastructure;
+package com.emme.identity.adapter.out.observability;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;

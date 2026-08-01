@@ -19,7 +19,7 @@ com.emme.identity
 ├── UserContext/UserContextHolder.java
 ├── api/{IdentityApi,MembershipInfo,UserInfo}
 ├── application/{IdentityService,CustomerAuthService,FeatureFlagService,KeycloakAuthService,CustomerMembershipListener}
-├── config/SecurityConfig.java
+├── configuration/SecurityConfiguration.java
 ├── entity/{identity,membership,role,permission,feature-flag entities/repositories}
 ├── infrastructure/{Keycloak clients, JWT decoder, rate-limit filter, audit logger}
 ├── service/IdentityApiImpl.java
@@ -58,18 +58,18 @@ context, but they must not become business API types accidentally.
 
 ### Task 1: Security and consumer inventory
 
-- [ ] Map every import of `com.emme.identity` across modules and applications.
-- [ ] Record authentication endpoints, current-user endpoints, membership paths,
+- [x] Map every import of `com.emme.identity` across modules and applications.
+- [x] Record authentication endpoints, current-user endpoints, membership paths,
   feature-flag paths, filters, listeners, and security bean wiring.
-- [ ] Capture baseline tests for successful login, invalid login, authorization,
+- [x] Capture baseline tests for successful login, invalid login, authorization,
   tenant mismatch, rate limiting, JWT decoding, and feature flags.
 
 ### Task 2: Architecture guardrails
 
-- [ ] Add `IdentityPackageConventionTest` and ArchUnit rules for domain isolation,
+- [x] Add `IdentityPackageConventionTest` and ArchUnit rules for domain isolation,
   application ports, inbound filters/controllers, persistence containment, and
   named API closure.
-- [ ] Add package-info to every materialized target package.
+- [x] Add package-info to every materialized target package.
 - [ ] Keep root `@ApplicationModule` allowed dependencies explicit and unchanged
   until consumer migrations are completed.
 
@@ -94,12 +94,12 @@ context, but they must not become business API types accidentally.
 
 ### Task 5: Security and Keycloak adapters
 
-- [ ] Move `SecurityConfig` to `configuration/SecurityConfiguration`.
-- [ ] Classify `KeycloakAdminClient`, `KeycloakRealmProvisioner`, and
+- [x] Move `SecurityConfig` to `configuration/SecurityConfiguration`.
+- [x] Classify `KeycloakAdminClient`, `KeycloakRealmProvisioner`, and
   `MultiRealmJwtDecoder` under `adapter/out/client/keycloak` or configuration
   only when their responsibility is bean wiring.
-- [ ] Move `LoginRateLimitFilter` to `adapter/in/web/filter`.
-- [ ] Move `SecurityAuditLogger` to the appropriate inbound/outbound observability
+- [x] Move `LoginRateLimitFilter` to `adapter/in/web/filter`.
+- [x] Move `SecurityAuditLogger` to the appropriate inbound/outbound observability
   package without changing emitted audit behavior.
 - [ ] Keep secrets and realm configuration in typed configuration properties.
 
@@ -159,3 +159,21 @@ claim the full Identity plan is complete.
 Application-owned repository ports, pure domain models, and persistence mappers
 remain future slices; this move intentionally preserves behavior while making
 the current technical ownership explicit.
+
+## Completed security-boundary slice — 2026-08-01
+
+- [x] Moved `SecurityConfig` to `configuration/SecurityConfiguration`.
+- [x] Moved `LoginRateLimitFilter` to `adapter/in/web/filter`.
+- [x] Moved the JWT decoder and Keycloak admin client to
+  `adapter/out/client/keycloak`.
+- [x] Moved `SecurityAuditLogger` to `adapter/out/observability`.
+- [x] Split tenant-created realm provisioning into
+  `adapter/in/messaging/consumer/TenantCreatedConsumer` and
+  `application/process/KeycloakRealmProvisioningProcessManager`.
+- [x] Preserved routes, Spring bean wiring, event handling, and external test
+  doubles; no security behavior was intentionally changed.
+- [x] Verified focused package tests, full Identity check, and Studio Modulith
+  verification.
+
+The Identity HTTP contract extraction and application/domain separation remain
+open tasks; this slice does not claim the full Identity plan is complete.

@@ -157,7 +157,14 @@
   renamed the JDBC implementation to `DatabaseRegistryAdapter`, and moved the
   pool/routing datasource under the database client adapter with
   `TenantDatabasePoolProvider`.
-- [ ] Next slice: continue Identity security/domain boundaries.
+- [x] Moved Identity security configuration to `configuration/SecurityConfiguration`.
+- [x] Moved the login filter, Keycloak clients/JWT decoder, and security audit
+  observer into canonical inbound/outbound adapter packages.
+- [x] Split tenant-created realm provisioning into an inbound event consumer and
+  an application process manager.
+- [x] Verified Identity tests/checks and Studio Modulith verification after the
+  security boundary migration.
+- [ ] Next slice: continue Identity web contract/application/domain separation.
 
 ## Architecture naming contract — 2026-07-31
 

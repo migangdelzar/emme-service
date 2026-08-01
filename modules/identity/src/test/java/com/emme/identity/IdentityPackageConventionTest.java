@@ -33,6 +33,31 @@ class IdentityPackageConventionTest {
   private static final Path PERSISTENCE_REPOSITORY =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/MembershipRepository.java");
+  private static final Path SECURITY_CONFIGURATION =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/configuration/SecurityConfiguration.java");
+  private static final Path LOGIN_RATE_LIMIT_FILTER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/web/filter/LoginRateLimitFilter.java");
+  private static final Path MULTI_REALM_JWT_DECODER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/MultiRealmJwtDecoder.java");
+  private static final Path SECURITY_AUDIT_LOGGER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/observability/SecurityAuditLogger.java");
+  private static final Path KEYCLOAK_ADMIN_CLIENT =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/KeycloakAdminClient.java");
+  private static final Path REALM_PROVISIONING_PROCESS =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/application/process/KeycloakRealmProvisioningProcessManager.java");
+  private static final Path TENANT_CREATED_CONSUMER =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/TenantCreatedConsumer.java");
+  private static final Path LEGACY_SECURITY_CONFIGURATION =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/config/SecurityConfig.java");
+  private static final Path LEGACY_INFRASTRUCTURE =
+      sourcePath("modules/identity/src/main/java/com/emme/identity/infrastructure");
 
   @Test
   void keepsModuleMetadataAndExplicitAllowedDependencies() throws IOException {
@@ -66,6 +91,19 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(PERSISTENCE_PACKAGE)).isTrue();
     assertThat(Files.exists(PERSISTENCE_ENTITY)).isTrue();
     assertThat(Files.exists(PERSISTENCE_REPOSITORY)).isTrue();
+  }
+
+  @Test
+  void ownsSecurityAdaptersUnderCanonicalBoundaries() {
+    assertThat(Files.exists(SECURITY_CONFIGURATION)).isTrue();
+    assertThat(Files.exists(LOGIN_RATE_LIMIT_FILTER)).isTrue();
+    assertThat(Files.exists(MULTI_REALM_JWT_DECODER)).isTrue();
+    assertThat(Files.exists(SECURITY_AUDIT_LOGGER)).isTrue();
+    assertThat(Files.exists(KEYCLOAK_ADMIN_CLIENT)).isTrue();
+    assertThat(Files.exists(REALM_PROVISIONING_PROCESS)).isTrue();
+    assertThat(Files.exists(TENANT_CREATED_CONSUMER)).isTrue();
+    assertThat(Files.exists(LEGACY_SECURITY_CONFIGURATION)).isFalse();
+    assertThat(hasJavaSources(LEGACY_INFRASTRUCTURE)).isFalse();
   }
 
   private static boolean hasJavaSources(Path directory) {

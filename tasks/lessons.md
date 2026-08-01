@@ -71,3 +71,13 @@
   legacy path, even though compilation and the new package checks were correct.
 - Prevention rule: update source-tree assertions in the same red-green slice as
   a rename, and run the focused convention test before the broader module gate.
+
+## 2026-08-01 — Source-tree tests must distinguish empty legacy directories
+
+- Failure mode: a migration removed every Java source from a legacy package, but
+  the filesystem directory remained and a `Files.exists(directory)` assertion
+  incorrectly reported the legacy package as present.
+- Detection signal: the canonical package test failed only on the legacy-directory
+  assertion after all source moves and compilation succeeded.
+- Prevention rule: architecture tests should assert the absence of legacy source
+  files (`hasJavaSources`) rather than the incidental existence of directories.

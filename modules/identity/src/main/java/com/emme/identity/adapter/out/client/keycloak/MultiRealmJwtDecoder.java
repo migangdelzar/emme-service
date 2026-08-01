@@ -1,4 +1,4 @@
-package com.emme.identity.infrastructure;
+package com.emme.identity.adapter.out.client.keycloak;
 
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;

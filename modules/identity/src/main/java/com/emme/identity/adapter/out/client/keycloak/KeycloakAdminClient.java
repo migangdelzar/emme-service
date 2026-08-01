@@ -1,4 +1,4 @@
-package com.emme.identity.infrastructure;
+package com.emme.identity.adapter.out.client.keycloak;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;

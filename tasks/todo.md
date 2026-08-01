@@ -78,6 +78,17 @@ reopened by this backlog.
 - [ ] Migrate Payment after Subscription contracts are stable, preserving
   webhook signature/replay and transaction behavior.
 
+## Studio Documents canonical boundary slice — 2026-08-01
+
+- [x] Add framework-free document and chunk domain models with lifecycle tests.
+- [x] Move persistence types behind application-owned ports and adapters.
+- [x] Extract document HTTP DTOs/mapper and move the controller to inbound
+  adapter ownership.
+- [x] Add package metadata and dependency-direction regression coverage.
+- [ ] Split application operations into one service per use case and complete
+  grouped public contracts.
+- [ ] Complete Studio integration, Modulith, and service-wide verification.
+
 ### P4 — Final governance verification
 
 - [ ] Run the final service-wide architecture, Modulith, CI, boot-artifact,

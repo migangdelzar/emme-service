@@ -1,6 +1,7 @@
-package com.emme.studio.documents.entity;
+package com.emme.studio.documents.adapter.out.persistence.entity;
 
 import com.emme.shared.TenantOwnedEntity;
+import com.emme.studio.documents.domain.model.DocumentChunk;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -12,7 +13,7 @@ import java.util.UUID;
 @Table(
     name = "document_chunk",
     uniqueConstraints = {@UniqueConstraint(columnNames = {"document_id", "chunk_index"})})
-public class DocumentChunk extends TenantOwnedEntity {
+public class DocumentChunkEntity extends TenantOwnedEntity {
 
   @Column(name = "document_id", nullable = false)
   private UUID documentId;
@@ -26,9 +27,9 @@ public class DocumentChunk extends TenantOwnedEntity {
   @Column(name = "content_fingerprint", nullable = false, length = 128)
   private String contentFingerprint;
 
-  protected DocumentChunk() {}
+  protected DocumentChunkEntity() {}
 
-  public DocumentChunk(
+  public DocumentChunkEntity(
       UUID tenantId, UUID documentId, int chunkIndex, String content, String contentFingerprint) {
     super(tenantId);
     this.documentId = Objects.requireNonNull(documentId, "documentId must not be null");
@@ -36,6 +37,24 @@ public class DocumentChunk extends TenantOwnedEntity {
     this.content = Objects.requireNonNull(content, "content must not be null");
     this.contentFingerprint =
         Objects.requireNonNull(contentFingerprint, "contentFingerprint must not be null");
+  }
+
+  private DocumentChunkEntity(DocumentChunk chunk) {
+    super(chunk.tenantId());
+    setId(chunk.id());
+    this.documentId = chunk.documentId();
+    this.chunkIndex = chunk.chunkIndex();
+    this.content = chunk.content();
+    this.contentFingerprint = chunk.contentFingerprint();
+  }
+
+  public static DocumentChunkEntity from(DocumentChunk chunk) {
+    return new DocumentChunkEntity(chunk);
+  }
+
+  public DocumentChunk toDomain() {
+    return new DocumentChunk(
+        getId(), getTenantId(), documentId, chunkIndex, content, contentFingerprint);
   }
 
   public UUID getDocumentId() {

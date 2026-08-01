@@ -1,6 +1,7 @@
-package com.emme.studio.documents.entity;
+package com.emme.studio.documents.adapter.out.persistence.entity;
 
 import com.emme.shared.TenantOwnedEntity;
+import com.emme.studio.documents.domain.model.Document;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,7 +12,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "document")
-public class Document extends TenantOwnedEntity {
+public class DocumentEntity extends TenantOwnedEntity {
 
   @Column(name = "name", nullable = false, length = 255)
   private String name;
@@ -26,12 +27,36 @@ public class Document extends TenantOwnedEntity {
   @Column(name = "version", nullable = false)
   private int version = 1;
 
-  protected Document() {}
+  protected DocumentEntity() {}
 
-  public Document(UUID tenantId, String name, String sourceType) {
+  public DocumentEntity(UUID tenantId, String name, String sourceType) {
     super(tenantId);
     this.name = Objects.requireNonNull(name, "name must not be null");
     this.sourceType = Objects.requireNonNull(sourceType, "sourceType must not be null");
+  }
+
+  private DocumentEntity(Document document) {
+    super(document.tenantId());
+    setId(document.id());
+    this.name = document.name();
+    this.sourceType = document.sourceType();
+    this.status = DocumentStatus.valueOf(document.status().name());
+    this.version = document.version();
+  }
+
+  public static DocumentEntity from(Document document) {
+    return new DocumentEntity(document);
+  }
+
+  public Document toDomain() {
+    return Document.rehydrate(
+        getId(),
+        getTenantId(),
+        name,
+        sourceType,
+        com.emme.studio.documents.domain.model.DocumentStatus.valueOf(status.name()),
+        version,
+        getCreatedAt());
   }
 
   public String getName() {

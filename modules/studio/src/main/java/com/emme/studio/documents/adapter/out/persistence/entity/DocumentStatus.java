@@ -1,4 +1,4 @@
-package com.emme.studio.documents.entity;
+package com.emme.studio.documents.adapter.out.persistence.entity;
 
 public enum DocumentStatus {
   UPLOADED,

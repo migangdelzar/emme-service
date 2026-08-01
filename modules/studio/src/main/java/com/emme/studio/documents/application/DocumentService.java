@@ -1,9 +1,8 @@
 package com.emme.studio.documents.application;
 
-import com.emme.studio.documents.entity.Document;
-import com.emme.studio.documents.entity.DocumentChunk;
-import com.emme.studio.documents.entity.DocumentChunkRepository;
-import com.emme.studio.documents.entity.DocumentRepository;
+import com.emme.studio.documents.application.port.out.DocumentRepository;
+import com.emme.studio.documents.domain.model.Document;
+import com.emme.studio.documents.domain.model.DocumentChunk;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,12 +21,9 @@ public class DocumentService {
   private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
 
   private final DocumentRepository documentRepository;
-  private final DocumentChunkRepository documentChunkRepository;
 
-  public DocumentService(
-      DocumentRepository documentRepository, DocumentChunkRepository documentChunkRepository) {
+  public DocumentService(DocumentRepository documentRepository) {
     this.documentRepository = documentRepository;
-    this.documentChunkRepository = documentChunkRepository;
   }
 
   /** Upload a new document. Status: UPLOADED */
@@ -40,7 +36,6 @@ public class DocumentService {
   public Document process(UUID documentId) {
     Document document = findDocumentOrThrow(documentId);
     document.markProcessing();
-    documentRepository.save(document);
     // In real app, actual processing would happen asynchronously.
     // Here we simulate immediate success.
     document.markReady();
@@ -65,18 +60,16 @@ public class DocumentService {
   /** Chunk a document into multiple chunks */
   public List<DocumentChunk> chunkDocument(UUID documentId, List<String> chunks) {
     Document document = findDocumentOrThrow(documentId);
-    documentChunkRepository.deleteByDocumentId(documentId);
-    documentChunkRepository.flush();
-
     List<DocumentChunk> documentChunks = new java.util.ArrayList<>();
     for (int i = 0; i < chunks.size(); i++) {
       String content = chunks.get(i);
       String fingerprint = sha256(content);
       DocumentChunk chunk =
-          new DocumentChunk(document.getTenantId(), document.getId(), i, content, fingerprint);
+          new DocumentChunk(document.tenantId(), document.id(), i, content, fingerprint);
       documentChunks.add(chunk);
     }
-    return documentChunkRepository.saveAll(documentChunks);
+    documentRepository.replaceChunks(documentId, documentChunks);
+    return documentChunks;
   }
 
   @Transactional(readOnly = true)
@@ -86,7 +79,7 @@ public class DocumentService {
 
   @Transactional(readOnly = true)
   public List<DocumentChunk> getChunks(UUID documentId) {
-    return documentChunkRepository.findByDocumentIdOrderByChunkIndexAsc(documentId);
+    return documentRepository.findChunks(documentId);
   }
 
   @Transactional(readOnly = true)

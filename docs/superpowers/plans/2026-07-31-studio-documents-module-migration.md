@@ -57,4 +57,24 @@ is added under the owning outbound port/adapter, not as a generic helper package
   package remains.
 - [ ] Domain models are framework-free and entities never reach API/web code.
 - [ ] Existing document status, tenant, persistence, and response behavior passes
+
+## Completed domain and persistence boundary slice — 2026-08-01
+
+- [x] Added framework-free `Document`, `DocumentChunk`, and `DocumentStatus`
+  models with lifecycle invariants and focused tests.
+- [x] Renamed JPA representations to `DocumentEntity` and
+  `DocumentChunkEntity` under outbound persistence.
+- [x] Added application-owned `DocumentRepository`, persistence mapper, Spring
+  Data repositories, and persistence adapter.
+- [x] Changed the document application service to depend on the outbound port,
+  not JPA repositories or entities.
+- [x] Extracted HTTP request/response records and mapper, and moved the
+  controller to the canonical inbound adapter package.
+- [x] Added package metadata and executable source/dependency boundary tests.
+- [x] Verified focused document unit/module tests, compilation, formatting, and
+  whitespace.
+
+The remaining Documents work is use-case contract/service splitting, search and
+embedding port ownership, full Studio integration evidence, and final Modulith
+verification.
   regression tests.

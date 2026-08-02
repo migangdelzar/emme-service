@@ -236,6 +236,14 @@ are intentional implementation or evidence gaps: transaction/event boundaries,
 pool/routing failure coverage, architecture rules, and the committed evidence
 report.
 
+## Completed e2e tenant CRUD contract slice — 2026-08-02
+
+- [x] Aligned the e2e tenant update client with the server's `PATCH`
+  `/api/tenants/{id}` contract.
+- [x] Added a first-class `UserSession.patch` helper.
+- [x] Removed the old `405` compatibility escape from the tenant CRUD test.
+- [x] Verified `:applications:emme-platform:compileE2eTestJava`.
+
 ### Reconciliation evidence
 
 ## Completed database identifier boundary slice — 2026-08-02

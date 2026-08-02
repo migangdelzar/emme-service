@@ -24,14 +24,8 @@ public class TenantCrud {
     return session.get("/api/tenants/" + id);
   }
 
-  /** Update tenant name via PATCH. Returns empty string if endpoint not yet implemented. */
+  /** Update tenant name via PATCH. */
   public String update(String id, String name) {
-    // PATCH not yet implemented on server; will return 200 when ready
-    try {
-      return session.put("/api/tenants/" + id, "{\"name\":\"" + name + "\"}");
-    } catch (AssertionError e) {
-      if (e.getMessage().contains("405")) return ""; // endpoint not yet implemented
-      throw e;
-    }
+    return session.patch("/api/tenants/" + id, "{\"name\":\"" + name + "\"}");
   }
 }

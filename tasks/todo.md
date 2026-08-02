@@ -1435,3 +1435,11 @@ limiting, then continue authorization domain/application separation.
   checks.
 - [ ] Run PostgreSQL/Testcontainers vector/full-text and provider contract
   evidence during the final service-wide verification gate.
+
+## Tenancy e2e CRUD contract — 2026-08-02
+
+- [x] Align the e2e tenant update client with the server's `PATCH` route.
+- [x] Add a first-class `UserSession.patch` helper.
+- [x] Remove the `405` compatibility escape so the CRUD test fails on a broken
+  update endpoint.
+- [x] Verify `compileE2eTestJava`.

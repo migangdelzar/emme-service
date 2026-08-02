@@ -338,3 +338,11 @@
   system changes together. Group delivery clients by technology or channel
   (`client/email`, `client/sms`, `client/push`, or `client/stripe`) and keep the
   application port in `application/port/out`.
+
+- 2026-08-01 — Provider classes that construct `OkHttpClient` or `ObjectMapper`
+  internally violate the composition-root boundary and make deterministic
+  contract tests harder. Detection signal: source-boundary tests find
+  `new OkHttpClient()` or `new ObjectMapper()` under provider packages.
+  Prevention rule: create one capability-owned transport wrapper in
+  configuration and inject both transport and serialization dependencies into
+  every provider.

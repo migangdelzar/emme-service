@@ -1,6 +1,7 @@
 package com.emme.notification.adapter.out.client.email;
 
 import com.emme.notification.configuration.NotificationProperties;
+import com.emme.notification.configuration.NotificationHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +17,6 @@ import java.util.TreeMap;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -49,17 +49,18 @@ public class SesEmailProvider implements com.emme.notification.application.port.
   private final String accessKey;
   private final String secretKey;
   private final String region;
-  private final OkHttpClient client;
+  private final NotificationHttpClient client;
   private final ObjectMapper mapper;
   private String apiBase;
 
   /** Production constructor — receives typed credentials from application configuration. */
-  public SesEmailProvider(NotificationProperties properties) {
+  public SesEmailProvider(
+      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
     this.accessKey = properties.ses().accessKey();
     this.secretKey = properties.ses().secretKey();
     this.region = properties.ses().region();
-    this.client = new OkHttpClient();
-    this.mapper = new ObjectMapper();
+    this.client = client;
+    this.mapper = mapper;
 
     boolean configured =
         accessKey != null
@@ -81,12 +82,17 @@ public class SesEmailProvider implements com.emme.notification.application.port.
 
   /** Test constructor — injects HTTP client and overrides base URL. */
   public SesEmailProvider(
-      OkHttpClient client, String accessKey, String secretKey, String region, String apiBase) {
+      NotificationHttpClient client,
+      String accessKey,
+      String secretKey,
+      String region,
+      String apiBase,
+      ObjectMapper mapper) {
     this.accessKey = accessKey;
     this.secretKey = secretKey;
     this.region = region;
     this.client = client;
-    this.mapper = new ObjectMapper();
+    this.mapper = mapper;
     this.apiBase = apiBase;
   }
 

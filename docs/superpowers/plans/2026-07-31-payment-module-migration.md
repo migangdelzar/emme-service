@@ -224,3 +224,15 @@ webhook table, and the final service-wide verification gate.
 Remaining Payment evidence is provider contract coverage, database/integration
 execution against the webhook table, and the final service-wide verification
 gate.
+
+## Completed provider composition-root hardening — 2026-08-01
+
+- [x] Added a capability-owned `PaymentHttpClient` and configuration bean.
+- [x] Injected HTTP and Jackson dependencies into all HTTP-backed Payment
+  providers; provider classes no longer construct transport or serializers.
+- [x] Added source-boundary regression coverage for the composition-root rule.
+- [x] Verified Payment and Notification-focused tests after the provider boundary
+  change.
+
+Remaining Payment evidence is deterministic provider contract coverage,
+webhook replay/signature coverage, and credentialed live-provider verification.

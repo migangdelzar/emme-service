@@ -1,12 +1,12 @@
 package com.emme.notification.adapter.out.client.sms;
 
 import com.emme.notification.configuration.NotificationProperties;
+import com.emme.notification.configuration.NotificationHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -32,26 +32,32 @@ public class MessageBirdProvider implements com.emme.notification.application.po
 
   private final String apiKey;
   private final String originator;
-  private final OkHttpClient client;
+  private final NotificationHttpClient client;
   private final String apiBase;
   private final ObjectMapper mapper;
 
-  public MessageBirdProvider(NotificationProperties properties) {
+  public MessageBirdProvider(
+      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
     this(
-        new OkHttpClient(),
+        client,
         PRODUCTION_API_BASE,
         properties.messagebird().apiKey(),
-        properties.messagebird().originator());
+        properties.messagebird().originator(),
+        mapper);
   }
 
   /** Package-private constructor for testing with custom API base, client, and credentials. */
   public MessageBirdProvider(
-      OkHttpClient client, String apiBase, String apiKey, String originator) {
+      NotificationHttpClient client,
+      String apiBase,
+      String apiKey,
+      String originator,
+      ObjectMapper mapper) {
     this.apiKey = notBlank(apiKey) ? apiKey : null;
     this.originator = notBlank(originator) ? originator : "Emme";
     this.client = client;
     this.apiBase = apiBase;
-    this.mapper = new ObjectMapper();
+    this.mapper = mapper;
     log.info(
         "MessageBirdProvider initialized — apiBase={}, apiKeyPresent={}",
         apiBase,

@@ -1,6 +1,7 @@
 package com.emme.notification.adapter.out.client.push;
 
 import com.emme.notification.configuration.NotificationProperties;
+import com.emme.notification.configuration.NotificationHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +14,6 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -47,24 +47,25 @@ public class FcmPushProvider implements com.emme.notification.application.port.o
   private final PrivateKey privateKey;
   private final String tokenUrl;
   private final String fcmUrl;
-  private final OkHttpClient client;
+  private final NotificationHttpClient client;
   private final ObjectMapper mapper;
 
   /** Production constructor — receives typed credentials from application configuration. */
-  public FcmPushProvider(NotificationProperties properties) {
+  public FcmPushProvider(
+      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
     this(
-        new OkHttpClient(),
-        new ObjectMapper(),
+        client,
+        mapper,
         DEFAULT_TOKEN_URL,
         null,
-        loadClientEmail(properties.fcm()),
-        loadProjectId(properties.fcm()),
-        loadPrivateKey(properties.fcm()));
+        loadClientEmail(properties.fcm(), mapper),
+        loadProjectId(properties.fcm(), mapper),
+        loadPrivateKey(properties.fcm(), mapper));
   }
 
   /** Full constructor for testing — all values injected directly. */
   public FcmPushProvider(
-      OkHttpClient client,
+      NotificationHttpClient client,
       ObjectMapper mapper,
       String tokenUrl,
       String fcmBaseUrl,
@@ -82,23 +83,27 @@ public class FcmPushProvider implements com.emme.notification.application.port.o
     log.info("FCM push provider initialized — project={} email={}", projectId, clientEmail);
   }
 
-  private static String loadClientEmail(NotificationProperties.Fcm properties) {
-    return safeGet(loadServiceAccount(properties), "client_email", String.class);
+  private static String loadClientEmail(
+      NotificationProperties.Fcm properties, ObjectMapper mapper) {
+    return safeGet(loadServiceAccount(properties, mapper), "client_email", String.class);
   }
 
-  private static String loadProjectId(NotificationProperties.Fcm properties) {
-    Map<String, Object> sa = loadServiceAccount(properties);
+  private static String loadProjectId(
+      NotificationProperties.Fcm properties, ObjectMapper mapper) {
+    Map<String, Object> sa = loadServiceAccount(properties, mapper);
     return properties.projectId() != null && !properties.projectId().isBlank()
         ? properties.projectId()
         : safeGet(sa, "project_id", String.class);
   }
 
-  private static PrivateKey loadPrivateKey(NotificationProperties.Fcm properties) {
-    return loadPrivateKey(safeGet(loadServiceAccount(properties), "private_key", String.class));
+  private static PrivateKey loadPrivateKey(
+      NotificationProperties.Fcm properties, ObjectMapper mapper) {
+    return loadPrivateKey(safeGet(loadServiceAccount(properties, mapper), "private_key", String.class));
   }
 
   /** Parses service account JSON from typed application configuration. */
-  private static Map<String, Object> loadServiceAccount(NotificationProperties.Fcm properties) {
+  private static Map<String, Object> loadServiceAccount(
+      NotificationProperties.Fcm properties, ObjectMapper mapper) {
     String saBase64 = properties.serviceAccount();
     if (saBase64 == null || saBase64.isBlank()) {
       throw new PushProviderException(
@@ -107,7 +112,7 @@ public class FcmPushProvider implements com.emme.notification.application.port.o
     try {
       byte[] json = Base64.getDecoder().decode(saBase64);
       @SuppressWarnings("unchecked")
-      Map<String, Object> parsed = new ObjectMapper().readValue(json, Map.class);
+      Map<String, Object> parsed = mapper.readValue(json, Map.class);
       return parsed;
     } catch (IOException e) {
       throw new PushProviderException(

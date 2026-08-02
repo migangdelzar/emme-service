@@ -3,13 +3,13 @@ package com.emme.payment.adapter.out.client.conekta;
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
 import com.emme.payment.configuration.PaymentProperties;
+import com.emme.payment.configuration.PaymentHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Base64;
 import java.util.Map;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -29,25 +29,19 @@ import org.springframework.stereotype.Component;
 public class ConektaProvider implements PaymentProvider {
 
   private final String privateKey;
-  private final OkHttpClient client;
+  private final PaymentHttpClient client;
   private final ObjectMapper mapper;
   private String apiBase;
 
   /** Production constructor — receives typed credentials from application configuration. */
-  public ConektaProvider(PaymentProperties properties) {
+  public ConektaProvider(
+      PaymentProperties properties, PaymentHttpClient client, ObjectMapper mapper) {
     this.privateKey = properties.conekta().privateKey();
-    this.client = new OkHttpClient();
-    this.mapper = new ObjectMapper();
+    this.client = client;
+    this.mapper = mapper;
     this.apiBase = "https://api.conekta.io";
   }
 
-  /** Test constructor — injects HTTP client and overrides base URL. */
-  public ConektaProvider(OkHttpClient client, String privateKey, String apiBase) {
-    this.privateKey = privateKey;
-    this.client = client;
-    this.mapper = new ObjectMapper();
-    this.apiBase = apiBase;
-  }
 
   @Override
   public String name() {

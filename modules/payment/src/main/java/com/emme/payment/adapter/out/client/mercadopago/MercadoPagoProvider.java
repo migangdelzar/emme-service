@@ -3,13 +3,13 @@ package com.emme.payment.adapter.out.client.mercadopago;
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
 import com.emme.payment.configuration.PaymentProperties;
+import com.emme.payment.configuration.PaymentHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -32,28 +32,20 @@ public class MercadoPagoProvider implements PaymentProvider {
 
   private final String accessToken;
   private final String publicKey;
-  private final OkHttpClient client;
+  private final PaymentHttpClient client;
   private final ObjectMapper mapper;
   private String apiBase;
 
   /** Production constructor — receives typed credentials from application configuration. */
-  public MercadoPagoProvider(PaymentProperties properties) {
+  public MercadoPagoProvider(
+      PaymentProperties properties, PaymentHttpClient client, ObjectMapper mapper) {
     this.accessToken = properties.mercadopago().accessToken();
     this.publicKey = properties.mercadopago().publicKey();
-    this.client = new OkHttpClient();
-    this.mapper = new ObjectMapper();
+    this.client = client;
+    this.mapper = mapper;
     this.apiBase = "https://api.mercadopago.com";
   }
 
-  /** Test constructor — injects HTTP client and overrides base URL. */
-  public MercadoPagoProvider(
-      OkHttpClient client, String accessToken, String publicKey, String apiBase) {
-    this.accessToken = accessToken;
-    this.publicKey = publicKey;
-    this.client = client;
-    this.mapper = new ObjectMapper();
-    this.apiBase = apiBase;
-  }
 
   @Override
   public String name() {

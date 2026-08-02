@@ -1,6 +1,7 @@
 package com.emme.notification.adapter.out.client.push;
 
 import com.emme.notification.configuration.NotificationProperties;
+import com.emme.notification.configuration.NotificationHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +14,6 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -44,14 +44,15 @@ public class ApnsPushProvider implements com.emme.notification.application.port.
   private final String teamId;
   private final String bundleId;
   private final PrivateKey privateKey;
-  private final OkHttpClient client;
+  private final NotificationHttpClient client;
   private final ObjectMapper mapper;
 
   /** Production constructor — receives typed credentials from application configuration. */
-  public ApnsPushProvider(NotificationProperties properties) {
+  public ApnsPushProvider(
+      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
     this(
-        new OkHttpClient(),
-        new ObjectMapper(),
+        client,
+        mapper,
         resolveApnsBase(properties.apns()),
         requireProperty(properties.apns().keyId(), "app.notification.apns.key-id"),
         requireProperty(properties.apns().teamId(), "app.notification.apns.team-id"),
@@ -62,7 +63,7 @@ public class ApnsPushProvider implements com.emme.notification.application.port.
 
   /** Full constructor for testing — all values injected directly. */
   public ApnsPushProvider(
-      OkHttpClient client,
+      NotificationHttpClient client,
       ObjectMapper mapper,
       String apnsBase,
       String keyId,

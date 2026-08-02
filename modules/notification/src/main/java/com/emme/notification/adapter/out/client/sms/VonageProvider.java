@@ -1,12 +1,12 @@
 package com.emme.notification.adapter.out.client.sms;
 
 import com.emme.notification.configuration.NotificationProperties;
+import com.emme.notification.configuration.NotificationHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -33,28 +33,35 @@ public class VonageProvider implements com.emme.notification.application.port.ou
   private final String apiKey;
   private final String apiSecret;
   private final String fromNumber;
-  private final OkHttpClient client;
+  private final NotificationHttpClient client;
   private final String apiBase;
   private final ObjectMapper mapper;
 
-  public VonageProvider(NotificationProperties properties) {
+  public VonageProvider(
+      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
     this(
-        new OkHttpClient(),
+        client,
         PRODUCTION_API_BASE,
         properties.vonage().apiKey(),
         properties.vonage().apiSecret(),
-        properties.vonage().fromNumber());
+        properties.vonage().fromNumber(),
+        mapper);
   }
 
   /** Package-private constructor for testing with custom API base, client, and credentials. */
   public VonageProvider(
-      OkHttpClient client, String apiBase, String apiKey, String apiSecret, String fromNumber) {
+      NotificationHttpClient client,
+      String apiBase,
+      String apiKey,
+      String apiSecret,
+      String fromNumber,
+      ObjectMapper mapper) {
     this.apiKey = notBlank(apiKey) ? apiKey : null;
     this.apiSecret = notBlank(apiSecret) ? apiSecret : null;
     this.fromNumber = notBlank(fromNumber) ? fromNumber : "Emme";
     this.client = client;
     this.apiBase = apiBase;
-    this.mapper = new ObjectMapper();
+    this.mapper = mapper;
     log.info(
         "VonageProvider initialized — apiBase={}, apiKeyPresent={}", apiBase, notBlank(apiKey));
   }

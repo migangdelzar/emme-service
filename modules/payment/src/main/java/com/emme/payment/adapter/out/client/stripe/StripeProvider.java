@@ -3,6 +3,7 @@ package com.emme.payment.adapter.out.client.stripe;
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
 import com.emme.payment.configuration.PaymentProperties;
+import com.emme.payment.configuration.PaymentHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -10,7 +11,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -39,20 +39,22 @@ public class StripeProvider implements PaymentProvider {
   private final String apiBase;
   private final String secretKey;
   private final String webhookSecret;
-  private final OkHttpClient client;
+  private final PaymentHttpClient client;
   private final ObjectMapper mapper;
 
-  public StripeProvider(PaymentProperties props) {
-    this(props, new OkHttpClient(), PRODUCTION_API_BASE);
+  public StripeProvider(
+      PaymentProperties props, PaymentHttpClient client, ObjectMapper mapper) {
+    this(props, client, PRODUCTION_API_BASE, mapper);
   }
 
-  /** Test constructor — accepts custom API base URL and HTTP client. */
-  public StripeProvider(PaymentProperties props, OkHttpClient client, String apiBase) {
+  /** Test constructor — accepts a capability-owned client and custom API base URL. */
+  public StripeProvider(
+      PaymentProperties props, PaymentHttpClient client, String apiBase, ObjectMapper mapper) {
     this.secretKey = props.stripe().secretKey();
     this.webhookSecret = props.stripe().webhookSecret();
     this.client = client;
     this.apiBase = apiBase;
-    this.mapper = new ObjectMapper();
+    this.mapper = mapper;
   }
 
   @Override

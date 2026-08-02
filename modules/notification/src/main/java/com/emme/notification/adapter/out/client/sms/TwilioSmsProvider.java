@@ -1,10 +1,10 @@
 package com.emme.notification.adapter.out.client.sms;
 
 import com.emme.notification.configuration.NotificationProperties;
+import com.emme.notification.configuration.NotificationHttpClient;
 import java.io.IOException;
 import java.util.Base64;
 import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.slf4j.Logger;
@@ -30,12 +30,12 @@ public class TwilioSmsProvider implements com.emme.notification.application.port
   private final String accountSid;
   private final String authToken;
   private final String fromNumber;
-  private final OkHttpClient client;
+  private final NotificationHttpClient client;
   private final String apiBase;
 
-  public TwilioSmsProvider(NotificationProperties properties) {
+  public TwilioSmsProvider(NotificationProperties properties, NotificationHttpClient client) {
     this(
-        new OkHttpClient(),
+        client,
         PRODUCTION_API_BASE,
         properties.twilio().accountSid(),
         properties.twilio().authToken(),
@@ -44,7 +44,11 @@ public class TwilioSmsProvider implements com.emme.notification.application.port
 
   /** Package-private constructor for testing with custom API base, HTTP client, and credentials. */
   public TwilioSmsProvider(
-      OkHttpClient client, String apiBase, String accountSid, String authToken, String fromNumber) {
+      NotificationHttpClient client,
+      String apiBase,
+      String accountSid,
+      String authToken,
+      String fromNumber) {
     this.accountSid = notBlank(accountSid) ? accountSid : null;
     this.authToken = notBlank(authToken) ? authToken : null;
     this.fromNumber = notBlank(fromNumber) ? fromNumber : null;

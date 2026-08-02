@@ -242,3 +242,15 @@ provider contract coverage, and the final service-wide verification gate.
 
 Remaining Notification evidence is provider contract coverage, retry policy for
 transient failures, and the final service-wide verification gate.
+
+## Completed provider composition-root hardening — 2026-08-01
+
+- [x] Added a capability-owned `NotificationHttpClient` and configuration bean.
+- [x] Injected HTTP and Jackson dependencies into all HTTP-backed Notification
+  providers; provider classes no longer construct transport or serializers.
+- [x] Added source-boundary regression coverage for the composition-root rule.
+- [x] Verified Notification and Payment-focused tests after the provider boundary
+  change.
+
+Remaining Notification evidence is deterministic provider contract coverage,
+retry/idempotency behavior, and credentialed live-provider verification.

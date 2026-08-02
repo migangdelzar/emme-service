@@ -39,6 +39,28 @@ class NotificationPackageConventionTest {
         .contains("UUID tenantId");
   }
 
+  @Test
+  void notificationProvidersDoNotConstructTransportOrSerializationDependencies() throws Exception {
+    try (Stream<Path> paths = Files.walk(ROOT.resolve("adapter/out/client"))) {
+      paths
+          .filter(path -> path.toString().endsWith("Provider.java"))
+          .forEach(
+              path -> {
+                try {
+                  String source = Files.readString(path);
+                  assertThat(source)
+                      .as("provider source %s", path)
+                      .doesNotContain("new OkHttpClient(")
+                      .doesNotContain("new ObjectMapper(");
+                } catch (Exception exception) {
+                  throw new IllegalStateException("Cannot inspect " + path, exception);
+                }
+              });
+    }
+    assertThat(Files.exists(ROOT.resolve("configuration/NotificationClientConfiguration.java")))
+        .isTrue();
+  }
+
   private static boolean hasJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) return false;
     try (Stream<Path> paths = Files.walk(directory)) {

@@ -1,12 +1,12 @@
 package com.emme.notification.adapter.out.client.email;
 
 import com.emme.notification.configuration.NotificationProperties;
+import com.emme.notification.configuration.NotificationHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -30,24 +30,17 @@ public class SendGridProvider implements com.emme.notification.application.port.
   private static final Logger log = LoggerFactory.getLogger(SendGridProvider.class);
 
   private final String apiKey;
-  private final OkHttpClient client;
+  private final NotificationHttpClient client;
   private final ObjectMapper mapper;
   private String apiBase;
 
   /** Production constructor — receives typed credentials from application configuration. */
-  public SendGridProvider(NotificationProperties properties) {
+  public SendGridProvider(
+      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
     this.apiKey = properties.sendgrid().apiKey();
-    this.client = new OkHttpClient();
-    this.mapper = new ObjectMapper();
-    this.apiBase = "https://api.sendgrid.com";
-  }
-
-  /** Test constructor — injects HTTP client and overrides base URL. */
-  public SendGridProvider(OkHttpClient client, String apiKey, String apiBase) {
-    this.apiKey = apiKey;
     this.client = client;
-    this.mapper = new ObjectMapper();
-    this.apiBase = apiBase;
+    this.mapper = mapper;
+    this.apiBase = "https://api.sendgrid.com";
   }
 
   @Override

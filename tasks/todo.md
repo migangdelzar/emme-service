@@ -1146,3 +1146,15 @@ limiting, then continue authorization domain/application separation.
 - [x] Add package metadata and update source-boundary tests for each client
   family.
 - [x] Verify focused Notification, Payment, and Calendar tests.
+
+## Provider composition-root hardening — 2026-08-01
+
+- [x] Add red source-boundary tests preventing Notification and Payment providers
+  from constructing HTTP clients or JSON mappers internally.
+- [x] Add capability-owned `NotificationHttpClient` and `PaymentHttpClient`
+  composition-root beans.
+- [x] Inject transport and serialization dependencies into all Notification and
+  Payment HTTP provider implementations.
+- [x] Verify focused Notification and Payment convention tests and whitespace.
+- [ ] Add deterministic provider contract tests for each externally integrated
+  technology and retain live credentialed checks as deployment evidence.

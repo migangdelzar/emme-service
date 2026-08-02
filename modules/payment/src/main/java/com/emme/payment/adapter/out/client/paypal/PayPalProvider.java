@@ -3,6 +3,7 @@ package com.emme.payment.adapter.out.client.paypal;
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
 import com.emme.payment.configuration.PaymentProperties;
+import com.emme.payment.configuration.PaymentHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -11,7 +12,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -37,7 +37,7 @@ public class PayPalProvider implements PaymentProvider {
 
   private final String clientId;
   private final String clientSecret;
-  private final OkHttpClient client;
+  private final PaymentHttpClient client;
   private final ObjectMapper mapper;
   private final String apiBase;
 
@@ -45,22 +45,15 @@ public class PayPalProvider implements PaymentProvider {
   private Instant tokenExpiry;
 
   /** Production constructor — receives typed credentials from application configuration. */
-  public PayPalProvider(PaymentProperties properties) {
+  public PayPalProvider(
+      PaymentProperties properties, PaymentHttpClient client, ObjectMapper mapper) {
     this.clientId = properties.paypal().clientId();
     this.clientSecret = properties.paypal().clientSecret();
-    this.client = new OkHttpClient();
-    this.mapper = new ObjectMapper();
+    this.client = client;
+    this.mapper = mapper;
     this.apiBase = API_BASE;
   }
 
-  /** Test constructor — injects HTTP client and overrides base URL. */
-  public PayPalProvider(OkHttpClient client, String clientId, String clientSecret, String apiBase) {
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
-    this.client = client;
-    this.mapper = new ObjectMapper();
-    this.apiBase = apiBase;
-  }
 
   @Override
   public String name() {

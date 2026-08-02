@@ -14,7 +14,7 @@ val baselineVersion =
 
 tasks.register("apiCheck") {
   group = "verification"
-  description = "Check API compatibility against baseline v${baselineVersion.get()}"
+  description = "Check API compatibility against the configured baseline"
 
   doLast {
     logger.lifecycle("API compat check against baseline: ${baselineVersion.get()}")

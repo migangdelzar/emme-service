@@ -116,6 +116,18 @@ class ArchitectureInventoryTest {
     assertThat(securityPlugin).doesNotContain("else -> TrivyProvider")
   }
 
+  @Test
+  fun `quality and api compatibility conventions avoid configuration-time value reads`() {
+    val qualityConvention =
+      Files.readString(sourcePath("build-logic/src/main/kotlin/emme.quality.gradle.kts"))
+    val apiCompatibilityConvention =
+      Files.readString(sourcePath("build-logic/src/main/kotlin/emme.api-compat.gradle.kts"))
+
+    assertThat(qualityConvention).contains("target(\"src/**/*.java\")")
+    assertThat(qualityConvention).doesNotContain("layout.buildDirectory.get()")
+    assertThat(apiCompatibilityConvention.substringBefore("doLast")).doesNotContain("baselineVersion.get()")
+  }
+
   private fun sourcePath(relativePath: String): Path {
     var current: Path? = Path.of("").toAbsolutePath()
     while (current != null) {

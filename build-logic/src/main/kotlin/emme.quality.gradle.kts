@@ -7,6 +7,7 @@ plugins {
 
 spotless {
   java {
+    target("src/**/*.java")
     googleJavaFormat()
     removeUnusedImports()
     trimTrailingWhitespace()
@@ -32,7 +33,9 @@ sonar {
     )
     property(
       "sonar.coverage.jacoco.xmlReportPaths",
-      "${layout.buildDirectory.get().asFile}/reports/jacoco/test/jacocoTestReport.xml",
+      layout.buildDirectory
+        .file("reports/jacoco/test/jacocoTestReport.xml")
+        .map { it.asFile.absolutePath },
     )
   }
 }

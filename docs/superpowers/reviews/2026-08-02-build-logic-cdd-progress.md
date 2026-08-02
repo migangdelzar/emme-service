@@ -36,6 +36,9 @@
   invalid semantic versions, and operation outside a Git checkout.
 - Made Git branch/commit ValueSources tolerate non-Git temporary projects with
   deterministic `unknown` values and no fatal stderr output.
+- Added quality and API compatibility TestKit coverage; quality formatting now
+  works as a composable capability without requiring the Java plugin, and Sonar
+  report paths remain provider-backed.
 
 ## Verification
 

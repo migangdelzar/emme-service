@@ -277,11 +277,11 @@ the old unreleased task names.
 - Consumes: typed global models and task/property conventions from Tasks 2–7.
 - Produces: validated scanner/quality selections, normalized security results, and independently testable quality/API compatibility conventions.
 
-- [x] **Step 1: Add failing tests for scanner and quality selection.** Added scanner selection, unsupported scanner laziness, and execution failure TestKit contracts; quality/API contracts remain to be added.
-- [x] **Step 2: Run focused tests to confirm red.** Security TestKit coverage now passes; quality/API TestKit coverage remains open.
+- [x] **Step 1: Add failing tests for scanner and quality selection.** Added security scanner, quality convention, and API compatibility TestKit contracts, including unsupported scanner laziness and execution failure.
+- [x] **Step 2: Run focused tests to confirm red.** The quality TestKit exposed that Spotless required an implicit Java plugin; the API and security contracts now pass.
 - [x] **Step 3: Replace selector strings and silent fallback.** Security scanner selection uses `Property<SecurityScanner>`, separate Trivy/Grype providers, and actionable unsupported-value failures.
-- [ ] **Step 4: Keep quality scripts declarative.** Shared Checkstyle/Spotless/Detekt configuration belongs in reusable helpers, not duplicated across each convention script.
-- [ ] **Step 5: Run focused tests and commit.** `git commit -m "refactor(build-logic): normalize security and quality capabilities"`.
+- [x] **Step 4: Keep quality scripts declarative.** Spotless now uses an explicit Java source target, and Sonar coverage paths use Gradle providers rather than eager build-directory reads.
+- [ ] **Step 5: Run focused tests and commit.** Commit after the feature-flag decision and final build-logic verification are synchronized.
 
 ### Task 9: Complete cross-capability composition and root application wiring
 

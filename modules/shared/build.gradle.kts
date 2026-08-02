@@ -39,4 +39,5 @@ dependencies {
   // Integration test deps — shared int tests need tenancy + studio entities
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
+  add("integrationTestImplementation", libs.spring.jdbc)
 }

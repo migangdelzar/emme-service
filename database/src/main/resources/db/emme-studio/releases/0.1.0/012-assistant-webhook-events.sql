@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS whatsapp_webhook_event (
     provider VARCHAR(40) NOT NULL,
     event_id VARCHAR(200) NOT NULL,
     received_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (tenant_id, provider, event_id)
 );
 

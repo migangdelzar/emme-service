@@ -4,11 +4,15 @@ import com.emme.shared.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "payment_webhook_event")
+@Table(
+    name = "payment_webhook_event",
+    uniqueConstraints =
+        @UniqueConstraint(columnNames = {"tenant_id", "provider", "event_id"}))
 public class PaymentWebhookEventEntity extends TenantOwnedEntity {
 
   @Column(nullable = false, length = 40)

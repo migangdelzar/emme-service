@@ -467,6 +467,19 @@ The remaining Identity work is distributed rate-limit state, explicit
 provisioning transaction/event ports, broader authorization review, and final
 tenant-isolation, migration, recovery, and service-wide evidence.
 
+## Completed Spring MVC endpoint-versioning slice — 2026-08-02
+
+- [x] Configured one service-wide `API-Version` request-header resolver with a
+  `1.0` default and supported-version allow-list.
+- [x] Applied `version = "1.0"` to the Identity controller while preserving the
+  existing `/api/v1/identity` public URI contract.
+- [x] Added source-boundary regression coverage for the resolver and mapping.
+- [x] Verified Identity/Tenancy checks and the application Modulith test.
+
+Future endpoint versions must be introduced as parallel representations only
+when a real compatibility change requires them; the stable `/api/v1` route is
+not duplicated speculatively.
+
 ## Completed one-service-per-use-case normalization — 2026-08-01
 
 - [x] Added a source-level convention test rejecting application services that

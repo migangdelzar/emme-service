@@ -772,6 +772,16 @@ class IdentityPackageConventionTest {
         .doesNotContain("CurrentUserController");
   }
 
+  @Test
+  void declaresIdentityEndpointsAsSpringMvcVersionOne() throws IOException {
+    Path controller =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/IdentityController.java");
+
+    assertThat(Files.readString(controller))
+        .contains("@RequestMapping(path = \"/api/v1/identity\", version = \"1.0\")");
+  }
+
   private static boolean hasJavaSource(Path directory, String filename) {
     return Files.exists(directory.resolve(filename));
   }

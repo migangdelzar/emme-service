@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/identity")
+@RequestMapping(path = "/api/v1/identity", version = "1.0")
 public class IdentityController {
 
   private final AssignMembershipUseCase assignMembership;

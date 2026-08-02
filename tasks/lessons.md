@@ -430,3 +430,14 @@
 - Prevention rule: unsupported embedding providers return an empty result and
   callers skip persistence; never store fabricated vectors that make cosine
   search produce misleading results.
+
+## 2026-08-02 — API version source must be centralized
+
+- Failure mode: allowing each controller or module to choose its own version
+  resolver would make the same `/api/v1` contract behave differently across the
+  service.
+- Detection signal: multiple `WebMvcConfigurer` implementations configure API
+  version resolution or controllers mix headers, query parameters, and paths.
+- Prevention rule: configure one resolver and default in the global MVC boundary;
+  use Spring mapping versions only for real parallel representations while
+  preserving the public major URI.

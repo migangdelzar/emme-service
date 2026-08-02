@@ -154,7 +154,7 @@ reopened by this backlog.
   `docs/superpowers/plans/2026-07-31-identity-module-migration.md`.
 - [ ] Complete the Tenancy boundary migration in
   `docs/superpowers/plans/2026-07-31-tenancy-module-migration.md`.
-- [ ] Adopt and verify Spring MVC endpoint version conditions for controllers,
+- [x] Adopt and verify Spring MVC endpoint version conditions for controllers,
   using one configured resolver and preserving the current `/api/v1` public
   major contract.
 
@@ -1386,3 +1386,14 @@ limiting, then continue authorization domain/application separation.
 - [x] Reverify default-pool lifecycle and closed-pool recovery tests.
 - [ ] Complete live eviction, routing-failure recovery, replay/idempotency,
   rollback, and service-wide operational evidence.
+
+## Spring MVC endpoint versioning — 2026-08-02
+
+- [x] Configure one header-based `ApiVersionConfigurer` using `API-Version`.
+- [x] Preserve `/api/v1` URI routes and default requests to version `1.0`.
+- [x] Declare the Identity controller's current mapping as Spring MVC version
+  `1.0`.
+- [x] Verify module source conventions, Checkstyle, integration checks, and
+  application Modulith tests.
+- [ ] Add parallel `1.1` representations only when a real compatibility change
+  requires them.

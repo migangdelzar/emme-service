@@ -199,6 +199,15 @@ class TenancyPackageConventionTest {
   }
 
   @Test
+  void centralizesSpringMvcApiVersionResolution() throws IOException {
+    assertThat(Files.readString(WEB_MVC_CONFIGURATION))
+        .contains("configureApiVersioning")
+        .contains("useRequestHeader(\"API-Version\")")
+        .contains("setDefaultVersion(\"1.0\")")
+        .contains("addSupportedVersions(\"1.0\")");
+  }
+
+  @Test
   void removesLegacyUngroupedContractFilesAndUsesPastTenseEventNaming() {
     assertThat(Files.exists(LEGACY_API)).isFalse();
     assertThat(Files.exists(LEGACY_RESULT)).isFalse();

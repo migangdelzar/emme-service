@@ -1,6 +1,6 @@
 package com.emme.notification.adapter.out.event;
 
-import com.emme.notification.api.event.NotificationDeliveredEvent;
+import com.emme.notification.api.event.NotificationDelivered;
 import com.emme.notification.application.port.out.NotificationEventPublisher;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ public class SpringNotificationEventPublisher implements NotificationEventPublis
   }
 
   @Override
-  public void publish(NotificationDeliveredEvent event) {
+  public void publish(NotificationDelivered event) {
     publisher.publishEvent(event);
   }
 }

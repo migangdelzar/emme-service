@@ -780,7 +780,7 @@ secret-redaction contract.
 - [x] Replace temporary entity-backed orchestration with focused use-case
   services and application-owned ports.
 - [x] Isolate Assistant AI providers behind `ai/application/port/out` and
-  `ai/adapter/out/client`, with focused chat, intent, and RAG use cases.
+  `ai/adapter/out/provider`, with focused chat, intent, and RAG use cases.
 - [ ] Preserve Assistant HTTP, webhook, JSON, database, and feature-flag behavior.
 - [ ] Separate pure domain models, persistence entities, ports, adapters, grouped API contracts, and package metadata.
 - [ ] Run the complete Assistant and service verification gates before merging.
@@ -1228,7 +1228,7 @@ limiting, then continue authorization domain/application separation.
 ## Assistant AI and WhatsApp adapter normalization — 2026-08-01
 
 - [x] Move AI provider implementations into technology-owned
-  `adapter/out/client/{mock,groq,ollama}` packages.
+  `adapter/out/provider/{mock,groq,ollama}` packages.
 - [x] Extract AI HTTP request records and response records from the controller.
 - [x] Inject the capability-owned AI transport wrapper and shared JSON mapper;
   provider implementations no longer construct transport dependencies.
@@ -1245,7 +1245,7 @@ limiting, then continue authorization domain/application separation.
 ## Technology-owned outbound client normalization — 2026-08-01
 
 - [x] Move Notification email, SMS, and push implementations from the generic
-  `adapter/out/provider` namespace into `adapter/out/client/{email,sms,push}`.
+  `adapter/out/client` namespace into `adapter/out/provider/{email,sms,push}`.
 - [x] Move Payment providers into technology-owned client packages for Conekta,
   Mercado Pago, PayPal, Stripe, and Mock.
 - [x] Move Calendar OAuth support into `adapter/out/google/oauth`.
@@ -1264,6 +1264,16 @@ limiting, then continue authorization domain/application separation.
 - [x] Verify focused Notification and Payment convention tests and whitespace.
 - [ ] Add deterministic provider contract tests for each externally integrated
   technology and retain live credentialed checks as deployment evidence.
+
+## Provider namespace and public event normalization — 2026-08-02
+
+- [x] Use `adapter/out/provider` for concrete capability providers.
+- [x] Reserve `adapter/out/client` for transport-focused clients such as the
+  Assistant WhatsApp Graph adapter.
+- [x] Normalize `NotificationDeliveredEvent` to `NotificationDelivered`.
+- [x] Update Studio event consumers and tests to the normalized public event.
+- [x] Verify Assistant, Notification, and Studio compilation/checks.
+- [ ] Complete deterministic provider contract, retry, and live integration evidence.
 
 ## Calendar Google transport composition-root hardening — 2026-08-01
 

@@ -22,6 +22,8 @@ class NotificationPackageConventionTest {
     assertThat(Files.exists(ROOT.resolve("adapter/in/web/controller/NotificationController.java")))
         .isTrue();
     assertThat(Files.exists(ROOT.resolve("api/usecase/RequestNotificationUseCase.java"))).isTrue();
+    assertThat(Files.exists(ROOT.resolve("api/event/NotificationDelivered.java"))).isTrue();
+    assertThat(Files.exists(ROOT.resolve("api/event/NotificationDeliveredEvent.java"))).isFalse();
   }
 
   @Test
@@ -41,7 +43,7 @@ class NotificationPackageConventionTest {
 
   @Test
   void notificationProvidersDoNotConstructTransportOrSerializationDependencies() throws Exception {
-    try (Stream<Path> paths = Files.walk(ROOT.resolve("adapter/out/client"))) {
+    try (Stream<Path> paths = Files.walk(ROOT.resolve("adapter/out/provider"))) {
       paths
           .filter(path -> path.toString().endsWith("Provider.java"))
           .forEach(

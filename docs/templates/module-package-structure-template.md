@@ -105,6 +105,8 @@ Use this layout when a module's `api` package has grown past a handful of flat f
     │       ├── messaging/
     │       │   ├── publisher/
     │       │   └── mapper/
+    │       ├── provider/
+    │       │   └── <provider>/
     │       ├── client/
     │       │   └── <external-system>/
     │       └── observability/
@@ -282,6 +284,9 @@ modules/<module>/
     │   │   │       │   └── mapper/
     │   │   │       │       ├── package-info.java
     │   │   │       │       └── <Fact>EventMapper.java
+    │   │   │       ├── provider/
+    │   │   │       │   ├── package-info.java
+    │   │   │       │   └── <provider>/<Technology><Capability>Provider.java
     │   │   │       ├── client/
     │   │   │       │   ├── package-info.java
     │   │   │       │   └── <external-system>/
@@ -923,6 +928,8 @@ adapter/out/
 ├── messaging/
 │   ├── publisher/
 │   └── mapper/
+├── provider/
+│   └── <provider>/
 ├── client/
 │   └── <external-system>/
 └── observability/
@@ -937,6 +944,7 @@ adapter/out/
 | `persistence.projection` | Optimized read models for search screens, lists, reports; never used to execute aggregate behavior |
 | `messaging.publisher` | Publishes module events to Spring application events, Kafka, RabbitMQ, or a transactional outbox |
 | `messaging.mapper` | Translates public/domain events into broker-specific representations |
+| `provider.<provider>` | Concrete implementations of application-owned provider ports; use provider-role class names such as `GroqModelProvider` |
 | `client.<external-system>` | One package per external dependency: transport client, request/response models, mapper, port adapter |
 | `observability` | Module-specific metrics, tracing, and diagnostic signals; observes execution without becoming a business system of record |
 
@@ -1901,7 +1909,9 @@ Names communicate architectural role before a file is opened. Use the module's u
 | `adapter.out.client.<provider>` | `<Operation>Request.java` | `PricingRequest` | Provider wire request; package supplies provider context |
 | `adapter.out.client.<provider>` | `<Operation>Response.java` | `PricingResponse` | Provider wire response |
 | `adapter.out.client.<provider>` | `<Provider>ClientMapper.java` | `PricingClientMapper` | Provider contract ↔ internal contract |
-| `adapter.out.client.<provider>` | `<Provider><Capability>Adapter.java` | `PricingClientAdapter` | Implements application port |
+| `adapter.out.client.<provider>` | `<Provider>Client.java` | `PricingClient` | Transport-focused external client |
+| `adapter.out.provider.<provider>` | `<Provider><Capability>Adapter.java` | `PricingProviderAdapter` | Implements a provider capability port |
+| `adapter.out.provider.<provider>` | `<Provider><Capability>Provider.java` | `GroqModelProvider` | Implements a capability provider port directly |
 | `adapter.out.client.database` | `<Capability>Adapter.java`, `<Capability>Provider.java` | `DatabaseRegistryAdapter`, `TenantDatabasePoolProvider` | Database bootstrap/client and pool infrastructure; no application orchestration |
 | `adapter.out.observability` | `<Module>MetricsAdapter.java` | `QuoteMetricsAdapter` | Module-specific metrics implementation |
 | `adapter.out.observability` | `<Module>TracingAdapter.java` | `QuoteTracingAdapter` | Module-specific trace enrichment/instrumentation |
@@ -2431,6 +2441,26 @@ package <base-namespace>.<module>.adapter.out.messaging.publisher;
 package <base-namespace>.<module>.adapter.out.messaging.mapper;
 ```
 
+### Provider adapter namespace
+
+**`adapter/out/provider/package-info.java`**
+
+```java
+/**
+ * Concrete provider adapters for the <Module> module.
+ *
+ * Child packages group interchangeable implementations of an application-owned
+ * provider port. These classes may compose a transport client, but they expose
+ * the module capability rather than the remote protocol.
+ */
+package <base-namespace>.<module>.adapter.out.provider;
+```
+
+Use this namespace when the implementation's role is a provider, such as
+`GroqModelProvider`, `OllamaModelProvider`, or `TwilioSmsProvider`. Keep the
+application-owned `ModelProvider`, `SmsSender`, or equivalent abstraction under
+`application.port.out`; provider implementations remain outbound adapters.
+
 ### External client namespace
 
 **`adapter/out/client/package-info.java`**
@@ -2439,9 +2469,10 @@ package <base-namespace>.<module>.adapter.out.messaging.mapper;
 /**
  * Outbound integrations with external systems used by <Module>.
  *
- * Each child package represents one provider or external capability and owns
- * its transport client, provider request/response models, mapper, and adapter
- * implementing an application-owned port.
+ * Each child package represents one external system and owns its transport
+ * client, provider request/response models, and protocol mapper. A higher-level
+ * provider adapter may compose this client, but the client package does not
+ * contain application orchestration.
  */
 package <base-namespace>.<module>.adapter.out.client;
 ```
@@ -2455,9 +2486,9 @@ package <base-namespace>.<module>.adapter.out.client;
  * <External System> integration for the <Module> module.
  *
  * This package owns the transport client, provider DTOs, authentication,
- * timeout and retry policy, provider error mapping, and the adapter that
- * implements the corresponding application port. No provider type escapes
- * this package.
+ * timeout and retry policy, and provider protocol error mapping. Its types are
+ * transport details; no client or provider DTO escapes into the application
+ * or domain layers.
  */
 package <base-namespace>.<module>.adapter.out.client.<external-system>;
 ```

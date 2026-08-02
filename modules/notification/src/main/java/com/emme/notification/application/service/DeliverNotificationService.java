@@ -50,7 +50,7 @@ public class DeliverNotificationService implements DeliverNotificationUseCase {
       notification.markSent();
       notification.markDelivered();
       var saved = repository.save(notification);
-      events.publish(new com.emme.notification.api.event.NotificationDeliveredEvent(saved.body()));
+      events.publish(new com.emme.notification.api.event.NotificationDelivered(saved.body()));
       log.info(
           "Notification delivered: channel={}, providerId={}", notification.channel(), providerId);
       return NotificationApplicationMapper.toInfo(saved);

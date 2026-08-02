@@ -12,11 +12,11 @@ class AiCapabilityConventionTest {
     Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant/ai");
     assertThat(read(root.resolve("package-info.java"))).doesNotContain("@NamedInterface");
     assertThat(Files.exists(root.resolve("application/port/out/ModelProvider.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("adapter/out/client/mock/MockModelProvider.java")))
+    assertThat(Files.exists(root.resolve("adapter/out/provider/mock/MockModelProvider.java")))
         .isTrue();
-    assertThat(Files.exists(root.resolve("adapter/out/client/groq/GroqModelProvider.java")))
+    assertThat(Files.exists(root.resolve("adapter/out/provider/groq/GroqModelProvider.java")))
         .isTrue();
-    assertThat(Files.exists(root.resolve("adapter/out/client/ollama/OllamaModelProvider.java")))
+    assertThat(Files.exists(root.resolve("adapter/out/provider/ollama/OllamaModelProvider.java")))
         .isTrue();
     assertThat(Files.exists(root.resolve("adapter/in/web/request/ChatRequest.java"))).isTrue();
     assertThat(Files.exists(root.resolve("adapter/in/web/request/IntentRequest.java"))).isTrue();

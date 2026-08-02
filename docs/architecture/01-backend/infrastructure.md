@@ -19,8 +19,10 @@ adapter/out/
 ├── messaging/
 │   ├── publisher/
 │   └── mapper/
+├── provider/
+│   └── <provider>/    # capability provider adapter and provider-specific DTOs
 ├── client/
-│   └── <provider>/    # client, provider DTOs, mapper, port adapter
+│   └── <external-system>/ # transport-only client and wire DTOs
 └── observability/     # module-specific metrics/tracing adapters
 
 configuration/         # Spring wiring and typed configuration
@@ -159,6 +161,12 @@ interfaces rather than on the exception class.
 - Framework repositories are visibly technical: `SpringDataQuoteRepository`.
 - Persistence-side AOP belongs under `adapter.out.persistence.aspect` and is named for the concern, for example `TenantContextAspect`; it must not become a domain or application dependency.
 - Provider request/response types remain inside that provider's package.
+- Use `adapter.out.provider.<provider>` when the concrete type implements a
+  capability provider port, for example `GroqModelProvider` or
+  `TwilioSmsProvider`.
+- Use `adapter.out.client.<external-system>` only for transport-focused
+  wrappers and wire contracts, for example `PricingHttpClient` and
+  `PricingResponse`. A provider adapter may compose such a client.
 - Do not use `InfrastructureService`, `RepositoryImpl`, or `DefaultClient`; these names hide the actual adapter role.
 
 ### Infrastructure checklist

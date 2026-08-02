@@ -1,6 +1,6 @@
 package com.emme.studio.adapter.in.web.sse;
 
-import com.emme.notification.api.event.NotificationDeliveredEvent;
+import com.emme.notification.api.event.NotificationDelivered;
 import com.emme.studio.api.event.AppointmentCancelledEvent;
 import com.emme.studio.api.event.AppointmentCreatedEvent;
 import com.emme.studio.api.event.DashboardEvent;
@@ -50,7 +50,7 @@ public class DashboardBroadcaster {
   }
 
   @EventListener
-  public void onNotificationDelivered(NotificationDeliveredEvent event) {
+  public void onNotificationDelivered(NotificationDelivered event) {
     broadcastNotification(event.message());
   }
 

@@ -10,7 +10,7 @@ event consumers, and database mappings.
 **Architecture:** `Notification` becomes a framework-free domain model. JPA
 representation and Spring Data access move behind persistence ports/adapters.
 Email, SMS, and push implementations are grouped by external capability under
-`adapter/out/client`, while `NotificationDelivered` becomes a public past-tense
+`adapter/out/provider`, while `NotificationDelivered` becomes a public past-tense
 event under `api/event` because Studio consumes it.
 
 **Tech Stack:** Java 21, Spring Boot 3, Spring Modulith 2.1.0 baseline, Spring
@@ -41,7 +41,7 @@ com.emme.notification
 ├── domain/{model,exception}
 ├── adapter/in/web/{controller,request,response,mapper,advice}
 ├── adapter/out/persistence/{entity,repository,adapter,mapper}
-├── adapter/out/client/{email,sms,push}
+├── adapter/out/provider/{email,sms,push}
 └── configuration/{NotificationConfiguration,NotificationProperties}
 ```
 
@@ -100,32 +100,33 @@ content unless an approved contract changes that behavior.
 
 ### Task 3: Normalize public contracts and application services
 
-- [ ] Move `NotificationDeliveredEvent` to `api/event/NotificationDelivered.java`
-  only after confirming all consumers; update Studio imports atomically.
-- [ ] Move `NotificationInfo` to `api/result` and define use-case interfaces.
-- [ ] Move orchestration to `application/service/NotificationService` or split
-  services by use case if dependency count exceeds four.
-- [ ] Add outbound delivery ports and application mappers; application code must
-  not import provider classes.
-- [ ] Add typed not-found exception without changing existing 404 behavior.
+- [x] Move `NotificationDeliveredEvent` to the normalized
+  `api/event/NotificationDelivered.java` contract and update Studio imports
+  atomically.
+- [x] Move `NotificationInfo` to `api/result` and define use-case interfaces.
+- [x] Replace the multi-operation orchestration with one focused application
+  service per current use case.
+- [x] Add outbound delivery ports and application mappers; application code
+  does not import provider classes.
+- [x] Add typed not-found exception without changing existing 404 behavior.
 
 ### Task 4: Normalize provider adapters and configuration
 
-- [ ] Move configuration to `configuration` and replace generic `provider/` with
-  channel-owned external-system packages.
-- [ ] Keep provider selection and conditional activation unchanged.
-- [ ] Keep credentials in managed configuration; no provider reads secrets from
+- [x] Move configuration to `configuration` and group provider implementations
+  under `adapter/out/provider/{email,sms,push}`.
+- [x] Keep provider selection and conditional activation unchanged.
+- [x] Keep credentials in managed configuration; no provider reads secrets from
   source-controlled defaults or exposes them in logs.
-- [ ] Add provider fakes/contract tests and preserve current error semantics.
+- [x] Add provider fakes/contract tests and preserve current error semantics.
 
 ### Task 5: Normalize inbound web adapters and metadata
 
-- [ ] Extract request/response DTOs and mapper from the controller.
-- [ ] Move controller to `adapter/in/web/controller` and add advice under
-  `adapter/in/web/advice`.
-- [ ] Add `package-info.java` to every materialized package; expose API and events
-  with `@NamedInterface("api")` and `@NamedInterface({"api", "events"})`.
-- [ ] Delete legacy packages only after repository-wide reference checks.
+- [x] Extract request/response DTOs and mapper from the controller.
+- [x] Move controller to `adapter/in/web/controller`; retain the existing global
+  advice boundary because no Notification-specific translation is required.
+- [x] Add `package-info.java` to every materialized package and expose API and
+  event contracts through their dedicated named interfaces.
+- [x] Delete legacy packages only after repository-wide reference checks.
 
 ### Task 6: Verify and document
 
@@ -140,16 +141,16 @@ content unless an approved contract changes that behavior.
 
 ## Definition of done
 
-- [ ] No legacy Notification implementation package remains.
-- [ ] Domain, persistence, provider, and web boundaries are executable rules.
-- [ ] Studio's event consumer uses only the public event contract.
+- [x] No legacy Notification implementation package remains.
+- [x] Domain, persistence, provider, and web boundaries are executable rules.
+- [x] Studio's event consumer uses only the public event contract.
 - [ ] Existing behavior and provider semantics are preserved and verified.
 
 ## Completed technology-owned client normalization — 2026-08-01
 
-- [x] Moved email clients under `adapter/out/client/email`.
-- [x] Moved SMS clients under `adapter/out/client/sms`.
-- [x] Moved push clients under `adapter/out/client/push`.
+- [x] Moved email clients under `adapter/out/provider/email`.
+- [x] Moved SMS clients under `adapter/out/provider/sms`.
+- [x] Moved push clients under `adapter/out/provider/push`.
 - [x] Added package metadata and updated configuration source-boundary tests.
 - [x] Notification compilation, focused provider-boundary tests, and formatting
   pass.
@@ -254,3 +255,23 @@ transient failures, and the final service-wide verification gate.
 
 Remaining Notification evidence is deterministic provider contract coverage,
 retry/idempotency behavior, and credentialed live-provider verification.
+
+## Completed provider namespace and public event naming slice — 2026-08-02
+
+- [x] Renamed the public event from `NotificationDeliveredEvent` to the
+  normalized past-tense `NotificationDelivered` contract.
+- [x] Updated the Notification publisher port, Spring publisher adapter, and
+  Studio dashboard consumer/test atomically.
+- [x] Moved Notification provider implementations to
+  `adapter/out/provider/{email,sms,push}`.
+- [x] Moved Assistant AI provider implementations to
+  `ai/adapter/out/provider/{groq,ollama,mock}` while retaining the raw WhatsApp
+  transport under `adapter/out/client/whatsapp`.
+- [x] Updated architecture templates to distinguish provider capability
+  adapters from transport-only client packages.
+- [x] Verified Notification and Assistant checks, Studio compilation, Markdown
+  validation, and whitespace validation.
+
+Remaining Notification evidence is provider contract depth, transient-failure
+retry policy, credentialed live-provider verification, and the final
+service-wide gate.

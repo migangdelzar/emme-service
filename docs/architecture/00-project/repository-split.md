@@ -58,10 +58,9 @@ name:
 | Main service application (`emme-platform`) | `ghcr.io/migangdelzar/emme-service` |
 | Web application | `ghcr.io/migangdelzar/emme-web` |
 
-`studio-api` has no active deployment image contract. Its source project may
-still be built for compatibility while the remaining migration responsibilities
-are moved to `emme-platform`, but deployment and release automation must not
-publish or consume a `studio-api` image.
+There is one backend application image contract. The service repository owns
+`ghcr.io/migangdelzar/emme-service`; deployment and release automation must not
+publish or consume a second backend application image.
 
 Environment overlays may replace these images with local registry names, but
 production manifests must promote an immutable tag or digest from the

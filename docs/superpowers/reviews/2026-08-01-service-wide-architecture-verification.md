@@ -6,9 +6,8 @@ This report verifies the current `feat/module-plans-normalization` service tree
 against the latest module template and the capability-driven outbound adapter
 rules. It covers the structural migrations completed on this branch, including
 the Assistant AI/WhatsApp slice and technology-owned Notification, Payment, and
-Calendar clients. The canonical deployable application is `emme-platform`;
-`studio-api` is retained only as a compatibility/build target pending a separate
-zero-reference retirement plan.
+Calendar clients. `emme-platform` is the sole deployable application and
+composition root.
 
 ## Verified architectural outcomes
 
@@ -27,7 +26,7 @@ zero-reference retirement plan.
 | Deterministic provider HTTP contract coverage | Pass for Stripe and Twilio representative contracts |
 | Legacy generic provider source packages | No tracked production sources remain |
 | Application architecture tests | Pass |
-| Spring Modulith named interfaces | Pass for `emme-platform` and `studio-api` |
+| Spring Modulith named interfaces | Pass for `emme-platform` |
 
 ## Canonical application and delivery target
 
@@ -38,11 +37,7 @@ zero-reference retirement plan.
 | Compose service | `emme-platform` | `scripts/validate-emme-platform-target.mjs` |
 | Legacy Kubernetes workload | `emme-platform` | Kustomize local/production render |
 | Kubernetes provider workload | `backend` / `app=emme-backend` | `KubernetesWorkloadTest` |
-| Compatibility application | `applications/studio-api` | Gradle compatibility build only |
-
-No active deployment manifest, wait script, or module-boundary CI job targets
-`studio-api`. Deleting the compatibility application is intentionally outside
-this cutover and requires its own migration and zero-reference evidence.
+| Application project count | One (`emme-platform`) | `settings.gradle.kts` and Gradle project graph |
 
 ## Verification commands
 
@@ -59,7 +54,7 @@ single-use Gradle daemon:
 ./gradlew ci -x test -x integrationTest -x e2eTest \
   --quiet --no-daemon --no-configuration-cache
 ./gradlew :applications:emme-platform:bootJar \
-  :applications:studio-api:bootJar --quiet --no-daemon --no-configuration-cache
+  --quiet --no-daemon --no-configuration-cache
 node scripts/validate-markdown.mjs
 git diff --check
 ```

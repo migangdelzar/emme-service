@@ -104,11 +104,11 @@
 - [x] Define optional GraalVM native-image spike with JVM rollback artifact.
 - [ ] Review and approve the written MVP design specification.
 - [ ] Execute the MVP plan before the build-logic CDD refactor.
-- [x] Audit `studio-api` usage: it is still referenced by Gradle settings, CI,
-  `mise`, deployment manifests, and module verification, so it is retained for
-  now rather than deleted destructively.
-- [ ] Make `emme-platform` the sole deployed MVP target and keep `studio-api`
-  only as a compatibility/build target until its retirement plan is complete.
+- [x] Audit the two application projects and identify `emme-platform` as the
+  newer canonical composition root.
+- [x] Migrate active delivery, CI, tests, and documentation to `emme-platform`.
+- [x] Remove the obsolete `applications/studio-api` project and its stale
+  demo-seeding/configuration surface.
 
 ## Remaining execution backlog — priority/type order
 
@@ -911,7 +911,7 @@ Remaining Identity follow-up: complete the broader security hardening review.
 - [x] Removed Booking's obsolete top-level `events` metadata and stale named
   interface dependencies; retained only actual shared/tenancy dependencies.
 - [x] Added source-tree convention tests for all three contract-only modules.
-- [x] Verified focused module tests and `applications:studio-api` Modulith tests.
+- [x] Verified focused module tests and `applications:emme-platform` Modulith tests.
 - [ ] Continue with the next dependency-safe migration slice from the registry
   (Identity/Tenancy security and persistence inventory).
 

@@ -93,7 +93,8 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :applications:emme-platform:bootJar :applications:studio-api:bootJar --no-daemon --no-configuration-cache --stacktrace
+      - name: Build canonical platform boot JAR
+        run: ./gradlew :applications:emme-platform:bootJar --no-daemon --no-configuration-cache --stacktrace
 
   deploy:
     needs: boot-jar

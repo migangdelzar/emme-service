@@ -31,7 +31,7 @@ dependencyResolutionManagement {
 rootProject.name = "emme"
 
 include(":platform")
-include(":applications:studio-api")
+include(":applications:emme-platform")
 include(":modules:booking")
 include(":libraries:kernel")
 include(":database")

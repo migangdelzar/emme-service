@@ -38,9 +38,19 @@ export async function validateTargetFiles({ repositoryRoot, rules }) {
 export const canonicalTargetRules = {
   files: [
     {
+      path: 'settings.gradle.kts',
+      required: ['include(":applications:emme-platform")'],
+      forbidden: ['include(":applications:studio-api")'],
+    },
+    {
       path: '.github/workflows/ci-module-boundaries.yml',
       required: [':applications:emme-platform:test'],
       forbidden: [':applications:studio-api:test'],
+    },
+    {
+      path: '.github/workflows/ci-backend.yml',
+      required: [':applications:emme-platform:bootJar'],
+      forbidden: [':applications:studio-api:bootJar'],
     },
     {
       path: 'mise.toml',

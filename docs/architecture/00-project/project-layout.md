@@ -16,8 +16,7 @@ the web application.
 ```text
 emme/
 ├── applications/                 # deployable Spring Boot applications
-│   ├── emme-platform/             # canonical deployed application
-│   └── studio-api/                # temporary compatibility/build target
+│   └── emme-platform/             # canonical deployed application
 ├── modules/                      # business capabilities / bounded contexts
 │   ├── shared/
 │   ├── tenancy/
@@ -69,11 +68,9 @@ flowchart TB
 | `database` | Schema lifecycle and migration ownership | Ad hoc SQL in every module |
 | `docs/architecture` | Stable architectural guidance | Temporary task notes |
 
-`applications/emme-platform` is the canonical composition root and the only
-active deployment target. `applications/studio-api` remains included solely as
-a compatibility/build target until a separate zero-reference retirement plan is
-complete; it must not appear in active CI boundary checks or deployment
-manifests.
+`applications/emme-platform` is the sole composition root and deployment
+target. There is no second application project; all service behavior, tests,
+configuration, packaging, and delivery automation belong to this application.
 
 ## Dependency direction
 

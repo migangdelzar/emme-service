@@ -15,9 +15,8 @@ The MVP will optimize for one deployable backend, one core customer journey, and
 the smallest useful production footprint. It will not attempt to close every
 module migration before proving product value.
 
-The canonical deployable application is `emme-platform`. `studio-api` is not a
-second MVP deployment target. It remains a compatibility/build target only until
-an explicit retirement or consolidation decision is recorded.
+The sole deployable application is `emme-platform`. The repository has one
+composition root, one application build, and one backend image contract.
 
 The MVP keeps DDD + Hexagonal module boundaries, but limits implementation to
 the capabilities required by the first salon workday journey:

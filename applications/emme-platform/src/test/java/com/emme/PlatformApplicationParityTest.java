@@ -9,8 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Protects the deployable application contract while {@code studio-api} remains a compatibility
- * target.
+ * Protects the sole deployable application contract.
  */
 class PlatformApplicationParityTest {
 

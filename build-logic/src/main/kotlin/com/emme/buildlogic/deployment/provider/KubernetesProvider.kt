@@ -26,10 +26,11 @@ abstract class KubernetesProvider : DeploymentProvider() {
 
   override fun status(): StatusResult {
     val ns = parameters.namespace.get()
-    val output = executeCommand(
-      "kubectl",
-      listOf("rollout", "status", "deployment/${KubernetesWorkload.DEPLOYMENT_NAME}", "-n", ns, "--timeout=30s"),
-    )
+    val output =
+      executeCommand(
+        "kubectl",
+        listOf("rollout", "status", "deployment/${KubernetesWorkload.DEPLOYMENT_NAME}", "-n", ns, "--timeout=30s"),
+      )
     val podsOutput = executeCommand("kubectl", listOf("get", "pods", "-n", ns, "--no-headers"))
     val pods = podsOutput.lines().count { it.isNotBlank() }
     return StatusResult(ready = output.contains("successfully rolled out"), pods = pods, details = output)

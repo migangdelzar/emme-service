@@ -11,10 +11,9 @@
 | Build-logic model | Capability-Driven Build Logic (CDD) |
 | Date | 2026-07-31 |
 
-`applications/emme-platform` is the canonical service composition root and the
-only active deployment target. `applications/studio-api` remains a temporary
-compatibility/build target; removing it requires a separate destructive cleanup
-after a repository-wide zero-reference audit.
+`applications/emme-platform` is the sole service composition root and active
+deployment target. All application behavior, tests, configuration, packaging,
+and delivery automation are migrated into this project.
 
 ## Objective
 

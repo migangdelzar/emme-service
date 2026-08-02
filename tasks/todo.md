@@ -163,8 +163,10 @@ reopened by this backlog.
   retired; update the registry and dependencies.
 - [x] Normalize Shared infrastructure after the Audit ownership decision,
   preserving rollback and repository-wide dependency evidence.
-- [ ] Complete Shared search integration/tenant-predicate evidence and run the
-  service-wide dependency-cycle verification.
+- [x] Complete Shared search integration/tenant-predicate evidence; the focused
+  Shared and application Modulith/layer gates pass.
+- [ ] Fix the remaining shared integration shutdown lifecycle warnings, then
+  run the service-wide dependency-cycle verification.
 
 ### P2 — Domain capabilities
 

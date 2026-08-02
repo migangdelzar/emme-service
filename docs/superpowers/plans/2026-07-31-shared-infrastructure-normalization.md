@@ -93,8 +93,10 @@ API results or domain aggregates.
 - [x] Moved global advice to `shared.web.advice`.
 - [x] Added Shared ownership regression coverage.
 
-Remaining work is search integration evidence, full dependency-cycle checks, and
-the service-wide verification gate.
+Search integration and tenant-predicate evidence is recorded in
+`docs/superpowers/reviews/2026-08-02-shared-search-verification.md`. Remaining
+work is the clean database/test-context lifecycle fix, full dependency-cycle
+checks, and the service-wide verification gate.
 
 ## Completed tenant-scoped search maintenance slice — 2026-08-01
 

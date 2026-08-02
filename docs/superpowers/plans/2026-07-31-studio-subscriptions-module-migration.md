@@ -77,8 +77,9 @@ owned responsibilities require them.
 - [x] Verified focused subscription/Documents tests, compilation, formatting,
   and test-fixture compilation.
 
-The remaining global work is full service-wide Modulith, integration, schema,
-security, and recovery evidence.
+Focused Subscription/Studio integration and application Modulith verification
+pass. Remaining global work is the shared database shutdown lifecycle,
+service-wide schema, security, recovery, and boot-artifact evidence.
 
 ## Completed tenant-scoped inbound boundary slice — 2026-08-01
 
@@ -104,5 +105,5 @@ service-wide integration, Modulith, schema, security, and recovery evidence.
   Studio schema and preserved the existing unique tenant ownership constraint.
 
 The Subscriptions capability remains structurally canonical. Remaining work is
-the repository-wide payment boundary, Modulith, security, recovery, and boot
-artifact evidence.
+the repository-wide payment boundary, shared database shutdown lifecycle,
+Modulith, security, recovery, and boot-artifact evidence.

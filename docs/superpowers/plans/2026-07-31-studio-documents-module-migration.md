@@ -101,8 +101,9 @@ is added under the owning outbound port/adapter, not as a generic helper package
   capability; no speculative adapter was created. If search is introduced, it
   must be added through an application-owned port and a technology adapter.
 
-Remaining Documents work is full Studio integration evidence, schema comparison,
-and final Modulith verification.
+Documents-focused tests, Studio integration, and application Modulith
+verification pass. Remaining work is the shared database shutdown lifecycle,
+repository-wide CI/boot-artifact report, and live schema rollback evidence.
 
 ## Completed tenant-safe persistence and verification slice — 2026-08-02
 
@@ -118,5 +119,7 @@ and final Modulith verification.
 
 The Documents implementation is now structurally canonical. The remaining
 service-level gate is the repository-wide Modulith/CI/boot-artifact report,
-plus live schema rollback evidence shared with the Studio migration.
+plus live schema rollback evidence shared with the Studio migration. The latest
+Studio integration run still exposes the known shutdown-time PostgreSQL and
+Spring Modulith publication-registry warnings.
   regression tests.

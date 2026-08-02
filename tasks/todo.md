@@ -251,7 +251,8 @@ reopened by this backlog.
 - [x] Split application operations into one service per use case and complete
   grouped public contracts.
 - [x] Expose only the Documents API through a Spring Modulith named interface.
-- [ ] Complete Studio integration, Modulith, and service-wide verification.
+- [x] Complete Documents-focused tests, Studio integration, and application
+  Modulith verification; shared lifecycle warnings remain.
 
 ## Studio Subscriptions canonical migration — 2026-08-01
 
@@ -261,7 +262,9 @@ reopened by this backlog.
 - [x] Move HTTP DTOs/controller to canonical inbound adapter packages.
 - [x] Update Identity, Studio, and test fixtures to canonical subscription contracts.
 - [x] Expose only `subscriptions-api` through a Spring Modulith named interface.
-- [ ] Complete service-wide integration, Modulith, schema, security, and recovery evidence.
+- [x] Complete Studio integration and application Modulith verification; shared
+  lifecycle warnings remain.
+- [ ] Complete schema, security, recovery, and service-wide evidence.
 
 ### P5 — Final governance verification
 

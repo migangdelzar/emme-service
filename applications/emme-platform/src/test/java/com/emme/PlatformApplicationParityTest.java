@@ -8,14 +8,13 @@ import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/**
- * Protects the sole deployable application contract.
- */
+/** Protects the sole deployable application contract. */
 class PlatformApplicationParityTest {
 
   @Test
   void canonicalApplicationUsesTheMvpRuntimeContract() throws IOException {
-    String applicationConfiguration = Files.readString(Path.of("src/main/resources/application.yml"));
+    String applicationConfiguration =
+        Files.readString(Path.of("src/main/resources/application.yml"));
 
     assertThat(applicationConfiguration)
         .contains("name: emme-platform")
@@ -45,6 +44,7 @@ class PlatformApplicationParityTest {
             ":modules:audit");
 
     requiredModules.forEach(
-        module -> assertThat(buildConfiguration).contains("implementation(project(\"" + module + "\"))"));
+        module ->
+            assertThat(buildConfiguration).contains("implementation(project(\"" + module + "\"))"));
   }
 }

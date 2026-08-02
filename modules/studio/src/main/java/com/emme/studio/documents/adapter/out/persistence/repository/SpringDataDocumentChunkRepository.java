@@ -13,5 +13,7 @@ public interface SpringDataDocumentChunkRepository
   List<DocumentChunkEntity> findByTenantIdAndDocumentIdOrderByChunkIndexAsc(
       UUID tenantId, UUID documentId);
 
+  List<DocumentChunkEntity> findByTenantIdAndIdIn(UUID tenantId, List<UUID> ids);
+
   void deleteByTenantIdAndDocumentId(UUID tenantId, UUID documentId);
 }

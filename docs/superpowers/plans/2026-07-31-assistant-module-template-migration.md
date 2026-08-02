@@ -22,9 +22,9 @@
 - External AI and WhatsApp integrations are accessed through application-owned outbound ports. Provider/client classes never become application dependencies.
 - `api.exception` contains only caller-visible expected failures. Domain rule failures remain under `domain.exception`; infrastructure exceptions never cross the module boundary.
 - The current `ConversationEvent` is a persisted conversation-history record, not a public Spring Modulith event. It remains a domain model and does not create `api/event` or `domain/event`.
-- No `application/process`, `domain/factory`, `domain/specification`, `adapter/in/messaging`, `adapter/in/scheduler`, `adapter/out/messaging`, `adapter/out/observability`, `adapter/out/cache`, `adapter/out/search`, or `adapter/out/storage` package is created because the current Assistant source has no durable responsibility for those branches.
+- No `application/process`, `domain/factory`, `domain/specification`, `adapter/in/messaging`, `adapter/in/scheduler`, `adapter/out/messaging`, `adapter/out/observability`, `adapter/out/cache`, or `adapter/out/storage` package is created because the current Assistant source has no durable responsibility for those branches. Document search remains owned by Studio and is consumed through `studio :: documents-api`.
 - WhatsApp webhook handling is a provider callback and therefore belongs under `adapter/in/webhook`, not `adapter/in/web/controller`.
-- The migration is structural and must not invent new Assistant capabilities. Any behavior that is currently a placeholder remains a placeholder while its boundary is normalized.
+- The migration is structural and must not invent new Assistant capabilities. Remaining behavior that is still a placeholder stays explicitly tracked while its boundary is normalized.
 
 ## Completed public AI capability boundary slice — 2026-08-01
 
@@ -939,6 +939,21 @@ open by design.
   vector, preventing invalid cosine-search data from being persisted.
 - [x] Preserved typed AI configuration and the provider composition boundary.
 - [x] Verified the focused Assistant test and formatting.
+
+## Completed Documents-backed RAG slice — 2026-08-02
+
+- [x] Added the Studio Documents `SearchDocumentChunksUseCase` public contract
+  with immutable tenant-scoped query validation.
+- [x] Added application-owned `DocumentSearchPort` and ranked search result
+  types, keeping Shared PostgreSQL hybrid search behind a Studio adapter.
+- [x] Added tenant-scoped chunk hydration that restores search rank order and
+  never returns chunks outside the requested tenant.
+- [x] Replaced the real-provider RAG placeholder with embedding, hybrid search,
+  context assembly, and model chat orchestration.
+- [x] Preserved keyword-only retrieval when an embedding provider returns an
+  empty vector and preserved the mock-mode canned response.
+- [x] Added focused Assistant and Studio unit tests and verified both module
+  `check` tasks.
 
 The remaining Assistant work is live provider contract execution, PostgreSQL
 replay evidence, and final service-wide verification.

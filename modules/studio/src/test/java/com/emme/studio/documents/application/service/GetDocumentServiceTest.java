@@ -55,6 +55,12 @@ class GetDocumentServiceTest {
     }
 
     @Override
+    public List<com.emme.studio.documents.domain.model.DocumentChunk> findChunksByTenantIdAndIds(
+        UUID tenantId, List<UUID> chunkIds) {
+      return List.of();
+    }
+
+    @Override
     public void replaceChunks(
         UUID tenantId,
         UUID documentId,

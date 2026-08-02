@@ -30,7 +30,7 @@ checklist reconciliation.
 | P1 | Audit | No implementation is missing. The metadata-only decision is complete; only historical plan wording needed reconciliation | Documentation only |
 | P2 | Studio Documents | Full Studio integration and Modulith evidence; schema comparison; final service-wide verification | Open verification |
 | P2 | Studio Subscriptions | Payment-boundary documentation/contract decision; final integration, Modulith, schema, security, and recovery evidence | Open boundary documentation plus verification |
-| P2 | Assistant | Live AI/WhatsApp provider contract tests; PostgreSQL replay execution; final service-wide verification | Open operational evidence |
+| P2 | Assistant | Live AI/WhatsApp provider contract tests; PostgreSQL replay execution; final service-wide verification; Documents-backed RAG live search evidence | Focused RAG boundary now implemented; operational evidence remains open |
 | P3 | Notification | Deterministic provider contract tests; explicit transient-failure retry policy and evidence; durable delivery replay/idempotency proof against PostgreSQL; final integration/CI verification | Open provider and operational evidence |
 | P3 | Payment | Deterministic provider contract tests; tenant-scoped read coverage for every endpoint; PostgreSQL execution of webhook claims; final signature/replay and financial integration evidence | Open provider and operational evidence |
 | P4 | Build-logic | Execute the new CDD migration specification and plan across all convention scripts, binary plugins, extensions, tasks, providers, models, ValueSources, tests, and verification gates; remove eager resolution and silent fallbacks; add complete TestKit/configuration-cache coverage | Open implementation |

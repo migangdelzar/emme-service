@@ -443,3 +443,17 @@
   boundary; keep public routes version-neutral and use Spring mapping versions
   only for real parallel representations. Because the service is pre-release,
   do not retain legacy path aliases unless explicitly required.
+
+## 2026-08-02 — Green Gradle checks can still expose test-context shutdown defects
+
+- Failure mode: module `check` tasks can complete successfully while Spring
+  test contexts emit shutdown-time SQL errors for missing `event_publication`
+  tables or already-closed schemas.
+- Detection signal: `ionShutdownHook` output contains
+  `InvalidDataAccessResourceUsageException`, `Table "event_publication" not
+  found`, or failed schema-drop statements even though Gradle reports
+  `BUILD SUCCESSFUL`.
+- Prevention rule: preserve this output in verification reports, isolate the
+  failing test profile/context, and close the lifecycle defect before claiming
+  final service-wide readiness. Do not suppress the warnings merely to make
+  CI output quiet.

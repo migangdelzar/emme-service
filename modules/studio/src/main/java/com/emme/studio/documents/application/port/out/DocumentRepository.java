@@ -17,5 +17,7 @@ public interface DocumentRepository {
 
   List<DocumentChunk> findChunks(UUID tenantId, UUID documentId);
 
+  List<DocumentChunk> findChunksByTenantIdAndIds(UUID tenantId, List<UUID> chunkIds);
+
   void replaceChunks(UUID tenantId, UUID documentId, List<DocumentChunk> chunks);
 }

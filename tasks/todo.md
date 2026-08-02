@@ -1397,3 +1397,17 @@ limiting, then continue authorization domain/application separation.
 - [ ] Add parallel `1.1` representations only when a real second
   representation exists; no legacy `/api/v1` alias is maintained before
   release.
+
+## Assistant Documents-backed RAG — 2026-08-02
+
+- [x] Add the public Studio Documents search query and use-case contract.
+- [x] Keep document search behind an application-owned outbound port and
+  tenant-scoped persistence hydration.
+- [x] Replace the real-provider RAG placeholder with embedding, search, context
+  assembly, and model-chat orchestration.
+- [x] Preserve keyword-only retrieval for unavailable embeddings and mock-mode
+  canned behavior.
+- [x] Verify focused Assistant/Studio tests, Spotless, Checkstyle, and module
+  checks.
+- [ ] Run PostgreSQL/Testcontainers vector/full-text and provider contract
+  evidence during the final service-wide verification gate.

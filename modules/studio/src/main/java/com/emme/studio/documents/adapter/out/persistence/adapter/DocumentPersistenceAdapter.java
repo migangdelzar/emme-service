@@ -64,6 +64,11 @@ public class DocumentPersistenceAdapter implements DocumentRepository {
   }
 
   @Override
+  public List<DocumentChunk> findChunksByTenantIdAndIds(UUID tenantId, List<UUID> chunkIds) {
+    return chunks.findByTenantIdAndIdIn(tenantId, chunkIds).stream().map(mapper::toDomain).toList();
+  }
+
+  @Override
   public void replaceChunks(UUID tenantId, UUID documentId, List<DocumentChunk> newChunks) {
     chunks.deleteByTenantIdAndDocumentId(tenantId, documentId);
     chunks.flush();

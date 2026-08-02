@@ -29,6 +29,11 @@ class DocumentsPackageConventionTest {
         .isTrue();
     assertThat(Files.exists(ROOT.resolve("adapter/in/web/controller/DocumentController.java")))
         .isTrue();
+    assertThat(Files.exists(ROOT.resolve("api/query/SearchDocumentChunksQuery.java"))).isTrue();
+    assertThat(Files.exists(ROOT.resolve("api/usecase/SearchDocumentChunksUseCase.java"))).isTrue();
+    assertThat(Files.exists(ROOT.resolve("application/port/out/DocumentSearchPort.java"))).isTrue();
+    assertThat(Files.exists(ROOT.resolve("adapter/out/search/HybridDocumentSearchAdapter.java")))
+        .isTrue();
   }
 
   @Test

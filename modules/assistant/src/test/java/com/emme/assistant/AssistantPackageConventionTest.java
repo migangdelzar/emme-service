@@ -2,8 +2,10 @@ package com.emme.assistant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +34,17 @@ class AssistantPackageConventionTest {
         .isTrue();
     assertThat(hasJavaSources(ROOT.resolve("ai/adapter/out/client"))).isFalse();
     assertThat(hasJavaSources(ROOT.resolve("ai/config"))).isFalse();
+  }
+
+  @Test
+  void consumesDocumentsOnlyThroughThePublicNamedInterface() throws IOException {
+    String build = Files.readString(sourcePath("modules/assistant/build.gradle.kts"));
+    String metadata = Files.readString(ROOT.resolve("package-info.java"));
+
+    assertThat(build).contains("implementation(project(\":modules:studio\"))");
+    assertThat(metadata).contains("studio :: documents-api");
+    assertThat(Arrays.stream(build.split("\\R")))
+        .noneMatch(line -> line.contains("testImplementation(project(\":modules:studio\"))"));
   }
 
   @Test

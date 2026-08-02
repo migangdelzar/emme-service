@@ -9,6 +9,7 @@ dependencies {
   implementation(project(":modules:shared"))
   implementation(project(":libraries:kernel"))
   implementation(project(":modules:tenancy"))
+  implementation(project(":modules:studio"))
 
   implementation(libs.spring.boot.starter.web)
   implementation(libs.spring.boot.starter.validation)
@@ -19,7 +20,6 @@ dependencies {
   testImplementation(testFixtures(project(":libraries:testing")))
   testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(libs.spring.security.test)
-  testImplementation(project(":modules:studio"))
   testImplementation(project(":modules:identity"))
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))

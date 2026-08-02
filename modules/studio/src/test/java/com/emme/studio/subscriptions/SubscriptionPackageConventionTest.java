@@ -50,6 +50,16 @@ class SubscriptionPackageConventionTest {
     assertThat(source).contains("withCurrentTenant");
   }
 
+  @Test
+  void requiresTenantScopeWhenSavingAnExistingSubscription() throws Exception {
+    String source =
+        Files.readString(
+            ROOT.resolve("adapter/out/persistence/adapter/SubscriptionPersistenceAdapter.java"));
+
+    assertThat(source).doesNotContain("repository.findById(");
+    assertThat(source).contains("findByTenantIdAndId(");
+  }
+
   private static boolean hasJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) {
       return false;

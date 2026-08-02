@@ -28,7 +28,9 @@ public class SubscriptionPersistenceAdapter implements SubscriptionRepository {
   @Override
   public Subscription save(Subscription subscription) {
     SubscriptionEntity existing =
-        repository.findById(subscription.id()).orElseGet(() -> mapper.toEntity(subscription));
+        repository
+            .findByTenantIdAndId(subscription.tenantId(), subscription.id())
+            .orElseGet(() -> mapper.toEntity(subscription));
     existing.setPlan(subscription.plan());
     existing.setStatus(subscription.status());
     existing.setPeriodEndsAt(subscription.periodEndsAt());

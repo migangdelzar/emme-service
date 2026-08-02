@@ -91,3 +91,18 @@ security, and recovery evidence.
 
 Remaining Subscription work is payment-boundary documentation and final
 service-wide integration, Modulith, schema, security, and recovery evidence.
+
+## Completed tenant-safe persistence verification slice — 2026-08-02
+
+- [x] Added `findByTenantIdAndId(UUID tenantId, UUID subscriptionId)` to the
+  Spring Data persistence boundary.
+- [x] Changed existing-subscription saves to resolve rows through the tenant
+  predicate instead of `repository.findById(...)`.
+- [x] Added a source-boundary regression test preventing unscoped subscription
+  persistence access.
+- [x] Compared subscription entity/status/plan fields with the canonical
+  Studio schema and preserved the existing unique tenant ownership constraint.
+
+The Subscriptions capability remains structurally canonical. Remaining work is
+the repository-wide payment boundary, Modulith, security, recovery, and boot
+artifact evidence.

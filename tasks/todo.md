@@ -1303,3 +1303,12 @@ limiting, then continue authorization domain/application separation.
   domain aggregate; persistence entities contain mappings only.
 - [x] Verify Documents unit/module checks and PostgreSQL integration startup.
 - [ ] Continue the remaining service-wide Modulith, schema, and recovery gate.
+
+## Studio Subscriptions verification — 2026-08-02
+
+- [x] Replace the unscoped subscription save lookup with
+  `findByTenantIdAndId(tenantId, subscriptionId)`.
+- [x] Add an executable package-boundary regression test preventing future
+  subscription persistence regressions.
+- [ ] Continue the remaining service-wide payment-boundary, Modulith, schema,
+  and recovery gate.

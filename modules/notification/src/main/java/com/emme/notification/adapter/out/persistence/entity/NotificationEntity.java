@@ -72,36 +72,4 @@ public class NotificationEntity extends TenantOwnedEntity {
   public void restoreIdentity(UUID id, Instant createdAt) {
     restoreAuditFields(id, createdAt, createdAt);
   }
-
-  /** Transition from REQUESTED to SENT (stub delivery) */
-  public void markSent() {
-    if (status != NotificationStatus.REQUESTED) {
-      throw new IllegalStateException("Cannot send notification with status: " + status);
-    }
-    status = NotificationStatus.SENT;
-  }
-
-  /** Transition from SENT to DELIVERED (stub delivery confirmation) */
-  public void markDelivered() {
-    if (status != NotificationStatus.SENT) {
-      throw new IllegalStateException("Cannot deliver notification with status: " + status);
-    }
-    status = NotificationStatus.DELIVERED;
-  }
-
-  /** Transition from REQUESTED to CANCELLED */
-  public void markCancelled() {
-    if (status != NotificationStatus.REQUESTED) {
-      throw new IllegalStateException("Cannot cancel notification with status: " + status);
-    }
-    status = NotificationStatus.CANCELLED;
-  }
-
-  /** Transition from any non-terminal status to FAILED */
-  public void markFailed() {
-    if (status == NotificationStatus.DELIVERED || status == NotificationStatus.CANCELLED) {
-      throw new IllegalStateException("Cannot fail notification with terminal status: " + status);
-    }
-    status = NotificationStatus.FAILED;
-  }
 }

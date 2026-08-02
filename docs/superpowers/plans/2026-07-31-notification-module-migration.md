@@ -248,6 +248,18 @@ provider contract coverage, and the final service-wide verification gate.
 Remaining Notification evidence is provider contract coverage, retry policy for
 transient failures, and the final service-wide verification gate.
 
+## Completed domain ownership correction — 2026-08-02
+
+- [x] Added a red package-boundary assertion that persistence entities must not
+  own Notification lifecycle transitions.
+- [x] Removed duplicated lifecycle methods from `NotificationEntity`; state is
+  persisted through the mapper while rules remain in `domain.model.Notification`.
+- [x] Verified Notification formatting, Checkstyle, module tests, and the
+  focused convention test.
+
+The remaining open work is still provider contract depth, transient retry
+policy, credentialed execution, and clean service-wide lifecycle evidence.
+
 ## Completed provider composition-root hardening — 2026-08-01
 
 - [x] Added a capability-owned `NotificationHttpClient` and configuration bean.

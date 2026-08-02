@@ -42,6 +42,17 @@ class NotificationPackageConventionTest {
   }
 
   @Test
+  void persistenceEntityDoesNotOwnNotificationLifecycleRules() throws Exception {
+    assertThat(
+            Files.readString(
+                ROOT.resolve("adapter/out/persistence/entity/NotificationEntity.java")))
+        .doesNotContain("markSent")
+        .doesNotContain("markDelivered")
+        .doesNotContain("markCancelled")
+        .doesNotContain("markFailed");
+  }
+
+  @Test
   void notificationProvidersDoNotConstructTransportOrSerializationDependencies() throws Exception {
     try (Stream<Path> paths = Files.walk(ROOT.resolve("adapter/out/provider"))) {
       paths

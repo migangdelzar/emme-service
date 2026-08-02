@@ -59,3 +59,14 @@ The integration process still emits shutdown-time PostgreSQL connection errors
 while Spring Modulith's event-publication registry and Hibernate close. The
 Gradle process exits successfully, but clean connection-lifecycle evidence
 remains open for the service-wide gate.
+
+## Persistence ownership correction — 2026-08-02
+
+Notification lifecycle transitions are owned exclusively by the framework-free
+`domain.model.Notification`. The JPA `NotificationEntity` is now a persistence
+state representation with no `markSent`, `markDelivered`, `markCancelled`, or
+`markFailed` business methods.
+
+The `NotificationPackageConventionTest` first failed against the duplicated
+entity methods, then passed after they were removed. The Notification module
+`spotlessApply`, `check`, and focused convention test complete successfully.

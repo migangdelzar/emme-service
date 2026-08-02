@@ -150,10 +150,12 @@ reopened by this backlog.
 ### P0 — Architecture baseline, security, and tenant isolation
 
 - [x] Complete Catalog baseline verification and commit its verification report.
-- [ ] Finish the remaining Identity security/domain/application separation in
-  `docs/superpowers/plans/2026-07-31-identity-module-migration.md`.
-- [ ] Complete the Tenancy boundary migration in
-  `docs/superpowers/plans/2026-07-31-tenancy-module-migration.md`.
+- [x] Finish the Identity security/domain/application separation; source and
+  focused boundary slices are complete. Live migration/recovery and final
+  service-wide evidence remain in the plan.
+- [x] Complete the Tenancy boundary migration; source and focused boundary
+  slices are complete. Live pool/routing recovery and final evidence remain in
+  the plan.
 - [x] Adopt and verify Spring MVC endpoint version conditions for controllers,
   using one configured resolver and version-neutral `/api` routes.
 
@@ -170,10 +172,10 @@ reopened by this backlog.
 
 ### P2 — Domain capabilities
 
-- [ ] Migrate Studio Documents using its approved public contracts and the
-  current module template.
-- [ ] Migrate Studio Subscriptions using its approved public contracts and the
-  current module template.
+- [x] Migrate Studio Documents using its approved public contracts and the
+  current module template; final service-wide evidence remains.
+- [x] Migrate Studio Subscriptions using its approved public contracts and the
+  current module template; final service-wide evidence remains.
 - [x] Migrate Assistant after Identity, Tenancy, and Shared contracts are
   stable; the canonical source layout and focused verification are complete.
 - [x] Normalize Assistant conversation persistence and replace the legacy
@@ -194,16 +196,19 @@ reopened by this backlog.
 
 ### P3 — Provider integrations
 
-- [ ] Migrate Notification with explicit provider ports, idempotency, and retry
-  evidence.
+- [x] Migrate Notification with explicit provider ports and idempotency
+  boundaries; retry, provider, and service-wide evidence remains.
 - [x] Normalize Notification persistence, provider, event, configuration, and
   inbound adapter package boundaries.
 - [x] Replace Notification's temporary multi-operation service with focused
   use-case services and application-owned delivery ports.
+- [x] Keep Notification lifecycle rules exclusively in the framework-free
+  domain aggregate; persistence entities contain state only.
 - [ ] Complete Notification retry/idempotency, tenant-scoped reads, delivery
   evidence, provider contract tests, and service-wide integration verification.
-- [ ] Migrate Payment after Subscription contracts are stable, preserving
-  webhook signature/replay and transaction behavior.
+- [x] Migrate Payment after Subscription contracts are stable, preserving
+  webhook signature/replay and transaction behavior; provider and final
+  service-wide evidence remains.
 - [x] Normalize Payment persistence, provider, configuration, and inbound
   webhook package boundaries.
 - [x] Replace Payment's temporary multi-operation service with focused use-case

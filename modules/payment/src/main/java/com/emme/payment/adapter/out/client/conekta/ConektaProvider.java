@@ -2,8 +2,8 @@ package com.emme.payment.adapter.out.client.conekta;
 
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
-import com.emme.payment.configuration.PaymentProperties;
 import com.emme.payment.configuration.PaymentHttpClient;
+import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -41,7 +41,6 @@ public class ConektaProvider implements PaymentProvider {
     this.mapper = mapper;
     this.apiBase = "https://api.conekta.io";
   }
-
 
   @Override
   public String name() {

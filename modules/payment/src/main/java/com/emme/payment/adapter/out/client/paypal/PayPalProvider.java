@@ -2,8 +2,8 @@ package com.emme.payment.adapter.out.client.paypal;
 
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
-import com.emme.payment.configuration.PaymentProperties;
 import com.emme.payment.configuration.PaymentHttpClient;
+import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -53,7 +53,6 @@ public class PayPalProvider implements PaymentProvider {
     this.mapper = mapper;
     this.apiBase = API_BASE;
   }
-
 
   @Override
   public String name() {

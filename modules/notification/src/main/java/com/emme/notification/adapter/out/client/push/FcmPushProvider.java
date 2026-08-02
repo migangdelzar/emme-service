@@ -1,7 +1,7 @@
 package com.emme.notification.adapter.out.client.push;
 
-import com.emme.notification.configuration.NotificationProperties;
 import com.emme.notification.configuration.NotificationHttpClient;
+import com.emme.notification.configuration.NotificationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -88,8 +88,7 @@ public class FcmPushProvider implements com.emme.notification.application.port.o
     return safeGet(loadServiceAccount(properties, mapper), "client_email", String.class);
   }
 
-  private static String loadProjectId(
-      NotificationProperties.Fcm properties, ObjectMapper mapper) {
+  private static String loadProjectId(NotificationProperties.Fcm properties, ObjectMapper mapper) {
     Map<String, Object> sa = loadServiceAccount(properties, mapper);
     return properties.projectId() != null && !properties.projectId().isBlank()
         ? properties.projectId()
@@ -98,7 +97,8 @@ public class FcmPushProvider implements com.emme.notification.application.port.o
 
   private static PrivateKey loadPrivateKey(
       NotificationProperties.Fcm properties, ObjectMapper mapper) {
-    return loadPrivateKey(safeGet(loadServiceAccount(properties, mapper), "private_key", String.class));
+    return loadPrivateKey(
+        safeGet(loadServiceAccount(properties, mapper), "private_key", String.class));
   }
 
   /** Parses service account JSON from typed application configuration. */

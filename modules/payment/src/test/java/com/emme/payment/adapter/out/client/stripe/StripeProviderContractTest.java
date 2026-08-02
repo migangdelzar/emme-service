@@ -58,8 +58,7 @@ class StripeProviderContractTest {
   void mapsProviderFailureToPaymentProviderException() {
     server.enqueue(new MockResponse().setResponseCode(402).setBody("{\"error\":\"declined\"}"));
 
-    assertThatThrownBy(
-            () -> provider.initiate("request-123", BigDecimal.TEN, "MXN", "Premium"))
+    assertThatThrownBy(() -> provider.initiate("request-123", BigDecimal.TEN, "MXN", "Premium"))
         .isInstanceOf(PaymentProviderException.class)
         .hasMessageContaining("HTTP 402");
   }

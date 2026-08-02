@@ -1,7 +1,7 @@
 package com.emme.notification.adapter.out.client.sms;
 
-import com.emme.notification.configuration.NotificationProperties;
 import com.emme.notification.configuration.NotificationHttpClient;
+import com.emme.notification.configuration.NotificationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;

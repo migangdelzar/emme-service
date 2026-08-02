@@ -2,8 +2,8 @@ package com.emme.payment.adapter.out.client.stripe;
 
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
-import com.emme.payment.configuration.PaymentProperties;
 import com.emme.payment.configuration.PaymentHttpClient;
+import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -42,8 +42,7 @@ public class StripeProvider implements PaymentProvider {
   private final PaymentHttpClient client;
   private final ObjectMapper mapper;
 
-  public StripeProvider(
-      PaymentProperties props, PaymentHttpClient client, ObjectMapper mapper) {
+  public StripeProvider(PaymentProperties props, PaymentHttpClient client, ObjectMapper mapper) {
     this(props, client, PRODUCTION_API_BASE, mapper);
   }
 

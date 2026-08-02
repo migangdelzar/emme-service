@@ -63,7 +63,8 @@ class PaymentPackageConventionTest {
                 }
               });
     }
-    assertThat(Files.exists(ROOT.resolve("configuration/PaymentClientConfiguration.java"))).isTrue();
+    assertThat(Files.exists(ROOT.resolve("configuration/PaymentClientConfiguration.java")))
+        .isTrue();
   }
 
   private static boolean hasJavaSources(Path directory) {

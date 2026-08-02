@@ -70,6 +70,64 @@ adapter/out/client/database/TenantRoutingDataSource.java
 adapters; a future HTTP registry implementation can replace the JDBC adapter
 without changing pool management or application-facing contracts.
 
+## Managed JDBC connection execution
+
+Connection-scoped JDBC work uses the Shared `JdbcConnectionExecutor` capability.
+It is an infrastructure executor, not a business `ConnectionService`: it owns
+only the delegation to Spring's connection lifecycle and the translation of
+callback failures.
+
+```java
+connections.consumeWithConnection(
+    connection -> {
+      try (Statement statement = connection.createStatement()) {
+        statement.execute(sql);
+      }
+    });
+
+List<Row> rows =
+    connections.withConnection(
+        (ThrowingSqlConnectionFunction<List<Row>, SQLException>)
+            connection -> loadRows(connection));
+```
+
+```mermaid
+flowchart LR
+    ADAPTER[Outbound adapter] --> EXECUTOR[JdbcConnectionExecutor]
+    EXECUTOR --> TEMPLATE[Spring JdbcTemplate]
+    TEMPLATE --> CONNECTION[Managed Connection]
+    CONNECTION --> CALLBACK[Throwing consumer or function]
+    TEMPLATE --> CLEANUP[Transaction participation and cleanup]
+```
+
+The callback contracts are intentionally generic:
+
+```java
+@FunctionalInterface
+public interface ThrowingSqlConnectionFunction<R, E extends Throwable> {
+  R apply(Connection connection) throws E;
+}
+
+@FunctionalInterface
+public interface ThrowingSqlConnectionConsumer<E extends Throwable> {
+  void accept(Connection connection) throws E;
+}
+```
+
+Use the function form when a result is produced and
+`consumeWithConnection` when the operation is side-effecting. A `Supplier` is
+not part of this API because it hides the connection from the callback; a
+connection-scoped operation should state its dependency explicitly.
+
+`JdbcConnectionExecutor` delegates acquisition, transaction participation,
+thread binding, and cleanup to `JdbcTemplate`. Callers must never invoke
+`DataSource#getConnection()`, close the supplied connection, cache it, or pass
+it beyond the callback scope. Checked callback failures are wrapped in the
+typed `JdbcConnectionExecutionException` with the original cause preserved;
+fatal `Error` instances are rethrown unchanged. Java does not permit generic
+`Throwable` subclasses, so the generic failure type belongs on the callback
+interfaces rather than on the exception class.
+
 ## Adapter guardrails
 
 ### Persistence

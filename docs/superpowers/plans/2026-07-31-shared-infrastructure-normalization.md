@@ -111,3 +111,26 @@ the service-wide verification gate.
 
 Remaining Shared work is live PostgreSQL vector/full-text integration evidence,
 dependency-cycle verification, and the final service-wide gate.
+
+## Completed managed JDBC connection template slice — 2026-08-02
+
+- [x] Promoted managed JDBC connection execution from Tenancy into Shared's
+  capability-owned `persistence.jdbc` package.
+- [x] Added generic `ThrowingSqlConnectionFunction<R, E extends Throwable>`
+  and `ThrowingSqlConnectionConsumer<E extends Throwable>` contracts.
+- [x] Added `JdbcConnectionExecutor` backed by Spring `JdbcTemplate`, with
+  `withConnection` for result-producing callbacks and
+  `consumeWithConnection` for side-effecting callbacks.
+- [x] Added typed `JdbcConnectionExecutionException` preserving the original
+  callback cause and rethrowing fatal `Error` instances.
+- [x] Migrated the Tenancy Liquibase adapter away from manual connection
+  acquisition and close handling.
+- [x] Added focused unit coverage for generic callback results, consumer
+  execution, and checked-failure translation.
+- [x] Added Shared integration coverage for tenant-scoped embedding maintenance
+  and bounded missing-embedding selection.
+
+The template deliberately does not expose a `Supplier` overload: a supplier
+cannot make the managed `Connection` dependency explicit. Additional
+connection-backed adapters should reuse this capability instead of creating a
+module-local connection service.

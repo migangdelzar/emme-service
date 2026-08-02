@@ -13,6 +13,7 @@ class SharedOwnershipConventionTest {
     assertThat(Files.exists(root.resolve("search/HybridSearch.java"))).isTrue();
     assertThat(Files.exists(root.resolve("web/advice/GlobalExceptionHandler.java"))).isTrue();
     assertThat(Files.exists(root.resolve("persistence/package-info.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("persistence/jdbc/package-info.java"))).isTrue();
     assertThat(Files.exists(root.resolve("time/package-info.java"))).isTrue();
     assertThat(Files.exists(root.resolve("identity/package-info.java"))).isTrue();
     assertThat(Files.exists(root.resolve("domain"))).isFalse();

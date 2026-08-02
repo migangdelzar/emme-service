@@ -1,5 +1,6 @@
 package com.emme.tenancy.adapter.out.client.database;
 
+import com.emme.shared.persistence.jdbc.JdbcConnectionExecutor;
 import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
 import java.sql.Statement;
 import liquibase.Liquibase;
@@ -17,7 +18,7 @@ public final class LiquibaseTenantSchemaMigrationAdapter implements TenantSchema
 
   private final JdbcConnectionExecutor connectionExecutor;
 
-  LiquibaseTenantSchemaMigrationAdapter(JdbcConnectionExecutor connectionExecutor) {
+  public LiquibaseTenantSchemaMigrationAdapter(JdbcConnectionExecutor connectionExecutor) {
     this.connectionExecutor = connectionExecutor;
   }
 
@@ -25,7 +26,7 @@ public final class LiquibaseTenantSchemaMigrationAdapter implements TenantSchema
   public void migrate(String schemaName) {
     String validatedSchemaName = TenantSchemaName.requireValid(schemaName);
     try {
-      connectionExecutor.withConnection(
+      connectionExecutor.consumeWithConnection(
           connection -> {
             try (Statement statement = connection.createStatement()) {
               statement.execute("CREATE SCHEMA IF NOT EXISTS \"" + validatedSchemaName + "\"");

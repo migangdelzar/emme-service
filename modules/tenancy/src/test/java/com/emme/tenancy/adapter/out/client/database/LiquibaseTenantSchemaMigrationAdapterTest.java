@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import com.emme.shared.persistence.jdbc.JdbcConnectionExecutor;
 import org.junit.jupiter.api.Test;
 
 class LiquibaseTenantSchemaMigrationAdapterTest {
@@ -27,6 +28,6 @@ class LiquibaseTenantSchemaMigrationAdapterTest {
   void executesMigrationThroughTheConnectionExecutor() {
     adapter.migrate("studio_a");
 
-    verify(connectionExecutor).withConnection(any(SqlConnectionConsumer.class));
+    verify(connectionExecutor).consumeWithConnection(any());
   }
 }

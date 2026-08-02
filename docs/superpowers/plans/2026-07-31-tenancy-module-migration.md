@@ -256,14 +256,18 @@ and the committed final verification report.
 
 ## Completed managed JDBC connection boundary slice — 2026-08-02
 
-- [x] Added `JdbcConnectionExecutor` with consumer and function forms for
-  connection-scoped work.
+- [x] Reused Shared's capability-owned `JdbcConnectionExecutor` with generic
+  `ThrowingSqlConnectionFunction<R, E extends Throwable>` and
+  `ThrowingSqlConnectionConsumer<E extends Throwable>` forms.
+- [x] Kept result-producing work on `withConnection` and side-effecting work on
+  `consumeWithConnection` so callback overloads remain unambiguous.
 - [x] Delegated connection lifecycle to Spring `JdbcTemplate.execute` rather
   than manually calling `DataSource#getConnection()` in production adapters.
 - [x] Migrated tenant Liquibase schema creation and migration to the managed
   connection boundary.
-- [x] Added unit coverage for result-returning and side-effect connection work,
-  plus adapter delegation.
+- [x] Added Shared unit coverage for result-returning, side-effect, checked
+  failure, fatal error, interruption, and null callback behavior, plus Tenancy
+  adapter delegation coverage.
 - [x] Verified Tenancy tests, Checkstyle, Spotless, integration tests,
   Markdown validation, and whitespace validation.
 

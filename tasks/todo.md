@@ -1277,3 +1277,18 @@ limiting, then continue authorization domain/application separation.
 - [x] Compile every integration-test source set and package the shared fixture
   JAR successfully.
 - [x] Document profile ownership and the build-logic CDD completion gate.
+
+## Shared managed JDBC connection template — 2026-08-02
+
+- [x] Define generic throwing connection callbacks with explicit result and
+  checked-failure type parameters.
+- [x] Provide the Shared `JdbcConnectionExecutor` higher-order boundary backed
+  by Spring-managed connection lifecycle.
+- [x] Use separate `withConnection` and `consumeWithConnection` operations to
+  keep result-producing and side-effecting overloads unambiguous.
+- [x] Migrate Tenancy Liquibase schema migration to the Shared executor.
+- [x] Add focused unit tests and Shared tenant-scoped search integration tests.
+- [x] Verify no production `DataSource#getConnection()` remains in Shared or
+  Tenancy connection-owned code.
+- [ ] Extend the same boundary to any later adapter that still performs manual
+  connection management during the final service-wide audit.

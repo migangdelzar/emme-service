@@ -48,9 +48,13 @@ class LayerConventionTest {
         .or()
         .areAssignableTo(org.springframework.data.repository.Repository.class)
         .should()
-        .resideInAnyPackage("com.emme.*.entity..", "com.emme.shared..")
+        .resideInAnyPackage(
+            "com.emme.*..adapter.out.persistence.entity..",
+            "com.emme.*..adapter.out.persistence.repository..",
+            "com.emme.shared..")
         .because(
-            "persistence types live in <module>/entity (shared holds base mapped superclasses)")
+            "persistence types live in <module>/adapter/out/persistence/entity or repository "
+                + "(shared holds base mapped superclasses)")
         .check(CLASSES);
   }
 
@@ -62,7 +66,7 @@ class LayerConventionTest {
         .or()
         .areAnnotatedWith(org.springframework.stereotype.Controller.class)
         .should()
-        .resideInAPackage("..web..")
+        .resideInAnyPackage("..adapter.in.web..", "..adapter.in.webhook..")
         .allowEmptyShould(true)
         .check(CLASSES);
   }
@@ -73,7 +77,7 @@ class LayerConventionTest {
         .that()
         .areAnnotatedWith(org.springframework.context.annotation.Configuration.class)
         .should()
-        .resideInAPackage("..config..")
+        .resideInAPackage("..configuration..")
         .allowEmptyShould(true)
         .check(CLASSES);
   }
@@ -101,10 +105,12 @@ class LayerConventionTest {
     assertThat(modules).isNotEmpty();
     for (String module : modules) {
       String modulePackage = "com.emme." + module + "..";
-      String entityPackage = "com.emme." + module + ".entity..";
+      String entityPackage = "com.emme." + module + "..adapter.out.persistence..";
       noClasses()
           .that()
           .resideOutsideOfPackage(modulePackage)
+          .and()
+          .resideOutsideOfPackage("com.emme.testing..")
           .should()
           .dependOnClassesThat(
               resideInAPackage(entityPackage)

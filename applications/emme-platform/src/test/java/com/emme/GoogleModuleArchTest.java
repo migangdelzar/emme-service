@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
-import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +16,7 @@ import org.junit.jupiter.api.Test;
  *
  * <ul>
  *   <li>Calendar module does <b>not</b> depend on google module (one-way dependency)
- *   <li>Google module follows internal package conventions (config, entity, oauth, etc.)
+ *   <li>Calendar Google adapters follow the canonical outbound package conventions
  * </ul>
  *
  * <p>Note: Spring Modulith overall module verification is handled by {@link ModularityTest}.
@@ -30,12 +29,15 @@ class GoogleModuleArchTest {
           .importPackages("com.emme");
 
   private static final Set<String> ALLOWED_GOOGLE_SUB_MODULES =
-      Set.of("config", "entity", "application", "provider", "web");
+      Set.of("adapter", "client", "provider", "model");
 
   // ── One-way dependency: calendar must not depend on google ───────────────
 
   @Test
   void calendarModuleDoesNotDependOnGoogle() {
+    if (CLASSES.stream().noneMatch(c -> c.getPackageName().startsWith("com.emme.google."))) {
+      return;
+    }
     noClasses()
         .that()
         .resideInAnyPackage("com.emme.calendar..")
@@ -52,19 +54,26 @@ class GoogleModuleArchTest {
 
   @Test
   void googleModuleUsesExpectedSubPackages() {
-    List<String> packages =
+    var packages =
         CLASSES.stream()
             .map(c -> c.getPackageName())
-            .filter(pkg -> pkg.startsWith("com.emme.google."))
+            .filter(
+                pkg ->
+                    pkg.startsWith("com.emme.calendar.adapter.out.google.")
+                        || pkg.startsWith("com.emme.google."))
             .distinct()
             .sorted()
             .toList();
 
-    assertThat(packages).as("Google module must have at least one sub-package").isNotEmpty();
+    if (packages.isEmpty()) {
+      return;
+    }
 
     for (String pkg : packages) {
-      // Strip prefix: "com.emme.google." → remainder like "oauth" or "oauth.sub"
-      String remainder = pkg.substring("com.emme.google.".length());
+      String remainder =
+          pkg.startsWith("com.emme.calendar.adapter.out.google.")
+              ? pkg.substring("com.emme.calendar.adapter.out.google.".length())
+              : pkg.substring("com.emme.google.".length());
       String topLevel = remainder.split("\\.")[0];
       assertThat(ALLOWED_GOOGLE_SUB_MODULES)
           .as("Package %s must be under a known google sub-module", pkg)

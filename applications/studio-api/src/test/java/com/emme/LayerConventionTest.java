@@ -49,13 +49,12 @@ class LayerConventionTest {
         .areAssignableTo(org.springframework.data.repository.Repository.class)
         .should()
         .resideInAnyPackage(
-            "com.emme..adapter.out.persistence.entity..",
-            "com.emme..adapter.out.persistence.repository..",
-            "com.emme..entity..",
+            "com.emme.*..adapter.out.persistence.entity..",
+            "com.emme.*..adapter.out.persistence.repository..",
             "com.emme.shared..")
         .because(
-            "persistence types live in adapter.out.persistence; legacy entity packages remain "
-                + "temporary migration targets")
+            "persistence types live in <module>/adapter/out/persistence/entity or repository "
+                + "(shared holds base mapped superclasses)")
         .check(CLASSES);
   }
 
@@ -67,7 +66,7 @@ class LayerConventionTest {
         .or()
         .areAnnotatedWith(org.springframework.stereotype.Controller.class)
         .should()
-        .resideInAPackage("..web..")
+        .resideInAnyPackage("..adapter.in.web..", "..adapter.in.webhook..")
         .allowEmptyShould(true)
         .check(CLASSES);
   }
@@ -78,7 +77,7 @@ class LayerConventionTest {
         .that()
         .areAnnotatedWith(org.springframework.context.annotation.Configuration.class)
         .should()
-        .resideInAPackage("..config..")
+        .resideInAPackage("..configuration..")
         .allowEmptyShould(true)
         .check(CLASSES);
   }
@@ -105,10 +104,8 @@ class LayerConventionTest {
     Set<String> modules = domainModules();
     assertThat(modules).isNotEmpty();
     for (String module : modules) {
-      // Skip shared and testing — they hold test fixtures and base classes
-      if (module.equals("testing") || module.equals("shared")) continue;
       String modulePackage = "com.emme." + module + "..";
-      String entityPackage = "com.emme." + module + ".entity..";
+      String entityPackage = "com.emme." + module + "..adapter.out.persistence..";
       noClasses()
           .that()
           .resideOutsideOfPackage(modulePackage)

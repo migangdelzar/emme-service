@@ -50,7 +50,7 @@ cd emme-service
 
 ./gradlew :applications:emme-platform:build
 ./gradlew :applications:emme-platform:test
-./gradlew :applications:emme-platform:archTest
+./gradlew :applications:emme-platform:test --tests '*ModularityTest'
 ```
 
 For a local runtime, use the deployment assets documented in
@@ -103,7 +103,7 @@ extensions, tasks, providers, and technology adapters. See
 ```bash
 ./gradlew check --no-configuration-cache
 ./gradlew :build-logic:test
-./gradlew :applications:emme-platform:archTest
+./gradlew :applications:emme-platform:test --tests '*ModularityTest'
 ```
 
 The CI workflows run compilation, tests, module-boundary verification, and the

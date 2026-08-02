@@ -1,4 +1,4 @@
-package com.emme.config;
+package com.emme.configuration;
 
 import javax.sql.DataSource;
 import org.slf4j.Logger;

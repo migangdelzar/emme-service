@@ -21,8 +21,9 @@ spring:
           enabled: true
   modulith:
     events:
-      jdbc-schema-initialization:
-        enabled: false
+      jdbc:
+        schema-initialization:
+          enabled: false
   liquibase:
     enabled: false
   autoconfigure:

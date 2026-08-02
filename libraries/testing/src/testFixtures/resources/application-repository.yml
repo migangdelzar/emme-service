@@ -24,8 +24,9 @@ spring:
     events:
       externalization:
         enabled: false
-      jdbc-schema-initialization:
-        enabled: true
+      jdbc:
+        schema-initialization:
+          enabled: true
   liquibase:
     enabled: false
   autoconfigure:

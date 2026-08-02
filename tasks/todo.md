@@ -172,8 +172,8 @@ reopened by this backlog.
   current module template.
 - [ ] Migrate Studio Subscriptions using its approved public contracts and the
   current module template.
-- [ ] Migrate Assistant after Identity, Tenancy, and Shared contracts are
-  stable.
+- [x] Migrate Assistant after Identity, Tenancy, and Shared contracts are
+  stable; the canonical source layout and focused verification are complete.
 - [x] Normalize Assistant conversation persistence and replace the legacy
   multi-operation conversation service with one use-case service per current
   conversation/action operation.
@@ -185,6 +185,10 @@ reopened by this backlog.
   Assistant plan.
 - [x] Complete Assistant WhatsApp tenant-account resolution and durable replay
   claim boundary; provider contract and live database evidence remain.
+- [x] Complete Assistant package metadata coverage and remove unused AI helper
+  classes after repository-wide reference verification.
+- [ ] Complete Assistant credentialed provider contracts, PostgreSQL replay and
+  lifecycle evidence, and the final service-wide quality gate.
 
 ### P3 — Provider integrations
 

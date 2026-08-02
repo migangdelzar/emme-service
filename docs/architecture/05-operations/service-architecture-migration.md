@@ -175,6 +175,32 @@ flowchart LR
   locale behavior tests.
 - Infrastructure validation is documented and executable where tooling is available.
 
+## Assistant migration evidence
+
+The Assistant module is now materialized using the canonical DDD + Hexagonal
+template. Its public boundary is grouped by API kind, application services are
+one-use-case-per-service, and framework-specific implementations remain behind
+outbound ports.
+
+```mermaid
+flowchart LR
+    WEB[adapter.in web / webhook] --> USECASE[api.usecase]
+    USECASE --> SERVICE[application.service]
+    SERVICE --> DOMAIN[domain.model]
+    SERVICE --> PORT[application.port.out]
+    PORT --> PERSIST[adapter.out.persistence]
+    PORT --> PROVIDER[ai/adapter/out/provider]
+    PORT --> CLIENT[adapter/out/client]
+```
+
+The detailed evidence is recorded in
+`docs/superpowers/reviews/2026-08-02-assistant-module-template-migration-verification.md`.
+The source migration and focused checks are complete. Credentialed provider
+contracts, PostgreSQL replay/lifecycle execution, and the final service-wide
+quality/recovery gate remain explicit follow-up evidence. Since the service is
+pre-release, endpoint versioning is header-based through `API-Version`; no
+legacy `/api/v1` aliases are part of the architecture.
+
 ## Deliberate non-goals
 
 - Do not rename every legacy module in one change.

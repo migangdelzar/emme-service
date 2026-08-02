@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Migrate `modules/assistant` in `emme-service` from its legacy `entity`/`application`/`web`/`ai` layout to the current approved Spring Modulith DDD + Hexagonal module template without changing HTTP contracts, JSON shapes, database tables, or business behavior.
+**Goal:** Migrate `modules/assistant` in `emme-service` from its legacy `entity`/`application`/`web`/`ai` layout to the current approved Spring Modulith DDD + Hexagonal module template. The service is pre-release: the current header-versioned `/api` contract is authoritative and no legacy path aliases or compatibility shims are retained.
 
 **Architecture:** The latest `docs/templates/module-package-structure-template.md` is authoritative. The module will expose grouped public contracts under `api/{command,query,result,usecase,exception,type}`, keep framework-free business models under `domain/model`, place JPA and provider implementations behind `adapter/out`, and keep inbound HTTP/provider callbacks under `adapter/in`. Only responsibilities that exist in Assistant will be materialized; optional branches such as `api/event`, `domain/event`, `application/process`, `domain/factory`, `scheduler`, `messaging`, and `observability` are not created without a real responsibility.
 
@@ -13,7 +13,7 @@
 - The current module template is the source of truth; the older 2026-07-23 assistant plan is superseded by this plan.
 - `domain/model` must not import Spring, JPA, Jackson, OkHttp, HTTP, or persistence classes.
 - Existing database table names, column names, constraints, migration ownership, and persisted enum values remain unchanged.
-- Existing HTTP paths, status codes, JSON field names, feature-flag expressions, webhook verification behavior, and error text remain unchanged unless a test proves the old behavior was accidental and the change is explicitly approved.
+- Current HTTP paths, status codes, JSON field names, feature-flag expressions, webhook verification behavior, error text, and database mappings are verified as the active contract. Legacy `/api/v1` aliases are not retained; endpoint versioning is supplied by the global `API-Version` header.
 - JPA entities live only under `adapter/out/persistence/entity`; application and API code must never expose them.
 - Every materialized production package receives a `package-info.java`; no empty architectural package is created merely to reproduce the maximum template tree.
 - The module root keeps `@ApplicationModule`; grouped API child packages join the logical `api` named interface, and `api.event` is omitted because Assistant currently has no public published event contract.
@@ -224,10 +224,29 @@ These records provide semantic identity at module boundaries. Web request/respon
 - [x] Verified Assistant compilation, formatting, package guard, and module test
   suite.
 
-The remaining Assistant implementation work is to replace the temporary
-entity-backed conversation orchestration with application-owned ports and
-focused one-use-case services, then complete AI provider ports/adapters,
-webhook normalization, API result mapping, and full Modulith evidence.
+The historical implementation checklist below was written before the migration
+slices landed. The source tree and focused tests are now the authoritative
+status; the reconciliation below identifies only evidence that is genuinely
+still open.
+
+### Migration status reconciliation — 2026-08-02
+
+| Area | Current status | Evidence | Remaining work |
+|---|---|---|---|
+| Package guardrails and metadata | Complete | `AiCapabilityConventionTest`, `AssistantPackageConventionTest`, and metadata in every materialized production package | None in the Assistant source tree |
+| Domain and persistence separation | Complete | Framework-free `domain/model`, `*Entity`, mappers, persistence adapters, and tenant predicates | PostgreSQL lifecycle evidence is part of the service-wide gate |
+| Application ports and one-service-per-use-case | Complete | Grouped `api/usecase`, focused application services, and port-only application imports | None in the Assistant source tree |
+| AI capability boundary | Complete | `assistant-ai-api`, focused AI services, private `ModelProvider`, and isolated Groq/Ollama/Mock providers | Credentialed provider contract tests |
+| WhatsApp boundary | Complete | Webhook adapter, typed properties, signature verification, tenant resolver, durable replay claim, and outbound client port | PostgreSQL replay and provider-contract evidence |
+| HTTP adapters | Complete | Dedicated request/response records, mappers, inbound use-case dependencies, and header-versioned neutral `/api` routes | No compatibility aliases by design |
+| Modulith visibility | Complete for current source | Assistant module tests and `documents-api` dependency boundary | Final service-wide dependency report |
+| Dead legacy code | Complete | Repository-wide reference check; unused AI helpers and empty legacy configuration package removed | None |
+
+The remaining items are operational evidence only: credentialed provider
+contracts, PostgreSQL replay/idempotency execution, clean test-context lifecycle,
+and the final service-wide quality/boot/recovery gate. They must not be marked
+complete merely because a Gradle task exits successfully while shutdown SQL
+warnings remain.
 
 ### Task 1: Establish the migration guardrails and package metadata
 
@@ -701,7 +720,7 @@ git commit -m "chore(assistant): remove legacy package structure"
 ./gradlew :modules:assistant:compileJava \
   :modules:assistant:test \
   :modules:assistant:integrationTest \
-  :applications:studio-api:test --tests '*ModularityTest*' \
+  :applications:emme-platform:test --tests '*ModularityTest*' \
   --no-daemon --no-configuration-cache
 ```
 
@@ -762,13 +781,13 @@ git log --oneline origin/feat/assistant-module-migration -1
 - [ ] All application services depend on ports, not concrete outbound adapters.
 - [ ] All inbound adapters depend on use-case interfaces, not repositories or entities.
 - [ ] All public API types are grouped by kind and named according to the current template.
-- [ ] HTTP paths, response JSON, status codes, feature flags, webhook behavior, and database mappings remain compatible.
+- [ ] Current header-versioned `/api` paths, response JSON, status codes, feature flags, webhook behavior, and database mappings are verified; no legacy compatibility aliases are required for this pre-release service.
 - [ ] AI and WhatsApp provider implementations are isolated under external-system client packages.
 - [ ] Dead Assistant helpers are removed only after repository-wide reference verification.
 - [ ] Spring Modulith and ArchUnit checks enforce the new boundary.
 - [ ] Unit, integration, architecture, formatting, static-analysis, and CI checks pass with zero failures and zero skipped tests.
 - [ ] Migration evidence is documented and committed.
-- [ ] All commits are logical, pushed to `origin/feat/assistant-module-migration`, and the remote tip is verified.
+- [ ] All commits are logical, pushed to `origin/feat/module-plans-normalization`, and the remote tip is verified.
 
 ## 5. Risks and controlled decisions
 

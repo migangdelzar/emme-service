@@ -123,7 +123,10 @@ class AssistantPackageConventionTest {
       return false;
     }
     try (Stream<Path> paths = Files.list(directory)) {
-      return paths.anyMatch(path -> path.toString().endsWith(".java"));
+      return paths.anyMatch(
+          path ->
+              path.toString().endsWith(".java")
+                  && !path.getFileName().toString().equals("package-info.java"));
     } catch (Exception exception) {
       throw new IllegalStateException("Cannot inspect " + directory, exception);
     }

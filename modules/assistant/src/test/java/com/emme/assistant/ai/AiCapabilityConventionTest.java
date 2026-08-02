@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 class AiCapabilityConventionTest {
@@ -27,6 +28,39 @@ class AiCapabilityConventionTest {
     assertThat(Files.exists(root.resolve("api/usecase/EmbedTextUseCase.java"))).isTrue();
     assertThat(Files.exists(root.resolve("application/service/CaptionImageService.java"))).isTrue();
     assertThat(Files.exists(root.resolve("application/service/EmbedTextService.java"))).isTrue();
+  }
+
+  @Test
+  void everyMaterializedProductionPackageHasPackageMetadata() throws Exception {
+    Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant");
+
+    try (Stream<Path> paths = Files.walk(root)) {
+      for (Path directory : paths.filter(Files::isDirectory).toList()) {
+        boolean containsProductionSource;
+        try (Stream<Path> files = Files.walk(directory)) {
+          containsProductionSource =
+              files.anyMatch(
+                  path ->
+                      path.getFileName().toString().endsWith(".java")
+                          && !path.getFileName().toString().equals("package-info.java"));
+        }
+        if (containsProductionSource) {
+          assertThat(Files.exists(directory.resolve("package-info.java")))
+              .as("package metadata for %s", directory)
+              .isTrue();
+        }
+      }
+    }
+  }
+
+  @Test
+  void doesNotRetainUnusedAiHelpersOrLegacyConfigurationPackage() {
+    Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant/ai");
+
+    assertThat(Files.exists(root.resolve("application/FallbackHandler.java"))).isFalse();
+    assertThat(Files.exists(root.resolve("application/ToolRegistry.java"))).isFalse();
+    assertThat(Files.exists(root.resolve("application/ToolExecutor.java"))).isFalse();
+    assertThat(Files.exists(root.resolve("config"))).isFalse();
   }
 
   private static String read(Path path) {

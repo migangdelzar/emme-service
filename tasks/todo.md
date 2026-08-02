@@ -93,6 +93,18 @@
 - [x] Verified focused contract tests, Kafka integration tests, formatting, and
   the CI quality gate without integration/e2e execution.
 
+### MVP low-cost runtime and native image design — 2026-08-02
+
+- [x] Select a focused MVP around Identity, Tenancy, Customer, Catalog, and
+  local Studio appointment operations.
+- [x] Select `emme-platform` as the only MVP deployment target.
+- [x] Defer payment, billing, notification, AI, documents, external calendar
+  synchronization, Kafka externalization, Kubernetes, and multi-region work.
+- [x] Define JVM container baseline before GraalVM optimization.
+- [x] Define optional GraalVM native-image spike with JVM rollback artifact.
+- [ ] Review and approve the written MVP design specification.
+- [ ] Execute the MVP plan before the build-logic CDD refactor.
+
 ## Remaining execution backlog — priority/type order
 
 This is the authoritative order for unfinished work. Detailed checklists remain

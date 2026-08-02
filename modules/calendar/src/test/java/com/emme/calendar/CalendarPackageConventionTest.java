@@ -92,6 +92,26 @@ class CalendarPackageConventionTest {
         .isTrue();
   }
 
+  @Test
+  void googleAdaptersDoNotConstructTransportDependenciesInternally() throws IOException {
+    try (var paths = Files.walk(SOURCE_ROOT.resolve("adapter/out/google"))) {
+      paths
+          .filter(path -> path.toString().endsWith(".java"))
+          .forEach(
+              path -> {
+                try {
+                  assertThat(Files.readString(path))
+                      .as("Google adapter source %s", path)
+                      .doesNotContain("new OkHttpClient(");
+                } catch (IOException exception) {
+                  throw new IllegalStateException("Cannot inspect " + path, exception);
+                }
+              });
+    }
+    assertThat(Files.exists(SOURCE_ROOT.resolve("configuration/GoogleClientConfiguration.java")))
+        .isTrue();
+  }
+
   private static boolean hasClass(String className) {
     return CLASSES.stream().anyMatch(javaClass -> javaClass.getName().equals(className));
   }

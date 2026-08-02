@@ -1109,3 +1109,12 @@ After this plan is complete, create separate plans for:
   and facade names.
 - [x] Verify Calendar compilation, Spotless, Checkstyle, unit tests, and
   integration tests.
+
+## Completed Google transport composition-root hardening — 2026-08-01
+
+- [x] Added a capability-owned `GoogleHttpClient` and configuration bean.
+- [x] Injected the transport boundary into Calendar OAuth, Calendar, Sheets,
+  and synchronization adapters.
+- [x] Added source-boundary regression coverage preventing Google adapters from
+  constructing `OkHttpClient` internally.
+- [x] Verified Calendar package conventions after the change.

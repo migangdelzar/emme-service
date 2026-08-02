@@ -4,6 +4,7 @@ import com.emme.calendar.api.result.CalendarBusyTimeRange;
 import com.emme.calendar.api.type.TokenSource;
 import com.emme.calendar.application.port.out.GoogleCalendarPort;
 import com.emme.calendar.configuration.GoogleCalendarProperties;
+import com.emme.calendar.configuration.GoogleHttpClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
@@ -45,7 +46,7 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
       MediaType.get("application/x-www-form-urlencoded");
   private static final MediaType JSON = MediaType.get("application/json");
 
-  private final OkHttpClient client;
+  private final GoogleHttpClient client;
   private final ObjectMapper mapper;
   private final String tokenUrl;
   private final String freeBusyUrl;
@@ -61,10 +62,13 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
   /** Production constructor with optional user OAuth token source. */
   @Autowired
   public GoogleCalendarClient(
-      Optional<TokenSource> userTokenSource, GoogleCalendarProperties properties) {
+      Optional<TokenSource> userTokenSource,
+      GoogleCalendarProperties properties,
+      GoogleHttpClient client,
+      ObjectMapper mapper) {
     this(
-        new OkHttpClient(),
-        new ObjectMapper(),
+        client,
+        mapper,
         properties.serviceAccountJsonBase64(),
         properties.tokenUrl(),
         properties.freeBusyUrl());
@@ -74,6 +78,15 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
   /** Test constructor — inject HTTP client, base64-encoded SA JSON, and endpoint URLs. */
   public GoogleCalendarClient(
       OkHttpClient client,
+      ObjectMapper mapper,
+      String saJsonBase64,
+      String tokenUrl,
+      String freeBusyUrl) {
+    this(new GoogleHttpClient(client), mapper, saJsonBase64, tokenUrl, freeBusyUrl);
+  }
+
+  private GoogleCalendarClient(
+      GoogleHttpClient client,
       ObjectMapper mapper,
       String saJsonBase64,
       String tokenUrl,

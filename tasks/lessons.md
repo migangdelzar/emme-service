@@ -346,3 +346,8 @@
   Prevention rule: create one capability-owned transport wrapper in
   configuration and inject both transport and serialization dependencies into
   every provider.
+
+- 2026-08-01 — Google Calendar adapters had the same hidden transport
+  construction problem as payment and notification providers. Prevention rule:
+  every external integration capability owns one named transport wrapper and
+  one composition-root bean; adapters receive it through constructor injection.

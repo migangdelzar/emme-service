@@ -12,6 +12,7 @@ import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
 import com.emme.calendar.configuration.CalendarProperties;
+import com.emme.calendar.configuration.GoogleHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.time.ZoneOffset;
@@ -19,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -56,7 +56,7 @@ public class StaffCalendarSyncAdapter {
   private final MarkCalendarEventLinksDeletedUseCase markCalendarEventLinksDeleted;
   private final MarkCalendarEventLinksFailedUseCase markCalendarEventLinksFailed;
   private final CalendarProperties properties;
-  private final OkHttpClient httpClient;
+  private final GoogleHttpClient httpClient;
   private final ObjectMapper mapper;
 
   public StaffCalendarSyncAdapter(
@@ -69,7 +69,8 @@ public class StaffCalendarSyncAdapter {
       MarkCalendarEventLinksDeletedUseCase markCalendarEventLinksDeleted,
       MarkCalendarEventLinksFailedUseCase markCalendarEventLinksFailed,
       CalendarProperties properties,
-      ObjectMapper mapper) {
+      ObjectMapper mapper,
+      GoogleHttpClient httpClient) {
     this.oauthService = oauthService;
     this.tokenRepo = tokenRepo;
     this.findCalendarEventLink = findCalendarEventLink;
@@ -79,7 +80,7 @@ public class StaffCalendarSyncAdapter {
     this.markCalendarEventLinksDeleted = markCalendarEventLinksDeleted;
     this.markCalendarEventLinksFailed = markCalendarEventLinksFailed;
     this.properties = properties;
-    this.httpClient = new OkHttpClient();
+    this.httpClient = httpClient;
     this.mapper = mapper;
   }
 

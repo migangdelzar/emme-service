@@ -4,10 +4,10 @@ import com.emme.calendar.adapter.out.google.adapter.GoogleOAuthAdapter;
 import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.emme.kernel.context.TenantContextHolder;
+import com.emme.calendar.configuration.GoogleHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -23,12 +23,13 @@ public class GoogleSheetsClient {
 
   private final GoogleOAuthAdapter oauthService;
   private final ObjectMapper mapper;
-  private final OkHttpClient httpClient;
+  private final GoogleHttpClient httpClient;
 
-  public GoogleSheetsClient(GoogleOAuthAdapter oauthService, ObjectMapper mapper) {
+  public GoogleSheetsClient(
+      GoogleOAuthAdapter oauthService, ObjectMapper mapper, GoogleHttpClient httpClient) {
     this.oauthService = oauthService;
     this.mapper = mapper;
-    this.httpClient = new OkHttpClient();
+    this.httpClient = httpClient;
   }
 
   public record SpreadsheetInfo(String id, String url, String title) {}

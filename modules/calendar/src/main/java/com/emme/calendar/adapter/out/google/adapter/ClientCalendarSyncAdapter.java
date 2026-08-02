@@ -7,6 +7,7 @@ import com.emme.calendar.api.usecase.FindCalendarEventLinkUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
+import com.emme.calendar.configuration.GoogleHttpClient;
 import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -16,7 +17,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -47,7 +47,7 @@ public class ClientCalendarSyncAdapter {
   private final MarkCalendarEventLinkSyncedUseCase markCalendarEventLinkSynced;
   private final MarkCalendarEventLinksDeletedUseCase markCalendarEventLinksDeleted;
   private final MarkCalendarEventLinksFailedUseCase markCalendarEventLinksFailed;
-  private final OkHttpClient httpClient;
+  private final GoogleHttpClient httpClient;
   private final ObjectMapper mapper;
 
   public ClientCalendarSyncAdapter(
@@ -57,14 +57,15 @@ public class ClientCalendarSyncAdapter {
       MarkCalendarEventLinkSyncedUseCase markCalendarEventLinkSynced,
       MarkCalendarEventLinksDeletedUseCase markCalendarEventLinksDeleted,
       MarkCalendarEventLinksFailedUseCase markCalendarEventLinksFailed,
-      ObjectMapper mapper) {
+      ObjectMapper mapper,
+      GoogleHttpClient httpClient) {
     this.oauthService = oauthService;
     this.findCalendarEventLink = findCalendarEventLink;
     this.createCalendarEventLink = createCalendarEventLink;
     this.markCalendarEventLinkSynced = markCalendarEventLinkSynced;
     this.markCalendarEventLinksDeleted = markCalendarEventLinksDeleted;
     this.markCalendarEventLinksFailed = markCalendarEventLinksFailed;
-    this.httpClient = new OkHttpClient();
+    this.httpClient = httpClient;
     this.mapper = mapper;
   }
 

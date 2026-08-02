@@ -1158,3 +1158,12 @@ limiting, then continue authorization domain/application separation.
 - [x] Verify focused Notification and Payment convention tests and whitespace.
 - [ ] Add deterministic provider contract tests for each externally integrated
   technology and retain live credentialed checks as deployment evidence.
+
+## Calendar Google transport composition-root hardening — 2026-08-01
+
+- [x] Add a red source-boundary test preventing Google adapters and clients from
+  constructing `OkHttpClient` internally.
+- [x] Add capability-owned `GoogleHttpClient` and configuration wiring.
+- [x] Inject the transport boundary into Calendar OAuth, Calendar, Sheets, and
+  synchronization adapters.
+- [x] Verify Calendar package conventions and formatting-sensitive whitespace.

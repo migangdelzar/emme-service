@@ -5,6 +5,7 @@ import com.emme.calendar.adapter.out.google.oauth.TokenEncryptionService;
 import com.emme.calendar.adapter.out.persistence.entity.GoogleOAuthTokenEntity;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleOAuthTokenRepository;
 import com.emme.calendar.configuration.GoogleOAuthConfig;
+import com.emme.calendar.configuration.GoogleHttpClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URLEncoder;
@@ -13,7 +14,6 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -47,18 +47,19 @@ public class GoogleOAuthAdapter {
   private final GoogleOAuthConfig config;
   private final TokenEncryptionService encryption;
   private final SpringDataGoogleOAuthTokenRepository tokenRepo;
-  private final OkHttpClient httpClient;
+  private final GoogleHttpClient httpClient;
   private final ObjectMapper mapper;
 
   public GoogleOAuthAdapter(
       GoogleOAuthConfig config,
       TokenEncryptionService encryption,
       SpringDataGoogleOAuthTokenRepository tokenRepo,
-      ObjectMapper mapper) {
+      ObjectMapper mapper,
+      GoogleHttpClient httpClient) {
     this.config = config;
     this.encryption = encryption;
     this.tokenRepo = tokenRepo;
-    this.httpClient = new OkHttpClient();
+    this.httpClient = httpClient;
     this.mapper = mapper;
   }
 

@@ -1452,3 +1452,14 @@ limiting, then continue authorization domain/application separation.
 - [ ] Add deeper transient-provider retry and credentialed provider contracts.
 - [ ] Resolve shutdown-time PostgreSQL/Event Publication connection lifecycle
   warnings before final service-wide readiness.
+
+## Studio nested capability reconciliation — 2026-08-02
+
+- [x] Reconcile Documents plan status with the tenant-safe persistence and
+  Assistant-facing search-port implementation.
+- [x] Reconcile Subscriptions plan status with its canonical domain,
+  application, persistence, and inbound adapter slices.
+- [x] Remove the stale Studio-root wording that described both capabilities as
+  deferred.
+- [ ] Complete shared service-wide schema, recovery, Modulith, and boot-artifact
+  evidence.

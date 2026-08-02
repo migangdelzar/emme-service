@@ -130,7 +130,8 @@ behavior remains governed by the Documents and Subscriptions plans.
 - [x] Migrated domain models are framework-independent.
 - [x] Migrated persistence entities are isolated behind application-owned ports.
 - [x] Migrated controllers are inbound adapters and preserve HTTP behavior.
-- [ ] Documents and subscriptions are explicitly deferred, not partially moved.
+- [x] Documents and subscriptions are migrated as canonical nested capabilities;
+  their remaining work is tracked in their dedicated plans.
 - [x] Studio focused tests, architecture tests, and service CI pass.
 - [x] Documentation and lessons are updated.
 - [x] Feature branch is committed and pushed.

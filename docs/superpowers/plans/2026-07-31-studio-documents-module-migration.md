@@ -44,8 +44,9 @@ is added under the owning outbound port/adapter, not as a generic helper package
 - [x] Replace the multi-use-case `DocumentService` façade with one focused
   application service per use case and move `DocumentController` to inbound web
   adapters with dedicated DTOs/mappers.
-- [ ] Isolate embedding/search calls behind ports and provider adapters if the
-  current implementation has a direct technical dependency.
+- [x] Isolate document search behind the application-owned `DocumentSearchPort`
+  and the Studio outbound search adapter; embedding orchestration remains owned
+  by Assistant.
 - [x] Add package-info to each materialized package and update Studio Modulith
   metadata without weakening existing module rules.
 - [x] Run focused Documents tests, Studio tests, integration tests, architecture,

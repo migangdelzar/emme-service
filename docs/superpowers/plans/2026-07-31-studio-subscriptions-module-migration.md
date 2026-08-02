@@ -36,9 +36,9 @@ owned responsibilities require them.
 
 ## Tasks
 
-- [ ] Inventory subscription endpoints, cross-module consumers, payment/identity
+- [x] Inventory subscription endpoints, cross-module consumers, payment/identity
   dependencies, migrations, and status transition behavior.
-- [ ] Add red package/layer rules and pure subscription lifecycle tests.
+- [x] Add red package/layer rules and pure subscription lifecycle tests.
 - [x] Extract framework-free Subscription domain model and status rules; move JPA
   representation to `SubscriptionEntity`.
 - [x] Split repository into application port, Spring Data repository, persistence

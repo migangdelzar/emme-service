@@ -66,6 +66,9 @@
   persistence ports.
 - [x] Verified focused and full Identity tests/checks plus Markdown validation.
 
+Identity verification evidence is recorded in
+`docs/superpowers/reviews/2026-08-02-identity-module-verification.md`.
+
 - Migrated build-logic packages from type-first buckets into `core/`, `root/`,
   capability-owned packages, and `git/` while preserving plugin IDs.
 - Added the missing `emme.security` convention entry point and registration test.

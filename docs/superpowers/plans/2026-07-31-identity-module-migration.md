@@ -643,6 +643,25 @@ tenant-isolation and migration/recovery evidence.
 Remaining Identity work is broader authorization hardening, explicit provisioning
 transaction/event ports, tenant-isolation tests, and migration/recovery evidence.
 
+## Current verification status — 2026-08-02
+
+The structural and security migration slices are implemented and verified in
+the committed [Identity verification report](../reviews/2026-08-02-identity-module-verification.md).
+The historical task checklist above is retained as migration history; the
+current open work is limited to final service-wide and operational evidence:
+
+- [x] Framework-free Identity models and adapter-owned persistence representations.
+- [x] Focused application services and application-owned outbound ports.
+- [x] Keycloak authentication, realm-provisioning, JWT trust, and typed settings.
+- [x] HTTP adapters, grouped public contracts, scoped exception advice, and
+  tenant-scoped authorization checks.
+- [x] Unit, module, integration, formatting, Checkstyle, and application test
+  evidence for the current migration.
+- [ ] Service-wide architecture, boot-artifact, and final Modulith evidence.
+- [ ] Live migration, recovery, rollback, and event-publication replay evidence.
+- [ ] Spring MVC mapping-version adoption when a second endpoint representation
+  is required; `/api/v1` remains the current public major contract.
+
 ## Completed membership authorization hardening slice — 2026-08-02
 
 - [x] Rejected platform-scoped roles from tenant memberships at the application

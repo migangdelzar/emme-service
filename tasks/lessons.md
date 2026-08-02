@@ -326,3 +326,15 @@
 - 2026-08-01 — The repository CI task is the formatting source of truth across
   fixtures and modules. Run it after structural refactors because shared test
   fixtures can fail Spotless even when the changed module itself is clean.
+
+- 2026-08-01 — Capability-specific transport beans must not be exposed as a
+  generic shared type when another module already publishes the same type.
+  The initial AI `OkHttpClient` bean broke the service context because Identity
+  already owns an `OkHttpClient`. Keep capability transport dependencies behind
+  a capability-owned wrapper or explicit port so Spring resolution remains
+  unambiguous.
+
+- 2026-08-01 — A generic `adapter/out/provider` directory hides which external
+  system changes together. Group delivery clients by technology or channel
+  (`client/email`, `client/sms`, `client/push`, or `client/stripe`) and keep the
+  application port in `application/port/out`.

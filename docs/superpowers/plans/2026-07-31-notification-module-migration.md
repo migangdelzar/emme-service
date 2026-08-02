@@ -145,6 +145,18 @@ content unless an approved contract changes that behavior.
 - [ ] Studio's event consumer uses only the public event contract.
 - [ ] Existing behavior and provider semantics are preserved and verified.
 
+## Completed technology-owned client normalization — 2026-08-01
+
+- [x] Moved email clients under `adapter/out/client/email`.
+- [x] Moved SMS clients under `adapter/out/client/sms`.
+- [x] Moved push clients under `adapter/out/client/push`.
+- [x] Added package metadata and updated configuration source-boundary tests.
+- [x] Notification compilation, focused provider-boundary tests, and formatting
+  pass.
+
+Remaining evidence is provider contract execution and final service-wide
+retry/idempotency verification.
+
 ## Completed typed provider configuration slice — 2026-08-01
 
 - [x] Reused `NotificationProperties` as the constructor boundary for all

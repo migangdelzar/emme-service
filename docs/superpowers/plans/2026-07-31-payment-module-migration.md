@@ -130,6 +130,17 @@ only performs transport. Provider DTOs remain inside their external-system packa
 - [ ] Payment domain is framework-free and providers are replaceable adapters.
 - [ ] Existing HTTP, webhook, provider, and database behavior is regression-tested.
 
+## Completed technology-owned client normalization — 2026-08-01
+
+- [x] Moved Conekta, Mercado Pago, PayPal, Stripe, and Mock implementations
+  under technology-owned `adapter/out/client/<technology>` packages.
+- [x] Added package metadata and updated provider configuration source-boundary
+  tests.
+- [x] Payment compilation, focused provider-boundary tests, and formatting pass.
+
+Remaining evidence is live provider contract execution and final financial
+webhook/replay verification.
+
 ## Completed typed provider configuration slice — 2026-08-01
 
 - [x] Reused `PaymentProperties` as the constructor boundary for Conekta,

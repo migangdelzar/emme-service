@@ -1,0 +1,79 @@
+# Service-wide architecture verification — 2026-08-01
+
+## Scope
+
+This report verifies the current `feat/module-plans-normalization` service tree
+against the latest module template and the capability-driven outbound adapter
+rules. It covers the structural migrations completed on this branch, including
+the Assistant AI/WhatsApp slice and technology-owned Notification, Payment, and
+Calendar clients.
+
+## Verified architectural outcomes
+
+| Area | Result |
+|---|---|
+| One application service per public use case | Pass |
+| Public commands, queries, results, events, exceptions, and types grouped by kind | Pass for migrated modules |
+| Framework-free domain and application-owned outbound ports | Pass for migrated modules |
+| Persistence entities/repositories hidden behind outbound adapters | Pass |
+| AI clients grouped by technology and injected through a capability-owned transport boundary | Pass |
+| WhatsApp parsing, processing, tenant routing, replay claim, and reply delivery separated by adapter boundary | Pass |
+| Notification clients grouped by email, SMS, and push channel | Pass |
+| Payment clients grouped by provider technology | Pass |
+| Calendar OAuth support grouped under the OAuth capability package | Pass |
+| Legacy generic provider source packages | No tracked production sources remain |
+| Application architecture tests | Pass |
+| Spring Modulith named interfaces | Pass for `emme-platform` and `studio-api` |
+
+## Verification commands
+
+All commands below completed successfully with `--no-configuration-cache` and a
+single-use Gradle daemon:
+
+```text
+./gradlew check --quiet --no-daemon --no-configuration-cache
+./gradlew :modules:shared:integrationTest :modules:identity:integrationTest \
+  :modules:tenancy:integrationTest :modules:catalog:integrationTest \
+  :modules:studio:integrationTest :modules:assistant:integrationTest \
+  :modules:notification:integrationTest :modules:payment:integrationTest \
+  --quiet --no-daemon --no-configuration-cache
+./gradlew ci -x test -x integrationTest -x e2eTest \
+  --quiet --no-daemon --no-configuration-cache
+./gradlew :applications:emme-platform:bootJar \
+  :applications:studio-api:bootJar --quiet --no-daemon --no-configuration-cache
+node scripts/validate-markdown.mjs
+git diff --check
+```
+
+Focused red/green tests also passed for:
+
+- canonical application architecture rules and named-interface closure;
+- Assistant AI client package ownership and typed configuration;
+- WhatsApp webhook mapping, signature verification, tenant routing, replay
+  claim, and duplicate suppression;
+- Notification and Payment technology-owned client packages;
+- Calendar OAuth package ownership.
+
+## Operational notes
+
+Some create-drop tests emit shutdown-only warnings when the in-memory database
+has already been closed before Spring Modulith's event-publication cleanup
+queries run. The test tasks still complete successfully. PostgreSQL and
+Testcontainers teardown may also emit connection/prune warnings after a green
+test run; these do not indicate a failed assertion or an application startup
+failure.
+
+Live third-party provider contract execution and a dedicated PostgreSQL replay
+demonstration remain operational evidence items in the module plans. They are
+separate from the completed package migration and must be run with provider
+credentials/containers available.
+
+Kafka transport replacement for Spring Modulith events and the dedicated Gradle
+build-logic CDD follow-up remain intentionally deferred to their explicitly
+ordered final phase.
+
+## Commits included in this verification slice
+
+- `ef317f0` — canonical application architecture rules and package placement
+- `3a320a9` — Assistant AI and WhatsApp adapter boundaries
+- `42bd5db` — technology-owned delivery client packages

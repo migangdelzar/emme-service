@@ -1118,3 +1118,31 @@ limiting, then continue authorization domain/application separation.
   `*ServiceCatalogEntryService` names.
 - [x] Align the corresponding use-case interface names and controller imports.
 - [x] Verify the Studio package convention test and formatting.
+
+## Assistant AI and WhatsApp adapter normalization — 2026-08-01
+
+- [x] Move AI provider implementations into technology-owned
+  `adapter/out/client/{mock,groq,ollama}` packages.
+- [x] Extract AI HTTP request records and response records from the controller.
+- [x] Inject the capability-owned AI transport wrapper and shared JSON mapper;
+  provider implementations no longer construct transport dependencies.
+- [x] Replace the legacy WhatsApp orchestration service with the focused
+  `ProcessWhatsAppMessageUseCase` and `ProcessWhatsAppMessageService`.
+- [x] Move webhook JSON parsing into `WhatsAppWebhookMapper` and outbound
+  Graph API delivery behind `WhatsAppReplyPort`/`WhatsAppReplyAdapter`.
+- [x] Add mapper, malformed-payload, status-update, replay-claim, and duplicate
+  delivery tests.
+- [x] Run the complete Assistant module test suite successfully.
+- [ ] Add live provider contract and PostgreSQL replay evidence in the final
+  service verification gate.
+
+## Technology-owned outbound client normalization — 2026-08-01
+
+- [x] Move Notification email, SMS, and push implementations from the generic
+  `adapter/out/provider` namespace into `adapter/out/client/{email,sms,push}`.
+- [x] Move Payment providers into technology-owned client packages for Conekta,
+  Mercado Pago, PayPal, Stripe, and Mock.
+- [x] Move Calendar OAuth support into `adapter/out/google/oauth`.
+- [x] Add package metadata and update source-boundary tests for each client
+  family.
+- [x] Verify focused Notification, Payment, and Calendar tests.

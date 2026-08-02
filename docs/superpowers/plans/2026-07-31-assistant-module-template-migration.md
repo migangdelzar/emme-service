@@ -823,9 +823,8 @@ configuration ownership.
 - [x] Added application dependency-direction coverage and verified Assistant
   formatting, compilation, and tests.
 
-Remaining work is AI provider capability isolation, channel-participant port
-ownership, WhatsApp webhook replay/idempotency evidence, and complete service
-verification.
+The AI, channel-participant, and webhook adapter details were completed in the
+subsequent slices recorded below; only operational evidence remains open.
 
 ## Completed AI capability boundary slice — 2026-08-01
 
@@ -838,9 +837,8 @@ verification.
 - [x] Updated source-boundary tests and verified Assistant formatting,
   compilation, and tests.
 
-Remaining Assistant work is channel-participant persistence ownership, provider
-contract coverage, webhook replay/idempotency evidence, and final Modulith/CI
-verification.
+Channel-participant persistence and AI use-case boundaries are complete; the
+remaining work is provider contract evidence and final service verification.
 
 ## Completed channel-participant boundary slice — 2026-08-01
 
@@ -853,8 +851,27 @@ verification.
 - [x] Added the source boundary regression test and verified the complete
   Assistant check.
 
-Remaining Assistant work is provider contract coverage, webhook replay/
-idempotency evidence, and final service-wide Modulith/CI verification.
+Remaining Assistant work is live provider contract coverage, PostgreSQL replay
+execution evidence, and final service-wide Modulith/CI verification.
+
+## Completed AI and WhatsApp adapter normalization — 2026-08-01
+
+- [x] Grouped Mock, Groq, and Ollama implementations by external technology
+  under `ai/adapter/out/client/` and removed the generic `provider` package.
+- [x] Extracted AI HTTP request/response records into named files under the
+  inbound web adapter.
+- [x] Injected `AiHttpClient` and `ObjectMapper` through the AI configuration
+  composition root; provider adapters no longer instantiate transports.
+- [x] Replaced `WhatsAppMessageService` with the focused
+  `ProcessWhatsAppMessageUseCase` and `ProcessWhatsAppMessageService`.
+- [x] Extracted webhook mapping and Graph API delivery into inbound/outbound
+  adapters with application-owned ports.
+- [x] Added unit coverage for malformed payloads, status updates, successful
+  processing, durable duplicate claims, and provider-account tenant routing.
+- [x] Assistant unit, web, module, formatting, and compilation checks pass.
+
+The remaining evidence is intentionally operational: live provider contract
+tests and PostgreSQL replay verification belong to the final service-wide gate.
 
 ## Completed WhatsApp delivery ownership and replay boundary — 2026-08-01
 
@@ -868,8 +885,8 @@ idempotency evidence, and final service-wide Modulith/CI verification.
 - [x] Added focused tenant-resolution and webhook-verifier tests and re-ran
   Assistant formatting and module checks.
 
-Remaining Assistant evidence is provider contract coverage, live PostgreSQL
-replay execution, and final service-wide Modulith/CI verification.
+The durable replay boundary is implemented; live PostgreSQL replay execution,
+provider contract coverage, and final service-wide verification remain.
 
 ## Completed WhatsApp webhook security boundary slice — 2026-08-01
 
@@ -886,6 +903,5 @@ replay execution, and final service-wide Modulith/CI verification.
   logs to avoid accidental personal-data disclosure.
 - [x] Added focused verifier, properties, and source-boundary tests.
 
-Remaining Assistant work is durable WhatsApp event replay/idempotency, provider
-contract coverage, tenant routing by provider account metadata, and final
-service-wide Modulith/CI verification.
+Durable replay, provider-account tenant routing, and webhook security are
+implemented; live provider and service-wide evidence remains.

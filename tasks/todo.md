@@ -243,6 +243,8 @@ reopened by this backlog.
   persistence, messaging, Modulith, fixtures, and Spring Web conventions.
 - [x] Verify root lifecycle task registration and module-type/capability
   composition with TestKit.
+- [x] Verify build-logic functional tests with configuration cache cold and
+  reused runs.
 - [ ] Normalize every build-logic capability, convention script, binary plugin,
   extension, task, provider, result, model, ValueSource, and test according to
   the dedicated plan.

@@ -43,6 +43,8 @@
   test-fixtures, persistence, Kafka messaging, Modulith, and Spring Web
   composition with explicit project-platform fixtures.
 - Added root plugin TestKit coverage for repository lifecycle task registration.
+- Verified the complete functional suite with Gradle configuration cache both
+  on a cold run and on a second run that reused the cache entry.
 
 ## Verification
 

@@ -299,8 +299,8 @@ the old unreleased task names.
 - Consumes: all normalized capability contracts from Tasks 2–8.
 - Produces: verified composition graph with module-type/capability separation and no accidental global application.
 
-- [ ] **Step 1: Add a failing composition test.** Assert that `emme.spring-module` does not imply container/deployment/publishing/security; `emme.spring-application` composes only the approved application baseline; optional capabilities apply only when requested.
-- [ ] **Step 2: Run the test to confirm red.** `./gradlew :build-logic:functionalTest --tests '*RootPluginFunctionalTest' --tests '*PluginRegistrationTest'`.
+- [x] **Step 1: Add a failing composition test.** Added root lifecycle and capability-composition TestKit contracts; Java/Spring and capability suites verify optional delivery plugins remain explicit.
+- [x] **Step 2: Run the test to confirm red.** Root and composition TestKit contracts pass against the current included build.
 - [ ] **Step 3: Refactor root and application wiring.** Keep repository-wide behavior in root; keep application-specific delivery capabilities explicit; preserve `emme.messaging` as the Kafka + Modulith transport capability.
 - [ ] **Step 4: Run all build-logic tests.** `./gradlew :build-logic:check --no-daemon --no-configuration-cache --console=plain`.
 - [ ] **Step 5: Commit.** `git commit -m "refactor(build-logic): verify capability composition"`.

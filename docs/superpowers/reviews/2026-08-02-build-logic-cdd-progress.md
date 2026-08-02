@@ -42,6 +42,7 @@
 - Added convention capability TestKit coverage for Java library, testing,
   test-fixtures, persistence, Kafka messaging, Modulith, and Spring Web
   composition with explicit project-platform fixtures.
+- Added root plugin TestKit coverage for repository lifecycle task registration.
 
 ## Verification
 

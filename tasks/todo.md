@@ -241,6 +241,8 @@ reopened by this backlog.
   convention assumptions about an implicitly applied Java plugin.
 - [x] Add capability composition TestKit coverage for foundation, testing,
   persistence, messaging, Modulith, fixtures, and Spring Web conventions.
+- [x] Verify root lifecycle task registration and module-type/capability
+  composition with TestKit.
 - [ ] Normalize every build-logic capability, convention script, binary plugin,
   extension, task, provider, result, model, ValueSource, and test according to
   the dedicated plan.

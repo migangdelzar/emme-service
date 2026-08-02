@@ -104,6 +104,11 @@
 - [x] Define optional GraalVM native-image spike with JVM rollback artifact.
 - [ ] Review and approve the written MVP design specification.
 - [ ] Execute the MVP plan before the build-logic CDD refactor.
+- [x] Audit `studio-api` usage: it is still referenced by Gradle settings, CI,
+  `mise`, deployment manifests, and module verification, so it is retained for
+  now rather than deleted destructively.
+- [ ] Make `emme-platform` the sole deployed MVP target and keep `studio-api`
+  only as a compatibility/build target until its retirement plan is complete.
 
 ## Remaining execution backlog — priority/type order
 

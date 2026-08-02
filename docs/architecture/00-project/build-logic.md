@@ -266,17 +266,18 @@ The remaining work is hardening and evidence, not a second package-tree rewrite:
 
 ### When this gate runs
 
-The hardening pass is the final P4 workstream: after the remaining backend
-module migrations, Shared/Audit ownership decisions, and module-level evidence
-are closed, but before the final service-wide architecture, CI, artifact, and
-release verification gate. Module migrations can continue now because the
-stable convention-plugin IDs and the capability boundary already exist.
+The hardening pass is the P4 build-platform workstream: after the remaining
+backend module migrations and Shared/Audit ownership decisions, but before the
+final P5 service-wide architecture, CI, artifact, and release verification
+gate. Module migrations can continue before P4 because the stable
+convention-plugin IDs and capability boundary already exist; build-logic itself
+is not considered complete until the dedicated CDD migration plan is executed.
 
 ```mermaid
 flowchart LR
     MODULES[Complete module migrations] --> OWNERSHIP[Resolve Shared and Audit ownership]
-    OWNERSHIP --> BUILDLOGIC[Harden and verify build-logic CDD]
-    BUILDLOGIC --> FINAL[Service-wide final verification]
+    OWNERSHIP --> BUILDLOGIC[Execute and verify build-logic CDD P4]
+    BUILDLOGIC --> FINAL[Service-wide final verification P5]
     BUILDLOGIC -. stable plugin IDs already usable .-> MODULES
 ```
 

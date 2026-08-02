@@ -24,7 +24,8 @@ flowchart TD
     IDENTITY --> ASSISTANT
     ASSISTANT --> DELIVERY
     DELIVERY --> CROSS
-    CROSS --> VERIFY
+    CROSS --> BUILDLOGIC
+    BUILDLOGIC --> VERIFY
 ```
 
 The completed contract, Calendar, Catalog, and Studio-core work is retained as
@@ -50,6 +51,8 @@ below is the authoritative order for open work.
 | `payment` | [payment module migration](2026-07-31-payment-module-migration.md) | Core complete | Finish webhook replay/signature evidence and service-wide verification |
 | `audit` | [audit module decision](2026-07-31-audit-module-normalization.md) | Decision complete | Keep metadata-only until a separately approved audit capability exists |
 | `shared` | [shared infrastructure normalization](2026-07-31-shared-infrastructure-normalization.md) | Ownership complete | Finish search evidence and service-wide dependency verification |
+| `build-logic` | [build-logic CDD migration](2026-08-02-build-logic-cdd-migration.md) | Design complete; implementation open | Normalize every Gradle capability, provider, task, model, test, and verification gate while preserving public plugin/task contracts |
+| `event-streaming` | [Kafka + Spring Modulith closure](2026-08-02-kafka-modulith-event-streaming-closure.md) | Implementation slice complete; operational closure open | Verify public event contracts, publication delivery, consumer idempotency, recovery, broker configuration, and CI evidence |
 
 ## Remaining execution order: priority and type
 
@@ -68,7 +71,9 @@ not move to the next priority band until its exit criteria are met.
 | P2 | AI and messaging capability | Close Assistant webhook/provider evidence | [Assistant](2026-07-31-assistant-module-template-migration.md) | Assistant has multiple provider and webhook boundaries and should consume stable Identity, Tenancy, and Shared contracts | AI provider, WhatsApp webhook, persistence, web, architecture, and service gates pass |
 | P3 | Provider integration | Migrate Notification | [Notification](2026-07-31-notification-module-migration.md) | Provider-heavy behavior needs stable tenant, persistence, and application-port foundations | Email/SMS/push provider contracts, idempotency/retry, web, integration, and CI gates pass |
 | P3 | Provider integration | Migrate Payment | [Payment](2026-07-31-payment-module-migration.md) | Payment has financial and webhook risk; it follows stable subscription, tenant, and provider boundaries | Provider/webhook signature and replay, transaction, tenant, integration, and CI evidence pass |
-| P4 | Governance and verification | Run final service-wide architecture verification | Registry and service verification checklist | Confirms no migration weakened Modulith boundaries or reintroduced legacy packages | Full architecture, Modulith, CI, boot artifacts, documentation, security, and rollback evidence pass |
+| P4 | Build platform | Execute the complete Capability-Driven Design build-logic migration | [Build-logic CDD](2026-08-02-build-logic-cdd-migration.md) | All module migrations consume the same build platform; its implementation must be normalized and verified before the final gate | All build-logic source is capability-owned, provider selection is lazy and truthful, TestKit/configuration-cache checks pass, and CI remains green |
+| P4 | Event streaming | Close Kafka + Spring Modulith event-streaming evidence | [Kafka + Modulith](2026-08-02-kafka-modulith-event-streaming-closure.md) | Events cross module and process boundaries; delivery, partitioning, replay, and failure semantics must be explicit | Event catalog, topic/key contracts, consumer idempotency/replay, failure policy, production configuration, integration tests, and CI evidence pass |
+| P5 | Governance and verification | Run final service-wide architecture verification | Registry and service verification checklist | Confirms no migration weakened Modulith boundaries or reintroduced legacy packages | Full architecture, Modulith, Kafka/event publication, CI, boot artifacts, documentation, security, and rollback evidence pass |
 
 ### Parallelization rules
 
@@ -80,8 +85,13 @@ not move to the next priority band until its exit criteria are met.
   and ownership boundaries are approved.
 - Notification and Payment may run in parallel after Shared is stable; Payment
   must additionally wait for the Subscription contract it consumes.
-- The final P4 verification is sequential and follows every implementation
-  plan, including any parallel tracks.
+- P4 build-logic and Kafka/Modulith closure tracks may run in parallel after the
+  module implementation plans, but both must close before the final service-wide
+  gate. Build-logic may consume stable module plugin IDs during earlier phases,
+  but its migration is not complete until all capability tests and
+  configuration-cache checks pass.
+- The final P5 verification is sequential and follows every implementation
+  plan, including build-logic and any parallel module tracks.
 
 ### Priority definitions
 
@@ -91,7 +101,8 @@ not move to the next priority band until its exit criteria are met.
 | P1 | Cross-cutting ownership or infrastructure that can invalidate later work |
 | P2 | Core business capabilities with bounded module scope |
 | P3 | External-provider integrations with higher operational complexity |
-| P4 | Final repository-wide governance and release evidence |
+| P4 | Build-platform normalization and verification |
+| P5 | Final repository-wide governance and release evidence |
 
 ## Baseline rule
 
@@ -116,5 +127,18 @@ Every implementation plan must document:
 - a committed verification report and a pushed branch.
 
 The build-logic CDD model is documented separately in
-`docs/architecture/00-project/build-logic.md`; it must not be copied into the
-business-module package tree.
+`docs/architecture/00-project/build-logic.md`. Its implementation is tracked by
+the dedicated [build-logic CDD specification](../specs/2026-08-02-build-logic-cdd-migration.md)
+and [implementation plan](2026-08-02-build-logic-cdd-migration.md); it must not
+be copied into the business-module package tree.
+
+## Plan audit rule
+
+Historical TDD checklists may contain unchecked template steps after a slice has
+been completed. The current status matrix, each plan's latest execution-status
+section, and the committed verification reports are authoritative. An unchecked
+historical line is not an implementation gap unless it is also listed as open in
+the plan's current status or in the priority table above.
+
+The current complete gap inventory is recorded in
+[`2026-08-02-plan-audit.md`](../reviews/2026-08-02-plan-audit.md).

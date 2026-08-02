@@ -2,7 +2,10 @@
 
 ## Acceptance criteria
 
-- [x] CDD build-logic architecture is implemented and documented.
+- [x] CDD build-logic architecture baseline is documented and used by the
+  current included build.
+- [ ] Execute the complete build-logic CDD migration plan before the final
+  service-wide verification gate.
 - [x] Catalog persistence is separated from the pure domain model.
 - [x] Cross-module identity dependencies use public API/event contracts.
 - [x] Architecture tests pass without weakening boundary rules.
@@ -153,6 +156,30 @@ reopened by this backlog.
   remaining provider contract, tenant-read, and full integration evidence is
   tracked in the Payment plan.
 
+### P4 — Build-platform normalization
+
+- [x] Create the build-logic CDD design specification and file-by-file
+  implementation plan.
+- [ ] Normalize every build-logic capability, convention script, binary plugin,
+  extension, task, provider, result, model, ValueSource, and test according to
+  the dedicated plan.
+- [ ] Add TestKit coverage for every binary plugin and convention family.
+- [ ] Remove eager configuration-time resolution, silent provider fallbacks, and
+  inconsistent task/result names; preserve public plugin IDs and registered task
+  names.
+- [ ] Verify configuration cache, task inputs/outputs, build-logic checks,
+  service CI, and Markdown validation; publish the committed verification report.
+
+### P4 cross-cutting event-streaming closure
+
+- [x] Implement the Spring Modulith Kafka externalizer and JDBC publication
+  registry in the dedicated messaging capability.
+- [ ] Execute `docs/superpowers/plans/2026-08-02-kafka-modulith-event-streaming-closure.md`.
+- [ ] Complete final Kafka/Modulith evidence: public event catalog, topic/key
+  contract verification, consumer idempotency/replay behavior, failure/retry or
+  dead-letter policy, production broker configuration, and CI/integration proof.
+- [ ] Keep RabbitMQ/AMQP absent from the unreleased codebase and documentation.
+
 ## Studio Documents canonical boundary slice — 2026-08-01
 
 - [x] Add framework-free document and chunk domain models with lifecycle tests.
@@ -175,7 +202,7 @@ reopened by this backlog.
 - [x] Expose only `subscriptions-api` through a Spring Modulith named interface.
 - [ ] Complete service-wide integration, Modulith, schema, security, and recovery evidence.
 
-### P4 — Final governance verification
+### P5 — Final governance verification
 
 - [ ] Run the final service-wide architecture, Modulith, CI, boot-artifact,
   documentation, security, and rollback evidence gate.

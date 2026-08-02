@@ -41,7 +41,7 @@ modules/audit/src/main/java/com/emme/audit/package-info.java
 ### Task 3: Verify
 
 - [x] Run `./gradlew :modules:audit:test :applications:studio-api:test --tests '*ModularityTest*' --no-daemon --no-configuration-cache`.
-- [ ] Record the decision in an ADR and update the service module registry.
+- [x] Record the decision in ADR 0004 and update the service module registry.
 
 ## Definition of done
 

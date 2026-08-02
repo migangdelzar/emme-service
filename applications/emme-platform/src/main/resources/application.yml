@@ -109,6 +109,8 @@ app:
     base-url: http://localhost:8080
     issuer-uri: http://localhost:8080/realms/emme
     client-id: emme-salon-app
+    customer-issuer-uri: http://localhost:8080/realms/emme-customers
+    customer-client-id: emme-customer-app
     admin-password: ${EMME_KEYCLOAK_ADMIN_PASSWORD:}
     provisioning:
       initial-admin-password: ${EMME_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_PASSWORD:}

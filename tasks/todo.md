@@ -123,6 +123,9 @@ reopened by this backlog.
   `docs/superpowers/plans/2026-07-31-identity-module-migration.md`.
 - [ ] Complete the Tenancy boundary migration in
   `docs/superpowers/plans/2026-07-31-tenancy-module-migration.md`.
+- [ ] Adopt and verify Spring MVC endpoint version conditions for controllers,
+  using one configured resolver and preserving the current `/api/v1` public
+  major contract.
 
 ### P1 — Cross-cutting ownership and infrastructure
 

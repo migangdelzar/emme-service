@@ -626,6 +626,23 @@ Remaining Identity work is architecture dependency evidence, provisioning
 transaction/event ports, broader authorization hardening, and final
 tenant-isolation and migration/recovery evidence.
 
+## Completed JWT issuer and audience hardening slice — 2026-08-02
+
+- [x] Added an Identity-owned JWT trust policy based on the existing typed
+  Keycloak issuer and client-id settings.
+- [x] Rejected untrusted issuers before dynamic JWKS URL construction, preventing
+  issuer-controlled outbound key resolution.
+- [x] Accepted only the configured platform realm and non-empty tenant realms
+  following the `emme-<slug>` naming boundary.
+- [x] Applied Spring Security issuer, timestamp, and audience validation to each
+  dynamically resolved decoder.
+- [x] Added regression coverage for trusted platform/tenant issuers, attacker
+  issuers, malformed realm boundaries, and audience rejection.
+- [x] Verified the focused Identity policy test with Gradle.
+
+Remaining Identity work is broader authorization hardening, explicit provisioning
+transaction/event ports, tenant-isolation tests, and migration/recovery evidence.
+
 ## Completed exception-advice boundary slice — 2026-08-01
 
 - [x] Added a source-boundary regression test preventing advice from importing

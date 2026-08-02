@@ -1,5 +1,6 @@
 package com.emme.identity.adapter.out.client.keycloak;
 
+import com.emme.identity.configuration.IdentityKeycloakProperties;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 import java.text.ParseException;
@@ -19,6 +20,11 @@ import org.springframework.stereotype.Component;
 public class MultiRealmJwtDecoder implements JwtDecoder {
 
   private final Map<String, NimbusJwtDecoder> decoders = new ConcurrentHashMap<>();
+  private final IdentityJwtTrustPolicy trustPolicy;
+
+  public MultiRealmJwtDecoder(IdentityKeycloakProperties properties) {
+    this.trustPolicy = new IdentityJwtTrustPolicy(properties);
+  }
 
   @Override
   public Jwt decode(String token) throws JwtException {
@@ -32,12 +38,17 @@ public class MultiRealmJwtDecoder implements JwtDecoder {
     if (issuer == null) {
       throw new JwtException("JWT missing 'iss' claim");
     }
+    if (!trustPolicy.acceptsIssuer(issuer)) {
+      throw new JwtException("JWT issuer is not trusted");
+    }
     NimbusJwtDecoder decoder =
         decoders.computeIfAbsent(
             issuer,
             iss -> {
               String jwksUri = iss + "/protocol/openid-connect/certs";
-              return NimbusJwtDecoder.withJwkSetUri(jwksUri).build();
+              NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwksUri).build();
+              jwtDecoder.setJwtValidator(trustPolicy.validatorFor(iss));
+              return jwtDecoder;
             });
     return decoder.decode(token);
   }

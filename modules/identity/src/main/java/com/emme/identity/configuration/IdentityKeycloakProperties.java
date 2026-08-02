@@ -13,6 +13,8 @@ public class IdentityKeycloakProperties {
   private String adminUsername = "admin";
   private String adminPassword = "";
   private String defaultRealm = "emme";
+  private String customerIssuerUri = "http://localhost:18080/realms/emme-customers";
+  private String customerClientId = "emme-customer-app";
 
   public String getBaseUrl() {
     return baseUrl;
@@ -68,5 +70,21 @@ public class IdentityKeycloakProperties {
 
   public void setDefaultRealm(String defaultRealm) {
     this.defaultRealm = defaultRealm;
+  }
+
+  public String getCustomerIssuerUri() {
+    return customerIssuerUri;
+  }
+
+  public void setCustomerIssuerUri(String customerIssuerUri) {
+    this.customerIssuerUri = customerIssuerUri;
+  }
+
+  public String getCustomerClientId() {
+    return customerClientId;
+  }
+
+  public void setCustomerClientId(String customerClientId) {
+    this.customerClientId = customerClientId;
   }
 }

@@ -68,6 +68,9 @@ class IdentityPackageConventionTest {
   private static final Path MULTI_REALM_JWT_DECODER =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/MultiRealmJwtDecoder.java");
+  private static final Path JWT_TRUST_POLICY =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/IdentityJwtTrustPolicy.java");
   private static final Path SECURITY_AUDIT_LOGGER =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/observability/SecurityAuditLogger.java");
@@ -717,8 +720,11 @@ class IdentityPackageConventionTest {
   void keepsKeycloakClientSettingsTypedAndAdapterOwned() throws IOException {
     String userAdapter = Files.readString(KEYCLOAK_USER_ADAPTER);
     String adminAdapter = Files.readString(KEYCLOAK_ADMIN_CLIENT);
+    String jwtDecoder = Files.readString(MULTI_REALM_JWT_DECODER);
 
     assertThat(Files.exists(IDENTITY_KEYCLOAK_PROPERTIES)).isTrue();
+    assertThat(Files.exists(JWT_TRUST_POLICY)).isTrue();
+    assertThat(jwtDecoder).contains("IdentityJwtTrustPolicy");
     assertThat(userAdapter).doesNotContain("@Value");
     assertThat(adminAdapter).doesNotContain("@Value");
   }

@@ -17,6 +17,8 @@ class IdentityKeycloakPropertiesTest {
     properties.setAdminUsername("admin");
     properties.setAdminPassword("secret");
     properties.setDefaultRealm("emme");
+    properties.setCustomerIssuerUri("http://localhost:18080/realms/emme-customers");
+    properties.setCustomerClientId("emme-customer-app");
 
     assertThat(properties.getBaseUrl()).isEqualTo("http://localhost:18080");
     assertThat(properties.getIssuerUri()).isEqualTo("http://localhost:18080/realms/emme");
@@ -25,5 +27,8 @@ class IdentityKeycloakPropertiesTest {
     assertThat(properties.getAdminUsername()).isEqualTo("admin");
     assertThat(properties.getAdminPassword()).isEqualTo("secret");
     assertThat(properties.getDefaultRealm()).isEqualTo("emme");
+    assertThat(properties.getCustomerIssuerUri())
+        .isEqualTo("http://localhost:18080/realms/emme-customers");
+    assertThat(properties.getCustomerClientId()).isEqualTo("emme-customer-app");
   }
 }

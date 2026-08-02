@@ -89,6 +89,49 @@ sequenceDiagram
 - Keep pagination, filtering, idempotency, and concurrency semantics explicit.
 - Document public endpoints through OpenAPI or equivalent generated API documentation.
 
+### Spring MVC endpoint versioning
+
+Spring Framework 7 provides first-class endpoint version conditions through the
+`version` attribute on `@RequestMapping` and its composed mappings such as
+`@GetMapping` and `@PostMapping`. The application must configure one explicit
+`ApiVersionStrategy` and one resolver before controllers use that attribute.
+
+Use the repository's two-level policy:
+
+| Boundary | Policy | Example |
+|---|---|---|
+| Public URI and OpenAPI major contract | Keep the stable major path visible to clients | `/api/v1/identity/memberships` |
+| Spring controller compatibility mapping | Use Spring's `version` attribute when two representations of the same route must coexist | `@GetMapping(path = "/memberships", version = "1.1")` |
+
+```java
+@RestController
+@RequestMapping("/api/v1/identity")
+final class IdentityController {
+
+  @GetMapping(path = "/memberships", version = "1.0")
+  MembershipResponse membershipsV1() {
+    // Stable v1 representation.
+  }
+
+  @GetMapping(path = "/memberships", version = "1.1+")
+  MembershipResponse membershipsV1_1() {
+    // Compatible baseline for later 1.x requests.
+  }
+}
+```
+
+The version source may be a path segment, request header, query parameter, or
+media-type parameter, but a service chooses one canonical resolver for its
+public API. Do not silently combine multiple version sources. A missing or
+unsupported version must produce the configured client error, and version
+selection must be covered by MockMvc contract tests.
+
+For the current service, `/api/v1` remains the externally visible major
+contract. Spring mapping versions are introduced only when an endpoint needs
+parallel compatibility behavior; they do not justify changing a stable route
+or duplicating controllers prematurely. See the official [Spring MVC API
+versioning reference](https://docs.spring.io/spring-framework/reference/web/webmvc-versioning.html).
+
 ## Error mapping
 
 | Condition | HTTP result |
@@ -108,6 +151,9 @@ The exact status may be specialized by the API contract, but the mapping must be
 ### Versioning and compatibility
 
 - Version externally consumed routes and schemas deliberately.
+- Prefer the visible `/api/v<major>` route for the public major contract and
+  Spring MVC `@RequestMapping(version = "...")` for parallel handler
+  compatibility within that contract.
 - Prefer additive changes; deprecate before removal.
 - Do not expose JPA entities, domain aggregates, provider responses, or internal exceptions.
 - Define field nullability, default behavior, enum evolution, pagination, sorting, and maximum page size.

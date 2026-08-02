@@ -45,3 +45,17 @@ unsupported channel was returned as `DELIVERED`. It now passes with:
 
 Full provider contract, transient retry, durable idempotency, and credentialed
 live-provider evidence remain open in the Notification migration plan.
+
+## Module gate — 2026-08-02
+
+The following gate also passed:
+
+```text
+./gradlew :modules:notification:compileJava :modules:notification:test \
+  :modules:notification:integrationTest --no-daemon --no-configuration-cache
+```
+
+The integration process still emits shutdown-time PostgreSQL connection errors
+while Spring Modulith's event-publication registry and Hibernate close. The
+Gradle process exits successfully, but clean connection-lifecycle evidence
+remains open for the service-wide gate.

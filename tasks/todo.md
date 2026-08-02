@@ -1443,3 +1443,12 @@ limiting, then continue authorization domain/application separation.
 - [x] Remove the `405` compatibility escape so the CRUD test fails on a broken
   update endpoint.
 - [x] Verify `compileE2eTestJava`.
+
+## Notification module verification — 2026-08-02
+
+- [x] Run Notification compile, unit, and integration tests.
+- [x] Verify canonical package, provider composition, tenant scope,
+  idempotency, and unsupported-channel behavior.
+- [ ] Add deeper transient-provider retry and credentialed provider contracts.
+- [ ] Resolve shutdown-time PostgreSQL/Event Publication connection lifecycle
+  warnings before final service-wide readiness.

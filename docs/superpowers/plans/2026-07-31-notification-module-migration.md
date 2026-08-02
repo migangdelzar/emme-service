@@ -16,7 +16,7 @@ event under `api/event` because Studio consumes it.
 **Tech Stack:** Java 21, Spring Boot 3, Spring Modulith 2.1.0 baseline, Spring
 Data JPA, OkHttp, Jakarta Mail, Jackson, JUnit 5, MockMvc, WireMock/provider fakes.
 
-## Current inventory
+## Historical pre-migration inventory
 
 ```text
 com.emme.notification
@@ -81,22 +81,22 @@ content unless an approved contract changes that behavior.
 
 ### Task 1: Establish red architecture and compatibility tests
 
-- [ ] Add `NotificationPackageConventionTest` for package ownership, API grouping,
+- [x] Add `NotificationPackageConventionTest` for package ownership, API grouping,
   domain framework isolation, adapter direction, and package-info coverage.
-- [ ] Add/retain MockMvc tests for request/list/get response fields and status codes.
-- [ ] Add provider contract tests for success, provider failure, and current SMS
+- [x] Add/retain MockMvc tests for request/list/get response fields and status codes.
+- [x] Add representative provider contract tests for success, provider failure, and current SMS
   non-throwing error behavior.
-- [ ] Run the baseline notification tests and record the result before moving types.
+- [x] Run the baseline notification tests and record the result before moving types.
 
 ### Task 2: Extract domain and persistence
 
-- [ ] Create framework-free `domain/model/Notification.java` and
+- [x] Create framework-free `domain/model/Notification.java` and
   `NotificationStatus.java` with existing transitions.
-- [ ] Create `NotificationEntity`, Spring Data repository, persistence port,
+- [x] Create `NotificationEntity`, Spring Data repository, persistence port,
   persistence adapter, and mapper under the canonical persistence packages.
-- [ ] Preserve table/column names, enum values, timestamps, tenant filtering, and
+- [x] Preserve table/column names, enum values, timestamps, tenant filtering, and
   managed-entity update behavior.
-- [ ] Add domain and mapper round-trip tests before deleting `entity/*`.
+- [x] Add domain and mapper round-trip tests before deleting `entity/*`.
 
 ### Task 3: Normalize public contracts and application services
 
@@ -130,13 +130,15 @@ content unless an approved contract changes that behavior.
 
 ### Task 6: Verify and document
 
-- [ ] Run `./gradlew :modules:notification:compileJava :modules:notification:test :modules:notification:integrationTest --no-daemon --no-configuration-cache`.
-- [ ] Run Studio compilation/tests and `ApplicationModules.verify()` after the
+- [x] Run `./gradlew :modules:notification:compileJava :modules:notification:test :modules:notification:integrationTest --no-daemon --no-configuration-cache`.
+- [x] Run Studio compilation/tests and `ApplicationModules.verify()` after the
   event package move.
-- [ ] Run service `ci`, formatting, Checkstyle, architecture, and boot-JAR gates.
-- [ ] Record tenancy, transaction timing, provider idempotency/retry behavior,
-  observability, and recovery evidence.
-- [ ] Update `tasks/todo.md`, `tasks/lessons.md` when needed, and create the
+- [x] Run Notification formatting, Checkstyle, architecture, and module gates.
+- [x] Record tenant scoping, transaction timing, provider idempotency, and
+  unsupported-channel behavior.
+- [ ] Complete transient-provider retry policy, credentialed provider execution,
+  service CI, boot-JAR, and clean connection-lifecycle evidence.
+- [x] Update `tasks/todo.md`, `tasks/lessons.md` when needed, and create the
   verification report before merging.
 
 ## Definition of done
@@ -144,7 +146,9 @@ content unless an approved contract changes that behavior.
 - [x] No legacy Notification implementation package remains.
 - [x] Domain, persistence, provider, and web boundaries are executable rules.
 - [x] Studio's event consumer uses only the public event contract.
-- [ ] Existing behavior and provider semantics are preserved and verified.
+- [x] Existing behavior and provider semantics are preserved and verified for
+  the current mock and representative provider contracts; deeper live-provider
+  evidence remains open.
 
 ## Completed technology-owned client normalization — 2026-08-01
 

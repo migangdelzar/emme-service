@@ -275,6 +275,16 @@ Execution rules and dependencies are maintained in
 - [x] Complete Catalog baseline verification before Identity's next
   implementation slice.
 
+### Repository-wide package metadata closure — 2026-08-02
+
+- [x] Add executable package-metadata guards for Studio Documents persistence
+  adapters and Calendar application mappers.
+- [x] Materialize the two remaining production `package-info.java` files.
+- [x] Verify the focused Studio Documents and Calendar convention tests after
+  a deliberate red phase.
+- [ ] Re-run the same metadata audit after the remaining build-logic and
+  service-wide changes are complete.
+
 ## One-service-per-use-case application boundary — 2026-08-01
 
 - [x] Add failing Identity and Catalog architecture tests that reject

@@ -37,6 +37,12 @@ class DocumentsPackageConventionTest {
   }
 
   @Test
+  void everyMaterializedPersistencePackageHasPackageMetadata() {
+    assertThat(Files.exists(ROOT.resolve("adapter/out/persistence/adapter/package-info.java")))
+        .isTrue();
+  }
+
+  @Test
   void keepsDomainAndApplicationIndependentFromFrameworkAndAdapters() throws IOException {
     assertThat(Files.readString(ROOT.resolve("domain/model/Document.java")))
         .doesNotContain("jakarta.persistence")

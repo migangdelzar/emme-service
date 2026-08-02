@@ -51,6 +51,11 @@ class CalendarPackageConventionTest {
   }
 
   @Test
+  void everyMaterializedApplicationPackageHasPackageMetadata() {
+    assertThat(Files.exists(SOURCE_ROOT.resolve("application/mapper/package-info.java"))).isTrue();
+  }
+
+  @Test
   void applicationServicesAreOneUseCasePerClass() {
     Set<String> legacyServices =
         Set.of("CalendarService", "CalendarSyncApiService", "CalendarSyncApi");

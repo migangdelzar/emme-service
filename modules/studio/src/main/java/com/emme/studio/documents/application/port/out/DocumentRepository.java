@@ -9,8 +9,6 @@ import java.util.UUID;
 /** Persistence capability required by document use cases. */
 public interface DocumentRepository {
 
-  Optional<Document> findById(UUID documentId);
-
   Optional<Document> findByTenantIdAndId(UUID tenantId, UUID documentId);
 
   List<Document> findByTenantId(UUID tenantId);

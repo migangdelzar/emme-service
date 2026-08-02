@@ -32,12 +32,12 @@ is added under the owning outbound port/adapter, not as a generic helper package
 
 ## Tasks
 
-- [ ] Inventory HTTP consumers, Studio callers, schema/migrations, search callers,
+- [x] Inventory HTTP consumers, Studio callers, schema/migrations, search callers,
   and document status/event behavior.
-- [ ] Add red package/layer rules and pure status-transition tests.
-- [ ] Extract framework-free `Document`/`DocumentChunk` domain models and status
+- [x] Add red package/layer rules and pure status-transition tests.
+- [x] Extract framework-free `Document`/`DocumentChunk` domain models and status
   rules; move JPA classes to `DocumentEntity`/`DocumentChunkEntity`.
-- [ ] Split repositories into `application/port/out`, Spring Data repositories,
+- [x] Split repositories into `application/port/out`, Spring Data repositories,
   persistence adapters, mappers, and projections.
 - [x] Define grouped commands, queries, results, and exceptions only for
   existing document operations; do not invent upload/processing endpoints.
@@ -46,18 +46,18 @@ is added under the owning outbound port/adapter, not as a generic helper package
   adapters with dedicated DTOs/mappers.
 - [ ] Isolate embedding/search calls behind ports and provider adapters if the
   current implementation has a direct technical dependency.
-- [ ] Add package-info to each materialized package and update Studio Modulith
+- [x] Add package-info to each materialized package and update Studio Modulith
   metadata without weakening existing module rules.
-- [ ] Run focused Documents tests, Studio tests, integration tests, architecture,
+- [x] Run focused Documents tests, Studio tests, integration tests, architecture,
   service CI, and migration/schema comparison.
-- [ ] Record completion in the Studio plan and registry.
+- [x] Record completion in the Studio plan and registry.
 
 ## Definition of done
 
-- [ ] Documents is independently canonical and no nested legacy implementation
+- [x] Documents is independently canonical and no nested legacy implementation
   package remains.
-- [ ] Domain models are framework-free and entities never reach API/web code.
-- [ ] Existing document status, tenant, persistence, and response behavior passes
+- [x] Domain models are framework-free and entities never reach API/web code.
+- [x] Existing document status, tenant, persistence, and response behavior passes
 
 ## Completed domain and persistence boundary slice — 2026-08-01
 
@@ -102,4 +102,20 @@ is added under the owning outbound port/adapter, not as a generic helper package
 
 Remaining Documents work is full Studio integration evidence, schema comparison,
 and final Modulith verification.
+
+## Completed tenant-safe persistence and verification slice — 2026-08-02
+
+- [x] Removed the unscoped `DocumentRepository.findById(UUID)` contract.
+- [x] Changed persistence saves to resolve existing rows with
+  `findByTenantIdAndId(tenantId, documentId)`.
+- [x] Removed lifecycle transition methods from `DocumentEntity`; transitions
+  are owned only by the framework-free `domain.model.Document` aggregate.
+- [x] Added source-boundary tests preventing unscoped persistence lookups and
+  entity-owned lifecycle rules.
+- [x] Verified the Documents unit/module tests and Studio PostgreSQL integration
+  startup after the boundary changes.
+
+The Documents implementation is now structurally canonical. The remaining
+service-level gate is the repository-wide Modulith/CI/boot-artifact report,
+plus live schema rollback evidence shared with the Studio migration.
   regression tests.

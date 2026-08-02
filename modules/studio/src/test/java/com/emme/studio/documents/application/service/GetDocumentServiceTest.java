@@ -32,11 +32,6 @@ class GetDocumentServiceTest {
     }
 
     @Override
-    public Optional<Document> findById(UUID documentId) {
-      return Optional.of(document);
-    }
-
-    @Override
     public Optional<Document> findByTenantIdAndId(UUID tenantId, UUID documentId) {
       return document.tenantId().equals(tenantId) && document.id().equals(documentId)
           ? Optional.of(document)

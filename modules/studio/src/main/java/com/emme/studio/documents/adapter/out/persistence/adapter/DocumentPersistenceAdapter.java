@@ -30,11 +30,6 @@ public class DocumentPersistenceAdapter implements DocumentRepository {
   }
 
   @Override
-  public Optional<Document> findById(UUID documentId) {
-    return documents.findById(documentId).map(entity -> mapper.toDomain(entity));
-  }
-
-  @Override
   public Optional<Document> findByTenantIdAndId(UUID tenantId, UUID documentId) {
     return documents.findByTenantIdAndId(tenantId, documentId).map(mapper::toDomain);
   }
@@ -49,7 +44,9 @@ public class DocumentPersistenceAdapter implements DocumentRepository {
   @Override
   public Document save(Document document) {
     DocumentEntity entity =
-        documents.findById(document.id()).orElseGet(() -> mapper.toEntity(document));
+        documents
+            .findByTenantIdAndId(document.tenantId(), document.id())
+            .orElseGet(() -> mapper.toEntity(document));
     entity.setName(document.name());
     entity.setSourceType(document.sourceType());
     entity.setStatus(

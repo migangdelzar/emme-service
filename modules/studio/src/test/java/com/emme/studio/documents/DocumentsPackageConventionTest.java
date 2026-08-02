@@ -46,6 +46,30 @@ class DocumentsPackageConventionTest {
         .check(CLASSES);
   }
 
+  @Test
+  void requiresTenantScopeForEveryDocumentPersistenceLookup() throws IOException {
+    String port = Files.readString(ROOT.resolve("application/port/out/DocumentRepository.java"));
+    String adapter =
+        Files.readString(
+            ROOT.resolve("adapter/out/persistence/adapter/DocumentPersistenceAdapter.java"));
+
+    assertThat(port).doesNotContain("findById(UUID documentId)");
+    assertThat(adapter).doesNotContain("documents.findById(");
+    assertThat(adapter).contains("documents.findByTenantIdAndId(");
+  }
+
+  @Test
+  void keepsDocumentLifecycleRulesInTheDomainAggregate() throws IOException {
+    String entity =
+        Files.readString(ROOT.resolve("adapter/out/persistence/entity/DocumentEntity.java"));
+
+    assertThat(entity)
+        .doesNotContain("markProcessing")
+        .doesNotContain("markReady")
+        .doesNotContain("markFailed")
+        .doesNotContain("markRetired");
+  }
+
   private static boolean hasJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) {
       return false;

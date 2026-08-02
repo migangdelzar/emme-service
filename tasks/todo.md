@@ -1292,3 +1292,14 @@ limiting, then continue authorization domain/application separation.
   Tenancy connection-owned code.
 - [ ] Extend the same boundary to any later adapter that still performs manual
   connection management during the final service-wide audit.
+
+## Tenancy and Studio Documents verification — 2026-08-02
+
+- [x] Make the scheduled Tenancy provisioning read boundary retry-safe when
+  the registry/database is temporarily unavailable.
+- [x] Remove the unscoped Documents repository lookup and use tenant-scoped
+  lookup during persistence saves.
+- [x] Keep document lifecycle transitions exclusively in the framework-free
+  domain aggregate; persistence entities contain mappings only.
+- [x] Verify Documents unit/module checks and PostgreSQL integration startup.
+- [ ] Continue the remaining service-wide Modulith, schema, and recovery gate.

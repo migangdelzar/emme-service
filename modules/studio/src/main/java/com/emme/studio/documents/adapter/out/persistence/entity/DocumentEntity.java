@@ -90,36 +90,4 @@ public class DocumentEntity extends TenantOwnedEntity {
   public void setVersion(int version) {
     this.version = version;
   }
-
-  /** Transition to PROCESSING state. Only valid from UPLOADED */
-  public void markProcessing() {
-    if (status != DocumentStatus.UPLOADED) {
-      throw new IllegalStateException("Cannot process document with status: " + status);
-    }
-    status = DocumentStatus.PROCESSING;
-  }
-
-  /** Transition to READY state. Only valid from PROCESSING */
-  public void markReady() {
-    if (status != DocumentStatus.PROCESSING) {
-      throw new IllegalStateException("Cannot mark ready document with status: " + status);
-    }
-    status = DocumentStatus.READY;
-  }
-
-  /** Transition to FAILED state. Valid from UPLOADED or PROCESSING */
-  public void markFailed() {
-    if (status != DocumentStatus.UPLOADED && status != DocumentStatus.PROCESSING) {
-      throw new IllegalStateException("Cannot fail document with status: " + status);
-    }
-    status = DocumentStatus.FAILED;
-  }
-
-  /** Transition to RETIRED state */
-  public void markRetired() {
-    if (status == DocumentStatus.RETIRED) {
-      throw new IllegalStateException("Document is already retired");
-    }
-    status = DocumentStatus.RETIRED;
-  }
 }

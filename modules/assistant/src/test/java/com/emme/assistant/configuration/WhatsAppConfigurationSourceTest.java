@@ -13,10 +13,14 @@ class WhatsAppConfigurationSourceTest {
   void webhookComponentsUseTypedConfigurationInsteadOfDirectEnvironmentAccess() throws IOException {
     Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant");
 
-    assertThat(Files.readString(root.resolve("adapter/in/messaging/WhatsAppMessageService.java")))
+    assertThat(Files.exists(root.resolve("adapter/in/messaging/WhatsAppMessageService.java")))
+        .isFalse();
+    assertThat(
+            Files.readString(
+                root.resolve("application/service/ProcessWhatsAppMessageService.java")))
         .doesNotContain("@Value(")
         .doesNotContain("System.getenv(")
-        .doesNotContain("skipping signature verification");
+        .doesNotContain("new ObjectMapper()");
     assertThat(Files.readString(root.resolve("adapter/in/webhook/WhatsAppWebhookController.java")))
         .doesNotContain("@Value(");
     assertThat(
@@ -27,6 +31,17 @@ class WhatsAppConfigurationSourceTest {
                 root.resolve("adapter/in/webhook/WhatsAppWebhookSignatureVerifier.java")))
         .contains("MessageDigest.isEqual");
     assertThat(Files.exists(root.resolve("configuration/WhatsAppProperties.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("api/command/ProcessWhatsAppMessageCommand.java")))
+        .isTrue();
+    assertThat(Files.exists(root.resolve("api/usecase/ProcessWhatsAppMessageUseCase.java")))
+        .isTrue();
+    assertThat(Files.exists(root.resolve("application/port/out/WhatsAppReplyPort.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("adapter/in/webhook/WhatsAppWebhookMapper.java")))
+        .isTrue();
+    assertThat(Files.exists(root.resolve("adapter/in/webhook/WhatsAppWebhookMessage.java")))
+        .isTrue();
+    assertThat(Files.exists(root.resolve("adapter/out/client/whatsapp/WhatsAppReplyAdapter.java")))
+        .isTrue();
   }
 
   private static Path sourcePath(String relativePath) {

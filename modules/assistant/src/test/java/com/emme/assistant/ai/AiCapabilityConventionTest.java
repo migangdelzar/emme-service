@@ -11,8 +11,15 @@ class AiCapabilityConventionTest {
   void keepsProviderImplementationsBehindApplicationPorts() {
     Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant/ai");
     assertThat(Files.exists(root.resolve("application/port/out/ModelProvider.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("adapter/out/provider/MockModelProvider.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("adapter/out/provider/GroqModelProvider.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("adapter/out/client/mock/MockModelProvider.java")))
+        .isTrue();
+    assertThat(Files.exists(root.resolve("adapter/out/client/groq/GroqModelProvider.java")))
+        .isTrue();
+    assertThat(Files.exists(root.resolve("adapter/out/client/ollama/OllamaModelProvider.java")))
+        .isTrue();
+    assertThat(Files.exists(root.resolve("adapter/in/web/request/ChatRequest.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("adapter/in/web/request/IntentRequest.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("adapter/in/web/request/RagRequest.java"))).isTrue();
     assertThat(Files.exists(root.resolve("application/service/DetectIntentService.java"))).isTrue();
     assertThat(Files.exists(root.resolve("api/usecase/DetectIntentUseCase.java"))).isTrue();
     assertThat(Files.exists(root.resolve("api/usecase/CaptionImageUseCase.java"))).isTrue();

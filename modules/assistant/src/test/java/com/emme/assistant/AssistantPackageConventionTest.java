@@ -30,6 +30,8 @@ class AssistantPackageConventionTest {
     assertThat(Files.exists(ROOT.resolve("ai/application/service/ChatService.java"))).isTrue();
     assertThat(Files.exists(ROOT.resolve("ai/adapter/in/web/controller/AiController.java")))
         .isTrue();
+    assertThat(hasJavaSources(ROOT.resolve("ai/adapter/out/provider"))).isFalse();
+    assertThat(hasJavaSources(ROOT.resolve("ai/config"))).isFalse();
   }
 
   @Test

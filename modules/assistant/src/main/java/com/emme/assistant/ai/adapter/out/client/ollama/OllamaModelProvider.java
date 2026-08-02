@@ -1,6 +1,7 @@
-package com.emme.assistant.ai.adapter.out.provider;
+package com.emme.assistant.ai.adapter.out.client.ollama;
 
 import com.emme.assistant.ai.application.port.out.ModelProvider;
+import com.emme.assistant.ai.configuration.AiHttpClient;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -9,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -48,10 +48,10 @@ public class OllamaModelProvider implements ModelProvider {
   private final String baseUrl;
   private final String chatModel;
   private final String embedModel;
-  private final OkHttpClient client;
+  private final AiHttpClient client;
   private final ObjectMapper mapper;
 
-  public OllamaModelProvider(AiProperties props) {
+  public OllamaModelProvider(AiProperties props, AiHttpClient client, ObjectMapper mapper) {
     this.baseUrl =
         stripTrailingSlash(
             props.chat() != null && props.chat().baseUrl() != null
@@ -65,8 +65,8 @@ public class OllamaModelProvider implements ModelProvider {
         props.embedding() != null && props.embedding().model() != null
             ? props.embedding().model()
             : DEFAULT_EMBED_MODEL;
-    this.client = new OkHttpClient();
-    this.mapper = new ObjectMapper();
+    this.client = client;
+    this.mapper = mapper;
 
     log.info(
         "OllamaModelProvider initialized — chatModel={}, embedModel={}, baseUrl={}",

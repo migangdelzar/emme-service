@@ -13,9 +13,21 @@ class GroqConfigurationSourceTest {
   void groqProviderUsesTypedAiConfigurationInsteadOfDirectEnvironmentAccess() throws IOException {
     Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant");
 
-    assertThat(Files.readString(root.resolve("ai/adapter/out/provider/GroqModelProvider.java")))
+    assertThat(Files.readString(root.resolve("ai/adapter/out/client/groq/GroqModelProvider.java")))
         .doesNotContain("System.getenv(")
-        .contains("props.chat().apiKey()");
+        .contains("props.chat().apiKey()")
+        .doesNotContain("new OkHttpClient()")
+        .doesNotContain("new ObjectMapper()");
+  }
+
+  @Test
+  void ollamaProviderReceivesTransportDependencies() throws IOException {
+    Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant");
+
+    assertThat(
+            Files.readString(root.resolve("ai/adapter/out/client/ollama/OllamaModelProvider.java")))
+        .doesNotContain("new OkHttpClient()")
+        .doesNotContain("new ObjectMapper()");
   }
 
   private static Path sourcePath(String relativePath) {

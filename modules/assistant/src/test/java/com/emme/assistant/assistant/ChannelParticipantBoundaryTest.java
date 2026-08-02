@@ -20,7 +20,7 @@ class ChannelParticipantBoundaryTest {
                     "adapter/out/persistence/adapter/ChannelParticipantPersistenceAdapter.java")))
         .isTrue();
     assertThat(
-            Files.readString(ROOT.resolve("adapter/in/messaging/WhatsAppMessageService.java"))
+            Files.readString(ROOT.resolve("application/service/ProcessWhatsAppMessageService.java"))
                 .replace("\\r\\n", "\\n"))
         .doesNotContain("adapter.out.persistence.entity.ChannelParticipantEntity")
         .doesNotContain(

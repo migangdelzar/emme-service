@@ -5,8 +5,10 @@ import java.security.MessageDigest;
 import java.util.HexFormat;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import org.springframework.stereotype.Component;
 
 /** Verifies Meta's {@code X-Hub-Signature-256} webhook digest in constant time. */
+@Component
 public final class WhatsAppWebhookSignatureVerifier {
   public boolean verify(String payload, String signature, String secret) {
     if (payload == null

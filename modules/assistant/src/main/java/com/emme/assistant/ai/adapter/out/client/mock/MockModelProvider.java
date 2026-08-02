@@ -1,4 +1,4 @@
-package com.emme.assistant.ai.adapter.out.provider;
+package com.emme.assistant.ai.adapter.out.client.mock;
 
 import com.emme.assistant.ai.application.port.out.ModelProvider;
 import com.emme.assistant.ai.configuration.AiProperties;

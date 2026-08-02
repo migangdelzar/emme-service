@@ -1,6 +1,7 @@
-package com.emme.assistant.ai.adapter.out.provider;
+package com.emme.assistant.ai.adapter.out.client.groq;
 
 import com.emme.assistant.ai.application.port.out.ModelProvider;
+import com.emme.assistant.ai.configuration.AiHttpClient;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -50,10 +50,10 @@ public class GroqModelProvider implements ModelProvider {
   private final String apiKey;
   private final String model;
   private final String baseUrl;
-  private final OkHttpClient client;
+  private final AiHttpClient client;
   private final ObjectMapper mapper;
 
-  public GroqModelProvider(AiProperties props) {
+  public GroqModelProvider(AiProperties props, AiHttpClient client, ObjectMapper mapper) {
     this.apiKey =
         props.chat() != null && props.chat().apiKey() != null ? props.chat().apiKey() : "";
     this.model =
@@ -62,8 +62,8 @@ public class GroqModelProvider implements ModelProvider {
         props.chat() != null && props.chat().baseUrl() != null
             ? props.chat().baseUrl()
             : DEFAULT_BASE_URL;
-    this.client = new OkHttpClient();
-    this.mapper = new ObjectMapper();
+    this.client = client;
+    this.mapper = mapper;
 
     log.info(
         "GroqModelProvider initialized — model={}, baseUrl={}, apiKeyPresent={}",

@@ -1,6 +1,7 @@
 package com.emme.assistant.adapter.in.webhook;
 
-import com.emme.assistant.adapter.in.messaging.WhatsAppMessageService;
+import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
+import com.emme.assistant.api.usecase.ProcessWhatsAppMessageUseCase;
 import com.emme.assistant.configuration.WhatsAppProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@ConditionalOnBean(WhatsAppMessageService.class)
+@ConditionalOnBean(ProcessWhatsAppMessageUseCase.class)
 @RestController
 @RequestMapping("/api/v1/webhooks/whatsapp")
 @Tag(name = "WhatsApp Webhook")
@@ -25,13 +26,20 @@ public class WhatsAppWebhookController {
 
   private static final Logger log = LoggerFactory.getLogger(WhatsAppWebhookController.class);
 
-  private final WhatsAppMessageService messageService;
+  private final ProcessWhatsAppMessageUseCase processMessage;
   private final WhatsAppProperties properties;
+  private final WhatsAppWebhookSignatureVerifier signatureVerifier;
+  private final WhatsAppWebhookMapper webhookMapper;
 
   public WhatsAppWebhookController(
-      WhatsAppMessageService messageService, WhatsAppProperties properties) {
-    this.messageService = messageService;
+      ProcessWhatsAppMessageUseCase processMessage,
+      WhatsAppProperties properties,
+      WhatsAppWebhookSignatureVerifier signatureVerifier,
+      WhatsAppWebhookMapper webhookMapper) {
+    this.processMessage = processMessage;
     this.properties = properties;
+    this.signatureVerifier = signatureVerifier;
+    this.webhookMapper = webhookMapper;
   }
 
   /** Meta webhook verification — GET with hub.mode, hub.verify_token, hub.challenge */
@@ -56,7 +64,17 @@ public class WhatsAppWebhookController {
       @RequestHeader("X-Hub-Signature-256") String signature, @RequestBody String payload) {
 
     try {
-      messageService.processMessage(payload, signature);
+      if (!signatureVerifier.verify(payload, signature, properties.appSecret())) {
+        throw new SecurityException("Invalid WhatsApp signature");
+      }
+      webhookMapper
+          .map(payload)
+          .filter(message -> !message.statusUpdate())
+          .ifPresent(
+              message ->
+                  processMessage.process(
+                      new ProcessWhatsAppMessageCommand(
+                          message.tenantId(), message.eventId(), message.from(), message.text())));
       return ResponseEntity.ok("received");
     } catch (SecurityException e) {
       log.warn("WhatsApp webhook rejected: {}", e.getMessage());

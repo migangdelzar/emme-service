@@ -35,7 +35,7 @@ class PaymentApplicationBoundaryTest {
         assertThat(source)
             .as("application source: %s", path)
             .doesNotContain("com.emme.payment.adapter.out.persistence")
-            .doesNotContain("com.emme.payment.adapter.out.provider")
+            .doesNotContain("com.emme.payment.adapter.out.client")
             .doesNotContain("jakarta.persistence")
             .doesNotContain("org.springframework.data");
       }

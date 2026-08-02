@@ -1,0 +1,278 @@
+package com.emme.notification.adapter.out.client.push;
+
+import com.emme.notification.configuration.NotificationProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+
+/**
+ * Firebase Cloud Messaging (FCM) push provider using pure HTTP + OAuth2. No Firebase Admin SDK
+ * dependency. Authenticates via service account JWT assertion exchanged for an OAuth2 access token.
+ *
+ * <p>Configuration: app.notification.fcm.service-account and app.notification.fcm.project-id. The
+ * project ID falls back to the service-account JSON when it is not configured.
+ *
+ * <p>Property: app.notification.push.provider=fcm
+ */
+@Component
+@ConditionalOnProperty(name = "app.notification.push.provider", havingValue = "fcm")
+public class FcmPushProvider implements com.emme.notification.application.port.out.PushSender {
+
+  private static final Logger log = LoggerFactory.getLogger(FcmPushProvider.class);
+  private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+  static final String DEFAULT_TOKEN_URL = "https://oauth2.googleapis.com/token";
+  private static final String DEFAULT_FCM_URL =
+      "https://fcm.googleapis.com/v1/projects/%s/messages:send";
+  private static final String SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
+
+  private final String projectId;
+  private final String clientEmail;
+  private final PrivateKey privateKey;
+  private final String tokenUrl;
+  private final String fcmUrl;
+  private final OkHttpClient client;
+  private final ObjectMapper mapper;
+
+  /** Production constructor — receives typed credentials from application configuration. */
+  public FcmPushProvider(NotificationProperties properties) {
+    this(
+        new OkHttpClient(),
+        new ObjectMapper(),
+        DEFAULT_TOKEN_URL,
+        null,
+        loadClientEmail(properties.fcm()),
+        loadProjectId(properties.fcm()),
+        loadPrivateKey(properties.fcm()));
+  }
+
+  /** Full constructor for testing — all values injected directly. */
+  public FcmPushProvider(
+      OkHttpClient client,
+      ObjectMapper mapper,
+      String tokenUrl,
+      String fcmBaseUrl,
+      String clientEmail,
+      String projectId,
+      PrivateKey privateKey) {
+    this.client = client;
+    this.mapper = mapper;
+    this.tokenUrl = tokenUrl;
+    this.clientEmail = clientEmail;
+    this.projectId = projectId;
+    this.privateKey = privateKey;
+    this.fcmUrl = fcmBaseUrl != null ? fcmBaseUrl : String.format(DEFAULT_FCM_URL, this.projectId);
+
+    log.info("FCM push provider initialized — project={} email={}", projectId, clientEmail);
+  }
+
+  private static String loadClientEmail(NotificationProperties.Fcm properties) {
+    return safeGet(loadServiceAccount(properties), "client_email", String.class);
+  }
+
+  private static String loadProjectId(NotificationProperties.Fcm properties) {
+    Map<String, Object> sa = loadServiceAccount(properties);
+    return properties.projectId() != null && !properties.projectId().isBlank()
+        ? properties.projectId()
+        : safeGet(sa, "project_id", String.class);
+  }
+
+  private static PrivateKey loadPrivateKey(NotificationProperties.Fcm properties) {
+    return loadPrivateKey(safeGet(loadServiceAccount(properties), "private_key", String.class));
+  }
+
+  /** Parses service account JSON from typed application configuration. */
+  private static Map<String, Object> loadServiceAccount(NotificationProperties.Fcm properties) {
+    String saBase64 = properties.serviceAccount();
+    if (saBase64 == null || saBase64.isBlank()) {
+      throw new PushProviderException(
+          "app.notification.fcm.service-account is required for FCM push provider");
+    }
+    try {
+      byte[] json = Base64.getDecoder().decode(saBase64);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> parsed = new ObjectMapper().readValue(json, Map.class);
+      return parsed;
+    } catch (IOException e) {
+      throw new PushProviderException(
+          "Failed to parse FCM_SERVICE_ACCOUNT_BASE64 as base64-encoded JSON: " + e.getMessage(),
+          e);
+    }
+  }
+
+  @Override
+  public String name() {
+    return "fcm";
+  }
+
+  @Override
+  public String send(String deviceToken, String title, String body, Map<String, String> data) {
+    try {
+      String accessToken = fetchAccessToken();
+      String messageId = sendMessage(accessToken, deviceToken, title, body, data);
+      log.info("FCM push sent — id={} token={}", messageId, deviceToken);
+      return messageId;
+    } catch (IOException e) {
+      throw new PushProviderException("FCM push failed: " + e.getMessage(), e);
+    }
+  }
+
+  // ── OAuth2 token acquisition ──
+
+  String fetchAccessToken() throws IOException {
+    String assertion = buildJwtAssertion();
+
+    String reqBody =
+        "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer" + "&assertion=" + assertion;
+
+    Request req =
+        new Request.Builder()
+            .url(tokenUrl)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .post(RequestBody.create(reqBody, MediaType.get("application/x-www-form-urlencoded")))
+            .build();
+
+    try (Response res = client.newCall(req).execute()) {
+      String respBody = res.body() != null ? res.body().string() : "";
+      if (!res.isSuccessful()) {
+        throw new PushProviderException(
+            "FCM OAuth2 token request failed: HTTP " + res.code() + " — " + respBody);
+      }
+      @SuppressWarnings("unchecked")
+      Map<String, Object> tokenResp = mapper.readValue(respBody, Map.class);
+      return (String) tokenResp.get("access_token");
+    }
+  }
+
+  // ── FCM message delivery ──
+
+  @SuppressWarnings("unchecked")
+  String sendMessage(
+      String accessToken, String deviceToken, String title, String body, Map<String, String> data)
+      throws IOException {
+    Map<String, Object> payload = new LinkedHashMap<>();
+
+    // message.token
+    Map<String, Object> message = new LinkedHashMap<>();
+    message.put("token", deviceToken);
+
+    // message.notification
+    Map<String, Object> notification = new LinkedHashMap<>();
+    notification.put("title", title);
+    notification.put("body", body);
+    message.put("notification", notification);
+
+    // message.data
+    if (data != null && !data.isEmpty()) {
+      Map<String, String> dataMap = new LinkedHashMap<>(data);
+      message.put("data", dataMap);
+    }
+
+    payload.put("message", message);
+
+    String jsonBody = mapper.writeValueAsString(payload);
+
+    Request req =
+        new Request.Builder()
+            .url(fcmUrl)
+            .header("Authorization", "Bearer " + accessToken)
+            .header("Content-Type", "application/json")
+            .post(RequestBody.create(jsonBody, JSON))
+            .build();
+
+    try (Response res = client.newCall(req).execute()) {
+      String respBody = res.body() != null ? res.body().string() : "";
+      if (!res.isSuccessful()) {
+        throw new PushProviderException("FCM send failed: HTTP " + res.code() + " — " + respBody);
+      }
+      Map<String, Object> result = mapper.readValue(respBody, Map.class);
+      return (String) result.get("name");
+    }
+  }
+
+  // ── JWT assertion builder ──
+
+  String buildJwtAssertion() {
+    try {
+      long now = Instant.now().getEpochSecond();
+
+      // Header
+      String headerJson =
+          mapper.writeValueAsString(
+              Map.of(
+                  "alg", "RS256",
+                  "typ", "JWT"));
+      String headerB64 = base64UrlEncode(headerJson.getBytes(StandardCharsets.UTF_8));
+
+      // Claims
+      Map<String, Object> claims = new LinkedHashMap<>();
+      claims.put("iss", clientEmail);
+      claims.put("scope", SCOPE);
+      claims.put("aud", tokenUrl);
+      claims.put("exp", now + 3600);
+      claims.put("iat", now);
+
+      String claimsJson = mapper.writeValueAsString(claims);
+      String claimsB64 = base64UrlEncode(claimsJson.getBytes(StandardCharsets.UTF_8));
+
+      String signingInput = headerB64 + "." + claimsB64;
+
+      // Sign
+      Signature sig = Signature.getInstance("SHA256withRSA");
+      sig.initSign(privateKey);
+      sig.update(signingInput.getBytes(StandardCharsets.UTF_8));
+      String signatureB64 = base64UrlEncode(sig.sign());
+
+      return signingInput + "." + signatureB64;
+    } catch (Exception e) {
+      throw new PushProviderException("Failed to build JWT assertion: " + e.getMessage(), e);
+    }
+  }
+
+  // ── Helpers ──
+
+  static String base64UrlEncode(byte[] data) {
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(data);
+  }
+
+  static PrivateKey loadPrivateKey(String pkcs8Pem) {
+    try {
+      String key =
+          pkcs8Pem
+              .replace("-----BEGIN PRIVATE KEY-----", "")
+              .replace("-----END PRIVATE KEY-----", "")
+              .replaceAll("\\s", "");
+      byte[] keyBytes = Base64.getDecoder().decode(key);
+      PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+      KeyFactory kf = KeyFactory.getInstance("RSA");
+      return kf.generatePrivate(spec);
+    } catch (Exception e) {
+      throw new PushProviderException("Failed to load FCM private key: " + e.getMessage(), e);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  static <T> T safeGet(Map<String, Object> map, String key, Class<T> type) {
+    Object val = map.get(key);
+    if (val == null || !type.isInstance(val)) {
+      throw new PushProviderException("FCM service account missing required field: " + key);
+    }
+    return (T) val;
+  }
+}

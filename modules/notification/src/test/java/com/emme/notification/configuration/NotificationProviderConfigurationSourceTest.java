@@ -24,10 +24,11 @@ class NotificationProviderConfigurationSourceTest {
   @Test
   void productionProvidersDoNotReadProcessEnvironmentDirectly() throws IOException {
     Path providerRoot =
-        sourcePath("modules/notification/src/main/java/com/emme/notification/adapter/out/provider");
+        sourcePath("modules/notification/src/main/java/com/emme/notification/adapter/out/client");
 
     for (String provider : PROVIDERS) {
-      assertThat(Files.readString(providerRoot.resolve(provider)))
+      assertThat(
+              Files.readString(providerRoot.resolve(providerPackage(provider)).resolve(provider)))
           .as("provider source: %s", provider)
           .doesNotContain("System.getenv(");
     }
@@ -37,6 +38,18 @@ class NotificationProviderConfigurationSourceTest {
                 sourcePath(
                     "modules/notification/src/main/java/com/emme/notification/configuration/NotificationProperties.java")))
         .isTrue();
+  }
+
+  private static String providerPackage(String provider) {
+    return switch (provider) {
+      case "ApnsPushProvider.java", "FcmPushProvider.java", "MockPushProvider.java" -> "push";
+      case "MessageBirdProvider.java",
+          "MockSmsProvider.java",
+          "TwilioSmsProvider.java",
+          "VonageProvider.java" ->
+          "sms";
+      default -> "email";
+    };
   }
 
   private static Path sourcePath(String relativePath) {

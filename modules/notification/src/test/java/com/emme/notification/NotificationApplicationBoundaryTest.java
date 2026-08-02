@@ -35,7 +35,7 @@ class NotificationApplicationBoundaryTest {
         assertThat(Files.readString(path))
             .as("application source: %s", path)
             .doesNotContain("com.emme.notification.adapter.out.persistence")
-            .doesNotContain("com.emme.notification.adapter.out.provider")
+            .doesNotContain("com.emme.notification.adapter.out.client")
             .doesNotContain("jakarta.persistence")
             .doesNotContain("org.springframework.data");
       }

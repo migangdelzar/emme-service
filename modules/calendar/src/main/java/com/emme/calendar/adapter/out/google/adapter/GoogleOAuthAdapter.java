@@ -1,7 +1,7 @@
 package com.emme.calendar.adapter.out.google.adapter;
 
 import com.emme.calendar.adapter.out.google.model.PersonaType;
-import com.emme.calendar.adapter.out.google.provider.TokenEncryptionService;
+import com.emme.calendar.adapter.out.google.oauth.TokenEncryptionService;
 import com.emme.calendar.adapter.out.persistence.entity.GoogleOAuthTokenEntity;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleOAuthTokenRepository;
 import com.emme.calendar.configuration.GoogleOAuthConfig;

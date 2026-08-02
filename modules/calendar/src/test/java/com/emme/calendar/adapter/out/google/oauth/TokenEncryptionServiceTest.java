@@ -2,7 +2,6 @@ package com.emme.calendar.adapter.out.google.oauth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.calendar.adapter.out.google.provider.TokenEncryptionService;
 import com.emme.calendar.configuration.GoogleOAuthConfig;
 import org.junit.jupiter.api.Test;
 

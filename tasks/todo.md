@@ -69,6 +69,15 @@
 Identity verification evidence is recorded in
 `docs/superpowers/reviews/2026-08-02-identity-module-verification.md`.
 
+### Tenancy database identifier boundary — 2026-08-02
+
+- [x] Centralized tenant schema-name validation for Liquibase and PostgreSQL
+  RLS/search-path database adapters.
+- [x] Moved `TenantContextAspect` beside the outbound database adapters.
+- [x] Added red/green regression coverage for SQL-fragment rejection and
+  package ownership.
+- [x] Verified focused Tenancy tests and Spotless.
+
 - Migrated build-logic packages from type-first buckets into `core/`, `root/`,
   capability-owned packages, and `git/` while preserving plugin IDs.
 - Added the missing `emme.security` convention entry point and registration test.

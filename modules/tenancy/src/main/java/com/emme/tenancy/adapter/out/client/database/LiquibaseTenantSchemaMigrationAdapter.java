@@ -25,7 +25,7 @@ public final class LiquibaseTenantSchemaMigrationAdapter implements TenantSchema
 
   @Override
   public void migrate(String schemaName) {
-    String validatedSchemaName = validateSchemaName(schemaName);
+    String validatedSchemaName = TenantSchemaName.requireValid(schemaName);
     try (Connection connection = dataSource.getConnection()) {
       try (Statement statement = connection.createStatement()) {
         statement.execute("CREATE SCHEMA IF NOT EXISTS \"" + validatedSchemaName + "\"");
@@ -47,12 +47,5 @@ public final class LiquibaseTenantSchemaMigrationAdapter implements TenantSchema
       throw new IllegalStateException(
           "Failed to migrate tenant schema: " + validatedSchemaName, exception);
     }
-  }
-
-  private String validateSchemaName(String schemaName) {
-    if (schemaName == null || !schemaName.matches("[a-z0-9_]+")) {
-      throw new IllegalArgumentException("Invalid tenant schema name: " + schemaName);
-    }
-    return schemaName;
   }
 }

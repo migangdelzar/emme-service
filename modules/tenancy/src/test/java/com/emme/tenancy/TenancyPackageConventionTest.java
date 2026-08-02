@@ -60,7 +60,10 @@ class TenancyPackageConventionTest {
   private static final Path PERSISTENCE_MAPPER =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/mapper/TenantPersistenceMapper.java");
-  private static final Path PERSISTENCE_ASPECT =
+  private static final Path DATABASE_CONTEXT_ASPECT =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantContextAspect.java");
+  private static final Path LEGACY_PERSISTENCE_ASPECT =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/aspect/TenantContextAspect.java");
   private static final Path LEGACY_TENANT_CONTEXT_ASPECT =
@@ -252,8 +255,9 @@ class TenancyPackageConventionTest {
   }
 
   @Test
-  void ownsTenantContextAspectUnderOutboundPersistence() {
-    assertThat(Files.exists(PERSISTENCE_ASPECT)).isTrue();
+  void ownsTenantContextAspectUnderOutboundDatabaseAdapters() {
+    assertThat(Files.exists(DATABASE_CONTEXT_ASPECT)).isTrue();
+    assertThat(Files.exists(LEGACY_PERSISTENCE_ASPECT)).isFalse();
     assertThat(Files.exists(LEGACY_TENANT_CONTEXT_ASPECT)).isFalse();
   }
 

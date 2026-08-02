@@ -238,6 +238,22 @@ report.
 
 ### Reconciliation evidence
 
+## Completed database identifier boundary slice — 2026-08-02
+
+- [x] Centralized tenant schema-name validation in the outbound database
+  adapter boundary.
+- [x] Applied the same validation before the PostgreSQL RLS/search-path aspect
+  uses a registry-provided schema identifier.
+- [x] Moved `TenantContextAspect` beside the routing, pool, and Liquibase
+  database adapters; it is not persistence-domain behavior.
+- [x] Added regression coverage for accepted identifiers, SQL fragments, the
+  Liquibase adapter, and canonical package ownership.
+- [x] Verified the focused Tenancy tests and formatting.
+
+Remaining Tenancy work is operational pool/routing/recovery evidence,
+provisioning replay and rollback evidence, transaction/after-commit evidence,
+and the committed final verification report.
+
 - `:modules:tenancy:test` passed.
 - `:modules:tenancy:integrationTest` passed.
 - `:modules:tenancy:check` passed.

@@ -29,7 +29,7 @@ class GoogleModuleArchTest {
           .importPackages("com.emme");
 
   private static final Set<String> ALLOWED_GOOGLE_SUB_MODULES =
-      Set.of("adapter", "client", "provider", "model");
+      Set.of("adapter", "client", "provider", "model", "oauth");
 
   // ── One-way dependency: calendar must not depend on google ───────────────
 

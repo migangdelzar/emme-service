@@ -5,11 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.emme.calendar.adapter.out.google.client.GoogleCalendarClient;
 import com.emme.calendar.api.result.CalendarBusyTimeRange;
 import com.emme.calendar.configuration.GoogleCalendarProperties;
+import com.emme.calendar.configuration.GoogleHttpClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 
 class GoogleCalendarClientLiveTest {
@@ -24,7 +27,10 @@ class GoogleCalendarClientLiveTest {
 
     GoogleCalendarClient client =
         new GoogleCalendarClient(
-            Optional.empty(), new GoogleCalendarProperties(saJson, null, null));
+            Optional.empty(),
+            new GoogleCalendarProperties(saJson, null, null),
+            new GoogleHttpClient(new OkHttpClient()),
+            new ObjectMapper());
 
     // Verify auth works (token obtained)
     String token = client.getAccessToken(false);

@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: studio-api
+  name: emme-platform
   labels:
-    app: studio-api
+    app: emme-platform
 spec:
   replicas: 2
   strategy:
@@ -13,15 +13,15 @@ spec:
       maxSurge: 1
   selector:
     matchLabels:
-      app: studio-api
+      app: emme-platform
   template:
     metadata:
       labels:
-        app: studio-api
+        app: emme-platform
     spec:
       containers:
-        - name: studio-api
-          image: ghcr.io/migangdelzar/emme-service-studio-api:latest
+        - name: emme-platform
+          image: ghcr.io/migangdelzar/emme-service:latest
           ports:
             - containerPort: 8081
               protocol: TCP

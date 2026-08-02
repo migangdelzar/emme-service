@@ -1,6 +1,6 @@
 services:
-  studio-api:
-    image: ghcr.io/migangdelzar/emme-service-studio-api:${TAG:-latest}
+  emme-platform:
+    image: ghcr.io/migangdelzar/emme-service:${TAG:-latest}
     ports:
       - "8081:8081"
     environment:

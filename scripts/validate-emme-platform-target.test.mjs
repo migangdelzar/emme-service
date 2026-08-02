@@ -4,7 +4,10 @@ import path from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { validateTargetFiles } from './validate-emme-platform-target.mjs';
+import {
+  canonicalTargetRules,
+  validateTargetFiles,
+} from './validate-emme-platform-target.mjs';
 
 test('rejects an active deployment file that targets studio-api', async () => {
   const repositoryRoot = await mkdtemp(path.join(tmpdir(), 'emme-target-'));
@@ -54,6 +57,15 @@ test('accepts an emme-platform deployment file', async () => {
         },
       ],
     },
+  });
+
+  assert.deepEqual(errors, []);
+});
+
+test('repository deployment surfaces target emme-platform', async () => {
+  const errors = await validateTargetFiles({
+    repositoryRoot: process.cwd(),
+    rules: canonicalTargetRules,
   });
 
   assert.deepEqual(errors, []);

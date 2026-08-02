@@ -35,7 +35,7 @@ export async function validateTargetFiles({ repositoryRoot, rules }) {
   return errors;
 }
 
-const canonicalTargetRules = {
+export const canonicalTargetRules = {
   files: [
     {
       path: '.github/workflows/ci-module-boundaries.yml',
@@ -74,13 +74,43 @@ const canonicalTargetRules = {
     },
     {
       path: 'deployment/helm/emme/values.yaml',
-      required: ['ghcr.io/migangdelzar/emme-service:'],
+      required: ['repository: ghcr.io/migangdelzar/emme-service'],
       forbidden: ['emme-service-studio-api'],
     },
     {
       path: 'deployment/kubernetes/base/kustomization.yml',
       required: ['emme-platform/deployment.yml', 'emme-platform/service.yml'],
       forbidden: ['studio-api/'],
+    },
+    {
+      path: 'deployment/kubernetes/base/emme-platform/deployment.yml',
+      required: ['name: emme-platform', 'app: emme-platform', 'ghcr.io/migangdelzar/emme-service:'],
+      forbidden: ['studio-api', 'emme-service-studio-api'],
+    },
+    {
+      path: 'deployment/kubernetes/base/emme-platform/service.yml',
+      required: ['name: emme-platform', 'app: emme-platform'],
+      forbidden: ['studio-api'],
+    },
+    {
+      path: 'deployment/kubernetes/base/ingress/ingress.yml',
+      required: ['name: emme-platform', 'secretName: emme-platform-tls'],
+      forbidden: ['studio-api'],
+    },
+    {
+      path: 'deployment/kubernetes/overlays/local/kustomization.yml',
+      required: ['ghcr.io/migangdelzar/emme-service', 'name: emme-platform'],
+      forbidden: ['studio-api', 'emme-service-studio-api'],
+    },
+    {
+      path: 'deployment/kubernetes/overlays/production/kustomization.yml',
+      required: ['ghcr.io/migangdelzar/emme-service', 'name: emme-platform'],
+      forbidden: ['studio-api', 'emme-service-studio-api'],
+    },
+    {
+      path: 'deployment/kubernetes/components/network-policies/kustomization.yml',
+      required: ['deny-all.yml'],
+      forbidden: ['studio-api'],
     },
     {
       path: 'deployment/scripts/wait-for-cluster.sh',

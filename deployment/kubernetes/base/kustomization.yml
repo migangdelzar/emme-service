@@ -2,9 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - studio-api/deployment.yml
-  - studio-api/service.yml
+  - emme-platform/deployment.yml
+  - emme-platform/service.yml
 
-commonLabels:
-  app.kubernetes.io/part-of: emme
-  app.kubernetes.io/managed-by: kustomize
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: emme
+      app.kubernetes.io/managed-by: kustomize

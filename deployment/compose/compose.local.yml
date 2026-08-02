@@ -1,6 +1,6 @@
 # Local dev — mounts source for hot reload
 services:
-  studio-api:
+  emme-platform:
     build:
       context: ../..
     environment:

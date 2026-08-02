@@ -68,11 +68,28 @@ flowchart TD
 - Consumes: current plugin IDs from `build-logic/src/main/kotlin/emme.*.gradle.kts` and binary registrations in `build-logic/build.gradle.kts`.
 - Produces: failing tests that detect moved files without capability ownership, missing public IDs, and missing stable task-name contracts.
 
-- [ ] **Step 1: Write failing inventory and ID tests.** Assert that every current convention script exists, every binary plugin registration has its implementation class, and each delivery plugin's required task names is documented by a test fixture.
-- [ ] **Step 2: Run the focused tests.** Run `./gradlew :build-logic:test --tests '*ArchitectureInventoryTest' --tests '*PluginIdContractTest' --no-daemon --no-configuration-cache --console=plain`; expected result is red until the assertions match the current inventory.
-- [ ] **Step 3: Implement the smallest guardrail.** Use `projectDir.resolve(...)`, `File.exists()`, and a constant map of stable IDs/task names; do not introduce reflection or a global scanner.
-- [ ] **Step 4: Run the focused tests again.** Expected result is green with the current source tree.
-- [ ] **Step 5: Commit.** `git commit -m "test(build-logic): add CDD migration guardrails"`.
+- [x] **Step 1: Write inventory and ID tests.** Assert that every current convention script exists and every binary plugin registration retains its implementation class.
+- [x] **Step 2: Run the focused tests.** `ArchitectureInventoryTest` and `PluginIdContractTest` pass against the current included build.
+- [x] **Step 3: Implement the smallest guardrail.** The tests use repository-relative source paths and explicit contracts; no reflection or global scanner was introduced.
+- [x] **Step 4: Run the focused tests again.** Green.
+- [x] **Step 5: Commit.** Included in the first build-logic CDD normalization commit.
+
+## Completed build-task naming slice — 2026-08-02
+
+- [x] Renamed publishing task implementation types to the normalized
+  `*Task` convention: `GenerateBuildInfoTask`, `GenerateReleaseManifestTask`,
+  and `VerifyReleaseVersionTask`.
+- [x] Renamed the unreleased registered task IDs to
+  `publishBuildInfo` and `publishVerifyVersion`; `publishManifest`,
+  `publishSign`, and `publishSbom` remain explicit and stable.
+- [x] Added inventory and plugin-ID contract tests.
+- [x] Verified `:build-logic:check`, including Spotless, Detekt, unit tests,
+  functional tests, and plugin validation.
+
+The remaining build-logic plan continues with capability ownership, lazy
+provider/task input verification, configuration-cache coverage, and complete
+TestKit coverage for each plugin family. No compatibility aliases are added for
+the old unreleased task names.
 
 ### Task 2: Audit `core`, `model`, `root`, and dependency access
 

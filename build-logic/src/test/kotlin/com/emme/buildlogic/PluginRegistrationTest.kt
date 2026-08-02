@@ -72,9 +72,9 @@ class PluginRegistrationTest {
     val project = project()
     project.pluginManager.apply(EmmePublishingPlugin::class.java)
 
-    assertThat(project.tasks.findByName("publishInfo")).isNotNull
+    assertThat(project.tasks.findByName("publishBuildInfo")).isNotNull
     assertThat(project.tasks.findByName("publishManifest")).isNotNull
-    assertThat(project.tasks.findByName("publishVerify")).isNotNull
+    assertThat(project.tasks.findByName("publishVerifyVersion")).isNotNull
     assertThat(project.tasks.findByName("publishSign")).isNotNull
     assertThat(project.tasks.findByName("publishSbom")).isNotNull
   }

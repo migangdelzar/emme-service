@@ -6,11 +6,11 @@ import com.emme.buildlogic.git.GitCommitValueSource
 import com.emme.buildlogic.model.ReleaseChannel
 import com.emme.buildlogic.publishing.provider.GhcrPublisherProvider
 import com.emme.buildlogic.publishing.provider.PublisherProvider
-import com.emme.buildlogic.publishing.task.GenerateBuildInfo
-import com.emme.buildlogic.publishing.task.GenerateReleaseManifest
+import com.emme.buildlogic.publishing.task.GenerateBuildInfoTask
+import com.emme.buildlogic.publishing.task.GenerateReleaseManifestTask
 import com.emme.buildlogic.publishing.task.GenerateSbomTask
 import com.emme.buildlogic.publishing.task.SignArtifactsTask
-import com.emme.buildlogic.publishing.task.VerifyReleaseVersion
+import com.emme.buildlogic.publishing.task.VerifyReleaseVersionTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
@@ -34,7 +34,7 @@ class EmmePublishingPlugin : Plugin<Project> {
           maxParallelUsages.set(1)
         }
 
-      tasks.register(TaskNames.PUBLISH_INFO, GenerateBuildInfo::class.java) {
+      tasks.register(TaskNames.PUBLISH_BUILD_INFO, GenerateBuildInfoTask::class.java) {
         group = "publishing"
         this.version.set(version)
         commit.set(gitCommit)
@@ -43,7 +43,7 @@ class EmmePublishingPlugin : Plugin<Project> {
         outputFile.set(layout.buildDirectory.file("publishing/build-info.properties"))
         onlyIf { extension.enabled.get() }
       }
-      tasks.register(TaskNames.PUBLISH_MANIFEST, GenerateReleaseManifest::class.java) {
+      tasks.register(TaskNames.PUBLISH_MANIFEST, GenerateReleaseManifestTask::class.java) {
         group = "publishing"
         this.version.set(version)
         channel.set(extension.channel.map { c: ReleaseChannel -> c.name.lowercase() })
@@ -52,7 +52,7 @@ class EmmePublishingPlugin : Plugin<Project> {
         manifestFile.set(layout.buildDirectory.file("publishing/manifest.yaml"))
         onlyIf { extension.enabled.get() }
       }
-      tasks.register(TaskNames.PUBLISH_VERIFY, VerifyReleaseVersion::class.java) {
+      tasks.register(TaskNames.PUBLISH_VERIFY_VERSION, VerifyReleaseVersionTask::class.java) {
         group = "publishing"
         this.version.set(version)
         onlyIf { extension.enabled.get() }

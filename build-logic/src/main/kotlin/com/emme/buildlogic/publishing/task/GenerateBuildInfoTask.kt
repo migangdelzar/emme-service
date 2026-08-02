@@ -9,7 +9,7 @@ import org.gradle.api.tasks.TaskAction
 import java.time.Instant
 import java.util.Properties
 
-abstract class GenerateBuildInfo : DefaultTask() {
+abstract class GenerateBuildInfoTask : DefaultTask() {
   @get:Input
   abstract val version: Property<String>
 

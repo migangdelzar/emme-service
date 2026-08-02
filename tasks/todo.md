@@ -225,6 +225,8 @@ reopened by this backlog.
 
 - [x] Create the build-logic CDD design specification and file-by-file
   implementation plan.
+- [x] Add build-logic source/plugin inventory guardrails and normalize
+  publishing task implementation names and unreleased task IDs.
 - [ ] Normalize every build-logic capability, convention script, binary plugin,
   extension, task, provider, result, model, ValueSource, and test according to
   the dedicated plan.

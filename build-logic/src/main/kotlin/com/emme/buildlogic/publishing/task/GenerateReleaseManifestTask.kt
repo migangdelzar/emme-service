@@ -8,7 +8,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import java.time.Instant
 
-abstract class GenerateReleaseManifest : DefaultTask() {
+abstract class GenerateReleaseManifestTask : DefaultTask() {
   @get:Input
   abstract val version: Property<String>
 

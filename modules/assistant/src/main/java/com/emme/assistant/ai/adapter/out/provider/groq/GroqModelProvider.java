@@ -5,8 +5,6 @@ import com.emme.assistant.ai.configuration.AiHttpClient;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -138,9 +136,9 @@ public class GroqModelProvider implements ModelProvider {
 
   @Override
   public List<Float> embed(String text) {
-    // Groq does not offer embeddings — return zero vector
-    log.debug("Groq does not support embeddings — returning zero vector for: {}", text);
-    return new ArrayList<>(Collections.nCopies(768, 0.0f));
+    // Groq does not offer embeddings. Do not persist a zero vector: cosine distance is undefined.
+    log.debug("Groq does not support embeddings — leaving text unembedded");
+    return List.of();
   }
 
   @Override

@@ -460,28 +460,28 @@ git commit -m "refactor(assistant): normalize AI ports and use-case services"
 
 **Files:**
 
-- Create: `adapter/out/client/package-info.java`
-- Create: `adapter/out/client/groq/package-info.java`
-- Create: `adapter/out/client/groq/{GroqHttpClient,GroqClientMapper,GroqModelAdapter}.java`
-- Create: `adapter/out/client/ollama/package-info.java`
-- Create: `adapter/out/client/ollama/{OllamaHttpClient,OllamaClientMapper,OllamaModelAdapter}.java`
-- Create: `adapter/out/client/mock/package-info.java`
-- Create: `adapter/out/client/mock/MockModelAdapter.java`
-- Create provider contract tests under `modules/assistant/src/integrationTest/java/com/emme/assistant/adapter/out/client/`
+- Create: `adapter/out/provider/package-info.java`
+- Create: `adapter/out/provider/groq/package-info.java`
+- Create: `adapter/out/provider/groq/{GroqHttpClient,GroqClientMapper,GroqModelProvider}.java`
+- Create: `adapter/out/provider/ollama/package-info.java`
+- Create: `adapter/out/provider/ollama/{OllamaHttpClient,OllamaClientMapper,OllamaModelProvider}.java`
+- Create: `adapter/out/provider/mock/package-info.java`
+- Create: `adapter/out/provider/mock/MockModelProvider.java`
+- Create provider contract tests under `modules/assistant/src/integrationTest/java/com/emme/assistant/ai/adapter/out/provider/`
 - Delete legacy `ai/application/{GroqModelProvider,OllamaModelProvider,MockModelProvider}.java` after references migrate.
 
 **Interfaces:**
 
-- Each `*ModelAdapter` implements `ModelProvider`.
+- Each `*ModelProvider` implements `ModelProvider`.
 - Each HTTP client owns only OkHttp request execution.
 - Each client mapper owns provider JSON/request translation.
 - Provider adapters preserve current fallback strings, intent sanitization, embedding behavior, conditional activation, and configuration defaults.
 - No provider class reads environment variables directly after configuration wiring; secrets enter through `AiProperties` or a dedicated configuration port.
 
 - [ ] **Step 1: Add fake HTTP client tests for success, provider errors, malformed payloads, and empty results**
-- [ ] **Step 2: Extract Groq transport client/mapper/adapter**
-- [ ] **Step 3: Extract Ollama transport client/mapper/adapter**
-- [ ] **Step 4: Move mock provider into the same external-system package convention**
+- [x] **Step 2: Extract Groq transport client/mapper/provider boundary**
+- [x] **Step 3: Extract Ollama transport client/mapper/provider boundary**
+- [x] **Step 4: Move mock provider into the same external-system package convention**
 - [ ] **Step 5: Run provider tests and full Assistant compile**
 - [ ] **Step 6: Commit**
 
@@ -930,3 +930,15 @@ This slice closes an application-level tenant-isolation gap without changing
 HTTP paths, response shapes, or database schema. Live provider contract tests,
 PostgreSQL replay evidence, and the final service-wide verification gate remain
 open by design.
+
+## Completed unsupported-embedding contract slice — 2026-08-02
+
+- [x] Added a regression test for the `ModelProvider` contract when Groq cannot
+  generate embeddings.
+- [x] Changed `GroqModelProvider` to return an empty list instead of a zero
+  vector, preventing invalid cosine-search data from being persisted.
+- [x] Preserved typed AI configuration and the provider composition boundary.
+- [x] Verified the focused Assistant test and formatting.
+
+The remaining Assistant work is live provider contract execution, PostgreSQL
+replay evidence, and final service-wide verification.

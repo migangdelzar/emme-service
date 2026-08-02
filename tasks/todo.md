@@ -794,6 +794,14 @@ secret-redaction contract.
 - [x] Verify `:modules:assistant:check` with zero failures and zero skipped tests.
 - [ ] Complete live provider contract, PostgreSQL replay, and service-wide verification evidence.
 
+### Assistant unsupported-embedding contract — 2026-08-02
+
+- [x] Add a regression test for Groq's unsupported embedding capability.
+- [x] Return an empty embedding result instead of a persisted zero vector.
+- [x] Verify focused Assistant test and formatting.
+- [ ] Complete live provider contract, PostgreSQL replay, and service-wide
+  verification evidence.
+
 ## Module migration plan registry — 2026-07-31
 
 - [x] Normalize contract-only plans for `customer`, `workforce`, and `booking`.

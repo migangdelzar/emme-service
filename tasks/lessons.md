@@ -420,3 +420,13 @@
 - Prevention rule: keep routing responsible only for selecting the database key
   and delegating target resolution to the capability-owned pool provider; test
   both boundaries independently.
+
+## 2026-08-02 — Unsupported search capabilities must degrade to absence
+
+- Failure mode: the Groq AI provider returned a synthetic zero embedding even
+  though it does not support embedding generation.
+- Detection signal: a provider implementation returned a fixed-size zero vector
+  while its public contract specified an empty result for unavailable embeddings.
+- Prevention rule: unsupported embedding providers return an empty result and
+  callers skip persistence; never store fabricated vectors that make cosine
+  search produce misleading results.

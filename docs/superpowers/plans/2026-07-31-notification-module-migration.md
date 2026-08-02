@@ -275,3 +275,17 @@ retry/idempotency behavior, and credentialed live-provider verification.
 Remaining Notification evidence is provider contract depth, transient-failure
 retry policy, credentialed live-provider verification, and the final
 service-wide gate.
+
+## Completed unsupported-channel delivery guard — 2026-08-02
+
+- [x] Added a red/green delivery-service regression test for channels without a
+  configured provider.
+- [x] Rejected unsupported `WHATSAPP` and `WEB` delivery paths explicitly
+  instead of returning a null provider ID and marking the notification as
+  delivered.
+- [x] Preserved the existing failure-state persistence behavior and verified
+  the focused Notification delivery tests.
+
+Remaining Notification evidence is deterministic provider contract depth,
+transient-failure retry policy, credentialed live-provider verification, and the
+final service-wide gate.

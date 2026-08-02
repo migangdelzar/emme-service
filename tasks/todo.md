@@ -1290,6 +1290,16 @@ limiting, then continue authorization domain/application separation.
 - [x] Verify Payment unit, module, formatting, and integration checks.
 - [ ] Complete provider contract depth, webhook replay/signature evidence, and service-wide verification.
 
+## Notification unsupported-channel delivery guard — 2026-08-02
+
+- [x] Add a failing regression test proving unsupported channels must not be
+  marked delivered.
+- [x] Fail explicitly for unsupported `WHATSAPP` and `WEB` delivery paths so
+  the existing application failure path persists `FAILED`.
+- [x] Verify focused Notification delivery tests.
+- [ ] Continue deterministic provider contracts, retry/idempotency, and live
+  integration evidence.
+
 ## Shared capability package normalization — 2026-08-02
 
 - [x] Move `BaseEntity` and `TenantOwnedEntity` to `shared.persistence`.

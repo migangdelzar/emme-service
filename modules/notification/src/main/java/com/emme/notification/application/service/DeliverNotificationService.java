@@ -71,7 +71,9 @@ public class DeliverNotificationService implements DeliverNotificationUseCase {
       case PUSH ->
           pushSender.send(
               notification.recipientReference(), "EMME", notification.body(), java.util.Map.of());
-      case WHATSAPP, WEB -> null;
+      case WHATSAPP, WEB ->
+          throw new IllegalStateException(
+              "No notification provider configured for channel: " + notification.channel());
     };
   }
 }

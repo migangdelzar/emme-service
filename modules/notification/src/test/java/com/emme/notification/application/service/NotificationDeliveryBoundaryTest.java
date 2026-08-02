@@ -66,4 +66,34 @@ class NotificationDeliveryBoundaryTest {
                         tenantId, notificationId)))
         .isInstanceOf(com.emme.notification.api.exception.NotificationNotFoundException.class);
   }
+
+  @Test
+  void marksUnsupportedChannelsAsFailedInsteadOfDelivered() {
+    UUID tenantId = UUID.randomUUID();
+    UUID notificationId = UUID.randomUUID();
+    Notification notification =
+        Notification.rehydrate(
+            notificationId,
+            tenantId,
+            NotificationChannel.WHATSAPP,
+            "recipient",
+            "body",
+            NotificationStatus.REQUESTED,
+            Instant.now());
+    NotificationRepository repository = mock(NotificationRepository.class);
+    EmailSender emailSender = mock(EmailSender.class);
+    SmsSender smsSender = mock(SmsSender.class);
+    PushSender pushSender = mock(PushSender.class);
+    NotificationEventPublisher events = mock(NotificationEventPublisher.class);
+    when(repository.findByTenantIdAndId(tenantId, notificationId))
+        .thenReturn(Optional.of(notification));
+    when(repository.save(notification)).thenReturn(notification);
+
+    var result =
+        new DeliverNotificationService(repository, emailSender, smsSender, pushSender, events)
+            .deliver(new DeliverNotificationCommand(tenantId, notificationId));
+
+    assertThat(result.status()).isEqualTo(NotificationStatus.FAILED);
+    verifyNoInteractions(emailSender, smsSender, pushSender, events);
+  }
 }

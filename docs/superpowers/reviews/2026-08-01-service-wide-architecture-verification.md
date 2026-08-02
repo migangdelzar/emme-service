@@ -21,6 +21,8 @@ Calendar clients.
 | Notification clients grouped by email, SMS, and push channel | Pass |
 | Payment clients grouped by provider technology | Pass |
 | Calendar OAuth support grouped under the OAuth capability package | Pass |
+| External HTTP clients composed at capability roots | Pass for Assistant, Calendar, Notification, and Payment |
+| Deterministic provider HTTP contract coverage | Pass for Stripe and Twilio representative contracts |
 | Legacy generic provider source packages | No tracked production sources remain |
 | Application architecture tests | Pass |
 | Spring Modulith named interfaces | Pass for `emme-platform` and `studio-api` |
@@ -52,7 +54,9 @@ Focused red/green tests also passed for:
 - WhatsApp webhook mapping, signature verification, tenant routing, replay
   claim, and duplicate suppression;
 - Notification and Payment technology-owned client packages;
-- Calendar OAuth package ownership.
+- Calendar OAuth package ownership and Google transport injection;
+- Stripe request/authentication/error mapping through a local HTTP contract;
+- Twilio request/authentication/error mapping through a local HTTP contract.
 
 ## Operational notes
 
@@ -77,3 +81,9 @@ ordered final phase.
 - `ef317f0` — canonical application architecture rules and package placement
 - `3a320a9` — Assistant AI and WhatsApp adapter boundaries
 - `42bd5db` — technology-owned delivery client packages
+- `696e5f1` — service-wide migration verification report
+- `c0ee541` — Notification and Payment transport injection
+- `d5f3b8e` — Calendar Google transport injection
+- `389ec87` — deterministic Stripe and Twilio provider contracts
+- `b030052` — canonical delivery formatting
+- `c3ece72`, `3a10dee` — application-level Google package-rule alignment

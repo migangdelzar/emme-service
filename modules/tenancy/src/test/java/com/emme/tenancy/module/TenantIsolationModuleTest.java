@@ -37,7 +37,7 @@ class TenantIsolationModuleTest extends BaseSpringModuleTest {
   void shouldFilterByTenant() throws Exception {
     // Verify tenant A is accessible with its own data
     mockMvc
-        .perform(get("/api/v1/tenants/" + tenantA.id()).with(tenantJwt()))
+        .perform(get("/api/tenants/" + tenantA.id()).with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(tenantA.id().toString()))
         .andExpect(jsonPath("$.slug").value(tenantA.slug()))
@@ -45,7 +45,7 @@ class TenantIsolationModuleTest extends BaseSpringModuleTest {
 
     // Verify tenant B is accessible with its own data
     mockMvc
-        .perform(get("/api/v1/tenants/" + tenantB.id()).with(tenantJwt()))
+        .perform(get("/api/tenants/" + tenantB.id()).with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(tenantB.id().toString()))
         .andExpect(jsonPath("$.slug").value(tenantB.slug()))
@@ -63,13 +63,13 @@ class TenantIsolationModuleTest extends BaseSpringModuleTest {
     UUID unknownId = UUID.randomUUID();
 
     mockMvc
-        .perform(get("/api/v1/tenants/" + unknownId).with(tenantJwt()))
+        .perform(get("/api/tenants/" + unknownId).with(tenantJwt()))
         .andExpect(status().isNotFound());
 
     // Verify that updating a non-existent tenant also fails
     mockMvc
         .perform(
-            patch("/api/v1/tenants/" + unknownId)
+            patch("/api/tenants/" + unknownId)
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -79,7 +79,7 @@ class TenantIsolationModuleTest extends BaseSpringModuleTest {
 
     // Verify that suspend on non-existent tenant fails
     mockMvc
-        .perform(post("/api/v1/tenants/" + unknownId + "/suspend").with(tenantJwt()))
+        .perform(post("/api/tenants/" + unknownId + "/suspend").with(tenantJwt()))
         .andExpect(status().isNotFound());
   }
 
@@ -92,7 +92,7 @@ class TenantIsolationModuleTest extends BaseSpringModuleTest {
     // Make a request with JWT containing that tenant_id
     mockMvc
         .perform(
-            get("/api/v1/tenants/" + specificTenantId)
+            get("/api/tenants/" + specificTenantId)
                 .with(tenantJwt(specificTenantId, TEST_USER_SUB, "platform_admin", "tenant_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(specificTenantId.toString()));

@@ -14,7 +14,7 @@ class AppointmentApiTest {
     withSession(
         s -> {
           s.setup().subscription(DEMO_TENANT);
-          var result = s.get("/api/v1/appointments", 403);
+          var result = s.get("/api/appointments", 403);
           assertThat(result).isNotNull();
         });
   }
@@ -28,7 +28,7 @@ class AppointmentApiTest {
               """
                 {"customerId":"00000000-0000-0000-0000-000000000000","serviceId":"00000000-0000-0000-0000-000000000000","artistId":"00000000-0000-0000-0000-000000000000","startsAt":"2027-01-15T10:00:00Z","endsAt":"2027-01-15T11:00:00Z"}
                 """;
-          var result = s.post("/api/v1/appointments", body, 500);
+          var result = s.post("/api/appointments", body, 500);
           assertThat(result).isNotNull();
         });
   }
@@ -42,7 +42,7 @@ class AppointmentApiTest {
               """
                 {"customerId":"","serviceId":"","artistId":"","startsAt":"","endsAt":""}
                 """;
-          var result = s.post("/api/v1/appointments", body, 400);
+          var result = s.post("/api/appointments", body, 400);
           assertThat(result).isNotNull();
         });
   }

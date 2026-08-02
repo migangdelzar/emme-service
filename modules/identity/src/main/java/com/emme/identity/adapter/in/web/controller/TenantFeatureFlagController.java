@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/tenant/features")
+@RequestMapping("/api/tenant/features")
 @Tag(name = "Tenant Features")
 @PreAuthorize("hasAnyRole('platform_admin', 'tenant_owner')")
 public class TenantFeatureFlagController {

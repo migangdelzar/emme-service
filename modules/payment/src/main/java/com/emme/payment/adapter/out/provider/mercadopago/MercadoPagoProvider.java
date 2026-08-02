@@ -81,7 +81,7 @@ public class MercadoPagoProvider implements PaymentProvider {
               "external_reference",
               idempotencyKey,
               "notification_url",
-              "https://emme.app/api/v1/callbacks/payments");
+              "https://emme.app/api/callbacks/payments");
 
       Request req =
           new Request.Builder()

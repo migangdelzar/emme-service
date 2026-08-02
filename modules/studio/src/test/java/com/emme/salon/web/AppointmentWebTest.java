@@ -41,7 +41,7 @@ class AppointmentWebTest extends BaseWebTest {
     MvcResult artistResult =
         mockMvc
             .perform(
-                post("/api/v1/artists")
+                post("/api/artists")
                     .with(auth())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\":\"Web Artist\"}"))
@@ -52,7 +52,7 @@ class AppointmentWebTest extends BaseWebTest {
     MvcResult customerResult =
         mockMvc
             .perform(
-                post("/api/v1/customers")
+                post("/api/customers")
                     .with(auth())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\":\"Web Customer\"}"))
@@ -63,7 +63,7 @@ class AppointmentWebTest extends BaseWebTest {
     MvcResult serviceResult =
         mockMvc
             .perform(
-                post("/api/v1/services")
+                post("/api/services")
                     .with(auth())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -77,7 +77,7 @@ class AppointmentWebTest extends BaseWebTest {
   void shouldReturn400ForMissingFields() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/appointments")
+            post("/api/appointments")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
@@ -87,7 +87,7 @@ class AppointmentWebTest extends BaseWebTest {
   @Test
   void shouldReturn404ForUnknownAppointment() throws Exception {
     mockMvc
-        .perform(get("/api/v1/appointments/{id}", UUID.randomUUID()).with(auth()))
+        .perform(get("/api/appointments/{id}", UUID.randomUUID()).with(auth()))
         .andExpect(status().isNotFound());
   }
 
@@ -103,7 +103,7 @@ class AppointmentWebTest extends BaseWebTest {
 
     mockMvc
         .perform(
-            post("/api/v1/appointments")
+            post("/api/appointments")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))

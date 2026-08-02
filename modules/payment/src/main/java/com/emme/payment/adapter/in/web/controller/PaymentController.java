@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/payments")
+@RequestMapping("/api/payments")
 public class PaymentController {
   private final InitiatePaymentUseCase initiatePayment;
   private final ListPaymentsUseCase listPayments;
@@ -57,7 +57,7 @@ public class PaymentController {
     return withCurrentTenant(
         tenantId -> {
           var payment = initiatePayment.initiate(PaymentWebMapper.toCommand(tenantId, request));
-          return ResponseEntity.created(URI.create("/api/v1/payments/" + payment.id()))
+          return ResponseEntity.created(URI.create("/api/payments/" + payment.id()))
               .body(PaymentResponse.from(payment));
         });
   }

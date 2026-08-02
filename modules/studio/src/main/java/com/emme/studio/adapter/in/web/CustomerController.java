@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/customers")
+@RequestMapping("/api/customers")
 @Tag(name = "Customers")
 public class CustomerController {
 
@@ -76,7 +76,7 @@ public class CustomerController {
           enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "customers:write"));
           Customer customer =
               createCustomer.create(tenantId, request.name(), request.phone(), request.email());
-          var location = URI.create("/api/v1/customers/" + customer.getId());
+          var location = URI.create("/api/customers/" + customer.getId());
           return ResponseEntity.created(location).body(CustomerResponse.from(customer));
         });
   }

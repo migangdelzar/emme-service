@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** HTTP entry point for the Tenant lifecycle use cases. */
 @RestController
-@RequestMapping("/api/v1/tenants")
+@RequestMapping("/api/tenants")
 @Tag(name = "Tenants")
 public class TenantController {
 
@@ -74,7 +74,7 @@ public class TenantController {
   public ResponseEntity<TenantResponse> create(@Valid @RequestBody CreateTenantRequest request) {
     TenantInfo tenant =
         createTenant.create(new CreateTenantCommand(request.slug(), request.name()));
-    URI location = URI.create("/api/v1/tenants/" + tenant.id());
+    URI location = URI.create("/api/tenants/" + tenant.id());
     return ResponseEntity.created(location).body(mapper.toResponse(tenant));
   }
 

@@ -10,6 +10,6 @@ public class CatalogCrud {
   }
 
   public String list() {
-    return session.get("/api/v1/catalog/items");
+    return session.get("/api/catalog/items");
   }
 }

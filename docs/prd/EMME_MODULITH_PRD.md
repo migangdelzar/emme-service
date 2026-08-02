@@ -72,7 +72,7 @@ sequenceDiagram
     participant Notif as notifications
 
     Customer->>Frontend: Send message
-    Frontend->>API: POST /api/v1/conversations/{id}/messages
+    Frontend->>API: POST /api/conversations/{id}/messages
     API->>Conv: Record inbound message
     Conv->>AI: Request response orchestration
     AI->>Model: Chat / vision / embedding call

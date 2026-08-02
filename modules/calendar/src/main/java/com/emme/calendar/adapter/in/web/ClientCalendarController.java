@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/client/calendar")
+@RequestMapping("/api/client/calendar")
 @Tag(name = "Client Calendar")
 public class ClientCalendarController {
 

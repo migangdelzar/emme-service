@@ -10,11 +10,10 @@ public class DocumentCrud {
   }
 
   public String list() {
-    return session.get("/api/v1/documents");
+    return session.get("/api/documents");
   }
 
   public String create(String name) {
-    return session.post(
-        "/api/v1/documents", "{\"name\":\"" + name + "\",\"sourceType\":\"MANUAL\"}");
+    return session.post("/api/documents", "{\"name\":\"" + name + "\",\"sourceType\":\"MANUAL\"}");
   }
 }

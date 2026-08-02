@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/business-config")
+@RequestMapping("/api/business-config")
 @Tag(name = "Business Config")
 public class BusinessConfigController {
 

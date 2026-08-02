@@ -32,7 +32,7 @@ class DocumentWebTest extends BaseWebTest {
   void shouldReturnBadRequestForEmptyUpload() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/documents")
+            post("/api/documents")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"\",\"sourceType\":\"\"}"))
@@ -43,7 +43,7 @@ class DocumentWebTest extends BaseWebTest {
   void shouldRejectUnauthenticated() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/documents")
+            post("/api/documents")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Doc\",\"sourceType\":\"PDF\"}"))
         .andExpect(status().isUnauthorized());

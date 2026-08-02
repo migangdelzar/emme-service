@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/artists")
+@RequestMapping("/api/artists")
 @Tag(name = "Artists")
 public class ArtistController {
 
@@ -71,7 +71,7 @@ public class ArtistController {
     return withCurrentTenant(
         tenantId -> {
           Artist artist = createArtist.create(tenantId, request.name());
-          var location = URI.create("/api/v1/artists/" + artist.getId());
+          var location = URI.create("/api/artists/" + artist.getId());
           return ResponseEntity.created(location).body(ArtistResponse.from(artist));
         });
   }

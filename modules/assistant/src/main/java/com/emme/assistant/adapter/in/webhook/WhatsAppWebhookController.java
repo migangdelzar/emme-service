@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @ConditionalOnBean(ProcessWhatsAppMessageUseCase.class)
 @RestController
-@RequestMapping("/api/v1/webhooks/whatsapp")
+@RequestMapping("/api/webhooks/whatsapp")
 @Tag(name = "WhatsApp Webhook")
 public class WhatsAppWebhookController {
 

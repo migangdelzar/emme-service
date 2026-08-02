@@ -10,12 +10,12 @@ public class NotificationCrud {
   }
 
   public String list() {
-    return session.get("/api/v1/notifications");
+    return session.get("/api/notifications");
   }
 
   public String send(String channel, String recipient, String message) {
     return session.post(
-        "/api/v1/notifications",
+        "/api/notifications",
         "{\"channel\":\""
             + channel
             + "\",\"recipient\":\""

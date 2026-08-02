@@ -22,7 +22,7 @@ class SubscriptionModuleTest extends BaseSpringModuleTest {
   @Test
   void shouldGetSubscription() throws Exception {
     mockMvc
-        .perform(get("/api/v1/subscriptions/{tenantId}", tenantId).with(tenantJwt()))
+        .perform(get("/api/subscriptions/{tenantId}", tenantId).with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.plan").value("ENTERPRISE"))
         .andExpect(jsonPath("$.status").value("TRIAL"));
@@ -32,7 +32,7 @@ class SubscriptionModuleTest extends BaseSpringModuleTest {
   void shouldChangePlan() throws Exception {
     mockMvc
         .perform(
-            put("/api/v1/subscriptions/{tenantId}/plan", tenantId)
+            put("/api/subscriptions/{tenantId}/plan", tenantId)
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"plan\":\"STARTER\"}"))
@@ -45,7 +45,7 @@ class SubscriptionModuleTest extends BaseSpringModuleTest {
   void shouldEnforceEntitlement() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/subscriptions/{tenantId}/enforce", tenantId)
+            post("/api/subscriptions/{tenantId}/enforce", tenantId)
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"entitlement\":\"ai:basic\"}"))
@@ -55,7 +55,7 @@ class SubscriptionModuleTest extends BaseSpringModuleTest {
   @Test
   void shouldRejectWithoutJwt() throws Exception {
     mockMvc
-        .perform(get("/api/v1/subscriptions/{tenantId}", UUID.randomUUID()))
+        .perform(get("/api/subscriptions/{tenantId}", UUID.randomUUID()))
         .andExpect(status().isUnauthorized());
   }
 }

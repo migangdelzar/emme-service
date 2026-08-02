@@ -34,7 +34,7 @@ class CustomerWebTest extends BaseWebTest {
     // CreateCustomerRequest requires @NotBlank name — empty name triggers 400
     mockMvc
         .perform(
-            post("/api/v1/customers")
+            post("/api/customers")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"\"}"))
@@ -45,7 +45,7 @@ class CustomerWebTest extends BaseWebTest {
   void shouldAcceptValidCustomer() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/customers")
+            post("/api/customers")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

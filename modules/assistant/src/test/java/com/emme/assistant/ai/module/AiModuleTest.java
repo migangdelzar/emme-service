@@ -20,7 +20,7 @@ class AiModuleTest extends BaseSpringModuleTest {
   void shouldGetAiResponse() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/ai/chat")
+            post("/api/ai/chat")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"userMessage\":\"Hello, how are you?\"}"))
@@ -32,7 +32,7 @@ class AiModuleTest extends BaseSpringModuleTest {
   void shouldRejectWithoutJwt() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/ai/chat")
+            post("/api/ai/chat")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"userMessage\":\"Hello\"}"))
         .andExpect(status().isUnauthorized());
@@ -42,7 +42,7 @@ class AiModuleTest extends BaseSpringModuleTest {
   void shouldReturnMockProviderResponse() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/ai/chat")
+            post("/api/ai/chat")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"userMessage\":\"What services do you offer?\"}"))
@@ -54,7 +54,7 @@ class AiModuleTest extends BaseSpringModuleTest {
   void shouldDetectIntent() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/ai/intent")
+            post("/api/ai/intent")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"message\":\"I want to book an appointment\"}"))
@@ -66,7 +66,7 @@ class AiModuleTest extends BaseSpringModuleTest {
   void shouldHandleEmptyMessageGracefully() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/ai/chat")
+            post("/api/ai/chat")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"userMessage\":\"\"}"))
@@ -78,7 +78,7 @@ class AiModuleTest extends BaseSpringModuleTest {
   void shouldHandleConversationContext() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/ai/chat")
+            post("/api/ai/chat")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

@@ -51,7 +51,7 @@ class MercadoPagoWebhookController {
     this.signatureVerifier = signatureVerifier;
   }
 
-  @PostMapping("/api/v1/callbacks/payments")
+  @PostMapping("/api/callbacks/payments")
   ResponseEntity<String> handleCallback(HttpServletRequest request) {
     if (webhookSecret == null || webhookSecret.isBlank()) {
       log.error("MercadoPago webhook secret is not configured; refusing callback processing");

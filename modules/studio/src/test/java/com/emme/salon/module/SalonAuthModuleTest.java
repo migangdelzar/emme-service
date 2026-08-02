@@ -17,22 +17,22 @@ class SalonAuthModuleTest extends BaseSpringModuleTest {
   @Test
   void shouldAccessWithAdminJwt() throws Exception {
     // tenantJwt() provides platform_admin + tenant_owner
-    mockMvc.perform(get("/api/v1/artists").with(tenantJwt())).andExpect(status().isOk());
+    mockMvc.perform(get("/api/artists").with(tenantJwt())).andExpect(status().isOk());
   }
 
   @Test
   void shouldAccessWithTenantJwt() throws Exception {
     // Tenant-only JWT should be able to read non-protected endpoints
     mockMvc
-        .perform(get("/api/v1/artists").with(tenantJwt(tenantId, TEST_USER_SUB, "tenant_owner")))
+        .perform(get("/api/artists").with(tenantJwt(tenantId, TEST_USER_SUB, "tenant_owner")))
         .andExpect(status().isOk());
   }
 
   @Test
   void shouldRejectInvalidRole() throws Exception {
-    // GET /api/v1/appointments requires platform_admin authority
+    // GET /api/appointments requires platform_admin authority
     mockMvc
-        .perform(get("/api/v1/appointments").with(tenantJwt(tenantId, TEST_USER_SUB, "customer")))
+        .perform(get("/api/appointments").with(tenantJwt(tenantId, TEST_USER_SUB, "customer")))
         .andExpect(status().isForbidden());
   }
 }

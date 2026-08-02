@@ -21,7 +21,7 @@ presentation and interaction.
 
 ```mermaid
 flowchart LR
-    WEB[emme-web<br/>React + Vite] -->|HTTP /api/v1 contracts| API[Spring Boot API]
+    WEB[emme-web<br/>React + Vite] -->|HTTP /api contracts| API[Spring Boot API]
     API --> MODULES[DDD business modules]
     MODULES --> PORTS[Application outbound ports]
     PORTS --> DB[(PostgreSQL)]

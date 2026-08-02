@@ -36,7 +36,7 @@ class CustomerApiTest {
         s -> {
           s.setup().subscription(DEMO_TENANT);
           var result =
-              s.post("/api/v1/customers", "{\"name\":\"\",\"email\":\"\",\"phone\":\"\"}", 400);
+              s.post("/api/customers", "{\"name\":\"\",\"email\":\"\",\"phone\":\"\"}", 400);
           assertThat(result).isNotNull();
         });
   }

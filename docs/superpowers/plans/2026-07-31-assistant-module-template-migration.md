@@ -722,18 +722,18 @@ Expected: all formatting, static analysis, dependency, and packaging checks pass
 Compare the Assistant migration scripts and integration schema before/after. Run unchanged MockMvc assertions for:
 
 ```text
-POST /api/v1/conversations
-GET  /api/v1/conversations
-GET  /api/v1/conversations/{id}
-POST /api/v1/conversations/{id}/close
-GET  /api/v1/conversations/{id}/events
-POST /api/v1/conversations/{id}/actions
-POST /api/v1/conversations/actions/{id}/confirm
-POST /api/v1/conversations/actions/{id}/reject
-POST /api/v1/ai/chat
-POST /api/v1/ai/intent
-POST /api/v1/ai/rag
-GET/POST /api/v1/webhooks/whatsapp
+POST /api/conversations
+GET  /api/conversations
+GET  /api/conversations/{id}
+POST /api/conversations/{id}/close
+GET  /api/conversations/{id}/events
+POST /api/conversations/{id}/actions
+POST /api/conversations/actions/{id}/confirm
+POST /api/conversations/actions/{id}/reject
+POST /api/ai/chat
+POST /api/ai/intent
+POST /api/ai/rag
+GET/POST /api/webhooks/whatsapp
 ```
 
 - [ ] **Step 4: Verify production-readiness controls from the current template**

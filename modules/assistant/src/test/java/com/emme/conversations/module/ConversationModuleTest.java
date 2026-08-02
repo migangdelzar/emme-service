@@ -20,7 +20,7 @@ class ConversationModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldListConversations() throws Exception {
-    mockMvc.perform(get("/api/v1/conversations").with(tenantJwt())).andExpect(status().isOk());
+    mockMvc.perform(get("/api/conversations").with(tenantJwt())).andExpect(status().isOk());
   }
 
   @Test
@@ -28,7 +28,7 @@ class ConversationModuleTest extends BaseSpringModuleTest {
     var result =
         mockMvc
             .perform(
-                post("/api/v1/conversations")
+                post("/api/conversations")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -45,7 +45,7 @@ class ConversationModuleTest extends BaseSpringModuleTest {
             : extractId(result.getResponse().getContentAsString());
 
     mockMvc
-        .perform(get("/api/v1/conversations/{id}", convId).with(tenantJwt()))
+        .perform(get("/api/conversations/{id}", convId).with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(convId));
   }
@@ -54,7 +54,7 @@ class ConversationModuleTest extends BaseSpringModuleTest {
   void shouldCreateConversation() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/conversations")
+            post("/api/conversations")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -66,7 +66,7 @@ class ConversationModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldRejectWithoutJwt() throws Exception {
-    mockMvc.perform(get("/api/v1/conversations")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/conversations")).andExpect(status().isUnauthorized());
   }
 
   private static String extractId(String json) {

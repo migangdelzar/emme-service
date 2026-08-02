@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/conversations")
+@RequestMapping("/api/conversations")
 @Tag(name = "Conversations")
 public class ConversationController {
   private final StartConversationUseCase start;
@@ -73,7 +73,7 @@ public class ConversationController {
     return withCurrentTenant(
         tenantId -> {
           var conversation = start.start(AssistantWebMapper.toCommand(tenantId, request));
-          return ResponseEntity.created(URI.create("/api/v1/conversations/" + conversation.id()))
+          return ResponseEntity.created(URI.create("/api/conversations/" + conversation.id()))
               .body(ConversationResponse.from(conversation));
         });
   }

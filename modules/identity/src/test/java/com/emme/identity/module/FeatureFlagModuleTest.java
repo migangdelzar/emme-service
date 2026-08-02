@@ -20,9 +20,7 @@ class FeatureFlagModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldListGlobalFeatureFlags() throws Exception {
-    mockMvc
-        .perform(get("/api/v1/admin/feature-flags").with(tenantJwt()))
-        .andExpect(status().isOk());
+    mockMvc.perform(get("/api/admin/feature-flags").with(tenantJwt())).andExpect(status().isOk());
   }
 
   @Test
@@ -42,7 +40,7 @@ class FeatureFlagModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            post("/api/v1/admin/feature-flags")
+            post("/api/admin/feature-flags")
                 .with(tenantJwt())
                 .contentType("application/json")
                 .content(createBody))
@@ -61,7 +59,7 @@ class FeatureFlagModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            put("/api/v1/admin/feature-flags/{code}", code)
+            put("/api/admin/feature-flags/{code}", code)
                 .with(tenantJwt())
                 .contentType("application/json")
                 .content(updateBody))
@@ -72,14 +70,14 @@ class FeatureFlagModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldRejectNonAdminForFeatureFlags() throws Exception {
-    mockMvc.perform(get("/api/v1/admin/feature-flags")).andExpect(status().is4xxClientError());
+    mockMvc.perform(get("/api/admin/feature-flags")).andExpect(status().is4xxClientError());
   }
 
   @Test
   void shouldRejectTenantFeatureMutationForAStaffUser() throws Exception {
     mockMvc
         .perform(
-            put("/api/v1/tenant/features/{code}", "calendar_sync")
+            put("/api/tenant/features/{code}", "calendar_sync")
                 .with(tenantJwt(tenantId, TEST_USER_SUB, "staff"))
                 .contentType("application/json")
                 .content("{\"enabled\":false}"))

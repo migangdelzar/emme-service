@@ -122,8 +122,8 @@ flowchart LR
 
 ## Compatibility contract
 
-- Preserve `/api/v1/appointments`, `/api/v1/artists`, `/api/v1/customers`,
-  `/api/v1/services`, `/api/v1/business`, and dashboard routes.
+- Preserve `/api/appointments`, `/api/artists`, `/api/customers`,
+  `/api/services`, `/api/business`, and dashboard routes.
 - Preserve `SalonApi` method signatures unless a grouped-package move requires
   only an import change.
 - Preserve event names and payload fields.

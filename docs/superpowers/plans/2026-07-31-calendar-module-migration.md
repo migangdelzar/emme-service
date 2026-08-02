@@ -642,7 +642,7 @@ Run:
 ```
 
 Expected: Calendar unit and integration tests pass with unchanged endpoint
-behavior for `/api/v1/calendar/busy` and `/api/v1/calendar/sync`.
+behavior for `/api/calendar/busy` and `/api/calendar/sync`.
 
 - [x] **Step 5: Commit**
 

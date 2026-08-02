@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/subscriptions")
+@RequestMapping("/api/subscriptions")
 @Tag(name = "Subscriptions")
 public class SubscriptionController {
 
@@ -61,7 +61,7 @@ public class SubscriptionController {
             return ResponseEntity.notFound().build();
           }
           SubscriptionInfo subscription = createSubscription.create(request.toCommand());
-          var location = java.net.URI.create("/api/v1/subscriptions/" + subscription.tenantId());
+          var location = java.net.URI.create("/api/subscriptions/" + subscription.tenantId());
           return ResponseEntity.created(location).body(mapper.toResponse(subscription));
         });
   }

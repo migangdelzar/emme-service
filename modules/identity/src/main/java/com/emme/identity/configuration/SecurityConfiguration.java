@@ -94,12 +94,12 @@ public class SecurityConfiguration {
                     .permitAll()
 
                     // Meta WhatsApp webhook — verification + incoming messages (unauthenticated)
-                    .requestMatchers("/api/v1/webhooks/whatsapp/**")
+                    .requestMatchers("/api/webhooks/whatsapp/**")
                     .permitAll()
 
                     // Google OAuth callback — browser redirect from Google consent screen.
                     // Uses Keycloak session cookie, not JWT.
-                    .requestMatchers("/api/v1/google/oauth/callback")
+                    .requestMatchers("/api/google/oauth/callback")
                     .permitAll()
 
                     // Auth endpoints (login via local auth)
@@ -109,9 +109,9 @@ public class SecurityConfiguration {
                     .permitAll()
 
                     // Tenant-level public catalog endpoints (shop-front)
-                    .requestMatchers(HttpMethod.GET, "/api/v1/tenants/*/services")
+                    .requestMatchers(HttpMethod.GET, "/api/tenants/*/services")
                     .permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/v1/tenants/*/artists")
+                    .requestMatchers(HttpMethod.GET, "/api/tenants/*/artists")
                     .permitAll()
 
                     // Everything else requires authentication

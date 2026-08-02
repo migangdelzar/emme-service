@@ -1402,6 +1402,11 @@ limiting, then continue authorization domain/application separation.
 - [x] Use version-neutral `/api` routes and default requests to version `1.0`.
 - [x] Declare the Identity controller's current mapping as Spring MVC version
   `1.0`.
+- [x] Normalize module controllers, e2e clients, operational scripts,
+  performance workloads, Kubernetes configuration, and test fixtures to the
+  canonical version-neutral `/api` routes.
+- [x] Resolve the tenant provisioning route collision exposed by removing the
+  URI version segment.
 - [x] Verify module source conventions, Checkstyle, integration checks, and
   application Modulith tests.
 - [ ] Add parallel `1.1` representations only when a real second

@@ -32,7 +32,7 @@ class AppointmentModuleTest extends BaseSpringModuleTest {
       MvcResult artistResult =
           mockMvc
               .perform(
-                  post("/api/v1/artists")
+                  post("/api/artists")
                       .with(tenantJwt())
                       .contentType(MediaType.APPLICATION_JSON)
                       .content("{\"name\":\"Test Artist\"}"))
@@ -44,7 +44,7 @@ class AppointmentModuleTest extends BaseSpringModuleTest {
       MvcResult customerResult =
           mockMvc
               .perform(
-                  post("/api/v1/customers")
+                  post("/api/customers")
                       .with(tenantJwt())
                       .contentType(MediaType.APPLICATION_JSON)
                       .content(
@@ -57,7 +57,7 @@ class AppointmentModuleTest extends BaseSpringModuleTest {
       MvcResult serviceResult =
           mockMvc
               .perform(
-                  post("/api/v1/services")
+                  post("/api/services")
                       .with(tenantJwt())
                       .contentType(MediaType.APPLICATION_JSON)
                       .content(
@@ -82,7 +82,7 @@ class AppointmentModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            post("/api/v1/appointments")
+            post("/api/appointments")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
@@ -103,14 +103,14 @@ class AppointmentModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            post("/api/v1/appointments")
+            post("/api/appointments")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/v1/appointments").with(tenantJwt()))
+        .perform(get("/api/appointments").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").isNotEmpty());
   }
@@ -127,7 +127,7 @@ class AppointmentModuleTest extends BaseSpringModuleTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/v1/appointments")
+                post("/api/appointments")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
@@ -137,7 +137,7 @@ class AppointmentModuleTest extends BaseSpringModuleTest {
     UUID appointmentId = extractId(result);
 
     mockMvc
-        .perform(get("/api/v1/appointments/{id}", appointmentId).with(tenantJwt()))
+        .perform(get("/api/appointments/{id}", appointmentId).with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(appointmentId.toString()));
   }
@@ -154,7 +154,7 @@ class AppointmentModuleTest extends BaseSpringModuleTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/v1/appointments")
+                post("/api/appointments")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
@@ -164,7 +164,7 @@ class AppointmentModuleTest extends BaseSpringModuleTest {
     UUID appointmentId = extractId(result);
 
     mockMvc
-        .perform(post("/api/v1/appointments/{id}/cancel", appointmentId).with(tenantJwt()))
+        .perform(post("/api/appointments/{id}/cancel", appointmentId).with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CANCELLED"));
   }
@@ -172,7 +172,7 @@ class AppointmentModuleTest extends BaseSpringModuleTest {
   @Test
   void shouldRejectUnauthenticated() throws Exception {
     mockMvc
-        .perform(post("/api/v1/appointments").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        .perform(post("/api/appointments").contentType(MediaType.APPLICATION_JSON).content("{}"))
         .andExpect(status().isUnauthorized());
   }
 

@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/services")
+@RequestMapping("/api/services")
 @Tag(name = "Services")
 public class ServiceController {
 
@@ -80,7 +80,7 @@ public class ServiceController {
                   request.description(),
                   request.durationMinutes(),
                   request.basePrice());
-          var location = URI.create("/api/v1/services/" + service.getId());
+          var location = URI.create("/api/services/" + service.getId());
           return ResponseEntity.created(location).body(ServiceResponse.from(service));
         });
   }

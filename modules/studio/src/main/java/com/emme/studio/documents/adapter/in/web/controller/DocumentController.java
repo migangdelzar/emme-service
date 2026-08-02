@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/documents")
+@RequestMapping("/api/documents")
 @Tag(name = "Documents")
 public class DocumentController {
 
@@ -72,7 +72,7 @@ public class DocumentController {
           DocumentInfo document =
               uploadDocument.upload(
                   new UploadDocumentCommand(tenantId, request.name(), request.sourceType()));
-          URI location = URI.create("/api/v1/documents/" + document.id());
+          URI location = URI.create("/api/documents/" + document.id());
           return ResponseEntity.created(location).body(mapper.toResponse(document));
         });
   }

@@ -16,12 +16,12 @@ locust -f locustfile.py --host=http://localhost:8081 --headless -u 100 -r 10 -t 
 | Scenario | Weight | Endpoint |
 |----------|--------|----------|
 | Health check | 3 | GET /actuator/health |
-| List services | 5 | GET /api/v1/services |
-| List appointments | 5 | GET /api/v1/appointments |
-| List customers | 3 | GET /api/v1/customers |
-| Create appointment | 2 | POST /api/v1/appointments |
-| Search slots | 2 | GET /api/v1/appointments/slots |
-| AI chat | 1 | POST /api/v1/ai/chat |
+| List services | 5 | GET /api/services |
+| List appointments | 5 | GET /api/appointments |
+| List customers | 3 | GET /api/customers |
+| Create appointment | 2 | POST /api/appointments |
+| Search slots | 2 | GET /api/appointments/slots |
+| AI chat | 1 | POST /api/ai/chat |
 | Metrics | 1 | GET /actuator/prometheus |
 
 ## Target thresholds (from design spec)

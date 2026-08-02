@@ -13,7 +13,7 @@ public class AppointmentCrud {
   public String create(
       String customerId, String serviceId, String artistId, String startsAt, String endsAt) {
     return session.post(
-        "/api/v1/appointments",
+        "/api/appointments",
         Template.load("appointment-create.json")
             .set("customerId", customerId)
             .set("serviceId", serviceId)
@@ -24,10 +24,10 @@ public class AppointmentCrud {
   }
 
   public String list() {
-    return session.get("/api/v1/appointments");
+    return session.get("/api/appointments");
   }
 
   public String cancel(String id) {
-    return session.post("/api/v1/appointments/" + id + "/cancel", "{}");
+    return session.post("/api/appointments/" + id + "/cancel", "{}");
   }
 }

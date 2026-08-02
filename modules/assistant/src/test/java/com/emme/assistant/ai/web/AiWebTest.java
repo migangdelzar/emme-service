@@ -40,7 +40,7 @@ class AiWebTest extends BaseWebTest {
     featureFlagRepo.deleteAll();
     mockMvc
         .perform(
-            post("/api/v1/ai/chat")
+            post("/api/ai/chat")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"userMessage\":\"Hello\"}"))
@@ -51,7 +51,7 @@ class AiWebTest extends BaseWebTest {
   void shouldAcceptValidChatRequest() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/ai/chat")
+            post("/api/ai/chat")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"userMessage\":\"Tell me about pricing\"}"))

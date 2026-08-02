@@ -12,14 +12,14 @@ public class ArtistCrud {
 
   public String create(String name) {
     return session.post(
-        "/api/v1/artists", Template.load("artist-create.json").set("name", name).render());
+        "/api/artists", Template.load("artist-create.json").set("name", name).render());
   }
 
   public String list() {
-    return session.get("/api/v1/artists");
+    return session.get("/api/artists");
   }
 
   public String getById(String id) {
-    return session.get("/api/v1/artists/" + id);
+    return session.get("/api/artists/" + id);
   }
 }

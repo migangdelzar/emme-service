@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/notifications")
+@RequestMapping("/api/notifications")
 @Tag(name = "Notifications")
 public class NotificationController {
   private final RequestNotificationUseCase requestNotification;
@@ -49,7 +49,7 @@ public class NotificationController {
         tenantId -> {
           var notification =
               requestNotification.request(NotificationWebMapper.toCommand(tenantId, request));
-          return ResponseEntity.created(URI.create("/api/v1/notifications/" + notification.id()))
+          return ResponseEntity.created(URI.create("/api/notifications/" + notification.id()))
               .body(NotificationResponse.from(notification));
         });
   }

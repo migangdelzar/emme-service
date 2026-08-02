@@ -50,7 +50,7 @@ class ServiceApiTest {
           s.setup().subscription(DEMO_TENANT);
           var result =
               s.post(
-                  "/api/v1/services",
+                  "/api/services",
                   "{\"code\":\"\",\"name\":\"\",\"basePrice\":null,\"durationMinutes\":0,\"category\":\"\"}",
                   400);
           assertThat(result).isNotNull();

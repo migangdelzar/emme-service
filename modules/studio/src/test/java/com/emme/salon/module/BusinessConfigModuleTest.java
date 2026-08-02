@@ -22,7 +22,7 @@ class BusinessConfigModuleTest extends BaseSpringModuleTest {
     // Profile may not exist yet; create one then get
     mockMvc
         .perform(
-            put("/api/v1/business-config/profile")
+            put("/api/business-config/profile")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -30,7 +30,7 @@ class BusinessConfigModuleTest extends BaseSpringModuleTest {
         .andExpect(status().isOk());
 
     mockMvc
-        .perform(get("/api/v1/business-config/profile").with(tenantJwt()))
+        .perform(get("/api/business-config/profile").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.displayName").value("Test Salon"));
   }
@@ -39,7 +39,7 @@ class BusinessConfigModuleTest extends BaseSpringModuleTest {
   void shouldUpdateOperatingHours() throws Exception {
     mockMvc
         .perform(
-            put("/api/v1/business-config/hours")
+            put("/api/business-config/hours")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

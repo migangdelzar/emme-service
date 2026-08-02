@@ -34,7 +34,7 @@ class ConversationWebTest extends BaseWebTest {
   void shouldRejectUnauthenticatedRequest() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/conversations")
+            post("/api/conversations")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\"participantId\":\"" + UUID.randomUUID() + "\",\"channel\":\"WHATSAPP\"}"))
@@ -45,7 +45,7 @@ class ConversationWebTest extends BaseWebTest {
   void shouldAcceptValidConversationRequest() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/conversations")
+            post("/api/conversations")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

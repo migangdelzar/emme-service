@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/appointments")
+@RequestMapping("/api/appointments")
 @Tag(name = "Appointments")
 public class AppointmentController {
 
@@ -114,7 +114,7 @@ public class AppointmentController {
                     request.artistId(),
                     request.startsAt(),
                     request.endsAt());
-            var location = URI.create("/api/v1/appointments/" + appointment.id());
+            var location = URI.create("/api/appointments/" + appointment.id());
             return ResponseEntity.created(location).body(AppointmentResponse.from(appointment));
           } catch (IllegalStateException e) {
             return ResponseEntity.status(409).body(e.getMessage());

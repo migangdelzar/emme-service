@@ -24,13 +24,13 @@ import org.springframework.http.MediaType;
 class TenantModuleTest extends BaseSpringModuleTest {
 
   @Test
-  @DisplayName("POST /api/v1/tenants → 201 with location header and tenant fields")
+  @DisplayName("POST /api/tenants → 201 with location header and tenant fields")
   void shouldCreateTenant() throws Exception {
     fullSetup(); // sets tenantId for tenantJwt()
 
     mockMvc
         .perform(
-            post("/api/v1/tenants")
+            post("/api/tenants")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -46,7 +46,7 @@ class TenantModuleTest extends BaseSpringModuleTest {
   }
 
   @Test
-  @DisplayName("GET /api/v1/tenants → 200 with list of all tenants")
+  @DisplayName("GET /api/tenants → 200 with list of all tenants")
   void shouldListTenants() throws Exception {
     fullSetup(); // ensures we have at least one tenant
 
@@ -55,7 +55,7 @@ class TenantModuleTest extends BaseSpringModuleTest {
     TenantInfo t2 = createTenant("test-tenant-b-" + System.nanoTime(), "Salon Beta");
 
     mockMvc
-        .perform(get("/api/v1/tenants").with(tenantJwt()))
+        .perform(get("/api/tenants").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
         .andExpect(jsonPath("$[*].id", hasItems(t1.id().toString(), t2.id().toString())))
@@ -63,13 +63,13 @@ class TenantModuleTest extends BaseSpringModuleTest {
   }
 
   @Test
-  @DisplayName("GET /api/v1/tenants/{id} → 200 with correct tenant data")
+  @DisplayName("GET /api/tenants/{id} → 200 with correct tenant data")
   void shouldGetTenantById() throws Exception {
     fullSetup();
     TenantInfo tenant = createTenant("test-tenant-2-" + System.nanoTime(), "Test Salon Two");
 
     mockMvc
-        .perform(get("/api/v1/tenants/" + tenant.id()).with(tenantJwt()))
+        .perform(get("/api/tenants/" + tenant.id()).with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(tenant.id().toString()))
         .andExpect(jsonPath("$.slug").value(tenant.slug()))
@@ -78,14 +78,14 @@ class TenantModuleTest extends BaseSpringModuleTest {
   }
 
   @Test
-  @DisplayName("PATCH /api/v1/tenants/{id} → 200 updates tenant name")
+  @DisplayName("PATCH /api/tenants/{id} → 200 updates tenant name")
   void shouldUpdateTenant() throws Exception {
     fullSetup();
     TenantInfo tenant = createTenant("test-tenant-3-" + System.nanoTime(), "Original Name");
 
     mockMvc
         .perform(
-            patch("/api/v1/tenants/" + tenant.id())
+            patch("/api/tenants/" + tenant.id())
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -97,11 +97,11 @@ class TenantModuleTest extends BaseSpringModuleTest {
   }
 
   @Test
-  @DisplayName("POST /api/v1/tenants without JWT → 401 Unauthorized")
+  @DisplayName("POST /api/tenants without JWT → 401 Unauthorized")
   void shouldRejectUnauthenticated() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/tenants")
+            post("/api/tenants")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """

@@ -10,11 +10,11 @@ class DashboardWebTest extends BaseWebTest {
 
   @Test
   void shouldReturnSseStream() throws Exception {
-    mockMvc.perform(get("/api/v1/dashboard/stream").with(auth())).andExpect(status().isOk());
+    mockMvc.perform(get("/api/dashboard/stream").with(auth())).andExpect(status().isOk());
   }
 
   @Test
   void shouldRejectWithoutJwt() throws Exception {
-    mockMvc.perform(get("/api/v1/dashboard/stream")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/dashboard/stream")).andExpect(status().isUnauthorized());
   }
 }

@@ -20,23 +20,20 @@ import org.springframework.http.MediaType;
 class TenantWebTest extends BaseWebTest {
 
   @Test
-  @DisplayName("POST /api/v1/tenants with empty body → 400 Bad Request (missing slug, name)")
+  @DisplayName("POST /api/tenants with empty body → 400 Bad Request (missing slug, name)")
   void shouldReturn400ForMissingFields() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/tenants")
-                .with(auth())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
+            post("/api/tenants").with(auth()).contentType(MediaType.APPLICATION_JSON).content("{}"))
         .andExpect(status().isBadRequest());
   }
 
   @Test
-  @DisplayName("POST /api/v1/tenants with valid slug and name → 201 Created")
+  @DisplayName("POST /api/tenants with valid slug and name → 201 Created")
   void shouldAcceptValidTenant() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/tenants")
+            post("/api/tenants")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -51,11 +48,11 @@ class TenantWebTest extends BaseWebTest {
   }
 
   @Test
-  @DisplayName("POST /api/v1/tenants with slug longer than 50 characters → 400 Bad Request")
+  @DisplayName("POST /api/tenants with slug longer than 50 characters → 400 Bad Request")
   void shouldRejectOversizedSlug() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/tenants")
+            post("/api/tenants")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -66,12 +63,10 @@ class TenantWebTest extends BaseWebTest {
   }
 
   @Test
-  @DisplayName("GET /api/v1/tenants/{unknownId} → 404 Not Found")
+  @DisplayName("GET /api/tenants/{unknownId} → 404 Not Found")
   void shouldReturn404ForUnknownTenant() throws Exception {
     UUID unknownId = UUID.randomUUID();
 
-    mockMvc
-        .perform(get("/api/v1/tenants/" + unknownId).with(auth()))
-        .andExpect(status().isNotFound());
+    mockMvc.perform(get("/api/tenants/" + unknownId).with(auth())).andExpect(status().isNotFound());
   }
 }

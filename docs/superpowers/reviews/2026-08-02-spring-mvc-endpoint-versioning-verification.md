@@ -38,6 +38,12 @@ flowchart LR
 The resolver is configured in Tenancy's existing global MVC configuration so
 the service has one resolver rather than module-specific version policies.
 
+The route migration also updated e2e clients, application configuration,
+operational scripts, performance workloads, Kubernetes callback and alert
+configuration, and test fixtures. Removing the URI segment exposed a collision
+between tenant creation and tenant provisioning; the latter now uses the
+explicit `/api/tenant-provisioning` workflow route.
+
 ## Verification
 
 ```text

@@ -24,7 +24,7 @@ class ServiceModuleTest extends BaseSpringModuleTest {
   void shouldCreateService() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/services")
+            post("/api/services")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -40,7 +40,7 @@ class ServiceModuleTest extends BaseSpringModuleTest {
     // Create one first
     mockMvc
         .perform(
-            post("/api/v1/services")
+            post("/api/services")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -48,7 +48,7 @@ class ServiceModuleTest extends BaseSpringModuleTest {
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/v1/services").with(tenantJwt()))
+        .perform(get("/api/services").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").isNotEmpty());
   }
@@ -58,7 +58,7 @@ class ServiceModuleTest extends BaseSpringModuleTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/v1/services")
+                post("/api/services")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -72,7 +72,7 @@ class ServiceModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            put("/api/v1/services/{id}", serviceId)
+            put("/api/services/{id}", serviceId)
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

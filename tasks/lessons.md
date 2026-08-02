@@ -457,3 +457,15 @@
   failing test profile/context, and close the lifecycle defect before claiming
   final service-wide readiness. Do not suppress the warnings merely to make
   CI output quiet.
+
+## 2026-08-02 — Removing a path version can expose route collisions
+
+- Failure mode: removing `/v1` from public routes caused the tenant resource
+  controller and tenant-provisioning request controller to claim the same
+  `POST /api/tenants` mapping.
+- Detection signal: Spring application-context startup failed with an
+  ambiguous handler mapping after the route normalization.
+- Prevention rule: after changing a shared route prefix, run an application
+  context or MockMvc mapping check and give distinct workflows explicit
+  resource/action route names instead of relying on the old version segment to
+  separate them.

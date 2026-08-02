@@ -13,7 +13,7 @@ import org.springframework.test.context.TestPropertySource;
     properties = {
       "app.google.oauth.client-id=test-client-id",
       "app.google.oauth.client-secret=test-client-secret",
-      "app.google.oauth.redirect-uri=http://localhost:8080/api/v1/google/oauth/callback",
+      "app.google.oauth.redirect-uri=http://localhost:8080/api/google/oauth/callback",
       "app.google.oauth.encryption-key=12345678901234567890123456789012" // 32 bytes for AES-256
     })
 class GoogleModuleTest extends BaseSpringModuleTest {
@@ -26,25 +26,25 @@ class GoogleModuleTest extends BaseSpringModuleTest {
   @Test
   void statusReturnsDisconnectedWhenNoTokenExists() throws Exception {
     mockMvc
-        .perform(get("/api/v1/google/oauth/status").with(tenantJwt()))
+        .perform(get("/api/google/oauth/status").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.connected").value(false));
   }
 
   @Test
   void statusRejectsWithoutJwt() throws Exception {
-    mockMvc.perform(get("/api/v1/google/oauth/status")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/google/oauth/status")).andExpect(status().isUnauthorized());
   }
 
   @Test
   void authorizeRedirectsToGoogle() throws Exception {
     mockMvc
-        .perform(get("/api/v1/google/oauth/authorize").with(tenantJwt()))
+        .perform(get("/api/google/oauth/authorize").with(tenantJwt()))
         .andExpect(status().is3xxRedirection());
   }
 
   @Test
   void authorizeRejectsWithoutJwt() throws Exception {
-    mockMvc.perform(get("/api/v1/google/oauth/authorize")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/google/oauth/authorize")).andExpect(status().isUnauthorized());
   }
 }

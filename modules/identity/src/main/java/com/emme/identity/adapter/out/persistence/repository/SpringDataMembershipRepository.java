@@ -13,6 +13,9 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataMembershipRepository extends JpaRepository<MembershipEntity, UUID> {
   List<MembershipEntity> findByTenantId(UUID tenantId);
 
+  @EntityGraph(attributePaths = {"role"})
+  Optional<MembershipEntity> findByIdAndTenantId(UUID membershipId, UUID tenantId);
+
   Optional<MembershipEntity> findByTenantIdAndUserReference(UUID tenantId, String userReference);
 
   @EntityGraph(attributePaths = {"role"})

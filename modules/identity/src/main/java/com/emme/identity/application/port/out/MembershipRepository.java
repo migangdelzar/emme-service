@@ -10,7 +10,7 @@ public interface MembershipRepository {
 
   Membership save(Membership membership);
 
-  Optional<Membership> findById(UUID membershipId);
+  Optional<Membership> findByIdInTenant(UUID membershipId, UUID tenantId);
 
   List<Membership> findActiveByUserReference(String userReference);
 }

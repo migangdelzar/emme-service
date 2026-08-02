@@ -74,4 +74,15 @@ class FeatureFlagModuleTest extends BaseSpringModuleTest {
   void shouldRejectNonAdminForFeatureFlags() throws Exception {
     mockMvc.perform(get("/api/v1/admin/feature-flags")).andExpect(status().is4xxClientError());
   }
+
+  @Test
+  void shouldRejectTenantFeatureMutationForAStaffUser() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/v1/tenant/features/{code}", "calendar_sync")
+                .with(tenantJwt(tenantId, TEST_USER_SUB, "staff"))
+                .contentType("application/json")
+                .content("{\"enabled\":false}"))
+        .andExpect(status().isForbidden());
+  }
 }

@@ -643,6 +643,27 @@ tenant-isolation and migration/recovery evidence.
 Remaining Identity work is broader authorization hardening, explicit provisioning
 transaction/event ports, tenant-isolation tests, and migration/recovery evidence.
 
+## Completed membership authorization hardening slice — 2026-08-02
+
+- [x] Rejected platform-scoped roles from tenant memberships at the application
+  use-case boundary.
+- [x] Added stable `InvalidMembershipRoleException` and Identity problem-detail
+  mapping for rejected privilege-escalation attempts.
+- [x] Restricted membership assignment and revocation to platform admins and
+  tenant owners at the HTTP adapter boundary.
+- [x] Changed membership revocation to use a tenant-scoped application port and
+  persistence query, preventing cross-tenant mutation by membership ID.
+- [x] Rejected tenant-owner mutations that select a tenant different from the
+  authenticated tenant; platform administrators remain the explicit exception.
+- [x] Restricted tenant feature-flag mutations to platform admins and tenant
+  owners.
+- [x] Added unit and module regression coverage for role-scope rejection,
+  tenant-scoped revocation, and staff authorization failures.
+
+Remaining Identity work is explicit provisioning transaction/event ports,
+broader authorization review, tenant-isolation tests, and migration/recovery
+evidence.
+
 ## Completed exception-advice boundary slice — 2026-08-01
 
 - [x] Added a source-boundary regression test preventing advice from importing

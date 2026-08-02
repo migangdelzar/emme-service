@@ -2,6 +2,7 @@ package com.emme.identity.adapter.in.web.security;
 
 import com.emme.functional.unchecked.UFunction;
 import java.util.UUID;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -32,6 +33,24 @@ public final class UserContextHolder {
       throw new IllegalStateException("No authenticated user context");
     }
     return fromPrincipal(authentication.getPrincipal());
+  }
+
+  /** Ensures a non-platform caller cannot select a different tenant for a mutation. */
+  public static void requireTenantAccess(UUID requestedTenantId) {
+    Authentication authentication =
+        java.util.Objects.requireNonNull(
+            SecurityContextHolder.getContext().getAuthentication(),
+            "No authenticated user context");
+    boolean platformAdmin =
+        authentication.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_platform_admin".equals(authority.getAuthority()));
+    if (platformAdmin) {
+      return;
+    }
+    UUID currentTenantId = currentUser().tenantId();
+    if (requestedTenantId == null || !requestedTenantId.equals(currentTenantId)) {
+      throw new AccessDeniedException("Tenant access denied");
+    }
   }
 
   public static UserContext fromPrincipal(Object principal) {

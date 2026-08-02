@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -68,6 +69,30 @@ class UserContextHolderTest {
     assertThatThrownBy(UserContextHolder::currentSubject)
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("No authenticated user context");
+  }
+
+  @Test
+  void rejectsTenantSelectionOutsideTheAuthenticatedTenant() {
+    UUID currentTenantId = UUID.randomUUID();
+    SecurityContextHolder.getContext()
+        .setAuthentication(
+            new JwtAuthenticationToken(
+                jwt(Map.of("sub", "user-1", "tenant_id", currentTenantId.toString()))));
+
+    assertThatThrownBy(() -> UserContextHolder.requireTenantAccess(UUID.randomUUID()))
+        .isInstanceOf(org.springframework.security.access.AccessDeniedException.class)
+        .hasMessage("Tenant access denied");
+  }
+
+  @Test
+  void allowsPlatformAdministratorsToSelectAnotherTenant() {
+    SecurityContextHolder.getContext()
+        .setAuthentication(
+            new JwtAuthenticationToken(
+                jwt(Map.of("sub", "admin")),
+                java.util.List.of(new SimpleGrantedAuthority("ROLE_platform_admin"))));
+
+    UserContextHolder.requireTenantAccess(UUID.randomUUID());
   }
 
   private static Jwt jwt(Map<String, Object> claims) {

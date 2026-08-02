@@ -70,6 +70,49 @@ class IdentityModuleTest extends BaseSpringModuleTest {
   }
 
   @Test
+  void shouldRejectMembershipAssignmentForAStaffUser() throws Exception {
+    String requestBody =
+        """
+                {
+                    "tenantId": "%s",
+                    "roleId": "%s",
+                    "userReference": "staff-assignment-target"
+                }
+                """
+            .formatted(tenantId, savedRole.getId());
+
+    mockMvc
+        .perform(
+            post("/api/v1/identity/memberships")
+                .with(tenantJwt(tenantId, TEST_USER_SUB, "staff"))
+                .contentType("application/json")
+                .content(requestBody))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void shouldRejectTenantOwnerAssignmentIntoAnotherTenant() throws Exception {
+    UUID otherTenantId = createTenant("other-" + System.nanoTime(), "Other Salon").id();
+    String requestBody =
+        """
+                {
+                    "tenantId": "%s",
+                    "roleId": "%s",
+                    "userReference": "cross-tenant-target"
+                }
+                """
+            .formatted(otherTenantId, savedRole.getId());
+
+    mockMvc
+        .perform(
+            post("/api/v1/identity/memberships")
+                .with(tenantJwt(tenantId, TEST_USER_SUB, "tenant_owner"))
+                .contentType("application/json")
+                .content(requestBody))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void shouldRevokeMembership() throws Exception {
     // Create membership via repository (role loaded eagerly via constructor)
     MembershipEntity m =

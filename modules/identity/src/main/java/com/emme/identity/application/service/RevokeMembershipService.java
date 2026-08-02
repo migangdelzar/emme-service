@@ -24,7 +24,7 @@ public class RevokeMembershipService implements RevokeMembershipUseCase {
   public MembershipInfo revoke(RevokeMembershipCommand command) {
     Membership membership =
         membershipRepository
-            .findById(command.membershipId())
+            .findByIdInTenant(command.membershipId(), command.tenantId())
             .orElseThrow(() -> new IllegalArgumentException("Membership not found"));
     membership.revoke();
     return MembershipApplicationMapper.toInfo(membershipRepository.save(membership));

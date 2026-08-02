@@ -40,15 +40,15 @@ public class MembershipPersistenceAdapter implements MembershipRepository {
         membership.id() == null
             ? mapper.toEntity(membership, role)
             : repository
-                .findById(membership.id())
+                .findByIdAndTenantId(membership.id(), membership.tenantId())
                 .map(existing -> update(existing, membership))
                 .orElseGet(() -> mapper.toEntity(membership, role));
     return mapper.toDomain(repository.save(entity));
   }
 
   @Override
-  public Optional<Membership> findById(UUID membershipId) {
-    return repository.findById(membershipId).map(mapper::toDomain);
+  public Optional<Membership> findByIdInTenant(UUID membershipId, UUID tenantId) {
+    return repository.findByIdAndTenantId(membershipId, tenantId).map(mapper::toDomain);
   }
 
   @Override

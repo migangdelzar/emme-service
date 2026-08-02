@@ -2,6 +2,7 @@ package com.emme.identity.adapter.in.web.advice;
 
 import com.emme.identity.api.exception.CustomerNotFoundException;
 import com.emme.identity.api.exception.InvalidCustomerTokenException;
+import com.emme.identity.api.exception.InvalidMembershipRoleException;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -29,6 +30,15 @@ public class IdentityExceptionHandler {
         "Customer not found",
         exception.getMessage(),
         "IDENTITY_CUSTOMER_NOT_FOUND");
+  }
+
+  @ExceptionHandler(InvalidMembershipRoleException.class)
+  ProblemDetail handleInvalidMembershipRole(InvalidMembershipRoleException exception) {
+    return problem(
+        HttpStatus.FORBIDDEN,
+        "Membership role is not allowed",
+        exception.getMessage(),
+        "IDENTITY_MEMBERSHIP_ROLE_INVALID");
   }
 
   private static ProblemDetail problem(

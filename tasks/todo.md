@@ -56,6 +56,16 @@
 - [x] Removed the empty `application/result` package and added a boundary test.
 - [x] Verified Studio formatting, tests, Checkstyle, and compilation.
 
+### Identity security and tenant-scope hardening — 2026-08-02
+
+- [x] Trusted platform, tenant, and customer JWT issuers with typed audience
+  validation and fail-closed dynamic JWKS resolution.
+- [x] Rejected platform roles from tenant memberships.
+- [x] Restricted membership and tenant feature mutations to authorized roles.
+- [x] Made membership revocation tenant-scoped in the application and
+  persistence ports.
+- [x] Verified focused and full Identity tests/checks plus Markdown validation.
+
 - Migrated build-logic packages from type-first buckets into `core/`, `root/`,
   capability-owned packages, and `git/` while preserving plugin IDs.
 - Added the missing `emme.security` convention entry point and registration test.

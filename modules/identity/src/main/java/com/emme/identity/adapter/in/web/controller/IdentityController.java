@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -73,27 +74,38 @@ public class IdentityController {
   }
 
   @PostMapping("/memberships")
+  @PreAuthorize("hasAnyRole('platform_admin', 'tenant_owner')")
   @Operation(
       summary = "Assign a membership to a user",
       tags = {"Identity"})
   @Tag(name = "Identity")
   public ResponseEntity<MembershipResponse> assignMembership(
       @Valid @RequestBody AssignMembershipRequest request) {
-    MembershipInfo membership =
-        assignMembership.assign(
-            new AssignMembershipCommand(
-                request.tenantId(), request.roleId(), request.userReference()));
-    URI location = URI.create("/api/v1/identity/memberships/" + membership.id());
-    return ResponseEntity.created(location)
-        .body(IdentityWebMapper.toMembershipResponse(membership));
+    return UserContextHolder.withCurrentUser(
+        user -> {
+          UserContextHolder.requireTenantAccess(request.tenantId());
+          MembershipInfo membership =
+              assignMembership.assign(
+                  new AssignMembershipCommand(
+                      request.tenantId(), request.roleId(), request.userReference()));
+          URI location = URI.create("/api/v1/identity/memberships/" + membership.id());
+          return ResponseEntity.created(location)
+              .body(IdentityWebMapper.toMembershipResponse(membership));
+        });
   }
 
   @DeleteMapping("/memberships/{id}")
+  @PreAuthorize("hasAnyRole('platform_admin', 'tenant_owner')")
   @Operation(
       summary = "Revoke a membership",
       tags = {"Identity"})
   public ResponseEntity<MembershipResponse> revokeMembership(@PathVariable UUID id) {
-    MembershipInfo membership = revokeMembership.revoke(new RevokeMembershipCommand(id));
-    return ResponseEntity.ok(IdentityWebMapper.toMembershipResponse(membership));
+    return UserContextHolder.withCurrentUser(
+        user -> {
+          UserContextHolder.requireTenantAccess(user.tenantId());
+          MembershipInfo membership =
+              revokeMembership.revoke(new RevokeMembershipCommand(id, user.tenantId()));
+          return ResponseEntity.ok(IdentityWebMapper.toMembershipResponse(membership));
+        });
   }
 }

@@ -277,6 +277,9 @@ class IdentityPackageConventionTest {
           "modules/identity/src/main/java/com/emme/identity/adapter/in/web/mapper/FeatureFlagWebMapper.java");
   private static final Path IDENTITY_EXCEPTION_PACKAGE =
       sourcePath("modules/identity/src/main/java/com/emme/identity/api/exception");
+  private static final Path INVALID_MEMBERSHIP_ROLE_EXCEPTION =
+      sourcePath(
+          "modules/identity/src/main/java/com/emme/identity/api/exception/InvalidMembershipRoleException.java");
   private static final Path USER_AUTH_USE_CASE =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/api/usecase/AuthenticateUserUseCase.java");
@@ -700,6 +703,7 @@ class IdentityPackageConventionTest {
   @Test
   void ownsExpectedFailuresAndHttpTranslationAtIdentityBoundaries() {
     assertThat(Files.exists(IDENTITY_EXCEPTION_HANDLER)).isTrue();
+    assertThat(Files.exists(INVALID_MEMBERSHIP_ROLE_EXCEPTION)).isTrue();
     assertThat(hasJavaSource(IDENTITY_EXCEPTION_PACKAGE, "CustomerNotFoundException.java"))
         .isTrue();
     assertThat(hasJavaSource(IDENTITY_EXCEPTION_PACKAGE, "InvalidCustomerTokenException.java"))

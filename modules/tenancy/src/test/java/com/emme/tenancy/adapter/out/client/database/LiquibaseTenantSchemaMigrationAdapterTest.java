@@ -1,17 +1,18 @@
 package com.emme.tenancy.adapter.out.client.database;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 
 class LiquibaseTenantSchemaMigrationAdapterTest {
 
-  private final DataSource dataSource = mock(DataSource.class);
+  private final JdbcConnectionExecutor connectionExecutor = mock(JdbcConnectionExecutor.class);
   private final LiquibaseTenantSchemaMigrationAdapter adapter =
-      new LiquibaseTenantSchemaMigrationAdapter(dataSource);
+      new LiquibaseTenantSchemaMigrationAdapter(connectionExecutor);
 
   @Test
   void rejectsUnsafeSchemaNamesBeforeOpeningAConnection() {
@@ -19,6 +20,13 @@ class LiquibaseTenantSchemaMigrationAdapterTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Invalid tenant schema name");
 
-    verifyNoInteractions(dataSource);
+    verifyNoInteractions(connectionExecutor);
+  }
+
+  @Test
+  void executesMigrationThroughTheConnectionExecutor() {
+    adapter.migrate("studio_a");
+
+    verify(connectionExecutor).withConnection(any(SqlConnectionConsumer.class));
   }
 }

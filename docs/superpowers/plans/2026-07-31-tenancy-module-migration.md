@@ -254,6 +254,23 @@ Remaining Tenancy work is operational pool/routing/recovery evidence,
 provisioning replay and rollback evidence, transaction/after-commit evidence,
 and the committed final verification report.
 
+## Completed managed JDBC connection boundary slice — 2026-08-02
+
+- [x] Added `JdbcConnectionExecutor` with consumer and function forms for
+  connection-scoped work.
+- [x] Delegated connection lifecycle to Spring `JdbcTemplate.execute` rather
+  than manually calling `DataSource#getConnection()` in production adapters.
+- [x] Migrated tenant Liquibase schema creation and migration to the managed
+  connection boundary.
+- [x] Added unit coverage for result-returning and side-effect connection work,
+  plus adapter delegation.
+- [x] Verified Tenancy tests, Checkstyle, Spotless, integration tests,
+  Markdown validation, and whitespace validation.
+
+Remaining Tenancy work is operational pool/routing/recovery evidence,
+provisioning replay and rollback evidence, transaction/after-commit evidence,
+and the committed final verification report.
+
 - `:modules:tenancy:test` passed.
 - `:modules:tenancy:integrationTest` passed.
 - `:modules:tenancy:check` passed.

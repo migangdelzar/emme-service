@@ -112,12 +112,12 @@ the old unreleased task names.
 - Consumes: the guardrail contract from Task 1.
 - Produces: a small shared core, typed global models, and a root plugin that owns repository coordination but no delivery implementation.
 
-- [ ] **Step 1: Write failing ownership tests.** Assert that `core` contains only approved shared names, `model` contains only global concepts, and root code does not import container/deployment/publishing/security implementations.
-- [ ] **Step 2: Run the tests to verify red.** Run `./gradlew :build-logic:test --tests '*ModelEnumTest' --tests '*ProviderRegistrationTest'`; expected failures identify each current ownership violation.
-- [ ] **Step 3: Move or split implementation.** Keep shared dependency access and constants in `core`; move capability-only helpers into their capability; make root lifecycle registration depend on capability contracts rather than concrete tool providers.
+- [x] **Step 1: Write failing ownership tests.** Assert that `core` contains only approved shared names, `model` contains only global concepts, and root code does not import container/deployment/publishing/security implementations.
+- [x] **Step 2: Run the tests to verify red.** The new root ownership guard failed while `EmmeBuildExtension` still exposed the container extension.
+- [x] **Step 3: Move or split implementation.** Removed the root-owned container extension; capability plugins now own their extensions and configuration.
 - [ ] **Step 4: Remove eager shared-service casts where possible.** Keep `ProviderRegistry` generic over `BuildService<BuildServiceParameters>` and preserve explicit parameter types for each capability.
-- [ ] **Step 5: Run unit and build-logic checks.** `./gradlew :build-logic:test :build-logic:check --no-daemon --no-configuration-cache --console=plain`.
-- [ ] **Step 6: Commit.** `git commit -m "refactor(build-logic): normalize core model and root ownership"`.
+- [x] **Step 5: Run unit and build-logic checks.** `:build-logic:check` passed after the root ownership slice.
+- [ ] **Step 6: Commit.** Commit the complete core/model/root slice after the remaining shared-service audit.
 
 ### Task 3: Normalize foundation and module-type conventions
 
@@ -196,8 +196,8 @@ the old unreleased task names.
 - [ ] **Step 2: Run focused tests to verify red.** `./gradlew :build-logic:test :build-logic:functionalTest --tests '*Container*' --tests '*ProviderRegistrationTest'`.
 - [ ] **Step 3: Implement typed lazy selection.** Do not call `extension.runtime.get()` during plugin application; map the property into validated provider parameters and resolve only in task execution/shared-service creation.
 - [ ] **Step 4: Make provider branches truthful.** A declared Podman branch must use `PodmanProvider`; unsupported runtime values fail with a clear message instead of silently using Docker.
-- [ ] **Step 5: Normalize task/result class names while preserving registered names.** Update imports, task registration, tests, and documentation in the same commit.
-- [ ] **Step 6: Run focused tests and commit.** `git commit -m "refactor(build-logic): normalize container capability"`.
+- [x] **Step 5: Normalize task/result class names while preserving registered names.** Renamed container task implementations to `BuildContainerImageTask`, `PushContainerImageTask`, and `VerifyContainerImageTask`; separated `ContainerPushResult` from `RegistryPushResult`; registered task names remain unchanged.
+- [x] **Step 6: Run focused tests and commit.** The focused inventory test and full `:build-logic:check` pass; commit follows after documentation is synchronized.
 
 ### Task 6: Normalize deployment capability
 

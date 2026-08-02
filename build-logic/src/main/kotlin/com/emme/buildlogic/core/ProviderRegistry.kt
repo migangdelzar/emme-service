@@ -13,11 +13,11 @@ object ProviderRegistry {
     noinline configure: BuildServiceSpec<P>.() -> Unit = {},
   ): Provider<T> = gradle.sharedServices.registerIfAbsent(name, T::class.java, configure)
 
-  fun BuildServiceSpec<*>.containerConcurrency() {
-    (this as BuildServiceSpec<BuildServiceParameters>).maxParallelUsages.set(2)
+  fun <P : BuildServiceParameters> BuildServiceSpec<P>.containerConcurrency() {
+    maxParallelUsages.set(2)
   }
 
-  fun BuildServiceSpec<*>.singleConcurrency() {
-    (this as BuildServiceSpec<BuildServiceParameters>).maxParallelUsages.set(1)
+  fun <P : BuildServiceParameters> BuildServiceSpec<P>.singleConcurrency() {
+    maxParallelUsages.set(1)
   }
 }

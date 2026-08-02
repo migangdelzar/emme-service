@@ -8,7 +8,11 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import java.io.ByteArrayOutputStream
 
-abstract class VerifyContainerImage : DefaultTask() {
+abstract class VerifyContainerImageTask : DefaultTask() {
+  private companion object {
+    const val MAX_VULNERABILITY_OUTPUT_LENGTH = 2000
+  }
+
   @get:Input
   abstract val imageName: Property<String>
 
@@ -54,7 +58,10 @@ abstract class VerifyContainerImage : DefaultTask() {
     val text = output.toString(Charsets.UTF_8)
 
     if (exitCode != 0) {
-      logger.warn("Container vulnerabilities found:\n{}", text.take(2000))
+      logger.warn(
+        "Container vulnerabilities found:\n{}",
+        text.take(MAX_VULNERABILITY_OUTPUT_LENGTH),
+      )
     } else {
       logger.lifecycle("Container scan clean.")
     }

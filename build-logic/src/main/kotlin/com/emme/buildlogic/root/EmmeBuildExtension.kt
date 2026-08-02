@@ -1,6 +1,5 @@
 package com.emme.buildlogic.root
 
-import com.emme.buildlogic.container.EmmeContainerExtension
 import com.emme.buildlogic.model.EmmeModuleType
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
@@ -18,7 +17,4 @@ abstract class EmmeBuildExtension
       objects
         .property(Boolean::class.java)
         .convention(true)
-
-    val container: EmmeContainerExtension =
-      objects.newInstance(EmmeContainerExtension::class.java)
   }

@@ -12,7 +12,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
-abstract class BuildContainerImage : DefaultTask() {
+abstract class BuildContainerImageTask : DefaultTask() {
   @get:Input
   abstract val imageName: Property<String>
 

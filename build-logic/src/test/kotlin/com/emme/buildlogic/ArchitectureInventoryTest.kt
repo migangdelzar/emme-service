@@ -51,8 +51,46 @@ class ArchitectureInventoryTest {
     assertThat(Files.exists(sourceRoot.resolve("publishing/EmmePublishingPlugin.kt"))).isTrue()
     assertThat(Files.exists(sourceRoot.resolve("security/EmmeSecurityPlugin.kt"))).isTrue()
     assertThat(Files.exists(sourceRoot.resolve("root/EmmeRootPlugin.kt"))).isTrue()
+    assertThat(Files.exists(sourceRoot.resolve("container/task/BuildContainerImageTask.kt"))).isTrue()
+    assertThat(Files.exists(sourceRoot.resolve("container/task/PushContainerImageTask.kt"))).isTrue()
+    assertThat(Files.exists(sourceRoot.resolve("container/task/VerifyContainerImageTask.kt"))).isTrue()
     assertThat(Files.exists(sourceRoot.resolve("core/EmmeContainerPlugin.kt"))).isFalse()
     assertThat(Files.exists(sourceRoot.resolve("core/DeployTask.kt"))).isFalse()
+  }
+
+  @Test
+  fun `registry results do not depend on container implementation types`() {
+    val registryProvider =
+      Files.readString(
+        sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/registry/RegistryProvider.kt"),
+      )
+    val containerResults =
+      Files.readString(
+        sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/container/provider/ContainerResult.kt"),
+      )
+
+    assertThat(registryProvider).doesNotContain("com.emme.buildlogic.container")
+    assertThat(registryProvider).contains("RegistryPushResult")
+    assertThat(containerResults).contains("ContainerPushResult")
+  }
+
+  @Test
+  fun `root extension does not own capability configuration`() {
+    val rootExtension =
+      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/root/EmmeBuildExtension.kt"))
+
+    assertThat(rootExtension).doesNotContain("com.emme.buildlogic.container")
+    assertThat(rootExtension).doesNotContain("val container")
+  }
+
+  @Test
+  fun `provider registry preserves build service parameter types`() {
+    val providerRegistry =
+      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/core/ProviderRegistry.kt"))
+
+    assertThat(providerRegistry).doesNotContain("as BuildServiceSpec<BuildServiceParameters>")
+    assertThat(providerRegistry).contains("BuildServiceSpec<P>.containerConcurrency()")
+    assertThat(providerRegistry).contains("BuildServiceSpec<P>.singleConcurrency()")
   }
 
   private fun sourcePath(relativePath: String): Path {

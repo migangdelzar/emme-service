@@ -227,6 +227,9 @@ reopened by this backlog.
   implementation plan.
 - [x] Add build-logic source/plugin inventory guardrails and normalize
   publishing task implementation names and unreleased task IDs.
+- [x] Remove root-owned container configuration, isolate registry/container
+  result models, and normalize container task implementation names while
+  preserving registered Gradle task IDs.
 - [ ] Normalize every build-logic capability, convention script, binary plugin,
   extension, task, provider, result, model, ValueSource, and test according to
   the dedicated plan.

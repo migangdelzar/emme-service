@@ -9,3 +9,7 @@ data class ManifestResult(
   val digest: String,
   val size: Long,
 )
+
+data class RegistryPushResult(
+  val manifest: String,
+)

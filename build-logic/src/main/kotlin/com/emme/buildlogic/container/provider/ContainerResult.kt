@@ -5,7 +5,7 @@ data class BuildResult(
   val digest: String,
 )
 
-data class PushResult(
+data class ContainerPushResult(
   val manifest: String,
 )
 

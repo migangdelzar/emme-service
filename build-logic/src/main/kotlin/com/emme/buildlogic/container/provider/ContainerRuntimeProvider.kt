@@ -21,7 +21,7 @@ abstract class ContainerRuntimeProvider :
   abstract fun push(
     image: String,
     registry: String,
-  ): PushResult
+  ): ContainerPushResult
 
   abstract fun scan(
     image: String,

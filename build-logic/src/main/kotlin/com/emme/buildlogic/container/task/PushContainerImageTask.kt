@@ -7,7 +7,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
-abstract class PushContainerImage : DefaultTask() {
+abstract class PushContainerImageTask : DefaultTask() {
   @get:Input
   abstract val imageName: Property<String>
 

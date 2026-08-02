@@ -30,7 +30,7 @@ abstract class DockerProvider : ContainerRuntimeProvider() {
   override fun push(
     image: String,
     registry: String,
-  ): PushResult {
+  ): ContainerPushResult {
     val fullImage = if (registry.isNotBlank()) "$registry/$image" else image
     val output = executeCommand(listOf("push", fullImage))
     val manifest =
@@ -39,7 +39,7 @@ abstract class DockerProvider : ContainerRuntimeProvider() {
         .lastOrNull { it.contains("digest:") }
         ?.substringAfter("digest:")
         ?.trim() ?: "unknown"
-    return PushResult(manifest = manifest)
+    return ContainerPushResult(manifest = manifest)
   }
 
   override fun scan(

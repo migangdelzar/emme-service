@@ -2,9 +2,9 @@ package com.emme.buildlogic.container
 
 import com.emme.buildlogic.container.provider.ContainerRuntimeProvider
 import com.emme.buildlogic.container.provider.DockerProvider
-import com.emme.buildlogic.container.task.BuildContainerImage
-import com.emme.buildlogic.container.task.PushContainerImage
-import com.emme.buildlogic.container.task.VerifyContainerImage
+import com.emme.buildlogic.container.task.BuildContainerImageTask
+import com.emme.buildlogic.container.task.PushContainerImageTask
+import com.emme.buildlogic.container.task.VerifyContainerImageTask
 import com.emme.buildlogic.core.TaskNames
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -34,7 +34,7 @@ class EmmeContainerPlugin : Plugin<Project> {
           maxParallelUsages.set(2)
         }
 
-      tasks.register(TaskNames.CONTAINER_BUILD, BuildContainerImage::class.java) {
+      tasks.register(TaskNames.CONTAINER_BUILD, BuildContainerImageTask::class.java) {
         group = "container"
         imageName.set(extension.imageName)
         contextDirectory.set(extension.contextDirectory)
@@ -42,14 +42,14 @@ class EmmeContainerPlugin : Plugin<Project> {
         onlyIf { extension.enabled.get() }
       }
 
-      tasks.register(TaskNames.CONTAINER_PUSH, PushContainerImage::class.java) {
+      tasks.register(TaskNames.CONTAINER_PUSH, PushContainerImageTask::class.java) {
         group = "container"
         imageName.set(extension.imageName)
         runtimeService.set(runtime)
         onlyIf { extension.enabled.get() && extension.push.get() }
       }
 
-      tasks.register(TaskNames.CONTAINER_VERIFY, VerifyContainerImage::class.java) {
+      tasks.register(TaskNames.CONTAINER_VERIFY, VerifyContainerImageTask::class.java) {
         group = "container"
         imageName.set(extension.imageName)
         severity.set(

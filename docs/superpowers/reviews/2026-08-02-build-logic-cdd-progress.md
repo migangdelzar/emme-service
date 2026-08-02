@@ -5,7 +5,7 @@
 | Build | `build-logic` included build |
 | Branch | `feat/module-plans-normalization` |
 | Date | 2026-08-02 |
-| Status | Guardrails and publishing naming slice complete; broader CDD migration open |
+| Status | Guardrails, root ownership, result ownership, and container task naming slices complete; broader CDD migration open |
 
 ## Completed slice
 
@@ -18,6 +18,13 @@
   `publishBuildInfo`/`publishVerifyVersion`.
 - Did not add aliases because this build is unreleased and no external consumer
   requires backwards compatibility.
+- Removed the container extension from `EmmeBuildExtension`; the root extension
+  now contains repository-wide metadata only.
+- Renamed container task implementation types to `BuildContainerImageTask`,
+  `PushContainerImageTask`, and `VerifyContainerImageTask` while preserving the
+  registered task names.
+- Separated `ContainerPushResult` and `RegistryPushResult` so the registry
+  capability does not depend on container implementation types.
 
 ## Verification
 
@@ -32,7 +39,7 @@ JVM restricted-native-access warning from Gradle's native platform library.
 
 ## Next CDD slices
 
-1. Enforce core/model/root ownership and remove capability leakage.
+1. Complete the remaining `core`/`model`/root shared-service audit.
 2. Add TestKit coverage for every foundation, testing, persistence, messaging,
    Modulith, delivery, security, and quality convention family.
 3. Verify lazy provider selection, task input/output declarations, and

@@ -1,6 +1,5 @@
 package com.emme.buildlogic.registry
 
-import com.emme.buildlogic.container.provider.PushResult
 import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
@@ -16,7 +15,7 @@ abstract class RegistryProvider :
 
   abstract fun login(): LoginResult
 
-  abstract fun push(image: String): PushResult
+  abstract fun push(image: String): RegistryPushResult
 
   abstract fun manifest(image: String): ManifestResult
 

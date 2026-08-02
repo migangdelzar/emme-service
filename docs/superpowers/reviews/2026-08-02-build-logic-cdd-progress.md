@@ -5,7 +5,7 @@
 | Build | `build-logic` included build |
 | Branch | `feat/module-plans-normalization` |
 | Date | 2026-08-02 |
-| Status | Guardrails, root ownership, result ownership, and container task naming slices complete; broader CDD migration open |
+| Status | Guardrails, capability ownership, lazy provider selection, and container task naming slices complete; broader CDD migration open |
 
 ## Completed slice
 
@@ -25,6 +25,11 @@
   registered task names.
 - Separated `ContainerPushResult` and `RegistryPushResult` so the registry
   capability does not depend on container implementation types.
+- Added truthful lazy provider selection for Docker/Podman, Compose/Kubernetes,
+  and Trivy/Grype; unsupported selector values now fail with supported-values
+  diagnostics instead of silently selecting a different provider.
+- Typed deployment and security selector properties with capability-owned enum
+  models and added a default container context directory.
 
 ## Verification
 

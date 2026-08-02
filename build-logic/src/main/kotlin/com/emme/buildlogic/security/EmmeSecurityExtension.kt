@@ -9,8 +9,8 @@ abstract class EmmeSecurityExtension
   constructor(
     providers: ProviderFactory,
   ) {
-    /** Security scanner: "trivy" or "grype" */
-    abstract val scanner: Property<String>
+    /** Security scanner selected by the project or CI environment. */
+    abstract val scanner: Property<SecurityScanner>
 
     /** Minimum severity to report: "LOW,MEDIUM,HIGH,CRITICAL" */
     abstract val severity: Property<String>
@@ -23,7 +23,8 @@ abstract class EmmeSecurityExtension
         providers
           .gradleProperty("emme.security.scanner")
           .orElse(providers.environmentVariable("EMME_SECURITY_SCANNER"))
-          .orElse("trivy"),
+          .map(SecurityScanner::fromString)
+          .orElse(SecurityScanner.TRIVY),
       )
       severity.convention(
         providers

@@ -93,6 +93,29 @@ class ArchitectureInventoryTest {
     assertThat(providerRegistry).contains("BuildServiceSpec<P>.singleConcurrency()")
   }
 
+  @Test
+  fun `container capability selects runtime providers lazily`() {
+    val containerPlugin =
+      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/container/EmmeContainerPlugin.kt"))
+
+    assertThat(containerPlugin).doesNotContain("extension.runtime.map { it.name.lowercase() }.get()")
+    assertThat(containerPlugin).contains("PodmanProvider")
+    assertThat(containerPlugin).contains("emmePodmanRuntime")
+  }
+
+  @Test
+  fun `deployment and security capabilities select providers lazily without fallback`() {
+    val deploymentPlugin =
+      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/deployment/EmmeDeploymentPlugin.kt"))
+    val securityPlugin =
+      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/security/EmmeSecurityPlugin.kt"))
+
+    assertThat(deploymentPlugin).doesNotContain("ext.target.get()")
+    assertThat(deploymentPlugin).doesNotContain("else -> ComposeProvider")
+    assertThat(securityPlugin).doesNotContain("extension.scanner.get()")
+    assertThat(securityPlugin).doesNotContain("else -> TrivyProvider")
+  }
+
   private fun sourcePath(relativePath: String): Path {
     var current: Path? = Path.of("").toAbsolutePath()
     while (current != null) {

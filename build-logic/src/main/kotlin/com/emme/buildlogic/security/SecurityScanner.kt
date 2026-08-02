@@ -10,6 +10,9 @@ enum class SecurityScanner(
   companion object {
     fun fromString(value: String): SecurityScanner =
       entries.find { it.name.equals(value, ignoreCase = true) }
-        ?: TRIVY
+        ?: throw IllegalArgumentException(
+          "Unsupported security scanner '$value'. " +
+            "Supported scanners: ${entries.joinToString { it.name.lowercase() }}",
+        )
   }
 }

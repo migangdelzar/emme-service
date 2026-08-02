@@ -1,5 +1,6 @@
 package com.emme.buildlogic.container
 
+import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -28,8 +29,15 @@ abstract class EmmeContainerExtension
         providers
           .gradleProperty("emme.container.runtime")
           .orElse(providers.environmentVariable("EMME_CONTAINER_RUNTIME"))
-          .map { ContainerRuntime.valueOf(it.uppercase()) }
-          .orElse(ContainerRuntime.DOCKER),
+          .map { rawRuntime ->
+            runCatching { ContainerRuntime.valueOf(rawRuntime.uppercase()) }
+              .getOrElse {
+                throw GradleException(
+                  "Unsupported container runtime '$rawRuntime'. " +
+                    "Supported runtimes: ${ContainerRuntime.entries.joinToString { it.name.lowercase() }}",
+                )
+              }
+          }.orElse(ContainerRuntime.DOCKER),
       )
       imageName.convention(
         providers

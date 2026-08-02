@@ -1,9 +1,12 @@
 package com.emme.buildlogic.security
 
+import com.emme.buildlogic.security.provider.GrypeProvider
+import com.emme.buildlogic.security.provider.SecurityScannerProvider
 import com.emme.buildlogic.security.provider.TrivyProvider
 import com.emme.buildlogic.security.task.SecurityScanTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
 
@@ -12,21 +15,32 @@ class EmmeSecurityPlugin : Plugin<Project> {
     with(project) {
       val extension = extensions.create("emmeSecurity", EmmeSecurityExtension::class.java)
 
-      val scannerName = extension.scanner.get()
-      val scannerClass =
-        when (scannerName.lowercase()) {
-          "trivy", "grype" -> TrivyProvider::class.java
-          else -> TrivyProvider::class.java
-        }
-
-      val securityScanner =
+      val trivyScanner =
         gradle.sharedServices.registerIfAbsent(
-          "emmeSecurityScanner",
-          scannerClass,
+          "emmeTrivyScanner",
+          TrivyProvider::class.java,
         ) {
-          parameters.scanner.set(extension.scanner)
+          parameters.scanner.set("trivy")
           parameters.severity.set(extension.severity)
           maxParallelUsages.set(1)
+        }
+
+      val grypeScanner =
+        gradle.sharedServices.registerIfAbsent(
+          "emmeGrypeScanner",
+          GrypeProvider::class.java,
+        ) {
+          parameters.scanner.set("grype")
+          parameters.severity.set(extension.severity)
+          maxParallelUsages.set(1)
+        }
+
+      val securityScanner: Provider<SecurityScannerProvider> =
+        extension.scanner.map { scanner ->
+          when (scanner) {
+            SecurityScanner.TRIVY -> trivyScanner.get()
+            SecurityScanner.GRYPE -> grypeScanner.get()
+          }
         }
 
       tasks.register("securityScan", SecurityScanTask::class.java) {

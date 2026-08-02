@@ -2,12 +2,14 @@ package com.emme.buildlogic.container
 
 import com.emme.buildlogic.container.provider.ContainerRuntimeProvider
 import com.emme.buildlogic.container.provider.DockerProvider
+import com.emme.buildlogic.container.provider.PodmanProvider
 import com.emme.buildlogic.container.task.BuildContainerImageTask
 import com.emme.buildlogic.container.task.PushContainerImageTask
 import com.emme.buildlogic.container.task.VerifyContainerImageTask
 import com.emme.buildlogic.core.TaskNames
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Exec
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
@@ -16,22 +18,32 @@ class EmmeContainerPlugin : Plugin<Project> {
   override fun apply(project: Project) {
     with(project) {
       val extension = extensions.create("emmeContainer", EmmeContainerExtension::class.java)
+      extension.contextDirectory.convention(layout.projectDirectory)
 
-      val runtimeDriver = extension.runtime.map { it.name.lowercase() }.get()
-      // TODO: add PodmanProvider when implemented; both currently map to DockerProvider
-      val runtimeClass =
-        when (runtimeDriver) {
-          "podman" -> DockerProvider::class.java
-          else -> DockerProvider::class.java
+      val dockerRuntime =
+        gradle.sharedServices.registerIfAbsent(
+          "emmeDockerRuntime",
+          DockerProvider::class.java,
+        ) {
+          parameters.executable.set("docker")
+          maxParallelUsages.set(2)
         }
 
-      val runtime =
+      val podmanRuntime =
         gradle.sharedServices.registerIfAbsent(
-          "emmeContainerRuntime",
-          runtimeClass,
+          "emmePodmanRuntime",
+          PodmanProvider::class.java,
         ) {
-          parameters.executable.set(runtimeDriver)
+          parameters.executable.set("podman")
           maxParallelUsages.set(2)
+        }
+
+      val runtime: Provider<ContainerRuntimeProvider> =
+        extension.runtime.map { selectedRuntime ->
+          when (selectedRuntime) {
+            ContainerRuntime.DOCKER -> dockerRuntime.get()
+            ContainerRuntime.PODMAN -> podmanRuntime.get()
+          }
         }
 
       tasks.register(TaskNames.CONTAINER_BUILD, BuildContainerImageTask::class.java) {

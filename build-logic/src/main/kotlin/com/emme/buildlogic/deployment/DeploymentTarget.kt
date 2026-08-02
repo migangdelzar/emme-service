@@ -12,6 +12,9 @@ enum class DeploymentTarget(
   companion object {
     fun fromString(value: String): DeploymentTarget =
       entries.find { it.name.equals(value, ignoreCase = true) }
-        ?: COMPOSE
+        ?: throw IllegalArgumentException(
+          "Unsupported deployment target '$value'. " +
+            "Supported targets: ${entries.joinToString { it.name.lowercase() }}",
+        )
   }
 }

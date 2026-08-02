@@ -14,59 +14,75 @@ import org.gradle.kotlin.dsl.register
 
 class EmmeDeploymentPlugin : Plugin<Project> {
   override fun apply(project: Project) {
-    with(project) {
-      val ext = extensions.create("emmeDeployment", EmmeDeploymentExtension::class.java)
-      ext.deploymentDir.convention(rootProject.layout.projectDirectory.dir("deployment"))
+    val extension =
+      project.extensions.create("emmeDeployment", EmmeDeploymentExtension::class.java)
+    extension.deploymentDir.convention(
+      project.rootProject.layout.projectDirectory
+        .dir("deployment"),
+    )
 
-      val target = ext.target.get()
-      val providerClass =
-        when (target.lowercase()) {
-          "compose" -> ComposeProvider::class
-          "kubernetes", "k3s", "k3d" -> KubernetesProvider::class
-          else -> ComposeProvider::class
-        }
+    val deployment = project.registerDeploymentProvider(extension)
+    project.registerDeploymentTasks(deployment)
+  }
 
-      fun registerProvider(cls: Class<out DeploymentProvider>) =
-        gradle.sharedServices.registerIfAbsent("emmeDeploymentProvider", cls) {
-          parameters.profile.set(ext.profile)
-          parameters.namespace.set(ext.namespace)
-          parameters.deploymentDir.set(ext.deploymentDir)
-          maxParallelUsages.set(1)
-        }
+  private fun Project.registerDeploymentProvider(extension: EmmeDeploymentExtension): Provider<DeploymentProvider> {
+    val composeDeployment =
+      gradle.sharedServices.registerIfAbsent("emmeComposeDeploymentProvider", ComposeProvider::class.java) {
+        parameters.profile.set(extension.profile)
+        parameters.namespace.set(extension.namespace)
+        parameters.deploymentDir.set(extension.deploymentDir)
+        maxParallelUsages.set(1)
+      }
 
-      val deployment = registerProvider(providerClass.java)
+    val kubernetesDeployment =
+      gradle.sharedServices.registerIfAbsent(
+        "emmeKubernetesDeploymentProvider",
+        KubernetesProvider::class.java,
+      ) {
+        parameters.profile.set(extension.profile)
+        parameters.namespace.set(extension.namespace)
+        parameters.deploymentDir.set(extension.deploymentDir)
+        maxParallelUsages.set(1)
+      }
 
-      tasks.register("deployUp", DeployTask::class.java) {
+    return extension.target.map { target ->
+      when (target) {
+        DeploymentTarget.COMPOSE -> composeDeployment.get()
+
+        DeploymentTarget.K3D,
+        DeploymentTarget.K3S,
+        DeploymentTarget.KUBERNETES,
+        -> kubernetesDeployment.get()
+      }
+    }
+  }
+
+  private fun Project.registerDeploymentTasks(deployment: Provider<DeploymentProvider>) {
+    listOf(
+      Triple("deployUp", "up", "Start deployment"),
+      Triple("deployDown", "down", "Stop deployment"),
+      Triple("deployApply", "apply", "Apply deployment changes"),
+    ).forEach { (taskName, action, description) ->
+      tasks.register(taskName, DeployTask::class.java) {
         group = "deployment"
-        description = "Start deployment"
-        action.set("up")
+        this.description = description
+        this.action.set(action)
         deploymentProvider.set(deployment)
       }
-      tasks.register("deployDown", DeployTask::class.java) {
-        group = "deployment"
-        description = "Stop deployment"
-        action.set("down")
-        deploymentProvider.set(deployment)
-      }
-      tasks.register("deployApply", DeployTask::class.java) {
-        group = "deployment"
-        description = "Apply deployment changes"
-        action.set("apply")
-        deploymentProvider.set(deployment)
-      }
-      tasks.register("deployStatus", DeploymentStatusTask::class.java) {
-        group = "deployment"
-        description = "Check deployment status"
-        deploymentProvider.set(deployment)
-      }
-      tasks.register("deployLogs", Exec::class.java) {
-        group = "deployment"
-        description = "Show deployment logs"
-        executable = "echo"
-        doFirst {
-          val logs = deployment.get().logs(tail = 50)
-          logger.lifecycle(logs)
-        }
+    }
+
+    tasks.register("deployStatus", DeploymentStatusTask::class.java) {
+      group = "deployment"
+      description = "Check deployment status"
+      deploymentProvider.set(deployment)
+    }
+    tasks.register("deployLogs", Exec::class.java) {
+      group = "deployment"
+      description = "Show deployment logs"
+      executable = "echo"
+      doFirst {
+        val logs = deployment.get().logs(tail = 50)
+        logger.lifecycle(logs)
       }
     }
   }

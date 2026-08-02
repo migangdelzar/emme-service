@@ -230,6 +230,9 @@ reopened by this backlog.
 - [x] Remove root-owned container configuration, isolate registry/container
   result models, and normalize container task implementation names while
   preserving registered Gradle task IDs.
+- [x] Make container, deployment, and security provider selection lazy, typed,
+  truthful, and actionable for unsupported values; verify the full build-logic
+  check after the provider slices.
 - [ ] Normalize every build-logic capability, convention script, binary plugin,
   extension, task, provider, result, model, ValueSource, and test according to
   the dedicated plan.

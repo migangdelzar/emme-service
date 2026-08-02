@@ -192,10 +192,10 @@ the old unreleased task names.
 - Consumes: stable `containerBuild`, `containerPush`, `containerVerify`, and `containerMultiArch` task names.
 - Produces: typed container runtime selection, real provider branches, `ContainerBuildResult`/`ContainerPushResult`/`ContainerScanResult`, and registry abstraction independent of Docker.
 
-- [ ] **Step 1: Write failing tests for provider selection and task names.** Cover Docker, unsupported runtime, disabled capability, image input propagation, and stable task registration.
-- [ ] **Step 2: Run focused tests to verify red.** `./gradlew :build-logic:test :build-logic:functionalTest --tests '*Container*' --tests '*ProviderRegistrationTest'`.
-- [ ] **Step 3: Implement typed lazy selection.** Do not call `extension.runtime.get()` during plugin application; map the property into validated provider parameters and resolve only in task execution/shared-service creation.
-- [ ] **Step 4: Make provider branches truthful.** A declared Podman branch must use `PodmanProvider`; unsupported runtime values fail with a clear message instead of silently using Docker.
+- [x] **Step 1: Write failing tests for provider selection and task names.** Cover Docker, unsupported runtime, disabled capability, image input propagation, and stable task registration.
+- [x] **Step 2: Run focused tests to verify red.** The inventory and TestKit tests exposed eager runtime resolution, silent Podman-to-Docker fallback, invalid-runtime diagnostics, and an unset default context directory.
+- [x] **Step 3: Implement typed lazy selection.** Runtime selection is now a lazy provider mapping; service providers are resolved only when an enabled task requests them, and container context defaults to the project directory.
+- [x] **Step 4: Make provider branches truthful.** Docker and Podman use separate providers/services; unsupported runtime values fail with a clear supported-values message.
 - [x] **Step 5: Normalize task/result class names while preserving registered names.** Renamed container task implementations to `BuildContainerImageTask`, `PushContainerImageTask`, and `VerifyContainerImageTask`; separated `ContainerPushResult` from `RegistryPushResult`; registered task names remain unchanged.
 - [x] **Step 6: Run focused tests and commit.** The focused inventory test and full `:build-logic:check` pass; commit follows after documentation is synchronized.
 
@@ -220,7 +220,7 @@ the old unreleased task names.
 
 - [ ] **Step 1: Add failing TestKit scenarios.** Cover Compose, Kubernetes, invalid target, namespace derivation, task names, and provider failure mapping.
 - [ ] **Step 2: Run the new test to confirm red.** `./gradlew :build-logic:functionalTest --tests '*DeploymentPluginFunctionalTest'`.
-- [ ] **Step 3: Replace free-form target selection.** Use `Property<DeploymentTarget>` or a provider-to-enum mapping; validate profile and namespace without calling `.get()` in plugin configuration.
+- [x] **Step 3: Replace free-form target selection.** `Property<DeploymentTarget>` is populated lazily from Gradle/environment providers, and target selection no longer calls `.get()` during plugin configuration.
 - [ ] **Step 4: Move all external command work into providers.** Tasks depend on the provider port/shared service and expose normalized `DeploymentResult` values.
 - [ ] **Step 5: Run functional tests with configuration cache.** `./gradlew :build-logic:functionalTest --tests '*DeploymentPluginFunctionalTest' --configuration-cache`.
 - [ ] **Step 6: Commit.** `git commit -m "refactor(build-logic): normalize deployment capability"`.
@@ -279,7 +279,7 @@ the old unreleased task names.
 
 - [ ] **Step 1: Add failing tests for scanner and quality selection.** Cover Trivy, unsupported scanner, severity parsing, fail-on-critical behavior, quality modes, and API baseline task wiring.
 - [ ] **Step 2: Run focused tests to confirm red.** `./gradlew :build-logic:functionalTest --tests '*SecurityPluginFunctionalTest' --tests '*QualityConventionFunctionalTest' --tests '*ApiCompatibilityConventionFunctionalTest'`.
-- [ ] **Step 3: Replace selector strings and silent fallback.** Map provider values through `SecurityScanner` and `QualityGateMode`; unsupported values fail during task execution with actionable messages.
+- [x] **Step 3: Replace selector strings and silent fallback.** Security scanner selection uses `Property<SecurityScanner>`, separate Trivy/Grype providers, and actionable unsupported-value failures.
 - [ ] **Step 4: Keep quality scripts declarative.** Shared Checkstyle/Spotless/Detekt configuration belongs in reusable helpers, not duplicated across each convention script.
 - [ ] **Step 5: Run focused tests and commit.** `git commit -m "refactor(build-logic): normalize security and quality capabilities"`.
 

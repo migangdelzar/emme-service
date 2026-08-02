@@ -11,8 +11,8 @@ abstract class EmmeDeploymentExtension
   constructor(
     providers: ProviderFactory,
   ) {
-    /** Target: "compose", "k3d", or "kubernetes" */
-    abstract val target: Property<String>
+    /** Deployment strategy selected by the project or CI environment. */
+    abstract val target: Property<DeploymentTarget>
 
     /** Profile/environment: "local", "test", "staging", "production" */
     abstract val profile: Property<String>
@@ -31,7 +31,8 @@ abstract class EmmeDeploymentExtension
         providers
           .gradleProperty("emme.deployment.target")
           .orElse(providers.environmentVariable("EMME_DEPLOYMENT_TARGET"))
-          .orElse("compose"),
+          .map(DeploymentTarget::fromString)
+          .orElse(DeploymentTarget.COMPOSE),
       )
       profile.convention(
         providers

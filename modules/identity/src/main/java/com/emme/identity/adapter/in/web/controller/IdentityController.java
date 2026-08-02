@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = "/api/v1/identity", version = "1.0")
+@RequestMapping(path = "/api/identity", version = "1.0")
 public class IdentityController {
 
   private final AssignMembershipUseCase assignMembership;
@@ -88,7 +88,7 @@ public class IdentityController {
               assignMembership.assign(
                   new AssignMembershipCommand(
                       request.tenantId(), request.roleId(), request.userReference()));
-          URI location = URI.create("/api/v1/identity/memberships/" + membership.id());
+          URI location = URI.create("/api/identity/memberships/" + membership.id());
           return ResponseEntity.created(location)
               .body(IdentityWebMapper.toMembershipResponse(membership));
         });

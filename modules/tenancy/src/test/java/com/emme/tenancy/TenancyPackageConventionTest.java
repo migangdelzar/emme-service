@@ -204,7 +204,10 @@ class TenancyPackageConventionTest {
         .contains("configureApiVersioning")
         .contains("useRequestHeader(\"API-Version\")")
         .contains("setDefaultVersion(\"1.0\")")
-        .contains("addSupportedVersions(\"1.0\")");
+        .contains("addSupportedVersions(\"1.0\")")
+        .doesNotContain("usePathSegment")
+        .doesNotContain("useQueryParam")
+        .doesNotContain("useMediaTypeParam");
   }
 
   @Test

@@ -80,7 +80,8 @@ sequenceDiagram
 
 ## HTTP API rules
 
-- Version public routes deliberately, for example `/api/v1/...`.
+- Resolve API versions through the canonical `API-Version` request header; do
+  not encode the version again in the URI path.
 - Validate syntax and boundary constraints at the edge.
 - Apply the [backend validation conventions](validation.md): Jakarta constraints belong on inbound request/message models, while domain and cross-aggregate rules remain in their owning layers.
 - Resolve authentication and tenant context before entering application behavior.
@@ -100,12 +101,13 @@ Use the repository's two-level policy:
 
 | Boundary | Policy | Example |
 |---|---|---|
-| Public URI and OpenAPI major contract | Keep the stable major path visible to clients | `/api/v1/identity/memberships` |
-| Spring controller compatibility mapping | Use Spring's `version` attribute when two representations of the same route must coexist | `@GetMapping(path = "/memberships", version = "1.1")` |
+| Version source | Resolve the requested version from one service-wide header | `API-Version: 1.0` |
+| Public URI | Keep resource paths version-neutral | `/api/identity/memberships` |
+| Spring controller mapping | Declare the supported representation with Spring's `version` attribute | `@GetMapping(path = "/memberships", version = "1.0")` |
 
 ```java
 @RestController
-@RequestMapping("/api/v1/identity")
+@RequestMapping(path = "/api/identity", version = "1.0")
 final class IdentityController {
 
   @GetMapping(path = "/memberships", version = "1.0")
@@ -120,16 +122,16 @@ final class IdentityController {
 }
 ```
 
-The version source may be a path segment, request header, query parameter, or
-media-type parameter, but a service chooses one canonical resolver for its
-public API. Do not silently combine multiple version sources. A missing or
-unsupported version must produce the configured client error, and version
-selection must be covered by MockMvc contract tests.
+The service uses the request header as its only version source. Do not add a
+path segment, query parameter, or media-type version resolver. A missing header
+uses the configured `1.0` default; an unsupported header must produce the
+configured client error. Version selection must be covered by MockMvc contract
+tests.
 
-For the current service, `/api/v1` remains the externally visible major
-contract. Spring mapping versions are introduced only when an endpoint needs
-parallel compatibility behavior; they do not justify changing a stable route
-or duplicating controllers prematurely. See the official [Spring MVC API
+This service is pre-release, so the version-neutral `/api/...` route is the
+canonical route and no `/api/v1/...` compatibility alias is maintained. Spring
+mapping versions are introduced only when a real second representation exists;
+they do not justify duplicating controllers speculatively. See the official [Spring MVC API
 versioning reference](https://docs.spring.io/spring-framework/reference/web/webmvc-versioning.html).
 
 ## Error mapping
@@ -151,9 +153,9 @@ The exact status may be specialized by the API contract, but the mapping must be
 ### Versioning and compatibility
 
 - Version externally consumed routes and schemas deliberately.
-- Prefer the visible `/api/v<major>` route for the public major contract and
-  Spring MVC `@RequestMapping(version = "...")` for parallel handler
-  compatibility within that contract.
+- Prefer the canonical `API-Version` request header and version-neutral `/api`
+  routes. Use Spring MVC `@RequestMapping(version = "...")` for parallel
+  handler representations only when a real second representation exists.
 - Prefer additive changes; deprecate before removal.
 - Do not expose JPA entities, domain aggregates, provider responses, or internal exceptions.
 - Define field nullability, default behavior, enum evolution, pagination, sorting, and maximum page size.

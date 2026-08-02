@@ -155,8 +155,7 @@ reopened by this backlog.
 - [ ] Complete the Tenancy boundary migration in
   `docs/superpowers/plans/2026-07-31-tenancy-module-migration.md`.
 - [x] Adopt and verify Spring MVC endpoint version conditions for controllers,
-  using one configured resolver and preserving the current `/api/v1` public
-  major contract.
+  using one configured resolver and version-neutral `/api` routes.
 
 ### P1 — Cross-cutting ownership and infrastructure
 
@@ -1390,10 +1389,11 @@ limiting, then continue authorization domain/application separation.
 ## Spring MVC endpoint versioning — 2026-08-02
 
 - [x] Configure one header-based `ApiVersionConfigurer` using `API-Version`.
-- [x] Preserve `/api/v1` URI routes and default requests to version `1.0`.
+- [x] Use version-neutral `/api` routes and default requests to version `1.0`.
 - [x] Declare the Identity controller's current mapping as Spring MVC version
   `1.0`.
 - [x] Verify module source conventions, Checkstyle, integration checks, and
   application Modulith tests.
-- [ ] Add parallel `1.1` representations only when a real compatibility change
-  requires them.
+- [ ] Add parallel `1.1` representations only when a real second
+  representation exists; no legacy `/api/v1` alias is maintained before
+  release.

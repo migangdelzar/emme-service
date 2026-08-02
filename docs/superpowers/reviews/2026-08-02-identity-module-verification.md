@@ -66,9 +66,9 @@ The following are intentionally still open and are not hidden by this report:
 1. Final service-wide architecture, CI, boot-artifact, and Modulith evidence.
 2. Live migration/recovery/rollback exercise against the deployment environment.
 3. Final operational evidence for event-publication replay and failure recovery.
-4. Adoption of Spring MVC mapping version conditions when a second endpoint
-   representation is introduced; the current `/api/v1` URI major contract is
-   preserved until then.
+4. Adoption of additional Spring MVC mapping versions when a second endpoint
+   representation is introduced; the current version-neutral `/api` route is
+   canonical and no legacy `/api/v1` alias is maintained.
 
 ## References
 

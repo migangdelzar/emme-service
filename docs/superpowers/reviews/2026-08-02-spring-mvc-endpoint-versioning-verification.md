@@ -11,11 +11,14 @@
 The service uses one centralized Spring MVC API-version strategy:
 
 - source: `API-Version` request header;
-- default: `1.0`, preserving existing clients;
+- default: `1.0` for requests without an explicit header;
 - supported version: `1.0`;
-- public major URI: unchanged `/api/v1/...`;
-- controller condition: Identity's `/api/v1/identity` mapping declares
+- public URI: version-neutral `/api/...` routes;
+- controller condition: Identity's `/api/identity` mapping declares
   `version = "1.0"`.
+
+The service is pre-release and does not require backwards-compatible aliases;
+the old `/api/v1/...` path is intentionally not maintained.
 
 ```mermaid
 flowchart LR
@@ -23,7 +26,7 @@ flowchart LR
     header[API-Version header]
     strategy[Central ApiVersionConfigurer]
     mapping[Identity mapping version 1.0]
-    uri[Existing /api/v1 URI]
+    uri[Version-neutral /api URI]
 
     request --> header
     header --> strategy

@@ -779,7 +779,8 @@ class IdentityPackageConventionTest {
             "modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/IdentityController.java");
 
     assertThat(Files.readString(controller))
-        .contains("@RequestMapping(path = \"/api/v1/identity\", version = \"1.0\")");
+        .contains("@RequestMapping(path = \"/api/identity\", version = \"1.0\")")
+        .doesNotContain("/api/v1/identity");
   }
 
   private static boolean hasJavaSource(Path directory, String filename) {

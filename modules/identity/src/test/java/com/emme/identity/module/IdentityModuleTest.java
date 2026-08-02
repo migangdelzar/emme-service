@@ -58,7 +58,7 @@ class IdentityModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            post("/api/v1/identity/memberships")
+            post("/api/identity/memberships")
                 .with(tenantJwt())
                 .contentType("application/json")
                 .content(requestBody))
@@ -83,7 +83,7 @@ class IdentityModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            post("/api/v1/identity/memberships")
+            post("/api/identity/memberships")
                 .with(tenantJwt(tenantId, TEST_USER_SUB, "staff"))
                 .contentType("application/json")
                 .content(requestBody))
@@ -105,7 +105,7 @@ class IdentityModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            post("/api/v1/identity/memberships")
+            post("/api/identity/memberships")
                 .with(tenantJwt(tenantId, TEST_USER_SUB, "tenant_owner"))
                 .contentType("application/json")
                 .content(requestBody))
@@ -119,7 +119,7 @@ class IdentityModuleTest extends BaseSpringModuleTest {
         membershipRepo.save(new MembershipEntity(tenantId, savedRole, "revoke-test-user"));
 
     mockMvc
-        .perform(delete("/api/v1/identity/memberships/{id}", m.getId()).with(tenantJwt()))
+        .perform(delete("/api/identity/memberships/{id}", m.getId()).with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("REVOKED"));
 
@@ -134,7 +134,7 @@ class IdentityModuleTest extends BaseSpringModuleTest {
     membershipRepo.save(new MembershipEntity(tenantId, savedRole, TEST_USER_SUB));
 
     mockMvc
-        .perform(get("/api/v1/identity/me").with(tenantJwt()))
+        .perform(get("/api/identity/me").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].role").value(savedRole.getCode()));
@@ -149,7 +149,7 @@ class IdentityModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            get("/api/v1/identity/me/permissions")
+            get("/api/identity/me/permissions")
                 .with(tenantJwt(tenantId, PERMISSIONS_TEST_USER, "tenant_owner"))
                 .param("tenantId", tenantId.toString()))
         .andExpect(status().isOk())
@@ -158,6 +158,6 @@ class IdentityModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldRejectUnauthenticatedMembershipAccess() throws Exception {
-    mockMvc.perform(get("/api/v1/identity/me")).andExpect(status().is4xxClientError());
+    mockMvc.perform(get("/api/identity/me")).andExpect(status().is4xxClientError());
   }
 }

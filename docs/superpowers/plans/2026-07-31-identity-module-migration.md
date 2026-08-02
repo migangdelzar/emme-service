@@ -471,14 +471,15 @@ tenant-isolation, migration, recovery, and service-wide evidence.
 
 - [x] Configured one service-wide `API-Version` request-header resolver with a
   `1.0` default and supported-version allow-list.
-- [x] Applied `version = "1.0"` to the Identity controller while preserving the
-  existing `/api/v1/identity` public URI contract.
+- [x] Applied `version = "1.0"` to the Identity controller and normalized its
+  public route to `/api/identity`, using the `API-Version` header as the sole
+  version source.
 - [x] Added source-boundary regression coverage for the resolver and mapping.
 - [x] Verified Identity/Tenancy checks and the application Modulith test.
 
 Future endpoint versions must be introduced as parallel representations only
-when a real compatibility change requires them; the stable `/api/v1` route is
-not duplicated speculatively.
+when a real second representation exists. The pre-release service does not
+maintain a legacy `/api/v1` compatibility alias.
 
 ## Completed one-service-per-use-case normalization — 2026-08-01
 
@@ -694,7 +695,8 @@ current open work is limited to final service-wide and operational evidence:
 - [ ] Service-wide architecture, boot-artifact, and final Modulith evidence.
 - [ ] Live migration, recovery, rollback, and event-publication replay evidence.
 - [ ] Spring MVC mapping-version adoption when a second endpoint representation
-  is required; `/api/v1` remains the current public major contract.
+  is required; the version-neutral `/api` route remains canonical and no legacy
+  `/api/v1` alias is maintained.
 
 ## Completed membership authorization hardening slice — 2026-08-02
 

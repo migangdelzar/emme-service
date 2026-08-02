@@ -11,8 +11,7 @@ import java.util.UUID;
 @Entity
 @Table(
     name = "whatsapp_webhook_event",
-    uniqueConstraints =
-        @UniqueConstraint(columnNames = {"tenant_id", "provider", "event_id"}))
+    uniqueConstraints = @UniqueConstraint(columnNames = {"tenant_id", "provider", "event_id"}))
 public class WhatsAppWebhookEventEntity extends TenantOwnedEntity {
   @Column(nullable = false, length = 40)
   private String provider;

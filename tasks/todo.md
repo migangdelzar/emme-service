@@ -1463,3 +1463,11 @@ limiting, then continue authorization domain/application separation.
   deferred.
 - [ ] Complete shared service-wide schema, recovery, Modulith, and boot-artifact
   evidence.
+
+## Shared infrastructure reconciliation — 2026-08-02
+
+- [x] Reconcile capability-owned persistence, time, identity, search, web, and
+  JDBC connection boundaries.
+- [x] Verify repository test, Shared integration, formatting, Checkstyle, and
+  application Modulith gates.
+- [ ] Add final repository-wide recovery/rollback evidence for Shared changes.

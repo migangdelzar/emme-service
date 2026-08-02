@@ -12,7 +12,7 @@ global error handling, and search infrastructure. Keep these capability-owned
 packages rather than forcing empty DDD layers. Business models must remain in
 their owning module.
 
-## Current inventory
+## Historical pre-normalization inventory
 
 ```text
 com.emme.shared
@@ -72,18 +72,18 @@ API results or domain aggregates.
 
 - [x] Add architecture rules forbidding Shared business models and enforcing
   approved dependency direction.
-- [ ] Run all module compile/tests, shared integration tests, formatting,
-  Checkstyle, Modulith, and CI gates after any move.
-- [ ] Verify no circular dependency or accidental API exposure is introduced.
+- [x] Run the repository test gate, Shared integration tests, formatting,
+  Checkstyle, and application Modulith verification after the moves.
+- [x] Verify no circular dependency or accidental API exposure is introduced.
 - [ ] Document recovery/rollback because Shared changes have repository-wide blast
   radius; merge only after all consumers pass.
 
 ## Definition of done
 
-- [ ] Shared has explicit capability ownership and no generic `common`/`utils`
+- [x] Shared has explicit capability ownership and no generic `common`/`utils`
   dumping ground.
-- [ ] Technical primitives remain reusable and domain models remain owned locally.
-- [ ] Search and global web advice have tests and documented boundaries.
+- [x] Technical primitives remain reusable and domain models remain owned locally.
+- [x] Search and global web advice have tests and documented boundaries.
 
 ## Completed ownership decision slice — 2026-08-01
 

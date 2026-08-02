@@ -357,6 +357,21 @@ decisions, architecture rules, and the committed final verification report.
   scenarios as open evidence work rather than treating unit coverage as a
   substitute.
 
+## Completed deterministic routing boundary slice — 2026-08-02
+
+- [x] Added regression coverage for default-database fallback when no database
+  context is present.
+- [x] Added regression coverage proving a resolved tenant database ID is used as
+  the routing lookup key.
+- [x] Added regression coverage proving target DataSource resolution is delegated
+  lazily to `TenantDatabasePoolProvider`.
+- [x] Verified the routing tests together with default-pool lifecycle and
+  recovery tests.
+
+Live pool eviction, routing-failure recovery, and deployment-level rollback
+evidence remain open; these tests document the deterministic unit boundary but
+do not substitute for the final operational evidence gate.
+
 ## Completed event-after-commit boundary slice — 2026-08-01
 
 - [x] Kept `CreateTenantService` event publication inside its transaction.

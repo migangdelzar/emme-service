@@ -409,3 +409,14 @@
 - Prevention rule: extract shared workflows into one focused application service
   behind a public use-case contract; every inbound adapter delegates to that
   contract and owns only transport translation.
+
+## 2026-08-02 — Routing adapters must not own pool lifecycle
+
+- Failure mode: a routing DataSource can accidentally become responsible for
+  tenant pool construction, cache policy, and shutdown when those concerns are
+  added directly to the Spring routing adapter.
+- Detection signal: routing tests need to inspect pool creation or the routing
+  class instantiates Hikari/Caffeine infrastructure itself.
+- Prevention rule: keep routing responsible only for selecting the database key
+  and delegating target resolution to the capability-owned pool provider; test
+  both boundaries independently.

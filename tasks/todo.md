@@ -1369,3 +1369,12 @@ limiting, then continue authorization domain/application separation.
   Modulith verification.
 - [ ] Continue the remaining Identity operational evidence and service-wide
   architecture gates.
+
+## Tenancy deterministic routing boundary — 2026-08-02
+
+- [x] Verify default-database fallback without tenant context.
+- [x] Verify tenant database routing-key preservation.
+- [x] Verify lazy target resolution through the pool provider.
+- [x] Reverify default-pool lifecycle and closed-pool recovery tests.
+- [ ] Complete live eviction, routing-failure recovery, replay/idempotency,
+  rollback, and service-wide operational evidence.

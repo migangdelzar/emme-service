@@ -37,12 +37,19 @@ class AssistantPackageConventionTest {
   }
 
   @Test
-  void consumesDocumentsOnlyThroughThePublicNamedInterface() throws IOException {
+  void consumesDocumentsOnlyThroughThePublicDocumentsContract() throws IOException {
     String build = Files.readString(sourcePath("modules/assistant/build.gradle.kts"));
     String metadata = Files.readString(ROOT.resolve("package-info.java"));
+    String ragService =
+        Files.readString(ROOT.resolve("ai/application/service/RagQueryService.java"));
 
     assertThat(build).contains("implementation(project(\":modules:studio\"))");
     assertThat(metadata).contains("studio :: documents-api");
+    assertThat(ragService)
+        .contains("com.emme.studio.documents.api")
+        .doesNotContain("com.emme.studio.documents.adapter")
+        .doesNotContain("com.emme.studio.documents.application")
+        .doesNotContain("com.emme.studio.domain");
     assertThat(Arrays.stream(build.split("\\R")))
         .noneMatch(line -> line.contains("testImplementation(project(\":modules:studio\"))"));
   }

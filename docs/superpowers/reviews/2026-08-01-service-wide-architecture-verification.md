@@ -1,4 +1,4 @@
-# Service-wide architecture verification — 2026-08-01
+# Service-wide architecture verification — 2026-08-02
 
 ## Scope
 
@@ -6,7 +6,9 @@ This report verifies the current `feat/module-plans-normalization` service tree
 against the latest module template and the capability-driven outbound adapter
 rules. It covers the structural migrations completed on this branch, including
 the Assistant AI/WhatsApp slice and technology-owned Notification, Payment, and
-Calendar clients.
+Calendar clients. The canonical deployable application is `emme-platform`;
+`studio-api` is retained only as a compatibility/build target pending a separate
+zero-reference retirement plan.
 
 ## Verified architectural outcomes
 
@@ -26,6 +28,21 @@ Calendar clients.
 | Legacy generic provider source packages | No tracked production sources remain |
 | Application architecture tests | Pass |
 | Spring Modulith named interfaces | Pass for `emme-platform` and `studio-api` |
+
+## Canonical application and delivery target
+
+| Surface | Canonical target | Evidence |
+|---|---|---|
+| Composition root | `applications/emme-platform` | `PlatformApplicationParityTest` |
+| Container image | `ghcr.io/migangdelzar/emme-service` | `emmeContainer.imageName` and target validator |
+| Compose service | `emme-platform` | `scripts/validate-emme-platform-target.mjs` |
+| Legacy Kubernetes workload | `emme-platform` | Kustomize local/production render |
+| Kubernetes provider workload | `backend` / `app=emme-backend` | `KubernetesWorkloadTest` |
+| Compatibility application | `applications/studio-api` | Gradle compatibility build only |
+
+No active deployment manifest, wait script, or module-boundary CI job targets
+`studio-api`. Deleting the compatibility application is intentionally outside
+this cutover and requires its own migration and zero-reference evidence.
 
 ## Verification commands
 

@@ -56,8 +56,12 @@ name:
 | Artifact | Canonical image |
 |---|---|
 | Main service application (`emme-platform`) | `ghcr.io/migangdelzar/emme-service` |
-| Studio API application | `ghcr.io/migangdelzar/emme-service-studio-api` |
 | Web application | `ghcr.io/migangdelzar/emme-web` |
+
+`studio-api` has no active deployment image contract. Its source project may
+still be built for compatibility while the remaining migration responsibilities
+are moved to `emme-platform`, but deployment and release automation must not
+publish or consume a `studio-api` image.
 
 Environment overlays may replace these images with local registry names, but
 production manifests must promote an immutable tag or digest from the

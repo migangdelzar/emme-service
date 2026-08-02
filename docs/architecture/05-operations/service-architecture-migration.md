@@ -11,6 +11,11 @@
 | Build-logic model | Capability-Driven Build Logic (CDD) |
 | Date | 2026-07-31 |
 
+`applications/emme-platform` is the canonical service composition root and the
+only active deployment target. `applications/studio-api` remains a temporary
+compatibility/build target; removing it requires a separate destructive cleanup
+after a repository-wide zero-reference audit.
+
 ## Objective
 
 Bring the separated service repository to the architecture already defined by the
@@ -159,8 +164,11 @@ flowchart LR
 
 - `./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon --no-configuration-cache`
   passes in the service repository.
-- `./gradlew :applications:studio-api:test --tests com.emme.ModularityTest
+- `./gradlew :applications:emme-platform:test --tests com.emme.ModularityTest
   --tests com.emme.LayerConventionTest --no-daemon --no-configuration-cache` passes.
+- `node scripts/validate-emme-platform-target.mjs` passes, proving active
+  Compose, Helm, Kubernetes, CI, and wait-script surfaces target
+  `emme-platform` and `ghcr.io/migangdelzar/emme-service`.
 - Catalog persistence classes are under `adapter/out/persistence/entity` and domain
   classes are framework-independent.
 - Identity consumes only tenancy API types and studio public events.

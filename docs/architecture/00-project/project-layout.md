@@ -16,8 +16,8 @@ the web application.
 ```text
 emme/
 ├── applications/                 # deployable Spring Boot applications
-│   ├── studio-api/
-│   └── emme-platform/
+│   ├── emme-platform/             # canonical deployed application
+│   └── studio-api/                # temporary compatibility/build target
 ├── modules/                      # business capabilities / bounded contexts
 │   ├── shared/
 │   ├── tenancy/
@@ -34,6 +34,7 @@ emme/
 ├── database/                     # migrations and database lifecycle
 ├── build-logic/                  # reusable Gradle architecture
 ├── infra/                        # local and environment infrastructure
+├── deployment/                   # Compose, Helm, and legacy Kustomize delivery
 ├── docs/                         # architecture, requirements, ADRs, and plans
 ├── settings.gradle.kts
 ├── build.gradle.kts
@@ -67,6 +68,12 @@ flowchart TB
 | `build-logic` | Build conventions and delivery automation | Application behavior |
 | `database` | Schema lifecycle and migration ownership | Ad hoc SQL in every module |
 | `docs/architecture` | Stable architectural guidance | Temporary task notes |
+
+`applications/emme-platform` is the canonical composition root and the only
+active deployment target. `applications/studio-api` remains included solely as
+a compatibility/build target until a separate zero-reference retirement plan is
+complete; it must not appear in active CI boundary checks or deployment
+manifests.
 
 ## Dependency direction
 

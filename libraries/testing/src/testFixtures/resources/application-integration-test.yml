@@ -1,8 +1,9 @@
-# application-integration-test.yml - integration tests with real Testcontainers infrastructure
-# Auto-applied by @PostgresIntegrationTest (@ActiveProfiles includes "integration-test")
+# Shared PostgreSQL integration profile for tests using @PostgresIntegrationTest.
+# The annotation activates this profile and supplies the Testcontainers database.
 testcontainers:
   reuse:
     enable: true
+
 spring:
   jpa:
     hibernate:

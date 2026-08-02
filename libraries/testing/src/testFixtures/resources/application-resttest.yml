@@ -1,6 +1,9 @@
-# application-resttest.yml — REST integration tests with H2 + real embedded server
-# Uses RANDOM_PORT, TestRestTemplate, JWT auth via TestSecurityConfig
-# Does NOT exclude OAuth2ResourceServer/OAuth2Client (needed for SecurityConfig)
+# Shared H2 REST integration profile for tests that explicitly activate `resttest`.
+#
+# Current database-backed integration tests use `@PostgresIntegrationTest` and
+# `application-integration-test.yml`. Keep this profile in the shared fixtures
+# so an H2 REST test does not duplicate the same bootstrap configuration in
+# every module.
 spring:
   datasource:
     url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
@@ -21,6 +24,8 @@ spring:
           enabled: true
   modulith:
     events:
+      externalization:
+        enabled: false
       jdbc:
         schema-initialization:
           enabled: false
@@ -56,7 +61,7 @@ app:
     provider: mock
   calendar:
     google:
-      service-account: ""
+      service-account-json-base64: ""
     calendar-id: test-calendar
 
 emme:

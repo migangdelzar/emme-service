@@ -1186,3 +1186,16 @@ limiting, then continue authorization domain/application separation.
 - [x] Inject the transport boundary into Calendar OAuth, Calendar, Sheets, and
   synchronization adapters.
 - [x] Verify Calendar package conventions and formatting-sensitive whitespace.
+
+## Shared test-profile DRY normalization — 2026-08-02
+
+- [x] Confirm duplicate REST and PostgreSQL integration profiles were identical
+  across all participating modules.
+- [x] Move `application-resttest.yml`, `application-integration-test.yml`, and
+  `intTest-schema.sql` into the shared testing test-fixture resources.
+- [x] Remove module-local duplicate profile and schema resources.
+- [x] Normalize all Spring Modulith JDBC schema properties to the current
+  nested namespace.
+- [x] Compile every integration-test source set and package the shared fixture
+  JAR successfully.
+- [x] Document profile ownership and the build-logic CDD completion gate.

@@ -240,6 +240,46 @@ emme.spring-application
 
 Avoid an `emme.everything` plugin. Explicit composition keeps module build scripts declarative and makes capability ownership visible.
 
+## Current rollout and completion gate
+
+Capability-Driven Design is already the organizing model of the current
+`build-logic` implementation: the repository is an included build, public
+conventions are precompiled `.gradle.kts` plugins, complex behavior is owned by
+binary Kotlin plugins, and capability packages own their extensions, tasks,
+providers, results, and value sources. The `emme.messaging` capability now also
+owns the Spring Modulith Kafka dependency used by deployable applications.
+
+The remaining work is hardening and evidence, not a second package-tree rewrite:
+
+1. remove remaining eager `Provider.get()` calls from plugin configuration and
+   use typed capability models instead of free-form selector strings;
+2. complete provider/task/result extraction where a capability still contains
+   technology-specific wiring in its plugin;
+3. add Gradle TestKit coverage for deployment, publishing, security, registry,
+   provider selection, configuration-cache behavior, and failure diagnostics;
+4. audit `core/` and `model/` so every file has more than one legitimate
+   capability consumer, otherwise move it into its owning capability;
+5. verify plugin IDs, lazy inputs/outputs, configuration-cache compatibility,
+   dependency locking, and CI execution across the real applications; and
+6. publish the final build-logic verification report and record any intentional
+   deviation in an ADR.
+
+### When this gate runs
+
+The hardening pass is the final P4 workstream: after the remaining backend
+module migrations, Shared/Audit ownership decisions, and module-level evidence
+are closed, but before the final service-wide architecture, CI, artifact, and
+release verification gate. Module migrations can continue now because the
+stable convention-plugin IDs and the capability boundary already exist.
+
+```mermaid
+flowchart LR
+    MODULES[Complete module migrations] --> OWNERSHIP[Resolve Shared and Audit ownership]
+    OWNERSHIP --> BUILDLOGIC[Harden and verify build-logic CDD]
+    BUILDLOGIC --> FINAL[Service-wide final verification]
+    BUILDLOGIC -. stable plugin IDs already usable .-> MODULES
+```
+
 ## Capability template
 
 ```text

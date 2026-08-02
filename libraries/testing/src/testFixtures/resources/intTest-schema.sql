@@ -1,4 +1,6 @@
--- Create schemas for all modules
+-- Shared schema bootstrap for PostgreSQL integration tests.
+-- JPA owns entity tables; this file owns infrastructure tables not represented
+-- by JPA entities.
 CREATE SCHEMA IF NOT EXISTS emme_core;
 CREATE SCHEMA IF NOT EXISTS emme_salon;
 CREATE SCHEMA IF NOT EXISTS emme_identity;
@@ -8,7 +10,6 @@ CREATE SCHEMA IF NOT EXISTS emme_notifications;
 CREATE SCHEMA IF NOT EXISTS emme_documents;
 CREATE SCHEMA IF NOT EXISTS emme_conversations;
 
--- emme_core: tenant_registry (not managed by JPA entity, used by TenantContextAspect)
 CREATE TABLE IF NOT EXISTS emme_core.tenant_registry (
     tenant_id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     slug varchar(63) NOT NULL UNIQUE,
@@ -22,6 +23,5 @@ CREATE TABLE IF NOT EXISTS emme_core.tenant_registry (
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
 );
--- This SQL script only creates tables that are NOT managed by JPA entities.
--- JPA entity tables are created by spring.jpa.hibernate.ddl-auto=create with
--- spring.jpa.properties.hibernate.hbm2ddl.create_schemas=true (Hibernate 7.x).
+
+-- JPA entity tables are created by Hibernate with ddl-auto=create-drop.

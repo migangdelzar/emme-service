@@ -69,7 +69,7 @@ single universal folder structure.
 | Area | Contents |
 |---|---|
 | [00 — Project](00-project/project-layout.md) | Repository layout, Gradle settings, mise, and build logic |
-| [01 — Backend](01-backend/module.md) | Modules, APIs, validation, application services, domain, infrastructure, controllers, repositories, and events |
+| [01 — Backend](01-backend/module.md) | Modules, APIs, validation, application services, domain, infrastructure, controllers, repositories, events, and test profile ownership |
 | Frontend consumer handbook | [emme-web architecture](https://github.com/migangdelzar/emme-web/tree/main/docs/architecture) |
 | [03 — Integration](03-integration/module-communication.md) | Module communication, service contracts, and frontend/backend boundary |
 | [04 — Delivery](04-delivery/container.md) | Containers, deployment, CI, and releases |
@@ -84,6 +84,7 @@ single universal folder structure.
 - [Modulith application template](../templates/modulith-application-template.md)
 - [Module package structure template](../templates/module-package-structure-template.md) — canonical future-module tree, package meanings, copy-ready `package-info.java` catalog, file/type naming, and approval controls.
 - [Backend validation conventions](01-backend/validation.md) — Jakarta Bean Validation on records, custom cross-field constraints, domain invariants, error mapping, i18n, and test coverage.
+- [Backend test configuration](01-backend/testing.md) — shared Spring profiles, Testcontainers ownership, schema helpers, and DRY test infrastructure.
 - [Module and capability build-logic design](../superpowers/specs/2026-07-30-module-architecture-and-capability-build-logic-design.md) — reconciles the two architecture models and migration documentation.
 
 ## Normative policy links

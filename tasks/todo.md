@@ -239,6 +239,8 @@ reopened by this backlog.
   and make Git ValueSources safe outside a checkout; verify publishing TestKit.
 - [x] Add quality/API compatibility TestKit coverage and remove quality
   convention assumptions about an implicitly applied Java plugin.
+- [x] Add capability composition TestKit coverage for foundation, testing,
+  persistence, messaging, Modulith, fixtures, and Spring Web conventions.
 - [ ] Normalize every build-logic capability, convention script, binary plugin,
   extension, task, provider, result, model, ValueSource, and test according to
   the dedicated plan.

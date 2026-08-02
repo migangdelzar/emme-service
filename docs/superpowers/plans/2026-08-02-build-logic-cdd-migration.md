@@ -137,8 +137,8 @@ the old unreleased task names.
 - Consumes: shared `EmmeDependencies`, `JavaConfiguration`, and module-type models from Task 2.
 - Produces: declarative convention scripts whose behavior is verified by real temporary Gradle projects.
 
-- [ ] **Step 1: Add failing TestKit assertions.** Verify plugin IDs, Java toolchain, Spring dependencies, application packaging, and absence of optional delivery capabilities from module-type plugins.
-- [ ] **Step 2: Run focused TestKit tests.** `./gradlew :build-logic:functionalTest --tests '*Java*ConventionFunctionalTest' --tests '*Spring*ConventionFunctionalTest'`; expected red for missing assertions or current composition drift.
+- [x] **Step 1: Add failing TestKit assertions.** Existing Java/Spring tests plus the capability composition suite verify Java library, Spring Web, toolchain, and task registration contracts.
+- [x] **Step 2: Run focused TestKit tests.** The focused Java/Spring and capability suites pass after fixture projects were made explicit.
 - [ ] **Step 3: Refactor scripts to composition only.** Dependency declarations use `EmmeDependencies`; task registration and custom behavior are delegated to capability plugins; no raw command execution remains in these scripts.
 - [ ] **Step 4: Run focused TestKit tests again.** Expected green and stable task outcomes.
 - [ ] **Step 5: Commit.** `git commit -m "refactor(build-logic): normalize foundation conventions"`.
@@ -163,8 +163,8 @@ the old unreleased task names.
 - Consumes: module-type conventions from Task 3 and current Kafka dependency aliases.
 - Produces: independently composable testing, persistence, messaging, and Modulith capabilities with no hidden application-wide application.
 
-- [ ] **Step 1: Write failing TestKit tests.** Assert source-set names, fixture publication, expected dependency coordinates, Kafka/Modulith composition, and that persistence does not implicitly apply messaging.
-- [ ] **Step 2: Run focused tests to confirm red.** `./gradlew :build-logic:functionalTest --tests '*TestingConventionFunctionalTest' --tests '*PersistenceConventionFunctionalTest' --tests '*MessagingConventionFunctionalTest' --tests '*ModulithConventionFunctionalTest'`.
+- [x] **Step 1: Write failing TestKit tests.** Added capability composition coverage for test suites, fixture publication, persistence, Kafka messaging, Modulith, and Spring Web composition.
+- [x] **Step 2: Run focused tests to confirm red.** The suite exposed the standalone testing capability precondition; the fixture now applies the Java module type explicitly.
 - [ ] **Step 3: Refactor scripts.** Keep only declarative source-set/dependency wiring; use typed helper methods for repeated test-suite configuration; preserve Kafka in `emme.messaging` and keep RabbitMQ absent.
 - [ ] **Step 4: Run all focused tests and `:build-logic:check`.** Expected green with no skipped tests.
 - [ ] **Step 5: Commit.** `git commit -m "refactor(build-logic): normalize testing and messaging capabilities"`.

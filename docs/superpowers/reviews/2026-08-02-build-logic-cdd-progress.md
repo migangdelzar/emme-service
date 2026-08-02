@@ -39,6 +39,9 @@
 - Added quality and API compatibility TestKit coverage; quality formatting now
   works as a composable capability without requiring the Java plugin, and Sonar
   report paths remain provider-backed.
+- Added convention capability TestKit coverage for Java library, testing,
+  test-fixtures, persistence, Kafka messaging, Modulith, and Spring Web
+  composition with explicit project-platform fixtures.
 
 ## Verification
 

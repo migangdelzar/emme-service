@@ -44,8 +44,18 @@ const canonicalTargetRules = {
     },
     {
       path: 'mise.toml',
-      required: [':applications:emme-platform:build'],
+      required: [':applications:emme-platform:build', ':applications:emme-platform:test'],
       forbidden: [':applications:studio-api:test'],
+    },
+    {
+      path: 'build-logic/src/main/kotlin/com/emme/buildlogic/deployment/provider/KubernetesProvider.kt',
+      required: ['KubernetesWorkload.DEPLOYMENT_NAME', 'KubernetesWorkload.POD_SELECTOR'],
+      forbidden: ['studio-api', 'app=studio-api'],
+    },
+    {
+      path: 'build-logic/src/main/kotlin/com/emme/buildlogic/deployment/provider/KubernetesWorkload.kt',
+      required: ['DEPLOYMENT_NAME = "backend"', 'POD_SELECTOR = "app=emme-backend"'],
+      forbidden: ['studio-api'],
     },
     {
       path: 'deployment/compose/compose.yml',

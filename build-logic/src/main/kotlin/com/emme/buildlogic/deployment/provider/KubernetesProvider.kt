@@ -26,7 +26,10 @@ abstract class KubernetesProvider : DeploymentProvider() {
 
   override fun status(): StatusResult {
     val ns = parameters.namespace.get()
-    val output = executeCommand("kubectl", listOf("rollout", "status", "deployment/studio-api", "-n", ns, "--timeout=30s"))
+    val output = executeCommand(
+      "kubectl",
+      listOf("rollout", "status", "deployment/${KubernetesWorkload.DEPLOYMENT_NAME}", "-n", ns, "--timeout=30s"),
+    )
     val podsOutput = executeCommand("kubectl", listOf("get", "pods", "-n", ns, "--no-headers"))
     val pods = podsOutput.lines().count { it.isNotBlank() }
     return StatusResult(ready = output.contains("successfully rolled out"), pods = pods, details = output)
@@ -34,7 +37,7 @@ abstract class KubernetesProvider : DeploymentProvider() {
 
   override fun logs(tail: Int): String {
     val ns = parameters.namespace.get()
-    return executeCommand("kubectl", listOf("logs", "-l", "app=studio-api", "-n", ns, "--tail=$tail"))
+    return executeCommand("kubectl", listOf("logs", "-l", KubernetesWorkload.POD_SELECTOR, "-n", ns, "--tail=$tail"))
   }
 
   override fun close() = Unit

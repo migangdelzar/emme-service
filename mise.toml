@@ -27,7 +27,7 @@ run = "./gradlew test --no-configuration-cache"
 
 [tasks.arch-test]
 description = "Verify Spring Modulith and ArchUnit boundaries"
-run = "./gradlew :applications:studio-api:test --tests com.emme.ModularityTest --tests com.emme.LayerConventionTest --no-daemon --no-configuration-cache"
+run = "./gradlew :applications:emme-platform:test --tests com.emme.ModularityTest --tests com.emme.LayerConventionTest --no-daemon --no-configuration-cache"
 
 [tasks.build]
 description = "Build the deployable backend"

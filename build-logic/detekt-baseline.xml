@@ -11,7 +11,6 @@
     <ID>MagicNumber:GhcrPublisherProvider.kt:GhcrPublisherProvider$1000</ID>
     <ID>MagicNumber:KubernetesProvider.kt:KubernetesProvider$1000</ID>
     <ID>MagicNumber:VerifyContainerImage.kt:VerifyContainerImage$2000</ID>
-    <ID>MaxLineLength:KubernetesProvider.kt:KubernetesProvider$val output = executeCommand("kubectl", listOf("rollout", "status", "deployment/studio-api", "-n", ns, "--timeout=30s"))</ID>
     <ID>TooGenericExceptionCaught:ComposeProvider.kt:ComposeProvider$e: Exception</ID>
     <ID>TooGenericExceptionCaught:KubernetesProvider.kt:KubernetesProvider$e: Exception</ID>
     <ID>TooGenericExceptionThrown:DeployTask.kt:DeployTask$throw RuntimeException("Deployment failed: ${result.message}")</ID>

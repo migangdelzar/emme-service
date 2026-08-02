@@ -74,6 +74,7 @@ spring-modulith-starter-test = { module = "org.springframework.modulith:spring-m
 spring-modulith-observability = { module = "org.springframework.modulith:spring-modulith-observability", version.ref = "spring-modulith" }
 spring-modulith-starter-core = { module = "org.springframework.modulith:spring-modulith-starter-core", version.ref = "spring-modulith" }
 spring-modulith-events-core = { module = "org.springframework.modulith:spring-modulith-events-core", version.ref = "spring-modulith" }
+spring-modulith-events-kafka = { module = "org.springframework.modulith:spring-modulith-events-kafka", version.ref = "spring-modulith" }
 spring-modulith-starter-jdbc = { module = "org.springframework.modulith:spring-modulith-starter-jdbc", version.ref = "spring-modulith" }
 spring-modulith-actuator = { module = "org.springframework.modulith:spring-modulith-actuator", version.ref = "spring-modulith" }
 spring-modulith-core = { module = "org.springframework.modulith:spring-modulith-core", version.ref = "spring-modulith" }

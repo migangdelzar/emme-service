@@ -71,6 +71,25 @@
   scan and use the persisted NVD cache; without the secret, the job skips
   deterministically instead of timing out on public NVD rate limits.
 
+### Spring Modulith + Kafka event streaming — 2026-08-02
+
+- [x] Added the Spring Modulith Kafka externalizer through the capability-owned
+  `emme.messaging` build convention.
+- [x] Switched the deployable application to the JDBC publication registry and
+  added the Liquibase-owned `event_publication` schema.
+- [x] Externalized only stable public tenant/appointment event contracts with
+  explicit topic names and tenant partition keys.
+- [x] Added production producer settings for acknowledgements, idempotence,
+  bounded retries, and compression.
+- [x] Added a real Kafka Testcontainers integration test covering committed
+  transaction, topic, key, and JSON payload.
+- [x] Added the Kafka architecture ADR, template guidance, and requirements
+  updates; RabbitMQ/AMQP remains unsupported.
+- [x] Kept ordinary local/test contexts Kafka-disabled unless the production or
+  dedicated Kafka integration profile enables event externalization.
+- [x] Verified focused contract tests, Kafka integration tests, formatting, and
+  the CI quality gate without integration/e2e execution.
+
 ## Remaining execution backlog — priority/type order
 
 This is the authoritative order for unfinished work. Detailed checklists remain

@@ -1267,7 +1267,7 @@ Rules:
 - Do not call slow external systems inside the primary database transaction unless the failure semantics are intentional and tested.
 - Publish completed facts after the aggregate state transition, not before it. For durable delivery, publication registration occurs while the producer transaction is active so the record commits atomically; consumer execution occurs after commit.
 - Use Spring Modulith's transactional event publication support for recoverable listeners; configure retry, staleness, and resubmission behavior rather than assuming an asynchronous listener is durable.
-- For broker delivery or cross-system publication, use a transactional outbox/externalization mechanism when losing an event is unacceptable. See the [Spring Modulith event publication reference](https://docs.spring.io/spring-modulith/reference/events.html).
+- For broker delivery or cross-system publication, use the Spring Modulith JDBC publication registry plus Kafka externalization when losing an event is unacceptable. Mark only stable public `api.event` contracts with `@Externalized`; keep Kafka transport details out of `domain` and `application`. See the [Spring Modulith event publication reference](https://docs.spring.io/spring-modulith/reference/events.html).
 - Document whether a consumer observes the event synchronously, after commit, or through an external broker.
 
 ### 14.3 Security and tenancy

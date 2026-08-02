@@ -72,9 +72,9 @@ demonstration remain operational evidence items in the module plans. They are
 separate from the completed package migration and must be run with provider
 credentials/containers available.
 
-Kafka transport replacement for Spring Modulith events and the dedicated Gradle
-build-logic CDD follow-up remain intentionally deferred to their explicitly
-ordered final phase.
+Kafka transport replacement is now implemented as the Spring Modulith Kafka
+externalization slice. The dedicated Gradle build-logic CDD follow-up remains
+ordered for its later phase.
 
 ## Commits included in this verification slice
 

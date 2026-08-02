@@ -26,6 +26,7 @@ to the decision it supersedes.
 - [ADR-0002: Deployment strategy pattern](0002-deployment-strategy-pattern.md)
 - [ADR-0003: Trusted proxy boundary for Identity rate limiting](0003-identity-login-rate-limit-client-ip.md)
 - [ADR-0004: Shared and Audit ownership](0004-shared-and-audit-ownership.md)
+- [ADR-0005: Spring Modulith event streaming through Kafka](0005-spring-modulith-kafka-event-streaming.md)
 
 ## Index
 
@@ -35,6 +36,7 @@ to the decision it supersedes.
 | [0002](0002-deployment-strategy-pattern.md) | Strategy pattern for deployment | Accepted | 2026-07-10 |
 | [0003](0003-identity-login-rate-limit-client-ip.md) | Trust forwarded client IPs only from configured proxies | Accepted | 2026-08-01 |
 | [0004](0004-shared-and-audit-ownership.md) | Shared technical capability and reserved Audit ownership | Accepted | 2026-08-01 |
+| [0005](0005-spring-modulith-kafka-event-streaming.md) | Spring Modulith event streaming through Kafka | Accepted | 2026-08-02 |
 
 Create a new ADR when a decision changes. Do not rewrite an accepted ADR to
 hide its historical rationale.

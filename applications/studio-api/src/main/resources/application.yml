@@ -27,6 +27,8 @@ spring:
       oauth2:
   modulith:
     events:
+      externalization:
+        enabled: false
       jdbc:
         schema-initialization:
           enabled: false

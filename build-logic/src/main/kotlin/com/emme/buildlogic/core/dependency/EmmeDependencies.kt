@@ -56,6 +56,7 @@ class EmmeDependencies(
   val springModulithStarterJdbc get() = lib("spring-modulith-starter-jdbc")
   val springModulithStarterTest get() = lib("spring-modulith-starter-test")
   val springModulithEventsCore get() = lib("spring-modulith-events-core")
+  val springModulithEventsKafka get() = lib("spring-modulith-events-kafka")
   val springModulithObservability get() = lib("spring-modulith-observability")
   val springModulithCore get() = lib("spring-modulith-core")
   val springModulithDocs get() = lib("spring-modulith-docs")

@@ -22,6 +22,8 @@ spring:
           enabled: true
   modulith:
     events:
+      externalization:
+        enabled: false
       jdbc-schema-initialization:
         enabled: true
   liquibase:

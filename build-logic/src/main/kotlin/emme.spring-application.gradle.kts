@@ -28,7 +28,7 @@ dependencies {
   implementation(e.liquibaseCore)
 
   implementation(e.springModulithStarterCore)
-  implementation(e.springModulithStarterJpa)
+  implementation(e.springModulithStarterJdbc)
 
   runtimeOnly(e.springModulithObservability)
 

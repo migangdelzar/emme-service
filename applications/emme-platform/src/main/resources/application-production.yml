@@ -1,6 +1,10 @@
 spring:
   application:
     name: emme-platform
+  modulith:
+    events:
+      externalization:
+        enabled: ${EMME_KAFKA_EVENTS_ENABLED:true}
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}

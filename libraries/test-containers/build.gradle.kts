@@ -15,6 +15,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-test-autoconfigure")
     implementation("org.springframework.boot:spring-boot-testcontainers")
     implementation("org.testcontainers:postgresql")
+    implementation("org.testcontainers:kafka")
     implementation("org.testcontainers:junit-jupiter")
     implementation("org.testcontainers:testcontainers")
 }

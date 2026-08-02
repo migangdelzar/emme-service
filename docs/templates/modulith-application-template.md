@@ -468,6 +468,13 @@ Events describe completed facts in past tense. Do not publish vague commands suc
 | Asynchronous in-memory | Best-effort local side effects are sufficient | Process failure may lose delivery; no independent recovery |
 | Durable asynchronous | Delivery must survive crashes or consumers need independent retries | Publisher atomically records the event; consumers retry and deduplicate |
 
+For this EMME template, durable asynchronous delivery is implemented with the
+Spring Modulith JDBC publication registry and Kafka externalization. Mark only
+stable public facts with `@Externalized("<topic>::<partition-key>")`; the target
+before `::` is the Kafka topic and the target after `::` is the Kafka message
+key. Keep local-only module events on Spring Modulith listeners. Kafka consumers
+remain inbound adapters and must be idempotent because delivery is at least once.
+
 Choose the least complex mode that satisfies the business reliability and consistency requirements. Delivery mode may change without changing the meaning of the event, provided its documented timing and failure contract remains compatible.
 
 ### Communication decision flow

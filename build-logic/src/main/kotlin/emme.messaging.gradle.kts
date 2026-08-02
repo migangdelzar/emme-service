@@ -10,5 +10,6 @@ plugins {
 
 dependencies {
   implementation(e.springKafka)
+  implementation(e.springModulithEventsKafka)
   testImplementation(e.testcontainersKafka)
 }

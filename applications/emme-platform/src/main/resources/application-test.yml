@@ -10,6 +10,10 @@ spring:
       ddl-auto: create-drop
   liquibase:
     enabled: false
+  modulith:
+    events:
+      externalization:
+        enabled: false
 
 logging:
   level:

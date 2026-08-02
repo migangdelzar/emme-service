@@ -40,7 +40,7 @@ modules/audit/src/main/java/com/emme/audit/package-info.java
 
 ### Task 3: Verify
 
-- [x] Run `./gradlew :modules:audit:test :applications:studio-api:test --tests '*ModularityTest*' --no-daemon --no-configuration-cache`.
+- [x] Run `./gradlew :modules:audit:test :applications:emme-platform:test --tests '*ModularityTest*' --no-daemon --no-configuration-cache`.
 - [x] Record the decision in ADR 0004 and update the service module registry.
 
 ## Definition of done
@@ -57,3 +57,13 @@ modules/audit/src/main/java/com/emme/audit/package-info.java
 - [x] Kept Audit as a metadata-only reserved Modulith boundary; no empty
   architectural layers were scaffolded.
 - [x] Preserved a separate future decision before extracting Audit.
+
+## Reserved-boundary hardening — 2026-08-02
+
+- [x] Removed unnecessary Shared and Tenancy implementation dependencies from
+  the metadata-only Audit Gradle project.
+- [x] Set Audit's Modulith metadata to `allowedDependencies = {}`.
+- [x] Replaced the placeholder test assertion with a source invariant proving
+  that only `package-info.java` exists and no empty DDD/Hexagonal layer tree was
+  scaffolded.
+- [x] Verified Audit and the application Modulith test after the cleanup.

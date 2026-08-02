@@ -1292,6 +1292,14 @@ limiting, then continue authorization domain/application separation.
 - [x] Complete PostgreSQL vector/full-text evidence with tenant-scoped and bounded integration coverage.
 - [ ] Complete dependency-cycle verification and service-wide gates.
 
+## Audit reserved-boundary hardening — 2026-08-02
+
+- [x] Remove unnecessary implementation dependencies from the metadata-only Audit project.
+- [x] Set Audit's Modulith allowed dependencies to empty.
+- [x] Replace the placeholder structure test with a real no-scaffolding invariant.
+- [x] Verify Audit and application Modulith tests.
+- [ ] Implement Audit only through a separately approved ownership, retention, and data-classification design.
+
 ## Calendar Google transport composition-root hardening — 2026-08-01
 
 - [x] Add a red source-boundary test preventing Google adapters and clients from

@@ -398,3 +398,14 @@
   same-tenant row, but not the insertion-order fixture ID.
 - Prevention rule: when a query defines ordering, derive the expected fixture
   from that ordering; never use insertion order as an implicit database contract.
+
+## 2026-08-02 — Inbound adapters must share use cases, not controllers
+
+- Failure mode: `AuthController` reused `/api/me` behavior by invoking
+  `CurrentUserController`, coupling two inbound adapters and making login
+  enrichment depend on an HTTP controller implementation.
+- Detection signal: a controller field or constructor parameter referenced
+  another controller instead of an application use-case interface.
+- Prevention rule: extract shared workflows into one focused application service
+  behind a public use-case contract; every inbound adapter delegates to that
+  contract and owns only transport translation.

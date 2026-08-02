@@ -1,15 +1,18 @@
 package com.emme.identity.adapter.in.web.controller;
 
 import com.emme.identity.adapter.in.web.mapper.CustomerWebMapper;
+import com.emme.identity.adapter.in.web.mapper.IdentityWebMapper;
 import com.emme.identity.adapter.in.web.request.LoginRequest;
 import com.emme.identity.adapter.in.web.response.TokenLoginResponse;
 import com.emme.identity.api.command.AuthenticateCustomerCommand;
 import com.emme.identity.api.command.AuthenticateUserCommand;
 import com.emme.identity.api.command.UpdateCustomerPhoneCommand;
 import com.emme.identity.api.exception.IdentityAuthenticationException;
+import com.emme.identity.api.query.GetCurrentUserQuery;
 import com.emme.identity.api.query.GetUserInfoQuery;
 import com.emme.identity.api.usecase.AuthenticateCustomerUseCase;
 import com.emme.identity.api.usecase.AuthenticateUserUseCase;
+import com.emme.identity.api.usecase.GetCurrentUserUseCase;
 import com.emme.identity.api.usecase.UpdateCustomerProfileUseCase;
 import java.util.Map;
 import java.util.UUID;
@@ -32,17 +35,17 @@ public class AuthController {
   private final AuthenticateUserUseCase authenticateUserUseCase;
   private final AuthenticateCustomerUseCase authenticateCustomerUseCase;
   private final UpdateCustomerProfileUseCase updateCustomerProfileUseCase;
-  private final CurrentUserController currentUserController;
+  private final GetCurrentUserUseCase getCurrentUser;
 
   public AuthController(
       AuthenticateUserUseCase authenticateUserUseCase,
       AuthenticateCustomerUseCase authenticateCustomerUseCase,
       UpdateCustomerProfileUseCase updateCustomerProfileUseCase,
-      CurrentUserController currentUserController) {
+      GetCurrentUserUseCase getCurrentUser) {
     this.authenticateUserUseCase = authenticateUserUseCase;
     this.authenticateCustomerUseCase = authenticateCustomerUseCase;
     this.updateCustomerProfileUseCase = updateCustomerProfileUseCase;
-    this.currentUserController = currentUserController;
+    this.getCurrentUser = getCurrentUser;
   }
 
   @PostMapping("/api/auth/login")
@@ -56,8 +59,7 @@ public class AuthController {
       Map<String, Object> userClaims =
           authenticateUserUseCase.getUserInfo(new GetUserInfoQuery(tokens.accessToken())).claims();
 
-      // Build a Jwt from userinfo claims so CurrentUserController can read sub, email, name,
-      // realm_access
+      // Build a Jwt from userinfo claims so the authenticated user context can be reconstructed.
       String sub = (String) userClaims.get("sub");
       if (sub == null || sub.isBlank()) {
         log.error("No sub claim in userinfo response for {}", request.email());
@@ -89,8 +91,14 @@ public class AuthController {
 
       log.info("User {} ({}) logged in via password grant", sub, request.email());
 
-      // Build user response using /api/me logic
-      var user = currentUserController.currentUser(jwt);
+      var user =
+          IdentityWebMapper.toCurrentUserResponse(
+              getCurrentUser.get(
+                  new GetCurrentUserQuery(
+                      sub,
+                      jwt.getClaimAsString("email"),
+                      jwt.getClaimAsString("name"),
+                      parseTenantId(jwt.getClaim("tenant_id")))));
 
       // Return token + user in response
       // Return ID token (has sub claim) instead of access token for Bearer auth
@@ -170,5 +178,14 @@ public class AuthController {
         updateCustomerProfileUseCase.updatePhone(
             new UpdateCustomerPhoneCommand(UUID.fromString(customerId), phone));
     return ResponseEntity.ok(Map.of("phone", customer.phone()));
+  }
+
+  private static UUID parseTenantId(Object rawTenantId) {
+    if (rawTenantId == null) return null;
+    try {
+      return UUID.fromString(rawTenantId.toString());
+    } catch (IllegalArgumentException ignored) {
+      return null;
+    }
   }
 }

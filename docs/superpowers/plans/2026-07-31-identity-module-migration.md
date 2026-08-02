@@ -446,6 +446,27 @@ The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
 
+## Completed current-user application boundary slice — 2026-08-02
+
+- [x] Added `GetCurrentUserQuery`, `GetCurrentUserUseCase`, and immutable
+  `CurrentUserInfo` result models under the grouped Identity API.
+- [x] Added one focused `GetCurrentUserService` application service to compose
+  memberships, tenant metadata, permissions, and the selected business profile.
+- [x] Kept the Identity API independent from Studio's internal profile model by
+  mapping `BusinessProfileInfo` to an Identity-owned `BusinessProfileSummary`.
+- [x] Reduced `CurrentUserController` to inbound-context extraction and use-case
+  delegation.
+- [x] Removed the `AuthController` to `CurrentUserController` dependency; login
+  enrichment now invokes the same application use case and HTTP mapper directly.
+- [x] Removed the unused legacy profile mapper after the application boundary
+  became the single source of current-user aggregation.
+- [x] Verified focused Identity tests, Identity check/integration tests, and the
+  application Modulith test.
+
+The remaining Identity work is distributed rate-limit state, explicit
+provisioning transaction/event ports, broader authorization review, and final
+tenant-isolation, migration, recovery, and service-wide evidence.
+
 ## Completed one-service-per-use-case normalization — 2026-08-01
 
 - [x] Added a source-level convention test rejecting application services that

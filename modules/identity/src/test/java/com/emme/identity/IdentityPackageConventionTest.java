@@ -745,6 +745,33 @@ class IdentityPackageConventionTest {
     assertThat(processSource).doesNotContain("Thread.sleep");
   }
 
+  @Test
+  void exposesCurrentUserWorkflowThroughOneApplicationUseCase() throws IOException {
+    Path query =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/api/query/GetCurrentUserQuery.java");
+    Path result =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/api/result/CurrentUserInfo.java");
+    Path useCase =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/api/usecase/GetCurrentUserUseCase.java");
+    Path service =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/application/service/GetCurrentUserService.java");
+    Path authController =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/AuthController.java");
+
+    assertThat(Files.exists(query)).isTrue();
+    assertThat(Files.exists(result)).isTrue();
+    assertThat(Files.exists(useCase)).isTrue();
+    assertThat(Files.exists(service)).isTrue();
+    assertThat(Files.readString(authController))
+        .contains("GetCurrentUserUseCase")
+        .doesNotContain("CurrentUserController");
+  }
+
   private static boolean hasJavaSource(Path directory, String filename) {
     return Files.exists(directory.resolve(filename));
   }

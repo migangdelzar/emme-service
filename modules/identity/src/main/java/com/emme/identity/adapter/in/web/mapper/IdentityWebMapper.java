@@ -1,9 +1,12 @@
 package com.emme.identity.adapter.in.web.mapper;
 
 import com.emme.identity.adapter.in.web.response.BusinessProfileResponse;
+import com.emme.identity.adapter.in.web.response.CurrentUserResponse;
 import com.emme.identity.adapter.in.web.response.MembershipResponse;
+import com.emme.identity.adapter.in.web.response.TenantMembershipResponse;
+import com.emme.identity.api.result.CurrentUserInfo;
 import com.emme.identity.api.result.MembershipInfo;
-import com.emme.studio.api.result.BusinessProfileInfo;
+import java.util.List;
 
 /** Maps Identity application data into HTTP response models. */
 public final class IdentityWebMapper {
@@ -20,8 +23,32 @@ public final class IdentityWebMapper {
         membership.createdAt());
   }
 
-  public static BusinessProfileResponse toBusinessProfileResponse(BusinessProfileInfo profile) {
-    return new BusinessProfileResponse(
-        profile.tenantId(), profile.displayName(), null, null, null, profile.locale(), true);
+  public static CurrentUserResponse toCurrentUserResponse(CurrentUserInfo user) {
+    List<TenantMembershipResponse> memberships =
+        user.memberships().stream()
+            .map(
+                membership ->
+                    new TenantMembershipResponse(
+                        membership.tenantId(),
+                        membership.tenantSlug(),
+                        membership.tenantName(),
+                        membership.tenantName(),
+                        membership.role(),
+                        membership.status(),
+                        membership.permissions()))
+            .toList();
+    BusinessProfileResponse profile =
+        user.profile() == null
+            ? null
+            : new BusinessProfileResponse(
+                user.profile().tenantId(),
+                user.profile().displayName(),
+                null,
+                null,
+                null,
+                user.profile().locale(),
+                true);
+    return new CurrentUserResponse(
+        user.userId(), user.email(), user.displayName(), memberships, profile);
   }
 }

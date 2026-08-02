@@ -1356,3 +1356,16 @@ limiting, then continue authorization domain/application separation.
   subscription persistence regressions.
 - [ ] Continue the remaining service-wide payment-boundary, Modulith, schema,
   and recovery gate.
+
+## Identity current-user application boundary — 2026-08-02
+
+- [x] Add grouped current-user query, use-case, and immutable result contracts.
+- [x] Extract membership, tenant, permission, and profile aggregation into one
+  focused `GetCurrentUserService`.
+- [x] Make both current-user and login inbound controllers delegate through the
+  application use case.
+- [x] Remove controller-to-controller coupling and the unused legacy mapper.
+- [x] Verify focused tests, Identity checks/integration, and application
+  Modulith verification.
+- [ ] Continue the remaining Identity operational evidence and service-wide
+  architecture gates.

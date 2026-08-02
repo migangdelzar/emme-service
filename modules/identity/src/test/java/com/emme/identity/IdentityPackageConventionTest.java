@@ -605,6 +605,12 @@ class IdentityPackageConventionTest {
             hasJavaSource(
                 FEATURE_FLAG_APPLICATION_SERVICE_PACKAGE, "GetEffectiveFeatureFlagsService.java"))
         .isTrue();
+    assertThat(hasJavaSource(API_USE_CASE_PACKAGE, "ListPlatformFeatureFlagsUseCase.java"))
+        .isTrue();
+    assertThat(
+            hasJavaSource(
+                FEATURE_FLAG_APPLICATION_SERVICE_PACKAGE, "ListPlatformFeatureFlagsService.java"))
+        .isTrue();
     assertThat(
             hasJavaSource(
                 FEATURE_FLAG_APPLICATION_SERVICE_PACKAGE, "SetPlatformFeatureFlagService.java"))

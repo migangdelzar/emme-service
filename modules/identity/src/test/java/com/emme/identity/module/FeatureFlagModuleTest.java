@@ -20,7 +20,24 @@ class FeatureFlagModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldListGlobalFeatureFlags() throws Exception {
-    mockMvc.perform(get("/api/admin/feature-flags").with(tenantJwt())).andExpect(status().isOk());
+    String code = "listed-flag-" + System.nanoTime();
+
+    mockMvc
+        .perform(
+            post("/api/admin/feature-flags")
+                .with(tenantJwt())
+                .contentType("application/json")
+                .content(
+                    """
+                    {"code":"%s","enabled":true}
+                    """
+                        .formatted(code)))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(get("/api/admin/feature-flags").with(tenantJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.code == '%s')].enabled", code).isNotEmpty());
   }
 
   @Test

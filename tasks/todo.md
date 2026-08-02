@@ -1387,6 +1387,15 @@ limiting, then continue authorization domain/application separation.
 - [ ] Continue the remaining Identity operational evidence and service-wide
   architecture gates.
 
+## Identity platform feature-flag listing — 2026-08-02
+
+- [x] Replace the platform-admin feature-flag listing placeholder with a
+  dedicated public use case and one application service.
+- [x] Keep global flag retrieval behind the Identity application repository port.
+- [x] Add unit and MockMvc module coverage for returned global flags.
+- [ ] Include the endpoint in the final service-wide security and boot-artifact
+  verification gate.
+
 ## Tenancy deterministic routing boundary — 2026-08-02
 
 - [x] Verify default-database fallback without tenant context.

@@ -6,6 +6,7 @@ import com.emme.identity.adapter.in.web.request.UpdateFeatureFlagRequest;
 import com.emme.identity.adapter.in.web.response.FeatureFlagResponse;
 import com.emme.identity.api.command.SetPlatformFeatureFlagCommand;
 import com.emme.identity.api.result.FeatureFlagInfo;
+import com.emme.identity.api.usecase.ListPlatformFeatureFlagsUseCase;
 import com.emme.identity.api.usecase.SetPlatformFeatureFlagUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,17 +28,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class FeatureFlagController {
 
   private final SetPlatformFeatureFlagUseCase setPlatformFeatureFlag;
+  private final ListPlatformFeatureFlagsUseCase listPlatformFeatureFlags;
 
-  public FeatureFlagController(SetPlatformFeatureFlagUseCase setPlatformFeatureFlag) {
+  public FeatureFlagController(
+      SetPlatformFeatureFlagUseCase setPlatformFeatureFlag,
+      ListPlatformFeatureFlagsUseCase listPlatformFeatureFlags) {
     this.setPlatformFeatureFlag = setPlatformFeatureFlag;
+    this.listPlatformFeatureFlags = listPlatformFeatureFlags;
   }
 
   @GetMapping
   @Operation(summary = "List all global feature flags")
   public ResponseEntity<List<FeatureFlagResponse>> listAll() {
-    // Platform admin sees all global flags
-    // For a complete view, return effective for a dummy tenant (TODO: admin-wide view)
-    return ResponseEntity.ok(List.of());
+    return ResponseEntity.ok(
+        listPlatformFeatureFlags.list().stream().map(FeatureFlagWebMapper::toResponse).toList());
   }
 
   @PostMapping

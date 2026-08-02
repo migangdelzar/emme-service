@@ -43,6 +43,8 @@ Kafka, build-logic, native-image, and full recovery exercises are complete.
   trusted-proxy, spoofed-header, Redis, and fallback coverage.
 - Security audit output is bounded, sanitized, correlation-safe, and does not
   include authentication exception messages or credentials.
+- Platform-admin feature-flag listing is backed by the Identity repository port
+  and returns mapped global flags; it no longer uses an empty placeholder.
 
 ## Commands and results
 
@@ -53,6 +55,9 @@ Kafka, build-logic, native-image, and full recovery exercises are complete.
 | `./gradlew :applications:emme-platform:test --no-daemon --no-configuration-cache` | Passed; 48 actionable tasks, 3 executed. |
 | `node scripts/validate-markdown.mjs` | Passed. |
 | `git diff --check` | Passed. |
+
+The platform feature-flag listing slice also passed the focused unit and
+MockMvc module tests before the full Identity check.
 
 The integration suite emits teardown warnings when the ephemeral PostgreSQL
 connection is closed before Spring Modulith's event-publication shutdown hook.

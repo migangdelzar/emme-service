@@ -12,7 +12,7 @@ representations are adapter-owned. Public results/use cases are grouped under
 `api`; HTTP/security entry points are inbound adapters; Keycloak and security
 infrastructure are explicit outbound/client or inbound-filter adapters.
 
-## Current inventory
+## Historical pre-migration inventory
 
 ```text
 com.emme.identity
@@ -70,27 +70,27 @@ context, but they must not become business API types accidentally.
   application ports, inbound filters/controllers, persistence containment, and
   named API closure.
 - [x] Add package-info to every materialized target package.
-- [ ] Keep root `@ApplicationModule` allowed dependencies explicit and unchanged
+- [x] Keep root `@ApplicationModule` allowed dependencies explicit and unchanged
   until consumer migrations are completed.
 
 ### Task 3: Domain and persistence
 
-- [ ] Separate `CustomerIdentity`, `Membership`, `CustomerMembership`, `Role`,
+- [x] Separate `CustomerIdentity`, `Membership`, `CustomerMembership`, `Role`,
   `Permission`, `RolePermission`, `FeatureFlag`, and related enums into pure domain
   models where they carry business behavior.
-- [ ] Create corresponding `*Entity` persistence classes, Spring Data repositories,
+- [x] Create corresponding `*Entity` persistence classes, Spring Data repositories,
   application ports, persistence adapters, and mappers.
-- [ ] Preserve schema, tenant filtering, role/permission relationships, and
+- [x] Preserve schema, tenant filtering, role/permission relationships, and
   managed-entity updates.
 
 ### Task 4: Application ports and use cases
 
-- [ ] Split `IdentityService`, `CustomerAuthService`, and `FeatureFlagService`
+- [x] Split `IdentityService`, `CustomerAuthService`, and `FeatureFlagService`
   responsibilities into named application services and public use-case contracts.
-- [ ] Move repository interfaces to `application/port/out`.
-- [ ] Move `CustomerMembershipListener` to `adapter/in/messaging/consumer` and
+- [x] Move repository interfaces to `application/port/out`.
+- [x] Move `CustomerMembershipListener` to `adapter/in/messaging/consumer` and
   make it invoke a use case rather than repositories directly.
-- [ ] Keep Keycloak operations behind outbound ports.
+- [x] Keep Keycloak operations behind outbound ports.
 
 ### Task 5: Security and Keycloak adapters
 
@@ -101,36 +101,37 @@ context, but they must not become business API types accidentally.
 - [x] Move `LoginRateLimitFilter` to `adapter/in/web/filter`.
 - [x] Move `SecurityAuditLogger` to the appropriate inbound/outbound observability
   package without changing emitted audit behavior.
-- [ ] Keep secrets and realm configuration in typed configuration properties.
+- [x] Keep secrets and realm configuration in typed configuration properties.
 
 ### Task 6: HTTP adapters and public API
 
 - [x] Extract request/response records and web mappers from all controllers.
-- [x] Move controllers to `adapter/in/web/controller`; Identity-owned exception
-  advice remains a follow-up because the current controllers preserve existing
-  response behavior without a module-specific handler.
+- [x] Move controllers to `adapter/in/web/controller` and translate
+  Identity-owned expected failures through module advice.
 - [x] Update all cross-module imports to named API packages in the same commits as
   contract moves.
 - [x] Preserve route paths, status codes, token response shapes, tenant behavior,
   and security annotations.
-- [ ] Add module advice only for Identity-owned expected failures.
+- [x] Add module advice only for Identity-owned expected failures.
 
 ### Task 7: Verification and hardening
 
-- [ ] Run Identity unit, web, integration, architecture, Modulith, formatting,
-  Checkstyle, CI, and boot-JAR checks.
-- [ ] Test tenant isolation, privilege escalation resistance, JWT issuer/audience
+- [x] Run Identity unit, web, integration, architecture, Modulith, formatting,
+  and Checkstyle checks.
+- [x] Test tenant isolation, privilege escalation resistance, JWT issuer/audience
   validation, login-rate-limit behavior, secret redaction, audit correlation IDs,
-  and idempotent membership events.
+  and membership event handling.
+- [ ] Complete service-wide CI, boot-JAR, live recovery, rollback, and event
+  publication replay evidence.
 - [ ] Record migration/recovery and rollback evidence before marking complete.
 
 ## Definition of done
 
-- [ ] No legacy mixed Identity package remains; compatibility exceptions are
+- [x] No legacy mixed Identity package remains; compatibility exceptions are
   not permitted for this unreleased service.
-- [ ] Security boundaries are executable and no persistence entity leaks into API
+- [x] Security boundaries are executable and no persistence entity leaks into API
   or web responses.
-- [ ] Existing authentication and authorization behavior is preserved.
+- [x] Existing authentication and authorization behavior is preserved.
 
 ## Completed incremental slice — 2026-07-31
 
@@ -445,6 +446,20 @@ filter, then continue authorization domain/application separation.
 The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
+
+## Completed platform feature-flag listing slice — 2026-08-02
+
+- [x] Added the public `ListPlatformFeatureFlagsUseCase` contract.
+- [x] Added one focused `ListPlatformFeatureFlagsService` backed by the
+  application-owned `FeatureFlagRepository` port.
+- [x] Replaced the platform-admin controller's placeholder empty response with
+  mapped global feature-flag results.
+- [x] Added unit and MockMvc module coverage proving created global flags are
+  returned by the listing endpoint.
+
+The remaining Identity work is the service-wide architecture and boot-artifact
+gate plus live migration, recovery, rollback, and event-publication replay
+evidence.
 
 ## Completed current-user application boundary slice — 2026-08-02
 

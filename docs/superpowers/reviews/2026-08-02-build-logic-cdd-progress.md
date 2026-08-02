@@ -32,6 +32,10 @@
   models and added a default container context directory.
 - Added TestKit coverage for deployment and security task registration,
   configuration-time laziness, and execution-time invalid-selector failures.
+- Added publishing TestKit coverage for task registration, metadata generation,
+  invalid semantic versions, and operation outside a Git checkout.
+- Made Git branch/commit ValueSources tolerate non-Git temporary projects with
+  deterministic `unknown` values and no fatal stderr output.
 
 ## Verification
 

@@ -235,6 +235,8 @@ reopened by this backlog.
   check after the provider slices.
 - [x] Add TestKit contracts for deployment and security provider selection and
   invalid-selector behavior.
+- [x] Make publishing metadata task inputs valid under Gradle task validation
+  and make Git ValueSources safe outside a checkout; verify publishing TestKit.
 - [ ] Normalize every build-logic capability, convention script, binary plugin,
   extension, task, provider, result, model, ValueSource, and test according to
   the dedicated plan.

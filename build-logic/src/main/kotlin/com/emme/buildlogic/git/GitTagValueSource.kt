@@ -12,10 +12,12 @@ abstract class GitTagValueSource : ValueSource<String, ValueSourceParameters.Non
 
   override fun obtain(): String {
     val output = ByteArrayOutputStream()
+    val error = ByteArrayOutputStream()
 
     execOperations.exec {
       commandLine("git", "describe", "--tags", "--abbrev=0")
       standardOutput = output
+      errorOutput = error
       isIgnoreExitValue = true
     }
 

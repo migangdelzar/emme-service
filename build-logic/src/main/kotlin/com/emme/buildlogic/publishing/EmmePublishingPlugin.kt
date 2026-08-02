@@ -15,6 +15,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
+import java.time.Instant
 
 class EmmePublishingPlugin : Plugin<Project> {
   override fun apply(project: Project) {
@@ -23,6 +24,9 @@ class EmmePublishingPlugin : Plugin<Project> {
       val gitCommit = providers.of(GitCommitValueSource::class.java) {}
       val gitBranch = providers.of(GitBranchValueSource::class.java) {}
       val version = extension.version.orElse(providers.provider { project.version.toString() })
+      val buildTimestamp = providers.provider { Instant.now().toString() }
+
+      extension.registry.convention("")
 
       val publisher =
         gradle.sharedServices.registerIfAbsent(
@@ -40,6 +44,7 @@ class EmmePublishingPlugin : Plugin<Project> {
         commit.set(gitCommit)
         branch.set(gitBranch)
         channel.set(extension.channel.map { c: ReleaseChannel -> c.name.lowercase() })
+        this.buildTimestamp.set(buildTimestamp)
         outputFile.set(layout.buildDirectory.file("publishing/build-info.properties"))
         onlyIf { extension.enabled.get() }
       }
@@ -49,6 +54,7 @@ class EmmePublishingPlugin : Plugin<Project> {
         channel.set(extension.channel.map { c: ReleaseChannel -> c.name.lowercase() })
         commit.set(gitCommit)
         registry.set(extension.registry)
+        releaseTimestamp.set(buildTimestamp)
         manifestFile.set(layout.buildDirectory.file("publishing/manifest.yaml"))
         onlyIf { extension.enabled.get() }
       }

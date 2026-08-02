@@ -236,7 +236,7 @@ the old unreleased task names.
 - Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/publishing/provider/PublisherProvider.kt`
 - Rename: `build-logic/src/main/kotlin/com/emme/buildlogic/publishing/task/GenerateBuildInfo.kt` → `GenerateBuildInfoTask.kt`
 - Rename: `build-logic/src/main/kotlin/com/emme/buildlogic/publishing/task/GenerateReleaseManifest.kt` → `GenerateReleaseManifestTask.kt`
-- Keep: `GenerateSbomTask.kt`, `SignArtifactsTask.kt`, `VerifyReleaseVersion.kt` and normalize any remaining missing `Task` suffix.
+- Keep: `GenerateSbomTask.kt`, `SignArtifactsTask.kt`, `VerifyReleaseVersionTask.kt` with the normalized `Task` suffix.
 - Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/git/GitBranchValueSource.kt`
 - Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/git/GitCommitValueSource.kt`
 - Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/git/GitTagValueSource.kt`
@@ -246,10 +246,10 @@ the old unreleased task names.
 - Consumes: `ReleaseChannel`, Git `ValueSource`s, registry provider, and stable publishing task names.
 - Produces: lazy build metadata, immutable release manifest inputs, explicit publisher result models, and configuration-cache-safe metadata resolution.
 
-- [ ] **Step 1: Add failing tests.** Cover enabled/disabled publishing, snapshot/release version validation, generated metadata, SBOM/signing task wiring, and Git value-source absence behavior.
-- [ ] **Step 2: Run focused tests to confirm red.** `./gradlew :build-logic:functionalTest --tests '*PublishingPluginFunctionalTest'`.
-- [ ] **Step 3: Normalize publisher and result names.** Keep signing credentials as providers; never resolve or log secret material during configuration.
-- [ ] **Step 4: Verify task inputs/outputs.** Every generated file is an output, every version/channel/commit/branch/registry value is an input, and task dependencies are provider-wired.
+- [x] **Step 1: Add failing tests.** Added TestKit coverage for disabled registration, metadata generation, invalid release versions, and Git absence behavior.
+- [x] **Step 2: Run focused tests to confirm red.** The initial test exposed fatal Git ValueSource behavior and unconfigured timestamp inputs.
+- [x] **Step 3: Normalize publisher and result names.** Git metadata is lazy and falls back to deterministic `unknown` values outside a Git checkout; signing credentials remain providers.
+- [x] **Step 4: Verify task inputs/outputs.** Build-info and release-manifest timestamps are provider-backed task inputs and generated files remain declared outputs.
 - [ ] **Step 5: Run TestKit and configuration-cache checks.** Expected green with no configuration-time Git process execution.
 - [ ] **Step 6: Commit.** `git commit -m "refactor(build-logic): normalize publishing capability"`.
 

@@ -1,11 +1,11 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.AppointmentDetails;
 import com.emme.studio.application.port.out.AppointmentCollisionPort;
 import com.emme.studio.application.port.out.AppointmentRepository;
 import com.emme.studio.application.port.out.ArtistRepository;
 import com.emme.studio.application.port.out.CustomerRepository;
 import com.emme.studio.application.port.out.ServiceRepository;
-import com.emme.studio.application.result.AppointmentView;
 import com.emme.studio.domain.model.Appointment;
 import com.emme.studio.domain.model.Artist;
 import com.emme.studio.domain.model.Customer;
@@ -61,7 +61,7 @@ final class AppointmentApplicationSupport {
     }
   }
 
-  AppointmentView toView(Appointment appointment) {
+  AppointmentDetails toView(Appointment appointment) {
     String customerName =
         customerRepository
             .findById(appointment.getCustomerId())
@@ -74,6 +74,6 @@ final class AppointmentApplicationSupport {
             .orElse(null);
     String artistName =
         artistRepository.findById(appointment.getArtistId()).map(Artist::getName).orElse(null);
-    return AppointmentView.from(appointment, customerName, serviceName, artistName);
+    return AppointmentDetails.from(appointment, customerName, serviceName, artistName);
   }
 }

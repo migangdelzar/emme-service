@@ -147,3 +147,15 @@ behavior remains governed by the Documents and Subscriptions plans.
   and facade names.
 - [x] Verify Studio compilation, Spotless, Checkstyle, unit tests, and
   integration tests.
+
+## Public result ownership normalization — 2026-08-01
+
+- [x] Moved appointment details and available-slot results into
+  `api/result`.
+- [x] Renamed the public appointment view to `AppointmentDetails`.
+- [x] Updated every appointment use-case contract, application service, and
+  inbound adapter to use the grouped public result package.
+- [x] Removed the empty `application/result` package.
+- [x] Added a convention test preventing API contracts from exposing
+  application-owned result types.
+- [x] Verified Studio formatting, Checkstyle, tests, and compilation.

@@ -1,12 +1,12 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.AppointmentDetails;
 import com.emme.studio.api.usecase.ConfirmAppointmentUseCase;
 import com.emme.studio.application.port.out.AppointmentCollisionPort;
 import com.emme.studio.application.port.out.AppointmentRepository;
 import com.emme.studio.application.port.out.ArtistRepository;
 import com.emme.studio.application.port.out.CustomerRepository;
 import com.emme.studio.application.port.out.ServiceRepository;
-import com.emme.studio.application.result.AppointmentView;
 import com.emme.studio.domain.model.Appointment;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,7 @@ public class ConfirmAppointmentService implements ConfirmAppointmentUseCase {
   }
 
   @Override
-  public AppointmentView confirm(UUID id) {
+  public AppointmentDetails confirm(UUID id) {
     Appointment appointment = support.find(id);
     appointment.confirm();
     return support.toView(repository.save(appointment));

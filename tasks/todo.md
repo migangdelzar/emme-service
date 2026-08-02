@@ -46,6 +46,13 @@
 - [x] Enforced current-tenant resolution for payment get and refund endpoints.
 - [x] Verified Payment formatting, tests, and module checks.
 
+### Studio public result ownership correction — 2026-08-01
+
+- [x] Moved appointment details and available-slot results into `api/result`.
+- [x] Renamed `AppointmentView` to `AppointmentDetails`.
+- [x] Removed the empty `application/result` package and added a boundary test.
+- [x] Verified Studio formatting, tests, Checkstyle, and compilation.
+
 - Migrated build-logic packages from type-first buckets into `core/`, `root/`,
   capability-owned packages, and `git/` while preserving plugin IDs.
 - Added the missing `emme.security` convention entry point and registration test.

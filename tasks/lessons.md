@@ -317,3 +317,8 @@
   tenant scope. A controller that scopes list/create but not get/refund still
   exposes a cross-tenant object reference. Make tenant identity part of every
   payment command/query and remove bare-ID repository ports.
+
+- 2026-08-01 — A public use-case interface must never return a type from
+  `application.result`, even when that type is technically immutable. Public
+  results belong under `api/result`; application services may assemble them but
+  must not own the public package.

@@ -42,6 +42,16 @@ class StudioPackageConventionTest {
   }
 
   @Test
+  void publicUseCasesDoNotExposeApplicationResultTypes() {
+    assertThat(hasClass("com.emme.studio.api.result.AppointmentDetails")).isTrue();
+    assertThat(hasClass("com.emme.studio.api.result.AvailableSlot")).isTrue();
+    assertThat(CLASSES.stream())
+        .filteredOn(javaClass -> javaClass.getPackageName().startsWith("com.emme.studio.api"))
+        .noneMatch(
+            javaClass -> javaClass.getName().startsWith("com.emme.studio.application.result."));
+  }
+
+  @Test
   void applicationServicesAreOneUseCasePerClass() {
     Set<String> legacyServices =
         Set.of(

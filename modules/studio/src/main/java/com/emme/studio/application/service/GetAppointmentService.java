@@ -1,12 +1,12 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.AppointmentDetails;
 import com.emme.studio.api.usecase.GetAppointmentUseCase;
 import com.emme.studio.application.port.out.AppointmentCollisionPort;
 import com.emme.studio.application.port.out.AppointmentRepository;
 import com.emme.studio.application.port.out.ArtistRepository;
 import com.emme.studio.application.port.out.CustomerRepository;
 import com.emme.studio.application.port.out.ServiceRepository;
-import com.emme.studio.application.result.AppointmentView;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,7 @@ public class GetAppointmentService implements GetAppointmentUseCase {
   }
 
   @Override
-  public Optional<AppointmentView> get(UUID id) {
+  public Optional<AppointmentDetails> get(UUID id) {
     return repository.findById(id).map(support::toView);
   }
 }

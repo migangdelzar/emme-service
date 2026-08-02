@@ -1,10 +1,10 @@
 package com.emme.studio.api.usecase;
 
-import com.emme.studio.application.result.AppointmentView;
+import com.emme.studio.api.result.AppointmentDetails;
 import java.util.UUID;
 
 /** Starts an appointment. */
 public interface StartAppointmentUseCase {
 
-  AppointmentView start(UUID id);
+  AppointmentDetails start(UUID id);
 }

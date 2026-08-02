@@ -1,10 +1,10 @@
 package com.emme.studio.api.usecase;
 
-import com.emme.studio.application.result.AppointmentView;
+import com.emme.studio.api.result.AppointmentDetails;
 import java.util.UUID;
 
 /** Confirms an appointment. */
 public interface ConfirmAppointmentUseCase {
 
-  AppointmentView confirm(UUID id);
+  AppointmentDetails confirm(UUID id);
 }

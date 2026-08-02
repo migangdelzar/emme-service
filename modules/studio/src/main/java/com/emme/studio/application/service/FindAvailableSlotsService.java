@@ -1,11 +1,11 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.AvailableSlot;
 import com.emme.studio.api.usecase.FindAvailableSlotsUseCase;
 import com.emme.studio.application.port.out.AppointmentCollisionPort;
 import com.emme.studio.application.port.out.ArtistCapabilityRepository;
 import com.emme.studio.application.port.out.OperatingHoursRepository;
 import com.emme.studio.application.port.out.ServiceRepository;
-import com.emme.studio.application.result.AvailableSlot;
 import com.emme.studio.domain.model.DayOfWeek;
 import com.emme.studio.domain.model.OperatingHours;
 import java.time.Instant;

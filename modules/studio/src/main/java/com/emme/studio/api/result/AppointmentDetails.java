@@ -1,11 +1,11 @@
-package com.emme.studio.application.result;
+package com.emme.studio.api.result;
 
 import com.emme.studio.domain.model.Appointment;
 import java.time.Instant;
 import java.util.UUID;
 
 /** Internal read model used by inbound adapters; it contains no persistence types. */
-public record AppointmentView(
+public record AppointmentDetails(
     UUID id,
     UUID customerId,
     String customerName,
@@ -17,9 +17,9 @@ public record AppointmentView(
     Instant endsAt,
     String status) {
 
-  public static AppointmentView from(
+  public static AppointmentDetails from(
       Appointment appointment, String customerName, String serviceName, String artistName) {
-    return new AppointmentView(
+    return new AppointmentDetails(
         appointment.getId(),
         appointment.getCustomerId(),
         customerName,

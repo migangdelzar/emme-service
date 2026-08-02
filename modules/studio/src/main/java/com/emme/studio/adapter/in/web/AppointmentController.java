@@ -2,6 +2,8 @@ package com.emme.studio.adapter.in.web;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.studio.api.result.AppointmentDetails;
+import com.emme.studio.api.result.AvailableSlot;
 import com.emme.studio.api.usecase.CancelAppointmentUseCase;
 import com.emme.studio.api.usecase.CompleteAppointmentUseCase;
 import com.emme.studio.api.usecase.ConfirmAppointmentUseCase;
@@ -12,8 +14,6 @@ import com.emme.studio.api.usecase.ListAppointmentsByDateUseCase;
 import com.emme.studio.api.usecase.MarkAppointmentNoShowUseCase;
 import com.emme.studio.api.usecase.RescheduleAppointmentUseCase;
 import com.emme.studio.api.usecase.StartAppointmentUseCase;
-import com.emme.studio.application.result.AppointmentView;
-import com.emme.studio.application.result.AvailableSlot;
 import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
 import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -89,7 +89,7 @@ public class AppointmentController {
       @RequestParam(required = false) LocalDate date) {
     return withCurrentTenant(
         tenantId -> {
-          List<AppointmentView> appointments;
+          List<AppointmentDetails> appointments;
           if (date != null) {
             appointments = listAppointments.list(tenantId, date);
           } else {
@@ -106,7 +106,7 @@ public class AppointmentController {
         tenantId -> {
           enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "appointments:write"));
           try {
-            AppointmentView appointment =
+            AppointmentDetails appointment =
                 createAppointment.create(
                     tenantId,
                     request.customerId(),
@@ -136,7 +136,7 @@ public class AppointmentController {
   public ResponseEntity<?> reschedule(
       @PathVariable UUID id, @Valid @RequestBody RescheduleRequest request) {
     try {
-      AppointmentView appointment =
+      AppointmentDetails appointment =
           rescheduleAppointment.reschedule(id, request.newStartsAt(), request.newEndsAt());
       return ResponseEntity.ok(AppointmentResponse.from(appointment));
     } catch (IllegalStateException e) {
@@ -179,7 +179,7 @@ public class AppointmentController {
   }
 
   private ResponseEntity<AppointmentResponse> withConflictHandling(
-      Supplier<AppointmentView> action) {
+      Supplier<AppointmentDetails> action) {
     try {
       return ResponseEntity.ok(AppointmentResponse.from(action.get()));
     } catch (IllegalStateException e) {
@@ -211,7 +211,7 @@ public class AppointmentController {
       Instant startsAt,
       Instant endsAt,
       String status) {
-    public static AppointmentResponse from(AppointmentView a) {
+    public static AppointmentResponse from(AppointmentDetails a) {
       return new AppointmentResponse(
           a.id(),
           a.customerId(),

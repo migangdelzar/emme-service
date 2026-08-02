@@ -1,4 +1,4 @@
-package com.emme.payment.adapter.out.client.paypal;
+package com.emme.payment.adapter.out.provider.paypal;
 
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;

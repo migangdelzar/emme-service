@@ -1,4 +1,4 @@
-package com.emme.payment.adapter.out.client.conekta;
+package com.emme.payment.adapter.out.provider.conekta;
 
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;

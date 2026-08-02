@@ -1,4 +1,4 @@
-package com.emme.payment.adapter.out.client.stripe;
+package com.emme.payment.adapter.out.provider.stripe;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

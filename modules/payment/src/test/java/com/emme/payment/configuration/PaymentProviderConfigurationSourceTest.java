@@ -20,7 +20,7 @@ class PaymentProviderConfigurationSourceTest {
   @Test
   void paymentProvidersAndWebhooksDoNotReadProcessEnvironmentDirectly() throws IOException {
     Path root = sourcePath("modules/payment/src/main/java/com/emme/payment");
-    Path providers = root.resolve("adapter/out/client");
+    Path providers = root.resolve("adapter/out/provider");
 
     for (String provider : PROVIDERS) {
       assertThat(Files.readString(providers.resolve(providerPackage(provider)).resolve(provider)))

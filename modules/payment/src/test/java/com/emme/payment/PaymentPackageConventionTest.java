@@ -24,6 +24,9 @@ class PaymentPackageConventionTest {
         .isTrue();
     assertThat(hasJavaSources(ROOT.resolve("adapter/in/web/controller"))).isTrue();
     assertThat(Files.exists(ROOT.resolve("api/usecase/InitiatePaymentUseCase.java"))).isTrue();
+    assertThat(Files.exists(ROOT.resolve("adapter/out/provider/stripe/StripeProvider.java")))
+        .isTrue();
+    assertThat(hasJavaSources(ROOT.resolve("adapter/out/client"))).isFalse();
   }
 
   @Test
@@ -47,7 +50,7 @@ class PaymentPackageConventionTest {
 
   @Test
   void paymentProvidersDoNotConstructTransportOrSerializationDependencies() throws Exception {
-    try (Stream<Path> paths = Files.walk(ROOT.resolve("adapter/out/client"))) {
+    try (Stream<Path> paths = Files.walk(ROOT.resolve("adapter/out/provider"))) {
       paths
           .filter(path -> path.toString().endsWith("Provider.java"))
           .forEach(

@@ -40,7 +40,7 @@ com.emme.payment
 ├── domain/{model,exception}
 ├── adapter/in/{web/controller,web/request,web/response,web/mapper,web/advice,webhook}
 ├── adapter/out/persistence/{entity,repository,adapter,mapper}
-├── adapter/out/client/{stripe,paypal,mercado-pago,conekta,mock}
+├── adapter/out/provider/{stripe,paypal,mercado-pago,conekta,mock}
 └── configuration/{PaymentConfiguration,PaymentProperties,PaymentProviderConfig}
 ```
 
@@ -103,7 +103,7 @@ only performs transport. Provider DTOs remain inside their external-system packa
 - [ ] Move `PaymentProvider` to `application/port/out` and `PaymentProperties` to
   `configuration`.
 - [ ] Group Stripe, PayPal, Mercado Pago, Conekta, and Mock implementations under
-  `adapter/out/client/<external-system>`.
+  `adapter/out/provider/<external-system>`.
 - [ ] Preserve provider request/response/error behavior and conditional activation.
 - [ ] Move Mercado Pago callback entry point to `adapter/in/webhook` with a thin
   controller, signature validation, mapper, and use-case invocation.
@@ -130,10 +130,10 @@ only performs transport. Provider DTOs remain inside their external-system packa
 - [ ] Payment domain is framework-free and providers are replaceable adapters.
 - [ ] Existing HTTP, webhook, provider, and database behavior is regression-tested.
 
-## Completed technology-owned client normalization — 2026-08-01
+## Completed technology-owned provider normalization — 2026-08-01
 
 - [x] Moved Conekta, Mercado Pago, PayPal, Stripe, and Mock implementations
-  under technology-owned `adapter/out/client/<technology>` packages.
+  under technology-owned `adapter/out/provider/<technology>` packages.
 - [x] Added package metadata and updated provider configuration source-boundary
   tests.
 - [x] Payment compilation, focused provider-boundary tests, and formatting pass.
@@ -236,3 +236,19 @@ gate.
 
 Remaining Payment evidence is deterministic provider contract coverage,
 webhook replay/signature coverage, and credentialed live-provider verification.
+
+## Completed provider namespace normalization — 2026-08-02
+
+- [x] Moved Conekta, Mercado Pago, PayPal, Stripe, and Mock payment provider
+  implementations to `adapter/out/provider/{conekta,mercadopago,paypal,stripe,mock}`.
+- [x] Kept `PaymentProvider` as the application-owned outbound port and retained
+  provider-role class names such as `StripeProvider`.
+- [x] Kept `PaymentHttpClient` as the transport-focused composition-root client;
+  it is not confused with the provider strategy boundary.
+- [x] Updated package metadata, provider contract tests, and source-boundary
+  assertions to reject the old `adapter/out/client` provider location.
+- [x] Verified Payment unit/module checks and PostgreSQL integration tests.
+
+Remaining Payment evidence is deterministic provider contract depth, webhook
+replay/signature execution evidence, credentialed live-provider verification,
+and the final service-wide gate.

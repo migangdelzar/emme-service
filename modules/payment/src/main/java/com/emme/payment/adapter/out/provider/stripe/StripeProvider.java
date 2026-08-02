@@ -1,4 +1,4 @@
-package com.emme.payment.adapter.out.client.stripe;
+package com.emme.payment.adapter.out.provider.stripe;
 
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;

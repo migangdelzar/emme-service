@@ -1246,8 +1246,8 @@ limiting, then continue authorization domain/application separation.
 
 - [x] Move Notification email, SMS, and push implementations from the generic
   `adapter/out/client` namespace into `adapter/out/provider/{email,sms,push}`.
-- [x] Move Payment providers into technology-owned client packages for Conekta,
-  Mercado Pago, PayPal, Stripe, and Mock.
+- [x] Move Payment providers into `adapter/out/provider/{conekta,mercadopago,
+  paypal,stripe,mock}` packages.
 - [x] Move Calendar OAuth support into `adapter/out/google/oauth`.
 - [x] Add package metadata and update source-boundary tests for each client
   family.
@@ -1274,6 +1274,14 @@ limiting, then continue authorization domain/application separation.
 - [x] Update Studio event consumers and tests to the normalized public event.
 - [x] Verify Assistant, Notification, and Studio compilation/checks.
 - [ ] Complete deterministic provider contract, retry, and live integration evidence.
+
+## Payment provider namespace normalization — 2026-08-02
+
+- [x] Move Payment provider implementations to `adapter/out/provider`.
+- [x] Keep `PaymentHttpClient` as transport infrastructure under configuration.
+- [x] Update provider package metadata and contract-test locations.
+- [x] Verify Payment unit, module, formatting, and integration checks.
+- [ ] Complete provider contract depth, webhook replay/signature evidence, and service-wide verification.
 
 ## Calendar Google transport composition-root hardening — 2026-08-01
 

@@ -351,3 +351,16 @@
   construction problem as payment and notification providers. Prevention rule:
   every external integration capability owns one named transport wrapper and
   one composition-root bean; adapters receive it through constructor injection.
+
+## 2026-08-02 — Scheduled provisioning reads must fail safely
+
+- Failure mode: the Tenancy provisioning scheduler allowed a transient registry
+  lookup failure to escape from the scheduled method and produced an uncaught
+  scheduler error while the application context was still initializing.
+- Detection signal: the Studio module check logged a `BadSqlGrammarException`
+  for the not-yet-created provisioning registry table even though the tests
+  completed successfully.
+- Prevention rule: scheduled process managers must catch failures while loading
+  work, log a bounded diagnostic, and return so the next scheduled invocation
+  can retry; they must not leak infrastructure failures through Spring's
+  scheduler boundary.

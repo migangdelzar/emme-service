@@ -254,6 +254,18 @@ Remaining Tenancy work is operational pool/routing/recovery evidence,
 provisioning replay and rollback evidence, transaction/after-commit evidence,
 and the committed final verification report.
 
+## Completed scheduler resilience slice — 2026-08-02
+
+- [x] Added a regression test for a provisioning-registry lookup failure.
+- [x] Made `TenantProvisioningProcessManager` log a bounded diagnostic and
+  return when pending-work loading fails, allowing the next scheduled poll to
+  retry safely.
+- [x] Reverified the focused process-manager tests and the Studio module checks.
+
+The remaining operational evidence is limited to live pool/routing recovery,
+provisioning rollback/replay under a real deployment, audit correlation, and
+the final service-wide verification report.
+
 ## Completed managed JDBC connection boundary slice — 2026-08-02
 
 - [x] Reused Shared's capability-owned `JdbcConnectionExecutor` with generic

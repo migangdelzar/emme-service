@@ -30,8 +30,13 @@ final class TenantProvisioningProcessManager {
   @Scheduled(fixedDelayString = "${app.tenant.provisioning.poll-interval:PT10S}")
   @SchedulerLock(name = "tenant-provisioning", lockAtMostFor = "PT5M")
   public void processProvisioningRequests() {
-    List<TenantProvisioningRepository.TenantProvisioningRequest> pending =
-        provisioningRepository.findPending();
+    List<TenantProvisioningRepository.TenantProvisioningRequest> pending;
+    try {
+      pending = provisioningRepository.findPending();
+    } catch (Exception exception) {
+      log.error("Unable to load pending tenant provisioning requests: {}", boundedError(exception));
+      return;
+    }
 
     if (pending.isEmpty()) return;
 

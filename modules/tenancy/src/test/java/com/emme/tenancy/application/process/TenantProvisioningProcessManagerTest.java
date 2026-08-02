@@ -33,6 +33,18 @@ class TenantProvisioningProcessManagerTest {
   }
 
   @Test
+  void toleratesProvisioningRepositoryFailureForTheNextScheduledRetry() {
+    when(provisioningRepository.findPending())
+        .thenThrow(new IllegalStateException("database unavailable"));
+
+    new TenantProvisioningProcessManager(provisioningRepository, schemaMigrationPort)
+        .processProvisioningRequests();
+
+    verify(provisioningRepository).findPending();
+    verifyNoInteractions(schemaMigrationPort);
+  }
+
+  @Test
   void marksTheTenantActiveAfterSchemaMigration() {
     TenantProvisioningRepository.TenantProvisioningRequest request = request();
     when(provisioningRepository.findPending()).thenReturn(List.of(request));

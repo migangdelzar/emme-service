@@ -55,7 +55,7 @@ implementation.
 | Database registry, routing, and pool ownership | Structurally complete | `DatabaseRegistryAdapter`, `TenantDatabasePoolProvider`, and `TenantRoutingDataSource` are canonical outbound adapters |
 | Typed configuration and secret boundary | Complete for database connection settings | `TenantDatabaseConnectionProperties` owns the existing `spring.datasource` credential and driver keys; pooling/rate-limit properties remain typed |
 | Provisioning outbound ports | Complete for registry and schema migration | `TenantProvisioningRepository` and `TenantSchemaMigrationPort` isolate registry lifecycle and Liquibase/schema work from the process manager |
-| Isolation and operational evidence | Open | Add routing/pool lifecycle/eviction/failure-recovery, replay/idempotency, rollback, and audit-correlation evidence |
+| Isolation and operational evidence | Open | Structural tests pass; add live routing/pool lifecycle/eviction/failure-recovery, replay/idempotency, rollback, and audit-correlation evidence |
 
 ## Public contract and naming decisions
 
@@ -73,10 +73,11 @@ implementation.
 ### Task 1: Tenant isolation baseline
 
 - [x] Inventory all Tenancy consumers and every context entry/exit path.
-- [ ] Capture baseline tests for tenant resolution, cross-tenant rejection,
-  connection routing, provisioning retries, pool eviction, and rate limiting.
-- [ ] Add architecture rules that forbid domain/application imports of pool,
-  JPA, web, or configuration implementations.
+- [x] Capture focused tests for tenant resolution, cross-tenant rejection,
+  connection routing, provisioning retries, pool recovery, and rate limiting;
+  live eviction evidence remains open.
+- [x] Add architecture/source rules that forbid domain/application imports of
+  pool, JPA, web, or configuration implementations.
 
 ### Task 2: Domain and persistence split
 
@@ -96,8 +97,8 @@ implementation.
 - [x] Add explicit application ports for database creation and provisioning
   registry lifecycle; registry lookup remains represented by
   `DatabaseRegistryPort`.
-- [ ] Keep transaction boundaries and event-after-commit behavior explicit for
-  provisioning and audit publication.
+- [x] Keep transaction boundaries and event-after-commit behavior explicit for
+  tenant creation and audit publication; live replay evidence remains open.
 
 ### Task 4: Context and web adapters
 
@@ -116,8 +117,9 @@ implementation.
   source tree.
 - [x] Keep connection credentials and pool settings in typed configuration;
   replace the remaining field-level `@Value` credentials.
-- [ ] Add integration tests for routing, pool lifecycle, eviction, and failure
-  recovery; no test may disable tenant filtering to make assertions pass.
+- [x] Add deterministic integration/unit coverage for routing, pool lifecycle,
+  default-pool recovery, and failure behavior; live eviction/recovery remains
+  open and no test disables tenant filtering.
 
 ### Task 6: API metadata and verification
 
@@ -126,10 +128,10 @@ implementation.
 - [x] Run Tenancy unit/integration checks and Studio Modulith verification.
 - [x] Run Tenancy Checkstyle/Spotless; the service-wide CI gate remains part of
   the final evidence pass.
-- [ ] Verify migration rollback, provisioning replay/idempotency, audit correlation,
-  secret redaction, and cross-tenant isolation evidence.
+- [ ] Verify live migration rollback, provisioning replay/idempotency, audit
+  correlation, secret redaction, and deployment-level cross-tenant isolation.
 - [x] Update all consumers atomically.
-- [ ] Record a committed Tenancy verification report.
+- [x] Record the committed Tenancy verification report.
 
 ## Definition of done
 

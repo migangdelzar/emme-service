@@ -156,6 +156,10 @@ reopened by this backlog.
 - [x] Complete the Tenancy boundary migration; source and focused boundary
   slices are complete. Live pool/routing recovery and final evidence remain in
   the plan.
+- [x] Record Tenancy operational boundary evidence for typed configuration,
+  managed JDBC callbacks, tenant predicates, and provisioning ownership.
+- [ ] Close live pool eviction/recovery, provisioning replay/rollback, and
+  clean test-context lifecycle evidence.
 - [x] Adopt and verify Spring MVC endpoint version conditions for controllers,
   using one configured resolver and version-neutral `/api` routes.
 

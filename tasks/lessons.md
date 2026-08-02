@@ -322,3 +322,7 @@
   `application.result`, even when that type is technically immutable. Public
   results belong under `api/result`; application services may assemble them but
   must not own the public package.
+
+- 2026-08-01 — The repository CI task is the formatting source of truth across
+  fixtures and modules. Run it after structural refactors because shared test
+  fixtures can fail Spotless even when the changed module itself is clean.

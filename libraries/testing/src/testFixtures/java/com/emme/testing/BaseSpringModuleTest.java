@@ -7,9 +7,9 @@ import com.emme.studio.subscriptions.adapter.out.persistence.entity.Subscription
 import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
 import com.emme.studio.subscriptions.api.type.PlanType;
 import com.emme.tenancy.api.command.CreateTenantCommand;
+import com.emme.tenancy.api.query.GetTenantQuery;
 import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.tenancy.api.usecase.CreateTenantUseCase;
-import com.emme.tenancy.api.query.GetTenantQuery;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

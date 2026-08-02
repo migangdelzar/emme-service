@@ -30,6 +30,8 @@
   diagnostics instead of silently selecting a different provider.
 - Typed deployment and security selector properties with capability-owned enum
   models and added a default container context directory.
+- Added TestKit coverage for deployment and security task registration,
+  configuration-time laziness, and execution-time invalid-selector failures.
 
 ## Verification
 

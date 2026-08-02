@@ -233,6 +233,8 @@ reopened by this backlog.
 - [x] Make container, deployment, and security provider selection lazy, typed,
   truthful, and actionable for unsupported values; verify the full build-logic
   check after the provider slices.
+- [x] Add TestKit contracts for deployment and security provider selection and
+  invalid-selector behavior.
 - [ ] Normalize every build-logic capability, convention script, binary plugin,
   extension, task, provider, result, model, ValueSource, and test according to
   the dedicated plan.

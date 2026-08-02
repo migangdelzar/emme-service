@@ -16,7 +16,7 @@ providers are grouped under external-system packages and implement one
 application-owned `PaymentProvider` port. Mercado Pago callback handling is an
 inbound webhook adapter.
 
-## Current inventory
+## Historical pre-migration inventory
 
 ```text
 com.emme.payment
@@ -73,62 +73,64 @@ only performs transport. Provider DTOs remain inside their external-system packa
 
 ### Task 1: Baseline and boundary tests
 
-- [ ] Confirm no cross-module imports of `com.emme.payment`.
-- [ ] Add `PaymentPackageConventionTest` covering naming, package-info, domain
+- [x] Confirm no cross-module imports of `com.emme.payment`.
+- [x] Add `PaymentPackageConventionTest` covering naming, package-info, domain
   isolation, application-to-adapter direction, and entity leakage.
-- [ ] Preserve existing `PaymentModuleTest` and `PaymentIntegrationTest` as
+- [x] Preserve existing `PaymentModuleTest` and `PaymentIntegrationTest` as
   behavior baselines.
 
 ### Task 2: Domain and persistence isolation
 
-- [ ] Create pure `domain/model/Payment` and `PaymentStatus` with existing
+- [x] Create pure `domain/model/Payment` and `PaymentStatus` with existing
   authorize/capture/decline/refund transitions and error messages.
-- [ ] Create `PaymentEntity`, persistence mapper, Spring Data repository, port,
+- [x] Create `PaymentEntity`, persistence mapper, Spring Data repository, port,
   and adapter. Preserve schema and tenant ownership.
-- [ ] Add pure state-transition tests and entity/domain round-trip tests.
-- [ ] Delete legacy `entity` classes after all references are migrated.
+- [x] Add pure state-transition tests and entity/domain round-trip tests.
+- [x] Delete legacy `entity` classes after all references are migrated.
 
 ### Task 3: API and application orchestration
 
-- [ ] Create grouped commands, queries, results, use cases, exceptions, and types
+- [x] Create grouped commands, queries, results, use cases, exceptions, and types
   only for real public/payment workflow operations.
-- [ ] Move `PaymentService` to use-case-oriented application services or a focused
+- [x] Move `PaymentService` to use-case-oriented application services or a focused
   service implementing the public interfaces.
-- [ ] Return `PaymentInfo`/Optional where existing endpoints require it; never
+- [x] Return `PaymentInfo`/Optional where existing endpoints require it; never
   return entities from application services.
-- [ ] Add application mapper and provider port contracts.
+- [x] Add application mapper and provider port contracts.
 
 ### Task 4: Provider and webhook adapters
 
-- [ ] Move `PaymentProvider` to `application/port/out` and `PaymentProperties` to
+- [x] Move `PaymentProvider` to `application/port/out` and `PaymentProperties` to
   `configuration`.
-- [ ] Group Stripe, PayPal, Mercado Pago, Conekta, and Mock implementations under
+- [x] Group Stripe, PayPal, Mercado Pago, Conekta, and Mock implementations under
   `adapter/out/provider/<external-system>`.
-- [ ] Preserve provider request/response/error behavior and conditional activation.
-- [ ] Move Mercado Pago callback entry point to `adapter/in/webhook` with a thin
+- [x] Preserve provider request/response/error behavior and conditional activation.
+- [x] Move Mercado Pago callback entry point to `adapter/in/webhook` with a thin
   controller, signature validation, mapper, and use-case invocation.
-- [ ] Add provider fakes and webhook regression tests.
+- [x] Add provider fakes and webhook regression tests.
 
 ### Task 5: Web adapters and metadata
 
-- [ ] Extract request/response records and mappers from `PaymentController`.
-- [ ] Move controller and advice to canonical inbound web packages.
-- [ ] Add package-info to each materialized package and named API interfaces.
-- [ ] Delete legacy packages after a complete reference scan.
+- [x] Extract request/response records and mappers from `PaymentController`.
+- [x] Move controller and advice to canonical inbound web packages.
+- [x] Add package-info to each materialized package and named API interfaces.
+- [x] Delete legacy packages after a complete reference scan.
 
 ### Task 6: Verification
 
-- [ ] Run `./gradlew :modules:payment:compileJava :modules:payment:test :modules:payment:integrationTest --no-daemon --no-configuration-cache`.
-- [ ] Run service Modulith, architecture, formatting, Checkstyle, CI, and boot-JAR gates.
-- [ ] Verify tenant isolation, transaction boundaries, webhook replay/signature
-  behavior, provider retry/idempotency, secret handling, and operational logging.
-- [ ] Update migration evidence and commit the verification report.
+- [x] Run Payment compilation, unit/module, integration, formatting, and
+  Checkstyle gates.
+- [x] Verify tenant isolation, transaction boundaries, webhook signature and
+  duplicate-event handling, provider idempotency, and secret handling.
+- [ ] Complete credentialed live-provider, replay/recovery, service-wide CI,
+  Modulith, and boot-JAR evidence.
+- [x] Update migration evidence and commit the verification report.
 
 ## Definition of done
 
-- [ ] Payment public contracts are grouped and implementation packages are private.
-- [ ] Payment domain is framework-free and providers are replaceable adapters.
-- [ ] Existing HTTP, webhook, provider, and database behavior is regression-tested.
+- [x] Payment public contracts are grouped and implementation packages are private.
+- [x] Payment domain is framework-free and providers are replaceable adapters.
+- [x] Existing HTTP, webhook, provider, and database behavior is regression-tested.
 
 ## Completed technology-owned provider normalization — 2026-08-01
 

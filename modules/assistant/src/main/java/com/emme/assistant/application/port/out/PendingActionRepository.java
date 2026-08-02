@@ -8,9 +8,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PendingActionRepository {
-  Optional<PendingAction> findById(UUID actionId);
+  Optional<PendingAction> findByTenantIdAndId(UUID tenantId, UUID actionId);
 
-  List<PendingAction> findByConversationIdAndStatus(UUID conversationId, ActionStatus status);
+  List<PendingAction> findByTenantIdAndConversationIdAndStatus(
+      UUID tenantId, UUID conversationId, ActionStatus status);
 
   List<PendingAction> findExpired(Instant now, ActionStatus status);
 

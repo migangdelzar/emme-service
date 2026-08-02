@@ -10,6 +10,7 @@ class AiCapabilityConventionTest {
   @Test
   void keepsProviderImplementationsBehindApplicationPorts() {
     Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant/ai");
+    assertThat(read(root.resolve("package-info.java"))).doesNotContain("@NamedInterface");
     assertThat(Files.exists(root.resolve("application/port/out/ModelProvider.java"))).isTrue();
     assertThat(Files.exists(root.resolve("adapter/out/client/mock/MockModelProvider.java")))
         .isTrue();
@@ -26,6 +27,14 @@ class AiCapabilityConventionTest {
     assertThat(Files.exists(root.resolve("api/usecase/EmbedTextUseCase.java"))).isTrue();
     assertThat(Files.exists(root.resolve("application/service/CaptionImageService.java"))).isTrue();
     assertThat(Files.exists(root.resolve("application/service/EmbedTextService.java"))).isTrue();
+  }
+
+  private static String read(Path path) {
+    try {
+      return Files.readString(path);
+    } catch (Exception exception) {
+      throw new IllegalStateException("Cannot read " + path, exception);
+    }
   }
 
   private static Path sourcePath(String relativePath) {

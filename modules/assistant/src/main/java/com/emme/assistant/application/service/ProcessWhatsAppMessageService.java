@@ -65,11 +65,13 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
     ChannelParticipant participant = findOrCreateParticipant(command);
     ConversationInfo conversation = findOrCreateConversation(command, participant);
     addConversationEvent.add(
-        new AddConversationEventCommand(conversation.id(), "MESSAGE_RECEIVED", command.text()));
+        new AddConversationEventCommand(
+            command.tenantId(), conversation.id(), "MESSAGE_RECEIVED", command.text()));
 
     String response = chatUseCase.chat("", command.text());
     addConversationEvent.add(
-        new AddConversationEventCommand(conversation.id(), "MESSAGE_SENT", response));
+        new AddConversationEventCommand(
+            command.tenantId(), conversation.id(), "MESSAGE_SENT", response));
     replyPort.send(command.from(), response);
   }
 

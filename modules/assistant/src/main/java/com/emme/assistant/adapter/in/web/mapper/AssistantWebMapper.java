@@ -15,8 +15,8 @@ public final class AssistantWebMapper {
   }
 
   public static ProposePendingActionCommand toCommand(
-      UUID conversationId, ProposeActionRequest request) {
+      UUID tenantId, UUID conversationId, ProposeActionRequest request) {
     return new ProposePendingActionCommand(
-        conversationId, request.actionType(), request.details(), request.expiresAt());
+        tenantId, conversationId, request.actionType(), request.details(), request.expiresAt());
   }
 }

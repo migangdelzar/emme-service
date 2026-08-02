@@ -21,7 +21,8 @@ public class RejectPendingActionService implements RejectPendingActionUseCase {
 
   @Override
   public PendingActionInfo reject(RejectPendingActionCommand command) {
-    PendingAction action = AssistantServiceSupport.action(repository, command.actionId());
+    PendingAction action =
+        AssistantServiceSupport.action(repository, command.tenantId(), command.actionId());
     if (action.status() != ActionStatus.PENDING) {
       throw new IllegalStateException("Action not in PENDING state: " + command.actionId());
     }

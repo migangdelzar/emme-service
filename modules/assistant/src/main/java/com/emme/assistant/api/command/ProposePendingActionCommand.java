@@ -5,4 +5,4 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record ProposePendingActionCommand(
-    UUID conversationId, ActionType actionType, String details, Instant expiresAt) {}
+    UUID tenantId, UUID conversationId, ActionType actionType, String details, Instant expiresAt) {}

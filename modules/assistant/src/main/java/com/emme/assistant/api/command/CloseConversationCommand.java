@@ -2,4 +2,4 @@ package com.emme.assistant.api.command;
 
 import java.util.UUID;
 
-public record CloseConversationCommand(UUID conversationId) {}
+public record CloseConversationCommand(UUID tenantId, UUID conversationId) {}

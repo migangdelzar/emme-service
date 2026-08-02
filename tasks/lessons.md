@@ -1,5 +1,17 @@
 # Engineering lessons
 
+## 2026-08-02 — Identifier-only lookups are a tenant-isolation defect
+
+- Failure mode: Assistant commands and repository ports addressed existing
+  conversations and pending actions by ID alone, allowing a caller with a valid
+  identifier to bypass the module's tenant boundary.
+- Detection signal: A package-boundary audit found `repository.findById(...)`
+  in outbound adapters and HTTP routes that did not call `withCurrentTenant`.
+- Prevention rule: Every application operation that addresses an existing
+  tenant-owned record must carry the tenant ID explicitly, and every persistence
+  predicate must include that tenant ID. Add a source-boundary regression test
+  when the contract is structural.
+
 ## 2026-08-01 — Unreleased architecture has no compatibility legacy
 
 - Failure mode: a boundary refactor initially preserved a legacy public API and

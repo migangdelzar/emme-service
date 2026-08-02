@@ -11,11 +11,15 @@ import java.util.UUID;
 final class AssistantServiceSupport {
   private AssistantServiceSupport() {}
 
-  static Conversation conversation(ConversationRepository repository, UUID id) {
-    return repository.findById(id).orElseThrow(() -> new ConversationNotFoundException(id));
+  static Conversation conversation(ConversationRepository repository, UUID tenantId, UUID id) {
+    return repository
+        .findByTenantIdAndId(tenantId, id)
+        .orElseThrow(() -> new ConversationNotFoundException(id));
   }
 
-  static PendingAction action(PendingActionRepository repository, UUID id) {
-    return repository.findById(id).orElseThrow(() -> new PendingActionNotFoundException(id));
+  static PendingAction action(PendingActionRepository repository, UUID tenantId, UUID id) {
+    return repository
+        .findByTenantIdAndId(tenantId, id)
+        .orElseThrow(() -> new PendingActionNotFoundException(id));
   }
 }

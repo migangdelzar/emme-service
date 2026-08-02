@@ -51,6 +51,42 @@ class AssistantPackageConventionTest {
     }
   }
 
+  @Test
+  void requiresTenantScopedLookupBoundariesForUserOwnedData() throws Exception {
+    String conversationPort =
+        Files.readString(ROOT.resolve("application/port/out/ConversationRepository.java"));
+    String conversationAdapter =
+        Files.readString(
+            ROOT.resolve("adapter/out/persistence/adapter/ConversationPersistenceAdapter.java"));
+    String eventPort =
+        Files.readString(ROOT.resolve("application/port/out/ConversationEventRepository.java"));
+    String eventAdapter =
+        Files.readString(
+            ROOT.resolve(
+                "adapter/out/persistence/adapter/ConversationEventPersistenceAdapter.java"));
+    String actionPort =
+        Files.readString(ROOT.resolve("application/port/out/PendingActionRepository.java"));
+    String actionAdapter =
+        Files.readString(
+            ROOT.resolve("adapter/out/persistence/adapter/PendingActionPersistenceAdapter.java"));
+    String controller =
+        Files.readString(ROOT.resolve("adapter/in/web/controller/ConversationController.java"));
+
+    assertThat(conversationPort).contains("findByTenantIdAndId(");
+    assertThat(conversationPort).doesNotContain("findById(UUID conversationId)");
+    assertThat(conversationAdapter).contains("findByTenantIdAndId(");
+    assertThat(conversationAdapter).doesNotContain("repository.findById(");
+    assertThat(eventPort).contains("tenantId");
+    assertThat(eventAdapter).contains("tenantId");
+    assertThat(actionPort).contains("findByTenantIdAndId(");
+    assertThat(actionPort).doesNotContain("findById(UUID actionId)");
+    assertThat(actionAdapter).contains("findByTenantIdAndId(");
+    assertThat(actionAdapter).doesNotContain("repository.findById(");
+    assertThat(controller).contains("withCurrentTenant");
+    assertThat(controller).contains("new GetConversationQuery(tenantId, id)");
+    assertThat(controller).contains("new CloseConversationCommand(tenantId, id)");
+  }
+
   private static boolean hasJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) {
       return false;

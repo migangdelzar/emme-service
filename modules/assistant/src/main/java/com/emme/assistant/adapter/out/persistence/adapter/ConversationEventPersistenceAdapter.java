@@ -22,15 +22,19 @@ public class ConversationEventPersistenceAdapter implements ConversationEventRep
   }
 
   @Override
-  public Optional<ConversationEvent> findLatestByConversationId(UUID conversationId) {
+  public Optional<ConversationEvent> findLatestByTenantIdAndConversationId(
+      UUID tenantId, UUID conversationId) {
     return repository
-        .findTopByConversationIdOrderBySequenceNumberDesc(conversationId)
+        .findTopByTenantIdAndConversationIdOrderBySequenceNumberDesc(tenantId, conversationId)
         .map(mapper::toDomain);
   }
 
   @Override
-  public List<ConversationEvent> findByConversationId(UUID conversationId) {
-    return repository.findByConversationIdOrderBySequenceNumberAsc(conversationId).stream()
+  public List<ConversationEvent> findByTenantIdAndConversationId(
+      UUID tenantId, UUID conversationId) {
+    return repository
+        .findByTenantIdAndConversationIdOrderBySequenceNumberAsc(tenantId, conversationId)
+        .stream()
         .map(mapper::toDomain)
         .toList();
   }

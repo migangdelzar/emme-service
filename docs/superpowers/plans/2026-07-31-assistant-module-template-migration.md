@@ -623,19 +623,20 @@ configuration
 ```
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/package-info.java`
-- Delete: `modules/assistant/src/main/java/com/emme/assistant/ai/package-info.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/package-info.java`
 - Modify any consuming module `package-info.java` declarations only when the new public port/API package requires it; do not weaken allowed dependencies.
 
 **Interfaces:**
 
 - Root package contains `@ApplicationModule(displayName = "Assistant", allowedDependencies = {"shared", "tenancy"})` plus no business types.
 - Each materialized `api` kind is annotated `@NamedInterface("api")`.
-- No `assistant` or `ai-api` legacy named interface remains.
+- The AI capability root is not a named interface; only the grouped AI public
+  API package is exposed through `assistant-ai-api`.
 - The module's event named interface is not created because the current persisted conversation history is not a published module event.
 
 - [ ] **Step 1: Add source-tree package-info verification for every materialized package**
 - [ ] **Step 2: Add named-interface and API signature closure assertions**
-- [ ] **Step 3: Remove the legacy `ai` named interface**
+- [ ] **Step 3: Ensure the AI capability root does not expose implementation packages**
 - [ ] **Step 4: Run `ApplicationModules.verify()` and inspect every Assistant dependency**
 - [ ] **Step 5: Commit**
 
@@ -662,7 +663,9 @@ com/emme/conversations/web/ConversationWebTest.java
 ```
 
 - Move: `src/integrationTest/java/com/emme/assistant/ai/AssistantIntegrationTest.java` → `src/integrationTest/java/com/emme/assistant/AssistantIntegrationTest.java`
-- Delete legacy production directories: `entity/`, flat `application/`, `web/`, and `ai/` after confirming no source references remain.
+- Delete obsolete legacy production directories: `entity/`, flat `application/`,
+  and `web/` after confirming no source references remain. Preserve the
+  normalized `ai/` capability because it owns real AI use cases and adapters.
 - Delete dead classes only after a repository-wide reference check: `FallbackHandler`, `ToolExecutor`, and `ToolRegistry`.
 
 - [ ] **Step 1: Run repository-wide reference checks before deleting files**
@@ -751,7 +754,9 @@ git log --oneline origin/feat/assistant-module-migration -1
 
 ## 4. Definition of Done
 
-- [ ] No legacy `assistant/entity`, flat `assistant/application`, `assistant/web`, or `assistant/ai` production package remains.
+- [ ] No obsolete `assistant/entity`, flat `assistant/application`, or
+  `assistant/web` production package remains; the normalized `assistant/ai`
+  capability is retained.
 - [ ] Every materialized production package has `package-info.java`.
 - [ ] Domain models are framework-free and persistence entities are adapter-owned.
 - [ ] All application services depend on ports, not concrete outbound adapters.
@@ -905,3 +910,23 @@ provider contract coverage, and final service-wide verification remain.
 
 Durable replay, provider-account tenant routing, and webhook security are
 implemented; live provider and service-wide evidence remains.
+
+## Completed tenant-scoped Assistant lookup slice — 2026-08-02
+
+- [x] Added tenant identity to conversation, event, and pending-action
+  commands/queries that address existing user-owned records.
+- [x] Changed application-owned persistence ports to require tenant-scoped
+  lookup methods for conversations, conversation history, and pending actions.
+- [x] Changed persistence adapters and Spring Data repositories to use
+  tenant-qualified predicates instead of identifier-only reads.
+- [x] Added tenant scoping to all conversation HTTP routes, including get,
+  close, history, action proposal, confirmation, and rejection.
+- [x] Added a source-boundary regression test that prevents reintroducing
+  identifier-only reads in the Assistant persistence boundary.
+- [x] Verified `:modules:assistant:check` with zero test failures and zero
+  skipped tests.
+
+This slice closes an application-level tenant-isolation gap without changing
+HTTP paths, response shapes, or database schema. Live provider contract tests,
+PostgreSQL replay evidence, and the final service-wide verification gate remain
+open by design.

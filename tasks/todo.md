@@ -780,10 +780,19 @@ secret-redaction contract.
 - [x] Replace temporary entity-backed orchestration with focused use-case
   services and application-owned ports.
 - [x] Isolate Assistant AI providers behind `ai/application/port/out` and
-  `ai/adapter/out/provider`, with focused chat, intent, and RAG use cases.
+  `ai/adapter/out/client`, with focused chat, intent, and RAG use cases.
 - [ ] Preserve Assistant HTTP, webhook, JSON, database, and feature-flag behavior.
 - [ ] Separate pure domain models, persistence entities, ports, adapters, grouped API contracts, and package metadata.
 - [ ] Run the complete Assistant and service verification gates before merging.
+
+### Assistant tenant-scoped lookup correction — 2026-08-02
+
+- [x] Add tenant identity to existing-record Assistant commands and queries.
+- [x] Enforce tenant-qualified predicates in conversation, event, and pending-action ports and adapters.
+- [x] Wrap all conversation and pending-action HTTP routes with `withCurrentTenant`.
+- [x] Add source-boundary regression coverage for identifier-only persistence reads.
+- [x] Verify `:modules:assistant:check` with zero failures and zero skipped tests.
+- [ ] Complete live provider contract, PostgreSQL replay, and service-wide verification evidence.
 
 ## Module migration plan registry — 2026-07-31
 

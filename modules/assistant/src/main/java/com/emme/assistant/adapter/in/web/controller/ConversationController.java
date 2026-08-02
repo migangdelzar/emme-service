@@ -90,42 +90,58 @@ public class ConversationController {
 
   @GetMapping("/{id}")
   public ResponseEntity<ConversationResponse> get(@PathVariable UUID id) {
-    return get.get(new GetConversationQuery(id))
-        .map(ConversationResponse::from)
-        .map(ResponseEntity::ok)
-        .orElseGet(() -> ResponseEntity.notFound().build());
+    return withCurrentTenant(
+        tenantId ->
+            get.get(new GetConversationQuery(tenantId, id))
+                .map(ConversationResponse::from)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build()));
   }
 
   @PostMapping("/{id}/close")
   public ResponseEntity<ConversationResponse> close(@PathVariable UUID id) {
-    return ResponseEntity.ok(
-        ConversationResponse.from(close.close(new CloseConversationCommand(id))));
+    return withCurrentTenant(
+        tenantId ->
+            ResponseEntity.ok(
+                ConversationResponse.from(
+                    close.close(new CloseConversationCommand(tenantId, id)))));
   }
 
   @GetMapping("/{id}/events")
   public ResponseEntity<List<EventResponse>> getHistory(@PathVariable UUID id) {
-    return ResponseEntity.ok(
-        history.get(new GetConversationHistoryQuery(id)).stream()
-            .map(EventResponse::from)
-            .toList());
+    return withCurrentTenant(
+        tenantId ->
+            ResponseEntity.ok(
+                history.get(new GetConversationHistoryQuery(tenantId, id)).stream()
+                    .map(EventResponse::from)
+                    .toList()));
   }
 
   @PostMapping("/{id}/actions")
   public ResponseEntity<PendingActionResponse> proposeAction(
       @PathVariable UUID id, @RequestBody ProposeActionRequest request) {
-    return ResponseEntity.ok(
-        PendingActionResponse.from(propose.propose(AssistantWebMapper.toCommand(id, request))));
+    return withCurrentTenant(
+        tenantId ->
+            ResponseEntity.ok(
+                PendingActionResponse.from(
+                    propose.propose(AssistantWebMapper.toCommand(tenantId, id, request)))));
   }
 
   @PostMapping("/actions/{id}/confirm")
   public ResponseEntity<PendingActionResponse> confirmAction(@PathVariable UUID id) {
-    return ResponseEntity.ok(
-        PendingActionResponse.from(confirm.confirm(new ConfirmPendingActionCommand(id))));
+    return withCurrentTenant(
+        tenantId ->
+            ResponseEntity.ok(
+                PendingActionResponse.from(
+                    confirm.confirm(new ConfirmPendingActionCommand(tenantId, id)))));
   }
 
   @PostMapping("/actions/{id}/reject")
   public ResponseEntity<PendingActionResponse> rejectAction(@PathVariable UUID id) {
-    return ResponseEntity.ok(
-        PendingActionResponse.from(reject.reject(new RejectPendingActionCommand(id))));
+    return withCurrentTenant(
+        tenantId ->
+            ResponseEntity.ok(
+                PendingActionResponse.from(
+                    reject.reject(new RejectPendingActionCommand(tenantId, id)))));
   }
 }

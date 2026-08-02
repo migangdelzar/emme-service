@@ -22,7 +22,8 @@ public class GetActiveActionsService implements GetActiveActionsUseCase {
   @Override
   public List<PendingActionInfo> get(GetActiveActionsQuery query) {
     return repository
-        .findByConversationIdAndStatus(query.conversationId(), ActionStatus.PENDING)
+        .findByTenantIdAndConversationIdAndStatus(
+            query.tenantId(), query.conversationId(), ActionStatus.PENDING)
         .stream()
         .map(AssistantApplicationMapper::toInfo)
         .toList();

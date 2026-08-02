@@ -24,14 +24,16 @@ public class PendingActionPersistenceAdapter implements PendingActionRepository 
   }
 
   @Override
-  public Optional<PendingAction> findById(UUID actionId) {
-    return repository.findById(actionId).map(mapper::toDomain);
+  public Optional<PendingAction> findByTenantIdAndId(UUID tenantId, UUID actionId) {
+    return repository.findByIdAndTenantId(actionId, tenantId).map(mapper::toDomain);
   }
 
   @Override
-  public List<PendingAction> findByConversationIdAndStatus(
-      UUID conversationId, ActionStatus status) {
-    return repository.findByConversationIdAndStatus(conversationId, status).stream()
+  public List<PendingAction> findByTenantIdAndConversationIdAndStatus(
+      UUID tenantId, UUID conversationId, ActionStatus status) {
+    return repository
+        .findByTenantIdAndConversationIdAndStatus(tenantId, conversationId, status)
+        .stream()
         .map(mapper::toDomain)
         .toList();
   }

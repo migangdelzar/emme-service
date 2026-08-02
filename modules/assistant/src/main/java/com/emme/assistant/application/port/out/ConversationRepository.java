@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ConversationRepository {
-  Optional<Conversation> findById(UUID conversationId);
+  Optional<Conversation> findByTenantIdAndId(UUID tenantId, UUID conversationId);
 
   List<Conversation> findByTenantId(UUID tenantId);
 

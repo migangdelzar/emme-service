@@ -10,8 +10,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SpringDataConversationEventRepository
     extends JpaRepository<ConversationEventEntity, UUID> {
-  List<ConversationEventEntity> findByConversationIdOrderBySequenceNumberAsc(UUID conversationId);
+  List<ConversationEventEntity> findByTenantIdAndConversationIdOrderBySequenceNumberAsc(
+      UUID tenantId, UUID conversationId);
 
-  Optional<ConversationEventEntity> findTopByConversationIdOrderBySequenceNumberDesc(
-      UUID conversationId);
+  Optional<ConversationEventEntity> findTopByTenantIdAndConversationIdOrderBySequenceNumberDesc(
+      UUID tenantId, UUID conversationId);
 }

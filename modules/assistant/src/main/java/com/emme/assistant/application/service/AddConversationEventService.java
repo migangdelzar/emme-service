@@ -25,17 +25,18 @@ public class AddConversationEventService implements AddConversationEventUseCase 
   @Override
   public ConversationEventInfo add(AddConversationEventCommand command) {
     var conversation =
-        AssistantServiceSupport.conversation(conversations, command.conversationId());
+        AssistantServiceSupport.conversation(
+            conversations, command.tenantId(), command.conversationId());
     int nextSequence =
         events
-            .findLatestByConversationId(command.conversationId())
+            .findLatestByTenantIdAndConversationId(command.tenantId(), command.conversationId())
             .map(event -> event.sequenceNumber() + 1)
             .orElse(1);
     return AssistantApplicationMapper.toInfo(
         events.save(
             new ConversationEvent(
                 java.util.UUID.randomUUID(),
-                conversation.tenantId(),
+                command.tenantId(),
                 command.conversationId(),
                 nextSequence,
                 command.eventType(),

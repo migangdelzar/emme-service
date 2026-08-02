@@ -6,9 +6,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ConversationEventRepository {
-  Optional<ConversationEvent> findLatestByConversationId(UUID conversationId);
+  Optional<ConversationEvent> findLatestByTenantIdAndConversationId(
+      UUID tenantId, UUID conversationId);
 
-  List<ConversationEvent> findByConversationId(UUID conversationId);
+  List<ConversationEvent> findByTenantIdAndConversationId(UUID tenantId, UUID conversationId);
 
   ConversationEvent save(ConversationEvent event);
 }

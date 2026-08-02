@@ -22,8 +22,8 @@ public class ConversationPersistenceAdapter implements ConversationRepository {
   }
 
   @Override
-  public Optional<Conversation> findById(UUID conversationId) {
-    return repository.findById(conversationId).map(mapper::toDomain);
+  public Optional<Conversation> findByTenantIdAndId(UUID tenantId, UUID conversationId) {
+    return repository.findByIdAndTenantId(conversationId, tenantId).map(mapper::toDomain);
   }
 
   @Override

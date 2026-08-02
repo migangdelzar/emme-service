@@ -1,6 +1,6 @@
 package com.emme.studio.subscriptions.adapter.out.persistence.entity;
 
-import com.emme.shared.TenantOwnedEntity;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import com.emme.studio.subscriptions.api.type.PlanType;
 import com.emme.studio.subscriptions.domain.model.Subscription;
 import com.emme.studio.subscriptions.domain.model.SubscriptionStatus;

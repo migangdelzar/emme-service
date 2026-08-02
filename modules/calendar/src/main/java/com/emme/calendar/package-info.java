@@ -1,7 +1,7 @@
 @org.springframework.modulith.ApplicationModule(
     displayName = "Calendar",
     allowedDependencies = {
-      "shared",
+      "shared :: persistence",
       "tenancy",
       "identity :: identity-security",
       "studio",

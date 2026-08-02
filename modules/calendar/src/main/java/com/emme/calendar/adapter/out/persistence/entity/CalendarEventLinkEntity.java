@@ -2,7 +2,7 @@ package com.emme.calendar.adapter.out.persistence.entity;
 
 import com.emme.calendar.domain.model.CalendarEventLinkStatus;
 import com.emme.calendar.domain.model.CalendarProvider;
-import com.emme.shared.TenantOwnedEntity;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

@@ -184,7 +184,8 @@ class TenancyPackageConventionTest {
     String source = Files.readString(ROOT_PACKAGE_INFO);
 
     assertThat(source).contains("@org.springframework.modulith.ApplicationModule");
-    assertThat(source).contains("\"shared\"");
+    assertThat(source).contains("shared :: persistence");
+    assertThat(source).contains("shared :: persistence-jdbc");
   }
 
   @Test

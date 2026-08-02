@@ -50,7 +50,7 @@ below is the authoritative order for open work.
 | `notification` | [notification module migration](2026-07-31-notification-module-migration.md) | Core complete | Finish retry/idempotency evidence and service-wide verification |
 | `payment` | [payment module migration](2026-07-31-payment-module-migration.md) | Core complete | Finish webhook replay/signature evidence and service-wide verification |
 | `audit` | [audit module decision](2026-07-31-audit-module-normalization.md) | Decision complete | Keep metadata-only until a separately approved audit capability exists |
-| `shared` | [shared infrastructure normalization](2026-07-31-shared-infrastructure-normalization.md) | Ownership complete | Finish search evidence and service-wide dependency verification |
+| `shared` | [shared infrastructure normalization](2026-07-31-shared-infrastructure-normalization.md) | Capability ownership, primitive packages, and search integration normalized | Finish dependency-cycle and service-wide verification |
 | `build-logic` | [build-logic CDD migration](2026-08-02-build-logic-cdd-migration.md) | Design complete; implementation open | Normalize every Gradle capability, provider, task, model, test, and verification gate while preserving public plugin/task contracts |
 | `event-streaming` | [Kafka + Spring Modulith closure](2026-08-02-kafka-modulith-event-streaming-closure.md) | Implementation slice complete; operational closure open | Verify public event contracts, publication delivery, consumer idempotency, recovery, broker configuration, and CI evidence |
 

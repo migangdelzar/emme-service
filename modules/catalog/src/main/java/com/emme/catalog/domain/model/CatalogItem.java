@@ -1,6 +1,6 @@
 package com.emme.catalog.domain.model;
 
-import com.emme.shared.IdGenerator;
+import com.emme.shared.identity.IdGenerator;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;

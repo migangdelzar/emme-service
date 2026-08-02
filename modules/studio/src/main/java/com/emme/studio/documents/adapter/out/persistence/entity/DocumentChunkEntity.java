@@ -1,6 +1,6 @@
 package com.emme.studio.documents.adapter.out.persistence.entity;
 
-import com.emme.shared.TenantOwnedEntity;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import com.emme.studio.documents.domain.model.DocumentChunk;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

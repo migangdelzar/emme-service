@@ -1,7 +1,7 @@
 @org.springframework.modulith.ApplicationModule(
     displayName = "Identity & Security",
     allowedDependencies = {
-      "shared",
+      "shared :: persistence",
       "tenancy",
       "tenancy :: tenant-api",
       "tenancy :: tenant-events",

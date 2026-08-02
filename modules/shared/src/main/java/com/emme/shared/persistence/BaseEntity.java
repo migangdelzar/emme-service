@@ -1,5 +1,7 @@
-package com.emme.shared;
+package com.emme.shared.persistence;
 
+import com.emme.shared.identity.IdGenerator;
+import com.emme.shared.time.ClockProvider;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;

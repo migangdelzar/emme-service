@@ -1,4 +1,4 @@
-package com.emme.shared;
+package com.emme.shared.identity;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.NoArgGenerator;

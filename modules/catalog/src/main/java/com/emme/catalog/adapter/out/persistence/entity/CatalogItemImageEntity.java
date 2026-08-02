@@ -1,7 +1,7 @@
 package com.emme.catalog.adapter.out.persistence.entity;
 
 import com.emme.catalog.domain.model.CatalogItemImage;
-import com.emme.shared.TenantOwnedEntity;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

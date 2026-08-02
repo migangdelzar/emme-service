@@ -2,7 +2,7 @@ package com.emme.notification.adapter.out.persistence.entity;
 
 import com.emme.kernel.type.NotificationChannel;
 import com.emme.notification.domain.model.NotificationStatus;
-import com.emme.shared.TenantOwnedEntity;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

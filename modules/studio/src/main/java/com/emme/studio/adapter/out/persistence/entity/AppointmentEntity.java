@@ -1,6 +1,6 @@
 package com.emme.studio.adapter.out.persistence.entity;
 
-import com.emme.shared.TenantOwnedEntity;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import com.emme.studio.domain.model.AppointmentStatus;
 import com.emme.studio.domain.model.ExternalCalendarStatus;
 import jakarta.persistence.Column;

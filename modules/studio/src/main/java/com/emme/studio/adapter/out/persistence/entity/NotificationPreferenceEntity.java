@@ -1,7 +1,7 @@
 package com.emme.studio.adapter.out.persistence.entity;
 
 import com.emme.kernel.type.NotificationChannel;
-import com.emme.shared.TenantOwnedEntity;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import com.emme.studio.domain.model.TemplatePolicy;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

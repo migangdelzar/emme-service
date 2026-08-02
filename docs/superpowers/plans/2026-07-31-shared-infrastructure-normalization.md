@@ -16,12 +16,11 @@ their owning module.
 
 ```text
 com.emme.shared
-├── BaseEntity.java
-├── TenantOwnedEntity.java
-├── ClockProvider.java
-├── IdGenerator.java
+├── persistence/{BaseEntity,TenantOwnedEntity}
+├── time/ClockProvider.java
+├── identity/IdGenerator.java
 ├── search/{HybridSearch,SearchTarget}
-└── web/GlobalExceptionHandler.java
+└── web/advice/GlobalExceptionHandler.java
 ```
 
 ## Target ownership
@@ -36,43 +35,42 @@ com.emme.shared
 └── web/advice/GlobalExceptionHandler.java
 ```
 
-The exact names may remain in their current package when moving them would create
-an unnecessary repository-wide compatibility blast radius; that decision requires
-an import inventory and an ADR. `shared` exposes technical primitives, not
-business API results or domain aggregates.
+The capability-owned locations are intentional and all root-package primitive
+locations have been removed. `shared` exposes technical primitives, not business
+API results or domain aggregates.
 
 ## Tasks
 
 ### Task 1: Consumer and ownership inventory
 
-- [ ] Map every import of `BaseEntity`, `TenantOwnedEntity`, `ClockProvider`,
+- [x] Map every import of `BaseEntity`, `TenantOwnedEntity`, `ClockProvider`,
   `IdGenerator`, `HybridSearch`, `SearchTarget`, and `GlobalExceptionHandler`.
-- [ ] Classify each type as persistence primitive, time/test primitive, identity
+- [x] Classify each type as persistence primitive, time/test primitive, identity
   primitive, search capability, or web infrastructure.
-- [ ] Confirm no business concept is hidden in Shared.
+- [x] Confirm no business concept is hidden in Shared.
 
 ### Task 2: Define capability-owned packages and compatibility strategy
 
-- [ ] Add package-info documentation for each materialized capability package.
-- [ ] Choose keep-in-place versus package move per type based on consumer count and
+- [x] Add package-info documentation for each materialized capability package.
+- [x] Choose keep-in-place versus package move per type based on consumer count and
   binary/source compatibility; record moves in an ADR.
-- [ ] Keep `BaseEntity` and `TenantOwnedEntity` framework-specific primitives out
+- [x] Keep `BaseEntity` and `TenantOwnedEntity` framework-specific primitives out
   of domain packages; domain models must not extend them.
-- [ ] Keep global advice transport infrastructure and ensure it imports only public
+- [x] Keep global advice transport infrastructure and ensure it imports only public
   exception contracts and kernel tracing primitives.
 
 ### Task 3: Isolate Search capability
 
-- [ ] Keep `HybridSearch` behind a capability-owned port where callers need an
-  abstraction; move provider/JDBC details behind an adapter only if that reduces
-  coupling without changing query semantics.
-- [ ] Preserve `SearchTarget` table/column/predicate behavior and tenant filters.
-- [ ] Add integration tests for vector/text search, missing embeddings, limits,
+- [x] Keep `HybridSearch` behind a capability-owned port where callers need an
+  abstraction; Catalog callers use `CatalogSearchPort` and keep Shared details
+  inside the Catalog adapter.
+- [x] Preserve `SearchTarget` table/column/predicate behavior and tenant filters.
+- [x] Add integration tests for vector/text search, missing embeddings, limits,
   and tenant predicates.
 
 ### Task 4: Verification and dependency hygiene
 
-- [ ] Add architecture rules forbidding Shared business models and enforcing
+- [x] Add architecture rules forbidding Shared business models and enforcing
   approved dependency direction.
 - [ ] Run all module compile/tests, shared integration tests, formatting,
   Checkstyle, Modulith, and CI gates after any move.
@@ -109,8 +107,21 @@ the service-wide verification gate.
   query semantics.
 - [x] Verified the Shared ownership test and compilation.
 
-Remaining Shared work is live PostgreSQL vector/full-text integration evidence,
-dependency-cycle verification, and the final service-wide gate.
+Remaining Shared work is dependency-cycle verification and the final
+service-wide gate.
+
+## Completed capability package normalization — 2026-08-02
+
+- [x] Moved `BaseEntity` and `TenantOwnedEntity` to `shared.persistence`.
+- [x] Moved `ClockProvider` to `shared.time` and `IdGenerator` to
+  `shared.identity`.
+- [x] Updated all module imports and shared tests to use the capability-owned
+  packages; no legacy root-package primitive remains.
+- [x] Verified the source-boundary regression test fails before the move and
+  passes after the move.
+
+Remaining Shared work is dependency-cycle verification and the final
+service-wide gate.
 
 ## Completed managed JDBC connection template slice — 2026-08-02
 

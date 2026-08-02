@@ -2,7 +2,7 @@ package com.emme.assistant.adapter.out.persistence.entity;
 
 import com.emme.assistant.domain.model.ConsentStatus;
 import com.emme.kernel.type.ChannelType;
-import com.emme.shared.TenantOwnedEntity;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

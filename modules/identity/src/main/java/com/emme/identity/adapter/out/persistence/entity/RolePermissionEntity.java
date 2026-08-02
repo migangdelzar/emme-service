@@ -1,6 +1,6 @@
 package com.emme.identity.adapter.out.persistence.entity;
 
-import com.emme.shared.BaseEntity;
+import com.emme.shared.persistence.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;

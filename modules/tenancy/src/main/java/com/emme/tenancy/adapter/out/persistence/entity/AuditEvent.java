@@ -1,6 +1,6 @@
 package com.emme.tenancy.adapter.out.persistence.entity;
 
-import com.emme.shared.BaseEntity;
+import com.emme.shared.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

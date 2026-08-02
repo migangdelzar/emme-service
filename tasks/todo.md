@@ -1283,6 +1283,15 @@ limiting, then continue authorization domain/application separation.
 - [x] Verify Payment unit, module, formatting, and integration checks.
 - [ ] Complete provider contract depth, webhook replay/signature evidence, and service-wide verification.
 
+## Shared capability package normalization — 2026-08-02
+
+- [x] Move `BaseEntity` and `TenantOwnedEntity` to `shared.persistence`.
+- [x] Move `ClockProvider` to `shared.time` and `IdGenerator` to `shared.identity`.
+- [x] Update all module imports and shared tests; remove legacy root-package primitive locations.
+- [x] Verify Shared formatting and unit tests.
+- [x] Complete PostgreSQL vector/full-text evidence with tenant-scoped and bounded integration coverage.
+- [ ] Complete dependency-cycle verification and service-wide gates.
+
 ## Calendar Google transport composition-root hardening — 2026-08-01
 
 - [x] Add a red source-boundary test preventing Google adapters and clients from

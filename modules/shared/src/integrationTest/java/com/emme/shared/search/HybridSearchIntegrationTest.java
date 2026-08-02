@@ -130,8 +130,13 @@ class HybridSearchIntegrationTest {
         "ACTIVE",
         new byte[] {1});
 
+    UUID firstMissingEmbeddingId =
+        List.of(missingEmbeddingId, secondMissingEmbeddingId).stream()
+            .min(UUID::compareTo)
+            .orElseThrow();
+
     assertThat(hybridSearch.idsMissingEmbedding(SearchTarget.CATALOG_ITEM, tenantId, 1))
-        .containsExactly(missingEmbeddingId);
+        .containsExactly(firstMissingEmbeddingId);
     assertThat(hybridSearch.countMissingEmbedding(SearchTarget.CATALOG_ITEM, tenantId))
         .isEqualTo(2);
   }

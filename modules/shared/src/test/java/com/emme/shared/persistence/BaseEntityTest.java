@@ -1,4 +1,4 @@
-package com.emme.shared;
+package com.emme.shared.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

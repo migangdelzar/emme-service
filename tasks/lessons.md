@@ -347,9 +347,11 @@
   unambiguous.
 
 - 2026-08-01 — A generic `adapter/out/provider` directory hides which external
-  system changes together. Group delivery clients by technology or channel
-  (`client/email`, `client/sms`, `client/push`, or `client/stripe`) and keep the
-  application port in `application/port/out`.
+  system changes together. Group capability implementations by technology or
+  channel (`provider/email`, `provider/sms`, `provider/push`, or
+  `provider/stripe`) and keep the application port in `application/port/out`.
+  Reserve `adapter/out/client` for transport-only wrappers and wire DTOs that
+  do not implement the application capability port.
 
 - 2026-08-01 — Provider classes that construct `OkHttpClient` or `ObjectMapper`
   internally violate the composition-root boundary and make deterministic
@@ -376,3 +378,23 @@
   work, log a bounded diagnostic, and return so the next scheduled invocation
   can retry; they must not leak infrastructure failures through Spring's
   scheduler boundary.
+
+## 2026-08-02 — Modulith named interfaces follow capability package moves
+
+- Failure mode: moving a shared primitive from the module root into a
+  capability package caused Modulith violations even though consumers still
+  declared a dependency on the `shared` module.
+- Detection signal: `ModularityTest` reported dependencies through
+  `shared.persistence` and `shared.identity` as inaccessible package targets.
+- Prevention rule: every cross-module capability package must declare an exact
+  `@NamedInterface` value, and each consumer must use the matching
+  `module :: named-interface` dependency entry.
+
+## 2026-08-02 — Integration assertions must follow explicit SQL ordering
+
+- Failure mode: a bounded PostgreSQL query ordered rows by UUID, while the
+  integration test asserted the first inserted UUID and failed nondeterministically.
+- Detection signal: the tenant-scoped search integration test returned a valid
+  same-tenant row, but not the insertion-order fixture ID.
+- Prevention rule: when a query defines ordering, derive the expected fixture
+  from that ordering; never use insertion order as an implicit database contract.

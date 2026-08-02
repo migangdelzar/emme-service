@@ -1,7 +1,8 @@
 @org.springframework.modulith.ApplicationModule(
     displayName = "Catalog",
     allowedDependencies = {
-      "shared",
+      "shared :: persistence",
+      "shared :: identity",
       "shared :: search",
       "tenancy",
       "assistant :: assistant-ai-api"

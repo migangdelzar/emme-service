@@ -1,7 +1,7 @@
 package com.emme.payment.adapter.out.persistence.entity;
 
 import com.emme.payment.domain.model.PaymentStatus;
-import com.emme.shared.TenantOwnedEntity;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

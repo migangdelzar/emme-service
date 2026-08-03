@@ -160,6 +160,7 @@ reopened by this backlog.
   managed JDBC callbacks, tenant predicates, and provisioning ownership.
 - [ ] Close live pool eviction/recovery, provisioning replay/rollback, and
   clean test-context lifecycle evidence.
+- [x] Validate staff-login credentials at the Identity HTTP boundary.
 - [x] Adopt and verify Spring MVC endpoint version conditions for controllers,
   using one configured resolver and version-neutral `/api` routes.
 

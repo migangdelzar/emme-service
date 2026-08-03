@@ -14,6 +14,7 @@ import com.emme.identity.api.usecase.AuthenticateCustomerUseCase;
 import com.emme.identity.api.usecase.AuthenticateUserUseCase;
 import com.emme.identity.api.usecase.GetCurrentUserUseCase;
 import com.emme.identity.api.usecase.UpdateCustomerProfileUseCase;
+import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class AuthController {
   }
 
   @PostMapping("/api/auth/login")
-  public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+  public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
     try {
       var tokens =
           authenticateUserUseCase.authenticate(

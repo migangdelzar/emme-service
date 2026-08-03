@@ -447,6 +447,20 @@ The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
 
+## Completed staff-login validation boundary slice — 2026-08-03
+
+- [x] Added a red/green source-boundary regression test for staff-login input
+  validation.
+- [x] Added `@NotBlank` constraints to both `LoginRequest` credentials.
+- [x] Applied `@Valid` before the authentication use case is invoked.
+- [x] Updated the empty-login module contract to return HTTP 400 rather than
+  invoking authentication and producing a server error.
+- [x] Verified the complete Identity unit suite and Checkstyle.
+
+Remaining Identity work is distributed rate-limit state, broader authorization
+domain/application separation, and the final production-readiness evidence
+gate.
+
 ## Completed platform feature-flag listing slice — 2026-08-02
 
 - [x] Added the public `ListPlatformFeatureFlagsUseCase` contract.

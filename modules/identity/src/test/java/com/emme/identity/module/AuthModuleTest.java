@@ -33,7 +33,7 @@ class AuthModuleTest extends BaseSpringModuleTest {
   void shouldRejectLoginWithEmptyBody() throws Exception {
     mockMvc
         .perform(post("/api/auth/login").contentType("application/json").content("{}"))
-        .andExpect(status().is5xxServerError());
+        .andExpect(status().isBadRequest());
   }
 
   @Test

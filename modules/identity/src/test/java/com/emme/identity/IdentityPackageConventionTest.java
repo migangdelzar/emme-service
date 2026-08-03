@@ -789,6 +789,24 @@ class IdentityPackageConventionTest {
         .doesNotContain("/api/v1/identity");
   }
 
+  @Test
+  void validatesStaffLoginCredentialsAtTheWebBoundary() throws IOException {
+    Path controller =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/AuthController.java");
+    Path request =
+        sourcePath(
+            "modules/identity/src/main/java/com/emme/identity/adapter/in/web/request/LoginRequest.java");
+
+    assertThat(Files.readString(controller))
+        .contains("import jakarta.validation.Valid;")
+        .contains("@Valid @RequestBody LoginRequest request");
+    assertThat(Files.readString(request))
+        .contains("import jakarta.validation.constraints.NotBlank;")
+        .contains("@NotBlank String email")
+        .contains("@NotBlank String password");
+  }
+
   private static boolean hasJavaSource(Path directory, String filename) {
     return Files.exists(directory.resolve(filename));
   }

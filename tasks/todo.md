@@ -133,8 +133,10 @@ Identity verification evidence is recorded in
   synchronization, Kafka externalization, Kubernetes, and multi-region work.
 - [x] Define JVM container baseline before GraalVM optimization.
 - [x] Define optional GraalVM native-image spike with JVM rollback artifact.
-- [ ] Review and approve the written MVP design specification.
-- [ ] Execute the MVP plan before the build-logic CDD refactor.
+- [x] Review and accept the written MVP design specification as the technical
+  runtime baseline; see ADR-0006 and the review evidence.
+- [x] Reconcile the MVP sequence with the repository state: build-logic CDD is
+  complete, while JVM/native deployment and recovery gates remain open.
 - [x] Audit the two application projects and identify `emme-platform` as the
   newer canonical composition root.
 - [x] Migrate active delivery, CI, tests, and documentation to `emme-platform`.

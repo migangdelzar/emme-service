@@ -2,12 +2,12 @@
 
 | Field | Detail |
 |---|---|
-| Status | Draft for user review |
+| Status | Accepted technical baseline; deployment gates open |
 | Date | 2026-08-02 |
 | Repository | `emme-service` |
 | Product shape | Low-cost salon operations MVP |
 | Canonical runtime | `emme-platform` |
-| Next implementation phase | MVP vertical slice, followed by build-logic CDD refactor |
+| Next implementation phase | JVM deployment validation, then optional native-image spike |
 
 ## 1. Decision summary
 
@@ -36,6 +36,12 @@ verify health, persistence, and tenant isolation
 GraalVM Native Image is an MVP delivery optimization track, not a prerequisite
 for domain work. The JVM image remains the fallback until the native image passes
 the same smoke and critical-path tests.
+
+The repository-local architecture and build-logic CDD implementation are now
+complete for the unreleased service. This document remains the runtime and
+release boundary: it does not claim credentialed provider, backup/restore,
+broker-outage, native-image, or deployed rollback evidence that cannot be run in
+the current workspace.
 
 ## 2. In-scope capabilities
 
@@ -170,22 +176,22 @@ toolchain.
 
 ## 6. Build-logic sequencing
 
-The full build-logic CDD refactor starts after Phase C and the first native-image
-spike. Its first relevant MVP responsibility is to provide an explicit native
-image/container capability without leaking native-specific wiring into module
-build files:
+The CDD build-logic implementation is complete for the current unreleased
+service. Its MVP-specific delivery capability is opt-in and does not leak
+native-specific wiring into module build files:
 
 ```kotlin
 plugins {
     id("emme.spring-application")
     id("emme.container")
-    id("emme.native-image") // introduced by the later CDD refactor
+    id("emme.native-image") // opt-in native delivery capability
 }
 ```
 
-The native capability must remain optional. `emme.spring-application` must not
+The native capability remains optional. `emme.spring-application` must not
 implicitly enable native compilation, Kafka, payment, or any other deferred
-capability.
+capability. The next implementation work is environment-backed runtime
+validation, not another broad build-logic refactor.
 
 ## 7. Testing strategy
 
@@ -209,8 +215,8 @@ capability.
 - JVM container deployment is reproducible before native optimization begins.
 - Native image is adopted only if it passes critical smoke tests and demonstrates
   lower measured memory under the same workload and resource limits.
-- The full build-logic CDD refactor begins only after the MVP JVM baseline and
-  native-image spike are documented.
+- The JVM artifact remains available for rollback until native and deployment
+  evidence is accepted.
 
 ## 9. Technical references
 

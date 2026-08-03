@@ -81,6 +81,7 @@ single universal folder structure.
 - [End-to-end architecture](03-integration/end-to-end.md) — cross-repository critical journeys and privacy-safe evidence.
 - [ADR-0001: Precompiled convention plugins](../adr/0001-build-logic-convention-plugins.md)
 - [ADR-0002: Deployment strategy pattern](../adr/0002-deployment-strategy-pattern.md)
+- [ADR-0006: Low-cost MVP runtime boundary](../adr/0006-mvp-low-cost-runtime-boundary.md)
 - [Modulith application template](../templates/modulith-application-template.md)
 - [Module package structure template](../templates/module-package-structure-template.md) — canonical future-module tree, package meanings, copy-ready `package-info.java` catalog, file/type naming, and approval controls.
 - [Backend validation conventions](01-backend/validation.md) — Jakarta Bean Validation on records, custom cross-field constraints, domain invariants, error mapping, i18n, and test coverage.

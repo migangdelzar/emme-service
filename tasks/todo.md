@@ -172,9 +172,8 @@ reopened by this backlog.
 - [x] Complete Shared search integration/tenant-predicate evidence; the focused
   Shared and application Modulith/layer gates pass.
 - [x] Remove H2 schema-drop/event-publication shutdown warnings from the shared
-  test profiles by keeping ephemeral schemas available through framework
-  shutdown; PostgreSQL/Testcontainers teardown warnings remain explicitly
-  environment-dependent.
+  test profiles and disable reusable PostgreSQL Testcontainers state so
+  framework shutdown callbacks complete against a live database.
 - [ ] Run the service-wide dependency-cycle verification.
 
 ### P2 — Domain capabilities

@@ -105,9 +105,8 @@ work is full dependency-cycle checks and the service-wide verification gate.
   `ddl-auto: create`, preserving startup isolation without dropping
   `event_publication` before Spring Modulith shutdown callbacks run.
 - [x] Verify the application parity test and Studio module check.
-- [ ] Retain PostgreSQL/Testcontainers shutdown output as environment-specific
-  evidence until the container lifecycle can be isolated without weakening
-  resource ownership.
+- [x] Remove reusable PostgreSQL Testcontainers state and verify the focused
+  integration lifecycle without connection-termination diagnostics.
 
 ## Completed tenant-scoped search maintenance slice — 2026-08-01
 

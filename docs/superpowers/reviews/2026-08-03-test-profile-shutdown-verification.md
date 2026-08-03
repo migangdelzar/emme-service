@@ -19,6 +19,11 @@ The databases remain isolated at startup, while their schemas remain available
 until the framework callbacks complete. Test-only databases are disposable, so
 explicit Hibernate shutdown drops provide no value here.
 
+The shared PostgreSQL container configuration also no longer enables
+`withReuse(true)`. Reusable containers allowed the Testcontainers resource
+reaper to terminate PostgreSQL before Spring Modulith's JDBC publication
+registry completed its shutdown callback.
+
 ## Verification
 
 The profile contract is executable in
@@ -30,9 +35,11 @@ The profile contract is executable in
   --no-daemon --no-configuration-cache --console=plain
 ./gradlew :modules:studio:check \
   --no-daemon --no-configuration-cache --console=plain
+./gradlew :modules:shared:integrationTest \
+  --tests com.emme.shared.search.HybridSearchIntegrationTest \
+  --max-workers=1 --no-daemon --no-configuration-cache --console=plain
 ```
 
-Both completed successfully. The Studio check no longer emits the prior H2
-`event_publication` missing-table shutdown warnings. PostgreSQL/Testcontainers
-connection teardown output remains separately tracked as environment-specific
-test-harness evidence.
+All completed successfully. The Studio check no longer emits the prior H2
+`event_publication` missing-table shutdown warnings, and the focused PostgreSQL
+integration test completes without the prior connection-termination diagnostics.

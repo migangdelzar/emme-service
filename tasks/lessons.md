@@ -541,3 +541,14 @@
 - Prevention rule: ephemeral test profiles use `ddl-auto: create`; isolate each
   test database at startup and let the framework close connections without a
   competing schema-drop phase.
+
+### Isolate disposable PostgreSQL containers from framework shutdown
+
+- Failure mode: reusable Testcontainers PostgreSQL state could be terminated by
+  the resource reaper before Spring Modulith's JDBC publication registry
+  completed its shutdown callback.
+- Detection signal: successful PostgreSQL integration tests emitted
+  `SQLSTATE(08006)`/`57P01` connection-termination diagnostics during
+  `eventPublicationRegistry` destruction.
+- Prevention rule: shared disposable integration containers must not enable
+  `.withReuse(true)`; verify the lifecycle with a focused PostgreSQL test.

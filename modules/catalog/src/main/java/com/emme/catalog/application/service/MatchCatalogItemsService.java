@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional(readOnly = true)
-public class CatalogMatchService implements MatchCatalogItemsUseCase {
+public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
 
   private static final int BRANCH_K = 10;
 
@@ -39,7 +39,7 @@ public class CatalogMatchService implements MatchCatalogItemsUseCase {
   private final CatalogItemRepository itemRepository;
   private final CatalogItemImageRepository imageRepository;
 
-  public CatalogMatchService(
+  public MatchCatalogItemsService(
       CaptionImageUseCase captionImageUseCase,
       EmbedTextUseCase embedTextUseCase,
       CatalogSearchPort searchPort,

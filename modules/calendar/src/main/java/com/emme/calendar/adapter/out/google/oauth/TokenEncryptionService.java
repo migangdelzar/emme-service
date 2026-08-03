@@ -1,6 +1,6 @@
 package com.emme.calendar.adapter.out.google.oauth;
 
-import com.emme.calendar.configuration.GoogleOAuthConfig;
+import com.emme.calendar.configuration.GoogleOAuthProperties;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 /**
  * AES-256-GCM encryption service for Google OAuth token storage.
  *
- * <p>Uses a 32-byte key from {@link GoogleOAuthConfig#encryptionKey()}. Each encryption produces a
+ * <p>Uses a 32-byte key from {@link GoogleOAuthProperties#encryptionKey()}. Each encryption produces a
  * random 12-byte IV, prepended to the ciphertext. The result is Base64-encoded.
  *
  * <p>Algorithm: {@code AES/GCM/NoPadding}, 128-bit authentication tag.
@@ -29,11 +29,11 @@ public class TokenEncryptionService {
   /**
    * Creates the service, validating the encryption key is exactly 32 bytes for AES-256.
    *
-   * @param config OAuth configuration holding the raw key string
+   * @param properties OAuth properties holding the raw key string
    * @throws IllegalArgumentException if the key is not 32 bytes
    */
-  public TokenEncryptionService(GoogleOAuthConfig config) {
-    byte[] rawKey = config.encryptionKey().getBytes(StandardCharsets.UTF_8);
+  public TokenEncryptionService(GoogleOAuthProperties properties) {
+    byte[] rawKey = properties.encryptionKey().getBytes(StandardCharsets.UTF_8);
     if (rawKey.length != 32) {
       throw new IllegalArgumentException(
           "encryption-key must be exactly 32 bytes for AES-256, got " + rawKey.length);

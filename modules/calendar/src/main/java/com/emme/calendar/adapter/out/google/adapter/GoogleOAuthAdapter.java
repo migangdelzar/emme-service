@@ -5,7 +5,7 @@ import com.emme.calendar.adapter.out.google.oauth.TokenEncryptionService;
 import com.emme.calendar.adapter.out.persistence.entity.GoogleOAuthTokenEntity;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleOAuthTokenRepository;
 import com.emme.calendar.configuration.GoogleHttpClient;
-import com.emme.calendar.configuration.GoogleOAuthConfig;
+import com.emme.calendar.configuration.GoogleOAuthProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URLEncoder;
@@ -44,19 +44,19 @@ public class GoogleOAuthAdapter {
       "https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/spreadsheets";
   private static final String CLIENT_SCOPES = "https://www.googleapis.com/auth/calendar.events";
 
-  private final GoogleOAuthConfig config;
+  private final GoogleOAuthProperties properties;
   private final TokenEncryptionService encryption;
   private final SpringDataGoogleOAuthTokenRepository tokenRepo;
   private final GoogleHttpClient httpClient;
   private final ObjectMapper mapper;
 
   public GoogleOAuthAdapter(
-      GoogleOAuthConfig config,
+      GoogleOAuthProperties properties,
       TokenEncryptionService encryption,
       SpringDataGoogleOAuthTokenRepository tokenRepo,
       ObjectMapper mapper,
       GoogleHttpClient httpClient) {
-    this.config = config;
+    this.properties = properties;
     this.encryption = encryption;
     this.tokenRepo = tokenRepo;
     this.httpClient = httpClient;
@@ -75,9 +75,9 @@ public class GoogleOAuthAdapter {
 
     return AUTH_URL
         + "?client_id="
-        + urlEncode(config.clientId())
+        + urlEncode(properties.clientId())
         + "&redirect_uri="
-        + urlEncode(config.redirectUri())
+        + urlEncode(properties.redirectUri())
         + "&response_type=code"
         + "&scope="
         + urlEncode(scopes)
@@ -98,9 +98,9 @@ public class GoogleOAuthAdapter {
     RequestBody body =
         new FormBody.Builder()
             .add("code", code)
-            .add("client_id", config.clientId())
-            .add("client_secret", config.clientSecret())
-            .add("redirect_uri", config.redirectUri())
+            .add("client_id", properties.clientId())
+            .add("client_secret", properties.clientSecret())
+            .add("redirect_uri", properties.redirectUri())
             .add("grant_type", "authorization_code")
             .build();
 
@@ -120,8 +120,8 @@ public class GoogleOAuthAdapter {
     RequestBody body =
         new FormBody.Builder()
             .add("refresh_token", refreshToken)
-            .add("client_id", config.clientId())
-            .add("client_secret", config.clientSecret())
+            .add("client_id", properties.clientId())
+            .add("client_secret", properties.clientSecret())
             .add("grant_type", "refresh_token")
             .build();
 

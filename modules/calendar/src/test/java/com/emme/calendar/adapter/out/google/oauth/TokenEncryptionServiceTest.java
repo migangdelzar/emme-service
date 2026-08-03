@@ -2,14 +2,14 @@ package com.emme.calendar.adapter.out.google.oauth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.calendar.configuration.GoogleOAuthConfig;
+import com.emme.calendar.configuration.GoogleOAuthProperties;
 import org.junit.jupiter.api.Test;
 
 class TokenEncryptionServiceTest {
 
   private final TokenEncryptionService service =
       new TokenEncryptionService(
-          new GoogleOAuthConfig(
+          new GoogleOAuthProperties(
               "id", "secret", "http://localhost/callback", "12345678901234567890123456789012"));
 
   @Test
@@ -34,6 +34,8 @@ class TokenEncryptionServiceTest {
   void shouldRejectInvalidKeyLength() {
     org.junit.jupiter.api.Assertions.assertThrows(
         IllegalArgumentException.class,
-        () -> new TokenEncryptionService(new GoogleOAuthConfig("id", "secret", "url", "short")));
+        () ->
+            new TokenEncryptionService(
+                new GoogleOAuthProperties("id", "secret", "url", "short")));
   }
 }

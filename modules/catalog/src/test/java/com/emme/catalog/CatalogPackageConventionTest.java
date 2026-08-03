@@ -30,7 +30,8 @@ class CatalogPackageConventionTest {
   @Test
   void catalogMatchingDependsOnACatalogOwnedSearchPort() throws IOException {
     String serviceSource =
-        Files.readString(SOURCE_ROOT.resolve("application/service/CatalogMatchService.java"));
+        Files.readString(
+            SOURCE_ROOT.resolve("application/service/MatchCatalogItemsService.java"));
 
     assertThat(serviceSource).contains("CatalogSearchPort");
     assertThat(serviceSource).doesNotContain("com.emme.shared.search.HybridSearch");
@@ -65,7 +66,8 @@ class CatalogPackageConventionTest {
         Files.readString(
             SOURCE_ROOT.resolve("application/service/AddCatalogItemImageService.java"));
     String matchService =
-        Files.readString(SOURCE_ROOT.resolve("application/service/CatalogMatchService.java"));
+        Files.readString(
+            SOURCE_ROOT.resolve("application/service/MatchCatalogItemsService.java"));
 
     assertThat(imageService).contains("com.emme.assistant.ai.api.usecase.CaptionImageUseCase");
     assertThat(imageService).doesNotContain("com.emme.assistant.ai.application");

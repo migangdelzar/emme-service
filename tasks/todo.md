@@ -175,6 +175,8 @@ reopened by this backlog.
   test profiles and disable reusable PostgreSQL Testcontainers state so
   framework shutdown callbacks complete against a live database; explicitly
   order publication-registry shutdown before container shutdown.
+- [ ] Close remaining shutdown-only diagnostics in every separately launched
+  Spring context and drain Kafka publications before JVM shutdown.
 - [x] Run the service-wide dependency-cycle verification through the platform
   Modulith, layer, and application parity tests.
 

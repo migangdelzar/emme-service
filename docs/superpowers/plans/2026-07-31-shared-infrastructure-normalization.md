@@ -108,8 +108,10 @@ remaining work is the final service-wide operational evidence gate.
 - [x] Verify the application parity test and Studio module check.
 - [x] Remove reusable PostgreSQL Testcontainers state and explicitly order
   publication-registry shutdown before container shutdown; verify focused and
-  Spring Boot PostgreSQL integration lifecycles without connection-termination
-  diagnostics.
+  Identity Spring Boot PostgreSQL integration lifecycles without
+  connection-termination diagnostics.
+- [ ] Complete shutdown-order verification for every separately launched Spring
+  context and close outstanding Kafka publications before JVM shutdown.
 
 ## Completed tenant-scoped search maintenance slice — 2026-08-01
 

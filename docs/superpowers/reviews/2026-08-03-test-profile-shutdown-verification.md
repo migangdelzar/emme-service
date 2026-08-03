@@ -47,8 +47,12 @@ The profile contract is executable in
   --max-workers=1 --no-daemon --no-configuration-cache --console=plain
 ```
 
-All completed successfully. The Studio check no longer emits the prior H2
-`event_publication` missing-table shutdown warnings, and the focused PostgreSQL
-integration test completes without the prior connection-termination diagnostics.
-The Identity Spring Boot integration test also completes without the prior
-publication-registry shutdown errors.
+All focused checks completed successfully. The Studio check no longer emits the
+prior H2 `event_publication` missing-table shutdown warnings, and the focused
+Shared and Identity PostgreSQL integration tests complete without the prior
+connection-termination diagnostics.
+
+The broader multi-module matrix also passes, but some separately launched Spring
+contexts still emit shutdown-only PostgreSQL diagnostics and the Kafka profile
+reports an unfinished publication during JVM shutdown. Those remain open
+service-wide lifecycle evidence items; they do not fail the integration tests.

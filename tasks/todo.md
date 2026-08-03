@@ -306,6 +306,17 @@ reopened by this backlog.
 - [ ] Execute the native executable and OCI image spike on a GraalVM/Docker
   runner before adopting native as the production artifact.
 
+### Disposable test-container policy closure — 2026-08-03
+
+- [x] Add a failing contract test proving optional Redis test containers are
+  disposable and shared integration profiles do not enable reuse.
+- [x] Remove the Redis `.withReuse(true)` setting and stale shared profile
+  `testcontainers.reuse.enable` configuration.
+- [x] Run focused container tests, relevant integration tests, and formatting;
+  the container checks, platform parity test, and Identity integration test
+  pass. The known external PostgreSQL/Testcontainers shutdown diagnostic is
+  reproduced and remains tracked in the lifecycle verification evidence.
+
 ## Studio Documents canonical boundary slice — 2026-08-01
 
 - [x] Add framework-free document and chunk domain models with lifecycle tests.

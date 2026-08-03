@@ -23,8 +23,6 @@ public class RedisContainerConfiguration {
   @Bean
   @ServiceConnection
   public GenericContainer<?> redisContainer() {
-    return new GenericContainer<>(DockerImageName.parse(IMAGE))
-        .withExposedPorts(REDIS_PORT)
-        .withReuse(true);
+    return new GenericContainer<>(DockerImageName.parse(IMAGE)).withExposedPorts(REDIS_PORT);
   }
 }

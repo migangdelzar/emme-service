@@ -56,3 +56,12 @@ The broader multi-module matrix also passes, but some separately launched Spring
 contexts still emit shutdown-only PostgreSQL diagnostics and the Kafka profile
 reports an unfinished publication during JVM shutdown. Those remain open
 service-wide lifecycle evidence items; they do not fail the integration tests.
+
+## Follow-up disposable-container closure — 2026-08-03
+
+The optional Redis test container previously used `.withReuse(true)`, and the
+shared PostgreSQL integration profile retained a stale
+`testcontainers.reuse.enable` setting. Both were removed. The PostgreSQL and
+Redis container configuration tests pass, and a repository search confirms that
+the shared test fixtures no longer enable container reuse. Credentialed or
+deployed lifecycle evidence remains an environment-dependent gate.

@@ -175,3 +175,15 @@ module-local connection service.
 The remaining PostgreSQL/Testcontainers shutdown messages are documented as an
 external process-teardown race in the final verification report. Deployment
 rollback evidence remains an environment-dependent release gate.
+
+## Disposable test-container policy closure — 2026-08-03
+
+- [x] Added a failing then passing contract test proving optional Redis test
+  containers are disposable.
+- [x] Removed Redis container reuse and the stale shared
+  `testcontainers.reuse.enable` profile setting.
+- [x] Confirmed PostgreSQL and Redis container configuration tests pass and no
+  reuse setting remains in the shared testing/test-containers fixtures.
+
+This keeps every disposable integration dependency isolated to the test JVM and
+avoids resource-reaper shutdown races with Spring Modulith publication cleanup.

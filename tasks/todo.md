@@ -201,6 +201,8 @@ reopened by this backlog.
   claim boundary; provider contract and live database evidence remain.
 - [x] Complete Assistant package metadata coverage and remove unused AI helper
   classes after repository-wide reference verification.
+- [x] Apply Bean Validation at Assistant conversation and pending-action web
+  boundaries.
 - [x] Remove `jakarta.persistence.EntityNotFoundException` from Studio
   application services and expose a Studio-owned public resource-not-found
   exception.

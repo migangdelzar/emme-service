@@ -24,6 +24,7 @@ import com.emme.assistant.api.usecase.RejectPendingActionUseCase;
 import com.emme.assistant.api.usecase.StartConversationUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -69,7 +70,8 @@ public class ConversationController {
 
   @PostMapping
   @Operation(summary = "Start a new conversation")
-  public ResponseEntity<ConversationResponse> start(@RequestBody StartConversationRequest request) {
+  public ResponseEntity<ConversationResponse> start(
+      @Valid @RequestBody StartConversationRequest request) {
     return withCurrentTenant(
         tenantId -> {
           var conversation = start.start(AssistantWebMapper.toCommand(tenantId, request));
@@ -119,7 +121,7 @@ public class ConversationController {
 
   @PostMapping("/{id}/actions")
   public ResponseEntity<PendingActionResponse> proposeAction(
-      @PathVariable UUID id, @RequestBody ProposeActionRequest request) {
+      @PathVariable UUID id, @Valid @RequestBody ProposeActionRequest request) {
     return withCurrentTenant(
         tenantId ->
             ResponseEntity.ok(

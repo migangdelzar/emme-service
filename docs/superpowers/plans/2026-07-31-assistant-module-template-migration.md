@@ -976,3 +976,17 @@ open by design.
 
 The remaining Assistant work is live provider contract execution, PostgreSQL
 replay evidence, and final service-wide verification.
+
+## Completed Assistant request-validation boundary slice — 2026-08-03
+
+- [x] Added a red/green architecture regression test for Assistant command
+  request validation.
+- [x] Applied `@Valid` to conversation creation and pending-action proposal
+  endpoints.
+- [x] Added explicit `@NotNull` constraints for participant, channel, action
+  type, and expiry values, plus `@NotBlank` for action details.
+- [x] Verified the focused and complete Assistant unit suite together with
+  Checkstyle.
+
+Remaining Assistant work is live provider contract execution, PostgreSQL
+replay evidence, and final service-wide verification.

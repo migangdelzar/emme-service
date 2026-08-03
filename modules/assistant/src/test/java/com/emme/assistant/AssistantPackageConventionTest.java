@@ -107,6 +107,31 @@ class AssistantPackageConventionTest {
     assertThat(controller).contains("new CloseConversationCommand(tenantId, id)");
   }
 
+  @Test
+  void validatesAssistantCommandsAtTheWebBoundary() throws IOException {
+    String controller =
+        Files.readString(ROOT.resolve("adapter/in/web/controller/ConversationController.java"));
+    String startRequest =
+        Files.readString(ROOT.resolve("adapter/in/web/request/StartConversationRequest.java"));
+    String actionRequest =
+        Files.readString(ROOT.resolve("adapter/in/web/request/ProposeActionRequest.java"));
+
+    assertThat(controller)
+        .contains("import jakarta.validation.Valid;")
+        .contains("@Valid @RequestBody StartConversationRequest request")
+        .contains("@Valid @RequestBody ProposeActionRequest request");
+    assertThat(startRequest)
+        .contains("import jakarta.validation.constraints.NotNull;")
+        .contains("@NotNull UUID participantId")
+        .contains("@NotNull ChannelType channel");
+    assertThat(actionRequest)
+        .contains("import jakarta.validation.constraints.NotBlank;")
+        .contains("import jakarta.validation.constraints.NotNull;")
+        .contains("@NotNull ActionType actionType")
+        .contains("@NotBlank String details")
+        .contains("@NotNull Instant expiresAt");
+  }
+
   private static boolean hasJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) {
       return false;

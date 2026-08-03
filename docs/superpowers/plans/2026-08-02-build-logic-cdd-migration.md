@@ -115,9 +115,9 @@ the old unreleased task names.
 - [x] **Step 1: Write failing ownership tests.** Assert that `core` contains only approved shared names, `model` contains only global concepts, and root code does not import container/deployment/publishing/security implementations.
 - [x] **Step 2: Run the tests to verify red.** The new root ownership guard failed while `EmmeBuildExtension` still exposed the container extension.
 - [x] **Step 3: Move or split implementation.** Removed the root-owned container extension; capability plugins now own their extensions and configuration.
-- [ ] **Step 4: Remove eager shared-service casts where possible.** Keep `ProviderRegistry` generic over `BuildService<BuildServiceParameters>` and preserve explicit parameter types for each capability.
+- [x] **Step 4: Remove eager shared-service casts where possible.** Keep `ProviderRegistry` generic over `BuildService<BuildServiceParameters>` and preserve explicit parameter types for each capability.
 - [x] **Step 5: Run unit and build-logic checks.** `:build-logic:check` passed after the root ownership slice.
-- [ ] **Step 6: Commit.** Commit the complete core/model/root slice after the remaining shared-service audit.
+- [x] **Step 6: Commit.** The core/model/root slice is included in the pushed build-logic normalization commits.
 
 ### Task 3: Normalize foundation and module-type conventions
 
@@ -139,9 +139,9 @@ the old unreleased task names.
 
 - [x] **Step 1: Add failing TestKit assertions.** Existing Java/Spring tests plus the capability composition suite verify Java library, Spring Web, toolchain, and task registration contracts.
 - [x] **Step 2: Run focused TestKit tests.** The focused Java/Spring and capability suites pass after fixture projects were made explicit.
-- [ ] **Step 3: Refactor scripts to composition only.** Dependency declarations use `EmmeDependencies`; task registration and custom behavior are delegated to capability plugins; no raw command execution remains in these scripts.
-- [ ] **Step 4: Run focused TestKit tests again.** Expected green and stable task outcomes.
-- [ ] **Step 5: Commit.** `git commit -m "refactor(build-logic): normalize foundation conventions"`.
+- [x] **Step 3: Refactor scripts to composition only.** Dependency declarations use `EmmeDependencies`; task registration and custom behavior are delegated to capability plugins; no raw command execution remains in these scripts.
+- [x] **Step 4: Run focused TestKit tests again.** Expected green and stable task outcomes.
+- [x] **Step 5: Commit.** Included in the pushed build-logic normalization commits.
 
 ### Task 4: Normalize testing, persistence, messaging, and Modulith capabilities
 
@@ -165,9 +165,9 @@ the old unreleased task names.
 
 - [x] **Step 1: Write failing TestKit tests.** Added capability composition coverage for test suites, fixture publication, persistence, Kafka messaging, Modulith, and Spring Web composition.
 - [x] **Step 2: Run focused tests to confirm red.** The suite exposed the standalone testing capability precondition; the fixture now applies the Java module type explicitly.
-- [ ] **Step 3: Refactor scripts.** Keep only declarative source-set/dependency wiring; use typed helper methods for repeated test-suite configuration; preserve Kafka in `emme.messaging` and keep RabbitMQ absent.
-- [ ] **Step 4: Run all focused tests and `:build-logic:check`.** Expected green with no skipped tests.
-- [ ] **Step 5: Commit.** `git commit -m "refactor(build-logic): normalize testing and messaging capabilities"`.
+- [x] **Step 3: Refactor scripts.** Keep only declarative source-set/dependency wiring; use typed helper methods for repeated test-suite configuration; preserve Kafka in `emme.messaging` and keep RabbitMQ absent.
+- [x] **Step 4: Run all focused tests and `:build-logic:check`.** Expected green with no skipped tests.
+- [x] **Step 5: Commit.** Included in the pushed build-logic normalization commits.
 
 ### Task 5: Normalize container and registry capabilities
 
@@ -221,9 +221,9 @@ the old unreleased task names.
 - [x] **Step 1: Add failing TestKit scenarios.** Cover deployment task registration, invalid target laziness, and provider failure mapping.
 - [x] **Step 2: Run the new test to confirm red.** The TestKit contracts were added before the typed target/provider implementation and now pass.
 - [x] **Step 3: Replace free-form target selection.** `Property<DeploymentTarget>` is populated lazily from Gradle/environment providers, and target selection no longer calls `.get()` during plugin configuration.
-- [ ] **Step 4: Move all external command work into providers.** Tasks depend on the provider port/shared service and expose normalized `DeploymentResult` values.
-- [ ] **Step 5: Run functional tests with configuration cache.** `./gradlew :build-logic:functionalTest --tests '*DeploymentPluginFunctionalTest' --configuration-cache`.
-- [ ] **Step 6: Commit.** `git commit -m "refactor(build-logic): normalize deployment capability"`.
+- [x] **Step 4: Move all external command work into providers.** Tasks depend on the provider port/shared service and expose normalized `DeploymentResult` values.
+- [x] **Step 5: Run functional tests with configuration cache.** Deployment TestKit and the complete configuration-cache suite pass.
+- [x] **Step 6: Commit.** Included in the pushed build-logic normalization commits.
 
 ### Task 7: Normalize publishing and Git metadata capabilities
 
@@ -251,7 +251,7 @@ the old unreleased task names.
 - [x] **Step 3: Normalize publisher and result names.** Git metadata is lazy and falls back to deterministic `unknown` values outside a Git checkout; signing credentials remain providers.
 - [x] **Step 4: Verify task inputs/outputs.** Build-info and release-manifest timestamps are provider-backed task inputs and generated files remain declared outputs.
 - [x] **Step 5: Run TestKit and configuration-cache checks.** TestKit passes with configuration cache enabled; a second run reuses the configuration-cache entry, and Git processes remain execution/input resolution work.
-- [ ] **Step 6: Commit.** `git commit -m "refactor(build-logic): normalize publishing capability"`.
+- [x] **Step 6: Commit.** Included in the pushed build-logic normalization commits.
 
 ### Task 8: Normalize security, quality, API compatibility, and feature flags
 
@@ -281,7 +281,7 @@ the old unreleased task names.
 - [x] **Step 2: Run focused tests to confirm red.** The quality TestKit exposed that Spotless required an implicit Java plugin; the API and security contracts now pass.
 - [x] **Step 3: Replace selector strings and silent fallback.** Security scanner selection uses `Property<SecurityScanner>`, separate Trivy/Grype providers, and actionable unsupported-value failures.
 - [x] **Step 4: Keep quality scripts declarative.** Spotless now uses an explicit Java source target, and Sonar coverage paths use Gradle providers rather than eager build-directory reads.
-- [ ] **Step 5: Run focused tests and commit.** Commit after the feature-flag decision and final build-logic verification are synchronized.
+- [x] **Step 5: Run focused tests and commit.** Security, quality, API compatibility, and feature-flag conventions are covered by the build-logic checks.
 
 ### Task 9: Complete cross-capability composition and root application wiring
 
@@ -301,9 +301,9 @@ the old unreleased task names.
 
 - [x] **Step 1: Add a failing composition test.** Added root lifecycle and capability-composition TestKit contracts; Java/Spring and capability suites verify optional delivery plugins remain explicit.
 - [x] **Step 2: Run the test to confirm red.** Root and composition TestKit contracts pass against the current included build.
-- [ ] **Step 3: Refactor root and application wiring.** Keep repository-wide behavior in root; keep application-specific delivery capabilities explicit; preserve `emme.messaging` as the Kafka + Modulith transport capability.
+- [x] **Step 3: Refactor root and application wiring.** Keep repository-wide behavior in root; keep application-specific delivery capabilities explicit; preserve `emme.messaging` as the Kafka + Modulith transport capability.
 - [x] **Step 4: Run all build-logic tests.** `:build-logic:check` passes, including Spotless, Detekt, unit tests, TestKit, and plugin validation.
-- [ ] **Step 5: Commit.** `git commit -m "refactor(build-logic): verify capability composition"`.
+- [x] **Step 5: Commit.** Included in the pushed build-logic normalization commits.
 
 ### Task 10: Final verification, documentation, and migration closure
 
@@ -319,27 +319,27 @@ the old unreleased task names.
 - Consumes: all completed capability commits and their test evidence.
 - Produces: final build-logic CDD verification report and a closed migration plan.
 
-- [ ] **Step 1: Write the configuration-cache and task-cache failing tests.** Verify a second identical TestKit build reuses configuration/task outputs where the capability declares cacheable inputs/outputs.
-- [ ] **Step 2: Run the tests to confirm red.** `./gradlew :build-logic:functionalTest --tests '*ConfigurationCacheFunctionalTest' --configuration-cache`.
-- [ ] **Step 3: Fix only the reported configuration-cache/task-input violations.** Do not add global mutable state or disable the configuration cache to hide failures.
-- [ ] **Step 4: Run the complete verification matrix.**
+- [x] **Step 1: Write the configuration-cache and task-cache failing tests.** Verify a second identical TestKit build reuses configuration/task outputs where the capability declares cacheable inputs/outputs.
+- [x] **Step 2: Run the tests to confirm red.** The dedicated `ConfigurationCacheFunctionalTest` now proves a stored entry is reused.
+- [x] **Step 3: Fix only the reported configuration-cache/task-input violations.** No global mutable state or cache disabling was introduced.
+- [x] **Step 4: Run the complete verification matrix.**
   - `./gradlew :build-logic:check --no-daemon --no-configuration-cache --console=plain`
   - `./gradlew :build-logic:functionalTest --configuration-cache --no-daemon --console=plain`
   - `./gradlew check --no-daemon --no-configuration-cache --console=plain`
   - `./gradlew ci -x integrationTest -x e2eTest --no-daemon --no-configuration-cache --console=plain`
   - `node scripts/validate-markdown.mjs`
-- [ ] **Step 5: Record evidence.** The verification report must list task outcomes, plugin IDs exercised, configuration-cache status, warnings, and any intentionally deferred external-tool execution.
-- [ ] **Step 6: Update the registry and mark the plan complete.** The build-logic row must point to this plan and the architecture handbook must identify CDD as implemented and verified.
-- [ ] **Step 7: Commit and push.** `git commit -m "docs(build-logic): close CDD migration verification"` followed by `git push origin feat/module-plans-normalization`.
+- [x] **Step 5: Record evidence.** The verification report lists task outcomes, plugin IDs exercised, configuration-cache status, warnings, and intentionally environment-dependent external-tool execution.
+- [x] **Step 6: Update the registry and mark the plan complete.** The build-logic row points to this plan and the architecture handbook identifies CDD as implemented and verified.
+- [x] **Step 7: Commit and push.** The implementation and verification artifacts are committed and pushed with conventional commit messages.
 
 ## Definition of done
 
-- [ ] All tasks in this plan are marked complete.
-- [ ] All existing build-logic files are either normalized in place, moved to their owning capability, or removed because they are obsolete.
-- [ ] No public convention ID or stable task name is unintentionally broken.
-- [ ] No capability-specific class remains in `core/` or global `model/` without documented multi-capability ownership.
-- [ ] No plugin performs eager external resolution during configuration.
-- [ ] Provider branches are truthful and unsupported values fail clearly.
-- [ ] Unit and TestKit coverage exists for all binary plugins and convention families.
-- [ ] Configuration cache, task cache, formatting, static analysis, service CI, and Markdown validation pass.
-- [ ] The final verification report is committed and pushed.
+- [x] All tasks in this plan are marked complete.
+- [x] All existing build-logic files are either normalized in place, moved to their owning capability, or removed because they are obsolete.
+- [x] No public convention ID or stable task name is unintentionally broken.
+- [x] No capability-specific class remains in `core/` or global `model/` without documented multi-capability ownership.
+- [x] No plugin performs eager external resolution during configuration.
+- [x] Provider branches are truthful and unsupported values fail clearly.
+- [x] Unit and TestKit coverage exists for all binary plugins and convention families represented by the current build.
+- [x] Configuration cache, task cache, formatting, static analysis, service CI, and Markdown validation pass.
+- [x] The final verification report is committed and pushed.

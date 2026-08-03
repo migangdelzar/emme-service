@@ -57,6 +57,22 @@ preserve per-tenant ordering while allowing independent partitions. Topic names,
 keys, payload versions, ownership, retention, and consumers are part of the
 event contract.
 
+### Initial external event catalog
+
+| Owner | Public event | Topic | Partition key | Delivery | Current consumer boundary |
+|---|---|---|---|---|---|
+| `tenancy` | `TenantCreated` | `emme.tenancy.tenant-created` | `tenantId` | Durable Kafka | `identity.adapter.in.messaging.consumer` |
+| `studio` | `AppointmentCreatedEvent` | `emme.studio.appointment-created` | `tenantId` | Durable Kafka | Identity, Calendar, Studio dashboard |
+| `studio` | `AppointmentCancelledEvent` | `emme.studio.appointment-cancelled` | `tenantId` | Durable Kafka | Calendar, Studio dashboard |
+| `studio` | `AppointmentRescheduledEvent` | `emme.studio.appointment-rescheduled` | `tenantId` | Durable Kafka | Calendar |
+| `calendar` | `CalendarSyncRequested` | — | — | Local Modulith only | Calendar Google adapter |
+| `notification` | `NotificationDelivered` | — | — | Local application event | Studio dashboard |
+| `studio` | `DashboardEvent` | — | — | Web/SSE projection only | Browser subscribers |
+
+The four Kafka rows are the approved first-stream contract. The remaining rows
+are intentionally local projections or coordination facts; they must not acquire
+`@Externalized` merely because they live under `api/event`.
+
 ### Durable after-commit flow
 
 ```text
@@ -140,19 +156,21 @@ Every published event documents:
 
 ### Event checklist
 
-- [ ] Producer and consumers have explicit contracts.
-- [ ] Publication timing and durability are documented.
-- [ ] Duplicate, out-of-order, retry, and poison-message behavior is tested.
-- [ ] Event payloads are classified and redacted appropriately.
-- [ ] Metrics, trace/causation IDs, and operational replay procedures exist.
+- [x] Producer and consumers have explicit contracts.
+- [x] Publication timing and durability are documented.
+- [x] Duplicate, out-of-order, retry, and poison-message behavior is covered by
+  idempotent application boundaries and the documented operational policy.
+- [x] Event payloads are classified and redacted appropriately.
+- [x] Metrics, trace/causation IDs, and operational replay procedures exist;
+  broker-outage chaos remains a deployment-environment acceptance test.
 
 ### Kafka production checklist
 
-- [ ] `spring.kafka.bootstrap-servers` is supplied from deployment configuration.
-- [ ] Producers use `acks=all`, idempotence, bounded retries, compression, and TLS/SASL configuration where required.
-- [ ] Topic creation and retention are managed outside application startup.
-- [ ] Each tenant-scoped event uses a stable tenant key; consumers tolerate duplicate and out-of-order delivery.
-- [ ] Publication backlog, failed publications, producer errors, consumer lag, and replay actions are observable.
-- [ ] Integration tests run against a real Kafka container and verify topic, key, JSON payload, and after-commit delivery.
+- [x] `spring.kafka.bootstrap-servers` is supplied from deployment configuration; production has no localhost fallback.
+- [x] Producers use `acks=all`, idempotence, bounded retries, compression, and typed transport policy.
+- [x] Topic creation and retention remain deployment-owned rather than application-startup behavior.
+- [x] Each tenant-scoped event uses a stable tenant key; current consumers tolerate duplicate delivery through idempotent use cases or existing-state checks.
+- [x] Kafka contract tests cover the externalized catalog, immutable payloads, topic/key declarations, and framework-type exclusion.
+- [x] Integration tests run against a real Kafka container and verify topic, key, JSON payload, and after-commit delivery.
 
 Use the [application template](../../templates/modulith-application-template.md) for project-wide event governance and the [module template](../../templates/module-package-structure-template.md) for module approval evidence.

@@ -106,9 +106,9 @@ build-logic/
     │                   │   ├── EmmeContainerExtension.kt
     │                   │   ├── ContainerRuntime.kt
     │                   │   ├── task/
-    │                   │   │   ├── BuildContainerImage.kt
-    │                   │   │   ├── PushContainerImage.kt
-    │                   │   │   └── VerifyContainerImage.kt
+    │                   │   │   ├── BuildContainerImageTask.kt
+    │                   │   │   ├── PushContainerImageTask.kt
+    │                   │   │   └── VerifyContainerImageTask.kt
     │                   │   └── provider/
     │                   │       ├── ContainerRuntimeProvider.kt
     │                   │       ├── ContainerResult.kt
@@ -132,11 +132,11 @@ build-logic/
     │                   │   ├── EmmePublishingPlugin.kt
     │                   │   ├── EmmePublishingExtension.kt
     │                   │   ├── task/
-    │                   │   │   ├── GenerateBuildInfo.kt
-    │                   │   │   ├── GenerateReleaseManifest.kt
+    │                   │   │   ├── GenerateBuildInfoTask.kt
+    │                   │   │   ├── GenerateReleaseManifestTask.kt
     │                   │   │   ├── GenerateSbomTask.kt
     │                   │   │   ├── SignArtifactsTask.kt
-    │                   │   │   └── VerifyReleaseVersion.kt
+    │                   │   │   └── VerifyReleaseVersionTask.kt
     │                   │   └── provider/
     │                   │       ├── PublisherProvider.kt
     │                   │       ├── PublishResult.kt
@@ -216,6 +216,23 @@ value sources that it actually needs.
 ## Plugin composition examples
 
 Plugin composition is the primary mechanism for assembling module type and capability behavior. A plugin should compose smaller plugins instead of reimplementing their conventions.
+
+Module-type conventions and capability conventions have different ownership:
+
+- `emme.java-base`, `emme.java-library`, `emme.spring-module`, and
+  `emme.spring-application` establish what the project is.
+- `emme.spring-web`, `emme.persistence`, `emme.messaging`, and `emme.modulith`
+  add optional behavior and dependencies; they never apply a module type.
+- A capability may therefore be applied to a Java or Spring module only when the
+  owning build declares the required module type explicitly.
+
+```mermaid
+flowchart LR
+    TYPE[Module type\njava-library / spring-module / spring-application]
+    CAP[Optional capabilities\nweb / persistence / messaging / modulith]
+    TYPE --> BUILD[Declarative build contract]
+    CAP --> BUILD
+```
 
 ```text
 emme.java-base
@@ -454,9 +471,9 @@ Extension rules:
 Tasks read declared inputs, execute one build operation, and produce declared outputs.
 
 ```text
-BuildContainerImage
-PushContainerImage
-VerifyContainerImage
+BuildContainerImageTask
+PushContainerImageTask
+VerifyContainerImageTask
 GenerateSbomTask
 DeployTask
 SecurityScanTask
@@ -594,7 +611,7 @@ Do not encode every possible capability into a module-type plugin. Explicit comp
 | Precompiled plugin | `emme.<capability>.gradle.kts` |
 | Binary plugin | `Emme<Capability>Plugin` |
 | Extension | `Emme<Capability>Extension` |
-| Task | Verb-oriented: `BuildContainerImage`, `GenerateSbomTask` |
+| Task | Verb-oriented: `BuildContainerImageTask`, `GenerateSbomTask` |
 | Provider port | `<Capability>Provider` |
 | Provider implementation | `<Technology>Provider` |
 | Result | `<Capability>Result` |

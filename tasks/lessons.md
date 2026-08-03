@@ -469,3 +469,17 @@
   context or MockMvc mapping check and give distinct workflows explicit
   resource/action route names instead of relying on the old version segment to
   separate them.
+
+## 2026-08-02 — Test broker restarts must model application restarts
+
+- Failure mode: a Kafka Testcontainers stop/start test attempted to prove
+  Spring Modulith publication recovery inside one cached Spring context. The
+  managed `@ServiceConnection` producer remained bound to the test lifecycle,
+  so the test timed out even though normal publication worked.
+- Detection signal: the broker publication test passed normally, while the
+  same-context restart test left an incomplete publication and repeatedly
+  reconnected against the managed test bootstrap.
+- Prevention rule: verify application-restart recovery through Spring
+  Modulith's configured resubmission policy, and run broker-outage chaos with
+  independently restarted application and broker processes. Do not use a
+  same-context managed-container restart as a production recovery assertion.

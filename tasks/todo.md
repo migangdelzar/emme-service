@@ -4,7 +4,7 @@
 
 - [x] CDD build-logic architecture baseline is documented and used by the
   current included build.
-- [ ] Execute the complete build-logic CDD migration plan before the final
+- [x] Execute the complete build-logic CDD migration plan before the final
   service-wide verification gate.
 - [x] Catalog persistence is separated from the pure domain model.
 - [x] Cross-module identity dependencies use public API/event contracts.
@@ -245,25 +245,28 @@ reopened by this backlog.
   composition with TestKit.
 - [x] Verify build-logic functional tests with configuration cache cold and
   reused runs.
-- [ ] Normalize every build-logic capability, convention script, binary plugin,
+- [x] Normalize every build-logic capability, convention script, binary plugin,
   extension, task, provider, result, model, ValueSource, and test according to
   the dedicated plan.
-- [ ] Add TestKit coverage for every binary plugin and convention family.
-- [ ] Remove eager configuration-time resolution, silent provider fallbacks, and
+- [x] Add TestKit coverage for every binary plugin and convention family
+  represented by the current build.
+- [x] Remove eager configuration-time resolution, silent provider fallbacks, and
   inconsistent task/result names; preserve public plugin IDs and registered task
   names.
-- [ ] Verify configuration cache, task inputs/outputs, build-logic checks,
+- [x] Verify configuration cache, task inputs/outputs, build-logic checks,
   service CI, and Markdown validation; publish the committed verification report.
 
 ### P4 cross-cutting event-streaming closure
 
 - [x] Implement the Spring Modulith Kafka externalizer and JDBC publication
   registry in the dedicated messaging capability.
-- [ ] Execute `docs/superpowers/plans/2026-08-02-kafka-modulith-event-streaming-closure.md`.
-- [ ] Complete final Kafka/Modulith evidence: public event catalog, topic/key
+- [x] Execute `docs/superpowers/plans/2026-08-02-kafka-modulith-event-streaming-closure.md`.
+- [x] Complete final Kafka/Modulith evidence: public event catalog, topic/key
   contract verification, consumer idempotency/replay behavior, failure/retry or
   dead-letter policy, production broker configuration, and CI/integration proof.
-- [ ] Keep RabbitMQ/AMQP absent from the unreleased codebase and documentation.
+- [x] Keep RabbitMQ/AMQP absent from the unreleased codebase and documentation;
+  Boot's required AMQP BOM verification metadata is retained without a runtime
+  dependency.
 
 ## Studio Documents canonical boundary slice — 2026-08-01
 

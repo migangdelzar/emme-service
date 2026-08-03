@@ -10,15 +10,11 @@
 ## Executive result
 
 The original eleven-item execution order is directionally correct for the
-backend modules, but it is not complete. It contains completed baselines as if
-they still required implementation, and it omits two required closure tracks:
-
-1. the complete implementation of the Capability-Driven Design build-logic
-   migration; and
-2. final operational evidence for Spring Modulith event publication over Kafka.
-
-The registry now separates implementation work, evidence work, and historical
-checklist reconciliation.
+backend modules, but it mixed implementation, evidence, and historical
+checklist work. The build-logic CDD migration and the local Kafka + Spring
+Modulith closure are now implemented and verified. The registry now separates
+remaining deployment-environment evidence from completed source migrations, so
+stale historical checkboxes do not reintroduce legacy work.
 
 ## True remaining work by priority
 
@@ -33,9 +29,9 @@ checklist reconciliation.
 | P2 | Assistant | Live AI/WhatsApp provider contract tests; PostgreSQL replay execution; final service-wide verification; Documents-backed RAG live search evidence | Focused RAG boundary now implemented; operational evidence remains open |
 | P3 | Notification | Deterministic provider contract tests; explicit transient-failure retry policy and evidence; durable delivery replay/idempotency proof against PostgreSQL; final integration/CI verification | Open provider and operational evidence |
 | P3 | Payment | Deterministic provider contract tests; tenant-scoped read coverage for every endpoint; PostgreSQL execution of webhook claims; final signature/replay and financial integration evidence | Open provider and operational evidence |
-| P4 | Build-logic | Execute the new CDD migration specification and plan across all convention scripts, binary plugins, extensions, tasks, providers, models, ValueSources, tests, and verification gates; remove eager resolution and silent fallbacks; add complete TestKit/configuration-cache coverage | Open implementation |
-| P4 | Kafka + Spring Modulith | Final event catalog and topic/key contract; consumer idempotency/replay behavior; retry/dead-letter policy; production broker settings; CI and real integration evidence | Open cross-cutting evidence |
-| P5 | Service-wide gate | Full architecture and dependency-cycle checks; all module and application tests; Modulith verification; formatting/Checkstyle/Detekt; boot JARs; Kafka integration; security, migration, rollback/recovery, documentation, and warning review | Open final gate |
+| P4 | Build-logic | Execute the CDD migration across all convention scripts, binary plugins, extensions, tasks, providers, models, ValueSources, tests, and verification gates; remove eager resolution and silent fallbacks; add complete TestKit/configuration-cache coverage | Complete for the current unreleased service; see the committed verification report |
+| P4 | Kafka + Spring Modulith | Final event catalog and topic/key contract; consumer idempotency/replay behavior; retry/dead-letter policy; production broker settings; CI and real integration evidence | Complete for the current MVP; broker-outage chaos remains deployment-environment evidence |
+| P5 | Service-wide gate | Full architecture and dependency-cycle checks; all module and application tests; Modulith verification; formatting/Checkstyle/Detekt; boot JARs; Kafka integration; security, migration, rollback/recovery, documentation, and warning review | Local gate passed; live provider, migration, rollback, and broker-chaos evidence remains environment-dependent |
 
 ## Baselines that are not missing implementation
 
@@ -70,9 +66,9 @@ flowchart LR
   TENANCY --> SHARED[Close Shared and Audit P1]
   SHARED --> CAPABILITIES[Documents / Subscriptions / Assistant P2]
   CAPABILITIES --> PROVIDERS[Notification / Payment P3]
-  PROVIDERS --> BUILDLOGIC[Execute build-logic CDD P4]
-  BUILDLOGIC --> KAFKA[Close Kafka + Modulith evidence P4]
-  KAFKA --> FINAL[Run service-wide P5 gate]
+  PROVIDERS --> BUILDLOGIC[Build-logic CDD P4\ncomplete]
+  BUILDLOGIC --> KAFKA[Kafka + Modulith P4\ncomplete for MVP]
+  KAFKA --> FINAL[Service-wide P5\nlocal gate passed]
 ```
 
 Documents and Subscriptions can proceed in parallel after their dependency

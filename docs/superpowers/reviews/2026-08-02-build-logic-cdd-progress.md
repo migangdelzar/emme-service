@@ -5,7 +5,7 @@
 | Build | `build-logic` included build |
 | Branch | `feat/module-plans-normalization` |
 | Date | 2026-08-02 |
-| Status | Guardrails, capability ownership, lazy provider selection, and container task naming slices complete; broader CDD migration open |
+| Status | Implemented and verified for the current unreleased service |
 
 ## Completed slice
 
@@ -45,6 +45,14 @@
 - Added root plugin TestKit coverage for repository lifecycle task registration.
 - Verified the complete functional suite with Gradle configuration cache both
   on a cold run and on a second run that reused the cache entry.
+- Separated module-type conventions from capability conventions: persistence,
+  messaging, Modulith, and Spring Web no longer apply `emme.spring-module`
+  implicitly. Modules opt into their type and capabilities explicitly.
+- Added an architecture regression test that rejects capability scripts applying
+  module-type plugins and a TestKit configuration-cache functional test.
+- Verified that the deployable application no longer emits the previous
+  `java-library`/Spring Boot composition warning caused by hidden module-type
+  composition.
 
 ## Verification
 
@@ -53,15 +61,16 @@
 ```
 
 Result: `BUILD SUCCESSFUL`. Spotless, Detekt, unit tests, functional TestKit
-tests, and Gradle plugin validation completed successfully. The build still
-prints the existing dependency-analysis warnings from `emme-platform` and the
-JVM restricted-native-access warning from Gradle's native platform library.
+tests, configuration-cache coverage, and Gradle plugin validation completed
+successfully. The JVM still prints the restricted-native-access warning for
+Zstandard/Gradle native libraries; that warning is unrelated to build-logic
+correctness.
 
-## Next CDD slices
+## Final boundary
 
-1. Complete the remaining `core`/`model`/root shared-service audit.
-2. Add TestKit coverage for every foundation, testing, persistence, messaging,
-   Modulith, delivery, security, and quality convention family.
-3. Verify lazy provider selection, task input/output declarations, and
-   configuration-cache behavior.
-4. Run the complete build-logic and service-wide final gate.
+The build-logic CDD migration is closed for this unreleased service branch.
+Future capabilities must follow the same rules: module-type plugins establish
+what a project is, capability conventions add optional behavior, and complex
+capabilities own their plugins, extensions, tasks, providers, results, and
+tests. New external-tool integrations require a capability-owned provider and
+TestKit coverage before adoption.

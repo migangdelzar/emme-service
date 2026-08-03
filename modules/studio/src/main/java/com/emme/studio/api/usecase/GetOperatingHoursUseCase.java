@@ -1,11 +1,11 @@
 package com.emme.studio.api.usecase;
 
-import com.emme.studio.domain.model.OperatingHours;
+import com.emme.studio.api.result.OperatingHoursDetails;
 import java.util.List;
 import java.util.UUID;
 
 /** Retrieves operating hours for a tenant. */
 public interface GetOperatingHoursUseCase {
 
-  List<OperatingHours> get(UUID tenantId);
+  List<OperatingHoursDetails> get(UUID tenantId);
 }

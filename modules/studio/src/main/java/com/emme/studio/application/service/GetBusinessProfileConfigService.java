@@ -1,8 +1,9 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.BusinessProfileDetails;
 import com.emme.studio.api.usecase.GetBusinessProfileConfigUseCase;
+import com.emme.studio.application.mapper.BusinessConfigurationApplicationMapper;
 import com.emme.studio.application.port.out.BusinessProfileRepository;
-import com.emme.studio.domain.model.BusinessProfile;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,9 @@ public class GetBusinessProfileConfigService implements GetBusinessProfileConfig
   }
 
   @Override
-  public Optional<BusinessProfile> get(UUID tenantId) {
-    return repository.findByTenantId(tenantId);
+  public Optional<BusinessProfileDetails> get(UUID tenantId) {
+    return repository
+        .findByTenantId(tenantId)
+        .map(BusinessConfigurationApplicationMapper::toDetails);
   }
 }

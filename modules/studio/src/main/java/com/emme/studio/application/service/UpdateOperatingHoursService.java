@@ -1,6 +1,9 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.OperatingHoursDetails;
+import com.emme.studio.api.type.BusinessDay;
 import com.emme.studio.api.usecase.UpdateOperatingHoursUseCase;
+import com.emme.studio.application.mapper.BusinessConfigurationApplicationMapper;
 import com.emme.studio.application.port.out.OperatingHoursRepository;
 import com.emme.studio.domain.model.DayOfWeek;
 import com.emme.studio.domain.model.OperatingHours;
@@ -21,13 +24,14 @@ public class UpdateOperatingHoursService implements UpdateOperatingHoursUseCase 
   }
 
   @Override
-  public OperatingHours update(
-      UUID tenantId, DayOfWeek day, LocalTime opensAt, LocalTime closesAt, boolean active) {
+  public OperatingHoursDetails update(
+      UUID tenantId, BusinessDay day, LocalTime opensAt, LocalTime closesAt, boolean active) {
+    DayOfWeek domainDay = DayOfWeek.valueOf(day.name());
     OperatingHours hours =
         repository
-            .findByTenantIdAndDayOfWeek(tenantId, day)
-            .orElse(new OperatingHours(tenantId, day, opensAt, closesAt));
+            .findByTenantIdAndDayOfWeek(tenantId, domainDay)
+            .orElse(new OperatingHours(tenantId, domainDay, opensAt, closesAt));
     hours.update(opensAt, closesAt, active);
-    return repository.save(hours);
+    return BusinessConfigurationApplicationMapper.toDetails(repository.save(hours));
   }
 }

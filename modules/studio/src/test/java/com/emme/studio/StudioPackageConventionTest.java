@@ -114,6 +114,22 @@ class StudioPackageConventionTest {
   }
 
   @Test
+  void businessConfigurationContractsDoNotExposeDomainModels() throws Exception {
+    Path root = sourcePath("modules/studio/src/main/java/com/emme/studio");
+    String useCase =
+        java.nio.file.Files.readString(root.resolve("api/usecase/GetOperatingHoursUseCase.java"));
+    String controller =
+        java.nio.file.Files.readString(
+            root.resolve("adapter/in/web/controller/BusinessConfigurationController.java"));
+
+    assertThat(useCase).doesNotContain("com.emme.studio.domain.model");
+    assertThat(controller).doesNotContain("com.emme.studio.domain.model");
+    assertThat(java.nio.file.Files.exists(root.resolve("api/result/OperatingHoursDetails.java")))
+        .isTrue();
+    assertThat(java.nio.file.Files.exists(root.resolve("api/type/BusinessDay.java"))).isTrue();
+  }
+
+  @Test
   void publicUseCasesDoNotExposeApplicationResultTypes() {
     assertThat(hasClass("com.emme.studio.api.result.AppointmentDetails")).isTrue();
     assertThat(hasClass("com.emme.studio.api.result.AvailableSlot")).isTrue();

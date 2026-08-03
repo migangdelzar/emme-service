@@ -46,7 +46,7 @@ class BusinessConfigModuleTest extends BaseSpringModuleTest {
                     "{\"day\":\"MON\",\"opensAt\":\"09:00:00\",\"closesAt\":\"18:00:00\",\"active\":true}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").exists())
-        .andExpect(jsonPath("$.dayOfWeek").value("MON"))
+        .andExpect(jsonPath("$.day").value("MON"))
         .andExpect(jsonPath("$.active").value(true));
   }
 }

@@ -1,8 +1,9 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.BookingPolicyDetails;
 import com.emme.studio.api.usecase.GetBookingPolicyUseCase;
+import com.emme.studio.application.mapper.BusinessConfigurationApplicationMapper;
 import com.emme.studio.application.port.out.BookingPolicyRepository;
-import com.emme.studio.domain.model.BookingPolicy;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,9 @@ public class GetBookingPolicyService implements GetBookingPolicyUseCase {
   }
 
   @Override
-  public Optional<BookingPolicy> get(UUID tenantId) {
-    return repository.findByTenantId(tenantId);
+  public Optional<BookingPolicyDetails> get(UUID tenantId) {
+    return repository
+        .findByTenantId(tenantId)
+        .map(BusinessConfigurationApplicationMapper::toDetails);
   }
 }

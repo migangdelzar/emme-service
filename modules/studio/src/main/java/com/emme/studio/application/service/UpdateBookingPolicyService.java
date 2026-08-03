@@ -1,6 +1,8 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.BookingPolicyDetails;
 import com.emme.studio.api.usecase.UpdateBookingPolicyUseCase;
+import com.emme.studio.application.mapper.BusinessConfigurationApplicationMapper;
 import com.emme.studio.application.port.out.BookingPolicyRepository;
 import com.emme.studio.domain.model.BookingPolicy;
 import java.util.UUID;
@@ -19,13 +21,13 @@ public class UpdateBookingPolicyService implements UpdateBookingPolicyUseCase {
   }
 
   @Override
-  public BookingPolicy update(
+  public BookingPolicyDetails update(
       UUID tenantId, int minNotice, int maxAdvance, int cancelWindow, boolean allowOverlap) {
     BookingPolicy policy =
         repository
             .findByTenantId(tenantId)
             .orElse(new BookingPolicy(tenantId, minNotice, maxAdvance, cancelWindow, allowOverlap));
     policy.update(minNotice, maxAdvance, cancelWindow, allowOverlap);
-    return repository.save(policy);
+    return BusinessConfigurationApplicationMapper.toDetails(repository.save(policy));
   }
 }

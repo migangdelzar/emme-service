@@ -80,6 +80,19 @@ class CalendarPackageConventionTest {
   }
 
   @Test
+  void clientCalendarControllerUsesApplicationContracts() throws IOException {
+    String controller =
+        Files.readString(
+            SOURCE_ROOT.resolve("adapter/in/web/controller/ClientCalendarController.java"));
+
+    assertThat(controller).doesNotContain("com.emme.calendar.adapter.out");
+    assertThat(Files.exists(SOURCE_ROOT.resolve("api/usecase/SyncClientCalendarUseCase.java")))
+        .isTrue();
+    assertThat(Files.exists(SOURCE_ROOT.resolve("api/usecase/UnsyncClientCalendarUseCase.java")))
+        .isTrue();
+  }
+
+  @Test
   void everyMaterializedApplicationPackageHasPackageMetadata() {
     assertThat(Files.exists(SOURCE_ROOT.resolve("application/mapper/package-info.java"))).isTrue();
   }

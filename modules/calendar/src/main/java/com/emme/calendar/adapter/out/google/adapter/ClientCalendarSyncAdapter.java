@@ -7,8 +7,8 @@ import com.emme.calendar.api.usecase.FindCalendarEventLinkUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
+import com.emme.calendar.application.port.out.ClientCalendarSyncPort;
 import com.emme.calendar.configuration.GoogleHttpClient;
-import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.time.Instant;
@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
  * locate and delete the corresponding Google Calendar event.
  */
 @Service
-public class ClientCalendarSyncAdapter {
+public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
 
   private static final Logger log = LoggerFactory.getLogger(ClientCalendarSyncAdapter.class);
   private static final String EVENTS_URL =
@@ -71,22 +71,6 @@ public class ClientCalendarSyncAdapter {
 
   /**
    * Create or update a Google Calendar event for a client appointment in the client's primary
-   * calendar.
-   *
-   * @param tenantId the tenant workspace
-   * @param appointmentId the appointment to sync
-   * @param startsAt appointment start time (UTC)
-   * @param endsAt appointment end time (UTC)
-   * @param summary event summary / title
-   * @return the Google Calendar event ID
-   */
-  public String syncAppointment(
-      UUID tenantId, UUID appointmentId, Instant startsAt, Instant endsAt, String summary) {
-    return syncAppointment(tenantId, appointmentId, startsAt, endsAt, summary, null);
-  }
-
-  /**
-   * Create or update a Google Calendar event for a client appointment in the client's primary
    * calendar, with optional description.
    *
    * @param tenantId the tenant workspace
@@ -97,15 +81,14 @@ public class ClientCalendarSyncAdapter {
    * @param description optional event description
    * @return the Google Calendar event ID
    */
-  public String syncAppointment(
+  public String sync(
       UUID tenantId,
       UUID appointmentId,
+      String userId,
       Instant startsAt,
       Instant endsAt,
       String summary,
       String description) {
-    String userId = UserContextHolder.currentSubject();
-
     log.info(
         "Client calendar sync — tenant={} appointment={} userId={} summary='{}'",
         tenantId,
@@ -184,9 +167,7 @@ public class ClientCalendarSyncAdapter {
    * @param tenantId the tenant workspace
    * @param appointmentId the appointment to remove
    */
-  public void unsyncAppointment(UUID tenantId, UUID appointmentId) {
-    String userId = UserContextHolder.currentSubject();
-
+  public void unsync(UUID tenantId, UUID appointmentId, String userId) {
     log.info(
         "Client calendar unsync — tenant={} appointment={} userId={}",
         tenantId,

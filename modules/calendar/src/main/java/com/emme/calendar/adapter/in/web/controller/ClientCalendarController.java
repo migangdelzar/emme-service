@@ -1,11 +1,15 @@
 package com.emme.calendar.adapter.in.web.controller;
 
-import com.emme.calendar.adapter.out.google.adapter.ClientCalendarSyncAdapter;
+import com.emme.calendar.adapter.in.web.request.SyncClientCalendarRequest;
+import com.emme.calendar.adapter.in.web.response.ClientCalendarSyncResponse;
+import com.emme.calendar.api.command.SyncClientCalendarCommand;
+import com.emme.calendar.api.command.UnsyncClientCalendarCommand;
+import com.emme.calendar.api.usecase.SyncClientCalendarUseCase;
+import com.emme.calendar.api.usecase.UnsyncClientCalendarUseCase;
+import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.emme.kernel.context.TenantContextHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.time.Instant;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,27 +25,34 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Client Calendar")
 public class ClientCalendarController {
 
-  private final ClientCalendarSyncAdapter syncService;
+  private final SyncClientCalendarUseCase syncClientCalendar;
+  private final UnsyncClientCalendarUseCase unsyncClientCalendar;
 
-  public ClientCalendarController(ClientCalendarSyncAdapter syncService) {
-    this.syncService = syncService;
+  public ClientCalendarController(
+      SyncClientCalendarUseCase syncClientCalendar,
+      UnsyncClientCalendarUseCase unsyncClientCalendar) {
+    this.syncClientCalendar = syncClientCalendar;
+    this.unsyncClientCalendar = unsyncClientCalendar;
   }
 
   @PostMapping("/sync")
   @PreAuthorize(
       "@featureFlagService.isEnabled('google_workspace') and @featureFlagService.isEnabled('client_google_sync')")
   @Operation(summary = "Sync a client appointment to their Google Calendar")
-  public ResponseEntity<Object> sync(@RequestBody SyncRequest request) {
+  public ResponseEntity<ClientCalendarSyncResponse> sync(
+      @RequestBody SyncClientCalendarRequest request) {
     UUID tenantId = TenantContextHolder.requireCurrentTenantId();
-    String eventId =
-        syncService.syncAppointment(
-            tenantId,
-            request.appointmentId(),
-            request.startsAt(),
-            request.endsAt(),
-            request.summary(),
-            request.description());
-    return ResponseEntity.ok(Map.of("status", "synced", "eventId", eventId));
+    var details =
+        syncClientCalendar.sync(
+            new SyncClientCalendarCommand(
+                tenantId,
+                request.appointmentId(),
+                UserContextHolder.currentSubject(),
+                request.startsAt(),
+                request.endsAt(),
+                request.summary(),
+                request.description()));
+    return ResponseEntity.ok(ClientCalendarSyncResponse.from(details));
   }
 
   @DeleteMapping("/sync/{appointmentId}")
@@ -50,19 +61,9 @@ public class ClientCalendarController {
   @Operation(summary = "Unsync appointment from Google Calendar")
   public ResponseEntity<Void> unsync(@PathVariable UUID appointmentId) {
     UUID tenantId = TenantContextHolder.requireCurrentTenantId();
-    syncService.unsyncAppointment(tenantId, appointmentId);
+    unsyncClientCalendar.unsync(
+        new UnsyncClientCalendarCommand(
+            tenantId, appointmentId, UserContextHolder.currentSubject()));
     return ResponseEntity.noContent().build();
   }
-
-  /**
-   * Request body for syncing an appointment to a client's Google Calendar.
-   *
-   * @param appointmentId the appointment to sync
-   * @param startsAt appointment start time (UTC)
-   * @param endsAt appointment end time (UTC)
-   * @param summary event title / summary
-   * @param description optional event description
-   */
-  public record SyncRequest(
-      UUID appointmentId, Instant startsAt, Instant endsAt, String summary, String description) {}
 }

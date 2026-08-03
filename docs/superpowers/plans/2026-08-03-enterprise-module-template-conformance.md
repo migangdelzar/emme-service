@@ -289,6 +289,9 @@ Apply the following mapping to every module that has public contracts:
 - [x] Migrate the Studio artist and capability vertical slice to public result
   records, application mapping, and dedicated HTTP contracts; remove the
   unused duplicate artist-capability listing surface.
+- [x] Move Calendar client-calendar synchronization behind focused inbound use
+  cases and an application-owned outbound port; keep Google transport details
+  inside the outbound adapter.
 - [ ] Rename `GetBusinessProfileConfig*` to the actual business concept represented by the contract after its API/result semantics are reviewed.
 - [ ] Split any service that combines customer, artist, appointment, catalog, operating-hours, or booking-policy use cases.
 - [ ] Verify nested `documents` and `subscriptions` dependencies remain one-way and use only named public APIs.

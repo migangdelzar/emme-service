@@ -196,6 +196,9 @@ Identity verification evidence is recorded in
 - [x] Migrated the Studio artist/capability use cases to `ArtistDetails` and
   `ArtistCapabilityDetails`, extracted dedicated HTTP records, and removed the
   unused duplicate `ListArtistCapabilities` API/service surface.
+- [x] Moved Calendar client-calendar synchronization behind focused use cases
+  and an application-owned `ClientCalendarSyncPort`; the controller no longer
+  imports the Google outbound adapter.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain

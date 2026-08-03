@@ -553,3 +553,25 @@
 - Prevention rule: shared disposable integration containers must not enable
   `.withReuse(true)`, and the publication registry must be destroyed before
   the container bean; verify both contracts with focused PostgreSQL tests.
+
+## 2026-08-03 — Validate test selectors before interpreting Gradle output
+
+- Failure mode: a focused Gradle invocation used the wrong fully qualified test
+  package and reported `No tests found`, which initially looked like an
+  implementation failure.
+- Detection signal: Gradle completed compilation but failed before executing a
+  test class, explicitly reporting that no tests matched the include filter.
+- Prevention rule: resolve the test package from the source declaration before
+  using `--tests`; when the selector is wrong, correct it and rerun before
+  diagnosing production code.
+
+## 2026-08-03 — Validation changes require contract-aligned status assertions
+
+- Failure mode: adding `@Valid` changed malformed login input from an internal
+  server error to the correct client error, while an existing module test still
+  expected a 5xx response.
+- Detection signal: the full Identity suite failed only at the old status
+  assertion while the boundary test correctly passed.
+- Prevention rule: when moving validation to the transport boundary, update
+  endpoint tests to assert rejection before use-case invocation and the correct
+  4xx status; do not preserve an invalid legacy 5xx contract.

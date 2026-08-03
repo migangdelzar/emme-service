@@ -94,8 +94,9 @@ API results or domain aggregates.
 - [x] Added Shared ownership regression coverage.
 
 Search integration and tenant-predicate evidence is recorded in
-`docs/superpowers/reviews/2026-08-02-shared-search-verification.md`. Remaining
-work is full dependency-cycle checks and the service-wide verification gate.
+`docs/superpowers/reviews/2026-08-02-shared-search-verification.md`. The focused
+service-wide dependency and Modulith verification passed on 2026-08-03;
+remaining work is the final service-wide operational evidence gate.
 
 ## Test-profile shutdown lifecycle — 2026-08-03
 
@@ -119,8 +120,8 @@ work is full dependency-cycle checks and the service-wide verification gate.
   query semantics.
 - [x] Verified the Shared ownership test and compilation.
 
-Remaining Shared work is dependency-cycle verification and the final
-service-wide gate.
+Shared dependency-cycle verification is complete; the final service-wide
+operational evidence gate remains.
 
 ## Completed capability package normalization — 2026-08-02
 
@@ -132,8 +133,8 @@ service-wide gate.
 - [x] Verified the source-boundary regression test fails before the move and
   passes after the move.
 
-Remaining Shared work is dependency-cycle verification and the final
-service-wide gate.
+Shared dependency-cycle verification is complete; the final service-wide
+operational evidence gate remains.
 
 ## Completed managed JDBC connection template slice — 2026-08-02
 

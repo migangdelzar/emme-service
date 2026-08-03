@@ -174,7 +174,8 @@ reopened by this backlog.
 - [x] Remove H2 schema-drop/event-publication shutdown warnings from the shared
   test profiles and disable reusable PostgreSQL Testcontainers state so
   framework shutdown callbacks complete against a live database.
-- [ ] Run the service-wide dependency-cycle verification.
+- [x] Run the service-wide dependency-cycle verification through the platform
+  Modulith, layer, and application parity tests.
 
 ### P2 — Domain capabilities
 
@@ -1367,7 +1368,8 @@ limiting, then continue authorization domain/application separation.
 - [x] Update all module imports and shared tests; remove legacy root-package primitive locations.
 - [x] Verify Shared formatting and unit tests.
 - [x] Complete PostgreSQL vector/full-text evidence with tenant-scoped and bounded integration coverage.
-- [ ] Complete dependency-cycle verification and service-wide gates.
+- [x] Complete dependency-cycle verification; retain the remaining
+  service-wide operational gates as the final verification track.
 
 ## Audit reserved-boundary hardening — 2026-08-02
 

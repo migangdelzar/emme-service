@@ -1,6 +1,8 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.CustomerDetails;
 import com.emme.studio.api.usecase.CreateCustomerUseCase;
+import com.emme.studio.application.mapper.CustomerApplicationMapper;
 import com.emme.studio.application.port.out.CustomerRepository;
 import com.emme.studio.domain.model.Customer;
 import java.util.UUID;
@@ -19,10 +21,10 @@ public class CreateCustomerService implements CreateCustomerUseCase {
   }
 
   @Override
-  public Customer create(UUID tenantId, String name, String phone, String email) {
+  public CustomerDetails create(UUID tenantId, String name, String phone, String email) {
     Customer customer = new Customer(tenantId, name);
     customer.setPhone(phone);
     customer.setEmail(email);
-    return customerRepository.save(customer);
+    return CustomerApplicationMapper.toDetails(customerRepository.save(customer));
   }
 }

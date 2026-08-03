@@ -35,7 +35,7 @@ class StudioPackageConventionTest {
   void publicContractsAreGroupedByKind() {
     assertThat(hasClass("com.emme.studio.api.result.AppointmentInfo")).isTrue();
     assertThat(hasClass("com.emme.studio.api.result.BusinessProfileInfo")).isTrue();
-    assertThat(hasClass("com.emme.studio.api.result.CustomerInfo")).isTrue();
+    assertThat(hasClass("com.emme.studio.api.result.CustomerSummary")).isTrue();
     assertThat(hasClass("com.emme.studio.api.usecase.GetBusinessProfileUseCase")).isTrue();
     assertThat(hasClass("com.emme.studio.api.usecase.ListAppointmentsUseCase")).isTrue();
     assertThat(hasClass("com.emme.studio.api.usecase.ListCustomersUseCase")).isTrue();
@@ -80,6 +80,22 @@ class StudioPackageConventionTest {
     assertThat(controller).doesNotContain("public record ServiceResponse");
     assertThat(controller).doesNotContain("public record CreateServiceRequest");
     assertThat(controller).doesNotContain("public record UpdateServiceRequest");
+  }
+
+  @Test
+  void customerWebBoundaryDoesNotExposeDomainModels() throws Exception {
+    Path root = sourcePath("modules/studio/src/main/java/com/emme/studio");
+    String controller =
+        java.nio.file.Files.readString(
+            root.resolve("adapter/in/web/controller/CustomerController.java"));
+
+    assertThat(controller).doesNotContain("com.emme.studio.domain.model");
+    assertThat(java.nio.file.Files.exists(root.resolve("api/result/CustomerDetails.java")))
+        .isTrue();
+    assertThat(
+            java.nio.file.Files.exists(
+                root.resolve("adapter/in/web/response/CustomerResponse.java")))
+        .isTrue();
   }
 
   @Test

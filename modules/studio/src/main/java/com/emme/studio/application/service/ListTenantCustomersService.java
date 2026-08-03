@@ -1,8 +1,9 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.CustomerDetails;
 import com.emme.studio.api.usecase.ListTenantCustomersUseCase;
+import com.emme.studio.application.mapper.CustomerApplicationMapper;
 import com.emme.studio.application.port.out.CustomerRepository;
-import com.emme.studio.domain.model.Customer;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,9 @@ public class ListTenantCustomersService implements ListTenantCustomersUseCase {
   }
 
   @Override
-  public List<Customer> list(UUID tenantId) {
-    return customerRepository.findByTenantId(tenantId);
+  public List<CustomerDetails> list(UUID tenantId) {
+    return customerRepository.findByTenantId(tenantId).stream()
+        .map(CustomerApplicationMapper::toDetails)
+        .toList();
   }
 }

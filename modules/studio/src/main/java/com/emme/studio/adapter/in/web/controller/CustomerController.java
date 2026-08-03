@@ -2,19 +2,21 @@ package com.emme.studio.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.studio.adapter.in.web.request.CreateCustomerRequest;
+import com.emme.studio.adapter.in.web.request.UpdateCustomerRequest;
+import com.emme.studio.adapter.in.web.response.CustomerResponse;
+import com.emme.studio.api.result.CustomerDetails;
 import com.emme.studio.api.usecase.CreateCustomerUseCase;
 import com.emme.studio.api.usecase.GetCustomerUseCase;
 import com.emme.studio.api.usecase.ListTenantCustomersUseCase;
 import com.emme.studio.api.usecase.RetireCustomerUseCase;
 import com.emme.studio.api.usecase.SearchCustomersUseCase;
 import com.emme.studio.api.usecase.UpdateCustomerUseCase;
-import com.emme.studio.domain.model.Customer;
 import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
 import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -74,9 +76,9 @@ public class CustomerController {
     return withCurrentTenant(
         tenantId -> {
           enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "customers:write"));
-          Customer customer =
+          CustomerDetails customer =
               createCustomer.create(tenantId, request.name(), request.phone(), request.email());
-          var location = URI.create("/api/customers/" + customer.getId());
+          var location = URI.create("/api/customers/" + customer.id());
           return ResponseEntity.created(location).body(CustomerResponse.from(customer));
         });
   }
@@ -94,14 +96,15 @@ public class CustomerController {
   @Operation(summary = "Update a customer")
   public ResponseEntity<CustomerResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateCustomerRequest request) {
-    Customer customer = updateCustomer.update(id, request.name(), request.phone(), request.email());
+    CustomerDetails customer =
+        updateCustomer.update(id, request.name(), request.phone(), request.email());
     return ResponseEntity.ok(CustomerResponse.from(customer));
   }
 
   @PostMapping("/{id}/retire")
   @Operation(summary = "Retire a customer")
   public ResponseEntity<CustomerResponse> retire(@PathVariable UUID id) {
-    Customer customer = retireCustomer.retire(id);
+    CustomerDetails customer = retireCustomer.retire(id);
     return ResponseEntity.ok(CustomerResponse.from(customer));
   }
 
@@ -113,17 +116,4 @@ public class CustomerController {
             ResponseEntity.ok(
                 searchCustomers.search(tenantId, q).stream().map(CustomerResponse::from).toList()));
   }
-
-  // --- DTOs ---
-
-  public record CustomerResponse(UUID id, String name, String phone, String email, String status) {
-    public static CustomerResponse from(Customer c) {
-      return new CustomerResponse(
-          c.getId(), c.getName(), c.getPhone(), c.getEmail(), c.getStatus().name());
-    }
-  }
-
-  public record CreateCustomerRequest(@NotBlank String name, String phone, String email) {}
-
-  public record UpdateCustomerRequest(String name, String phone, String email) {}
 }

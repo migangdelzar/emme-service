@@ -1,6 +1,8 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.CustomerDetails;
 import com.emme.studio.api.usecase.RetireCustomerUseCase;
+import com.emme.studio.application.mapper.CustomerApplicationMapper;
 import com.emme.studio.application.port.out.CustomerRepository;
 import com.emme.studio.domain.model.Customer;
 import java.util.UUID;
@@ -19,12 +21,12 @@ public class RetireCustomerService implements RetireCustomerUseCase {
   }
 
   @Override
-  public Customer retire(UUID id) {
+  public CustomerDetails retire(UUID id) {
     Customer customer =
         customerRepository
             .findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + id));
     customer.retire();
-    return customerRepository.save(customer);
+    return CustomerApplicationMapper.toDetails(customerRepository.save(customer));
   }
 }

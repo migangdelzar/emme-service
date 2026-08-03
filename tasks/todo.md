@@ -182,6 +182,10 @@ Identity verification evidence is recorded in
 - [x] Relocated Identity feature-flag test support into an explicit
   `application.support` test package and verified Identity, Tenancy, and
   platform architecture tests.
+- [x] Migrated the Studio customer vertical slice to `CustomerDetails` API
+  results, application mapping, dedicated HTTP request/response records, and
+  renamed the ambiguous `CustomerInfo` contract to `CustomerSummary`; Studio
+  and Calendar tests passed.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain

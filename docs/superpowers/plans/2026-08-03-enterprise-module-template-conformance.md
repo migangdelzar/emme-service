@@ -277,6 +277,9 @@ Apply the following mapping to every module that has public contracts:
 - [ ] Audit the core API, application services, domain aggregates, web adapters, persistence adapters, and configuration against the module template.
 - [x] Move core Studio HTTP controllers into `adapter/in/web/controller` and rename `BusinessConfigController` to `BusinessConfigurationController`.
 - [x] Extract the core Studio service web request/response records into dedicated `request` and `response` files.
+- [x] Migrate the Studio customer vertical slice to public `CustomerDetails`
+  results, application mapping, dedicated web contracts, and normalized
+  `CustomerSummary` naming without controller-to-domain imports.
 - [ ] Rename `GetBusinessProfileConfig*` to the actual business concept represented by the contract after its API/result semantics are reviewed.
 - [ ] Split any service that combines customer, artist, appointment, catalog, operating-hours, or booking-policy use cases.
 - [ ] Verify nested `documents` and `subscriptions` dependencies remain one-way and use only named public APIs.

@@ -1,6 +1,6 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.api.result.CustomerInfo;
+import com.emme.studio.api.result.CustomerSummary;
 import com.emme.studio.api.usecase.ListCustomersUseCase;
 import com.emme.studio.application.port.out.CustomerRepository;
 import java.util.List;
@@ -20,9 +20,9 @@ public class ListCustomersService implements ListCustomersUseCase {
   }
 
   @Override
-  public List<CustomerInfo> listCustomers(UUID tenantId) {
+  public List<CustomerSummary> listCustomers(UUID tenantId) {
     return customerRepository.findByTenantId(tenantId).stream()
-        .map(c -> new CustomerInfo(c.getId(), c.getName(), c.getPhone(), c.getEmail()))
+        .map(c -> new CustomerSummary(c.getId(), c.getName(), c.getPhone(), c.getEmail()))
         .toList();
   }
 }

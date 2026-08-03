@@ -6,7 +6,7 @@ import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleSpre
 import com.emme.calendar.api.result.GoogleSpreadsheetInfo;
 import com.emme.calendar.application.port.out.GoogleSheetsExportPort;
 import com.emme.studio.api.result.AppointmentInfo;
-import com.emme.studio.api.result.CustomerInfo;
+import com.emme.studio.api.result.CustomerSummary;
 import com.emme.studio.api.usecase.ListAppointmentsUseCase;
 import com.emme.studio.api.usecase.ListCustomersUseCase;
 import java.time.Instant;
@@ -140,12 +140,12 @@ public class GoogleSheetsAdapter implements GoogleSheetsExportPort {
   }
 
   private Object[][] buildCustomerRows(UUID tenantId) {
-    List<CustomerInfo> customers = listCustomers.listCustomers(tenantId);
+    List<CustomerSummary> customers = listCustomers.listCustomers(tenantId);
     Object[][] rows = new Object[customers.size() + 1][];
     rows[0] = new Object[] {"Name", "Phone", "Email", "Last Visit"};
 
     for (int i = 0; i < customers.size(); i++) {
-      CustomerInfo c = customers.get(i);
+      CustomerSummary c = customers.get(i);
       rows[i + 1] =
           new Object[] {
             c.name() != null ? c.name() : "",

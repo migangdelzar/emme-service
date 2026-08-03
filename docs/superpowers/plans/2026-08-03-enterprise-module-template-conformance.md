@@ -268,7 +268,8 @@ Apply the following mapping to every module that has public contracts:
 
 - [ ] Keep studio as a business module with explicit core capabilities; do not reintroduce `studio-api`.
 - [ ] Audit the core API, application services, domain aggregates, web adapters, persistence adapters, and configuration against the module template.
-- [ ] Rename `BusinessConfigController` and `GetBusinessProfileConfig*` to the actual business concept represented by the contract; prefer `BusinessProfile`/`BusinessProfileConfiguration` only when those are distinct concepts.
+- [x] Move core Studio HTTP controllers into `adapter/in/web/controller` and rename `BusinessConfigController` to `BusinessConfigurationController`.
+- [ ] Rename `GetBusinessProfileConfig*` to the actual business concept represented by the contract after its API/result semantics are reviewed.
 - [ ] Split any service that combines customer, artist, appointment, catalog, operating-hours, or booking-policy use cases.
 - [ ] Verify nested `documents` and `subscriptions` dependencies remain one-way and use only named public APIs.
 
@@ -310,7 +311,7 @@ Apply the following mapping to every module that has public contracts:
 - [ ] Define payment aggregate lifecycle and domain rules independently of provider SDKs.
 - [ ] Verify initiate, authorize, capture, refund, callback processing, and query services are single-use-case services.
 - [ ] Separate payment ports, provider clients, provider adapters, request/response wire models, and mappers.
-- [ ] Normalize `PaymentProviderConfig` into typed provider properties/configuration according to actual responsibility.
+- [x] Rename `PaymentProviderConfig` to `PaymentProviderConfiguration`; retain `PaymentProperties` for typed provider selection properties.
 - [ ] Normalize webhook controllers and signature validation; add replay protection, idempotency, tenant isolation, provider failure, and financial recovery tests.
 - [ ] Keep provider output and SDK exceptions out of public API and domain types.
 

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Primary;
  * back to mock provider if the configured one is not available.
  */
 @Configuration
-class PaymentProviderConfig {
+class PaymentProviderConfiguration {
 
   @Bean
   @Primary

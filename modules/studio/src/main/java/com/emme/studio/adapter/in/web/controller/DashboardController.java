@@ -1,4 +1,4 @@
-package com.emme.studio.adapter.in.web;
+package com.emme.studio.adapter.in.web.controller;
 
 import com.emme.studio.adapter.in.web.sse.DashboardBroadcaster;
 import io.swagger.v3.oas.annotations.Operation;

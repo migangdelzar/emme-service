@@ -168,6 +168,10 @@ Identity verification evidence is recorded in
 - [x] Added the enterprise-template conformance baseline and linked the repository template as the source of truth.
 - [x] Added optional validation, authorization, process, webhook, listener, provider, and client branches to the backend module overview.
 - [x] Renamed `CatalogMatchService` to `MatchCatalogItemsService` using a red source-convention test, canonical file rename, repository-wide reference audit, and focused Catalog verification.
+- [x] Renamed calendar `GoogleOAuthConfig` to `GoogleOAuthProperties` and verified the OAuth encryption and package-convention tests.
+- [x] Renamed shared `BaseEntity` to `PersistedEntity`, updated all persistence consumers, and verified Shared tests.
+- [x] Moved core Studio controllers into `adapter.in.web.controller`, renamed `BusinessConfigController`, added package metadata, and verified Studio module tests.
+- [x] Renamed payment `PaymentProviderConfig` to `PaymentProviderConfiguration` and verified the provider configuration source test.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain

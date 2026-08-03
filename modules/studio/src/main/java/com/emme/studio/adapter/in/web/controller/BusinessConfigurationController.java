@@ -1,4 +1,4 @@
-package com.emme.studio.adapter.in.web;
+package com.emme.studio.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/business-config")
 @Tag(name = "Business Config")
-public class BusinessConfigController {
+public class BusinessConfigurationController {
 
   private final GetBusinessProfileConfigUseCase getProfile;
   private final UpdateBusinessProfileUseCase updateProfile;
@@ -36,7 +36,7 @@ public class BusinessConfigController {
   private final GetBookingPolicyUseCase getPolicy;
   private final UpdateBookingPolicyUseCase updatePolicy;
 
-  public BusinessConfigController(
+  public BusinessConfigurationController(
       GetBusinessProfileConfigUseCase getProfile,
       UpdateBusinessProfileUseCase updateProfile,
       GetOperatingHoursUseCase getHours,

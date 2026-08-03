@@ -42,6 +42,22 @@ class StudioPackageConventionTest {
   }
 
   @Test
+  void webControllersAreGroupedInTheControllerPackageWithSemanticNames() {
+    assertThat(hasClass("com.emme.studio.adapter.in.web.controller.AppointmentController"))
+        .isTrue();
+    assertThat(hasClass("com.emme.studio.adapter.in.web.controller.ArtistController")).isTrue();
+    assertThat(
+            hasClass("com.emme.studio.adapter.in.web.controller.BusinessConfigurationController"))
+        .isTrue();
+    assertThat(hasClass("com.emme.studio.adapter.in.web.controller.CustomerController")).isTrue();
+    assertThat(hasClass("com.emme.studio.adapter.in.web.controller.DashboardController")).isTrue();
+    assertThat(hasClass("com.emme.studio.adapter.in.web.controller.ServiceController")).isTrue();
+    assertThat(CLASSES.stream())
+        .filteredOn(javaClass -> javaClass.getPackageName().equals("com.emme.studio.adapter.in.web"))
+        .noneMatch(javaClass -> javaClass.getSimpleName().endsWith("Controller"));
+  }
+
+  @Test
   void publicUseCasesDoNotExposeApplicationResultTypes() {
     assertThat(hasClass("com.emme.studio.api.result.AppointmentDetails")).isTrue();
     assertThat(hasClass("com.emme.studio.api.result.AvailableSlot")).isTrue();

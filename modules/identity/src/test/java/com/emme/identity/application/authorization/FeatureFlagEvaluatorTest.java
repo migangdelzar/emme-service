@@ -1,7 +1,8 @@
-package com.emme.identity.application.service;
+package com.emme.identity.application.authorization;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.identity.application.support.FeatureFlagTestRepository;
 import com.emme.identity.domain.model.FeatureFlag;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.studio.subscriptions.api.type.PlanType;
@@ -9,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-class FeatureFlagEvaluationServiceTest {
+class FeatureFlagEvaluatorTest {
 
   @Test
   void overlaysTenantOverridesOnGlobalDefaults() {
@@ -19,10 +20,10 @@ class FeatureFlagEvaluationServiceTest {
     repository.flags.add(new FeatureFlag(tenantId, "calendar_sync", true, null, "Tenant override"));
     repository.flags.add(new FeatureFlag(null, "ai_chat", true, null, "Global default"));
 
-    FeatureFlagEvaluationService service =
-        new FeatureFlagEvaluationService(repository, ignored -> Optional.empty());
+    FeatureFlagEvaluator evaluator =
+        new FeatureFlagEvaluator(repository, ignored -> Optional.empty());
 
-    assertThat(service.getEffective(tenantId))
+    assertThat(evaluator.getEffective(tenantId))
         .containsEntry("calendar_sync", true)
         .containsEntry("ai_chat", true);
   }
@@ -33,10 +34,11 @@ class FeatureFlagEvaluationServiceTest {
     FeatureFlagTestRepository repository = new FeatureFlagTestRepository();
     repository.flags.add(new FeatureFlag(null, "ai_chat", true, PlanType.ENTERPRISE, "AI"));
 
-    FeatureFlagEvaluationService service =
-        new FeatureFlagEvaluationService(repository, ignored -> Optional.of(PlanType.STARTER));
+    FeatureFlagEvaluator evaluator =
+        new FeatureFlagEvaluator(repository, ignored -> Optional.of(PlanType.STARTER));
 
-    assertThat(TenantContextHolder.withTenantOverride(tenantId, () -> service.isEnabled("ai_chat")))
+    assertThat(
+            TenantContextHolder.withTenantOverride(tenantId, () -> evaluator.isEnabled("ai_chat")))
         .isFalse();
   }
 }

@@ -176,6 +176,12 @@ Identity verification evidence is recorded in
 - [x] Ran the repository-wide `./gradlew test --no-daemon` gate after the naming and adapter package changes; all 81 tasks completed successfully.
 - [x] Extracted Calendar HTTP response records into dedicated `adapter/in/web/response` files and passed Calendar tests plus Spotless.
 - [x] Extracted Studio service web request/response records into dedicated files and passed Studio tests plus Spotless.
+- [x] Added the repository-wide application-service cohesion guardrail and
+  moved Identity feature-flag evaluation plus Tenancy audit recording out of
+  `application/service` when they did not represent public use cases.
+- [x] Relocated Identity feature-flag test support into an explicit
+  `application.support` test package and verified Identity, Tenancy, and
+  platform architecture tests.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain
@@ -1387,7 +1393,8 @@ limiting, then continue authorization domain/application separation.
 - [x] Close the Audit decision-only plan using ADR 0004 and keep the module
   metadata-only because Identity and Tenancy own current audit responsibilities.
 - [x] Rename the internal Tenancy audit coordinator to
-  `RecordAuditEventService` and remove the generic `AuditService` name.
+  `AuditEventRecorder` under `application/audit` and remove the generic
+  `AuditService` name.
 - [x] Verify the Tenancy boundary and package convention tests.
 
 ## Studio service-catalog naming normalization — 2026-08-01

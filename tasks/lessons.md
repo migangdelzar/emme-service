@@ -272,8 +272,20 @@
 - Detection signal: the generic service name obscured whether the class owned
   an aggregate, a public use case, or an infrastructure boundary.
 - Prevention rule: name non-domain coordinators after the operation they own,
-  such as `RecordAuditEventService`, and keep reserved metadata-only modules
+  such as `AuditEventRecorder`, and keep reserved metadata-only modules
   free of speculative implementation layers.
+
+## 2026-08-03 — Keep non-use-case collaborators out of application/service
+
+- Failure mode: a repository-wide one-use-case-per-service check initially
+  treated `RecordAuditEventService` as a use-case service even though it was an
+  internal audit transaction coordinator.
+- Detection signal: the class lived under `application/service` but implemented
+  no matching public use-case interface.
+- Prevention rule: reserve `application/service` for one
+  `<Verb><Subject>Service` per matching `<Verb><Subject>UseCase`; place internal
+  policy, authorization, audit, and process collaborators in their semantic
+  application subpackages.
 
 ## 2026-08-01 — Avoid repeated responsibility nouns in type names
 

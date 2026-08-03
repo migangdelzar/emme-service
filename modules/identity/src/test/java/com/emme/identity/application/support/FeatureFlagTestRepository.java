@@ -1,4 +1,4 @@
-package com.emme.identity.application.service;
+package com.emme.identity.application.support;
 
 import com.emme.identity.application.port.out.FeatureFlagRepository;
 import com.emme.identity.domain.model.FeatureFlag;
@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-final class FeatureFlagTestRepository implements FeatureFlagRepository {
+public final class FeatureFlagTestRepository implements FeatureFlagRepository {
 
-  final List<FeatureFlag> flags = new ArrayList<>();
+  public final List<FeatureFlag> flags = new ArrayList<>();
 
-  void addGlobal(String code, boolean enabled) {
+  public void addGlobal(String code, boolean enabled) {
     flags.add(new FeatureFlag(null, code, enabled, null, "Global default"));
   }
 
-  void addTenantOverride(UUID tenantId, String code, boolean enabled) {
+  public void addTenantOverride(UUID tenantId, String code, boolean enabled) {
     flags.add(new FeatureFlag(tenantId, code, enabled, null, "Tenant override"));
   }
 

@@ -24,10 +24,9 @@ class TenantUseCaseBoundaryTest {
   @Test
   void keepsAuditPersistenceBehindAnApplicationPort() throws Exception {
     assertThat(Files.exists(ROOT.resolve("application/port/out/AuditEventPort.java"))).isTrue();
-    assertThat(Files.exists(ROOT.resolve("application/service/RecordAuditEventService.java")))
-        .isTrue();
+    assertThat(Files.exists(ROOT.resolve("application/audit/AuditEventRecorder.java"))).isTrue();
     assertThat(Files.exists(ROOT.resolve("application/service/AuditService.java"))).isFalse();
-    assertThat(Files.readString(ROOT.resolve("application/service/RecordAuditEventService.java")))
+    assertThat(Files.readString(ROOT.resolve("application/audit/AuditEventRecorder.java")))
         .doesNotContain("adapter.out.persistence");
   }
 }

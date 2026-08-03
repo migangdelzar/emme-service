@@ -1,4 +1,4 @@
-package com.emme.identity.application.service;
+package com.emme.identity.application.authorization;
 
 import com.emme.identity.application.port.out.FeatureFlagRepository;
 import com.emme.identity.application.port.out.SubscriptionPlanPort;
@@ -15,12 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 /** Evaluates feature flags for authorization and application policy decisions. */
 @Service("featureFlagService")
 @Transactional(readOnly = true)
-public class FeatureFlagEvaluationService {
+public class FeatureFlagEvaluator {
 
   private final FeatureFlagRepository repository;
   private final SubscriptionPlanPort subscriptionPlanPort;
 
-  public FeatureFlagEvaluationService(
+  public FeatureFlagEvaluator(
       FeatureFlagRepository repository, SubscriptionPlanPort subscriptionPlanPort) {
     this.repository = repository;
     this.subscriptionPlanPort = subscriptionPlanPort;

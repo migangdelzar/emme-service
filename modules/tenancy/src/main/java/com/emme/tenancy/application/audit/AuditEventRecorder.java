@@ -1,4 +1,4 @@
-package com.emme.tenancy.application.service;
+package com.emme.tenancy.application.audit;
 
 import com.emme.tenancy.application.port.out.AuditEventPort;
 import com.emme.tenancy.domain.model.AuditOutcome;
@@ -10,11 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Records one tenant audit event in an independent transaction. */
 @Service
-public class RecordAuditEventService {
+public class AuditEventRecorder {
 
   private final AuditEventPort auditEventPort;
 
-  public RecordAuditEventService(AuditEventPort auditEventPort) {
+  public AuditEventRecorder(AuditEventPort auditEventPort) {
     this.auditEventPort = auditEventPort;
   }
 

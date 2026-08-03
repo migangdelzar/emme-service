@@ -2,6 +2,7 @@ package com.emme.identity.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.identity.application.support.FeatureFlagTestRepository;
 import com.emme.identity.domain.model.FeatureFlag;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

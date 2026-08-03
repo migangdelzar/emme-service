@@ -249,6 +249,9 @@ Apply the following mapping to every module that has public contracts:
 
 - [ ] Complete framework-free domain models for membership, role, permission, customer identity, customer membership, and feature flags.
 - [ ] Split any identity service with multiple responsibilities into one service per use case.
+- [x] Move feature-flag evaluation out of `application/service` into the
+  focused `application/authorization/FeatureFlagEvaluator` collaborator so the
+  one-use-case-per-service rule remains executable.
 - [ ] Move repositories behind application-owned ports and create persistence entities, mappers, adapters, and projections.
 - [ ] Move membership synchronization into an inbound consumer that invokes a use case.
 - [ ] Put Keycloak operations behind explicit ports and provider/client adapters.
@@ -260,6 +263,8 @@ Apply the following mapping to every module that has public contracts:
 ### E5. `tenancy`
 
 - [ ] Reconcile the tenancy plan with the implemented pool lifecycle, routing, provisioning, and migration slices.
+- [x] Move the internal audit recorder to `application/audit/AuditEventRecorder`;
+  it is not a public use-case service and must not occupy `application/service`.
 - [ ] Keep `TenantProvisioningProcessManager` only for the actual resumable provisioning workflow; keep individual use cases in separate services.
 - [ ] Separate database registry/pool/routing technical adapters from tenant domain and application ports.
 - [ ] Normalize `BootstrapJdbcConfiguration`, `DataSourceConfiguration`, and typed tenant properties according to their actual wiring responsibility.

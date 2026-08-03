@@ -73,9 +73,9 @@ class TenancyPackageConventionTest {
   private static final Path TENANT_SERVICE =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/CreateTenantService.java");
-  private static final Path AUDIT_SERVICE =
+  private static final Path AUDIT_RECORDER =
       sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/application/service/RecordAuditEventService.java");
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/audit/AuditEventRecorder.java");
   private static final Path PROVISIONING_SERVICE =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/RequestTenantProvisioningService.java");
@@ -278,7 +278,7 @@ class TenancyPackageConventionTest {
   void ownsOrchestrationByApplicationResponsibility() {
     assertThat(Files.exists(APPLICATION_SERVICE_PACKAGE)).isTrue();
     assertThat(Files.exists(TENANT_SERVICE)).isTrue();
-    assertThat(Files.exists(AUDIT_SERVICE)).isTrue();
+    assertThat(Files.exists(AUDIT_RECORDER)).isTrue();
     assertThat(Files.exists(PROVISIONING_SERVICE)).isTrue();
     assertThat(Files.exists(PROVISIONING_IMPLEMENTATION)).isTrue();
     assertThat(Files.exists(PROCESS_PACKAGE)).isTrue();

@@ -3,6 +3,7 @@ package com.emme.identity.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.identity.api.command.SetPlatformFeatureFlagCommand;
+import com.emme.identity.application.support.FeatureFlagTestRepository;
 import com.emme.studio.subscriptions.api.type.PlanType;
 import org.junit.jupiter.api.Test;
 

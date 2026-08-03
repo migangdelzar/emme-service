@@ -3,6 +3,7 @@ package com.emme.identity.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.identity.api.command.SetTenantFeatureFlagOverrideCommand;
+import com.emme.identity.application.support.FeatureFlagTestRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 

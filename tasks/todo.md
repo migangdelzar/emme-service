@@ -231,6 +231,7 @@ reopened by this backlog.
 - [x] Complete Payment webhook signature and durable replay/idempotency boundary;
   remaining provider contract, tenant-read, and full integration evidence is
   tracked in the Payment plan.
+- [x] Apply Bean Validation at the Payment initiation HTTP boundary.
 
 ### P4 — Build-platform normalization
 

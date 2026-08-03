@@ -42,6 +42,16 @@ class PaymentApplicationBoundaryTest {
     }
   }
 
+  @Test
+  void validatesInitiatePaymentRequestAtTheWebBoundary() throws IOException {
+    String controller =
+        Files.readString(ROOT.resolve("adapter/in/web/controller/PaymentController.java"));
+
+    assertThat(controller)
+        .contains("import jakarta.validation.Valid;")
+        .contains("@Valid @RequestBody InitiatePaymentRequest request");
+  }
+
   private static Path sourcePath(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {

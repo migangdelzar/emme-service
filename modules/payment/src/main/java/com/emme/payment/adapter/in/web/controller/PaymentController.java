@@ -12,6 +12,7 @@ import com.emme.payment.api.usecase.GetPaymentUseCase;
 import com.emme.payment.api.usecase.InitiatePaymentUseCase;
 import com.emme.payment.api.usecase.ListPaymentsUseCase;
 import com.emme.payment.api.usecase.RefundPaymentUseCase;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -53,7 +54,8 @@ public class PaymentController {
   }
 
   @PostMapping
-  ResponseEntity<PaymentResponse> initiate(@RequestBody InitiatePaymentRequest request) {
+  ResponseEntity<PaymentResponse> initiate(
+      @Valid @RequestBody InitiatePaymentRequest request) {
     return withCurrentTenant(
         tenantId -> {
           var payment = initiatePayment.initiate(PaymentWebMapper.toCommand(tenantId, request));

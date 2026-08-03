@@ -254,3 +254,16 @@ webhook replay/signature coverage, and credentialed live-provider verification.
 Remaining Payment evidence is deterministic provider contract depth, webhook
 replay/signature execution evidence, credentialed live-provider verification,
 and the final service-wide gate.
+
+## Completed payment request-validation boundary slice — 2026-08-03
+
+- [x] Added a red/green architecture regression test for validating payment
+  initiation requests at the HTTP boundary.
+- [x] Applied `@Valid` to `InitiatePaymentRequest` in `PaymentController`, so
+  its `@NotBlank`, `@NotNull`, and `@Positive` constraints execute before the
+  application use case.
+- [x] Verified the focused Payment application-boundary test.
+
+Remaining Payment evidence is deterministic provider contract depth, webhook
+replay/signature execution evidence, credentialed live-provider verification,
+and the final service-wide gate.

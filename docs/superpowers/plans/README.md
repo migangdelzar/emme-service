@@ -42,15 +42,15 @@ below is the authoritative order for open work.
 | `booking` | [booking contract normalization](2026-07-31-booking-contract-normalization.md) | Complete boundary slice | Normalize API/event ownership and preserve declared consumers |
 | `calendar` | [calendar migration](2026-07-31-calendar-module-migration.md) | Complete | Record conformance to the latest template and preserve Google adapters |
 | `studio` | [studio migration](2026-07-31-studio-module-migration.md) | Core complete | Keep nested capabilities in separate plans |
-| `studio.documents` | [documents capability migration](2026-07-31-studio-documents-module-migration.md) | Core complete | Finish search/embedding evidence and service-wide verification |
-| `studio.subscriptions` | [subscriptions capability migration](2026-07-31-studio-subscriptions-module-migration.md) | Core boundary complete | Finish authorization/payment boundary and service-wide verification |
-| `identity` | [identity module migration](2026-07-31-identity-module-migration.md) | Canonical boundaries complete; production/security evidence remains | Keep security domain, persistence, inbound security, and Keycloak adapters behind public contracts |
-| `tenancy` | [tenancy module migration](2026-07-31-tenancy-module-migration.md) | Canonical boundaries complete; operational evidence remains | Keep tenant domain, focused lifecycle use cases, provisioning, database pool, and web infrastructure separated |
-| `assistant` | [assistant module migration](2026-07-31-assistant-module-template-migration.md) | Canonical conversation, AI, participant, and WhatsApp adapter boundaries complete; provider/recovery evidence remains | Keep AI providers, conversations, participants, and WhatsApp webhook boundaries isolated |
-| `notification` | [notification module migration](2026-07-31-notification-module-migration.md) | Core complete | Finish retry/idempotency evidence and service-wide verification |
-| `payment` | [payment module migration](2026-07-31-payment-module-migration.md) | Core complete | Finish webhook replay/signature evidence and service-wide verification |
+| `studio.documents` | [documents capability migration](2026-07-31-studio-documents-module-migration.md) | Repository-local migration and verification complete; schema rollback evidence remains | Keep search/embedding ownership behind public capability contracts |
+| `studio.subscriptions` | [subscriptions capability migration](2026-07-31-studio-subscriptions-module-migration.md) | Repository-local migration and verification complete; payment/recovery evidence remains | Keep subscription lifecycle and payment boundary explicit |
+| `identity` | [identity module migration](2026-07-31-identity-module-migration.md) | Repository-local migration and verification complete; deployment evidence remains | Keep security domain, persistence, inbound security, and Keycloak adapters behind public contracts |
+| `tenancy` | [tenancy module migration](2026-07-31-tenancy-module-migration.md) | Repository-local migration and verification complete; operational evidence remains | Keep tenant domain, focused lifecycle use cases, provisioning, database pool, and web infrastructure separated |
+| `assistant` | [assistant module migration](2026-07-31-assistant-module-template-migration.md) | Repository-local migration and verification complete; credentialed provider/recovery evidence remains | Keep AI providers, conversations, participants, and WhatsApp webhook boundaries isolated |
+| `notification` | [notification module migration](2026-07-31-notification-module-migration.md) | Repository-local migration and verification complete; credentialed provider/retry evidence remains | Keep channel providers behind application ports and preserve durable delivery boundaries |
+| `payment` | [payment module migration](2026-07-31-payment-module-migration.md) | Repository-local migration and verification complete; credentialed financial/recovery evidence remains | Keep payment providers and webhook replay behind application-owned ports |
 | `audit` | [audit module decision](2026-07-31-audit-module-normalization.md) | Reserved metadata-only boundary hardened | Keep metadata-only until a separately approved audit capability exists |
-| `shared` | [shared infrastructure normalization](2026-07-31-shared-infrastructure-normalization.md) | Capability ownership, primitive packages, and search integration normalized | Finish dependency-cycle and service-wide verification |
+| `shared` | [shared infrastructure normalization](2026-07-31-shared-infrastructure-normalization.md) | Repository-local ownership, primitive packages, search integration, and dependency verification complete | Keep Shared technical and cross-cutting; run deployment rollback evidence before production |
 | `build-logic` | [build-logic CDD migration](2026-08-02-build-logic-cdd-migration.md); [verification report](../reviews/2026-08-02-build-logic-cdd-verification.md) | Implemented and verified | Capability-owned Gradle conventions, binary plugins, lazy providers, normalized tasks/models, TestKit, and configuration-cache coverage |
 | `event-streaming` | [Kafka + Spring Modulith closure](2026-08-02-kafka-modulith-event-streaming-closure.md); [verification report](../reviews/2026-08-02-kafka-modulith-event-streaming-verification.md) | Implemented and verified for MVP | Verify public event contracts, publication delivery, consumer idempotency, application-restart recovery configuration, broker configuration, and CI evidence |
 
@@ -73,7 +73,7 @@ not move to the next priority band until its exit criteria are met.
 | P3 | Provider integration | Migrate Payment | [Payment](2026-07-31-payment-module-migration.md) | Payment has financial and webhook risk; it follows stable subscription, tenant, and provider boundaries | Provider/webhook signature and replay, transaction, tenant, integration, and CI evidence pass |
 | P4 | Build platform | Execute the complete Capability-Driven Design build-logic migration | [Build-logic CDD](2026-08-02-build-logic-cdd-migration.md) | All module migrations consume the same build platform; its implementation is now normalized and verified | Complete for the current unreleased service; future capabilities must add provider ownership and TestKit coverage |
 | P4 | Event streaming | Close Kafka + Spring Modulith event-streaming evidence | [Kafka + Modulith](2026-08-02-kafka-modulith-event-streaming-closure.md) | Events cross module and process boundaries; delivery, partitioning, replay, and failure semantics must be explicit | Complete for the current MVP; broker-outage chaos remains a deployment-environment acceptance test |
-| P5 | Governance and verification | Run final service-wide architecture verification | Registry and service verification checklist | Confirms no migration weakened Modulith boundaries or reintroduced legacy packages | Full architecture, Modulith, Kafka/event publication, CI, boot artifacts, documentation, security, and rollback evidence pass |
+| P5 | Governance and verification | Run final repository-local service verification | [final service verification](../reviews/2026-08-03-final-service-verification.md) | Confirms no migration weakened Modulith boundaries or reintroduced legacy packages | Repository-local architecture, Modulith, Kafka, CI, integration, boot, documentation, and remote checks pass; deployment-only gates remain explicit |
 
 ### Parallelization rules
 
@@ -141,4 +141,7 @@ historical line is not an implementation gap unless it is also listed as open in
 the plan's current status or in the priority table above.
 
 The current complete gap inventory is recorded in
-[`2026-08-02-plan-audit.md`](../reviews/2026-08-02-plan-audit.md).
+[`2026-08-02-plan-audit.md`](../reviews/2026-08-02-plan-audit.md). The latest
+repository-local closure and its environment-dependent release gates are
+recorded in
+[`2026-08-03-final-service-verification.md`](../reviews/2026-08-03-final-service-verification.md).

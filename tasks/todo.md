@@ -324,8 +324,14 @@ reopened by this backlog.
 
 ### P5 — Final governance verification
 
-- [ ] Run the final service-wide architecture, Modulith, CI, boot-artifact,
-  documentation, security, and rollback evidence gate.
+- [x] Run the repository-local service-wide architecture, Modulith, CI,
+  integration, boot-artifact, documentation, formatting, and remote PR checks.
+- [x] Commit the final evidence report at
+  `docs/superpowers/reviews/2026-08-03-final-service-verification.md`.
+- [ ] Execute environment-dependent security, provider, backup/restore,
+  native-image measurement, broker-outage, and live pool-recovery gates before
+  production deployment; these cannot be truthfully executed without the target
+  environment and credentials.
 
 Execution rules and dependencies are maintained in
 `docs/superpowers/plans/README.md#remaining-execution-order-priority-and-type`.

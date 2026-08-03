@@ -988,5 +988,16 @@ replay evidence, and final service-wide verification.
 - [x] Verified the focused and complete Assistant unit suite together with
   Checkstyle.
 
-Remaining Assistant work is live provider contract execution, PostgreSQL
-replay evidence, and final service-wide verification.
+## Repository-local closure — 2026-08-03
+
+- [x] Verified Assistant integration, provider contract, WhatsApp signature,
+  replay, tenant-routing, and persistence-boundary tests.
+- [x] Verified the complete service-wide integration matrix, platform Modulith,
+  CI, boot JAR, and Markdown gates.
+- [x] Kept AI provider and WhatsApp transport implementations behind explicit
+  application ports and capability-owned adapters.
+
+Credentialed AI/WhatsApp provider execution, live PostgreSQL replay/recovery,
+and deployed operational evidence remain environment-dependent release gates.
+The repository-local migration is complete; consolidated evidence is recorded
+in `docs/superpowers/reviews/2026-08-03-final-service-verification.md`.

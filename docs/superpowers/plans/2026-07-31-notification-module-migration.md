@@ -331,6 +331,16 @@ live-provider verification, and the final service-wide gate.
 - [x] Preserved the existing failure-state persistence behavior and verified
   the focused Notification delivery tests.
 
-Remaining Notification evidence is deterministic provider contract depth,
-transient-failure retry policy, credentialed live-provider verification, and the
-final service-wide gate.
+## Repository-local closure — 2026-08-03
+
+- [x] Verified MessageBird, Vonage, Twilio, email, push, typed-failure, and
+  unsupported-channel contract coverage.
+- [x] Verified Notification integration, service-wide CI, platform Modulith,
+  boot JAR, and Markdown gates.
+- [x] Preserved durable delivery idempotency and explicit failure semantics;
+  provider errors cannot become successful delivery IDs.
+
+Credentialed provider execution, transient retry tuning against real provider
+responses, and deployed delivery recovery remain environment-dependent release
+evidence. The repository-local migration is complete; consolidated evidence is
+recorded in `docs/superpowers/reviews/2026-08-03-final-service-verification.md`.

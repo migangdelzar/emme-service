@@ -251,10 +251,6 @@ webhook replay/signature coverage, and credentialed live-provider verification.
   assertions to reject the old `adapter/out/client` provider location.
 - [x] Verified Payment unit/module checks and PostgreSQL integration tests.
 
-Remaining Payment evidence is deterministic provider contract depth, webhook
-replay/signature execution evidence, credentialed live-provider verification,
-and the final service-wide gate.
-
 ## Completed payment request-validation boundary slice — 2026-08-03
 
 - [x] Added a red/green architecture regression test for validating payment
@@ -267,3 +263,17 @@ and the final service-wide gate.
 Remaining Payment evidence is deterministic provider contract depth, webhook
 replay/signature execution evidence, credentialed live-provider verification,
 and the final service-wide gate.
+
+## Repository-local closure — 2026-08-03
+
+- [x] Verified Stripe provider request/error contracts and Mercado Pago webhook
+  signature, tenant, duplicate, and replay boundaries.
+- [x] Verified Payment integration, service-wide CI, platform Modulith, boot JAR,
+  and Markdown gates.
+- [x] Preserved tenant predicates and application-owned provider/persistence
+  ports throughout payment use cases.
+
+Credentialed financial-provider execution, live webhook replay/recovery, and
+backup/rollback drills remain environment-dependent release evidence. The
+repository-local migration is complete; consolidated evidence is recorded in
+`docs/superpowers/reviews/2026-08-03-final-service-verification.md`.

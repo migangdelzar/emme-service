@@ -67,3 +67,13 @@ modules/audit/src/main/java/com/emme/audit/package-info.java
   that only `package-info.java` exists and no empty DDD/Hexagonal layer tree was
   scaffolded.
 - [x] Verified Audit and the application Modulith test after the cleanup.
+
+## Repository-local closure — 2026-08-03
+
+- [x] Verified the metadata-only Audit boundary in the complete platform
+  Modulith, CI, boot JAR, and Markdown gates.
+- [x] Confirmed that durable audit ownership remains with the existing Tenancy
+  and Identity capabilities; no duplicate Audit business module was created.
+
+Any future Audit capability still requires a separately approved retention,
+ownership, and data-classification decision.

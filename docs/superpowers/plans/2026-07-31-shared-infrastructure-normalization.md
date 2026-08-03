@@ -162,3 +162,16 @@ The template deliberately does not expose a `Supplier` overload: a supplier
 cannot make the managed `Connection` dependency explicit. Additional
 connection-backed adapters should reuse this capability instead of creating a
 module-local connection service.
+
+## Repository-local closure — 2026-08-03
+
+- [x] Verified Shared unit/integration search coverage and the full service-wide
+  integration matrix.
+- [x] Verified dependency-cycle, Modulith, CI, boot JAR, formatting, and
+  Markdown gates.
+- [x] Preserved explicit ownership for technical primitives, search, web advice,
+  time, identity, and managed JDBC callbacks.
+
+The remaining PostgreSQL/Testcontainers shutdown messages are documented as an
+external process-teardown race in the final verification report. Deployment
+rollback evidence remains an environment-dependent release gate.

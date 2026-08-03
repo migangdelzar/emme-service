@@ -104,6 +104,13 @@ service-wide integration, Modulith, schema, security, and recovery evidence.
 - [x] Compared subscription entity/status/plan fields with the canonical
   Studio schema and preserved the existing unique tenant ownership constraint.
 
-The Subscriptions capability remains structurally canonical. Remaining work is
-the repository-wide payment boundary, shared database shutdown lifecycle,
-Modulith, security, recovery, and boot-artifact evidence.
+## Repository-local closure — 2026-08-03
+
+- [x] Verified tenant-safe subscription persistence, Studio integration, the
+  payment boundary, platform Modulith, CI, boot JAR, and Markdown gates.
+- [x] Preserved the subscription lifecycle as a framework-free domain model and
+  kept payment access behind application-owned contracts.
+
+Live schema rollback and deployment recovery remain environment-dependent release
+evidence. The repository-local migration is complete; consolidated evidence is
+recorded in `docs/superpowers/reviews/2026-08-03-final-service-verification.md`.

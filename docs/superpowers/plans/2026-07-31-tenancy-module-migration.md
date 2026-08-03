@@ -446,6 +446,16 @@ and the committed verification report.
   coverage while preserving existing HTTP and provisioning behavior.
 - [x] Verified Tenancy and Identity unit/integration tests after the split.
 
-Remaining Tenancy work is live routing/eviction/recovery evidence, provisioning
-replay and rollback evidence, architecture dependency rules, and the committed
-final verification report.
+## Repository-local closure — 2026-08-03
+
+- [x] Verified the complete Tenancy integration test task in the service-wide
+  integration matrix.
+- [x] Verified managed bootstrap JDBC callbacks through the qualified generic
+  executor and preserved H2 contexts without bootstrap infrastructure.
+- [x] Verified platform Modulith, layer, application-parity, CI, boot JAR, and
+  Markdown gates.
+
+Live pool eviction, database-outage routing recovery, provisioning replay and
+rollback, and audit-correlation drills remain environment-dependent release
+evidence. The repository-local migration is complete; the consolidated evidence
+is recorded in `docs/superpowers/reviews/2026-08-03-final-service-verification.md`.

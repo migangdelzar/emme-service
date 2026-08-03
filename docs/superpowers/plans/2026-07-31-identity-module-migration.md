@@ -457,10 +457,6 @@ filter, then continue authorization domain/application separation.
 - [x] Preserved the existing table names, columns, relationships, and runtime
   behavior.
 
-The remaining Identity work is distributed rate-limit state, broader
-authorization domain/application separation, and the final production-readiness
-evidence gate.
-
 ## Completed staff-login validation boundary slice — 2026-08-03
 
 - [x] Added a red/green source-boundary regression test for staff-login input
@@ -830,3 +826,17 @@ evidence gate.
 The remaining Identity work is distributed rate-limit state, broader
 authorization domain/application separation, and the final production-readiness
 evidence gate.
+
+## Repository-local closure — 2026-08-03
+
+- [x] Verified the complete Identity integration test task in the service-wide
+  integration matrix.
+- [x] Verified platform Modulith, layer, application-parity, CI, boot JAR, and
+  Markdown gates.
+- [x] Preserved the focused one-service-per-use-case, public-contract, and
+  security-boundary rules.
+
+Credentialed Keycloak provisioning, distributed rate-limit deployment behavior,
+live migration/recovery, and rollback drills remain environment-dependent
+release evidence. The repository-local migration is complete; consolidated
+evidence is recorded in `docs/superpowers/reviews/2026-08-03-final-service-verification.md`.

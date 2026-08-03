@@ -122,4 +122,14 @@ service-level gate is the repository-wide Modulith/CI/boot-artifact report,
 plus live schema rollback evidence shared with the Studio migration. The latest
 Studio integration run still exposes the known shutdown-time PostgreSQL and
 Spring Modulith publication-registry warnings.
-  regression tests.
+
+## Repository-local closure — 2026-08-03
+
+- [x] Verified Studio integration, document lifecycle, tenant-safe persistence,
+  platform Modulith, CI, boot JAR, and Markdown gates.
+- [x] Kept search and embedding responsibilities behind explicit capability
+  contracts without inventing an upload or ingestion implementation.
+
+Live schema rollback and deployment recovery remain environment-dependent release
+evidence. The repository-local migration is complete; consolidated evidence is
+recorded in `docs/superpowers/reviews/2026-08-03-final-service-verification.md`.

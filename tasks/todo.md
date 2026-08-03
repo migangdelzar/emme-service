@@ -166,6 +166,8 @@ reopened by this backlog.
 - [x] Qualify the registry adapter against the named bootstrap executor so the
   shared tenant-routed executor cannot reintroduce datasource initialization
   cycles.
+- [x] Disable database-backed scheduling in ephemeral platform/shared test
+  profiles; provisioning scheduling remains enabled in the production profile.
 - [ ] Close live pool eviction/recovery, provisioning replay/rollback, and
   clean test-context lifecycle evidence.
 - [x] Validate staff-login credentials at the Identity HTTP boundary.
@@ -187,7 +189,8 @@ reopened by this backlog.
 - [ ] Close remaining shutdown-only diagnostics in every separately launched
   Spring context and drain Kafka publications before JVM shutdown. The
   Identity context is now clean after ordering publication cleanup before both
-  tenant pools and the PostgreSQL container.
+  tenant pools and the PostgreSQL container; lightweight contexts no longer run
+  the PostgreSQL-only provisioning scheduler.
 - [x] Run the service-wide dependency-cycle verification through the platform
   Modulith, layer, and application parity tests.
 

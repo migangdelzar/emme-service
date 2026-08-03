@@ -3,6 +3,9 @@
 # BaseRepositoryTest loads the full TestApplication
 # context (every module component-scanned), not just the repository under test.
 spring:
+  task:
+    scheduling:
+      enabled: false
   datasource:
     url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
     driver-class-name: org.h2.Driver
@@ -44,6 +47,9 @@ spring:
         enabled: false
 
 app:
+  tenant:
+    provisioning:
+      enabled: false
   ai:
     provider: mock
   calendar:

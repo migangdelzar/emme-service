@@ -84,6 +84,12 @@ container. Identity's focused integration context is clean after that change;
 remaining messages in other contexts are tracked as a test-harness cleanup
 improvement rather than hidden or treated as production runtime evidence.
 
+Ephemeral platform and shared test profiles disable Spring scheduling and the
+tenant provisioning component. The component is also guarded at its bean
+boundary, so lightweight contexts that do not load the platform application
+cannot issue PostgreSQL-only registry queries. The default production profile
+keeps scheduling and provisioning enabled.
+
 ## Environment-dependent evidence not claimed as local completion
 
 The following require secrets or an actual deployment environment and therefore

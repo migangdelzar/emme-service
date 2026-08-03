@@ -459,3 +459,18 @@ Live pool eviction, database-outage routing recovery, provisioning replay and
 rollback, and audit-correlation drills remain environment-dependent release
 evidence. The repository-local migration is complete; the consolidated evidence
 is recorded in `docs/superpowers/reviews/2026-08-03-final-service-verification.md`.
+
+## Test-profile scheduler isolation — 2026-08-03
+
+- [x] Added a platform parity test requiring ephemeral profiles to disable
+  database-backed scheduling.
+- [x] Made the tenant provisioning component conditional on an explicit
+  `app.tenant.provisioning.enabled` flag, with production enabled by default.
+- [x] Disabled Spring scheduling and tenant provisioning in the platform and
+  every shared testing fixture profile that can create an ephemeral context.
+- [x] Verified platform parity and Identity tests without the provisioning
+  scheduler querying the PostgreSQL-only registry table in lightweight tests.
+
+Production scheduling and tenant provisioning remain enabled by the default
+application profile and are still covered by the environment-dependent
+provisioning/recovery gates.

@@ -3,6 +3,9 @@
 # context (every module component-scanned) and needs the same cross-module bootstrap config
 # as application-test.yml / application-repository.yml; see those files' headers.
 spring:
+  task:
+    scheduling:
+      enabled: false
   jpa:
     entity-scan:
       packages: com.emme
@@ -46,6 +49,9 @@ spring:
         enabled: false
 
 app:
+  tenant:
+    provisioning:
+      enabled: false
   ai:
     provider: mock
   calendar:

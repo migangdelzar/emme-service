@@ -1,4 +1,7 @@
 spring:
+  task:
+    scheduling:
+      enabled: false
   autoconfigure:
     exclude:
       - org.springframework.boot.security.oauth2.client.autoconfigure.servlet.OAuth2ClientAutoConfiguration
@@ -15,6 +18,9 @@ spring:
             client-secret: test-secret
 
 app:
+  tenant:
+    provisioning:
+      enabled: false
   keycloak:
     base-url: http://localhost:8080
     issuer-uri: https://test-issuer/realms/emme

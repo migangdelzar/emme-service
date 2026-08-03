@@ -75,3 +75,13 @@ shared PostgreSQL integration profile retained a stale
 Redis container configuration tests pass, and a repository search confirms that
 the shared test fixtures no longer enable container reuse. Credentialed or
 deployed lifecycle evidence remains an environment-dependent gate.
+
+## Scheduled provisioning isolation — 2026-08-03
+
+The platform and all shared ephemeral profiles now disable Spring scheduling
+and tenant provisioning. `TenantProvisioningProcessManager` is additionally
+guarded by `app.tenant.provisioning.enabled`, preventing it from querying the
+PostgreSQL-only `emme_core.tenant_registry` table even in lightweight contexts
+that do not load the platform application. The platform parity, Tenancy
+condition, Studio, and Identity tests pass without the prior provisioning query
+diagnostic; production scheduling remains enabled in the default profile.

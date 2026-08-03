@@ -620,3 +620,15 @@
 - Prevention rule: bootstrap adapters must depend on the named bootstrap
   executor; optionality must never be used as a substitute for a qualifier at a
   circular infrastructure boundary.
+
+## 2026-08-03 — Disable database-backed schedulers in lightweight tests
+
+- Failure mode: `TenantProvisioningProcessManager` ran from H2/lightweight
+  contexts and queried the PostgreSQL-only tenant registry table, producing
+  application errors inside otherwise green test runs.
+- Detection signal: `Unable to load pending tenant provisioning requests` with
+  a bad-grammar error for `emme_core.tenant_registry` during CI.
+- Prevention rule: database-backed scheduled components must be guarded by an
+  explicit production-default property, and shared ephemeral profiles must
+  disable both the scheduler and the guarded component. Production scheduling
+  remains enabled and gets its own integration/recovery evidence.

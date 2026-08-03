@@ -12,6 +12,9 @@ spring:
       security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_SSL}
 
 app:
+  keycloak:
+    provisioning:
+      enabled: ${EMME_KEYCLOAK_PROVISIONING_ENABLED:true}
   messaging:
     kafka:
       enabled: ${EMME_KAFKA_EVENTS_ENABLED:true}

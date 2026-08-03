@@ -39,6 +39,7 @@ import org.testcontainers.kafka.KafkaContainer;
 @TestPropertySource(
     properties = {
       "spring.modulith.events.externalization.enabled=true",
+      "app.keycloak.provisioning.enabled=false",
       "app.google.oauth.encryption-key=12345678901234567890123456789012"
     })
 @Execution(ExecutionMode.SAME_THREAD)

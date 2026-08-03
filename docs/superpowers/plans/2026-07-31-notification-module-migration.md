@@ -309,6 +309,18 @@ service-wide gate.
 Remaining Notification evidence is transient-failure retry policy, credentialed
 live-provider verification, and the final service-wide gate.
 
+## Completed deterministic SMS provider contract depth — 2026-08-03
+
+- [x] Added MessageBird success and HTTP-failure contract coverage with
+  authorization and JSON payload assertions.
+- [x] Added Vonage success and HTTP-failure contract coverage with request-body
+  assertions and typed failure translation.
+- [x] Verified the complete Notification unit suite after adding both provider
+  contracts.
+
+Remaining Notification evidence is transient-failure retry policy, credentialed
+live-provider verification, and the final service-wide gate.
+
 ## Completed unsupported-channel delivery guard — 2026-08-02
 
 - [x] Added a red/green delivery-service regression test for channels without a

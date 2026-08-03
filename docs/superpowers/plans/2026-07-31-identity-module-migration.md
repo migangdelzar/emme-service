@@ -411,9 +411,23 @@ authorization review, and the final production-readiness evidence gate.
 
 The current Identity baseline includes typed security and provisioning
 configuration, separated provider ports and adapters, redacted audit output,
-and a trusted-proxy boundary for login rate limiting. The remaining scope is
-distributed rate-limit state, broader authorization domain/application
-separation, and the final production-readiness evidence gate.
+trusted-proxy handling, and distributed login rate-limit state. The remaining
+scope is broader authorization review, explicit provisioning transaction/event
+ports, and the final production-readiness evidence gate.
+
+## Completed isolated provisioning toggle for event-streaming tests — 2026-08-03
+
+- [x] Made the `TenantCreated` provisioning consumer conditional on the typed
+  deployment toggle `EMME_KEYCLOAK_PROVISIONING_ENABLED` while keeping it
+  enabled by default.
+- [x] Disabled provisioning only in the isolated Kafka Testcontainers context,
+  where Keycloak is intentionally absent.
+- [x] Verified the Kafka event-streaming integration exits with no unfinished
+  Spring Modulith publications and preserved the public event contract.
+
+Remaining Identity work is broader authorization review, explicit provisioning
+transaction/event ports, and final tenant-isolation, migration, recovery, and
+service-wide evidence.
 
 ## Completed security audit hardening slice — 2026-08-01
 

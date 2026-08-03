@@ -236,6 +236,14 @@ reopened by this backlog.
   tracked in the Payment plan.
 - [x] Apply Bean Validation at the Payment initiation HTTP boundary.
 
+### Provider and event evidence checkpoint — 2026-08-03
+
+- [x] Add deterministic MessageBird and Vonage provider contract tests for
+  success payloads, authentication/request shape, and typed HTTP failures.
+- [x] Make Kafka integration composition explicit by disabling external
+  Keycloak provisioning in the isolated Kafka test profile; the test now exits
+  with no outstanding Spring Modulith publications.
+
 ### P4 — Build-platform normalization
 
 - [x] Create the build-logic CDD design specification and file-by-file

@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-08-03 — Isolated integration contexts must override public contracts
+
+- Failure mode: An integration test attempted to replace an internal Identity
+  port from the application composition root, but the application intentionally
+  exposes only the module API and compilation failed.
+- Detection signal: The platform integration-test classpath could not resolve
+  `identity.application` types.
+- Prevention rule: Test compositions may override only public module contracts;
+  add an explicit feature toggle when an external listener must be disabled in
+  an isolated context instead of widening module visibility.
+
 ## 2026-08-02 — Identifier-only lookups are a tenant-isolation defect
 
 - Failure mode: Assistant commands and repository ports addressed existing

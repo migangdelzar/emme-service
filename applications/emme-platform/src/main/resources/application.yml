@@ -121,6 +121,7 @@ app:
     customer-client-id: emme-customer-app
     admin-password: ${EMME_KEYCLOAK_ADMIN_PASSWORD:}
     provisioning:
+      enabled: ${EMME_KEYCLOAK_PROVISIONING_ENABLED:true}
       initial-admin-password: ${EMME_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_PASSWORD:}
   ai:
     provider: mock

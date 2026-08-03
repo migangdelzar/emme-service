@@ -20,7 +20,7 @@ stale historical checkboxes do not reintroduce legacy work.
 
 | Priority | Plan or area | What is still missing | Classification |
 |---|---|---|---|
-| P0 | Identity | Distributed login-rate-limit state and failure behavior; final architecture dependency rules; explicit provisioning transaction/event-port evidence; broader authorization hardening; tenant-isolation, privilege-escalation, JWT issuer/audience, and migration/recovery evidence | Open implementation plus production evidence |
+| P0 | Identity | Final architecture dependency rules; explicit provisioning transaction/event-port evidence; broader authorization hardening; tenant-isolation, privilege-escalation, JWT issuer/audience, and migration/recovery evidence | Open implementation plus production evidence; distributed rate limiting is already implemented and focused-tested |
 | P0 | Tenancy | Live tenant-pool eviction and routing-failure evidence; provisioning replay/idempotency and rollback evidence; transaction/after-commit evidence; architecture dependency rules; committed verification report | Open operational evidence |
 | P1 | Shared | Live PostgreSQL vector/full-text search integration evidence; complete dependency-cycle and API-exposure verification; committed rollback/recovery evidence | Open verification |
 | P1 | Audit | No implementation is missing. The metadata-only decision is complete; only historical plan wording needed reconciliation | Documentation only |

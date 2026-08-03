@@ -35,7 +35,6 @@ class TokenEncryptionServiceTest {
     org.junit.jupiter.api.Assertions.assertThrows(
         IllegalArgumentException.class,
         () ->
-            new TokenEncryptionService(
-                new GoogleOAuthProperties("id", "secret", "url", "short")));
+            new TokenEncryptionService(new GoogleOAuthProperties("id", "secret", "url", "short")));
   }
 }

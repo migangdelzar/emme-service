@@ -58,8 +58,25 @@ class CalendarPackageConventionTest {
     assertThat(hasClass("com.emme.calendar.adapter.in.web.controller.GoogleOAuthController"))
         .isTrue();
     assertThat(CLASSES.stream())
-        .filteredOn(javaClass -> javaClass.getPackageName().equals("com.emme.calendar.adapter.in.web"))
+        .filteredOn(
+            javaClass -> javaClass.getPackageName().equals("com.emme.calendar.adapter.in.web"))
         .noneMatch(javaClass -> javaClass.getSimpleName().endsWith("Controller"));
+  }
+
+  @Test
+  void webResponsesHaveDedicatedFilesOutsideControllers() throws IOException {
+    assertThat(
+            Files.exists(
+                SOURCE_ROOT.resolve("adapter/in/web/response/CalendarBusyTimeResponse.java")))
+        .isTrue();
+    assertThat(
+            Files.exists(
+                SOURCE_ROOT.resolve("adapter/in/web/response/CalendarSyncStateResponse.java")))
+        .isTrue();
+    String controller =
+        Files.readString(SOURCE_ROOT.resolve("adapter/in/web/controller/CalendarController.java"));
+    assertThat(controller).doesNotContain("record TimeRangeResponse");
+    assertThat(controller).doesNotContain("record SyncStateResponse");
   }
 
   @Test

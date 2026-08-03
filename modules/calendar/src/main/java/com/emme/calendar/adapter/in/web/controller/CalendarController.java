@@ -2,10 +2,11 @@ package com.emme.calendar.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.calendar.adapter.in.web.response.CalendarBusyTimeResponse;
+import com.emme.calendar.adapter.in.web.response.CalendarSyncStateResponse;
 import com.emme.calendar.api.result.CalendarBusyTimeRange;
 import com.emme.calendar.api.usecase.GetBusyTimesUseCase;
 import com.emme.calendar.api.usecase.SyncCalendarEventsUseCase;
-import com.emme.calendar.domain.model.CalendarSyncState;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
@@ -36,39 +37,25 @@ public class CalendarController {
 
   @GetMapping("/busy")
   @Operation(summary = "Get busy times for an artist on a given date")
-  public ResponseEntity<List<TimeRangeResponse>> getBusyTimes(
+  public ResponseEntity<List<CalendarBusyTimeResponse>> getBusyTimes(
       @RequestParam UUID artistId,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
     return withCurrentTenant(
         tenantId -> {
           List<CalendarBusyTimeRange> busyTimes =
               getBusyTimes.getBusyTimes(tenantId, artistId, date);
-          return ResponseEntity.ok(busyTimes.stream().map(TimeRangeResponse::from).toList());
+          return ResponseEntity.ok(busyTimes.stream().map(CalendarBusyTimeResponse::from).toList());
         });
   }
 
   @PostMapping("/sync")
   @Operation(summary = "Trigger calendar sync for current tenant")
   @PreAuthorize("@featureFlagService.isEnabled('calendar_sync')")
-  public ResponseEntity<SyncStateResponse> sync() {
+  public ResponseEntity<CalendarSyncStateResponse> sync() {
     return withCurrentTenant(
         tenantId -> {
           var state = syncCalendarEvents.sync(tenantId);
-          return ResponseEntity.ok(SyncStateResponse.from(state));
+          return ResponseEntity.ok(CalendarSyncStateResponse.from(state));
         });
-  }
-
-  // --- DTOs ---
-
-  public record TimeRangeResponse(String start, String end) {
-    public static TimeRangeResponse from(CalendarBusyTimeRange tr) {
-      return new TimeRangeResponse(tr.start().toString(), tr.end().toString());
-    }
-  }
-
-  public record SyncStateResponse(UUID id, UUID tenantId, String provider, String status) {
-    public static SyncStateResponse from(CalendarSyncState s) {
-      return new SyncStateResponse(s.id(), s.tenantId(), s.provider().name(), s.status().name());
-    }
   }
 }

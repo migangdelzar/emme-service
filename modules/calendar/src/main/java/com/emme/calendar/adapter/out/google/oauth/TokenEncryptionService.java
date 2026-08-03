@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 /**
  * AES-256-GCM encryption service for Google OAuth token storage.
  *
- * <p>Uses a 32-byte key from {@link GoogleOAuthProperties#encryptionKey()}. Each encryption produces a
- * random 12-byte IV, prepended to the ciphertext. The result is Base64-encoded.
+ * <p>Uses a 32-byte key from {@link GoogleOAuthProperties#encryptionKey()}. Each encryption
+ * produces a random 12-byte IV, prepended to the ciphertext. The result is Base64-encoded.
  *
  * <p>Algorithm: {@code AES/GCM/NoPadding}, 128-bit authentication tag.
  */

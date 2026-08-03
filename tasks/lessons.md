@@ -483,3 +483,27 @@
   Modulith's configured resubmission policy, and run broker-outage chaos with
   independently restarted application and broker processes. Do not use a
   same-context managed-container restart as a production recovery assertion.
+
+## 2026-08-03 — Database UUID ordering must not use Java signed ordering
+
+- Failure mode: a PostgreSQL query ordered UUIDs by the database UUID
+  comparator, while the integration test derived the expected first row with
+  Java `UUID::compareTo`, which compares signed 64-bit segments.
+- Detection signal: the query returned a valid tenant-scoped row, but the test
+  expected a different UUID whenever the most-significant bit changed sign.
+- Prevention rule: when an integration contract depends on database ordering,
+  derive the expected value using the database-compatible canonical UUID text
+  ordering or assert only the documented ordering-independent contract.
+
+## 2026-08-03 — Serialize Testcontainers integration contexts when cleanup is global
+
+- Failure mode: running several PostgreSQL-backed Gradle integration tasks in
+  parallel caused Testcontainers' shared resource reaper to race, producing
+  prune conflicts and shutting down a database while Spring contexts were
+  still closing.
+- Detection signal: the same isolated integration test passed, while the
+  parallel aggregate run reported resource-reaper conflicts and shutdown-only
+  connection errors.
+- Prevention rule: use `--max-workers=1` for the repository-wide PostgreSQL
+  integration gate unless the test-container cleanup strategy is explicitly
+  isolated per test task.

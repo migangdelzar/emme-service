@@ -319,8 +319,12 @@ Execution rules and dependencies are maintained in
 - [x] Materialize the two remaining production `package-info.java` files.
 - [x] Verify the focused Studio Documents and Calendar convention tests after
   a deliberate red phase.
-- [ ] Re-run the same metadata audit after the remaining build-logic and
-  service-wide changes are complete.
+- [x] Re-run the same metadata audit after the remaining build-logic and
+  service-wide changes are complete, including the application composition-root
+  configuration package.
+
+Results are recorded in
+`docs/superpowers/reviews/2026-08-03-package-metadata-verification.md`.
 
 ## One-service-per-use-case application boundary — 2026-08-01
 

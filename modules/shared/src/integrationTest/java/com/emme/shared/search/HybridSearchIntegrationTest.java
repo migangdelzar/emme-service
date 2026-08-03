@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.TestApplication;
 import com.emme.testing.integration.annotation.PostgresIntegrationTest;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -132,7 +133,9 @@ class HybridSearchIntegrationTest {
 
     UUID firstMissingEmbeddingId =
         List.of(missingEmbeddingId, secondMissingEmbeddingId).stream()
-            .min(UUID::compareTo)
+            // PostgreSQL orders UUIDs by their byte representation. Compare the canonical
+            // hexadecimal form so the test expresses the same deterministic ordering.
+            .min(Comparator.comparing(UUID::toString))
             .orElseThrow();
 
     assertThat(hybridSearch.idsMissingEmbedding(SearchTarget.CATALOG_ITEM, tenantId, 1))

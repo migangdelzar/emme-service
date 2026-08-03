@@ -47,4 +47,24 @@ class PlatformApplicationParityTest {
         module ->
             assertThat(buildConfiguration).contains("implementation(project(\"" + module + "\"))"));
   }
+
+  @Test
+  void everyMaterializedApplicationConfigurationPackageHasLocalMetadata() throws IOException {
+    Path configurationPackage =
+        sourcePath("applications/emme-platform/src/main/java/com/emme/configuration");
+
+    assertThat(configurationPackage.resolve("package-info.java")).exists();
+  }
+
+  private static Path sourcePath(String relativePath) {
+    Path current = Path.of("").toAbsolutePath();
+    while (current != null) {
+      Path candidate = current.resolve(relativePath);
+      if (Files.exists(candidate)) {
+        return candidate;
+      }
+      current = current.getParent();
+    }
+    throw new IllegalStateException("Cannot locate source path: " + relativePath);
+  }
 }

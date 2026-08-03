@@ -54,8 +54,7 @@ public class PaymentController {
   }
 
   @PostMapping
-  ResponseEntity<PaymentResponse> initiate(
-      @Valid @RequestBody InitiatePaymentRequest request) {
+  ResponseEntity<PaymentResponse> initiate(@Valid @RequestBody InitiatePaymentRequest request) {
     return withCurrentTenant(
         tenantId -> {
           var payment = initiatePayment.initiate(PaymentWebMapper.toCommand(tenantId, request));

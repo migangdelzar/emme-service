@@ -4,5 +4,4 @@ import com.emme.kernel.type.ChannelType;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-public record StartConversationRequest(
-    @NotNull UUID participantId, @NotNull ChannelType channel) {}
+public record StartConversationRequest(@NotNull UUID participantId, @NotNull ChannelType channel) {}

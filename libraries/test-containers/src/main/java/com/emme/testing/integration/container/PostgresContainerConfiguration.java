@@ -1,8 +1,8 @@
 package com.emme.testing.integration.container;
 
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -43,9 +43,7 @@ public class PostgresContainerConfiguration {
     return beanFactory -> {
       if (beanFactory.containsBeanDefinition("eventPublicationRegistry")
           && beanFactory.containsBeanDefinition("postgresContainer")) {
-        beanFactory
-            .getBeanDefinition("eventPublicationRegistry")
-            .setDependsOn("postgresContainer");
+        beanFactory.getBeanDefinition("eventPublicationRegistry").setDependsOn("postgresContainer");
       }
     };
   }

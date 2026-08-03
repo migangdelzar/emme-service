@@ -160,3 +160,14 @@ behavior remains governed by the Documents and Subscriptions plans.
 - [x] Added a convention test preventing API contracts from exposing
   application-owned result types.
 - [x] Verified Studio formatting, Checkstyle, tests, and compilation.
+
+## Framework-free application failure boundary — 2026-08-03
+
+- [x] Add an architecture test rejecting `jakarta.persistence` dependencies
+  from Studio application orchestration.
+- [x] Introduce the public `StudioResourceNotFoundException` under the grouped
+  `api/exception` contract package.
+- [x] Replace persistence-specific `EntityNotFoundException` construction in
+  Artist and Artist Capability application services.
+- [x] Add the `studio-api` named-interface metadata for public exceptions.
+- [x] Verify the Studio package convention suite after a deliberate red phase.

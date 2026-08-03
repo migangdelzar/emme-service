@@ -1,12 +1,12 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.exception.StudioResourceNotFoundException;
 import com.emme.studio.api.usecase.AddArtistCapabilityUseCase;
 import com.emme.studio.application.port.out.ArtistCapabilityRepository;
 import com.emme.studio.application.port.out.ArtistRepository;
 import com.emme.studio.application.port.out.ServiceRepository;
 import com.emme.studio.domain.model.Artist;
 import com.emme.studio.domain.model.ArtistCapability;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +33,11 @@ public class AddArtistCapabilityService implements AddArtistCapabilityUseCase {
     Artist artist =
         artistRepository
             .findById(artistId)
-            .orElseThrow(() -> new EntityNotFoundException("Artist not found: " + artistId));
+            .orElseThrow(() -> new StudioResourceNotFoundException("Artist", artistId));
     com.emme.studio.domain.model.Service service =
         serviceRepository
             .findById(serviceId)
-            .orElseThrow(() -> new EntityNotFoundException("Service not found: " + serviceId));
+            .orElseThrow(() -> new StudioResourceNotFoundException("Service", serviceId));
     return artistCapabilityRepository.save(new ArtistCapability(tenantId, artist, service));
   }
 }

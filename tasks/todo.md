@@ -171,8 +171,11 @@ reopened by this backlog.
   preserving rollback and repository-wide dependency evidence.
 - [x] Complete Shared search integration/tenant-predicate evidence; the focused
   Shared and application Modulith/layer gates pass.
-- [ ] Fix the remaining shared integration shutdown lifecycle warnings, then
-  run the service-wide dependency-cycle verification.
+- [x] Remove H2 schema-drop/event-publication shutdown warnings from the shared
+  test profiles by keeping ephemeral schemas available through framework
+  shutdown; PostgreSQL/Testcontainers teardown warnings remain explicitly
+  environment-dependent.
+- [ ] Run the service-wide dependency-cycle verification.
 
 ### P2 — Domain capabilities
 
@@ -195,6 +198,9 @@ reopened by this backlog.
   claim boundary; provider contract and live database evidence remain.
 - [x] Complete Assistant package metadata coverage and remove unused AI helper
   classes after repository-wide reference verification.
+- [x] Remove `jakarta.persistence.EntityNotFoundException` from Studio
+  application services and expose a Studio-owned public resource-not-found
+  exception.
 - [ ] Complete Assistant credentialed provider contracts, PostgreSQL replay and
   lifecycle evidence, and the final service-wide quality gate.
 

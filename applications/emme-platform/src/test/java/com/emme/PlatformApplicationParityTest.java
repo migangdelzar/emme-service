@@ -56,6 +56,26 @@ class PlatformApplicationParityTest {
     assertThat(configurationPackage.resolve("package-info.java")).exists();
   }
 
+  @Test
+  void ephemeralTestProfilesKeepSchemasAvailableDuringFrameworkShutdown() throws IOException {
+    List<String> profiles =
+        List.of(
+            "applications/emme-platform/src/main/resources/application-test.yml",
+            "applications/emme-platform/src/integrationTest/resources/application-kafka-test.yml",
+            "libraries/testing/src/testFixtures/resources/application-test.yml",
+            "libraries/testing/src/testFixtures/resources/application-repository.yml",
+            "libraries/testing/src/testFixtures/resources/application-web.yml",
+            "libraries/testing/src/testFixtures/resources/application-resttest.yml",
+            "libraries/testing/src/testFixtures/resources/application-integration-test.yml");
+
+    profiles.forEach(
+        profile ->
+            assertThat(readSource(profile))
+                .as("ephemeral database profile: %s", profile)
+                .contains("ddl-auto: create\n")
+                .doesNotContain("ddl-auto: create-drop"));
+  }
+
   private static Path sourcePath(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {
@@ -66,5 +86,13 @@ class PlatformApplicationParityTest {
       current = current.getParent();
     }
     throw new IllegalStateException("Cannot locate source path: " + relativePath);
+  }
+
+  private static String readSource(String relativePath) {
+    try {
+      return Files.readString(sourcePath(relativePath));
+    } catch (IOException exception) {
+      throw new IllegalStateException("Cannot read source path: " + relativePath, exception);
+    }
   }
 }

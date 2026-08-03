@@ -1,9 +1,9 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.exception.StudioResourceNotFoundException;
 import com.emme.studio.api.usecase.UpdateArtistUseCase;
 import com.emme.studio.application.port.out.ArtistRepository;
 import com.emme.studio.domain.model.Artist;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +24,7 @@ public class UpdateArtistService implements UpdateArtistUseCase {
     Artist artist =
         artistRepository
             .findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Artist not found: " + id));
+            .orElseThrow(() -> new StudioResourceNotFoundException("Artist", id));
     artist.setName(name);
     return artistRepository.save(artist);
   }

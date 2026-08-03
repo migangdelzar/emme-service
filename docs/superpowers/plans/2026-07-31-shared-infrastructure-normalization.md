@@ -95,8 +95,19 @@ API results or domain aggregates.
 
 Search integration and tenant-predicate evidence is recorded in
 `docs/superpowers/reviews/2026-08-02-shared-search-verification.md`. Remaining
-work is the clean database/test-context lifecycle fix, full dependency-cycle
-checks, and the service-wide verification gate.
+work is full dependency-cycle checks and the service-wide verification gate.
+
+## Test-profile shutdown lifecycle — 2026-08-03
+
+- [x] Add an application-level regression assertion for every shared ephemeral
+  test profile.
+- [x] Change H2 and test-only database profiles from `ddl-auto: create-drop` to
+  `ddl-auto: create`, preserving startup isolation without dropping
+  `event_publication` before Spring Modulith shutdown callbacks run.
+- [x] Verify the application parity test and Studio module check.
+- [ ] Retain PostgreSQL/Testcontainers shutdown output as environment-specific
+  evidence until the container lifecycle can be isolated without weakening
+  resource ownership.
 
 ## Completed tenant-scoped search maintenance slice — 2026-08-01
 

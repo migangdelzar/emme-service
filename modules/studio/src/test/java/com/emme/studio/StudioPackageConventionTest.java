@@ -83,6 +83,19 @@ class StudioPackageConventionTest {
         .check(CLASSES);
   }
 
+  @Test
+  void applicationLayerDoesNotDependOnPersistenceExceptions() {
+    noClasses()
+        .that()
+        .resideInAnyPackage("com.emme.studio.application..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("jakarta.persistence..")
+        .because("application failures must use Studio-owned exceptions")
+        .check(CLASSES);
+    assertThat(hasClass("com.emme.studio.api.exception.StudioResourceNotFoundException")).isTrue();
+  }
+
   private static boolean hasClass(String className) {
     return CLASSES.stream().anyMatch(javaClass -> javaClass.getName().equals(className));
   }

@@ -507,3 +507,37 @@
 - Prevention rule: use `--max-workers=1` for the repository-wide PostgreSQL
   integration gate unless the test-container cleanup strategy is explicitly
   isolated per test task.
+
+## 2026-08-03 — Application failures must not use persistence exception types
+
+- Failure mode: Studio application services constructed JPA's
+  `EntityNotFoundException`, leaking persistence vocabulary into use-case
+  orchestration and coupling the application layer to Jakarta Persistence.
+- Detection signal: the Studio ArchUnit boundary test reported application
+  methods depending on `jakarta.persistence` constructors.
+- Prevention rule: expected use-case failures belong to the owning module's
+  grouped API/domain exception vocabulary; adapters may translate those stable
+  exceptions into transport-specific responses.
+
+## 2026-08-03 — Do not ship ineffective container lifecycle changes
+
+- Failure mode: suppressing the Spring bean destroy method on a
+  `@ServiceConnection` PostgreSQL container did not remove shutdown-hook
+  connection warnings and would have weakened explicit test-resource ownership.
+- Detection signal: the focused PostgreSQL integration test still emitted the
+  same warnings after the fixture change, while its assertions remained green.
+- Prevention rule: reproduce the lifecycle warning, verify the causal owner,
+  and revert fixture changes that change ownership without improving shutdown
+  ordering; retain the limitation as explicit verification evidence when it is
+  caused by the external test harness.
+
+## 2026-08-03 — Disposable test schemas must outlive event callbacks
+
+- Failure mode: H2 `create-drop` removed the Spring Modulith publication table
+  before the event registry's shutdown callback queried outstanding
+  publications.
+- Detection signal: green module tests emitted `event_publication` missing-table
+  and failed-schema-drop diagnostics during `ionShutdownHook`.
+- Prevention rule: ephemeral test profiles use `ddl-auto: create`; isolate each
+  test database at startup and let the framework close connections without a
+  competing schema-drop phase.

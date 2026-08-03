@@ -1,9 +1,9 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.exception.StudioResourceNotFoundException;
 import com.emme.studio.api.usecase.RemoveArtistCapabilityUseCase;
 import com.emme.studio.application.port.out.ArtistCapabilityRepository;
 import com.emme.studio.domain.model.ArtistCapability;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +24,7 @@ public class RemoveArtistCapabilityService implements RemoveArtistCapabilityUseC
     ArtistCapability capability =
         artistCapabilityRepository
             .findById(capabilityId)
-            .orElseThrow(
-                () -> new EntityNotFoundException("Capability not found: " + capabilityId));
+            .orElseThrow(() -> new StudioResourceNotFoundException("Capability", capabilityId));
     capability.deactivate();
     return artistCapabilityRepository.save(capability);
   }

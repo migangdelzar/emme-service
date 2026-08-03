@@ -161,6 +161,9 @@ reopened by this backlog.
 - [x] Route bootstrap registry JDBC work through the generic throwing connection
   executor; preserve the circular-dependency break through a dedicated
   composition-root datasource and keep H2 contexts free of bootstrap beans.
+- [x] Qualify the registry adapter against the named bootstrap executor so the
+  shared tenant-routed executor cannot reintroduce datasource initialization
+  cycles.
 - [ ] Close live pool eviction/recovery, provisioning replay/rollback, and
   clean test-context lifecycle evidence.
 - [x] Validate staff-login credentials at the Identity HTTP boundary.

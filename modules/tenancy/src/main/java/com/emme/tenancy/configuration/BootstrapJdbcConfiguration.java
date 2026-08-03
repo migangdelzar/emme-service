@@ -3,8 +3,7 @@ package com.emme.tenancy.configuration;
 import com.emme.shared.persistence.jdbc.JdbcConnectionExecutor;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,8 +12,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /** Composition-root wiring for the registry bootstrap connection boundary. */
 @Configuration
-@ConditionalOnProperty(name = "spring.datasource.url")
-@ConditionalOnExpression("!'${spring.datasource.url:}'.contains('h2')")
+@ConditionalOnBean(JdbcConnectionDetails.class)
 public class BootstrapJdbcConfiguration {
 
   @Bean(name = "bootstrapJdbcDataSource")

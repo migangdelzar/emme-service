@@ -597,3 +597,14 @@
 - Prevention rule: keep required application ports materialized in every
   supported context; condition only the production infrastructure needed to
   implement the port, and verify both production and H2 wiring explicitly.
+
+## 2026-08-03 — Qualify bootstrap infrastructure explicitly
+
+- Failure mode: an optional JDBC executor dependency selected Shared's default
+  tenant-routed executor instead of the dedicated bootstrap executor, recreating
+  the datasource initialization cycle during PostgreSQL integration startup.
+- Detection signal: the integration context failed while creating
+  `dataSourceScriptDatabaseInitializer` through `JdbcTemplate`.
+- Prevention rule: bootstrap adapters must depend on the named bootstrap
+  executor; optionality must never be used as a substitute for a qualifier at a
+  circular infrastructure boundary.

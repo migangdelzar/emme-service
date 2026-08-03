@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 
 class DatabaseRegistryAdapterTest {
 
@@ -27,7 +28,9 @@ class DatabaseRegistryAdapterTest {
     TenantDatabaseConnectionProperties connectionProperties = connectionProperties();
     DatabaseRegistryPort port =
         new DatabaseRegistryAdapter(
-            connectionProperties, Optional.of(mock(JdbcConnectionExecutor.class)));
+            connectionProperties,
+            connectionDetails(),
+            Optional.of(mock(JdbcConnectionExecutor.class)));
 
     assertThat(port.findById(DEFAULT_DATABASE_ID))
         .get()
@@ -64,7 +67,8 @@ class DatabaseRegistryAdapterTest {
     when(resultSet.getBoolean("is_active")).thenReturn(expected.active());
 
     DatabaseRegistryPort port =
-        new DatabaseRegistryAdapter(connectionProperties(), Optional.of(executor));
+        new DatabaseRegistryAdapter(
+            connectionProperties(), connectionDetails(), Optional.of(executor));
 
     assertThat(port.findById(databaseId)).contains(expected);
   }
@@ -75,5 +79,24 @@ class DatabaseRegistryAdapterTest {
     properties.setUsername("emme");
     properties.setPassword("secret");
     return properties;
+  }
+
+  private static JdbcConnectionDetails connectionDetails() {
+    return new JdbcConnectionDetails() {
+      @Override
+      public String getUsername() {
+        return "emme";
+      }
+
+      @Override
+      public String getPassword() {
+        return "secret";
+      }
+
+      @Override
+      public String getJdbcUrl() {
+        return "jdbc:h2:mem:bootstrap";
+      }
+    };
   }
 }

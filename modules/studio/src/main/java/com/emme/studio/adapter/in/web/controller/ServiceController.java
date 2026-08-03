@@ -2,6 +2,9 @@ package com.emme.studio.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.studio.adapter.in.web.request.CreateServiceRequest;
+import com.emme.studio.adapter.in.web.request.UpdateServiceRequest;
+import com.emme.studio.adapter.in.web.response.ServiceResponse;
 import com.emme.studio.api.usecase.CreateServiceCatalogEntryUseCase;
 import com.emme.studio.api.usecase.GetServiceCatalogEntryUseCase;
 import com.emme.studio.api.usecase.ListActiveServiceCatalogEntriesUseCase;
@@ -13,8 +16,6 @@ import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -115,43 +116,4 @@ public class ServiceController {
     Service service = retireService.retire(id);
     return ResponseEntity.ok(ServiceResponse.from(service));
   }
-
-  // --- DTOs ---
-
-  public record ServiceResponse(
-      UUID id,
-      String code,
-      String name,
-      String category,
-      String description,
-      int durationMinutes,
-      BigDecimal basePrice,
-      String status) {
-    public static ServiceResponse from(Service s) {
-      return new ServiceResponse(
-          s.getId(),
-          s.getCode(),
-          s.getName(),
-          s.getCategory(),
-          s.getDescription(),
-          s.getDurationMinutes(),
-          s.getBasePrice(),
-          s.getStatus().name());
-    }
-  }
-
-  public record CreateServiceRequest(
-      String code,
-      String name,
-      String category,
-      String description,
-      int durationMinutes,
-      @NotNull BigDecimal basePrice) {}
-
-  public record UpdateServiceRequest(
-      String name,
-      String category,
-      String description,
-      int durationMinutes,
-      BigDecimal basePrice) {}
 }

@@ -7,6 +7,7 @@ import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
+import java.nio.file.Path;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -53,8 +54,32 @@ class StudioPackageConventionTest {
     assertThat(hasClass("com.emme.studio.adapter.in.web.controller.DashboardController")).isTrue();
     assertThat(hasClass("com.emme.studio.adapter.in.web.controller.ServiceController")).isTrue();
     assertThat(CLASSES.stream())
-        .filteredOn(javaClass -> javaClass.getPackageName().equals("com.emme.studio.adapter.in.web"))
+        .filteredOn(
+            javaClass -> javaClass.getPackageName().equals("com.emme.studio.adapter.in.web"))
         .noneMatch(javaClass -> javaClass.getSimpleName().endsWith("Controller"));
+  }
+
+  @Test
+  void serviceWebContractsHaveDedicatedFiles() throws Exception {
+    Path root = sourcePath("modules/studio/src/main/java/com/emme/studio");
+    assertThat(
+            java.nio.file.Files.exists(
+                root.resolve("adapter/in/web/response/ServiceResponse.java")))
+        .isTrue();
+    assertThat(
+            java.nio.file.Files.exists(
+                root.resolve("adapter/in/web/request/CreateServiceRequest.java")))
+        .isTrue();
+    assertThat(
+            java.nio.file.Files.exists(
+                root.resolve("adapter/in/web/request/UpdateServiceRequest.java")))
+        .isTrue();
+    String controller =
+        java.nio.file.Files.readString(
+            root.resolve("adapter/in/web/controller/ServiceController.java"));
+    assertThat(controller).doesNotContain("public record ServiceResponse");
+    assertThat(controller).doesNotContain("public record CreateServiceRequest");
+    assertThat(controller).doesNotContain("public record UpdateServiceRequest");
   }
 
   @Test
@@ -114,5 +139,17 @@ class StudioPackageConventionTest {
 
   private static boolean hasClass(String className) {
     return CLASSES.stream().anyMatch(javaClass -> javaClass.getName().equals(className));
+  }
+
+  private static Path sourcePath(String relativePath) {
+    Path current = Path.of("").toAbsolutePath();
+    while (current != null) {
+      Path candidate = current.resolve(relativePath);
+      if (java.nio.file.Files.exists(candidate)) {
+        return candidate;
+      }
+      current = current.getParent();
+    }
+    throw new IllegalStateException("Cannot locate source path: " + relativePath);
   }
 }

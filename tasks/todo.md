@@ -175,6 +175,7 @@ Identity verification evidence is recorded in
 - [x] Moved Calendar HTTP controllers into `adapter/in/web/controller`, removed the now-empty parent package metadata, and verified the Calendar convention test.
 - [x] Ran the repository-wide `./gradlew test --no-daemon` gate after the naming and adapter package changes; all 81 tasks completed successfully.
 - [x] Extracted Calendar HTTP response records into dedicated `adapter/in/web/response` files and passed Calendar tests plus Spotless.
+- [x] Extracted Studio service web request/response records into dedicated files and passed Studio tests plus Spotless.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain

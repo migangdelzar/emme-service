@@ -74,15 +74,15 @@ represented as local proof.
 
 ## Known non-blocking test-harness diagnostic
 
-Some separately launched PostgreSQL/Testcontainers Spring contexts log
+Some separately launched PostgreSQL/Testcontainers Spring contexts still log
 shutdown-time `SQLSTATE 08006`, `57P01`, or EOF messages while Spring Modulith
 queries its JDBC publication registry after the external PostgreSQL process has
 already begun stopping. Every affected Gradle task still completed successfully
-with zero failed tests. The existing test-container configuration disables
-reuse and explicitly declares publication-registry ordering; the remaining
-message is an external process-shutdown race, not an application assertion
-failure. It is tracked as a test-harness cleanup improvement rather than hidden
-or treated as production runtime evidence.
+with zero failed tests. The test-container configuration now disables reuse and
+orders publication cleanup before both tenant pools and the PostgreSQL
+container. Identity's focused integration context is clean after that change;
+remaining messages in other contexts are tracked as a test-harness cleanup
+improvement rather than hidden or treated as production runtime evidence.
 
 ## Environment-dependent evidence not claimed as local completion
 

@@ -187,3 +187,15 @@ rollback evidence remains an environment-dependent release gate.
 
 This keeps every disposable integration dependency isolated to the test JVM and
 avoids resource-reaper shutdown races with Spring Modulith publication cleanup.
+
+## Tenant-pool publication shutdown ordering — 2026-08-03
+
+- [x] Added a red/green configuration test requiring the publication registry
+  to depend on both the PostgreSQL container and `TenantDatabasePoolProvider`.
+- [x] Applied the ordering only when the relevant bean definitions exist, so
+  H2 and lightweight contexts remain valid.
+- [x] Re-ran the Identity PostgreSQL integration test: it passes and reports
+  `No publications outstanding!` without the prior shutdown diagnostic.
+
+The broader multi-context matrix and deployed recovery drills remain separate
+operational evidence gates.

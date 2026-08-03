@@ -57,6 +57,16 @@ contexts still emit shutdown-only PostgreSQL diagnostics and the Kafka profile
 reports an unfinished publication during JVM shutdown. Those remain open
 service-wide lifecycle evidence items; they do not fail the integration tests.
 
+## Tenant-pool ordering follow-up — 2026-08-03
+
+The Identity integration context exposed a more specific ordering gap: the
+publication registry could outlive the tenant pool provider even after the
+PostgreSQL container was non-reusable. The test-container configuration now
+orders the registry before both `TenantDatabasePoolProvider` and the PostgreSQL
+container when those beans are present. The focused configuration tests and
+Identity integration test pass, and the Identity shutdown log reports no
+outstanding publications without the prior connection diagnostic.
+
 ## Follow-up disposable-container closure — 2026-08-03
 
 The optional Redis test container previously used `.withReuse(true)`, and the

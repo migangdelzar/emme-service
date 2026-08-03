@@ -32,18 +32,28 @@ public class PostgresContainerConfiguration {
   }
 
   /**
-   * Keeps the JDBC publication registry alive until after the PostgreSQL container is available.
+   * Keeps the JDBC publication registry alive until after tenant pools and the PostgreSQL container
+   * are available.
    *
    * <p>Spring destroys dependent beans before their dependencies. Making the publication registry
-   * depend on the container therefore guarantees that its outstanding-publication callback runs
-   * before Testcontainers stops PostgreSQL.
+   * depend on both resources guarantees that its outstanding-publication callback runs before the
+   * tenant pool provider or Testcontainers closes the backing connection.
    */
   @Bean
   static BeanFactoryPostProcessor eventPublicationRegistryShutdownOrdering() {
     return beanFactory -> {
-      if (beanFactory.containsBeanDefinition("eventPublicationRegistry")
-          && beanFactory.containsBeanDefinition("postgresContainer")) {
-        beanFactory.getBeanDefinition("eventPublicationRegistry").setDependsOn("postgresContainer");
+      if (beanFactory.containsBeanDefinition("eventPublicationRegistry")) {
+        var publicationRegistry = beanFactory.getBeanDefinition("eventPublicationRegistry");
+        var dependencies = new java.util.ArrayList<String>();
+        if (beanFactory.containsBeanDefinition("postgresContainer")) {
+          dependencies.add("postgresContainer");
+        }
+        if (beanFactory.containsBeanDefinition("tenantDatabasePoolProvider")) {
+          dependencies.add("tenantDatabasePoolProvider");
+        }
+        if (!dependencies.isEmpty()) {
+          publicationRegistry.setDependsOn(dependencies.toArray(String[]::new));
+        }
       }
     };
   }

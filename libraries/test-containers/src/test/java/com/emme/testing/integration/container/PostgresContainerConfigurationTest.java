@@ -22,11 +22,13 @@ class PostgresContainerConfigurationTest {
     beanFactory.registerBeanDefinition(
         "eventPublicationRegistry", new RootBeanDefinition(Object.class));
     beanFactory.registerBeanDefinition("postgresContainer", new RootBeanDefinition(Object.class));
+    beanFactory.registerBeanDefinition(
+        "tenantDatabasePoolProvider", new RootBeanDefinition(Object.class));
 
     PostgresContainerConfiguration.eventPublicationRegistryShutdownOrdering()
         .postProcessBeanFactory(beanFactory);
 
     assertThat(beanFactory.getBeanDefinition("eventPublicationRegistry").getDependsOn())
-        .containsExactly("postgresContainer");
+        .containsExactlyInAnyOrder("postgresContainer", "tenantDatabasePoolProvider");
   }
 }

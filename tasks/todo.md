@@ -185,7 +185,9 @@ reopened by this backlog.
   framework shutdown callbacks complete against a live database; explicitly
   order publication-registry shutdown before container shutdown.
 - [ ] Close remaining shutdown-only diagnostics in every separately launched
-  Spring context and drain Kafka publications before JVM shutdown.
+  Spring context and drain Kafka publications before JVM shutdown. The
+  Identity context is now clean after ordering publication cleanup before both
+  tenant pools and the PostgreSQL container.
 - [x] Run the service-wide dependency-cycle verification through the platform
   Modulith, layer, and application parity tests.
 

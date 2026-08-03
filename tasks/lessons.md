@@ -563,7 +563,19 @@
   `eventPublicationRegistry` destruction.
 - Prevention rule: shared disposable integration containers must not enable
   `.withReuse(true)`, and the publication registry must be destroyed before
-  the container bean; verify both contracts with focused PostgreSQL tests.
+  tenant pool providers and the container bean; verify all dependency contracts
+  with focused PostgreSQL tests.
+
+## 2026-08-03 — Publication cleanup must outlive tenant pools
+
+- Failure mode: ordering Spring Modulith publication cleanup only before the
+  PostgreSQL container still allowed `TenantDatabasePoolProvider` to close the
+  tenant-routed pool first.
+- Detection signal: Identity integration passed but logged a broken
+  `emme-pool-default` connection during `eventPublicationRegistry.destroy()`.
+- Prevention rule: the publication registry must depend on every managed
+  connection owner it uses, not only the external container; verify the
+  dependency graph and a real PostgreSQL context shutdown.
 
 ## 2026-08-03 — Validate test selectors before interpreting Gradle output
 

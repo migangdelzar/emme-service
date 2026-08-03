@@ -43,12 +43,7 @@ jobs:
           fi
       - uses: actions/checkout@v4
         if: steps.nvd-key.outputs.configured == 'true'
-      - uses: actions/setup-java@v4
-        if: steps.nvd-key.outputs.configured == 'true'
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: ./.github/actions/setup-gradle
         if: steps.nvd-key.outputs.configured == 'true'
       - name: Cache OWASP Dependency-Check data
         uses: actions/cache@v4

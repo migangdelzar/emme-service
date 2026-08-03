@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,18 +20,26 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: ./.github/actions/setup-gradle
       - name: Verify documentation
         uses: actions/setup-node@v4
         with:
           node-version: '20'
       - run: node scripts/validate-markdown.mjs
       - name: Run Gradle quality lifecycle
-        run: ./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon --no-configuration-cache --stacktrace
+        run: >-
+          ./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon
+          --no-configuration-cache --stacktrace
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-quality-reports
+          path: |
+            **/build/reports/**
+            **/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 7
 
   test:
     needs: quality
@@ -38,13 +47,42 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: ./.github/actions/setup-gradle
+      - name: Run all unit and module tests
+        run: ./gradlew test --no-daemon --no-configuration-cache --stacktrace
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
-      - name: Run platform tests
-        run: ./gradlew :applications:emme-platform:test --no-daemon --no-configuration-cache --stacktrace
+          name: backend-test-reports
+          path: |
+            **/build/reports/tests/**
+            **/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  integration:
+    name: Integration tests
+    needs: quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-gradle
+      - name: Run integration tests
+        run: >-
+          ./gradlew integrationTest --no-daemon --no-configuration-cache
+          --stacktrace
+      - name: Upload integration reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-integration-reports
+          path: |
+            **/build/reports/tests/**
+            **/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 7
 
   build-logic:
     name: Build-logic unit and functional tests
@@ -52,12 +90,19 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: ./.github/actions/setup-gradle
+      - name: Run build-logic checks
+        run: >-
+          ./gradlew :build-logic:check --no-daemon --no-configuration-cache
+          --stacktrace
+      - name: Upload build-logic reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :build-logic:check --no-daemon --no-configuration-cache --stacktrace
+          name: build-logic-reports
+          path: build-logic/build/reports/**
+          if-no-files-found: ignore
+          retention-days: 7
 
   infrastructure:
     name: Validate infrastructure manifests
@@ -83,29 +128,69 @@ jobs:
           terraform validate
 
   boot-jar:
-    needs: [quality, test, build-logic, infrastructure]
+    needs: [quality, test, integration, build-logic, infrastructure]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: ./.github/actions/setup-gradle
       - name: Build canonical platform boot JAR
-        run: ./gradlew :applications:emme-platform:bootJar --no-daemon --no-configuration-cache --stacktrace
+        run: >-
+          ./gradlew :applications:emme-platform:bootJar --no-daemon
+          --no-configuration-cache --stacktrace
+      - name: Upload boot JAR and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emme-platform-boot-jar
+          path: |
+            applications/emme-platform/build/libs/*.jar
+            applications/emme-platform/build/reports/**
+          if-no-files-found: ignore
+          retention-days: 14
 
   deploy:
-    needs: boot-jar
+    needs: [boot-jar, summary]
     if: github.ref_name == 'main'
     runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: ./.github/actions/setup-gradle
       - name: Deploy
-        run: ./gradlew deploy -Paction=up -Pprovider=${{ github.ref_name == 'main' && 'prod' || 'k3d' }} --no-daemon --no-configuration-cache
+        run: >-
+          ./gradlew deploy -Paction=up
+          -Pprovider=${{ github.ref_name == 'main' && 'prod' || 'k3d' }}
+          --no-daemon --no-configuration-cache
+
+  summary:
+    name: CI summary
+    if: always()
+    needs: [quality, test, integration, build-logic, infrastructure, boot-jar]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Publish result summary
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          INTEGRATION_RESULT: ${{ needs.integration.result }}
+          BUILD_LOGIC_RESULT: ${{ needs['build-logic'].result }}
+          INFRASTRUCTURE_RESULT: ${{ needs.infrastructure.result }}
+          BOOT_JAR_RESULT: ${{ needs['boot-jar'].result }}
+        run: |
+          echo "## Backend CI" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Quality: ${QUALITY_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tests: ${TEST_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Integration: ${INTEGRATION_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Build logic: ${BUILD_LOGIC_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Infrastructure: ${INFRASTRUCTURE_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Boot JAR: ${BOOT_JAR_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          if [[ "${QUALITY_RESULT}" != "success" ||
+                "${TEST_RESULT}" != "success" ||
+                "${INTEGRATION_RESULT}" != "success" ||
+                "${BUILD_LOGIC_RESULT}" != "success" ||
+                "${INFRASTRUCTURE_RESULT}" != "success" ||
+                "${BOOT_JAR_RESULT}" != "success" ]]; then
+            exit 1
+          fi

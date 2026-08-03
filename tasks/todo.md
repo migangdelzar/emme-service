@@ -203,6 +203,13 @@ Identity verification evidence is recorded in
   and disconnect operations behind one-use-case-per-operation application
   services and `GoogleOAuthPort`; the controller now uses only API contracts
   and dedicated HTTP responses.
+- [x] Hardened GitHub Actions with a shared Gradle setup action, complete unit
+  and integration gates, retained failure reports, boot-JAR artifacts, a final
+  required summary, and production smoke restricted to successful `main` runs.
+- [x] Corrected the Kafka integration profile to use standard Spring datasource,
+  JPA, Liquibase, and Modulith properties; `DatabaseRegistryAdapter` now
+  gracefully falls back to typed connection properties when no service
+  connection details bean exists.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain

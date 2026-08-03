@@ -398,6 +398,7 @@ Every migrated module must complete the following applicable test levels:
 - [ ] Update each module’s existing `*PackageConventionTest` instead of creating duplicate architecture test styles.
 - [ ] Add missing tests for modules currently limited to package metadata.
 - [ ] Run tests after each module slice and record the command/output in its migration plan.
+- [x] Normalize GitHub Actions around one Gradle setup action, complete unit/module and integration gates, failure artifacts, a required CI summary, and main-only production smoke execution.
 - [ ] Keep zero skipped tests and zero ignored architecture rules.
 - [ ] Compare the final module graph against the baseline and explain every remaining dependency.
 

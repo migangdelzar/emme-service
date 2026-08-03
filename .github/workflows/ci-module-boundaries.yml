@@ -19,13 +19,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: ./.github/actions/setup-gradle
 
       - name: Verify module boundaries
-        run: ./gradlew :applications:emme-platform:test --tests com.emme.ModularityTest --tests com.emme.LayerConventionTest --no-daemon --no-configuration-cache --stacktrace
+        run: >-
+          ./gradlew :applications:emme-platform:test
+          --tests com.emme.ModularityTest
+          --tests com.emme.LayerConventionTest
+          --no-daemon --no-configuration-cache --stacktrace

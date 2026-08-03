@@ -29,7 +29,7 @@ class DatabaseRegistryAdapterTest {
     DatabaseRegistryPort port =
         new DatabaseRegistryAdapter(
             connectionProperties,
-            connectionDetails(),
+            Optional.of(connectionDetails()),
             Optional.of(mock(JdbcConnectionExecutor.class)));
 
     assertThat(port.findById(DEFAULT_DATABASE_ID))
@@ -68,9 +68,20 @@ class DatabaseRegistryAdapterTest {
 
     DatabaseRegistryPort port =
         new DatabaseRegistryAdapter(
-            connectionProperties(), connectionDetails(), Optional.of(executor));
+            connectionProperties(), Optional.of(connectionDetails()), Optional.of(executor));
 
     assertThat(port.findById(databaseId)).contains(expected);
+  }
+
+  @Test
+  void fallsBackToTypedConnectionPropertiesWhenServiceConnectionDetailsAreUnavailable() {
+    DatabaseRegistryPort port =
+        new DatabaseRegistryAdapter(connectionProperties(), Optional.empty(), Optional.empty());
+
+    assertThat(port.findById(DEFAULT_DATABASE_ID))
+        .get()
+        .extracting(DatabaseRegistryEntry::jdbcUrl)
+        .isEqualTo("jdbc:h2:mem:bootstrap");
   }
 
   private static TenantDatabaseConnectionProperties connectionProperties() {

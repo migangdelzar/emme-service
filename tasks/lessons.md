@@ -1,5 +1,29 @@
 # Engineering lessons
 
+## 2026-08-03 — Test profiles must use the framework-owned property namespace
+
+- Failure mode: The Kafka integration profile placed datasource and JPA values
+  under `app.*`, so Spring Boot ignored them and the tenant routing datasource
+  attempted to connect to the local production PostgreSQL endpoint.
+- Detection signal: The integration context first lacked
+  `JdbcConnectionDetails`, then failed against `localhost:5432`, and finally
+  failed schema validation after only the datasource key was corrected.
+- Prevention rule: Keep framework configuration under its canonical `spring.*`
+  namespace and reserve `app.*` for application-owned typed properties. Add a
+  real profile-context integration test whenever a custom composition root
+  replaces a framework auto-configuration.
+
+## 2026-08-03 — Optional service-connection metadata
+
+- Failure mode: A bootstrap database adapter required
+  `JdbcConnectionDetails` even in H2/Kafka contexts where no Testcontainers
+  database service connection is intentionally created.
+- Detection signal: The Kafka integration context failed before tests ran with
+  `NoSuchBeanDefinitionException: JdbcConnectionDetails`.
+- Prevention rule: Treat service-connection metadata as optional at framework
+  boundaries and fall back to the validated typed connection properties when a
+  local or in-memory profile does not provide the optional bean.
+
 ## 2026-08-03 — Isolated integration contexts must override public contracts
 
 - Failure mode: An integration test attempted to replace an internal Identity

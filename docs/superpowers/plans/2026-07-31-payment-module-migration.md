@@ -21,7 +21,7 @@ inbound webhook adapter.
 ```text
 com.emme.payment
 ├── application/PaymentService.java
-├── config/PaymentProviderConfig.java
+├── config/PaymentProviderConfiguration.java
 ├── entity/{Payment,PaymentStatus,PaymentRepository}.java
 ├── provider/{PaymentProvider,PaymentProperties,provider implementations}.java
 └── web/{PaymentController,MercadoPagoWebhookController}.java
@@ -41,7 +41,7 @@ com.emme.payment
 ├── adapter/in/{web/controller,web/request,web/response,web/mapper,web/advice,webhook}
 ├── adapter/out/persistence/{entity,repository,adapter,mapper}
 ├── adapter/out/provider/{stripe,paypal,mercado-pago,conekta,mock}
-└── configuration/{PaymentConfiguration,PaymentProperties,PaymentProviderConfig}
+└── configuration/{PaymentConfiguration,PaymentProperties,PaymentProviderConfiguration}
 ```
 
 Materialize `api/event` only if a Payment fact is actually published or consumed.

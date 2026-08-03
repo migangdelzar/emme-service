@@ -72,8 +72,10 @@ NotificationWebMapper
 NotificationExceptionHandler
 ```
 
-Provider failures retain current semantics: SMS providers return their current
-error strings, while email/push typed provider exceptions remain adapter-local.
+Provider failures are represented as exceptions at the application port boundary.
+Provider implementations must never return an error string that could be
+mistaken for a provider message ID; email, SMS, and push adapters use typed
+provider exceptions for rejected or unreachable deliveries.
 `NotificationInfo` exposes only the existing six response fields and never body
 content unless an approved contract changes that behavior.
 
@@ -84,8 +86,7 @@ content unless an approved contract changes that behavior.
 - [x] Add `NotificationPackageConventionTest` for package ownership, API grouping,
   domain framework isolation, adapter direction, and package-info coverage.
 - [x] Add/retain MockMvc tests for request/list/get response fields and status codes.
-- [x] Add representative provider contract tests for success, provider failure, and current SMS
-  non-throwing error behavior.
+- [x] Add representative provider contract tests for success and provider failure.
 - [x] Run the baseline notification tests and record the result before moving types.
 
 ### Task 2: Extract domain and persistence
@@ -117,7 +118,8 @@ content unless an approved contract changes that behavior.
 - [x] Keep provider selection and conditional activation unchanged.
 - [x] Keep credentials in managed configuration; no provider reads secrets from
   source-controlled defaults or exposes them in logs.
-- [x] Add provider fakes/contract tests and preserve current error semantics.
+- [x] Add provider fakes/contract tests and enforce typed provider failures at
+  the application boundary.
 
 ### Task 5: Normalize inbound web adapters and metadata
 
@@ -291,6 +293,21 @@ retry/idempotency behavior, and credentialed live-provider verification.
 Remaining Notification evidence is provider contract depth, transient-failure
 retry policy, credentialed live-provider verification, and the final
 service-wide gate.
+
+## Completed SMS provider failure-contract slice — 2026-08-03
+
+- [x] Added `SmsProviderException` as the typed SMS provider failure boundary.
+- [x] Changed Twilio, MessageBird, and Vonage adapters to throw typed failures
+  for missing credentials, rejected HTTP responses, and transport errors.
+- [x] Added a red/green Twilio contract test proving a provider rejection cannot
+  be represented as a successful message ID.
+- [x] Updated `SmsSender` to document that error strings are forbidden because
+  they can cause the application service to mark failed deliveries as delivered.
+- [x] Verified the focused provider contract and the complete Notification unit
+  suite.
+
+Remaining Notification evidence is transient-failure retry policy, credentialed
+live-provider verification, and the final service-wide gate.
 
 ## Completed unsupported-channel delivery guard — 2026-08-02
 

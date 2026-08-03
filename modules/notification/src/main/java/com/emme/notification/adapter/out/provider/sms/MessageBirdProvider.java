@@ -77,7 +77,7 @@ public class MessageBirdProvider implements com.emme.notification.application.po
   public String send(String to, String message) {
     if (apiKey == null || apiKey.isBlank()) {
       log.warn("MESSAGEBIRD_API_KEY not set — cannot send SMS");
-      return "messagebird-error: API_KEY not configured";
+      throw new SmsProviderException("MessageBird API_KEY not configured");
     }
 
     try {
@@ -99,7 +99,7 @@ public class MessageBirdProvider implements com.emme.notification.application.po
         String responseBody = response.body() != null ? response.body().string() : "";
         if (!response.isSuccessful()) {
           log.warn("MessageBird API error: status={}, body={}", response.code(), responseBody);
-          return "messagebird-error: HTTP " + response.code();
+          throw new SmsProviderException("MessageBird send failed: HTTP " + response.code());
         }
         @SuppressWarnings("unchecked")
         Map<String, Object> result = mapper.readValue(responseBody, Map.class);
@@ -109,7 +109,7 @@ public class MessageBirdProvider implements com.emme.notification.application.po
       }
     } catch (IOException e) {
       log.error("MessageBird SMS send failed", e);
-      return "messagebird-error: " + e.getMessage();
+      throw new SmsProviderException("MessageBird send failed: " + e.getMessage(), e);
     }
   }
 

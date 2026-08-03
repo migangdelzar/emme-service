@@ -74,15 +74,15 @@ public class TwilioSmsProvider implements com.emme.notification.application.port
   public String send(String to, String message) {
     if (accountSid == null || accountSid.isBlank()) {
       log.warn("TWILIO_ACCOUNT_SID not set — cannot send SMS");
-      return "twilio-error: ACCOUNT_SID not configured";
+      throw new SmsProviderException("Twilio ACCOUNT_SID not configured");
     }
     if (authToken == null || authToken.isBlank()) {
       log.warn("TWILIO_AUTH_TOKEN not set — cannot send SMS");
-      return "twilio-error: AUTH_TOKEN not configured";
+      throw new SmsProviderException("Twilio AUTH_TOKEN not configured");
     }
     if (fromNumber == null || fromNumber.isBlank()) {
       log.warn("TWILIO_FROM_NUMBER not set — cannot send SMS");
-      return "twilio-error: FROM_NUMBER not configured";
+      throw new SmsProviderException("Twilio FROM_NUMBER not configured");
     }
 
     try {
@@ -100,7 +100,7 @@ public class TwilioSmsProvider implements com.emme.notification.application.port
         String responseBody = response.body() != null ? response.body().string() : "";
         if (!response.isSuccessful()) {
           log.warn("Twilio API error: status={}, body={}", response.code(), responseBody);
-          return "twilio-error: HTTP " + response.code();
+          throw new SmsProviderException("Twilio send failed: HTTP " + response.code());
         }
         String sid = extractSid(responseBody);
         log.info("Twilio SMS sent — sid: {}, to: {}", sid, to);
@@ -108,7 +108,7 @@ public class TwilioSmsProvider implements com.emme.notification.application.port
       }
     } catch (IOException e) {
       log.error("Twilio SMS send failed", e);
-      return "twilio-error: " + e.getMessage();
+      throw new SmsProviderException("Twilio send failed: " + e.getMessage(), e);
     }
   }
 

@@ -217,8 +217,10 @@ reopened by this backlog.
   use-case services and application-owned delivery ports.
 - [x] Keep Notification lifecycle rules exclusively in the framework-free
   domain aggregate; persistence entities contain state only.
-- [ ] Complete Notification retry/idempotency, tenant-scoped reads, delivery
-  evidence, provider contract tests, and service-wide integration verification.
+- [ ] Complete Notification transient retry policy, credentialed provider
+  execution, and service-wide integration verification.
+- [x] Normalize SMS provider failures as typed exceptions so rejected or
+  unreachable deliveries cannot be marked as delivered from an error string.
 - [x] Migrate Payment after Subscription contracts are stable, preserving
   webhook signature/replay and transaction behavior; provider and final
   service-wide evidence remains.

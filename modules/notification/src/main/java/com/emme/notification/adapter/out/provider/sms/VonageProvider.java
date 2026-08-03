@@ -79,11 +79,11 @@ public class VonageProvider implements com.emme.notification.application.port.ou
   public String send(String to, String message) {
     if (apiKey == null || apiKey.isBlank()) {
       log.warn("VONAGE_API_KEY not set — cannot send SMS");
-      return "vonage-error: API_KEY not configured";
+      throw new SmsProviderException("Vonage API_KEY not configured");
     }
     if (apiSecret == null || apiSecret.isBlank()) {
       log.warn("VONAGE_API_SECRET not set — cannot send SMS");
-      return "vonage-error: API_SECRET not configured";
+      throw new SmsProviderException("Vonage API_SECRET not configured");
     }
 
     try {
@@ -106,7 +106,7 @@ public class VonageProvider implements com.emme.notification.application.port.ou
         String responseBody = response.body() != null ? response.body().string() : "";
         if (!response.isSuccessful()) {
           log.warn("Vonage API error: status={}, body={}", response.code(), responseBody);
-          return "vonage-error: HTTP " + response.code();
+          throw new SmsProviderException("Vonage send failed: HTTP " + response.code());
         }
         @SuppressWarnings("unchecked")
         Map<String, Object> result = mapper.readValue(responseBody, Map.class);
@@ -121,7 +121,7 @@ public class VonageProvider implements com.emme.notification.application.port.ou
       }
     } catch (IOException e) {
       log.error("Vonage SMS send failed", e);
-      return "vonage-error: " + e.getMessage();
+      throw new SmsProviderException("Vonage send failed: " + e.getMessage(), e);
     }
   }
 

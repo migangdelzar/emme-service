@@ -1,6 +1,7 @@
 package com.emme.notification.adapter.out.provider.sms;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.emme.notification.configuration.NotificationHttpClient;
 import okhttp3.OkHttpClient;
@@ -44,10 +45,12 @@ class TwilioSmsProviderContractTest {
   }
 
   @Test
-  void mapsTwilioFailureToStableProviderError() {
+  void throwsTypedProviderFailureWhenTwilioRejectsTheMessage() {
     server.enqueue(new MockResponse().setResponseCode(429).setBody("rate limited"));
 
-    assertThat(provider.send("+5215551111111", "Hello")).isEqualTo("twilio-error: HTTP 429");
+    assertThatThrownBy(() -> provider.send("+5215551111111", "Hello"))
+        .isInstanceOf(SmsProviderException.class)
+        .hasMessage("Twilio send failed: HTTP 429");
   }
 
   private String baseUrl() {

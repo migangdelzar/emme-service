@@ -47,6 +47,7 @@ dependencies {
   implementation(libs.dependency.check.gradle.plugin)
   implementation(libs.sonarqube.gradle.plugin)
   implementation(libs.japicmp.gradle.plugin)
+  implementation(libs.graalvm.native.gradle.plugin)
 
   testImplementation(gradleTestKit())
   testImplementation(platform(libs.junit.bom))

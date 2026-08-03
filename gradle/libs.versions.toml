@@ -30,6 +30,7 @@ cyclonedx = "2.1.0"
 dependency-check = "12.2.2"
 sonarqube = "6.0.1.5171"
 japicmp = "0.4.6"
+graalvm-native-build-tools = "1.1.5"
 
 [libraries]
 # --- Platforms ---
@@ -137,6 +138,7 @@ cyclonedx-gradle-plugin = { module = "org.cyclonedx.bom:org.cyclonedx.bom.gradle
 dependency-check-gradle-plugin = { module = "org.owasp:dependency-check-gradle", version.ref = "dependency-check" }
 sonarqube-gradle-plugin = { module = "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin", version.ref = "sonarqube" }
 japicmp-gradle-plugin = { module = "me.champeau.gradle:japicmp-gradle-plugin", version.ref = "japicmp" }
+graalvm-native-gradle-plugin = { module = "org.graalvm.buildtools:native-gradle-plugin", version.ref = "graalvm-native-build-tools" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

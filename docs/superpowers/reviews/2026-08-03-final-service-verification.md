@@ -25,6 +25,7 @@ The source of truth is `applications/emme-platform`; the removed
 | Endpoint versioning | Pass | Configured Spring MVC header-based `API-Version` resolver and controller mappings |
 | Managed JDBC callbacks | Pass | Generic throwable connection function/consumer executor and Tenancy bootstrap integration |
 | Build-logic CDD | Pass | Capability-owned Gradle plugins, extensions, tasks, providers, ValueSources, and TestKit |
+| Optional native-image capability | Pass locally | `emme.native-image` convention, no-fallback configuration, dependency verification, and TestKit |
 | Spring Modulith boundaries | Pass | Platform Modulith and layer tests |
 | Kafka event streaming | Pass locally | Kafka Testcontainers publication/topic/key/payload test; no RabbitMQ runtime dependency |
 | Application composition | Pass | `emme-platform` parity and application project graph tests |
@@ -100,6 +101,11 @@ These are operational acceptance tests, not missing package migrations. The
 repository contains deterministic fakes, contract tests, integration tests,
 typed configuration, and rollback documentation needed to execute them safely.
 
+The optional `emme.native-image` capability is now available for the deployable
+application spike. It is intentionally not applied to `emme-platform` by
+default, so the JVM image and existing delivery behavior remain the safe
+baseline until a GraalVM/Docker runner produces and measures the native image.
+
 ## Final decision
 
 The branch is ready for code review and merge of the repository-local
@@ -108,4 +114,3 @@ architecture work. No legacy module implementation package, obsolete
 lookup, or unqualified tenant persistence path was reintroduced. The remaining
 environment-dependent gates must be run before production deployment, not
 before merging this unreleased architecture branch.
-

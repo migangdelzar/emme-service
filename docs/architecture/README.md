@@ -72,7 +72,7 @@ single universal folder structure.
 | [01 — Backend](01-backend/module.md) | Modules, APIs, validation, application services, domain, infrastructure, controllers, repositories, events, and test profile ownership |
 | Frontend consumer handbook | [emme-web architecture](https://github.com/migangdelzar/emme-web/tree/main/docs/architecture) |
 | [03 — Integration](03-integration/module-communication.md) | Module communication, service contracts, and frontend/backend boundary |
-| [04 — Delivery](04-delivery/container.md) | Containers, deployment, CI, and releases |
+| [04 — Delivery](04-delivery/container.md) | Containers, native images, deployment, CI, and releases |
 | [05 — Operations](05-operations/production-readiness.md) | Service levels, observability, reliability, recovery, incidents, and approval evidence |
 
 ## Existing focused architecture documents
@@ -123,7 +123,7 @@ structure → contracts → verification → tests → artifact → rollout → 
 | Backend validation | [Validation conventions](01-backend/validation.md) |
 | Cross-module behavior | [Module communication](03-integration/module-communication.md), [contracts](03-integration/contracts.md), [events](01-backend/events.md) |
 | Frontend consumer | [emme-web architecture](https://github.com/migangdelzar/emme-web/tree/main/docs/architecture) |
-| Delivery | [Container](04-delivery/container.md), [deployment](04-delivery/deployment.md), [CI](04-delivery/ci.md), [release](04-delivery/release.md) |
+| Delivery | [Container](04-delivery/container.md), [native images](04-delivery/native-image.md), [deployment](04-delivery/deployment.md), [CI](04-delivery/ci.md), [release](04-delivery/release.md) |
 | Operations | [Service levels](05-operations/service-levels.md), [observability](05-operations/observability.md), [reliability](05-operations/reliability.md), [recovery](05-operations/data-lifecycle-and-recovery.md), [production readiness](05-operations/production-readiness.md) |
 
 ### Approval rule

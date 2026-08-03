@@ -332,6 +332,20 @@ the old unreleased task names.
 - [x] **Step 6: Update the registry and mark the plan complete.** The build-logic row points to this plan and the architecture handbook identifies CDD as implemented and verified.
 - [x] **Step 7: Commit and push.** The implementation and verification artifacts are committed and pushed with conventional commit messages.
 
+## Completed optional native-image capability — 2026-08-03
+
+- [x] Added the capability-owned `emme.native-image` convention script.
+- [x] Pinned GraalVM Native Build Tools `1.1.5` in the version catalog and
+  dependency verification metadata.
+- [x] Configured native binaries with no JVM fallback and grouped native tasks
+  under the `native-image` task group.
+- [x] Added TestKit coverage proving the capability is opt-in and registers
+  `nativeCompile`/`nativeTest` only when applied.
+- [x] Added the delivery handbook page and kept the JVM artifact as rollback.
+
+The native executable and OCI image still require a GraalVM toolchain or
+Buildpacks-compatible Docker daemon and are tracked as deployment evidence.
+
 ## Definition of done
 
 - [x] All tasks in this plan are marked complete.

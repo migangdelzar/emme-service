@@ -20,6 +20,7 @@ class ArchitectureInventoryTest {
         "emme.java-library.gradle.kts",
         "emme.messaging.gradle.kts",
         "emme.modulith.gradle.kts",
+        "emme.native-image.gradle.kts",
         "emme.persistence.gradle.kts",
         "emme.publishing.gradle.kts",
         "emme.quality.gradle.kts",

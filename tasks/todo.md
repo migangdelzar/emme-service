@@ -297,6 +297,15 @@ reopened by this backlog.
   Boot's required AMQP BOM verification metadata is retained without a runtime
   dependency.
 
+### Optional native-image capability — 2026-08-03
+
+- [x] Add `emme.native-image` as an opt-in capability-owned convention.
+- [x] Pin and verify GraalVM Native Build Tools dependencies.
+- [x] Add TestKit registration and no-fallback configuration coverage.
+- [x] Document native/JVM rollout, measurement, and rollback controls.
+- [ ] Execute the native executable and OCI image spike on a GraalVM/Docker
+  runner before adopting native as the production artifact.
+
 ## Studio Documents canonical boundary slice — 2026-08-01
 
 - [x] Add framework-free document and chunk domain models with lifecycle tests.

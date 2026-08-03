@@ -51,6 +51,18 @@ class CalendarPackageConventionTest {
   }
 
   @Test
+  void webControllersAreGroupedInTheControllerPackage() {
+    assertThat(hasClass("com.emme.calendar.adapter.in.web.controller.CalendarController")).isTrue();
+    assertThat(hasClass("com.emme.calendar.adapter.in.web.controller.ClientCalendarController"))
+        .isTrue();
+    assertThat(hasClass("com.emme.calendar.adapter.in.web.controller.GoogleOAuthController"))
+        .isTrue();
+    assertThat(CLASSES.stream())
+        .filteredOn(javaClass -> javaClass.getPackageName().equals("com.emme.calendar.adapter.in.web"))
+        .noneMatch(javaClass -> javaClass.getSimpleName().endsWith("Controller"));
+  }
+
+  @Test
   void everyMaterializedApplicationPackageHasPackageMetadata() {
     assertThat(Files.exists(SOURCE_ROOT.resolve("application/mapper/package-info.java"))).isTrue();
   }

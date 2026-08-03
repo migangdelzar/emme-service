@@ -1,4 +1,4 @@
-package com.emme.calendar.adapter.in.web;
+package com.emme.calendar.adapter.in.web.controller;
 
 import com.emme.calendar.adapter.out.google.adapter.ClientCalendarSyncAdapter;
 import com.emme.kernel.context.TenantContextHolder;

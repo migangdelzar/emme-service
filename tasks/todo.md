@@ -172,6 +172,7 @@ Identity verification evidence is recorded in
 - [x] Renamed shared `BaseEntity` to `PersistedEntity`, updated all persistence consumers, and verified Shared tests.
 - [x] Moved core Studio controllers into `adapter.in.web.controller`, renamed `BusinessConfigController`, added package metadata, and verified Studio module tests.
 - [x] Renamed payment `PaymentProviderConfig` to `PaymentProviderConfiguration` and verified the provider configuration source test.
+- [x] Moved Calendar HTTP controllers into `adapter/in/web/controller`, removed the now-empty parent package metadata, and verified the Calendar convention test.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain

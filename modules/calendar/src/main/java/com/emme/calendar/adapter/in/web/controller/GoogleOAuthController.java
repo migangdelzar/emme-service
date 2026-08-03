@@ -1,4 +1,4 @@
-package com.emme.calendar.adapter.in.web;
+package com.emme.calendar.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 

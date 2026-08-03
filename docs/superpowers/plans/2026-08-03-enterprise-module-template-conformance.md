@@ -230,6 +230,7 @@ Apply the following mapping to every module that has public contracts:
 
 - [ ] Audit the current calendar aggregate, synchronization workflow, Google transport client, OAuth configuration, scheduler/listener, and persistence adapters against the target tree.
 - [ ] Rename configuration types to semantic names such as `GoogleCalendarProperties` where they represent typed properties and `GoogleCalendarConfiguration` where they wire beans.
+- [x] Rename `GoogleOAuthConfig` to `GoogleOAuthProperties` and move Calendar HTTP controllers into `adapter/in/web/controller` with package metadata.
 - [ ] Keep transport classes as `GoogleCalendarHttpClient` or equivalent and adapters as `<Capability>ClientAdapter`; do not collapse transport and port implementation.
 - [ ] Ensure synchronization services remain one use case per service and event listeners invoke use cases.
 - [ ] Verify tenant/staff isolation, token refresh, retry behavior, idempotency, and failure recovery.

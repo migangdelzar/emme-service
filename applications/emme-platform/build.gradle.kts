@@ -8,6 +8,13 @@ plugins {
   id("emme.deployment")
 }
 
+// Native delivery is an explicit application-edge experiment. Keeping the JVM
+// path as the default makes ordinary development and CI deterministic while
+// still exposing the same application to a reproducible native build command.
+if (providers.gradleProperty("emme.native-image").map(String::toBoolean).orElse(false).get()) {
+  pluginManager.apply("emme.native-image")
+}
+
 group = "com.emme"
 version = "0.1.0"
 

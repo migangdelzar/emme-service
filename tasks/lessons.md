@@ -668,3 +668,24 @@
   explicit production-default property, and shared ephemeral profiles must
   disable both the scheduler and the guarded component. Production scheduling
   remains enabled and gets its own integration/recovery evidence.
+
+## 2026-08-03 — Exclude generated sources from architecture scans
+
+- Failure mode: a source convention test scanned generated Spotless output
+  under a module's `build/` directory and reported a stale controller mapping.
+- Detection signal: the test failed against a path containing
+  `build/spotless-clean`, even though the corresponding `src/main` controller
+  was already normalized.
+- Prevention rule: repository source scans must exclude generated/build trees
+  before asserting package or naming conventions.
+
+## 2026-08-03 — Recheck suite-order failures before changing persistence
+
+- Failure mode: a full Tenancy suite reported one optimistic-lock failure while
+  the isolated test and a clean class execution passed.
+- Detection signal: the failure disappeared when the target test was selected
+  directly and when the class was rerun with fresh tasks.
+- Prevention rule: reproduce a persistence failure in isolation and from a
+  clean test execution before changing production mapping or transaction code;
+  retain the failure as a service-wide test-stability follow-up when it cannot
+  be reproduced deterministically.

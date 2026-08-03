@@ -214,6 +214,67 @@ Identity verification evidence is recorded in
   gracefully falls back to typed connection properties when no service
   connection details bean exists.
 
+## Clara reference-pattern adoption — 2026-08-03
+
+### Acceptance criteria
+
+- [x] Localized, stable error contracts use shared message keys and preserve RFC
+  9457 `ProblemDetail`.
+- [x] Correlation IDs are returned to HTTP callers and remain present in error
+  responses.
+- [x] Public HTTP controllers consistently declare the supported API version.
+- [x] The generated OpenAPI contract has a deterministic verification path.
+- [ ] The backend has a cross-repository full-stack smoke workflow that is safe
+  for pull requests and does not use production secrets.
+- [x] Native-image delivery remains explicit and has a reproducible smoke path;
+  the JVM image remains the rollback artifact.
+
+### Execution checklist
+
+- [x] Add failing tests for locale negotiation, message resolution, and
+  localized problem details.
+- [x] Implement shared i18n configuration and message resources.
+- [x] Add failing/contract tests for correlation response headers and apply the
+  minimal filter change.
+- [x] Add an architecture guard for controller API-version declarations and
+  annotate the remaining public controllers.
+- [x] Add OpenAPI contract verification without coupling business modules to
+  springdoc internals.
+- [ ] Add the Clara-style backend/frontend smoke workflow after confirming the
+  sibling `emme-web` repository contract.
+- [x] Add an explicit native-image application-edge execution path after the
+  JVM delivery path is green.
+- [ ] Capture equivalent JVM/native startup, RSS, image-size, health, and
+  critical-flow measurements on a GraalVM/Docker runner.
+- [ ] Run focused tests, full unit tests, integration tests, CI checks, and
+  Markdown validation; update this section with evidence.
+
+### Working notes
+
+- Keep Emme's RFC 9457 `ProblemDetail`; do not introduce Clara's separate
+  `ApiError` envelope.
+- Keep Emme's existing generic throwing functional interfaces and JDBC
+  `withConnection` abstraction; Clara's equivalent is not an improvement here.
+- Keep API versioning header-based (`API-Version`) for the unreleased system.
+- Do not enable native image implicitly in every module or replace the JVM
+  rollback artifact.
+
+### Verification evidence
+
+- [x] `:modules:shared:test` passed, including locale negotiation, message
+  resolution, localized `ProblemDetail`, and correlation properties.
+- [x] `:modules:tenancy:test` passed after isolated and clean reruns; the first
+  aggregate run exposed a non-reproducible H2 optimistic-lock failure that is
+  recorded in `tasks/lessons.md` for the final test-stability audit.
+- [x] `:applications:emme-platform:test` and `compileE2eTestJava` passed.
+- [x] Focused Spotless and Checkstyle gates passed for Shared, Tenancy, and the
+  platform application.
+- [x] `:applications:emme-platform:tasks --all
+  -Pemme.native-image=true` exposed `nativeCompile` and `nativeTest` without
+  changing the default JVM build.
+- [ ] Deployed OpenAPI E2E execution, full CI, cross-repository smoke, and
+  native memory measurements remain environment-dependent final gates.
+
 
 This is the authoritative order for unfinished work. Detailed checklists remain
 inside each linked migration plan; completed historical slices below are not

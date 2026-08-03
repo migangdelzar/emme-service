@@ -15,7 +15,8 @@ under equivalent limits.
 
 ## Opt-in convention
 
-Apply the capability only at the deployable application edge:
+Apply the capability only at the deployable application edge. Emme keeps this
+opt-in so normal JVM development and CI remain fast:
 
 ```kotlin
 plugins {
@@ -45,8 +46,12 @@ flowchart LR
 The primary local task is:
 
 ```text
-./gradlew :applications:emme-platform:nativeCompile
+./gradlew :applications:emme-platform:nativeCompile -Pemme.native-image=true
 ```
+
+The application build also accepts `-Pemme.native-image=true` as the explicit
+opt-in switch. Without that property the native plugin is not applied and the
+JVM path remains the default artifact.
 
 The container path uses Spring Boot's `bootBuildImage` with the GraalVM Native
 Build Tools plugin applied. A Docker daemon or Buildpacks-compatible builder is

@@ -10,7 +10,7 @@ class SharedOwnershipConventionTest {
   @Test
   void documentsTechnicalCapabilityOwnershipWithoutBusinessLayers() {
     Path root = sourcePath("modules/shared/src/main/java/com/emme/shared");
-    assertThat(Files.exists(root.resolve("persistence/BaseEntity.java"))).isTrue();
+    assertThat(Files.exists(root.resolve("persistence/PersistedEntity.java"))).isTrue();
     assertThat(Files.exists(root.resolve("persistence/TenantOwnedEntity.java"))).isTrue();
     assertThat(Files.exists(root.resolve("time/ClockProvider.java"))).isTrue();
     assertThat(Files.exists(root.resolve("identity/IdGenerator.java"))).isTrue();

@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
-class BaseEntityTest {
+class PersistedEntityTest {
 
-  private static final class TestEntity extends BaseEntity {}
+  private static final class TestEntity extends PersistedEntity {}
 
   @Test
   void shouldGenerateUUIDv7OnCreate() {

@@ -9,7 +9,7 @@
 ## Context
 
 `shared` is consumed by every persistence adapter and owns technical primitives
-such as `BaseEntity`, `TenantOwnedEntity`, clock/ID helpers, hybrid search, and
+such as `PersistedEntity`, `TenantOwnedEntity`, clock/ID helpers, hybrid search, and
 global transport advice. These are cross-cutting capabilities rather than
 business concepts, but their package locations still need to communicate their
 technical ownership clearly.

@@ -1,6 +1,6 @@
 package com.emme.tenancy.adapter.out.persistence.entity;
 
-import com.emme.shared.persistence.BaseEntity;
+import com.emme.shared.persistence.PersistedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "audit_event")
-public class AuditEvent extends BaseEntity {
+public class AuditEvent extends PersistedEntity {
 
   @Column(name = "tenant_id")
   private UUID tenantId;

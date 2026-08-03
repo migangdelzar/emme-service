@@ -1,6 +1,6 @@
 package com.emme.identity.adapter.out.persistence.entity;
 
-import com.emme.shared.persistence.BaseEntity;
+import com.emme.shared.persistence.PersistedEntity;
 import com.emme.studio.subscriptions.api.type.PlanType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,7 +14,7 @@ import java.util.UUID;
 /** JPA representation of a global or tenant-specific feature flag. */
 @Entity
 @Table(name = "feature_flag", schema = "emme_core")
-public class FeatureFlagEntity extends BaseEntity {
+public class FeatureFlagEntity extends PersistedEntity {
 
   @Column(name = "tenant_id")
   private UUID tenantId;

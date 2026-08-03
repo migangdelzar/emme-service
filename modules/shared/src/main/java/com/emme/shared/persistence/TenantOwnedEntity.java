@@ -5,11 +5,11 @@ import jakarta.persistence.MappedSuperclass;
 import java.util.UUID;
 
 /**
- * Base class for entities owned by a tenant. Enables Hibernate tenant filtering and inherits
+ * Persistence class for entities owned by a tenant. Enables Hibernate tenant filtering and inherits
  * UUIDv7/timestamp support.
  */
 @MappedSuperclass
-public abstract class TenantOwnedEntity extends BaseEntity {
+public abstract class TenantOwnedEntity extends PersistedEntity {
 
   @Column(name = "tenant_id", nullable = false)
   private UUID tenantId;

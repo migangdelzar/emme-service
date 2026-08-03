@@ -24,7 +24,7 @@ obvious at every import site.
 
 ## Changes
 
-- Moved `BaseEntity` and `TenantOwnedEntity` to `shared.persistence`.
+- Moved `PersistedEntity` and `TenantOwnedEntity` to `shared.persistence`.
 - Moved `ClockProvider` to `shared.time`.
 - Moved `IdGenerator` to `shared.identity`.
 - Updated all consuming modules and Shared tests.

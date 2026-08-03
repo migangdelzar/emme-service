@@ -75,10 +75,12 @@ duplicate or empty declarations rather than applying one annotation everywhere.
 
 ### Naming consistency
 
-The repository contains configuration names such as `*Config` and a generic
-shared `BaseEntity`. These require semantic review. The target is typed
-`*Properties` for external settings, `*Configuration` for bean wiring, and
-semantic persistence primitives rather than generic `Base*` names.
+The repository contains configuration names such as `*Config` and previously
+contained a generic shared `BaseEntity`. The first naming slices converted the
+calendar property record and the shared persistence primitive. The target is
+typed `*Properties` for external settings, `*Configuration` for bean wiring,
+and semantic persistence primitives rather than generic `Base*` names. The
+shared primitive is now `PersistedEntity`.
 
 `CatalogMatchService` implemented `MatchCatalogItemsUseCase`, which was the
 first confirmed service-name mismatch. The red-green rename slice completed on

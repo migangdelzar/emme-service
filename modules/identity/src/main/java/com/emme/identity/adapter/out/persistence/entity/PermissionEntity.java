@@ -1,6 +1,6 @@
 package com.emme.identity.adapter.out.persistence.entity;
 
-import com.emme.shared.persistence.BaseEntity;
+import com.emme.shared.persistence.PersistedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -11,7 +11,7 @@ import java.util.UUID;
 /** JPA representation of an Identity permission. */
 @Entity
 @Table(name = "permission", schema = "emme_core")
-public class PermissionEntity extends BaseEntity {
+public class PermissionEntity extends PersistedEntity {
 
   @Column(name = "code", nullable = false, unique = true, length = 100)
   private String code;

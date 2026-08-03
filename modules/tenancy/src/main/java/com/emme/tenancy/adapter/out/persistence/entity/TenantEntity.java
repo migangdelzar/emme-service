@@ -1,6 +1,6 @@
 package com.emme.tenancy.adapter.out.persistence.entity;
 
-import com.emme.shared.persistence.BaseEntity;
+import com.emme.shared.persistence.PersistedEntity;
 import com.emme.tenancy.domain.model.TenantStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,7 +13,7 @@ import java.util.UUID;
 /** Persistence representation of the Tenancy tenant aggregate. */
 @Entity
 @Table(name = "tenant", schema = "emme_core")
-public class TenantEntity extends BaseEntity {
+public class TenantEntity extends PersistedEntity {
 
   @Column(name = "slug", nullable = false, unique = true, length = 50)
   private String slug;

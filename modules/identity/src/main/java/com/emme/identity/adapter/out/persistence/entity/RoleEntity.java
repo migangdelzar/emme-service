@@ -1,7 +1,7 @@
 package com.emme.identity.adapter.out.persistence.entity;
 
 import com.emme.identity.domain.model.RoleScope;
-import com.emme.shared.persistence.BaseEntity;
+import com.emme.shared.persistence.PersistedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,7 +14,7 @@ import java.util.UUID;
 /** JPA representation of an Identity role. */
 @Entity
 @Table(name = "role", schema = "emme_core")
-public class RoleEntity extends BaseEntity {
+public class RoleEntity extends PersistedEntity {
 
   @Column(name = "code", nullable = false, unique = true, length = 50)
   private String code;

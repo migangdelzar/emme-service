@@ -26,7 +26,7 @@ class TenantOwnedEntityTest {
   }
 
   @Test
-  void shouldInheritBaseEntityBehavior() {
+  void shouldInheritPersistedEntityBehavior() {
     TestTenantEntity entity = new TestTenantEntity();
     entity.onCreate();
 

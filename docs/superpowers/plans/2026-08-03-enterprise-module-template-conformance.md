@@ -317,7 +317,7 @@ Apply the following mapping to every module that has public contracts:
 ### E12. `shared`
 
 - [ ] Classify every shared type as persistence, JDBC/connection execution, identity vocabulary, search, time, web, or test support.
-- [ ] Replace generic `BaseEntity` with a semantic persistence primitive based on actual owned fields; split audit/identity/version behavior if one abstraction currently combines unrelated responsibilities.
+- [x] Replace generic `BaseEntity` with the semantic `PersistedEntity` persistence primitive; retain `TenantOwnedEntity` for the additional tenant-owned concern.
 - [ ] Keep `JdbcConnectionExecutor` and throwable functional interfaces generic, resource-safe, and infrastructure-owned.
 - [ ] Keep shared named interfaces narrow and documented; remove business concepts from shared.
 - [ ] Add architecture tests preventing business module dependencies on shared implementation packages that are not explicitly public.

@@ -1,7 +1,7 @@
 package com.emme.identity.adapter.out.persistence.entity;
 
 import com.emme.identity.domain.model.MembershipStatus;
-import com.emme.shared.persistence.BaseEntity;
+import com.emme.shared.persistence.PersistedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,7 +17,7 @@ import java.util.UUID;
 /** JPA representation of the Identity membership aggregate. */
 @Entity
 @Table(name = "membership", schema = "emme_core")
-public class MembershipEntity extends BaseEntity {
+public class MembershipEntity extends PersistedEntity {
 
   @Column(name = "tenant_id", nullable = false)
   private UUID tenantId;

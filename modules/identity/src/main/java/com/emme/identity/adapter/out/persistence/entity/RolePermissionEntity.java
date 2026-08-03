@@ -1,6 +1,6 @@
 package com.emme.identity.adapter.out.persistence.entity;
 
-import com.emme.shared.persistence.BaseEntity;
+import com.emme.shared.persistence.PersistedEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
@@ -15,7 +15,7 @@ import jakarta.persistence.UniqueConstraint;
     name = "role_permission",
     schema = "emme_core",
     uniqueConstraints = {@UniqueConstraint(columnNames = {"role_id", "permission_id"})})
-public class RolePermissionEntity extends BaseEntity {
+public class RolePermissionEntity extends PersistedEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(

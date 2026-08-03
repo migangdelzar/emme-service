@@ -13,11 +13,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Base MappedSuperclass providing UUIDv7 id and timestamp columns for all JPA entities in the
- * system.
+ * Persistence MappedSuperclass providing UUIDv7 identity, audit timestamps, and optimistic
+ * versioning for JPA entities in the system.
  */
 @MappedSuperclass
-public abstract class BaseEntity {
+public abstract class PersistedEntity {
 
   @Id
   @Column(name = "id", nullable = false, updatable = false)
@@ -77,7 +77,7 @@ public abstract class BaseEntity {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof BaseEntity that)) return false;
+    if (!(o instanceof PersistedEntity that)) return false;
     return id != null && Objects.equals(id, that.id);
   }
 

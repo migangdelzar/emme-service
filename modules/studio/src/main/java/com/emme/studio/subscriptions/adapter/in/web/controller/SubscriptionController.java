@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/subscriptions")
+@RequestMapping(path = "/api/subscriptions", version = "1.0")
 @Tag(name = "Subscriptions")
 public class SubscriptionController {
 

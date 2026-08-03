@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/google/sheets")
+@RequestMapping(path = "/api/google/sheets", version = "1.0")
 @Tag(name = "Google Sheets")
 public class SheetsController {
 

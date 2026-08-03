@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/customers")
+@RequestMapping(path = "/api/customers", version = "1.0")
 @Tag(name = "Customers")
 public class CustomerController {
 

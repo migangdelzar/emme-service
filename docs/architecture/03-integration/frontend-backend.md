@@ -39,12 +39,17 @@ sequenceDiagram
 
 ## Contract rules
 
-- Use versioned API routes.
+- Use the version-neutral `/api` route shape with the `API-Version: 1.0`
+  request header. Do not use `/api/v1` compatibility paths in this unreleased
+  system.
 - Generate or centrally maintain request/response types where practical.
 - Treat backend validation and authorization as authoritative.
 - Define loading, empty, validation, conflict, unauthorized, and unavailable states in the frontend.
-- Propagate correlation IDs for support and tracing.
+- Propagate the backend `X-Correlation-Id` response header into support-safe
+  diagnostics and tracing context.
 - Keep backend error codes stable enough for frontend behavior; keep human messages replaceable.
+- Select localized human messages with `Accept-Language`; branch UI behavior on
+  the stable RFC 9457 `code` property, never on translated text.
 - Add contract tests for high-value endpoints and E2E tests for critical journeys.
 
 ## Local development
@@ -89,4 +94,5 @@ Document whether a successful mutation means committed state, accepted asynchron
 - [ ] Error codes map to explicit UI states.
 - [ ] Retry/cancellation behavior does not duplicate mutations.
 - [ ] Correlation IDs and safe diagnostics cross the boundary.
+- [ ] The client sends `API-Version` and no longer emits `/api/v1` paths.
 - [ ] Critical journeys run against production-like infrastructure.

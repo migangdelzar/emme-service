@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/ai")
+@RequestMapping(path = "/api/ai", version = "1.0")
 @Tag(name = "AI")
 public class AiController {
 

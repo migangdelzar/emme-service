@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/admin/feature-flags")
+@RequestMapping(path = "/api/admin/feature-flags", version = "1.0")
 @Tag(name = "Platform Feature Flags")
 @PreAuthorize("hasRole('platform_admin')")
 public class FeatureFlagController {

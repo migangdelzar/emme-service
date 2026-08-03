@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/artists")
+@RequestMapping(path = "/api/artists", version = "1.0")
 @Tag(name = "Artists")
 public class ArtistController {
 

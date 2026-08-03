@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping(path = "/api/dashboard", version = "1.0")
 @Tag(name = "Dashboard")
 public class DashboardController {
 

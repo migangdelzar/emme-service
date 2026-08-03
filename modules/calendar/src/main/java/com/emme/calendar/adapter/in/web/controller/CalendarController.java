@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/calendar")
+@RequestMapping(path = "/api/calendar", version = "1.0")
 @Tag(name = "Calendar")
 public class CalendarController {
 

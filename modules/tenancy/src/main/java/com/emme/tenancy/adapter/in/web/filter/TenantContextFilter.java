@@ -21,6 +21,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class TenantContextFilter extends OncePerRequestFilter {
 
+  public static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
+
   private static final Logger log = LoggerFactory.getLogger(TenantContextFilter.class);
   private final TenantRepository tenantRepository;
 
@@ -36,6 +38,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
     String correlationId = CorrelationId.generate();
     CorrelationId.set(correlationId);
     MDC.put("correlationId", correlationId);
+    response.setHeader(CORRELATION_ID_HEADER, correlationId);
 
     try {
       UUID tenantId = null;

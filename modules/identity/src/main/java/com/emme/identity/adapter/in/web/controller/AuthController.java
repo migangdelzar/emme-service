@@ -49,7 +49,7 @@ public class AuthController {
     this.getCurrentUser = getCurrentUser;
   }
 
-  @PostMapping("/api/auth/login")
+  @PostMapping(path = "/api/auth/login", version = "1.0")
   public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
     try {
       var tokens =
@@ -114,7 +114,7 @@ public class AuthController {
     }
   }
 
-  @PostMapping("/api/auth/customer-login")
+  @PostMapping(path = "/api/auth/customer-login", version = "1.0")
   public ResponseEntity<?> customerLogin(
       @RequestBody(required = false) Map<String, String> body,
       @RequestHeader(value = "X-Provider-Token", required = false) String headerToken,
@@ -162,7 +162,7 @@ public class AuthController {
     }
   }
 
-  @PutMapping("/api/me/profile")
+  @PutMapping(path = "/api/me/profile", version = "1.0")
   public ResponseEntity<?> updateCustomerProfile(
       @RequestBody Map<String, String> body, @AuthenticationPrincipal Jwt jwt) {
     if (jwt == null) return ResponseEntity.status(401).build();

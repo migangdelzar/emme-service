@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/business-config")
+@RequestMapping(path = "/api/business-config", version = "1.0")
 @Tag(name = "Business Config")
 public class BusinessConfigurationController {
 

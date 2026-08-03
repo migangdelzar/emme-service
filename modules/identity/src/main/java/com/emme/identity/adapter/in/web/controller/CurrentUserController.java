@@ -19,7 +19,7 @@ public class CurrentUserController {
     this.getCurrentUser = getCurrentUser;
   }
 
-  @GetMapping("/api/me")
+  @GetMapping(path = "/api/me", version = "1.0")
   public CurrentUserResponse currentUser(@AuthenticationPrincipal Object principal) {
     UserContext user = UserContextHolder.fromPrincipal(principal);
     return IdentityWebMapper.toCurrentUserResponse(

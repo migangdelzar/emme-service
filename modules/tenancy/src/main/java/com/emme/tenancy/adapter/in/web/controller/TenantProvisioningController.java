@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** HTTP entry point for asynchronous tenant provisioning requests and status. */
 @RestController
-@RequestMapping("/api/tenant-provisioning")
+@RequestMapping(path = "/api/tenant-provisioning", version = "1.0")
 class TenantProvisioningController {
 
   private final RequestTenantProvisioningUseCase requestProvisioning;

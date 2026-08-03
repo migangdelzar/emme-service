@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/google/oauth")
+@RequestMapping(path = "/api/google/oauth", version = "1.0")
 @Tag(name = "Google OAuth")
 public class GoogleOAuthController {
 

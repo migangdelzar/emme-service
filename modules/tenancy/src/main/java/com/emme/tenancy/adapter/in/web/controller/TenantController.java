@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** HTTP entry point for the Tenant lifecycle use cases. */
 @RestController
-@RequestMapping("/api/tenants")
+@RequestMapping(path = "/api/tenants", version = "1.0")
 @Tag(name = "Tenants")
 public class TenantController {
 

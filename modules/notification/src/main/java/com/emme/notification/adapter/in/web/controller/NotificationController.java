@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping(path = "/api/notifications", version = "1.0")
 @Tag(name = "Notifications")
 public class NotificationController {
   private final RequestNotificationUseCase requestNotification;

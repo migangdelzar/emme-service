@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/conversations")
+@RequestMapping(path = "/api/conversations", version = "1.0")
 @Tag(name = "Conversations")
 public class ConversationController {
   private final StartConversationUseCase start;

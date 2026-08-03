@@ -87,6 +87,9 @@ sequenceDiagram
 - Resolve authentication and tenant context before entering application behavior.
 - Use request and response DTOs; do not expose persistence entities.
 - Return consistent error envelopes with a correlation identifier.
+- Resolve human-readable problem details through shared message keys and the
+  request `Accept-Language` header; clients must use the stable `code` property
+  for behavior rather than matching localized text.
 - Keep pagination, filtering, idempotency, and concurrency semantics explicit.
 - Document public endpoints through OpenAPI or equivalent generated API documentation.
 
@@ -128,6 +131,12 @@ uses the configured `1.0` default; an unsupported header must produce the
 configured client error. Version selection must be covered by MockMvc contract
 tests.
 
+The resolver default is not a substitute for a controller declaration. The
+resolver chooses the requested representation, while each controller mapping
+declares the representation it supports. This keeps future parallel `1.1` or
+`2.0` handlers auditable and prevents an accidental global default from making
+an endpoint appear version-compatible when it is not.
+
 This service is pre-release, so the version-neutral `/api/...` route is the
 canonical route and no `/api/v1/...` compatibility alias is maintained. Spring
 mapping versions are introduced only when a real second representation exists;
@@ -135,6 +144,11 @@ they do not justify duplicating controllers speculatively. See the official [Spr
 versioning reference](https://docs.spring.io/spring-framework/reference/web/webmvc-versioning.html).
 
 ## Error mapping
+
+Problem details are RFC 9457 `ProblemDetail` responses with a stable machine
+`code`, a localized `title`/`detail` resolved from shared message resources,
+and the request correlation identifier when available. Human-readable text is
+not a client compatibility key.
 
 | Condition | HTTP result |
 |---|---:|

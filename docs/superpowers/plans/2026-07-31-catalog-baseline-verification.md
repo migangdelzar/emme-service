@@ -45,7 +45,7 @@ integration. This plan checks conformance and fixes only documented gaps.
   `@NamedInterface("catalog-api")` on `catalog.api`.
 - Added the Catalog-owned `CatalogSearchPort` and `CatalogSearchHit` contracts.
 - Added `HybridCatalogSearchAdapter` to translate Shared's hybrid-search engine
-  into Catalog semantics; `CatalogMatchService` no longer imports Shared's
+  into Catalog semantics; `MatchCatalogItemsService` no longer imports Shared's
   `HybridSearch` or `SearchTarget` directly.
 - Added convention and adapter mapping tests for package metadata and search
   ownership.

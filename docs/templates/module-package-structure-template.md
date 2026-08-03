@@ -4,6 +4,12 @@
 
 > **Template status:** Approved baseline. Adopt the mandatory rules for every production module. Mark any deliberate deviation in the module metadata and record the decision in an ADR.
 
+> **Enterprise conformance source:** This repository copy incorporates the
+> supplied enterprise module template and is the version used by migration
+> plans. Do not maintain a second competing module tree in another repository;
+> update this template and its focused architecture pages when the standard
+> changes.
+
 > **Unreleased-system rule:** When the service or module is not released to
 > external consumers, do not preserve legacy names, packages, wrappers, or
 > compatibility aliases. Update all in-repository consumers in the same

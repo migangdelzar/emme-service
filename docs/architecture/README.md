@@ -2,6 +2,12 @@
 
 > **Naming contract:** Follow the [canonical architecture naming catalog](00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
 
+> **Module-template contract:** The repository copy of the [module package
+> structure template](../templates/module-package-structure-template.md) is the
+> executable source of truth for the enterprise DDD + Hexagonal + Spring
+> Modulith module shape. It incorporates the supplied enterprise template and
+> must be applied by conformance plans before a module is considered complete.
+
 This handbook is the reusable architecture baseline for the EMME service
 repository. It describes backend DDD/Hexagonal modules, contract ownership,
 Capability-Driven Gradle build logic, delivery, and operational evidence.
@@ -104,6 +110,8 @@ single universal folder structure.
 4. Apply delivery capabilities only to deployable applications.
 5. Verify operational readiness before release.
 6. Record deviations in an ADR when the baseline is intentionally changed.
+
+For an existing module, use the [enterprise module-template conformance plan](../superpowers/plans/2026-08-03-enterprise-module-template-conformance.md): inventory first, normalize names and boundaries second, and remove obsolete shapes only after repository-wide reference and verification checks.
 
 The handbook is a default, not a license to create empty layers. A capability may contain only the files that carry real responsibility.
 

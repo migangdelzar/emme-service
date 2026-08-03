@@ -77,7 +77,7 @@ modules/calendar/src/main/java/com/emme/calendar/
 ├── infrastructure/google/application/GoogleOAuthService.java
 ├── infrastructure/google/application/SheetsExportService.java
 ├── infrastructure/google/application/StaffCalendarSyncService.java
-├── infrastructure/google/config/GoogleOAuthConfig.java
+├── infrastructure/google/config/GoogleOAuthProperties.java
 ├── infrastructure/google/entity/GoogleOAuthToken.java
 ├── infrastructure/google/entity/GoogleOAuthTokenRepository.java
 ├── infrastructure/google/entity/GoogleSpreadsheetLink.java
@@ -144,7 +144,7 @@ modules/calendar/src/main/java/com/emme/calendar/
 │   ├── google/adapter/GoogleSheetsAdapter.java
 │   ├── google/provider/OAuthTokenSource.java
 │   └── google/provider/TokenEncryptionService.java
-└── configuration/GoogleOAuthConfig.java
+└── configuration/GoogleOAuthProperties.java
 ```
 
 The target names are intentionally explicit. `CalendarSyncApi` remains the
@@ -665,7 +665,7 @@ git commit -m "refactor(calendar): separate application and inbound adapters"
 - Move: `infrastructure/google/provider/GoogleSheetsClient.java` → `adapter/out/google/client/GoogleSheetsClient.java`
 - Move: `infrastructure/google/provider/OAuthTokenSource.java` → `adapter/out/google/provider/OAuthTokenSource.java`
 - Move: `infrastructure/google/provider/TokenEncryptionService.java` → `adapter/out/google/provider/TokenEncryptionService.java`
-- Move: `infrastructure/google/config/GoogleOAuthConfig.java` → `configuration/GoogleOAuthConfig.java`
+- Move: `infrastructure/google/config/GoogleOAuthConfig.java` → `configuration/GoogleOAuthProperties.java`
 - Move: `infrastructure/google/entity/GoogleOAuthToken.java` → `adapter/out/persistence/entity/GoogleOAuthTokenEntity.java`
 - Move: `infrastructure/google/entity/GoogleOAuthTokenRepository.java` → `adapter/out/persistence/repository/SpringDataGoogleOAuthTokenRepository.java`
 - Move: `infrastructure/google/entity/GoogleSpreadsheetLink.java` → `adapter/out/persistence/entity/GoogleSpreadsheetLinkEntity.java`
@@ -809,7 +809,7 @@ configuration classes use the canonical packages.
 
 - [x] **Step 3: Write minimal implementation**
 
-Keep configuration properties in `GoogleOAuthConfig`; the application-level
+Keep configuration properties in `GoogleOAuthProperties`; the application-level
 `@ConfigurationPropertiesScan` already registers it, so no empty
 `CalendarConfiguration` class is created. Keep business behavior in application
 services and adapter behavior in adapters. Remove Calendar from the legacy

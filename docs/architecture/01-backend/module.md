@@ -61,17 +61,20 @@ modules/<capability>/
     │   └── type/
     ├── application/
     │   ├── service/
+    │   ├── validation/                   # optional application workflow validation
+    │   ├── authorization/                # optional use-case authorization
+    │   ├── process/                      # optional long-running process managers
     │   ├── port/out/
     │   └── mapper/
     ├── domain/
-    │   ├── model/
+    │   ├── model/                        # aggregate/entity/valueobject/etc. as needed
     │   ├── service/
     │   ├── event/
     │   ├── exception/
     │   └── specification/
     ├── adapter/
-    │   ├── in/                            # web, messaging, scheduler
-    │   └── out/                           # persistence, messaging, client, observability
+    │   ├── in/                            # web, webhook, messaging, scheduler, listener
+    │   └── out/                           # persistence, messaging, provider, client, observability
     └── configuration/                     # framework wiring only
 ```
 

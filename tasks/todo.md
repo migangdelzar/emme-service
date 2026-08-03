@@ -145,6 +145,31 @@ Identity verification evidence is recorded in
 
 ## Remaining execution backlog — priority/type order
 
+## Enterprise module-template conformance execution — 2026-08-03
+
+- [ ] Reconcile the local handbook and template with the downloaded enterprise module template.
+- [ ] Produce and commit the conformance baseline inventory.
+- [ ] Add repository-wide naming, API visibility, Modulith, and one-use-case-per-service guardrails.
+- [ ] Normalize public contracts and application/domain boundaries module by module.
+- [ ] Complete module-specific adapter, persistence, validation, security, tenant, and recovery work.
+- [ ] Close Kafka + Spring Modulith event evidence after module boundaries stabilize.
+- [ ] Remove unused legacy names, empty folders, stale references, and obsolete `studio-api` references.
+- [ ] Run full service verification and publish the final evidence report.
+
+### Working notes
+
+- Execution branch: `feat/enterprise-module-template-conformance`, based on `feat/module-plans-normalization`.
+- The enterprise plan is tracked at `docs/superpowers/plans/2026-08-03-enterprise-module-template-conformance.md`.
+- The current repository already implements several target guardrails; execution must verify them before changing code.
+- Build-logic remains a separate CDD track and is not converted to the backend module tree.
+
+### Completed in this execution slice
+
+- [x] Added the enterprise-template conformance baseline and linked the repository template as the source of truth.
+- [x] Added optional validation, authorization, process, webhook, listener, provider, and client branches to the backend module overview.
+- [x] Renamed `CatalogMatchService` to `MatchCatalogItemsService` using a red source-convention test, canonical file rename, repository-wide reference audit, and focused Catalog verification.
+
+
 This is the authoritative order for unfinished work. Detailed checklists remain
 inside each linked migration plan; completed historical slices below are not
 reopened by this backlog.

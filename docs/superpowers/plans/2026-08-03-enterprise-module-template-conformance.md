@@ -101,12 +101,12 @@ The tree is a decision catalogue, not a requirement to create every directory. A
 
 ### A1. Freeze the canonical rules before code changes
 
-- [ ] Add a link from `docs/architecture/README.md` to the downloaded enterprise template and state that it is the module-structure reference.
-- [ ] Reconcile `docs/templates/module-package-structure-template.md` with the downloaded template: include optional tactical DDD folders, validation, authorization, process, listener, webhook, projection, migration, and testing guidance.
-- [ ] Update `docs/architecture/01-backend/module.md`, `api.md`, `application.md`, `domain.md`, `infrastructure.md`, `controller.md`, `repository.md`, `events.md`, `validation.md`, and `testing.md` so rules are not duplicated with contradictory wording.
-- [ ] Record the one-use-case-per-service rule and the exception process for inseparable workflows in `docs/architecture/01-backend/application.md` and `docs/architecture/00-project/naming-conventions.md`.
-- [ ] Record `Client` versus `Provider`: use `HttpClient` for a transport client, `ClientAdapter` for an adapter implementing an application port, and `Provider` for a selectable external strategy or vendor implementation.
-- [ ] Record that `shared/` is technical infrastructure, not a business module, and that `audit/` is metadata-only until ownership is decided.
+- [x] Add a link from `docs/architecture/README.md` to the repository module template, which incorporates the supplied enterprise template, and state that it is the module-structure reference.
+- [x] Reconcile `docs/templates/module-package-structure-template.md` with the supplied enterprise template; optional tactical DDD folders, validation, authorization, process, listener, webhook, projection, migration, and testing guidance are present.
+- [x] Audit the focused backend architecture pages and update the module overview where optional validation, authorization, process, webhook, listener, provider, and client branches were not shown.
+- [x] Confirm the one-use-case-per-service rule and the exception process for inseparable workflows in the application and naming guidance.
+- [x] Confirm `Client` versus `Provider`: use `HttpClient` for a transport client, `ClientAdapter` for an adapter implementing an application port, and `Provider` for a selectable external strategy or vendor implementation.
+- [x] Confirm that `shared/` is technical infrastructure, not a business module, and that `audit/` is metadata-only until ownership is decided.
 
 ### A2. Produce an evidence-backed inventory
 
@@ -117,7 +117,7 @@ The tree is a decision catalogue, not a requirement to create every directory. A
 - [ ] Inventory all imports crossing module boundaries and produce a list of forbidden implementation imports.
 - [ ] Inventory all `DataSource#getConnection()` calls, direct JPA repository use from application/web code, direct external SDK use from domain code, and non-Kafka broker configuration.
 - [ ] Inventory empty directories and files with no production references. Delete only after `rg`, compiler, test, and build verification prove they are unused.
-- [ ] Store the baseline evidence in `docs/superpowers/reviews/2026-08-03-enterprise-module-template-conformance-baseline.md` and link it from this plan.
+- [x] Store the baseline evidence in `docs/superpowers/reviews/2026-08-03-enterprise-module-template-conformance-baseline.md` and link it from this plan.
 
 ### A3. Add executable architecture guardrails
 
@@ -238,7 +238,7 @@ Apply the following mapping to every module that has public contracts:
 ### E3. `catalog`
 
 - [ ] Complete the existing catalog baseline verification plan: package materialization, named interfaces, domain imports, application direction, persistence mapper ownership, tenant predicates, and hybrid-search ownership.
-- [ ] Rename `CatalogMatchService` to `MatchCatalogItemsService` so the concrete service matches `MatchCatalogItemsUseCase`.
+- [x] Rename `CatalogMatchService` to `MatchCatalogItemsService` so the concrete service matches `MatchCatalogItemsUseCase`.
 - [ ] Separate catalog aggregate behavior from hybrid search orchestration and external image-caption/embedding integrations through explicit ports.
 - [ ] Keep image storage, search, and projections in outbound capability packages; do not expose search implementation types through the API.
 - [ ] Add tenant-isolation, search ranking, empty-result, provider failure, and read-model tests.
@@ -465,4 +465,3 @@ Implementation order:
 - [ ] All module plans, architecture docs, ADRs, and final evidence are updated.
 - [ ] Spotless, Checkstyle, unit, integration, architecture, Modulith, boot JAR, container, and CI verification pass.
 - [ ] Changes are committed in logical units, pushed to `feat/module-plans-normalization`, and not merged.
-

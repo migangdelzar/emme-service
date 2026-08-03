@@ -2,8 +2,16 @@ package com.emme.calendar.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
-import com.emme.calendar.adapter.out.google.adapter.GoogleOAuthAdapter;
-import com.emme.calendar.adapter.out.google.model.PersonaType;
+import com.emme.calendar.adapter.in.web.response.GoogleOAuthStatusResponse;
+import com.emme.calendar.api.command.CompleteGoogleOAuthCommand;
+import com.emme.calendar.api.command.DisconnectGoogleOAuthCommand;
+import com.emme.calendar.api.command.GetGoogleOAuthStatusQuery;
+import com.emme.calendar.api.command.StartGoogleOAuthCommand;
+import com.emme.calendar.api.type.GoogleOAuthPersona;
+import com.emme.calendar.api.usecase.CompleteGoogleOAuthUseCase;
+import com.emme.calendar.api.usecase.DisconnectGoogleOAuthUseCase;
+import com.emme.calendar.api.usecase.GetGoogleOAuthStatusUseCase;
+import com.emme.calendar.api.usecase.StartGoogleOAuthUseCase;
 import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +22,6 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Base64;
-import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,13 +43,24 @@ public class GoogleOAuthController {
   private static final String STATE_PREFIX = "oauth:state:";
   private static final Duration STATE_TTL = Duration.ofMinutes(5);
 
-  private final GoogleOAuthAdapter oauthService;
+  private final StartGoogleOAuthUseCase startGoogleOAuthUseCase;
+  private final CompleteGoogleOAuthUseCase completeGoogleOAuthUseCase;
+  private final GetGoogleOAuthStatusUseCase getGoogleOAuthStatusUseCase;
+  private final DisconnectGoogleOAuthUseCase disconnectGoogleOAuthUseCase;
   private final StringRedisTemplate redis;
   private final ObjectMapper mapper;
 
   public GoogleOAuthController(
-      GoogleOAuthAdapter oauthService, StringRedisTemplate redis, ObjectMapper mapper) {
-    this.oauthService = oauthService;
+      StartGoogleOAuthUseCase startGoogleOAuthUseCase,
+      CompleteGoogleOAuthUseCase completeGoogleOAuthUseCase,
+      GetGoogleOAuthStatusUseCase getGoogleOAuthStatusUseCase,
+      DisconnectGoogleOAuthUseCase disconnectGoogleOAuthUseCase,
+      StringRedisTemplate redis,
+      ObjectMapper mapper) {
+    this.startGoogleOAuthUseCase = startGoogleOAuthUseCase;
+    this.completeGoogleOAuthUseCase = completeGoogleOAuthUseCase;
+    this.getGoogleOAuthStatusUseCase = getGoogleOAuthStatusUseCase;
+    this.disconnectGoogleOAuthUseCase = disconnectGoogleOAuthUseCase;
     this.redis = redis;
     this.mapper = mapper;
   }
@@ -52,17 +70,18 @@ public class GoogleOAuthController {
   @PreAuthorize("@featureFlagService.isEnabled('google_workspace')")
   @Operation(summary = "Start Google OAuth flow")
   public void authorize(
-      @RequestParam(defaultValue = "STAFF") PersonaType personaType, HttpServletResponse response)
+      @RequestParam(defaultValue = "STAFF") GoogleOAuthPersona persona,
+      HttpServletResponse response)
       throws IOException {
     String state = generateState();
     var context =
         withCurrentTenant(
             tenantId -> {
               var userId = UserContextHolder.currentSubject();
-              return new OAuthStateContext(tenantId, userId, personaType.name());
+              return new OAuthStateContext(tenantId, userId, persona.name());
             });
     storeState(state, context);
-    String url = oauthService.buildAuthorizationUrl(personaType, state);
+    String url = startGoogleOAuthUseCase.start(new StartGoogleOAuthCommand(persona, state)).value();
     response.sendRedirect(url);
   }
 
@@ -98,12 +117,12 @@ public class GoogleOAuthController {
       response.sendRedirect("/#/settings?google=error&reason=invalid_state");
       return;
     }
-    PersonaType personaType = PersonaType.valueOf(savedContext.personaType());
+    GoogleOAuthPersona persona = GoogleOAuthPersona.valueOf(savedContext.persona());
     try {
-      var tokens = oauthService.exchangeCode(code);
       UUID tenantId = savedContext.tenantId();
       String userId = savedContext.userId();
-      oauthService.storeToken(tenantId, userId, personaType, tokens);
+      completeGoogleOAuthUseCase.complete(
+          new CompleteGoogleOAuthCommand(tenantId, userId, persona, code));
       response.sendRedirect("/#/settings?google=connected");
     } catch (Exception e) {
       log.error("OAuth callback failed", e);
@@ -115,13 +134,15 @@ public class GoogleOAuthController {
   @GetMapping("/status")
   @PreAuthorize("@featureFlagService.isEnabled('google_workspace')")
   @Operation(summary = "Check Google OAuth connection status")
-  public ResponseEntity<Map<String, Object>> status(
-      @RequestParam(defaultValue = "STAFF") PersonaType personaType) {
+  public ResponseEntity<GoogleOAuthStatusResponse> status(
+      @RequestParam(defaultValue = "STAFF") GoogleOAuthPersona persona) {
     return withCurrentTenant(
         tenantId -> {
           String userId = UserContextHolder.currentSubject();
-          boolean connected = oauthService.isConnected(tenantId, userId, personaType);
-          return ResponseEntity.ok(Map.of("connected", connected));
+          var status =
+              getGoogleOAuthStatusUseCase.get(
+                  new GetGoogleOAuthStatusQuery(tenantId, userId, persona));
+          return ResponseEntity.ok(new GoogleOAuthStatusResponse(status.connected()));
         });
   }
 
@@ -130,11 +151,12 @@ public class GoogleOAuthController {
   @PreAuthorize("@featureFlagService.isEnabled('google_workspace')")
   @Operation(summary = "Disconnect Google Workspace")
   public ResponseEntity<Void> disconnect(
-      @RequestParam(defaultValue = "STAFF") PersonaType personaType) {
+      @RequestParam(defaultValue = "STAFF") GoogleOAuthPersona persona) {
     return withCurrentTenant(
         tenantId -> {
           String userId = UserContextHolder.currentSubject();
-          oauthService.revokeToken(tenantId, userId, personaType);
+          disconnectGoogleOAuthUseCase.disconnect(
+              new DisconnectGoogleOAuthCommand(tenantId, userId, persona));
           return ResponseEntity.noContent().build();
         });
   }
@@ -169,5 +191,5 @@ public class GoogleOAuthController {
   }
 
   /** Stored in Redis with 5-min TTL. Carries context across the OAuth redirect chain. */
-  private record OAuthStateContext(UUID tenantId, String userId, String personaType) {}
+  private record OAuthStateContext(UUID tenantId, String userId, String persona) {}
 }

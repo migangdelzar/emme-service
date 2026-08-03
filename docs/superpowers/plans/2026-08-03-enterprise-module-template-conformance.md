@@ -232,6 +232,7 @@ Apply the following mapping to every module that has public contracts:
 - [ ] Rename configuration types to semantic names such as `GoogleCalendarProperties` where they represent typed properties and `GoogleCalendarConfiguration` where they wire beans.
 - [x] Rename `GoogleOAuthConfig` to `GoogleOAuthProperties` and move Calendar HTTP controllers into `adapter/in/web/controller` with package metadata.
 - [x] Extract Calendar HTTP response records into `adapter/in/web/response` so controllers contain no nested transport types.
+- [x] Move Google OAuth HTTP operations behind one-use-case-per-operation application services and an application-owned OAuth port; keep Google persona/token types out of the inbound adapter.
 - [ ] Keep transport classes as `GoogleCalendarHttpClient` or equivalent and adapters as `<Capability>ClientAdapter`; do not collapse transport and port implementation.
 - [ ] Ensure synchronization services remain one use case per service and event listeners invoke use cases.
 - [ ] Verify tenant/staff isolation, token refresh, retry behavior, idempotency, and failure recovery.

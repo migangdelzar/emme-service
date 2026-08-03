@@ -4,6 +4,9 @@ import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.calendar.adapter.out.google.oauth.TokenEncryptionService;
 import com.emme.calendar.adapter.out.persistence.entity.GoogleOAuthTokenEntity;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleOAuthTokenRepository;
+import com.emme.calendar.api.type.GoogleOAuthPersona;
+import com.emme.calendar.application.port.out.GoogleOAuthPort;
+import com.emme.calendar.application.port.out.GoogleOAuthTokens;
 import com.emme.calendar.configuration.GoogleHttpClient;
 import com.emme.calendar.configuration.GoogleOAuthProperties;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional
-public class GoogleOAuthAdapter {
+public class GoogleOAuthAdapter implements GoogleOAuthPort {
 
   private static final Logger log = LoggerFactory.getLogger(GoogleOAuthAdapter.class);
   private static final String AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -64,13 +67,15 @@ public class GoogleOAuthAdapter {
   }
 
   /**
-   * Build the Google OAuth consent URL with scopes determined by {@link PersonaType}.
+   * Build the Google OAuth consent URL with scopes determined by the Calendar API persona.
    *
    * @param personaType determines which scopes to request
    * @param state opaque value echoed back by Google for CSRF protection
    * @return the full authorization URL to redirect the user to
    */
-  public String buildAuthorizationUrl(PersonaType personaType, String state) {
+  @Override
+  public String buildAuthorizationUrl(GoogleOAuthPersona persona, String state) {
+    PersonaType personaType = toPersonaType(persona);
     String scopes = personaType == PersonaType.STAFF ? STAFF_SCOPES : CLIENT_SCOPES;
 
     return AUTH_URL
@@ -94,7 +99,8 @@ public class GoogleOAuthAdapter {
    * @return parsed token response
    * @throws RuntimeException if the HTTP call fails or the response cannot be parsed
    */
-  public TokenResponse exchangeCode(String code) {
+  @Override
+  public GoogleOAuthTokens exchangeCode(String code) {
     RequestBody body =
         new FormBody.Builder()
             .add("code", code)
@@ -104,7 +110,7 @@ public class GoogleOAuthAdapter {
             .add("grant_type", "authorization_code")
             .build();
 
-    return postTokenRequest(body);
+    return toGoogleOAuthTokens(postTokenRequest(body));
   }
 
   /**
@@ -139,8 +145,10 @@ public class GoogleOAuthAdapter {
    * @param personaType STAFF or CLIENT
    * @param tokens the token response from Google
    */
+  @Override
   public void storeToken(
-      UUID tenantId, String userId, PersonaType personaType, TokenResponse tokens) {
+      UUID tenantId, String userId, GoogleOAuthPersona persona, GoogleOAuthTokens tokens) {
+    PersonaType personaType = toPersonaType(persona);
     Instant expiresAt = Instant.now().plusSeconds(tokens.expiresIn());
 
     Optional<GoogleOAuthTokenEntity> existing =
@@ -296,10 +304,21 @@ public class GoogleOAuthAdapter {
    * @param personaType STAFF or CLIENT
    * @return {@code true} if a token exists in the database
    */
+  @Override
+  public void revokeToken(UUID tenantId, String userId, GoogleOAuthPersona persona) {
+    revokeToken(tenantId, userId, toPersonaType(persona));
+  }
+
+  /** Check whether a user has a connected Google account for an internal persona type. */
   public boolean isConnected(UUID tenantId, String userId, PersonaType personaType) {
     return tokenRepo
         .findByTenantIdAndUserIdAndPersonaType(tenantId, userId, personaType)
         .isPresent();
+  }
+
+  @Override
+  public boolean isConnected(UUID tenantId, String userId, GoogleOAuthPersona persona) {
+    return isConnected(tenantId, userId, toPersonaType(persona));
   }
 
   // ---------------------------------------------------------------------------
@@ -364,8 +383,21 @@ public class GoogleOAuthAdapter {
    * @param expiresIn seconds until the access token expires
    * @param email the Google account email (may be null)
    */
-  public record TokenResponse(
+  private record TokenResponse(
       String accessToken, String refreshToken, String scope, long expiresIn, String email) {}
+
+  private static PersonaType toPersonaType(GoogleOAuthPersona persona) {
+    return persona == GoogleOAuthPersona.STAFF ? PersonaType.STAFF : PersonaType.CLIENT;
+  }
+
+  private static GoogleOAuthTokens toGoogleOAuthTokens(TokenResponse tokens) {
+    return new GoogleOAuthTokens(
+        tokens.accessToken(),
+        tokens.refreshToken(),
+        tokens.scope(),
+        tokens.expiresIn(),
+        tokens.email());
+  }
 
   /** Daily cleanup: purge tokens that expired 90+ days ago and were never refreshed. */
   @Scheduled(cron = "0 0 3 * * *") // daily at 3:00 AM

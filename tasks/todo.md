@@ -199,6 +199,10 @@ Identity verification evidence is recorded in
 - [x] Moved Calendar client-calendar synchronization behind focused use cases
   and an application-owned `ClientCalendarSyncPort`; the controller no longer
   imports the Google outbound adapter.
+- [x] Moved Calendar Google OAuth authorization, callback completion, status,
+  and disconnect operations behind one-use-case-per-operation application
+  services and `GoogleOAuthPort`; the controller now uses only API contracts
+  and dedicated HTTP responses.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain

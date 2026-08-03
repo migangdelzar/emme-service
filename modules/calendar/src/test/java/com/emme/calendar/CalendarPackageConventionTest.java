@@ -93,6 +93,18 @@ class CalendarPackageConventionTest {
   }
 
   @Test
+  void googleOAuthControllerUsesApplicationContracts() throws IOException {
+    String controller =
+        Files.readString(
+            SOURCE_ROOT.resolve("adapter/in/web/controller/GoogleOAuthController.java"));
+
+    assertThat(controller).doesNotContain("com.emme.calendar.adapter.out");
+    assertThat(Files.exists(SOURCE_ROOT.resolve("application/port/out/GoogleOAuthPort.java")))
+        .isTrue();
+    assertThat(Files.exists(SOURCE_ROOT.resolve("api/type/GoogleOAuthPersona.java"))).isTrue();
+  }
+
+  @Test
   void everyMaterializedApplicationPackageHasPackageMetadata() {
     assertThat(Files.exists(SOURCE_ROOT.resolve("application/mapper/package-info.java"))).isTrue();
   }

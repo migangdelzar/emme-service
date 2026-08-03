@@ -257,6 +257,21 @@ reopened by this backlog.
   Keycloak provisioning in the isolated Kafka test profile; the test now exits
   with no outstanding Spring Modulith publications.
 
+### Cleanup and verification checkpoint — 2026-08-03
+
+- [x] Correct the duplicate Assistant `package-info.java` metadata that caused
+      the boot-JAR duplicate-package warning.
+- [x] Confirm Git does not track generated build output or empty directories.
+- [x] Confirm the repository's existing dependency-analysis/build checks are
+      the source of truth for unused dependencies.
+- [x] Record the cleanup evidence and deletion policy in
+      `docs/superpowers/reviews/2026-08-03-repository-cleanup-audit.md`.
+- [ ] Continue deleting source files only when repository-wide references and
+      architecture tests prove they are unreachable; do not remove valid
+      capability ports, adapters, or public contracts based on name heuristics.
+- [ ] Re-run service-wide quality, architecture, boot-JAR, and integration
+      verification after the frontend recording slice is committed.
+
 ### P4 — Build-platform normalization
 
 - [x] Create the build-logic CDD design specification and file-by-file

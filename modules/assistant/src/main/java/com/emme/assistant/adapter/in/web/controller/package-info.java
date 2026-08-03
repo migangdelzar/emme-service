@@ -1,2 +1,2 @@
-/** Assistant AI HTTP entry points. */
-package com.emme.assistant.ai.adapter.in.web.controller;
+/** HTTP controllers for the Assistant conversation capability. */
+package com.emme.assistant.adapter.in.web.controller;

@@ -586,3 +586,14 @@
 - Prevention rule: when moving validation to the transport boundary, update
   endpoint tests to assert rejection before use-case invocation and the correct
   4xx status; do not preserve an invalid legacy 5xx contract.
+
+## 2026-08-03 — Condition infrastructure, not required application ports
+
+- Failure mode: conditioning `DatabaseRegistryAdapter` on
+  `JdbcConnectionDetails` removed the required `DatabaseRegistryPort` from H2
+  and lightweight Spring contexts, so the tenant pool provider could not start.
+- Detection signal: fourteen Tenancy application-context tests failed with
+  `NoSuchBeanDefinitionException` for `DatabaseRegistryPort`.
+- Prevention rule: keep required application ports materialized in every
+  supported context; condition only the production infrastructure needed to
+  implement the port, and verify both production and H2 wiring explicitly.

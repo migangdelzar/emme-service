@@ -8,9 +8,18 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "spring.datasource")
 public class TenantDatabaseConnectionProperties {
 
+  private String url = "";
   private String username = "emme";
   private String password = "emme";
   private String driverClassName = "org.postgresql.Driver";
+
+  public String getUrl() {
+    return url;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
+  }
 
   public String getUsername() {
     return username;

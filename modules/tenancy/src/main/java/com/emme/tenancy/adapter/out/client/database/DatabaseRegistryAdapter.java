@@ -1,69 +1,73 @@
 package com.emme.tenancy.adapter.out.client.database;
 
+import com.emme.shared.persistence.jdbc.JdbcConnectionExecutor;
+import com.emme.shared.persistence.jdbc.ThrowingSqlConnectionFunction;
 import com.emme.tenancy.application.port.out.DatabaseRegistryEntry;
 import com.emme.tenancy.application.port.out.DatabaseRegistryPort;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import com.emme.tenancy.configuration.TenantDatabaseConnectionProperties;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.stereotype.Component;
 
 /**
- * Bootstrap JDBC registry lookup — connects DIRECTLY to PostgreSQL, bypassing the tenant-aware
- * DataSource. This breaks the circular dependency between entityManagerFactory → DataSource →
- * TenantDatabasePoolProvider → DatabaseRegistryAdapter.
+ * Bootstrap JDBC registry lookup through a dedicated, unpooled connection executor.
  *
- * <p>Uses raw JDBC with a dedicated bootstrap connection. This connection is only used for looking
- * up the {@code database_registry} table during pool initialization. All business queries use the
- * tenant-aware DataSource.
+ * <p>This deliberately bypasses the tenant-aware {@code DataSource} to break the circular
+ * dependency between the entity manager, tenant routing, pool creation, and registry lookup.
+ * Connection acquisition and cleanup remain owned by Spring's {@link
+ * org.springframework.jdbc.core.JdbcTemplate}; this adapter only describes the query.
  */
 @Component
 public class DatabaseRegistryAdapter implements DatabaseRegistryPort {
 
   private static final UUID DEFAULT_DB_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+  private static final String REGISTRY_QUERY =
+      "SELECT database_id, jdbc_url, name, min_pool_size, max_pool_size, priority, is_active "
+          + "FROM emme_core.database_registry WHERE database_id = ?";
 
   private final String bootstrapUrl;
-  private final String username;
-  private final String password;
+  private final Optional<JdbcConnectionExecutor> connectionExecutor;
 
-  public DatabaseRegistryAdapter(JdbcConnectionDetails connectionDetails) {
-    this.bootstrapUrl = connectionDetails.getJdbcUrl();
-    this.username = connectionDetails.getUsername();
-    this.password = connectionDetails.getPassword();
+  public DatabaseRegistryAdapter(
+      TenantDatabaseConnectionProperties connectionProperties,
+      Optional<JdbcConnectionExecutor> connectionExecutor) {
+    this.bootstrapUrl = connectionProperties.getUrl();
+    this.connectionExecutor = connectionExecutor;
   }
 
   @Override
   public Optional<DatabaseRegistryEntry> findById(UUID id) {
-    // Default database — hardcoded, no DB query needed (avoids chicken-and-egg)
     if (DEFAULT_DB_ID.equals(id)) {
       return Optional.of(
           new DatabaseRegistryEntry(DEFAULT_DB_ID, "default", bootstrapUrl, 3, 20, 0, true));
     }
 
-    // Tenant databases — look up from registry table
-    try (Connection conn = DriverManager.getConnection(bootstrapUrl, username, password);
-        var stmt =
-            conn.prepareStatement(
-                "SELECT database_id, jdbc_url, name, min_pool_size, max_pool_size, priority, is_active "
-                    + "FROM emme_core.database_registry WHERE database_id = ?")) {
-      stmt.setObject(1, id);
-      try (var rs = stmt.executeQuery()) {
-        if (rs.next()) {
-          return Optional.of(
-              new DatabaseRegistryEntry(
-                  UUID.fromString(rs.getString("database_id")),
-                  rs.getString("name"),
-                  rs.getString("jdbc_url"),
-                  rs.getInt("min_pool_size"),
-                  rs.getInt("max_pool_size"),
-                  rs.getInt("priority"),
-                  rs.getBoolean("is_active")));
-        }
-        return Optional.empty();
-      }
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to lookup database registry for id=" + id, e);
-    }
+    return connectionExecutor
+        .orElseThrow(
+            () ->
+                new IllegalStateException(
+                    "Bootstrap JDBC connection executor is unavailable for tenant database lookup"))
+        .withConnection(
+            (ThrowingSqlConnectionFunction<Optional<DatabaseRegistryEntry>, SQLException>)
+                connection -> {
+                  try (var statement = connection.prepareStatement(REGISTRY_QUERY)) {
+                    statement.setObject(1, id);
+                    try (var resultSet = statement.executeQuery()) {
+                      if (!resultSet.next()) {
+                        return Optional.empty();
+                      }
+                      return Optional.of(
+                          new DatabaseRegistryEntry(
+                              UUID.fromString(resultSet.getString("database_id")),
+                              resultSet.getString("name"),
+                              resultSet.getString("jdbc_url"),
+                              resultSet.getInt("min_pool_size"),
+                              resultSet.getInt("max_pool_size"),
+                              resultSet.getInt("priority"),
+                              resultSet.getBoolean("is_active")));
+                    }
+                  }
+                });
   }
 }

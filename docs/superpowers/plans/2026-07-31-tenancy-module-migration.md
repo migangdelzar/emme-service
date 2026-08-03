@@ -57,6 +57,26 @@ implementation.
 | Provisioning outbound ports | Complete for registry and schema migration | `TenantProvisioningRepository` and `TenantSchemaMigrationPort` isolate registry lifecycle and Liquibase/schema work from the process manager |
 | Isolation and operational evidence | Open | Structural tests pass; add live routing/pool lifecycle/eviction/failure-recovery, replay/idempotency, rollback, and audit-correlation evidence |
 
+## Completed managed bootstrap JDBC boundary — 2026-08-03
+
+- [x] Routed `DatabaseRegistryAdapter` tenant lookups through the generic,
+  throwable-aware `JdbcConnectionExecutor.withConnection` callback.
+- [x] Kept datasource construction and connection acquisition in the
+  composition-root `BootstrapJdbcConfiguration`, using a dedicated unpooled
+  bootstrap datasource so tenant routing cannot participate in registry
+  initialization.
+- [x] Extended typed `TenantDatabaseConnectionProperties` with the bootstrap
+  URL used by the default registry entry.
+- [x] Kept the registry application port available in H2 and lightweight test
+  contexts; production-only bootstrap executor beans are conditional on a
+  non-H2 JDBC URL.
+- [x] Added unit coverage proving callback-based registry access and typed
+  configuration binding while preserving default-database behavior.
+
+The remaining Tenancy work is operational evidence: live pool eviction and
+recovery, provisioning replay/idempotency and rollback, audit correlation,
+secret redaction, and service-wide verification.
+
 ## Public contract and naming decisions
 
 - The legacy multi-operation `TenantApi` is replaced by focused grouped

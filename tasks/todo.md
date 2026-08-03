@@ -158,6 +158,9 @@ reopened by this backlog.
   the plan.
 - [x] Record Tenancy operational boundary evidence for typed configuration,
   managed JDBC callbacks, tenant predicates, and provisioning ownership.
+- [x] Route bootstrap registry JDBC work through the generic throwing connection
+  executor; preserve the circular-dependency break through a dedicated
+  composition-root datasource and keep H2 contexts free of bootstrap beans.
 - [ ] Close live pool eviction/recovery, provisioning replay/rollback, and
   clean test-context lifecycle evidence.
 - [x] Validate staff-login credentials at the Identity HTTP boundary.

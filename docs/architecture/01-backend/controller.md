@@ -1,5 +1,7 @@
 # Controllers
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 Controllers are thin inbound adapters. They handle protocol concerns and delegate to application use cases.
@@ -20,6 +22,7 @@ request DTO
 - Controllers do not contain transaction orchestration or domain invariants.
 - Controllers do not access repositories directly.
 - Use explicit request/response types and stable JSON field names.
+- Use immutable request records with Jakarta Bean Validation annotations and explicitly trigger them with `@Valid`; use the [validation conventions](validation.md) for cross-field rules, message keys, and error mapping.
 - Include tenant and correlation context in the request pipeline, not in every business method signature unless the domain requires it.
 - Test successful, validation, authorization, not-found, and conflict responses.
 

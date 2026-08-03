@@ -1,0 +1,59 @@
+package com.emme.identity.application.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.emme.identity.api.query.GetCurrentUserQuery;
+import com.emme.identity.api.result.BusinessProfileSummary;
+import com.emme.identity.api.result.CurrentUserInfo;
+import com.emme.identity.api.result.MembershipInfo;
+import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
+import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
+import com.emme.studio.api.result.BusinessProfileInfo;
+import com.emme.studio.api.usecase.GetBusinessProfileUseCase;
+import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.usecase.GetTenantUseCase;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+
+class GetCurrentUserServiceTest {
+
+  @Test
+  void assemblesCurrentUserDataThroughApplicationCapabilities() {
+    UUID tenantId = UUID.randomUUID();
+    GetCurrentUserMembershipsUseCase memberships =
+        query ->
+            List.of(
+                new MembershipInfo(
+                    UUID.randomUUID(), tenantId, "Tenant", "tenant_owner", "ACTIVE"));
+    GetUserPermissionsUseCase permissions =
+        (userReference, requestedTenantId) -> Set.of("tenant:read");
+    GetTenantUseCase tenants =
+        query ->
+            Optional.of(
+                new TenantInfo(
+                    tenantId,
+                    "tenant",
+                    "Tenant",
+                    "tenant_schema",
+                    "ACTIVE",
+                    "DEDICATED",
+                    "emme-tenant"));
+    GetBusinessProfileUseCase profiles =
+        requestedTenantId ->
+            Optional.of(new BusinessProfileInfo(requestedTenantId, "Studio", "en-US"));
+
+    GetCurrentUserService service =
+        new GetCurrentUserService(memberships, permissions, tenants, profiles);
+
+    CurrentUserInfo result =
+        service.get(new GetCurrentUserQuery("user-1", "user@example.com", "User", tenantId));
+
+    assertThat(result.userId()).isEqualTo("user-1");
+    assertThat(result.memberships()).hasSize(1);
+    assertThat(result.memberships().getFirst().permissions()).containsExactly("tenant:read");
+    assertThat(result.profile()).isEqualTo(new BusinessProfileSummary(tenantId, "Studio", "en-US"));
+  }
+}

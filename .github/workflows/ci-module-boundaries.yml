@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: module-boundaries-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-24.04
@@ -21,4 +28,4 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Verify module boundaries
-        run: ./gradlew :applications:emme-platform:archTest --no-configuration-cache
+        run: ./gradlew :applications:emme-platform:test --tests com.emme.ModularityTest --tests com.emme.LayerConventionTest --no-daemon --no-configuration-cache --stacktrace

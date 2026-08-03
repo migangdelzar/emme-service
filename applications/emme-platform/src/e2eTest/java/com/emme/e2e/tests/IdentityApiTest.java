@@ -29,7 +29,7 @@ class IdentityApiTest {
   void shouldDenyFeatureFlagsWithoutAdmin() {
     withSession(
         s -> {
-          var result = s.get("/api/v1/admin/feature-flags", 403);
+          var result = s.get("/api/admin/feature-flags", 403);
           assertThat(result).isNotNull();
         });
   }

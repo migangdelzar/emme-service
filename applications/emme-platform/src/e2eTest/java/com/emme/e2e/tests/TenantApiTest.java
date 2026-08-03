@@ -27,7 +27,7 @@ class TenantApiTest {
           assertThat(got).contains(slug);
 
           var updated = s.tenants().update(id, "Updated Studio");
-          if (!updated.isEmpty()) assertThat(updated).contains("Updated Studio");
+          assertThat(updated).contains("Updated Studio");
         });
   }
 

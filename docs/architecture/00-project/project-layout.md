@@ -1,19 +1,22 @@
 # Project Layout
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 The service repository is a modular monolith with independently understandable
 business modules, shared libraries, deployable applications, and an included
 Gradle build-logic build. The browser application lives in the sibling
-`emme-web` repository.
+`emme-web` repository. Frontend architecture and browser delivery guidance are
+owned by that repository; this repository owns the service contract consumed by
+the web application.
 
 ## Baseline layout
 
 ```text
 emme/
 ├── applications/                 # deployable Spring Boot applications
-│   ├── studio-api/
-│   └── emme-platform/
+│   └── emme-platform/             # canonical deployed application
 ├── modules/                      # business capabilities / bounded contexts
 │   ├── shared/
 │   ├── tenancy/
@@ -30,7 +33,7 @@ emme/
 ├── database/                     # migrations and database lifecycle
 ├── build-logic/                  # reusable Gradle architecture
 ├── infra/                        # local and environment infrastructure
-├── apps/                         # frontend applications
+├── deployment/                   # Compose, Helm, and legacy Kustomize delivery
 ├── docs/                         # architecture, requirements, ADRs, and plans
 ├── settings.gradle.kts
 ├── build.gradle.kts
@@ -64,6 +67,10 @@ flowchart TB
 | `build-logic` | Build conventions and delivery automation | Application behavior |
 | `database` | Schema lifecycle and migration ownership | Ad hoc SQL in every module |
 | `docs/architecture` | Stable architectural guidance | Temporary task notes |
+
+`applications/emme-platform` is the sole composition root and deployment
+target. There is no second application project; all service behavior, tests,
+configuration, packaging, and delivery automation belong to this application.
 
 ## Dependency direction
 

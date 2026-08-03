@@ -19,14 +19,14 @@ class NotificationModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldListNotifications() throws Exception {
-    mockMvc.perform(get("/api/v1/notifications").with(tenantJwt())).andExpect(status().isOk());
+    mockMvc.perform(get("/api/notifications").with(tenantJwt())).andExpect(status().isOk());
   }
 
   @Test
   void shouldSendNotification() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/notifications")
+            post("/api/notifications")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -41,7 +41,7 @@ class NotificationModuleTest extends BaseSpringModuleTest {
   void shouldRejectWithoutJwt() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/notifications")
+            post("/api/notifications")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\"channel\":\"EMAIL\",\"recipient\":\"test@example.com\",\"message\":\"Test\"}"))

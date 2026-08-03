@@ -1,13 +1,16 @@
 package com.emme.testing;
 
-import com.emme.identity.entity.FeatureFlag;
-import com.emme.identity.entity.FeatureFlagRepository;
-import com.emme.studio.entity.BusinessProfileRepository;
-import com.emme.studio.subscriptions.api.PlanType;
-import com.emme.studio.subscriptions.entity.Subscription;
-import com.emme.studio.subscriptions.entity.SubscriptionRepository;
-import com.emme.tenancy.application.TenantService;
-import com.emme.tenancy.entity.Tenant;
+import com.emme.identity.adapter.out.persistence.entity.FeatureFlagEntity;
+import com.emme.identity.adapter.out.persistence.repository.SpringDataFeatureFlagRepository;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataBusinessProfileRepository;
+import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
+import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
+import com.emme.studio.subscriptions.api.type.PlanType;
+import com.emme.tenancy.api.command.CreateTenantCommand;
+import com.emme.tenancy.api.query.GetTenantQuery;
+import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.usecase.CreateTenantUseCase;
+import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -42,12 +45,18 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 public abstract class BaseSpringModuleTest {
 
   @Autowired protected MockMvc mockMvc;
-  @Autowired protected TenantService tenantService;
-  @Autowired protected SubscriptionRepository subscriptionRepo;
-  @Autowired protected FeatureFlagRepository featureFlagRepo;
-  @Autowired protected BusinessProfileRepository profileRepo;
-  @Autowired protected com.emme.identity.entity.MembershipRepository membershipRepo;
-  @Autowired protected com.emme.identity.entity.RoleRepository roleRepo;
+  @Autowired protected CreateTenantUseCase createTenantUseCase;
+  @Autowired protected GetTenantUseCase getTenantUseCase;
+  @Autowired protected SpringDataSubscriptionRepository subscriptionRepo;
+  @Autowired protected SpringDataFeatureFlagRepository featureFlagRepo;
+  @Autowired protected SpringDataBusinessProfileRepository profileRepo;
+
+  @Autowired
+  protected com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository
+      membershipRepo;
+
+  @Autowired
+  protected com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository roleRepo;
 
   protected static final String TEST_USER_SUB = "auth0|test-user-123";
   protected static final String TEST_ISSUER = "https://test-issuer/realms/emme";
@@ -55,13 +64,14 @@ public abstract class BaseSpringModuleTest {
 
   /** Create tenant + ENTERPRISE subscription + global feature flags. */
   protected UUID fullSetup() {
-    Tenant tenant = tenantService.create("test-" + System.nanoTime(), "Test Salon");
-    UUID tid = tenant.getId();
+    TenantInfo tenant = createTenant("test-" + System.nanoTime(), "Test Salon");
+    UUID tid = tenant.id();
     tenantId = tid;
 
     if (subscriptionRepo.findByTenantId(tid).isEmpty()) {
       subscriptionRepo.save(
-          new Subscription(tid, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
+          new SubscriptionEntity(
+              tid, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
     }
 
     String[] flags = {
@@ -76,10 +86,18 @@ public abstract class BaseSpringModuleTest {
     for (String code : flags) {
       if (featureFlagRepo.findByTenantIdIsNull().stream()
           .noneMatch(f -> f.getCode().equals(code))) {
-        featureFlagRepo.save(new FeatureFlag(null, code, true, null, "global default"));
+        featureFlagRepo.save(new FeatureFlagEntity(null, code, true, null, "global default"));
       }
     }
     return tid;
+  }
+
+  protected TenantInfo createTenant(String slug, String name) {
+    return createTenantUseCase.create(new CreateTenantCommand(slug, name));
+  }
+
+  protected TenantInfo findTenant(UUID tenantId) {
+    return getTenantUseCase.get(new GetTenantQuery(tenantId)).orElseThrow();
   }
 
   /** JWT with platform_admin + tenant_owner roles. */

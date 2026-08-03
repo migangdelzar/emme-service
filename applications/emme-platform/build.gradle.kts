@@ -1,6 +1,8 @@
 plugins {
   id("emme.spring-application")
   id("emme.modulith")
+  id("emme.messaging")
+  id("emme.integration-testing")
   id("emme.container")
   id("emme.publishing")
   id("emme.deployment")
@@ -16,6 +18,8 @@ val e2eTest by sourceSets.creating {
 }
 
 dependencies {
+  implementation(libs.jackson.databind)
+
   // Business Modules
   implementation(project(":modules:shared"))
   implementation(project(":modules:tenancy"))
@@ -54,6 +58,19 @@ dependencies {
   "e2eTestImplementation"(libs.assertj.core)
   "e2eTestImplementation"(libs.okhttp)
   "e2eTestImplementation"(libs.okhttp.logging.interceptor)
+
+  add("integrationTestImplementation", libs.testcontainers.kafka)
+  add("integrationTestImplementation", libs.spring.kafka)
+  add("integrationTestImplementation", libs.spring.modulith.events.kafka)
+  add("integrationTestImplementation", libs.spring.boot.starter.oauth2.client)
+  add("integrationTestImplementation", project(":modules:studio"))
+  add("integrationTestImplementation", project(":modules:tenancy"))
+  add("integrationTestRuntimeOnly", libs.h2)
+}
+
+sourceSets.named("integrationTest") {
+  compileClasspath += sourceSets.main.get().output
+  runtimeClasspath += sourceSets.main.get().output
 }
 
 tasks.register<Test>("e2eTest") {
@@ -61,7 +78,7 @@ tasks.register<Test>("e2eTest") {
   group = "verification"
   testClassesDirs = e2eTest.output.classesDirs
   classpath = e2eTest.runtimeClasspath
-  shouldRunAfter(tasks.named("integrationTest"))
+  shouldRunAfter(tasks.matching { it.name == "integrationTest" })
   useJUnitPlatform()
   jvmArgs("--enable-preview", "-Djava.net.preferIPv4Stack=true")
   systemProperty(

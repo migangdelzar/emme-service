@@ -143,8 +143,8 @@
 | C-013 | Local AI | Ollama must support local development models and the approved production embedding model. | Technical | Medium | Open |
 | C-014 | External messaging | Production WhatsApp must integrate directly with Meta WhatsApp Cloud API. | Technical | High | Open |
 | C-015 | Internal communication | v1 modules must communicate through Java APIs and Modulith events, not internal REST, gRPC, or protobuf. | Technical | High | Open |
-| C-016 | Event durability | Cross-module event publication must use the Spring Modulith JDBC event registry. | Technical | High | Open |
-| C-017 | Deferred broker | RabbitMQ and event externalization must remain deferred until Phase 3 WhatsApp scaling requires them. | Schedule | High | Deferred |
+| C-016 | Event durability | Cross-module event publication must use the Spring Modulith JDBC event registry and retain incomplete publications for retry and recovery. | Technical | High | Open |
+| C-017 | Kafka event streaming | Stable public `api.event` contracts selected for externalization must be published to Kafka through Spring Modulith's Kafka externalizer, using explicit topics and tenant partition keys. | Technical | High | Open |
 | C-018 | Web model | HTTP APIs must use Spring Web MVC with virtual threads; WebFlux must not be introduced in v1. | Technical | High | Open |
 | C-019 | Persistence API | Durable relational persistence must use Spring Data JPA/Hibernate unless a PostgreSQL-specific query requires an explicit JDBC/native adapter. | Technical | High | Open |
 | C-020 | Scheduling | In-process scheduled work must use Spring scheduling and ShedLock JDBC coordination. | Technical | Medium | Open |
@@ -164,7 +164,7 @@
 | C-034 | Container image | The backend image must be built with Spring Boot Buildpacks or Jib and must not require an application Dockerfile. | Technical | Medium | Open |
 | C-035 | Excluded frameworks | Quarkus and Micronaut dependencies and runtime configuration must not be copied into the target project. | Technical | High | Open |
 | C-036 | Excluded service runtimes | Python AI gateway and TypeScript AI bridge behavior must be translated into Java Spring AI modules rather than retained as deployables. | Technical | High | Open |
-| C-037 | Excluded technologies | Spring Batch, GraalVM native images, WebFlux, Kafka, service mesh, n8n, and Argo CD must not be required by v1. | Technical | High | Deferred |
+| C-037 | Excluded technologies | Spring Batch, GraalVM native images, WebFlux, service mesh, n8n, and Argo CD must not be required by v1. | Technical | High | Open |
 | C-038 | Domain modeling | Core business entities must use explicit relational models; generic catch-all business-object tables are prohibited. | Technical | High | Open |
 | C-039 | Module purity | Domain packages must not import Spring, JPA, Redis, transport, provider SDK, or AI framework types. | Technical | High | Open |
 | C-040 | Dependency direction | Modules must expose explicit public APIs, prohibit repository/entity access across module boundaries, and contain no cyclic dependencies. | Technical | High | Open |

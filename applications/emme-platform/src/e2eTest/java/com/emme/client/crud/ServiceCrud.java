@@ -12,7 +12,7 @@ public class ServiceCrud {
 
   public String create(String name, String code, int price, int durationMinutes, String category) {
     return session.post(
-        "/api/v1/services",
+        "/api/services",
         Template.load("service-create.json")
             .set("name", name)
             .set("code", code)
@@ -23,14 +23,14 @@ public class ServiceCrud {
   }
 
   public String list() {
-    return session.get("/api/v1/services");
+    return session.get("/api/services");
   }
 
   public String getById(String id) {
-    return session.get("/api/v1/services/" + id);
+    return session.get("/api/services/" + id);
   }
 
   public String listByCategory(String category) {
-    return session.get("/api/v1/services?category=" + category);
+    return session.get("/api/services?category=" + category);
   }
 }

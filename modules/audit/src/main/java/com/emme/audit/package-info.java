@@ -1,4 +1,4 @@
 @org.springframework.modulith.ApplicationModule(
     displayName = "Audit",
-    allowedDependencies = {"shared", "tenancy"})
+    allowedDependencies = {})
 package com.emme.audit;

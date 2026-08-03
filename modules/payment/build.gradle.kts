@@ -16,6 +16,7 @@ dependencies {
   implementation(libs.jackson.databind)
   testImplementation(testFixtures(project(":libraries:testing")))
   testImplementation(libs.spring.boot.webmvc.test)
+  testImplementation(libs.okhttp.mockwebserver)
 
   testRuntimeOnly(libs.h2)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))

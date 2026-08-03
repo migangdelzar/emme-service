@@ -24,7 +24,7 @@ class DocumentApiTest {
               """
                 {"name":"E2E Test Document","sourceType":"NOTE"}
                 """;
-          var result = s.post("/api/v1/documents", body, 500);
+          var result = s.post("/api/documents", body, 500);
           assertThat(result).isNotNull();
         });
   }

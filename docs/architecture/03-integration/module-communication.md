@@ -1,5 +1,7 @@
 # Module Communication
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 Modules communicate through stable, intentional boundaries. The default choice is the smallest mechanism that preserves correctness and ownership.

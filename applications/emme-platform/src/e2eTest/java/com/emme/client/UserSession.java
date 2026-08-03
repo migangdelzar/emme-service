@@ -105,6 +105,12 @@ public final class UserSession implements AutoCloseable {
     return execute(new Request.Builder().url(resolve(path)).put(body).build(), 200);
   }
 
+  /** PATCH → assert 200. */
+  public String patch(String path, String jsonBody) {
+    var body = RequestBody.create(jsonBody, MediaType.get("application/json"));
+    return execute(new Request.Builder().url(resolve(path)).patch(body).build(), 200);
+  }
+
   /** DELETE → assert 2xx. */
   public void delete(String path) {
     execute(new Request.Builder().url(resolve(path)).delete().build(), 200);

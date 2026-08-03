@@ -4,6 +4,13 @@
 
 > **Template status:** Approved baseline. Adopt the mandatory rules for every production module. Mark any deliberate deviation in the module metadata and record the decision in an ADR.
 
+> **Unreleased-system rule:** When the service or module is not released to
+> external consumers, do not preserve legacy names, packages, wrappers, or
+> compatibility aliases. Update all in-repository consumers in the same
+> migration. Compatibility layers require an external released consumer,
+> persisted/serialized contract, or an explicitly approved migration window
+> recorded in an ADR or migration plan.
+
 ## 1. Module metadata
 
 | Field | Value |
@@ -24,7 +31,7 @@
 
 ## 2. Purpose
 
-This template defines a Spring Modulith module built with DDD + Hexagonal Architecture, where the module's public `api` package is standardized by **kind** rather than by feature: every command, query, result, use case, event, exception, and type gets its own dedicated subpackage. The goal is that a developer can answer "what is this class for?" from its package alone, without reading the class body.
+This template defines a Spring Modulith module built with DDD + Hexagonal Architecture, where the module's public `api` package is standardized by **kind** rather than by feature: every command, query, result, use case, event, exception, and type gets its own dedicated subpackage. The goal is that a developer can answer "what is this class for?" from its package alone, without reading the class body. Input validation follows the [backend validation conventions](../architecture/01-backend/validation.md): Jakarta Bean Validation on inbound records, custom constraints for cross-field transport rules, and explicit domain/application validation for business truth.
 
 The template covers two contracts at once:
 
@@ -44,6 +51,7 @@ Use this layout when a module's `api` package has grown past a handful of flat f
 5. Both adapter groups point inward; nothing inside `domain` or `application` depends on `adapter`.
 6. Place a small `package-info.java` in every **materialized** architectural package. It is the package's local responsibility contract and, where applicable, carries Spring Modulith metadata.
 7. A package is materialized only when it contains a real type, owns descendants with a real responsibility, or carries required module/named-interface metadata. Do not create optional branches merely to reproduce the full tree.
+8. Validation follows ownership: `adapter.in.*` validates transport shape, `application` validates workflow/external facts, and `domain` protects business invariants. Do not put Jakarta validation annotations on domain types.
 
 ## 4. Full package tree
 
@@ -79,7 +87,8 @@ Use this layout when a module's `api` package has grown past a handful of flat f
     │   │   │   ├── request/
     │   │   │   ├── response/
     │   │   │   ├── mapper/
-    │   │   │   └── advice/
+    │   │   │   ├── advice/
+    │   │   │   └── validation/                         # C: cross-field input constraints
     │   │   ├── messaging/
     │   │   │   ├── consumer/
     │   │   │   └── mapper/
@@ -87,6 +96,7 @@ Use this layout when a module's `api` package has grown past a handful of flat f
     │   │
     │   └── out/
     │       ├── persistence/
+    │       │   ├── aspect/                              # C: persistence-side cross-cutting adapter
     │       │   ├── entity/
     │       │   ├── repository/
     │       │   ├── adapter/
@@ -95,6 +105,8 @@ Use this layout when a module's `api` package has grown past a handful of flat f
     │       ├── messaging/
     │       │   ├── publisher/
     │       │   └── mapper/
+    │       ├── provider/
+    │       │   └── <provider>/
     │       ├── client/
     │       │   └── <external-system>/
     │       └── observability/
@@ -149,6 +161,7 @@ modules/<module>/
     │   │   │   │   └── out/
     │   │   │   │       ├── package-info.java
     │   │   │   │       ├── <Capability>Port.java
+    │   │   │   │       ├── <Capability>Entry.java
     │   │   │   │       ├── <Aggregate>Repository.java
     │   │   │   │       ├── <ReadCapability>Port.java
     │   │   │   │       └── <Fact>Publisher.java
@@ -243,6 +256,9 @@ modules/<module>/
     │   │   │       ├── package-info.java
     │   │   │       ├── persistence/
     │   │   │       │   ├── package-info.java
+    │   │   │       │   ├── aspect/                      # C: persistence-side cross-cutting adapter
+    │   │   │       │   │   ├── package-info.java
+    │   │   │       │   │   └── <Concern>Aspect.java
     │   │   │       │   ├── entity/
     │   │   │       │   │   ├── package-info.java
     │   │   │       │   │   ├── <Aggregate>Entity.java
@@ -268,6 +284,9 @@ modules/<module>/
     │   │   │       │   └── mapper/
     │   │   │       │       ├── package-info.java
     │   │   │       │       └── <Fact>EventMapper.java
+    │   │   │       ├── provider/
+    │   │   │       │   ├── package-info.java
+    │   │   │       │   └── <provider>/<Technology><Capability>Provider.java
     │   │   │       ├── client/
     │   │   │       │   ├── package-info.java
     │   │   │       │   └── <external-system>/
@@ -704,7 +723,20 @@ application/
 
 ### `application.service`
 
-Implementations of the public use cases. Application services may handle transactions, aggregate loading, invoking domain behavior, saving aggregates, calling external ports, publishing events, and use-case-level authorization. They should not contain detailed business invariants — those belong in `domain`.
+Implementations of the public use cases. Each application service implements
+exactly one `api.usecase` interface and is named after that use case.
+Application services may handle transactions, aggregate loading, invoking
+domain behavior, saving aggregates, calling external ports, publishing events,
+and use-case-level authorization. They should not contain detailed business
+invariants — those belong in `domain`.
+
+Do not create a module-wide application façade that implements several use
+cases. If multiple use cases share logic, extract a named non-use-case
+collaborator such as an application mapper, evaluator, policy, loader, or
+factory. This keeps transaction boundaries, authorization, dependencies, and
+tests specific to one operation. It is a cohesion rule, not a circular-
+dependency workaround; circular dependencies require ports, events, or a
+dedicated collaborator.
 
 ```java
 @Service
@@ -896,6 +928,8 @@ adapter/out/
 ├── messaging/
 │   ├── publisher/
 │   └── mapper/
+├── provider/
+│   └── <provider>/
 ├── client/
 │   └── <external-system>/
 └── observability/
@@ -910,6 +944,7 @@ adapter/out/
 | `persistence.projection` | Optimized read models for search screens, lists, reports; never used to execute aggregate behavior |
 | `messaging.publisher` | Publishes module events to Spring application events, Kafka, RabbitMQ, or a transactional outbox |
 | `messaging.mapper` | Translates public/domain events into broker-specific representations |
+| `provider.<provider>` | Concrete implementations of application-owned provider ports; use provider-role class names such as `GroqModelProvider` |
 | `client.<external-system>` | One package per external dependency: transport client, request/response models, mapper, port adapter |
 | `observability` | Module-specific metrics, tracing, and diagnostic signals; observes execution without becoming a business system of record |
 
@@ -1240,7 +1275,7 @@ Rules:
 - Do not call slow external systems inside the primary database transaction unless the failure semantics are intentional and tested.
 - Publish completed facts after the aggregate state transition, not before it. For durable delivery, publication registration occurs while the producer transaction is active so the record commits atomically; consumer execution occurs after commit.
 - Use Spring Modulith's transactional event publication support for recoverable listeners; configure retry, staleness, and resubmission behavior rather than assuming an asynchronous listener is durable.
-- For broker delivery or cross-system publication, use a transactional outbox/externalization mechanism when losing an event is unacceptable. See the [Spring Modulith event publication reference](https://docs.spring.io/spring-modulith/reference/events.html).
+- For broker delivery or cross-system publication, use the Spring Modulith JDBC publication registry plus Kafka externalization when losing an event is unacceptable. Mark only stable public `api.event` contracts with `@Externalized`; keep Kafka transport details out of `domain` and `application`. See the [Spring Modulith event publication reference](https://docs.spring.io/spring-modulith/reference/events.html).
 - Document whether a consumer observes the event synchronously, after commit, or through an external broker.
 
 ### 14.3 Security and tenancy
@@ -1830,8 +1865,9 @@ Names communicate architectural role before a file is opened. Use the module's u
 | `api.exception` | `<Subject><Failure>Exception.java` | `QuoteNotFoundException`, `QuoteUnavailableException` | Expected caller-visible failure |
 | `api.type` | `<Concept><Qualifier>.java` | `QuoteId`, `QuoteStatusView` | Stable semantic public vocabulary |
 | `application.service` | `<Verb><Subject>Service.java` | `SubmitQuoteService`, `SearchQuotesService` | Implements the matching use case; never `*ServiceImpl` |
-| `application.service` | `<Subject>ApplicationService.java` | `PaymentApplicationService`, `FeatureFlagApplicationService` | Approved only for a cohesive aggregate/application façade implementing multiple tightly related use cases; never a generic dumping ground |
+| `application.service` | `<Subject>ApplicationService.java` | `PaymentApplicationService` | Only when the class is one explicitly named use-case implementation; never a multi-use-case façade or compatibility name |
 | `application.port.out` | `<Capability>Port.java` | `PricingPort`, `CustomerVerificationPort` | External capability with no technology in the name |
+| `application.port.out` | `<Capability>Entry.java` | `DatabaseRegistryEntry` | Immutable port data returned by an outbound capability; never a JPA entity or provider DTO |
 | `application.port.out` | `<Aggregate>Repository.java` | `QuoteRepository` | Aggregate persistence port |
 | `application.port.out` | `<ReadCapability>Port.java` | `SearchQuotesPort` | Read capability returning application/API results without exposing database projections |
 | `application.port.out` | `<Fact>Publisher.java` | `QuoteEventPublisher` | Publication capability |
@@ -1849,6 +1885,7 @@ Names communicate architectural role before a file is opened. Use the module's u
 | `adapter.in.web.request` | `<Verb><Resource>Request.java` | `CreateQuoteRequest` | Versioned inbound wire shape |
 | `adapter.in.web.response` | `<Resource><Shape>Response.java` | `QuoteResponse`, `QuotePageResponse` | Outbound wire shape; not an application result |
 | `adapter.in.web.mapper` | `<Resource>WebMapper.java` | `QuoteWebMapper` | Request/response ↔ module API |
+| `adapter.in.web.validation` | `Valid<Concept>.java`, `<Concept>Validator.java` | `ValidQuoteDateRange`, `QuoteDateRangeValidator` | Cross-field transport constraints; stateless and free of I/O |
 | `adapter.in.web.advice` | `<Module>ExceptionHandler.java` | `QuoteExceptionHandler` | Module-specific HTTP failure mapping |
 | `adapter.in.web.filter` | `<Concern>Filter.java` | `QuoteIdempotencyFilter` | Module-owned request-pipeline concern |
 | `adapter.in.messaging.consumer` | `<Fact>Consumer.java` | `CustomerUpdatedConsumer` | Names the fact received, not an imperative operation |
@@ -1872,7 +1909,10 @@ Names communicate architectural role before a file is opened. Use the module's u
 | `adapter.out.client.<provider>` | `<Operation>Request.java` | `PricingRequest` | Provider wire request; package supplies provider context |
 | `adapter.out.client.<provider>` | `<Operation>Response.java` | `PricingResponse` | Provider wire response |
 | `adapter.out.client.<provider>` | `<Provider>ClientMapper.java` | `PricingClientMapper` | Provider contract ↔ internal contract |
-| `adapter.out.client.<provider>` | `<Provider><Capability>Adapter.java` | `PricingClientAdapter` | Implements application port |
+| `adapter.out.client.<provider>` | `<Provider>Client.java` | `PricingClient` | Transport-focused external client |
+| `adapter.out.provider.<provider>` | `<Provider><Capability>Adapter.java` | `PricingProviderAdapter` | Implements a provider capability port |
+| `adapter.out.provider.<provider>` | `<Provider><Capability>Provider.java` | `GroqModelProvider` | Implements a capability provider port directly |
+| `adapter.out.client.database` | `<Capability>Adapter.java`, `<Capability>Provider.java` | `DatabaseRegistryAdapter`, `TenantDatabasePoolProvider` | Database bootstrap/client and pool infrastructure; no application orchestration |
 | `adapter.out.observability` | `<Module>MetricsAdapter.java` | `QuoteMetricsAdapter` | Module-specific metrics implementation |
 | `adapter.out.observability` | `<Module>TracingAdapter.java` | `QuoteTracingAdapter` | Module-specific trace enrichment/instrumentation |
 | `adapter.out.cache` | `<Technology><Subject>CacheAdapter.java` | `RedisQuoteCacheAdapter` | Implements an application cache port |
@@ -2037,7 +2077,7 @@ Test method names describe observable behavior, for example `rejectsSubmissionWh
 |---|---|
 | API data types | Prefer immutable `record` types when identity/behavior does not require a class |
 | API interfaces | One cohesive use case per interface; avoid module-wide god facades |
-| Application services | One implementation per use case; constructor injection only; package-private with component scanning or public for cross-package `@Bean` wiring; `final` only when the proxy strategy permits |
+| Application services | Exactly one implementation per use case and exactly one use-case interface per service; constructor injection only; package-private with component scanning or public for cross-package `@Bean` wiring; `final` only when the proxy strategy permits |
 | Domain aggregates | Classes with behavior and private mutation; no public field setters |
 | Value objects | Immutable, validated at construction, equality by value |
 | Collections | Never return `null`; return immutable snapshots or unmodifiable views |
@@ -2132,6 +2172,15 @@ package <base-namespace>.<module>.adapter.in.web.controller;
  */
 package <base-namespace>.<module>.adapter.in.web.request;
 ```
+
+### Web validation
+
+Create `adapter/in/web/validation` only when a request has a real cross-field
+or conditional transport rule that cannot be expressed with field annotations.
+Use a type-level `Valid<Concept>` annotation and a stateless `<Concept>Validator`.
+Keep the validator free of repositories, HTTP clients, authorization, and
+business state transitions. The complete annotation, error, i18n, and testing
+policy is defined in the [backend validation conventions](../architecture/01-backend/validation.md).
 
 ### Web response models
 
@@ -2392,6 +2441,26 @@ package <base-namespace>.<module>.adapter.out.messaging.publisher;
 package <base-namespace>.<module>.adapter.out.messaging.mapper;
 ```
 
+### Provider adapter namespace
+
+**`adapter/out/provider/package-info.java`**
+
+```java
+/**
+ * Concrete provider adapters for the <Module> module.
+ *
+ * Child packages group interchangeable implementations of an application-owned
+ * provider port. These classes may compose a transport client, but they expose
+ * the module capability rather than the remote protocol.
+ */
+package <base-namespace>.<module>.adapter.out.provider;
+```
+
+Use this namespace when the implementation's role is a provider, such as
+`GroqModelProvider`, `OllamaModelProvider`, or `TwilioSmsProvider`. Keep the
+application-owned `ModelProvider`, `SmsSender`, or equivalent abstraction under
+`application.port.out`; provider implementations remain outbound adapters.
+
 ### External client namespace
 
 **`adapter/out/client/package-info.java`**
@@ -2400,9 +2469,10 @@ package <base-namespace>.<module>.adapter.out.messaging.mapper;
 /**
  * Outbound integrations with external systems used by <Module>.
  *
- * Each child package represents one provider or external capability and owns
- * its transport client, provider request/response models, mapper, and adapter
- * implementing an application-owned port.
+ * Each child package represents one external system and owns its transport
+ * client, provider request/response models, and protocol mapper. A higher-level
+ * provider adapter may compose this client, but the client package does not
+ * contain application orchestration.
  */
 package <base-namespace>.<module>.adapter.out.client;
 ```
@@ -2416,9 +2486,9 @@ package <base-namespace>.<module>.adapter.out.client;
  * <External System> integration for the <Module> module.
  *
  * This package owns the transport client, provider DTOs, authentication,
- * timeout and retry policy, provider error mapping, and the adapter that
- * implements the corresponding application port. No provider type escapes
- * this package.
+ * timeout and retry policy, and provider protocol error mapping. Its types are
+ * transport details; no client or provider DTO escapes into the application
+ * or domain layers.
  */
 package <base-namespace>.<module>.adapter.out.client.<external-system>;
 ```

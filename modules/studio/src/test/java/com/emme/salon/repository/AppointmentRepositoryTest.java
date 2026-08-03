@@ -2,15 +2,15 @@ package com.emme.studio.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.studio.entity.Appointment;
-import com.emme.studio.entity.AppointmentRepository;
-import com.emme.studio.entity.AppointmentStatus;
-import com.emme.studio.entity.Artist;
-import com.emme.studio.entity.ArtistRepository;
-import com.emme.studio.entity.Customer;
-import com.emme.studio.entity.CustomerRepository;
-import com.emme.studio.entity.Service;
-import com.emme.studio.entity.ServiceRepository;
+import com.emme.studio.adapter.out.persistence.entity.AppointmentEntity;
+import com.emme.studio.adapter.out.persistence.entity.ArtistEntity;
+import com.emme.studio.adapter.out.persistence.entity.CustomerEntity;
+import com.emme.studio.adapter.out.persistence.entity.ServiceEntity;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataAppointmentRepository;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataArtistRepository;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataCustomerRepository;
+import com.emme.studio.adapter.out.persistence.repository.SpringDataServiceRepository;
+import com.emme.studio.domain.model.AppointmentStatus;
 import com.emme.testing.BaseRepositoryTest;
 import com.emme.testing.TestSecurityConfig;
 import java.math.BigDecimal;
@@ -26,26 +26,27 @@ import org.springframework.context.annotation.Import;
 @Import(TestSecurityConfig.class)
 class AppointmentRepositoryTest extends BaseRepositoryTest {
 
-  @Autowired private AppointmentRepository appointmentRepo;
+  @Autowired private SpringDataAppointmentRepository appointmentRepo;
 
-  @Autowired private ArtistRepository artistRepo;
+  @Autowired private SpringDataArtistRepository artistRepo;
 
-  @Autowired private CustomerRepository customerRepo;
+  @Autowired private SpringDataCustomerRepository customerRepo;
 
-  @Autowired private ServiceRepository serviceRepo;
+  @Autowired private SpringDataServiceRepository serviceRepo;
 
   private UUID tenantId;
-  private Artist artist;
-  private Customer customer;
-  private Service service;
+  private ArtistEntity artist;
+  private CustomerEntity customer;
+  private ServiceEntity service;
 
   @BeforeEach
   void setUp() {
     tenantId = UUID.randomUUID();
-    artist = artistRepo.save(new Artist(tenantId, "Repo Artist"));
-    customer = customerRepo.save(new Customer(tenantId, "Repo Customer"));
+    artist = artistRepo.save(new ArtistEntity(tenantId, "Repo Artist"));
+    customer = customerRepo.save(new CustomerEntity(tenantId, "Repo Customer"));
     service =
-        serviceRepo.save(new Service(tenantId, "r-cut", "Repo Cut", 30, new BigDecimal("25.00")));
+        serviceRepo.save(
+            new ServiceEntity(tenantId, "r-cut", "Repo Cut", 30, new BigDecimal("25.00")));
   }
 
   @Test
@@ -53,14 +54,14 @@ class AppointmentRepositoryTest extends BaseRepositoryTest {
     Instant startsAt = Instant.now().plus(1, ChronoUnit.DAYS);
     Instant endsAt = startsAt.plus(1, ChronoUnit.HOURS);
 
-    Appointment appointment =
-        new Appointment(tenantId, customer, service, artist, startsAt, endsAt);
-    Appointment saved = appointmentRepo.save(appointment);
+    AppointmentEntity appointment =
+        new AppointmentEntity(tenantId, customer, service, artist, startsAt, endsAt);
+    AppointmentEntity saved = appointmentRepo.save(appointment);
 
     assertThat(saved.getId()).isNotNull();
     assertThat(saved.getStatus()).isEqualTo(AppointmentStatus.CONFIRMED);
 
-    Appointment found = appointmentRepo.findById(saved.getId()).orElseThrow();
+    AppointmentEntity found = appointmentRepo.findById(saved.getId()).orElseThrow();
     assertThat(found.getCustomer().getName()).isEqualTo("Repo Customer");
     assertThat(found.getArtist().getName()).isEqualTo("Repo Artist");
   }
@@ -73,10 +74,10 @@ class AppointmentRepositoryTest extends BaseRepositoryTest {
     Instant start2 = now.plus(3, ChronoUnit.HOURS);
     Instant end2 = now.plus(4, ChronoUnit.HOURS);
 
-    appointmentRepo.save(new Appointment(tenantId, customer, service, artist, start1, end1));
-    appointmentRepo.save(new Appointment(tenantId, customer, service, artist, start2, end2));
+    appointmentRepo.save(new AppointmentEntity(tenantId, customer, service, artist, start1, end1));
+    appointmentRepo.save(new AppointmentEntity(tenantId, customer, service, artist, start2, end2));
 
-    List<Appointment> results =
+    List<AppointmentEntity> results =
         appointmentRepo.findByArtistIdAndStartsAtBetween(
             artist.getId(), now, now.plus(5, ChronoUnit.HOURS));
 

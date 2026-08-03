@@ -29,3 +29,12 @@ databaseChangeLog:
   - include:
       file: releases/0.1.0/010-google-workspace.sql
       relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/011-payment-webhook-events.sql
+      relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/012-assistant-webhook-events.sql
+      relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/013-event-publication.sql
+      relativeToChangelogFile: true

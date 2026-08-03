@@ -13,8 +13,8 @@ spec:
         # ── Booking failures ──
         - alert: HighAppointmentFailureRate
           expr: |
-            rate(http_server_requests_seconds_count{uri=~"/api/v1/appointments", status=~"4..|5.."}[5m])
-            / rate(http_server_requests_seconds_count{uri=~"/api/v1/appointments"}[5m]) > 0.1
+            rate(http_server_requests_seconds_count{uri=~"/api/appointments", status=~"4..|5.."}[5m])
+            / rate(http_server_requests_seconds_count{uri=~"/api/appointments"}[5m]) > 0.1
           for: 5m
           labels:
             severity: critical
@@ -24,7 +24,7 @@ spec:
 
         # ── Webhook failures ──
         - alert: WhatsAppWebhookFailure
-          expr: rate(http_server_requests_seconds_count{uri="/api/v1/webhooks/whatsapp", status=~"4..|5.."}[5m]) > 0
+          expr: rate(http_server_requests_seconds_count{uri="/api/webhooks/whatsapp", status=~"4..|5.."}[5m]) > 0
           for: 5m
           labels:
             severity: warning
@@ -34,7 +34,7 @@ spec:
         # ── AI latency ──
         - alert: HighAILatency
           expr: |
-            histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{uri=~"/api/v1/ai/.*"}[5m])) > 20
+            histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{uri=~"/api/ai/.*"}[5m])) > 20
           for: 5m
           labels:
             severity: warning

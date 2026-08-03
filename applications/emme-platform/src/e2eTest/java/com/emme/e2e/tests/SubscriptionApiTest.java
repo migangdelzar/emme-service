@@ -26,7 +26,7 @@ class SubscriptionApiTest {
               """
                 {"entitlement":"customers:write"}
                 """;
-          var result = s.post("/api/v1/subscriptions/" + DEMO_TENANT + "/enforce", body, 200);
+          var result = s.post("/api/subscriptions/" + DEMO_TENANT + "/enforce", body, 200);
           assertThat(result).isNotNull();
         });
   }

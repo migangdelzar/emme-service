@@ -1,8 +1,11 @@
 # application-repository.yml — L3 repository tests: JPA + H2, no web, no security
-# Mirrors modules/identity/src/integrationTest/resources/application-resttest.yml's database
-# and cross-module bootstrap config, since BaseRepositoryTest loads the full TestApplication
+# Uses the shared test-fixture database and cross-module bootstrap config, since
+# BaseRepositoryTest loads the full TestApplication
 # context (every module component-scanned), not just the repository under test.
 spring:
+  task:
+    scheduling:
+      enabled: false
   datasource:
     url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
     driver-class-name: org.h2.Driver
@@ -11,7 +14,7 @@ spring:
       mode: never
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     open-in-view: false
     properties:
       hibernate:
@@ -22,8 +25,11 @@ spring:
           enabled: true
   modulith:
     events:
-      jdbc-schema-initialization:
-        enabled: true
+      externalization:
+        enabled: false
+      jdbc:
+        schema-initialization:
+          enabled: true
   liquibase:
     enabled: false
   autoconfigure:
@@ -41,11 +47,14 @@ spring:
         enabled: false
 
 app:
+  tenant:
+    provisioning:
+      enabled: false
   ai:
     provider: mock
   calendar:
     google:
-      service-account: ""
+      service-account-json-base64: ""
     calendar-id: test-calendar
 
 emme:

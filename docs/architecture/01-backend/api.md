@@ -1,5 +1,7 @@
 # Module API and HTTP Boundary
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 The word API describes two different contracts that must remain separate:
@@ -78,13 +80,59 @@ sequenceDiagram
 
 ## HTTP API rules
 
-- Version public routes deliberately, for example `/api/v1/...`.
+- Resolve API versions through the canonical `API-Version` request header; do
+  not encode the version again in the URI path.
 - Validate syntax and boundary constraints at the edge.
+- Apply the [backend validation conventions](validation.md): Jakarta constraints belong on inbound request/message models, while domain and cross-aggregate rules remain in their owning layers.
 - Resolve authentication and tenant context before entering application behavior.
 - Use request and response DTOs; do not expose persistence entities.
 - Return consistent error envelopes with a correlation identifier.
 - Keep pagination, filtering, idempotency, and concurrency semantics explicit.
 - Document public endpoints through OpenAPI or equivalent generated API documentation.
+
+### Spring MVC endpoint versioning
+
+Spring Framework 7 provides first-class endpoint version conditions through the
+`version` attribute on `@RequestMapping` and its composed mappings such as
+`@GetMapping` and `@PostMapping`. The application must configure one explicit
+`ApiVersionStrategy` and one resolver before controllers use that attribute.
+
+Use the repository's two-level policy:
+
+| Boundary | Policy | Example |
+|---|---|---|
+| Version source | Resolve the requested version from one service-wide header | `API-Version: 1.0` |
+| Public URI | Keep resource paths version-neutral | `/api/identity/memberships` |
+| Spring controller mapping | Declare the supported representation with Spring's `version` attribute | `@GetMapping(path = "/memberships", version = "1.0")` |
+
+```java
+@RestController
+@RequestMapping(path = "/api/identity", version = "1.0")
+final class IdentityController {
+
+  @GetMapping(path = "/memberships", version = "1.0")
+  MembershipResponse membershipsV1() {
+    // Stable v1 representation.
+  }
+
+  @GetMapping(path = "/memberships", version = "1.1+")
+  MembershipResponse membershipsV1_1() {
+    // Compatible baseline for later 1.x requests.
+  }
+}
+```
+
+The service uses the request header as its only version source. Do not add a
+path segment, query parameter, or media-type version resolver. A missing header
+uses the configured `1.0` default; an unsupported header must produce the
+configured client error. Version selection must be covered by MockMvc contract
+tests.
+
+This service is pre-release, so the version-neutral `/api/...` route is the
+canonical route and no `/api/v1/...` compatibility alias is maintained. Spring
+mapping versions are introduced only when a real second representation exists;
+they do not justify duplicating controllers speculatively. See the official [Spring MVC API
+versioning reference](https://docs.spring.io/spring-framework/reference/web/webmvc-versioning.html).
 
 ## Error mapping
 
@@ -105,6 +153,9 @@ The exact status may be specialized by the API contract, but the mapping must be
 ### Versioning and compatibility
 
 - Version externally consumed routes and schemas deliberately.
+- Prefer the canonical `API-Version` request header and version-neutral `/api`
+  routes. Use Spring MVC `@RequestMapping(version = "...")` for parallel
+  handler representations only when a real second representation exists.
 - Prefer additive changes; deprecate before removal.
 - Do not expose JPA entities, domain aggregates, provider responses, or internal exceptions.
 - Define field nullability, default behavior, enum evolution, pagination, sorting, and maximum page size.

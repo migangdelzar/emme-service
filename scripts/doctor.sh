@@ -31,10 +31,10 @@ echo "  pgvector: $([ "$VEC" = "1" ] && echo '✅' || echo '❌')"
 
 # 6. AI
 echo "🤖 AI:"
-curl -sf -X POST http://localhost:8081/api/v1/ai/chat -H "Content-Type: application/json" -d '{"userMessage":"hi","conversationContext":""}' 2>/dev/null | head -c 60 && echo "" || echo "  ❌"
+curl -sf -X POST http://localhost:8081/api/ai/chat -H "Content-Type: application/json" -d '{"userMessage":"hi","conversationContext":""}' 2>/dev/null | head -c 60 && echo "" || echo "  ❌"
 
 # 7. Catalog
 echo "📋 Catalog:"
-curl -sf -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:8081/api/v1/catalog/items 2>/dev/null || echo "  ❌"
+curl -sf -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:8081/api/catalog/items 2>/dev/null || echo "  ❌"
 
 echo "✅ Doctor complete"

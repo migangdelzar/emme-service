@@ -1,0 +1,29 @@
+package com.emme.buildlogic.git
+
+import org.gradle.api.provider.ValueSource
+import org.gradle.api.provider.ValueSourceParameters
+import org.gradle.process.ExecOperations
+import java.io.ByteArrayOutputStream
+import javax.inject.Inject
+
+abstract class GitBranchValueSource : ValueSource<String, ValueSourceParameters.None> {
+  @get:Inject
+  abstract val execOperations: ExecOperations
+
+  override fun obtain(): String {
+    val output = ByteArrayOutputStream()
+    val error = ByteArrayOutputStream()
+
+    execOperations.exec {
+      commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
+      standardOutput = output
+      errorOutput = error
+      isIgnoreExitValue = true
+    }
+
+    return output
+      .toString(Charsets.UTF_8)
+      .trim()
+      .ifEmpty { "unknown" }
+  }
+}

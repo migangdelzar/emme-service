@@ -1,5 +1,7 @@
 # Application Layer
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 The application layer orchestrates use cases. It coordinates domain objects, transactions, authorization checks, ports, and event publication without implementing transport or vendor details.
@@ -72,6 +74,33 @@ The service lives in `application.service` and implements `CreateAppointmentUseC
 
 Application services should be small. If a service needs many unrelated dependencies, split the use case or move the invariant to the domain model.
 
+### One use case, one application service
+
+Every public use-case interface has exactly one concrete application-service
+implementation, and every application service implements exactly one use-case
+interface:
+
+```mermaid
+flowchart LR
+    CMD[Command or Query] --> UC[One UseCase interface]
+    UC -.implemented by.-> S[One application service]
+    S --> D[Domain behavior]
+    S --> P[Outbound ports]
+```
+
+Do not create a module-wide façade such as `MembershipService` implementing
+assign, read, and revoke use cases, or `FeatureFlagService` implementing query
+and mutation use cases. Give each operation a focused class such as
+`AssignMembershipService`, `GetCurrentUserMembershipsService`, and
+`RevokeMembershipService`.
+
+This rule is for cohesion and SOLID responsibilities, not because multiple
+use-case implementations inherently create circular dependencies. Circular
+dependencies are resolved with application-owned ports, inbound events, or
+dedicated collaborators; bundling use cases only hides the dependency graph.
+Shared behavior belongs in a named mapper, policy, evaluator, or other
+non-use-case collaborator.
+
 ## Use-case guardrails
 
 ### Use-case contract
@@ -98,11 +127,13 @@ Each use case documents:
 - Keep application services deterministic where possible by injecting time, identity, and provider dependencies.
 - Do not use application services as a dumping ground for domain invariants or transport mapping.
 - Name one service after one use case (`SubmitQuoteService`), never after the whole module (`QuoteService`) or an implementation suffix (`QuoteServiceImpl`).
+- Implement exactly one `api.usecase` interface per application service; do not use multi-use-case façade services.
 
 ### Application checklist
 
 - [ ] Every public use case has an explicit input/output/error contract.
 - [ ] Every service implements the matching `api.usecase` interface and uses the same verb/subject in its filename.
+- [ ] No application service implements more than one use-case interface; shared behavior is extracted to a named collaborator.
 - [ ] Transaction and consistency behavior is covered by tests.
 - [ ] Authorization and tenant scope are enforced before protected operations.
 - [ ] Duplicate commands/events are safe or explicitly rejected.

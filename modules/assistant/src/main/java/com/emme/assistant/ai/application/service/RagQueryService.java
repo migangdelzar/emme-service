@@ -1,0 +1,53 @@
+package com.emme.assistant.ai.application.service;
+
+import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
+import com.emme.assistant.ai.application.port.out.ModelProvider;
+import com.emme.assistant.ai.configuration.AiProperties;
+import com.emme.studio.documents.api.query.SearchDocumentChunksQuery;
+import com.emme.studio.documents.api.result.DocumentChunkInfo;
+import com.emme.studio.documents.api.usecase.SearchDocumentChunksUseCase;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+
+@Service
+public class RagQueryService implements RagQueryUseCase {
+
+  private final AiProperties properties;
+  private final ModelProvider modelProvider;
+  private final SearchDocumentChunksUseCase searchDocuments;
+
+  public RagQueryService(
+      AiProperties properties,
+      ModelProvider modelProvider,
+      SearchDocumentChunksUseCase searchDocuments) {
+    this.properties = properties;
+    this.modelProvider = modelProvider;
+    this.searchDocuments = searchDocuments;
+  }
+
+  /** RAG query — mock returns canned answer, real embeds + queries pgvector. */
+  public String query(UUID tenantId, String question) {
+    if (isMock()) {
+      return "MOCK RAG: Based on your documents, the answer to your question about '"
+          + question
+          + "' is that you should contact the salon for specific details.";
+    }
+    var queryVector = modelProvider.embed(question);
+    var chunks =
+        searchDocuments.search(new SearchDocumentChunksQuery(tenantId, queryVector, question, 5));
+    String context =
+        chunks.stream()
+            .map(DocumentChunkInfo::content)
+            .filter(content -> content != null && !content.isBlank())
+            .collect(Collectors.joining("\n\n"));
+    if (context.isBlank()) {
+      return "No relevant documents were found.";
+    }
+    return modelProvider.chat(context, question);
+  }
+
+  private boolean isMock() {
+    return properties.provider() == null || "mock".equalsIgnoreCase(properties.provider());
+  }
+}

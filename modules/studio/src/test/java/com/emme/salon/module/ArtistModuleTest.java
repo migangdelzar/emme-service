@@ -25,7 +25,7 @@ class ArtistModuleTest extends BaseSpringModuleTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/v1/services")
+                post("/api/services")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -41,7 +41,7 @@ class ArtistModuleTest extends BaseSpringModuleTest {
   void shouldCreateArtist() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/artists")
+            post("/api/artists")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Alice Styles\"}"))
@@ -56,14 +56,14 @@ class ArtistModuleTest extends BaseSpringModuleTest {
     // Create one first
     mockMvc
         .perform(
-            post("/api/v1/artists")
+            post("/api/artists")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"List Artist\"}"))
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/v1/artists").with(tenantJwt()))
+        .perform(get("/api/artists").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").isNotEmpty());
   }
@@ -73,7 +73,7 @@ class ArtistModuleTest extends BaseSpringModuleTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/v1/artists")
+                post("/api/artists")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\":\"Old Name\"}"))
@@ -86,7 +86,7 @@ class ArtistModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            put("/api/v1/artists/{id}", artistId)
+            put("/api/artists/{id}", artistId)
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"New Name\"}"))
@@ -99,7 +99,7 @@ class ArtistModuleTest extends BaseSpringModuleTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/v1/artists")
+                post("/api/artists")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\":\"Capable Artist\"}"))
@@ -112,7 +112,7 @@ class ArtistModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            post("/api/v1/artists/{id}/capabilities", artistId)
+            post("/api/artists/{id}/capabilities", artistId)
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"serviceId\":\"" + serviceId + "\"}"))

@@ -27,7 +27,7 @@ class CatalogApiTest {
                 {"serviceId":"00000000-0000-0000-0000-000000000000","code":"%s","name":"E2E Test Catalog Item","price":300.00}
                 """
                   .formatted(uniqueCode);
-          var result = s.post("/api/v1/catalog/items", body);
+          var result = s.post("/api/catalog/items", body);
           assertThat(result).isNotNull();
         });
   }
@@ -40,7 +40,7 @@ class CatalogApiTest {
               """
                 {"query":"E2E"}
                 """;
-          var result = s.post("/api/v1/catalog/match", body, 500);
+          var result = s.post("/api/catalog/match", body, 500);
           assertThat(result).isNotNull();
         });
   }

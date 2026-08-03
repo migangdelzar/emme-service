@@ -18,14 +18,14 @@ class DocumentModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldListDocuments() throws Exception {
-    mockMvc.perform(get("/api/v1/documents").with(tenantJwt())).andExpect(status().isOk());
+    mockMvc.perform(get("/api/documents").with(tenantJwt())).andExpect(status().isOk());
   }
 
   @Test
   void shouldRejectWithoutJwt() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/documents")
+            post("/api/documents")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Unauthorized Doc\",\"sourceType\":\"PDF\"}"))
         .andExpect(status().isUnauthorized());
@@ -35,7 +35,7 @@ class DocumentModuleTest extends BaseSpringModuleTest {
   void shouldReturnBadRequestForEmptyUpload() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/documents")
+            post("/api/documents")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"\",\"sourceType\":\"\"}"))

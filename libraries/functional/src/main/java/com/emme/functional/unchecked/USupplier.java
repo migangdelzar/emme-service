@@ -5,16 +5,16 @@ import java.util.function.Supplier;
 @FunctionalInterface
 public interface USupplier<T> extends Supplier<T> {
 
-    @Override
-    default T get() {
-        try {
-            return getThrows();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
+  @Override
+  default T get() {
+    try {
+      return getThrows();
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Throwable e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    T getThrows() throws Throwable;
+  T getThrows() throws Throwable;
 }

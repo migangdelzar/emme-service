@@ -1,0 +1,12 @@
+package com.emme.studio.adapter.out.persistence.repository;
+
+import com.emme.studio.adapter.out.persistence.entity.ArtistEntity;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface SpringDataArtistRepository extends JpaRepository<ArtistEntity, UUID> {
+  List<ArtistEntity> findByTenantId(UUID tenantId);
+}

@@ -24,7 +24,7 @@ class CustomerModuleTest extends BaseSpringModuleTest {
   void shouldCreateCustomer() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/customers")
+            post("/api/customers")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -40,14 +40,14 @@ class CustomerModuleTest extends BaseSpringModuleTest {
     // Create one first so list is non-empty
     mockMvc
         .perform(
-            post("/api/v1/customers")
+            post("/api/customers")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"List Test\"}"))
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/v1/customers").with(tenantJwt()))
+        .perform(get("/api/customers").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").isNotEmpty());
   }
@@ -57,7 +57,7 @@ class CustomerModuleTest extends BaseSpringModuleTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/v1/customers")
+                post("/api/customers")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\":\"Original Name\"}"))
@@ -70,7 +70,7 @@ class CustomerModuleTest extends BaseSpringModuleTest {
 
     mockMvc
         .perform(
-            put("/api/v1/customers/{id}", customerId)
+            put("/api/customers/{id}", customerId)
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Updated Name\",\"phone\":\"555-9999\"}"))
@@ -84,7 +84,7 @@ class CustomerModuleTest extends BaseSpringModuleTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/v1/customers")
+                post("/api/customers")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\":\"Get By ID\"}"))
@@ -96,7 +96,7 @@ class CustomerModuleTest extends BaseSpringModuleTest {
             result.getResponse().getContentAsString().replaceAll(".*\"id\":\"([^\"]+)\".*", "$1"));
 
     mockMvc
-        .perform(get("/api/v1/customers/{id}", customerId).with(tenantJwt()))
+        .perform(get("/api/customers/{id}", customerId).with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(customerId.toString()));
   }

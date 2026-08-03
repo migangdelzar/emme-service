@@ -1,5 +1,7 @@
 # Deployment
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 Deployment moves a verified image and its configuration to a target environment. Target-specific commands are isolated behind a deployment provider or strategy.

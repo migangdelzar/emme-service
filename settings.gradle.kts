@@ -25,7 +25,6 @@ rootProject.name = "emme-service"
 include(":platform")
 
 // ── Application ──
-include(":applications:studio-api")
 include(":applications:emme-platform")
 
 // ── Business Modules ──

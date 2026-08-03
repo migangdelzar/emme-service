@@ -2,13 +2,17 @@ package com.emme.calendar;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.calendar.application.CalendarService;
-import com.emme.calendar.application.GoogleCalendarClient;
+import com.emme.calendar.adapter.out.google.client.GoogleCalendarClient;
+import com.emme.calendar.api.result.CalendarBusyTimeRange;
+import com.emme.calendar.configuration.GoogleCalendarProperties;
+import com.emme.calendar.configuration.GoogleHttpClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Test;
 
 class GoogleCalendarClientLiveTest {
@@ -21,7 +25,12 @@ class GoogleCalendarClientLiveTest {
       return;
     }
 
-    GoogleCalendarClient client = new GoogleCalendarClient(Optional.empty());
+    GoogleCalendarClient client =
+        new GoogleCalendarClient(
+            Optional.empty(),
+            new GoogleCalendarProperties(saJson, null, null),
+            new GoogleHttpClient(new OkHttpClient()),
+            new ObjectMapper());
 
     // Verify auth works (token obtained)
     String token = client.getAccessToken(false);
@@ -31,7 +40,7 @@ class GoogleCalendarClientLiveTest {
     // Verify free/busy API works
     String now = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
     String tomorrow = DateTimeFormatter.ISO_INSTANT.format(Instant.now().plus(1, ChronoUnit.DAYS));
-    List<CalendarService.TimeRange> busy = client.freeBusy("primary", now, tomorrow);
+    List<CalendarBusyTimeRange> busy = client.freeBusy("primary", now, tomorrow);
 
     assertThat(busy).isNotNull();
     System.out.println("✅ Free/busy OK — " + busy.size() + " busy slots found");

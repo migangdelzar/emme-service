@@ -1,4 +1,4 @@
-package com.emme.studio.web;
+package com.emme.studio.adapter.in.web;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -10,11 +10,11 @@ class DashboardWebTest extends BaseWebTest {
 
   @Test
   void shouldReturnSseStream() throws Exception {
-    mockMvc.perform(get("/api/v1/dashboard/stream").with(auth())).andExpect(status().isOk());
+    mockMvc.perform(get("/api/dashboard/stream").with(auth())).andExpect(status().isOk());
   }
 
   @Test
   void shouldRejectWithoutJwt() throws Exception {
-    mockMvc.perform(get("/api/v1/dashboard/stream")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/dashboard/stream")).andExpect(status().isUnauthorized());
   }
 }

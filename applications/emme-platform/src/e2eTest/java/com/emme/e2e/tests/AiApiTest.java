@@ -16,7 +16,7 @@ class AiApiTest {
               """
                 {"userMessage":"Hello","conversationContext":"e2e-test"}
                 """;
-          var result = s.post("/api/v1/ai/chat", body, 403);
+          var result = s.post("/api/ai/chat", body, 403);
           assertThat(result).isNotNull();
         });
   }
@@ -29,7 +29,7 @@ class AiApiTest {
               """
                 {"userMessage":"Hello"}
                 """;
-          var result = s.post("/api/v1/ai/chat", body, 401);
+          var result = s.post("/api/ai/chat", body, 401);
           assertThat(result).isNotNull();
         });
   }

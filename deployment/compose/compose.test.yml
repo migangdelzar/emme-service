@@ -1,6 +1,6 @@
 # CI test — depends on healthy dependencies
 services:
-  studio-api:
+  emme-platform:
     environment:
       SPRING_PROFILES_ACTIVE: test
     depends_on:

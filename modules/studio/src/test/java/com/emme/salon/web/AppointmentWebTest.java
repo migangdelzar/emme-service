@@ -1,14 +1,14 @@
-package com.emme.studio.web;
+package com.emme.studio.adapter.in.web;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.studio.subscriptions.api.PlanType;
-import com.emme.studio.subscriptions.entity.Subscription;
-import com.emme.studio.subscriptions.entity.SubscriptionRepository;
-import com.emme.tenancy.application.TenantService;
+import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
+import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
+import com.emme.studio.subscriptions.api.type.PlanType;
+import com.emme.tenancy.api.result.TenantInfo;
 import com.emme.testing.BaseWebTest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -23,9 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class AppointmentWebTest extends BaseWebTest {
 
-  @Autowired private TenantService tenantService;
-
-  @Autowired private SubscriptionRepository subscriptionRepo;
+  @Autowired private SpringDataSubscriptionRepository subscriptionRepo;
 
   private UUID artistId;
   private UUID customerId;
@@ -33,16 +31,17 @@ class AppointmentWebTest extends BaseWebTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    var tenant = tenantService.create("web-test-" + System.nanoTime(), "Web Test Salon");
-    tenantId = tenant.getId();
+    TenantInfo tenant = createTenant("web-test-" + System.nanoTime(), "Web Test Salon");
+    tenantId = tenant.id();
     subscriptionRepo.save(
-        new Subscription(tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
+        new SubscriptionEntity(
+            tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
 
     // Create prerequisite entities via API
     MvcResult artistResult =
         mockMvc
             .perform(
-                post("/api/v1/artists")
+                post("/api/artists")
                     .with(auth())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\":\"Web Artist\"}"))
@@ -53,7 +52,7 @@ class AppointmentWebTest extends BaseWebTest {
     MvcResult customerResult =
         mockMvc
             .perform(
-                post("/api/v1/customers")
+                post("/api/customers")
                     .with(auth())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"name\":\"Web Customer\"}"))
@@ -64,7 +63,7 @@ class AppointmentWebTest extends BaseWebTest {
     MvcResult serviceResult =
         mockMvc
             .perform(
-                post("/api/v1/services")
+                post("/api/services")
                     .with(auth())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -78,7 +77,7 @@ class AppointmentWebTest extends BaseWebTest {
   void shouldReturn400ForMissingFields() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/appointments")
+            post("/api/appointments")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
@@ -88,7 +87,7 @@ class AppointmentWebTest extends BaseWebTest {
   @Test
   void shouldReturn404ForUnknownAppointment() throws Exception {
     mockMvc
-        .perform(get("/api/v1/appointments/{id}", UUID.randomUUID()).with(auth()))
+        .perform(get("/api/appointments/{id}", UUID.randomUUID()).with(auth()))
         .andExpect(status().isNotFound());
   }
 
@@ -104,7 +103,7 @@ class AppointmentWebTest extends BaseWebTest {
 
     mockMvc
         .perform(
-            post("/api/v1/appointments")
+            post("/api/appointments")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))

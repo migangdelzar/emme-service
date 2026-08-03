@@ -2,11 +2,14 @@
 # Loads the full TestApplication context (every module component-scanned), so it needs the
 # same cross-module bootstrap config as application-repository.yml; see that file's header.
 spring:
+  task:
+    scheduling:
+      enabled: false
   jpa:
     entity-scan:
       packages: com.emme
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     open-in-view: false
     properties:
       hibernate:
@@ -21,12 +24,15 @@ spring:
   sql:
     init:
       mode: never
-  modulith:
-    events:
-      jdbc-schema-initialization:
-        enabled: true
   liquibase:
     enabled: false
+  modulith:
+    events:
+      externalization:
+        enabled: false
+      jdbc:
+        schema-initialization:
+          enabled: true
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
@@ -42,11 +48,14 @@ spring:
         enabled: false
 
 app:
+  tenant:
+    provisioning:
+      enabled: false
   ai:
     provider: mock
   calendar:
     google:
-      service-account: ""
+      service-account-json-base64: ""
     calendar-id: test-calendar
 
 emme:

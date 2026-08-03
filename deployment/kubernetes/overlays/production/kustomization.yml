@@ -8,7 +8,7 @@ resources:
 namespace: emme-prod
 
 images:
-  - name: ghcr.io/migangdelzar/emme-service-studio-api
+  - name: ghcr.io/migangdelzar/emme-service
     newTag: latest
 
 patches:
@@ -16,13 +16,13 @@ patches:
       apiVersion: apps/v1
       kind: Deployment
       metadata:
-        name: studio-api
+        name: emme-platform
       spec:
         replicas: 3
         template:
           spec:
             containers:
-              - name: studio-api
+              - name: emme-platform
                 resources:
                   requests:
                     memory: "512Mi"

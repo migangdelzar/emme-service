@@ -17,7 +17,7 @@ provider "hcloud" {
 
 resource "hcloud_ssh_key" "default" {
   name       = "${var.cluster_name}-ssh"
-  public_key = file(var.ssh_public_key_path)
+  public_key = file(pathexpand(var.ssh_public_key_path))
 }
 
 resource "hcloud_firewall" "k3s" {
@@ -40,20 +40,14 @@ resource "hcloud_firewall" "k3s" {
     port       = "443"
     source_ips = ["0.0.0.0/0"]
   }
-  rule {
-    direction  = "in"
-    protocol   = "tcp"
-    port       = "6443"
-    source_ips = ["0.0.0.0/0"]
-  }
 }
 
 resource "hcloud_server" "k3s" {
-  name        = var.cluster_name
-  server_type = var.node_type
-  image       = "ubuntu-24.04"
-  location    = var.location
-  ssh_keys    = [hcloud_ssh_key.default.id]
+  name         = var.cluster_name
+  server_type  = var.node_type
+  image        = "ubuntu-24.04"
+  location     = var.location
+  ssh_keys     = [hcloud_ssh_key.default.id]
   firewall_ids = [hcloud_firewall.k3s.id]
 
   user_data = templatefile("${path.module}/cloud-init.yaml", {
@@ -80,5 +74,5 @@ output "floating_ip" {
 }
 
 output "kubeconfig_command" {
-  value = "scp root@${hcloud_server.k3s.ipv4_address}:/etc/rancher/k3s/k3s.yaml ~/.kube/config && sed -i '' 's/127.0.0.1/${hcloud_server.k3s.ipv4_address}/g' ~/.kube/config"
+  value = "ssh -fN -L 6443:127.0.0.1:6443 root@${hcloud_server.k3s.ipv4_address} && scp root@${hcloud_server.k3s.ipv4_address}:/etc/rancher/k3s/k3s.yaml ~/.kube/config"
 }

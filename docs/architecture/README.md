@@ -1,9 +1,10 @@
 # EMME Architecture Handbook
 
-This handbook is the reusable architecture baseline for EMME service projects.
-It describes how the backend repository is organized, how DDD/Hexagonal modules
-communicate, how the web repository integrates through contracts, and how build
-capabilities are composed.
+> **Naming contract:** Follow the [canonical architecture naming catalog](00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
+This handbook is the reusable architecture baseline for the EMME service
+repository. It describes backend DDD/Hexagonal modules, contract ownership,
+Capability-Driven Gradle build logic, delivery, and operational evidence.
 
 The current project is split into two sibling repositories:
 
@@ -24,6 +25,15 @@ Build:    project convention + build capabilities, organized with Capability-Dri
 Frontend: app shell + features, organized by user-facing capability
 Delivery: container + publishing + deployment capabilities, composed at the application edge
 ```
+
+## Unreleased-system rule
+
+This repository is not released to external consumers. Therefore migrations
+must use the latest canonical architecture directly: remove obsolete names,
+packages, wrappers, and compatibility aliases and update all in-repository
+consumers in the same change. A compatibility layer is permitted only for an
+external released consumer, a persisted/serialized contract, or an explicitly
+approved migration window documented in an ADR or migration plan.
 
 These are related but different architecture models:
 
@@ -59,28 +69,40 @@ single universal folder structure.
 | Area | Contents |
 |---|---|
 | [00 — Project](00-project/project-layout.md) | Repository layout, Gradle settings, mise, and build logic |
-| [01 — Backend](01-backend/module.md) | Modules, APIs, application services, domain, infrastructure, controllers, repositories, and events |
-| [02 — Frontend](02-frontend/app.md) | Apps, modules, features, Vite, React, and testing |
-| [03 — Integration](03-integration/module-communication.md) | Module communication, frontend/backend integration, and contracts |
-| [04 — Delivery](04-delivery/container.md) | Containers, deployment, CI, and releases |
+| [01 — Backend](01-backend/module.md) | Modules, APIs, validation, application services, domain, infrastructure, controllers, repositories, events, and test profile ownership |
+| Frontend consumer handbook | [emme-web architecture](https://github.com/migangdelzar/emme-web/tree/main/docs/architecture) |
+| [03 — Integration](03-integration/module-communication.md) | Module communication, service contracts, and frontend/backend boundary |
+| [04 — Delivery](04-delivery/container.md) | Containers, native images, deployment, CI, and releases |
+| [05 — Operations](05-operations/production-readiness.md) | Service levels, observability, reliability, recovery, incidents, and approval evidence |
 
 ## Existing focused architecture documents
 
 - [Library architecture](library-architecture.md) — responsibility-based libraries and contract extraction.
-- [E2E architecture](e2e-architecture.md) — REST/UI test flows, identity, tenancy, and test-user pooling.
+- [End-to-end architecture](03-integration/end-to-end.md) — cross-repository critical journeys and privacy-safe evidence.
 - [ADR-0001: Precompiled convention plugins](../adr/0001-build-logic-convention-plugins.md)
 - [ADR-0002: Deployment strategy pattern](../adr/0002-deployment-strategy-pattern.md)
+- [ADR-0006: Low-cost MVP runtime boundary](../adr/0006-mvp-low-cost-runtime-boundary.md)
 - [Modulith application template](../templates/modulith-application-template.md)
 - [Module package structure template](../templates/module-package-structure-template.md) — canonical future-module tree, package meanings, copy-ready `package-info.java` catalog, file/type naming, and approval controls.
+- [Backend validation conventions](01-backend/validation.md) — Jakarta Bean Validation on records, custom cross-field constraints, domain invariants, error mapping, i18n, and test coverage.
+- [Backend test configuration](01-backend/testing.md) — shared Spring profiles, Testcontainers ownership, schema helpers, and DRY test infrastructure.
 - [Module and capability build-logic design](../superpowers/specs/2026-07-30-module-architecture-and-capability-build-logic-design.md) — reconciles the two architecture models and migration documentation.
+
+## Normative policy links
+
+- [Engineering principles](../principles.md)
+- [Security and privacy](../security.md)
+- [Testing policy](../testing.md)
+- [Git and review policy](../git.md)
+- [Code splitting](../code-splitting.md)
 
 ## How to use this handbook
 
 1. Start with the project documents to understand the repository shell.
 2. For every future backend module, start from the module template and materialize only the package branches its first real vertical slice needs.
-3. Build frontend features inside an application shell; keep shared code purposeful.
-4. Define cross-boundary contracts before wiring integrations.
-5. Apply delivery capabilities only to deployable applications.
+3. Define cross-boundary contracts before wiring integrations; the frontend consumer guidance lives in `emme-web`.
+4. Apply delivery capabilities only to deployable applications.
+5. Verify operational readiness before release.
 6. Record deviations in an ADR when the baseline is intentionally changed.
 
 The handbook is a default, not a license to create empty layers. A capability may contain only the files that carry real responsibility.
@@ -99,9 +121,11 @@ structure → contracts → verification → tests → artifact → rollout → 
 | Build architecture | [Capability-driven build logic](00-project/build-logic.md) |
 | Backend modules | [Backend module](01-backend/module.md) and [module template](../templates/module-package-structure-template.md) |
 | Backend boundaries | [API](01-backend/api.md), [application](01-backend/application.md), [domain](01-backend/domain.md), [outbound adapters and configuration](01-backend/infrastructure.md) |
+| Backend validation | [Validation conventions](01-backend/validation.md) |
 | Cross-module behavior | [Module communication](03-integration/module-communication.md), [contracts](03-integration/contracts.md), [events](01-backend/events.md) |
-| Frontend | [App](02-frontend/app.md), [module](02-frontend/module.md), [feature](02-frontend/feature.md), [testing](02-frontend/testing.md) |
-| Delivery | [Container](04-delivery/container.md), [deployment](04-delivery/deployment.md), [CI](04-delivery/ci.md), [release](04-delivery/release.md) |
+| Frontend consumer | [emme-web architecture](https://github.com/migangdelzar/emme-web/tree/main/docs/architecture) |
+| Delivery | [Container](04-delivery/container.md), [native images](04-delivery/native-image.md), [deployment](04-delivery/deployment.md), [CI](04-delivery/ci.md), [release](04-delivery/release.md) |
+| Operations | [Service levels](05-operations/service-levels.md), [observability](05-operations/observability.md), [reliability](05-operations/reliability.md), [recovery](05-operations/data-lifecycle-and-recovery.md), [production readiness](05-operations/production-readiness.md) |
 
 ### Approval rule
 
@@ -116,6 +140,7 @@ A project or module is not production-ready because it has the expected folders.
 - [ ] Build logic follows capability-first ownership and provider boundaries.
 - [ ] Frontend modules consume contracts instead of backend internals.
 - [ ] Delivery documents cover supply chain, rollout, migrations, rollback, and observability.
+- [ ] Operations documents cover service levels, telemetry, reliability, recovery, incident response, and release evidence.
 - [ ] Internal links and Markdown formatting pass validation.
 
 ## Documentation ownership

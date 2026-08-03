@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/catalog")
+@RequestMapping("/api/catalog")
 @Tag(name = "Catalog")
 public class CatalogController {
 
@@ -63,7 +63,7 @@ public class CatalogController {
         tenantId -> {
           CatalogItemInfo info =
               createCatalogItemUseCase.create(CatalogWebMapper.toCommand(tenantId, request));
-          return ResponseEntity.created(URI.create("/api/v1/catalog/items/" + info.id()))
+          return ResponseEntity.created(URI.create("/api/catalog/items/" + info.id()))
               .body(CatalogWebMapper.toResponse(info));
         });
   }
@@ -95,9 +95,10 @@ public class CatalogController {
     return withCurrentTenant(
         tenantId -> {
           CatalogItemImageInfo info =
-              addCatalogItemImageUseCase.addImage(CatalogWebMapper.toCommand(tenantId, id, request));
+              addCatalogItemImageUseCase.addImage(
+                  CatalogWebMapper.toCommand(tenantId, id, request));
           return ResponseEntity.created(
-                  URI.create("/api/v1/catalog/items/" + id + "/images/" + info.id()))
+                  URI.create("/api/catalog/items/" + id + "/images/" + info.id()))
               .body(CatalogWebMapper.toResponse(info));
         });
   }

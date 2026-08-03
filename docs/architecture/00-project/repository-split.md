@@ -1,5 +1,7 @@
 # Repository Split
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Decision
 
 EMME is developed as two sibling repositories:
@@ -54,8 +56,11 @@ name:
 | Artifact | Canonical image |
 |---|---|
 | Main service application (`emme-platform`) | `ghcr.io/migangdelzar/emme-service` |
-| Studio API application | `ghcr.io/migangdelzar/emme-service-studio-api` |
 | Web application | `ghcr.io/migangdelzar/emme-web` |
+
+There is one backend application image contract. The service repository owns
+`ghcr.io/migangdelzar/emme-service`; deployment and release automation must not
+publish or consume a second backend application image.
 
 Environment overlays may replace these images with local registry names, but
 production manifests must promote an immutable tag or digest from the

@@ -27,6 +27,15 @@
 
 This repository contains one or more deployable applications assembled from independently understandable business modules. Each deployable application is a modular monolith: its modules run together in one process and release unit. Each module owns a business capability, hides its implementation, exposes deliberate contracts, and can be tested in isolation.
 
+### Unreleased-system rule
+
+When the application or module has not been released to external consumers, use
+the canonical structure directly: remove obsolete names, packages, wrappers, and
+compatibility aliases during the migration and update all repository consumers in
+the same change. Retain compatibility only for an external released consumer,
+persisted/serialized contract, or an explicitly approved migration window recorded
+in an ADR or migration plan.
+
 The objective is not to imitate distributed microservices inside one process. The objective is to gain clear ownership and replaceable internals without accepting unnecessary network, deployment, and operational complexity.
 
 ## 3. Architecture principles
@@ -458,6 +467,13 @@ Events describe completed facts in past tense. Do not publish vague commands suc
 | Synchronous in-memory | Consumers must react in the same process and transaction phase | Consumer failure may fail or roll back the publisher according to the documented policy |
 | Asynchronous in-memory | Best-effort local side effects are sufficient | Process failure may lose delivery; no independent recovery |
 | Durable asynchronous | Delivery must survive crashes or consumers need independent retries | Publisher atomically records the event; consumers retry and deduplicate |
+
+For this EMME template, durable asynchronous delivery is implemented with the
+Spring Modulith JDBC publication registry and Kafka externalization. Mark only
+stable public facts with `@Externalized("<topic>::<partition-key>")`; the target
+before `::` is the Kafka topic and the target after `::` is the Kafka message
+key. Keep local-only module events on Spring Modulith listeners. Kafka consumers
+remain inbound adapters and must be idempotent because delivery is at least once.
 
 Choose the least complex mode that satisfies the business reliability and consistency requirements. Delivery mode may change without changing the meaning of the event, provided its documented timing and failure contract remains compatible.
 

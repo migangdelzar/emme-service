@@ -1,5 +1,7 @@
 # Frontend–Backend Integration
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 The frontend and backend are independently structured applications joined by explicit HTTP contracts. The frontend owns presentation and interaction; the backend owns authorization, tenancy, validation, and business truth.
@@ -9,7 +11,7 @@ The frontend and backend are independently structured applications joined by exp
 ```text
 React feature
    ↓ typed API client
-HTTP /api/v1
+HTTP /api
    ↓ auth + tenant context
 controller
    ↓ application use case

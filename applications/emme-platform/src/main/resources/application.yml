@@ -34,6 +34,7 @@ spring:
       externalization:
         enabled: ${EMME_KAFKA_EVENTS_ENABLED:false}
         serialize-externalization: true
+      republish-outstanding-events-on-restart: true
       jdbc:
         schema-initialization:
           enabled: false
@@ -105,6 +106,13 @@ otel:
 
 # App-specific configuration
 app:
+  messaging:
+    kafka:
+      enabled: ${EMME_KAFKA_EVENTS_ENABLED:false}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      security-protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      producer-retries: ${KAFKA_PRODUCER_RETRIES:10}
+      consumer-group: ${KAFKA_CONSUMER_GROUP:emme-platform}
   keycloak:
     base-url: http://localhost:8080
     issuer-uri: http://localhost:8080/realms/emme

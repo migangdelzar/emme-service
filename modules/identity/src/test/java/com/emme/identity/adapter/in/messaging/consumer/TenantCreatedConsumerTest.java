@@ -16,7 +16,12 @@ class TenantCreatedConsumerTest {
     ProvisionTenantIdentityUseCase useCase = mock(ProvisionTenantIdentityUseCase.class);
     TenantCreatedConsumer consumer = new TenantCreatedConsumer(useCase);
     TenantCreated event =
-        new TenantCreated(UUID.randomUUID(), "studio-a", "Studio A", "admin@studio-a.emme.app");
+        new TenantCreated(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "studio-a",
+            "Studio A",
+            "admin@studio-a.emme.app");
 
     consumer.on(event);
 

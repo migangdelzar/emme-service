@@ -2,6 +2,7 @@ plugins {
   id("emme.java-library")
   id("emme.integration-testing")
   id("emme.persistence")
+  id("emme.modulith")
   `java-test-fixtures`
 }
 

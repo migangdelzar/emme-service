@@ -4,14 +4,10 @@ import org.gradle.api.artifacts.VersionCatalogsExtension
 val libs = extensions.getByType(VersionCatalogsExtension::class).named("libs")
 val e = EmmeDependencies(libs)
 
-plugins {
-  id("emme.spring-module")
-}
-
 dependencies {
-  implementation(e.springModulithApi)
+  add("implementation", e.springModulithApi)
 
-  testImplementation(e.springModulithStarterTest)
+  add("testImplementation", e.springModulithStarterTest)
 }
 
 // Modulith documentation generation — triggered by -Pemme.modulith.docs=true

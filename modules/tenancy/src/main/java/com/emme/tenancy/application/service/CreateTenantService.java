@@ -7,6 +7,7 @@ import com.emme.tenancy.api.usecase.CreateTenantUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
 import com.emme.tenancy.domain.model.Tenant;
+import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +33,11 @@ public class CreateTenantService implements CreateTenantUseCase {
     Tenant saved = repository.save(new Tenant(command.slug(), command.name()));
     eventPublisher.publishEvent(
         new TenantCreated(
-            saved.id(), saved.slug(), saved.name(), "admin@" + saved.slug() + ".emme.app"));
+            UUID.randomUUID(),
+            saved.id(),
+            saved.slug(),
+            saved.name(),
+            "admin@" + saved.slug() + ".emme.app"));
     return TenantApplicationMapper.toInfo(saved);
   }
 }

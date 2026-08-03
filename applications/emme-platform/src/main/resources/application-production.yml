@@ -5,6 +5,20 @@ spring:
     events:
       externalization:
         enabled: ${EMME_KAFKA_EVENTS_ENABLED:true}
+      republish-outstanding-events-on-restart: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    properties:
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_SSL}
+
+app:
+  messaging:
+    kafka:
+      enabled: ${EMME_KAFKA_EVENTS_ENABLED:true}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+      security-protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_SSL}
+      producer-retries: ${KAFKA_PRODUCER_RETRIES:10}
+      consumer-group: ${KAFKA_CONSUMER_GROUP:emme-platform}
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}

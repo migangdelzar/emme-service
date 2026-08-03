@@ -58,6 +58,7 @@ class ConventionCapabilitiesFunctionalTest {
     writeBuild(
       projectDir,
       """
+      java
       id("emme.persistence")
       id("emme.messaging")
       id("emme.modulith")

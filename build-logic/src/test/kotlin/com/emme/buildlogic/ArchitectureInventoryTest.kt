@@ -59,6 +59,24 @@ class ArchitectureInventoryTest {
   }
 
   @Test
+  fun `capability conventions do not apply the spring module type`() {
+    val sourceRoot = sourcePath("build-logic/src/main/kotlin")
+    val capabilityScripts =
+      listOf(
+        "emme.persistence.gradle.kts",
+        "emme.messaging.gradle.kts",
+        "emme.modulith.gradle.kts",
+        "emme.spring-web.gradle.kts",
+      )
+
+    capabilityScripts.forEach { scriptName ->
+      assertThat(Files.readString(sourceRoot.resolve(scriptName)))
+        .describedAs("$scriptName must remain a capability, not a module type")
+        .doesNotContain("id(\"emme.spring-module\")")
+    }
+  }
+
+  @Test
   fun `registry results do not depend on container implementation types`() {
     val registryProvider =
       Files.readString(

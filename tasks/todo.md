@@ -206,6 +206,9 @@ Identity verification evidence is recorded in
 - [x] Hardened GitHub Actions with a shared Gradle setup action, complete unit
   and integration gates, retained failure reports, boot-JAR artifacts, a final
   required summary, and production smoke restricted to successful `main` runs.
+- [x] Removed `main`-only pull-request filters from backend quality and security
+  workflows so stacked PRs, including this conformance PR, receive the same
+  blocking validation.
 - [x] Corrected the Kafka integration profile to use standard Spring datasource,
   JPA, Liquibase, and Modulith properties; `DatabaseRegistryAdapter` now
   gracefully falls back to typed connection properties when no service

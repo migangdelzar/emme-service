@@ -1,6 +1,8 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.ServiceDetails;
 import com.emme.studio.api.usecase.RetireServiceCatalogEntryUseCase;
+import com.emme.studio.application.mapper.ServiceCatalogApplicationMapper;
 import com.emme.studio.application.port.out.ServiceRepository;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -18,12 +20,12 @@ public class RetireServiceCatalogEntryService implements RetireServiceCatalogEnt
   }
 
   @Override
-  public com.emme.studio.domain.model.Service retire(UUID id) {
+  public ServiceDetails retire(UUID id) {
     com.emme.studio.domain.model.Service service =
         serviceRepository
             .findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Service not found: " + id));
     service.retire();
-    return serviceRepository.save(service);
+    return ServiceCatalogApplicationMapper.toDetails(serviceRepository.save(service));
   }
 }

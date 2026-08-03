@@ -1,6 +1,8 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.ServiceDetails;
 import com.emme.studio.api.usecase.GetServiceCatalogEntryUseCase;
+import com.emme.studio.application.mapper.ServiceCatalogApplicationMapper;
 import com.emme.studio.application.port.out.ServiceRepository;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,7 +21,7 @@ public class GetServiceCatalogEntryService implements GetServiceCatalogEntryUseC
   }
 
   @Override
-  public Optional<com.emme.studio.domain.model.Service> get(UUID id) {
-    return serviceRepository.findById(id);
+  public Optional<ServiceDetails> get(UUID id) {
+    return serviceRepository.findById(id).map(ServiceCatalogApplicationMapper::toDetails);
   }
 }

@@ -1,13 +1,13 @@
 package com.emme.studio.api.usecase;
 
-import com.emme.studio.domain.model.Service;
+import com.emme.studio.api.result.ServiceDetails;
 import java.math.BigDecimal;
 import java.util.UUID;
 
 /** Creates a service-catalog entry. */
 public interface CreateServiceCatalogEntryUseCase {
 
-  Service create(
+  ServiceDetails create(
       UUID tenantId,
       String code,
       String name,

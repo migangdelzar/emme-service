@@ -1,6 +1,8 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.ServiceDetails;
 import com.emme.studio.api.usecase.ListActiveServiceCatalogEntriesUseCase;
+import com.emme.studio.application.mapper.ServiceCatalogApplicationMapper;
 import com.emme.studio.application.port.out.ServiceRepository;
 import com.emme.studio.domain.model.ServiceStatus;
 import java.util.List;
@@ -21,7 +23,9 @@ public class ListActiveServiceCatalogEntriesService
   }
 
   @Override
-  public List<com.emme.studio.domain.model.Service> listActive(UUID tenantId) {
-    return serviceRepository.findByTenantIdAndStatus(tenantId, ServiceStatus.ACTIVE);
+  public List<ServiceDetails> listActive(UUID tenantId) {
+    return serviceRepository.findByTenantIdAndStatus(tenantId, ServiceStatus.ACTIVE).stream()
+        .map(ServiceCatalogApplicationMapper::toDetails)
+        .toList();
   }
 }

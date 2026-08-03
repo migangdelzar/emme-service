@@ -1,6 +1,6 @@
 package com.emme.studio.adapter.in.web.response;
 
-import com.emme.studio.domain.model.Service;
+import com.emme.studio.api.result.ServiceDetails;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -15,15 +15,15 @@ public record ServiceResponse(
     BigDecimal basePrice,
     String status) {
 
-  public static ServiceResponse from(Service service) {
+  public static ServiceResponse from(ServiceDetails service) {
     return new ServiceResponse(
-        service.getId(),
-        service.getCode(),
-        service.getName(),
-        service.getCategory(),
-        service.getDescription(),
-        service.getDurationMinutes(),
-        service.getBasePrice(),
-        service.getStatus().name());
+        service.id(),
+        service.code(),
+        service.name(),
+        service.category(),
+        service.description(),
+        service.durationMinutes(),
+        service.basePrice(),
+        service.status());
   }
 }

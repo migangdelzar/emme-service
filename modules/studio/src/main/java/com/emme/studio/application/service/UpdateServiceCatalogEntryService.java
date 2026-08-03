@@ -1,6 +1,8 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.ServiceDetails;
 import com.emme.studio.api.usecase.UpdateServiceCatalogEntryUseCase;
+import com.emme.studio.application.mapper.ServiceCatalogApplicationMapper;
 import com.emme.studio.application.port.out.ServiceRepository;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -19,7 +21,7 @@ public class UpdateServiceCatalogEntryService implements UpdateServiceCatalogEnt
   }
 
   @Override
-  public com.emme.studio.domain.model.Service update(
+  public ServiceDetails update(
       UUID id,
       String name,
       String category,
@@ -39,6 +41,6 @@ public class UpdateServiceCatalogEntryService implements UpdateServiceCatalogEnt
     }
     service.setDurationMinutes(durationMinutes);
     service.setBasePrice(basePrice);
-    return serviceRepository.save(service);
+    return ServiceCatalogApplicationMapper.toDetails(serviceRepository.save(service));
   }
 }

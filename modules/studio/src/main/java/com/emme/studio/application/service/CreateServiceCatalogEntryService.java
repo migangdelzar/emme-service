@@ -1,6 +1,8 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.ServiceDetails;
 import com.emme.studio.api.usecase.CreateServiceCatalogEntryUseCase;
+import com.emme.studio.application.mapper.ServiceCatalogApplicationMapper;
 import com.emme.studio.application.port.out.ServiceRepository;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -20,7 +22,7 @@ public class CreateServiceCatalogEntryService implements CreateServiceCatalogEnt
   }
 
   @Override
-  public com.emme.studio.domain.model.Service create(
+  public ServiceDetails create(
       UUID tenantId,
       String code,
       String name,
@@ -29,8 +31,9 @@ public class CreateServiceCatalogEntryService implements CreateServiceCatalogEnt
       int durationMinutes,
       BigDecimal basePrice) {
     String effectiveCategory = category == null ? DEFAULT_CATEGORY : category;
-    return serviceRepository.save(
-        new com.emme.studio.domain.model.Service(
-            tenantId, code, name, effectiveCategory, description, durationMinutes, basePrice));
+    return ServiceCatalogApplicationMapper.toDetails(
+        serviceRepository.save(
+            new com.emme.studio.domain.model.Service(
+                tenantId, code, name, effectiveCategory, description, durationMinutes, basePrice)));
   }
 }

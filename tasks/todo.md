@@ -186,6 +186,10 @@ Identity verification evidence is recorded in
   results, application mapping, dedicated HTTP request/response records, and
   renamed the ambiguous `CustomerInfo` contract to `CustomerSummary`; Studio
   and Calendar tests passed.
+- [x] Migrated the Studio service-catalog vertical slice to `ServiceDetails`
+  API results and domain-free HTTP contracts, then removed the unused duplicate
+  `ListServiceCatalogEntries` API/service surface; Studio and Calendar tests
+  passed.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain

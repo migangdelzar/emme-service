@@ -280,6 +280,9 @@ Apply the following mapping to every module that has public contracts:
 - [x] Migrate the Studio customer vertical slice to public `CustomerDetails`
   results, application mapping, dedicated web contracts, and normalized
   `CustomerSummary` naming without controller-to-domain imports.
+- [x] Migrate the Studio service-catalog vertical slice to public
+  `ServiceDetails` results, application mapping, and domain-free web contracts;
+  remove the unused duplicate `ListServiceCatalogEntries` surface.
 - [ ] Rename `GetBusinessProfileConfig*` to the actual business concept represented by the contract after its API/result semantics are reviewed.
 - [ ] Split any service that combines customer, artist, appointment, catalog, operating-hours, or booking-policy use cases.
 - [ ] Verify nested `documents` and `subscriptions` dependencies remain one-way and use only named public APIs.

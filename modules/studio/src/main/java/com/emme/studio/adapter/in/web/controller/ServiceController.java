@@ -5,12 +5,12 @@ import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 import com.emme.studio.adapter.in.web.request.CreateServiceRequest;
 import com.emme.studio.adapter.in.web.request.UpdateServiceRequest;
 import com.emme.studio.adapter.in.web.response.ServiceResponse;
+import com.emme.studio.api.result.ServiceDetails;
 import com.emme.studio.api.usecase.CreateServiceCatalogEntryUseCase;
 import com.emme.studio.api.usecase.GetServiceCatalogEntryUseCase;
 import com.emme.studio.api.usecase.ListActiveServiceCatalogEntriesUseCase;
 import com.emme.studio.api.usecase.RetireServiceCatalogEntryUseCase;
 import com.emme.studio.api.usecase.UpdateServiceCatalogEntryUseCase;
-import com.emme.studio.domain.model.Service;
 import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
 import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,7 +72,7 @@ public class ServiceController {
     return withCurrentTenant(
         tenantId -> {
           enforceEntitlement.enforce(new EnforceEntitlementCommand(tenantId, "services:write"));
-          Service service =
+          ServiceDetails service =
               createService.create(
                   tenantId,
                   request.code(),
@@ -81,7 +81,7 @@ public class ServiceController {
                   request.description(),
                   request.durationMinutes(),
                   request.basePrice());
-          var location = URI.create("/api/services/" + service.getId());
+          var location = URI.create("/api/services/" + service.id());
           return ResponseEntity.created(location).body(ServiceResponse.from(service));
         });
   }
@@ -99,7 +99,7 @@ public class ServiceController {
   @Operation(summary = "Update a service")
   public ResponseEntity<ServiceResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateServiceRequest request) {
-    Service service =
+    ServiceDetails service =
         updateService.update(
             id,
             request.name(),
@@ -113,7 +113,7 @@ public class ServiceController {
   @PostMapping("/{id}/retire")
   @Operation(summary = "Retire a service")
   public ResponseEntity<ServiceResponse> retire(@PathVariable UUID id) {
-    Service service = retireService.retire(id);
+    ServiceDetails service = retireService.retire(id);
     return ResponseEntity.ok(ServiceResponse.from(service));
   }
 }

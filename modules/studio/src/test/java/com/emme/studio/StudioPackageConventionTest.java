@@ -99,6 +99,21 @@ class StudioPackageConventionTest {
   }
 
   @Test
+  void serviceCatalogWebBoundaryDoesNotExposeDomainModels() throws Exception {
+    Path root = sourcePath("modules/studio/src/main/java/com/emme/studio");
+    String controller =
+        java.nio.file.Files.readString(
+            root.resolve("adapter/in/web/controller/ServiceController.java"));
+    String response =
+        java.nio.file.Files.readString(
+            root.resolve("adapter/in/web/response/ServiceResponse.java"));
+
+    assertThat(controller).doesNotContain("com.emme.studio.domain.model");
+    assertThat(response).doesNotContain("com.emme.studio.domain.model");
+    assertThat(java.nio.file.Files.exists(root.resolve("api/result/ServiceDetails.java"))).isTrue();
+  }
+
+  @Test
   void publicUseCasesDoNotExposeApplicationResultTypes() {
     assertThat(hasClass("com.emme.studio.api.result.AppointmentDetails")).isTrue();
     assertThat(hasClass("com.emme.studio.api.result.AvailableSlot")).isTrue();

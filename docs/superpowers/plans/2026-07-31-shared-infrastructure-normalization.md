@@ -106,8 +106,10 @@ remaining work is the final service-wide operational evidence gate.
   `ddl-auto: create`, preserving startup isolation without dropping
   `event_publication` before Spring Modulith shutdown callbacks run.
 - [x] Verify the application parity test and Studio module check.
-- [x] Remove reusable PostgreSQL Testcontainers state and verify the focused
-  integration lifecycle without connection-termination diagnostics.
+- [x] Remove reusable PostgreSQL Testcontainers state and explicitly order
+  publication-registry shutdown before container shutdown; verify focused and
+  Spring Boot PostgreSQL integration lifecycles without connection-termination
+  diagnostics.
 
 ## Completed tenant-scoped search maintenance slice — 2026-08-01
 

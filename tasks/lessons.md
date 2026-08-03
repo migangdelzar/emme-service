@@ -551,4 +551,5 @@
   `SQLSTATE(08006)`/`57P01` connection-termination diagnostics during
   `eventPublicationRegistry` destruction.
 - Prevention rule: shared disposable integration containers must not enable
-  `.withReuse(true)`; verify the lifecycle with a focused PostgreSQL test.
+  `.withReuse(true)`, and the publication registry must be destroyed before
+  the container bean; verify both contracts with focused PostgreSQL tests.

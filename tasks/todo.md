@@ -173,7 +173,8 @@ reopened by this backlog.
   Shared and application Modulith/layer gates pass.
 - [x] Remove H2 schema-drop/event-publication shutdown warnings from the shared
   test profiles and disable reusable PostgreSQL Testcontainers state so
-  framework shutdown callbacks complete against a live database.
+  framework shutdown callbacks complete against a live database; explicitly
+  order publication-registry shutdown before container shutdown.
 - [x] Run the service-wide dependency-cycle verification through the platform
   Modulith, layer, and application parity tests.
 

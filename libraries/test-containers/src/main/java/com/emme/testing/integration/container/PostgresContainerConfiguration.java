@@ -2,6 +2,7 @@ package com.emme.testing.integration.container;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -28,5 +29,24 @@ public class PostgresContainerConfiguration {
         .withDatabaseName(DATABASE)
         .withUsername(USERNAME)
         .withPassword(PASSWORD);
+  }
+
+  /**
+   * Keeps the JDBC publication registry alive until after the PostgreSQL container is available.
+   *
+   * <p>Spring destroys dependent beans before their dependencies. Making the publication registry
+   * depend on the container therefore guarantees that its outstanding-publication callback runs
+   * before Testcontainers stops PostgreSQL.
+   */
+  @Bean
+  static BeanFactoryPostProcessor eventPublicationRegistryShutdownOrdering() {
+    return beanFactory -> {
+      if (beanFactory.containsBeanDefinition("eventPublicationRegistry")
+          && beanFactory.containsBeanDefinition("postgresContainer")) {
+        beanFactory
+            .getBeanDefinition("eventPublicationRegistry")
+            .setDependsOn("postgresContainer");
+      }
+    };
   }
 }

@@ -173,6 +173,7 @@ Identity verification evidence is recorded in
 - [x] Moved core Studio controllers into `adapter.in.web.controller`, renamed `BusinessConfigController`, added package metadata, and verified Studio module tests.
 - [x] Renamed payment `PaymentProviderConfig` to `PaymentProviderConfiguration` and verified the provider configuration source test.
 - [x] Moved Calendar HTTP controllers into `adapter/in/web/controller`, removed the now-empty parent package metadata, and verified the Calendar convention test.
+- [x] Ran the repository-wide `./gradlew test --no-daemon` gate after the naming and adapter package changes; all 81 tasks completed successfully.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain

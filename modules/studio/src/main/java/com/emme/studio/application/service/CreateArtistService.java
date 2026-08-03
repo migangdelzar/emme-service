@@ -1,6 +1,8 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.ArtistDetails;
 import com.emme.studio.api.usecase.CreateArtistUseCase;
+import com.emme.studio.application.mapper.ArtistApplicationMapper;
 import com.emme.studio.application.port.out.ArtistRepository;
 import com.emme.studio.domain.model.Artist;
 import java.util.UUID;
@@ -19,7 +21,7 @@ public class CreateArtistService implements CreateArtistUseCase {
   }
 
   @Override
-  public Artist create(UUID tenantId, String name) {
-    return artistRepository.save(new Artist(tenantId, name));
+  public ArtistDetails create(UUID tenantId, String name) {
+    return ArtistApplicationMapper.toDetails(artistRepository.save(new Artist(tenantId, name)));
   }
 }

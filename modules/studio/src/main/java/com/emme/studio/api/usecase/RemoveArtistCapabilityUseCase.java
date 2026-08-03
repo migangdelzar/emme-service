@@ -1,10 +1,10 @@
 package com.emme.studio.api.usecase;
 
-import com.emme.studio.domain.model.ArtistCapability;
+import com.emme.studio.api.result.ArtistCapabilityDetails;
 import java.util.UUID;
 
 /** Removes an artist capability. */
 public interface RemoveArtistCapabilityUseCase {
 
-  ArtistCapability remove(UUID capabilityId);
+  ArtistCapabilityDetails remove(UUID capabilityId);
 }

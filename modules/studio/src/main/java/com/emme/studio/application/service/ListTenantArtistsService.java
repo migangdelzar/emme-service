@@ -1,8 +1,9 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.ArtistDetails;
 import com.emme.studio.api.usecase.ListTenantArtistsUseCase;
+import com.emme.studio.application.mapper.ArtistApplicationMapper;
 import com.emme.studio.application.port.out.ArtistRepository;
-import com.emme.studio.domain.model.Artist;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,9 @@ public class ListTenantArtistsService implements ListTenantArtistsUseCase {
   }
 
   @Override
-  public List<Artist> list(UUID tenantId) {
-    return artistRepository.findByTenantId(tenantId);
+  public List<ArtistDetails> list(UUID tenantId) {
+    return artistRepository.findByTenantId(tenantId).stream()
+        .map(ArtistApplicationMapper::toDetails)
+        .toList();
   }
 }

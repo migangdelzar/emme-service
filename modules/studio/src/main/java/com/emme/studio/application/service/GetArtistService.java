@@ -1,8 +1,9 @@
 package com.emme.studio.application.service;
 
+import com.emme.studio.api.result.ArtistDetails;
 import com.emme.studio.api.usecase.GetArtistUseCase;
+import com.emme.studio.application.mapper.ArtistApplicationMapper;
 import com.emme.studio.application.port.out.ArtistRepository;
-import com.emme.studio.domain.model.Artist;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class GetArtistService implements GetArtistUseCase {
   }
 
   @Override
-  public Optional<Artist> get(UUID id) {
-    return artistRepository.findById(id);
+  public Optional<ArtistDetails> get(UUID id) {
+    return artistRepository.findById(id).map(ArtistApplicationMapper::toDetails);
   }
 }

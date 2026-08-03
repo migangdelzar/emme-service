@@ -130,6 +130,19 @@ class StudioPackageConventionTest {
   }
 
   @Test
+  void artistWebBoundaryDoesNotExposeDomainModels() throws Exception {
+    Path root = sourcePath("modules/studio/src/main/java/com/emme/studio");
+    String controller =
+        java.nio.file.Files.readString(
+            root.resolve("adapter/in/web/controller/ArtistController.java"));
+
+    assertThat(controller).doesNotContain("com.emme.studio.domain.model");
+    assertThat(java.nio.file.Files.exists(root.resolve("api/result/ArtistDetails.java"))).isTrue();
+    assertThat(java.nio.file.Files.exists(root.resolve("api/result/ArtistCapabilityDetails.java")))
+        .isTrue();
+  }
+
+  @Test
   void publicUseCasesDoNotExposeApplicationResultTypes() {
     assertThat(hasClass("com.emme.studio.api.result.AppointmentDetails")).isTrue();
     assertThat(hasClass("com.emme.studio.api.result.AvailableSlot")).isTrue();

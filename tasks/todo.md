@@ -190,6 +190,12 @@ Identity verification evidence is recorded in
   API results and domain-free HTTP contracts, then removed the unused duplicate
   `ListServiceCatalogEntries` API/service surface; Studio and Calendar tests
   passed.
+- [x] Migrated Studio business-configuration use cases to public profile,
+  operating-hours, and booking-policy results, introduced the API-owned
+  `BusinessDay` type, and extracted dedicated HTTP records.
+- [x] Migrated the Studio artist/capability use cases to `ArtistDetails` and
+  `ArtistCapabilityDetails`, extracted dedicated HTTP records, and removed the
+  unused duplicate `ListArtistCapabilities` API/service surface.
 
 
 This is the authoritative order for unfinished work. Detailed checklists remain

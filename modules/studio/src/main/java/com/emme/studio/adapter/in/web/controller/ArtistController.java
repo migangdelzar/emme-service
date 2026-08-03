@@ -2,6 +2,13 @@ package com.emme.studio.adapter.in.web.controller;
 
 import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
+import com.emme.studio.adapter.in.web.request.AddArtistCapabilityRequest;
+import com.emme.studio.adapter.in.web.request.CreateArtistRequest;
+import com.emme.studio.adapter.in.web.request.UpdateArtistRequest;
+import com.emme.studio.adapter.in.web.response.ArtistCapabilityResponse;
+import com.emme.studio.adapter.in.web.response.ArtistResponse;
+import com.emme.studio.api.result.ArtistCapabilityDetails;
+import com.emme.studio.api.result.ArtistDetails;
 import com.emme.studio.api.usecase.AddArtistCapabilityUseCase;
 import com.emme.studio.api.usecase.CreateArtistUseCase;
 import com.emme.studio.api.usecase.DeactivateArtistUseCase;
@@ -9,8 +16,6 @@ import com.emme.studio.api.usecase.GetArtistUseCase;
 import com.emme.studio.api.usecase.ListTenantArtistsUseCase;
 import com.emme.studio.api.usecase.RemoveArtistCapabilityUseCase;
 import com.emme.studio.api.usecase.UpdateArtistUseCase;
-import com.emme.studio.domain.model.Artist;
-import com.emme.studio.domain.model.ArtistCapability;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
@@ -70,8 +75,8 @@ public class ArtistController {
   public ResponseEntity<ArtistResponse> create(@RequestBody CreateArtistRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          Artist artist = createArtist.create(tenantId, request.name());
-          var location = URI.create("/api/artists/" + artist.getId());
+          ArtistDetails artist = createArtist.create(tenantId, request.name());
+          var location = URI.create("/api/artists/" + artist.id());
           return ResponseEntity.created(location).body(ArtistResponse.from(artist));
         });
   }
@@ -89,24 +94,25 @@ public class ArtistController {
   @Operation(summary = "Update an artist")
   public ResponseEntity<ArtistResponse> update(
       @PathVariable UUID id, @RequestBody UpdateArtistRequest request) {
-    Artist artist = updateArtist.update(id, request.name());
+    ArtistDetails artist = updateArtist.update(id, request.name());
     return ResponseEntity.ok(ArtistResponse.from(artist));
   }
 
   @PostMapping("/{id}/deactivate")
   @Operation(summary = "Deactivate an artist")
   public ResponseEntity<ArtistResponse> deactivate(@PathVariable UUID id) {
-    Artist artist = deactivateArtist.deactivate(id);
+    ArtistDetails artist = deactivateArtist.deactivate(id);
     return ResponseEntity.ok(ArtistResponse.from(artist));
   }
 
   @PostMapping("/{id}/capabilities")
   @Operation(summary = "Add a capability to an artist")
   public ResponseEntity<ArtistCapabilityResponse> addCapability(
-      @PathVariable UUID id, @RequestBody AddCapabilityRequest request) {
+      @PathVariable UUID id, @RequestBody AddArtistCapabilityRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          ArtistCapability capability = addArtistCapability.add(id, request.serviceId(), tenantId);
+          ArtistCapabilityDetails capability =
+              addArtistCapability.add(id, request.serviceId(), tenantId);
           return ResponseEntity.ok(ArtistCapabilityResponse.from(capability));
         });
   }
@@ -114,39 +120,7 @@ public class ArtistController {
   @DeleteMapping("/capabilities/{id}")
   @Operation(summary = "Remove a capability")
   public ResponseEntity<ArtistCapabilityResponse> removeCapability(@PathVariable UUID id) {
-    ArtistCapability capability = removeArtistCapability.remove(id);
+    ArtistCapabilityDetails capability = removeArtistCapability.remove(id);
     return ResponseEntity.ok(ArtistCapabilityResponse.from(capability));
   }
-
-  // --- DTOs ---
-
-  public record ArtistResponse(UUID id, String name, String status) {
-    public static ArtistResponse from(Artist a) {
-      return new ArtistResponse(a.getId(), a.getName(), a.getStatus().name());
-    }
-  }
-
-  public record ArtistCapabilityResponse(
-      UUID id,
-      UUID artistId,
-      String artistName,
-      UUID serviceId,
-      String serviceName,
-      boolean active) {
-    public static ArtistCapabilityResponse from(ArtistCapability ac) {
-      return new ArtistCapabilityResponse(
-          ac.getId(),
-          ac.getArtist().getId(),
-          ac.getArtist().getName(),
-          ac.getService().getId(),
-          ac.getService().getName(),
-          ac.isActive());
-    }
-  }
-
-  public record CreateArtistRequest(String name) {}
-
-  public record UpdateArtistRequest(String name) {}
-
-  public record AddCapabilityRequest(UUID serviceId) {}
 }

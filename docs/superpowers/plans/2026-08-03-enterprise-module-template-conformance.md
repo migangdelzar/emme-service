@@ -283,6 +283,12 @@ Apply the following mapping to every module that has public contracts:
 - [x] Migrate the Studio service-catalog vertical slice to public
   `ServiceDetails` results, application mapping, and domain-free web contracts;
   remove the unused duplicate `ListServiceCatalogEntries` surface.
+- [x] Migrate Studio business-configuration contracts to public profile,
+  operating-hours, and booking-policy results with the API-owned `BusinessDay`
+  type and dedicated HTTP records.
+- [x] Migrate the Studio artist and capability vertical slice to public result
+  records, application mapping, and dedicated HTTP contracts; remove the
+  unused duplicate artist-capability listing surface.
 - [ ] Rename `GetBusinessProfileConfig*` to the actual business concept represented by the contract after its API/result semantics are reviewed.
 - [ ] Split any service that combines customer, artist, appointment, catalog, operating-hours, or booking-policy use cases.
 - [ ] Verify nested `documents` and `subscriptions` dependencies remain one-way and use only named public APIs.

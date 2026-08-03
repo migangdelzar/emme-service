@@ -1,7 +1,9 @@
 package com.emme.studio.application.service;
 
 import com.emme.studio.api.exception.StudioResourceNotFoundException;
+import com.emme.studio.api.result.ArtistCapabilityDetails;
 import com.emme.studio.api.usecase.AddArtistCapabilityUseCase;
+import com.emme.studio.application.mapper.ArtistApplicationMapper;
 import com.emme.studio.application.port.out.ArtistCapabilityRepository;
 import com.emme.studio.application.port.out.ArtistRepository;
 import com.emme.studio.application.port.out.ServiceRepository;
@@ -29,7 +31,7 @@ public class AddArtistCapabilityService implements AddArtistCapabilityUseCase {
   }
 
   @Override
-  public ArtistCapability add(UUID artistId, UUID serviceId, UUID tenantId) {
+  public ArtistCapabilityDetails add(UUID artistId, UUID serviceId, UUID tenantId) {
     Artist artist =
         artistRepository
             .findById(artistId)
@@ -38,6 +40,7 @@ public class AddArtistCapabilityService implements AddArtistCapabilityUseCase {
         serviceRepository
             .findById(serviceId)
             .orElseThrow(() -> new StudioResourceNotFoundException("Service", serviceId));
-    return artistCapabilityRepository.save(new ArtistCapability(tenantId, artist, service));
+    return ArtistApplicationMapper.toDetails(
+        artistCapabilityRepository.save(new ArtistCapability(tenantId, artist, service)));
   }
 }

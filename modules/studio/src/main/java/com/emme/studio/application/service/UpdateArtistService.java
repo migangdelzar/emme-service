@@ -1,7 +1,9 @@
 package com.emme.studio.application.service;
 
 import com.emme.studio.api.exception.StudioResourceNotFoundException;
+import com.emme.studio.api.result.ArtistDetails;
 import com.emme.studio.api.usecase.UpdateArtistUseCase;
+import com.emme.studio.application.mapper.ArtistApplicationMapper;
 import com.emme.studio.application.port.out.ArtistRepository;
 import com.emme.studio.domain.model.Artist;
 import java.util.UUID;
@@ -20,12 +22,12 @@ public class UpdateArtistService implements UpdateArtistUseCase {
   }
 
   @Override
-  public Artist update(UUID id, String name) {
+  public ArtistDetails update(UUID id, String name) {
     Artist artist =
         artistRepository
             .findById(id)
             .orElseThrow(() -> new StudioResourceNotFoundException("Artist", id));
     artist.setName(name);
-    return artistRepository.save(artist);
+    return ArtistApplicationMapper.toDetails(artistRepository.save(artist));
   }
 }

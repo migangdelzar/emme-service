@@ -1891,3 +1891,13 @@ security checks, integration tests, infrastructure validation, and packaging.
 
 - [ ] Investigate non-failing Testcontainers prune and application-context
       shutdown warnings emitted by the integration suite.
+
+## Selectable parallel CI refactor — 2026-08-04
+
+- [x] Document the safe parallel-execution design and manual pipeline inputs.
+- [x] Create service and web implementation plans.
+- [x] Add the backend workflow contract validator.
+- [x] Run backend tests and JaCoCo coverage in one Gradle job locally.
+- [ ] Apply the remaining service workflow input and container-trigger changes.
+- [ ] Add the reusable web Bun setup action and optional workflow inputs.
+- [ ] Verify both repositories' changed workflows in GitHub Actions.

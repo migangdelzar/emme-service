@@ -62,6 +62,9 @@ public class TenantDatabasePoolProvider {
     this.poolCache =
         Caffeine.newBuilder()
             .ticker(ticker)
+            // Pool eviction is a resource-lifecycle boundary. Run removal callbacks inline so a
+            // caller never observes an evicted pool before its Hikari resources are closed.
+            .executor(Runnable::run)
             .expireAfterAccess(config.getIdleTimeoutMinutes(), TimeUnit.MINUTES)
             .maximumSize(config.getMaxPoolCacheSize())
             .removalListener(

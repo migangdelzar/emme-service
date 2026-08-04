@@ -758,3 +758,15 @@
   explicitly annotate the production injection constructor with `@Autowired`;
   keep test-only constructors package-private and verify at least one real
   application context after adding them.
+
+## 2026-08-04 — Make evicted resource cleanup deterministic
+
+- **Failure mode:** A Caffeine tenant-pool entry expired, but its asynchronous
+  removal listener had not closed the Hikari datasource when the replacement
+  pool was returned.
+- **Detection signal:** The pool lifecycle test passed in isolation and failed
+  in the full suite/CI with `firstPool.isClosed()` false; the test log showed
+  the removal callback running on `ForkJoinPool.commonPool-worker-1`.
+- **Prevention rule:** Resource-owning cache removal callbacks must use a
+  deterministic executor (inline for this small lifecycle action) so callers
+  cannot observe a replacement before the evicted resource is released.

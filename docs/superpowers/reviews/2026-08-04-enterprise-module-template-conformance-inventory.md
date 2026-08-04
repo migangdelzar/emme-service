@@ -93,11 +93,18 @@ named `*Service`.
 | Application imports of technical adapters | No violations | `DddHexagonalArchitectureTest` passes |
 | Inbound adapters importing outbound adapters | No violations | `DddHexagonalArchitectureTest` passes |
 | Cross-module business implementation imports | No violations | `CrossModuleDependencyArchitectureTest` passes; Calendar now uses Shared's authenticated-subject context instead of Identity's web adapter |
+| Empty source directories | One stale test directory removed | `modules/tenancy/src/test/java/com/emme/tenancy/application/audit` was empty after audit ownership normalization; no production capability directory was empty |
 
 The direct connection calls under `src/integrationTest` are intentional test
 fixture/setup operations. Production connection acquisition remains behind the
 shared throwable connection executor; converting test setup to that helper is a
 separate cleanup task and must not be confused with a production boundary leak.
+
+The source inventory contains 56 command records, 35 query records, 56 result
+records, 135 use-case interfaces, 10 public event records, 19 public API
+exceptions, and 16 public API types. A full per-module contract matrix remains
+open for the next API vertical-slice review; these aggregate counts are not a
+substitute for checking each contract's semantic pairing.
 
 ## Verification performed
 

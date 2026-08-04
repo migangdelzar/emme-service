@@ -115,8 +115,8 @@ The tree is a decision catalogue, not a requirement to create every directory. A
 - [ ] Inventory every `api` package and compare command/query/result/use-case/event/exception/type names as a vertical slice.
 - [ ] Inventory every `package-info.java`, `ApplicationModule`, and `NamedInterface` declaration and detect duplicates, empty interfaces, mismatched names, and missing package metadata.
 - [x] Inventory all imports crossing module boundaries and produce a list of forbidden implementation imports; the executable scan found and removed Calendar's Identity adapter dependency.
-- [ ] Inventory all `DataSource#getConnection()` calls, direct JPA repository use from application/web code, direct external SDK use from domain code, and non-Kafka broker configuration.
-- [ ] Inventory empty directories and files with no production references. Delete only after `rg`, compiler, test, and build verification prove they are unused.
+- [x] Inventory all `DataSource#getConnection()` calls, direct JPA repository use from application/web code, direct external SDK use from domain code, and non-Kafka broker configuration; production connection acquisition and application/web repository leaks are absent, and remaining direct connection calls are integration-test setup only.
+- [x] Inventory empty directories and files with no production references. Delete only after `rg`, compiler, test, and build verification prove they are unused; the only empty source directory was the stale Tenancy audit test package and it was removed.
 - [x] Store the baseline evidence in `docs/superpowers/reviews/2026-08-03-enterprise-module-template-conformance-baseline.md` and link it from this plan.
 - [x] Refresh the production type, application-service, package-metadata, and boundary inventory in `docs/superpowers/reviews/2026-08-04-enterprise-module-template-conformance-inventory.md` after public contract naming normalization.
 

@@ -81,7 +81,11 @@ Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/su
 - [x] Materialized missing `package-info.java` files for all production Java
       packages in modules and supporting libraries.
 - [x] Normalized the Calendar OAuth query package and the Tenancy JDBC
-      provisioning adapter name.
+  provisioning adapter name.
+- [x] Audited production connection acquisition and empty source directories:
+      no production `DataSource#getConnection()` calls remain, integration-test
+      setup calls are intentional, and the stale empty Tenancy audit test
+      directory was removed.
 - [x] Added all architecture rule families to the dedicated GitHub boundary
       workflow so they are visible and blocking independently of the full test
       job.

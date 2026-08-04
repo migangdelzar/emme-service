@@ -24,6 +24,7 @@ an external broker, a real database outage, or a native-image-capable runner.
 | Real full-stack recordings | Pass | Canonical tenant-owner recording suite passes 5/5 with one worker and zero retries |
 | Recording artifacts | Pass | Playwright videos, traces, screenshots, and report are generated under `emme-web/e2e/src/test-results/real-recordings` |
 | Web quality gates | Pass | E2E typecheck, recording contract tests, frontend coverage, i18n validation, and workspace lint pass; lint has existing non-blocking warnings only |
+| DDD + Hexagonal executable rules | Pass | Shared ArchUnit fixtures verify domain purity, application direction, public API independence, inbound/outbound separation, and nested persistence ownership |
 | Legacy runtime audit | Pass | No RabbitMQ/AMQP runtime integration, active `studio-api` application target, or production direct JDBC connection acquisition remains |
 | Endpoint versioning audit | Pass | Internal controller mappings use Spring header version `1.0`; the unversioned WhatsApp callback remains an external-provider transport contract |
 

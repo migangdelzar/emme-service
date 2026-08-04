@@ -4,7 +4,7 @@
 |---|---|
 | Repository | `emme-service` |
 | Branch | `feat/enterprise-module-template-conformance` |
-| Commit | `fe7ad54` |
+| Commit | `04d1f7f` baseline; cross-module dependency evidence is updated by the current conformance slice |
 | Date | 2026-08-04 |
 | Scope | Production Java sources under `modules/` and the `emme-platform` architecture tests |
 | Source of truth | [Architecture naming conventions](../../architecture/00-project/naming-conventions.md) and [module template](../../templates/module-package-structure-template.md) |
@@ -91,6 +91,7 @@ named `*Service`.
 | Domain imports of Spring/JPA/Kafka/adapter infrastructure | No violations | `DddHexagonalArchitectureTest` passes |
 | Application imports of technical adapters | No violations | `DddHexagonalArchitectureTest` passes |
 | Inbound adapters importing outbound adapters | No violations | `DddHexagonalArchitectureTest` passes |
+| Cross-module business implementation imports | No violations | `CrossModuleDependencyArchitectureTest` passes; Calendar now uses Shared's authenticated-subject context instead of Identity's web adapter |
 
 The direct connection calls under `src/integrationTest` are intentional test
 fixture/setup operations. Production connection acquisition remains behind the
@@ -113,15 +114,23 @@ git diff --check
 The commit pre-push gate also passed the repository test, coverage, and coverage
 verification lifecycle.
 
+The dependency-boundary slice additionally passed:
+
+```text
+./gradlew :modules:shared:test --tests com.emme.shared.web.security.CurrentUserContextHolderTest
+./gradlew :modules:calendar:test
+./gradlew :applications:emme-platform:test --tests com.emme.CrossModuleDependencyArchitectureTest --tests com.emme.ModularityTest --tests com.emme.NamedInterfaceArchitectureTest
+```
+
 ## Remaining inventory work
 
 The following are intentionally still open in the conformance plan because this
 document does not claim evidence that was not collected:
 
-1. A full dependency graph report listing every cross-module import and its
-   named-interface target.
-2. Per-service transaction mode and dependency-count review.
-3. Empty-directory and obsolete-file deletion review across generated/build
+1. Per-service transaction mode and dependency-count review.
+2. Empty-directory and obsolete-file deletion review across generated/build
    output and test fixtures.
+3. Provider, replay, rollback, and recovery evidence for the high-risk modules.
+4. Final Kafka/Spring Modulith delivery and production deployment verification.
 4. Provider, replay, rollback, and recovery evidence for the high-risk modules.
 5. Final Kafka/Spring Modulith delivery and production deployment verification.

@@ -31,8 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
  * exchange, token refresh, encrypted storage, revocation, and connectivity checks.
  *
  * <p>Tokens are encrypted with {@link TokenEncryptionService} before persistence. Tenant and user
- * identity come from the current security context via {@code TenantContextHolder} and {@code
- * UserContextHolder}.
+ * identity come from the current tenant and shared authenticated-subject contexts.
  */
 @Service
 @Transactional

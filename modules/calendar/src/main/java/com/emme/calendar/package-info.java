@@ -2,6 +2,7 @@
     displayName = "Calendar",
     allowedDependencies = {
       "shared :: persistence",
+      "shared :: web-security",
       "tenancy",
       "identity :: identity-security",
       "studio",

@@ -3,8 +3,8 @@ package com.emme.calendar.adapter.out.google.client;
 import com.emme.calendar.adapter.out.google.adapter.GoogleOAuthAdapter;
 import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.calendar.configuration.GoogleHttpClient;
-import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.emme.kernel.context.TenantContextHolder;
+import com.emme.shared.web.security.CurrentUserContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import okhttp3.MediaType;
@@ -102,7 +102,7 @@ public class GoogleSheetsClient {
 
   private String getToken() {
     var tenantId = TenantContextHolder.requireCurrentTenantId();
-    var userId = UserContextHolder.currentSubject();
+    var userId = CurrentUserContextHolder.currentSubject();
     return oauthService.getValidAccessToken(tenantId, userId, PersonaType.STAFF);
   }
 }

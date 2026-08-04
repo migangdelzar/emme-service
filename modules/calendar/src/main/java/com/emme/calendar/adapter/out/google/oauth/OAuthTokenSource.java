@@ -3,8 +3,8 @@ package com.emme.calendar.adapter.out.google.oauth;
 import com.emme.calendar.adapter.out.google.adapter.GoogleOAuthAdapter;
 import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.calendar.api.type.TokenSource;
-import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.emme.kernel.context.TenantContext;
+import com.emme.shared.web.security.CurrentUserContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ public class OAuthTokenSource implements TokenSource {
   @Override
   public String getAccessToken() {
     var tenantId = TenantContext.getCurrentTenantId();
-    var userId = UserContextHolder.currentSubject();
+    var userId = CurrentUserContextHolder.currentSubject();
     return oauthService.getValidAccessToken(tenantId, userId, PersonaType.STAFF);
   }
 
@@ -34,7 +34,7 @@ public class OAuthTokenSource implements TokenSource {
   public boolean isConfigured() {
     try {
       var tenantId = TenantContext.getCurrentTenantId();
-      var userId = UserContextHolder.currentSubject();
+      var userId = CurrentUserContextHolder.currentSubject();
       return oauthService.isConnected(tenantId, userId, PersonaType.STAFF);
     } catch (Exception e) {
       log.debug("OAuth token source not available: {}", e.getMessage());

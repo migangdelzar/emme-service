@@ -114,7 +114,7 @@ The tree is a decision catalogue, not a requirement to create every directory. A
 - [ ] Inventory every `application/service` class and verify its implemented use-case count, name, transaction mode, and dependency count.
 - [ ] Inventory every `api` package and compare command/query/result/use-case/event/exception/type names as a vertical slice.
 - [ ] Inventory every `package-info.java`, `ApplicationModule`, and `NamedInterface` declaration and detect duplicates, empty interfaces, mismatched names, and missing package metadata.
-- [ ] Inventory all imports crossing module boundaries and produce a list of forbidden implementation imports.
+- [x] Inventory all imports crossing module boundaries and produce a list of forbidden implementation imports; the executable scan found and removed Calendar's Identity adapter dependency.
 - [ ] Inventory all `DataSource#getConnection()` calls, direct JPA repository use from application/web code, direct external SDK use from domain code, and non-Kafka broker configuration.
 - [ ] Inventory empty directories and files with no production references. Delete only after `rg`, compiler, test, and build verification prove they are unused.
 - [x] Store the baseline evidence in `docs/superpowers/reviews/2026-08-03-enterprise-module-template-conformance-baseline.md` and link it from this plan.
@@ -125,6 +125,7 @@ The tree is a decision catalogue, not a requirement to create every directory. A
 - [x] Keep `ModularityTest` as the repository-wide Modulith verification and add explicit named-interface checks through `NamedInterfaceArchitectureTest`.
 - [x] Add or extend per-module/package convention tests for API visibility, package metadata, forbidden imports, and one-use-case-per-service.
 - [x] Add ArchUnit rules for domain framework independence, application inward dependency, controller/use-case usage, persistence isolation, API-only cross-module imports, and absence of the normalized generic public-contract names.
+- [x] Add the reusable cross-module dependency rule and platform test that reject imports into another business module's domain, application, adapter, or configuration packages.
 - [x] Add deterministic naming audits for public contract categories, suffixes, and one-use-case-per-service; initialism cleanup remains part of the residual inventory review.
 - [x] Add a test that confirms `emme-platform` has no dependency on the removed `studio-api` project or legacy package.
 

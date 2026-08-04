@@ -6,8 +6,8 @@ import com.emme.calendar.api.command.SyncClientCalendarCommand;
 import com.emme.calendar.api.command.UnsyncClientCalendarCommand;
 import com.emme.calendar.api.usecase.SyncClientCalendarUseCase;
 import com.emme.calendar.api.usecase.UnsyncClientCalendarUseCase;
-import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.emme.kernel.context.TenantContextHolder;
+import com.emme.shared.web.security.CurrentUserContextHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
@@ -47,7 +47,7 @@ public class ClientCalendarController {
             new SyncClientCalendarCommand(
                 tenantId,
                 request.appointmentId(),
-                UserContextHolder.currentSubject(),
+                CurrentUserContextHolder.currentSubject(),
                 request.startsAt(),
                 request.endsAt(),
                 request.summary(),
@@ -63,7 +63,7 @@ public class ClientCalendarController {
     UUID tenantId = TenantContextHolder.requireCurrentTenantId();
     unsyncClientCalendar.unsync(
         new UnsyncClientCalendarCommand(
-            tenantId, appointmentId, UserContextHolder.currentSubject()));
+            tenantId, appointmentId, CurrentUserContextHolder.currentSubject()));
     return ResponseEntity.noContent().build();
   }
 }

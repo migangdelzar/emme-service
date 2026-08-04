@@ -12,7 +12,7 @@ import com.emme.calendar.api.usecase.CompleteGoogleOAuthUseCase;
 import com.emme.calendar.api.usecase.DisconnectGoogleOAuthUseCase;
 import com.emme.calendar.api.usecase.GetGoogleOAuthStatusUseCase;
 import com.emme.calendar.api.usecase.StartGoogleOAuthUseCase;
-import com.emme.identity.adapter.in.web.security.UserContextHolder;
+import com.emme.shared.web.security.CurrentUserContextHolder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,7 +77,7 @@ public class GoogleOAuthController {
     var context =
         withCurrentTenant(
             tenantId -> {
-              var userId = UserContextHolder.currentSubject();
+              var userId = CurrentUserContextHolder.currentSubject();
               return new OAuthStateContext(tenantId, userId, persona.name());
             });
     storeState(state, context);
@@ -138,7 +138,7 @@ public class GoogleOAuthController {
       @RequestParam(defaultValue = "STAFF") GoogleOAuthPersona persona) {
     return withCurrentTenant(
         tenantId -> {
-          String userId = UserContextHolder.currentSubject();
+          String userId = CurrentUserContextHolder.currentSubject();
           var status =
               getGoogleOAuthStatusUseCase.get(
                   new GetGoogleOAuthStatusQuery(tenantId, userId, persona));
@@ -154,7 +154,7 @@ public class GoogleOAuthController {
       @RequestParam(defaultValue = "STAFF") GoogleOAuthPersona persona) {
     return withCurrentTenant(
         tenantId -> {
-          String userId = UserContextHolder.currentSubject();
+          String userId = CurrentUserContextHolder.currentSubject();
           disconnectGoogleOAuthUseCase.disconnect(
               new DisconnectGoogleOAuthCommand(tenantId, userId, persona));
           return ResponseEntity.noContent().build();

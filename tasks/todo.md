@@ -1945,3 +1945,14 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - [x] Preserve deliberate technical named interfaces such as `persistence`,
   `persistence-jdbc`, `search`, `identity`, and `time`.
 - [x] Verify the new guardrail with the platform test suite and Spotless.
+
+## Cross-module dependency architecture guardrail — 2026-08-04
+
+- [x] Add a failing platform test for business-module implementation imports.
+- [x] Add reusable `ModuleDependencyRules` that permits cross-module API
+  contracts while rejecting domain, application, adapter, and configuration
+  imports.
+- [x] Move Calendar's generic authenticated-subject lookup from Identity's web
+  adapter into Shared web security infrastructure.
+- [x] Verify the focused Shared and platform architecture tests pass.
+- [ ] Continue with per-service transaction-mode and dependency-count review.

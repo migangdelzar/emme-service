@@ -1,0 +1,151 @@
+package com.emme.e2eprovisioner.tenant;
+
+import com.emme.shared.persistence.jdbc.JdbcConnectionExecutor;
+import com.emme.shared.persistence.jdbc.ThrowingSqlConnectionFunction;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.UUID;
+import javax.sql.DataSource;
+
+/** JDBC adapter that performs idempotent, prepared tenant-owner seed operations. */
+public final class JdbcTenantSeeder implements TenantSeeder {
+
+  private static final UUID BUSINESS_OWNER_ROLE_ID =
+      UUID.fromString("00000000-0000-0000-0000-000000000001");
+  private final JdbcConnectionExecutor connectionExecutor;
+
+  public JdbcTenantSeeder(JdbcConnectionExecutor connectionExecutor) {
+    this.connectionExecutor = connectionExecutor;
+  }
+
+  public static JdbcTenantSeeder create(DataSource dataSource) {
+    return new JdbcTenantSeeder(
+        new JdbcConnectionExecutor(new org.springframework.jdbc.core.JdbcTemplate(dataSource)));
+  }
+
+  @Override
+  public UUID ensureTenant(String slug, String name) throws SQLException {
+    return connectionExecutor.withConnection(
+        (ThrowingSqlConnectionFunction<UUID, SQLException>)
+            connection ->
+                inTransaction(connection, ignored -> ensureTenant(connection, slug, name)));
+  }
+
+  @Override
+  public void activateOwnerMembership(UUID tenantId, String userReference) throws SQLException {
+    connectionExecutor.consumeWithConnection(
+        connection -> {
+          inTransaction(
+              connection,
+              ignored -> {
+                activateOwnerMembership(connection, tenantId, userReference);
+                return null;
+              });
+        });
+  }
+
+  private static UUID ensureTenant(Connection connection, String slug, String name)
+      throws SQLException {
+    UUID tenantId;
+    try (var statement =
+        connection.prepareStatement(
+            "SELECT tenant_id FROM emme_core.tenant_registry WHERE slug = ?")) {
+      statement.setString(1, slug);
+      try (var result = statement.executeQuery()) {
+        if (!result.next()) {
+          throw new SQLException("E2E tenant registry entry was not found for slug: " + slug);
+        }
+        tenantId = result.getObject(1, UUID.class);
+      }
+    }
+
+    try (var statement =
+        connection.prepareStatement(
+            """
+            INSERT INTO emme_core.tenant (id, slug, name, status, keycloak_realm)
+            VALUES (?, ?, ?, 'ACTIVE', 'emme')
+            ON CONFLICT (id) DO UPDATE SET
+              slug = EXCLUDED.slug,
+              name = EXCLUDED.name,
+              status = EXCLUDED.status,
+              keycloak_realm = EXCLUDED.keycloak_realm
+            """)) {
+      statement.setObject(1, tenantId);
+      statement.setString(2, slug);
+      statement.setString(3, name);
+      statement.executeUpdate();
+    }
+    return tenantId;
+  }
+
+  private static void activateOwnerMembership(
+      Connection connection, UUID tenantId, String userReference) throws SQLException {
+    try (var statement =
+        connection.prepareStatement(
+            """
+            INSERT INTO emme_core.role (id, code, name, scope, active)
+            VALUES (?, 'business_owner', 'Business owner', 'TENANT', true)
+            ON CONFLICT (code) DO UPDATE SET active = true
+            """)) {
+      statement.setObject(1, BUSINESS_OWNER_ROLE_ID);
+      statement.executeUpdate();
+    }
+
+    try (var statement =
+        connection.prepareStatement(
+            """
+            INSERT INTO emme_core.membership (tenant_id, role_id, user_reference, status)
+            VALUES (?, ?, ?, 'ACTIVE')
+            ON CONFLICT DO NOTHING
+            """)) {
+      statement.setObject(1, tenantId);
+      statement.setObject(2, BUSINESS_OWNER_ROLE_ID);
+      statement.setString(3, userReference);
+      statement.executeUpdate();
+    }
+
+    try (var statement =
+        connection.prepareStatement(
+            """
+            UPDATE emme_core.tenant_registry
+            SET status = 'ACTIVE',
+                schema_version = '0.1.0',
+                last_migrated_at = now(),
+                migration_error = NULL,
+                updated_at = now()
+            WHERE tenant_id = ?
+            """)) {
+      statement.setObject(1, tenantId);
+      statement.executeUpdate();
+    }
+  }
+
+  private static <T> T inTransaction(
+      Connection connection, ThrowingSqlConnectionFunction<T, SQLException> operation)
+      throws SQLException {
+    var originalAutoCommit = connectionAutoCommit(connection);
+    try {
+      connection.setAutoCommit(false);
+      var result = operation.apply(connection);
+      connection.commit();
+      return result;
+    } catch (SQLException exception) {
+      rollback(connection, exception);
+      throw exception;
+    } finally {
+      connection.setAutoCommit(originalAutoCommit);
+    }
+  }
+
+  private static boolean connectionAutoCommit(Connection connection) throws SQLException {
+    return connection.getAutoCommit();
+  }
+
+  private static void rollback(Connection connection, SQLException original) {
+    try {
+      connection.rollback();
+    } catch (SQLException rollbackFailure) {
+      original.addSuppressed(rollbackFailure);
+    }
+  }
+}

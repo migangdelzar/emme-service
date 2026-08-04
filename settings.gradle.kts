@@ -51,3 +51,6 @@ include(":libraries:test-containers")
 // ── Database ──
 include(":database")
 include(":libraries:observability-support")
+
+// ── Operational tools ──
+include(":tools:e2e-provisioner")

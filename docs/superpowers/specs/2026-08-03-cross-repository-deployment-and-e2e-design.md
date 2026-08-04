@@ -93,16 +93,19 @@ deployment/
 │       └── k3s-production-native/
 │
 └── scripts/
-    ├── bootstrap-k3d-cluster.sh
-    ├── provision-e2e-keycloak-realm.sh
-    └── seed-e2e-tenant.sh
+    └── bootstrap-k3d-cluster.sh
+
+tools/
+└── e2e-provisioner/
+    ├── keycloak/
+    └── tenant/
 ```
 
 `compose.yaml` is the shared base. Runtime overlays select JVM or Native images. Environment overlays select local, CI, or E2E behavior. Observability remains orthogonal and can be added independently.
 
 `k3d-*` identifies local clusters. `k3s-staging-*` and `k3s-production-*` identify cluster target and runtime variant explicitly. `prod` and `dev` are avoided because they do not describe whether the target is a local K3d cluster, staging K3s cluster, or production K3s cluster.
 
-The scripts directory is deliberately small. It contains only dynamic orchestration that cannot be expressed cleanly through Gradle, Compose, or Kubernetes manifests. Image builds are Gradle/build-logic tasks, and Kubernetes deployment is performed with Kustomize plus GitHub Actions or GitOps. A generic `build-image.sh` or `deploy-k3d.sh` would hide the real tool contract and become a second deployment implementation.
+The scripts directory is deliberately small. It contains only thin local bootstrap adapters that cannot be expressed cleanly through Gradle, Compose, or Kubernetes manifests. Image builds are Gradle/build-logic tasks, Kubernetes deployment is performed with Kustomize plus GitHub Actions or GitOps, and dynamic E2E provisioning is implemented by the typed `tools:e2e-provisioner` Java application. A generic `build-image.sh` or `deploy-k3d.sh` would hide the real tool contract and become a second deployment implementation.
 
 ### Web repository
 

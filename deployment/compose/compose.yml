@@ -4,7 +4,7 @@ services:
   emme-platform:
     # The base remains runnable for existing local commands. Runtime-specific
     # image selection is owned by the explicit JVM/native overlay.
-    image: ghcr.io/migangdelzar/emme-service:${TAG:-latest}
+    image: ${EMME_SERVICE_IMAGE:-ghcr.io/migangdelzar/emme-service:${TAG:-latest}}
     ports:
       - "8081:8081"
     environment:

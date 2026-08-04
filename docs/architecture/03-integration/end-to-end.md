@@ -54,6 +54,23 @@ sequenceDiagram
     Test->>Stack: clean owned state/resources
 ```
 
+The canonical disposable data contract is maintained in the
+[E2E fixture contract template](../../templates/e2e-fixture-contract-template.md).
+The service repository owns the typed `:tools:e2e-provisioner` that creates
+infrastructure identity and tenant state; the web repository owns Playwright
+scenario factories and browser evidence. Neither repository may silently seed
+the other's private implementation tables.
+
+## Fixture coverage
+
+Every real-stack run must declare which rows from the fixture contract are
+applicable to the selected service ref. Missing modules are marked
+`not-applicable` with a contract test or ADR rather than receiving fake rows.
+The required baseline includes tenant identity, role/membership, studio
+profile, customer, service, artist, appointment, and explicit integration
+states for calendar, notification, payment, assistant, documents, and
+subscriptions when those capabilities are enabled.
+
 ## Isolation and evidence
 
 - Use unique synthetic users, tenants, and records.

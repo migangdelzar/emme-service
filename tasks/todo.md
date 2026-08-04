@@ -14,6 +14,17 @@
 - [x] Web i18n follows the Clara reference pattern and its quality gate passes.
 - [x] Changes are committed and pushed in logical commits.
 
+## Ephemeral full-stack E2E runtime — 2026-08-04
+
+- [x] Add a Compose overlay for disposable Keycloak and database migrations.
+- [x] Add typed Keycloak realm provisioning and tenant-owner database seeding
+      tooling through `:tools:e2e-provisioner`.
+- [x] Validate the overlay and provisioning-tool contract from the web-owned
+      full-stack workflow.
+- [ ] Keep runtime defaults branch-pinned until both feature branches merge.
+- [x] Add the reusable E2E fixture contract template covering identity,
+      tenant, business, integration, observability, cleanup, and evidence data.
+
 ## Working notes
 
 - The Modulith handbook is the source of truth for module and build-logic structure.

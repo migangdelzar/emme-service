@@ -1,0 +1,53 @@
+# Disposable full-stack E2E overlay.
+# The application runs as the exact service image built from the selected
+# service ref. The web repository owns the browser process.
+services:
+  emme-platform:
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emme
+      SPRING_DATASOURCE_USERNAME: emme
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-emme}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/emme
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/emme/protocol/openid-connect/certs
+      APP_KEYCLOAK_BASE_URL: http://keycloak:8080
+      APP_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/emme
+      APP_KEYCLOAK_ADMIN_PASSWORD: ${EMME_E2E_KEYCLOAK_ADMIN_PASSWORD:-e2e-admin-password}
+      APP_KEYCLOAK_PROVISIONING_ENABLED: "false"
+      APP_TENANT_PROVISIONING_ENABLED: "false"
+      OTEL_SDK_DISABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${EMME_E2E_KEYCLOAK_ADMIN_PASSWORD:-e2e-admin-password}
+    ports:
+      - "18080:8080"
+    networks:
+      - emme-net
+
+  database-migrations:
+    build:
+      context: ../..
+      dockerfile: database/Dockerfile
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: emme
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-emme}
+      DATABASE_NAME: emme
+      LIQUIBASE_CONTEXTS: ${LIQUIBASE_CONTEXTS:-dev}
+      TENANT_SEED_SLUGS: ${TENANT_SEED_SLUGS:-e2e-studio}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - emme-net

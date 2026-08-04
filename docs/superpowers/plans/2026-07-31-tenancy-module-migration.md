@@ -55,7 +55,7 @@ implementation.
 | Database registry, routing, and pool ownership | Structurally complete | `DatabaseRegistryAdapter`, `TenantDatabasePoolProvider`, and `TenantRoutingDataSource` are canonical outbound adapters |
 | Typed configuration and secret boundary | Complete for database connection settings | `TenantDatabaseConnectionProperties` owns the existing `spring.datasource` credential and driver keys; pooling/rate-limit properties remain typed |
 | Provisioning outbound ports | Complete for registry and schema migration | `TenantProvisioningRepository` and `TenantSchemaMigrationPort` isolate registry lifecycle and Liquibase/schema work from the process manager |
-| Isolation and operational evidence | Open | Structural tests pass; add live routing/pool lifecycle/eviction/failure-recovery, replay/idempotency, rollback, and audit-correlation evidence |
+| Isolation and operational evidence | Partially complete | Deterministic pool lifecycle, default-pool recovery, idle eviction, and provisioning replay/idempotency are covered; live outage/recovery, rollback, and audit-correlation evidence remain environment-dependent |
 
 ## Completed managed bootstrap JDBC boundary — 2026-08-03
 
@@ -138,8 +138,9 @@ secret redaction, and service-wide verification.
 - [x] Keep connection credentials and pool settings in typed configuration;
   replace the remaining field-level `@Value` credentials.
 - [x] Add deterministic integration/unit coverage for routing, pool lifecycle,
-  default-pool recovery, and failure behavior; live eviction/recovery remains
-  open and no test disables tenant filtering.
+  default-pool recovery, idle eviction, provisioning replay/idempotency, and
+  failure behavior; deployment-level eviction/recovery remains open and no
+  test disables tenant filtering.
 
 ### Task 6: API metadata and verification
 
@@ -148,17 +149,46 @@ secret redaction, and service-wide verification.
 - [x] Run Tenancy unit/integration checks and Studio Modulith verification.
 - [x] Run Tenancy Checkstyle/Spotless; the service-wide CI gate remains part of
   the final evidence pass.
-- [ ] Verify live migration rollback, provisioning replay/idempotency, audit
-  correlation, secret redaction, and deployment-level cross-tenant isolation.
+- [x] Verify the provisioning SQL contract is replay-safe for the same slug and
+  schema; conflicting slug/schema combinations remain fail-closed.
+- [x] Verify idle tenant-pool eviction closes the evicted Hikari resource using
+  a deterministic clock.
+- [ ] Verify live migration rollback, audit correlation, secret redaction, and
+  deployment-level cross-tenant isolation.
 - [x] Update all consumers atomically.
 - [x] Record the committed Tenancy verification report.
 
 ## Definition of done
 
-- [ ] Tenant isolation and database routing remain protected by executable tests.
+- [x] Tenant isolation and database routing remain protected by executable tests;
+  deployment-level recovery evidence remains open.
 - [x] Domain/application code has no direct JPA/pool/web implementation
   dependency; provisioning database work is isolated behind application ports.
 - [x] Public APIs/events are grouped and named according to the current template.
+
+## Completed deterministic provisioning and eviction evidence slice — 2026-08-04
+
+- [x] Made repeated provisioning requests idempotent for an existing slug whose
+  schema is unchanged, while keeping conflicting slug/schema combinations
+  fail-closed.
+- [x] Added a SQL contract test for the PostgreSQL `ON CONFLICT` behavior and
+  the returned registry identifier.
+- [x] Added an injectable Caffeine ticker to make tenant-pool idle eviction
+  deterministic without sleeping in tests.
+- [x] Verified that idle eviction closes the removed Hikari pool before a new
+  pool is created for the next lookup.
+
+### Verification
+
+```text
+./gradlew :modules:tenancy:spotlessApply :modules:tenancy:test \
+  --tests com.emme.tenancy.adapter.out.persistence.adapter.TenantProvisioningPersistenceAdapterTest \
+  --tests com.emme.tenancy.adapter.out.client.database.TenantDatabasePoolProviderTest \
+  --no-daemon --no-configuration-cache --console=plain
+```
+
+The focused Tenancy tests and formatting passed. Live database outage/recovery,
+rollback, and audit-correlation evidence remain deployment-level gates.
 
 ## Completed incremental slice — 2026-07-31
 

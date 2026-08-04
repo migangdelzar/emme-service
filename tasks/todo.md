@@ -455,8 +455,9 @@ reopened by this backlog.
   cycles.
 - [x] Disable database-backed scheduling in ephemeral platform/shared test
   profiles; provisioning scheduling remains enabled in the production profile.
-- [ ] Close live pool eviction/recovery, provisioning replay/rollback, and
-  clean test-context lifecycle evidence.
+- [x] Close deterministic tenant-pool idle eviction and provisioning replay
+  evidence; live outage/recovery, rollback, and deployment-level lifecycle
+  evidence remain environment-dependent.
 - [x] Validate staff-login credentials at the Identity HTTP boundary.
 - [x] Adopt and verify Spring MVC endpoint version conditions for controllers,
   using one configured resolver and version-neutral `/api` routes.

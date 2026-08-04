@@ -19,7 +19,10 @@ public final class TenantProvisioningPersistenceAdapter implements TenantProvisi
   @Override
   public UUID requestProvisioning(String slug, String schemaName) {
     return jdbc.queryForObject(
-        "INSERT INTO emme_core.tenant_registry (slug, schema_name, status) VALUES (?, ?, 'PROVISIONING') RETURNING tenant_id",
+        "INSERT INTO emme_core.tenant_registry (slug, schema_name, status) VALUES (?, ?, 'PROVISIONING') "
+            + "ON CONFLICT (slug) DO UPDATE SET updated_at = now() "
+            + "WHERE emme_core.tenant_registry.schema_name = EXCLUDED.schema_name "
+            + "RETURNING tenant_id",
         UUID.class,
         slug,
         schemaName);

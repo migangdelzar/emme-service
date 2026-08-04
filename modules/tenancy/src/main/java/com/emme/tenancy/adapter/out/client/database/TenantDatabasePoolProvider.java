@@ -8,6 +8,7 @@ import com.emme.tenancy.configuration.TenantPoolingProperties;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
+import com.github.benmanes.caffeine.cache.Ticker;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.annotation.PreDestroy;
@@ -44,12 +45,21 @@ public class TenantDatabasePoolProvider {
       TenantPoolingProperties config,
       TenantDatabaseConnectionProperties connectionProperties,
       DatabaseRegistryPort databaseRegistryPort) {
+    this(config, connectionProperties, databaseRegistryPort, Ticker.systemTicker());
+  }
+
+  TenantDatabasePoolProvider(
+      TenantPoolingProperties config,
+      TenantDatabaseConnectionProperties connectionProperties,
+      DatabaseRegistryPort databaseRegistryPort,
+      Ticker ticker) {
     this.config = config;
     this.connectionProperties = connectionProperties;
     this.databaseRegistryPort = databaseRegistryPort;
 
     this.poolCache =
         Caffeine.newBuilder()
+            .ticker(ticker)
             .expireAfterAccess(config.getIdleTimeoutMinutes(), TimeUnit.MINUTES)
             .maximumSize(config.getMaxPoolCacheSize())
             .removalListener(

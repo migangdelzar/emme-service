@@ -5,8 +5,8 @@ import com.emme.assistant.api.command.AddConversationEventCommand;
 import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
 import com.emme.assistant.api.command.StartConversationCommand;
 import com.emme.assistant.api.query.ListConversationsQuery;
-import com.emme.assistant.api.result.ConversationInfo;
-import com.emme.assistant.api.type.ConversationStatusView;
+import com.emme.assistant.api.result.ConversationDetails;
+import com.emme.assistant.api.type.ConversationStatus;
 import com.emme.assistant.api.usecase.AddConversationEventUseCase;
 import com.emme.assistant.api.usecase.ListConversationsUseCase;
 import com.emme.assistant.api.usecase.ProcessWhatsAppMessageUseCase;
@@ -63,7 +63,7 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
     }
 
     ChannelParticipant participant = findOrCreateParticipant(command);
-    ConversationInfo conversation = findOrCreateConversation(command, participant);
+    ConversationDetails conversation = findOrCreateConversation(command, participant);
     addConversationEvent.add(
         new AddConversationEventCommand(
             command.tenantId(), conversation.id(), "MESSAGE_RECEIVED", command.text()));
@@ -91,13 +91,13 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
                         ConsentStatus.UNKNOWN)));
   }
 
-  private ConversationInfo findOrCreateConversation(
+  private ConversationDetails findOrCreateConversation(
       ProcessWhatsAppMessageCommand command, ChannelParticipant participant) {
-    List<ConversationInfo> conversations =
+    List<ConversationDetails> conversations =
         listConversations.list(new ListConversationsQuery(command.tenantId()));
     return conversations.stream()
         .filter(conversation -> conversation.participantId().equals(participant.id()))
-        .filter(conversation -> conversation.status() == ConversationStatusView.ACTIVE)
+        .filter(conversation -> conversation.status() == ConversationStatus.ACTIVE)
         .findFirst()
         .orElseGet(
             () ->

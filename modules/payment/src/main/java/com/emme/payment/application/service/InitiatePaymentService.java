@@ -1,7 +1,7 @@
 package com.emme.payment.application.service;
 
 import com.emme.payment.api.command.InitiatePaymentCommand;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import com.emme.payment.api.usecase.InitiatePaymentUseCase;
 import com.emme.payment.application.mapper.PaymentApplicationMapper;
 import com.emme.payment.application.port.out.PaymentProvider;
@@ -23,14 +23,14 @@ public class InitiatePaymentService implements InitiatePaymentUseCase {
   }
 
   @Override
-  public PaymentInfo initiate(InitiatePaymentCommand command) {
+  public PaymentDetails initiate(InitiatePaymentCommand command) {
     return repository
         .findByTenantIdAndProviderReference(command.tenantId(), command.providerReference())
-        .map(PaymentApplicationMapper::toInfo)
+        .map(PaymentApplicationMapper::toResult)
         .orElseGet(() -> create(command));
   }
 
-  private PaymentInfo create(InitiatePaymentCommand command) {
+  private PaymentDetails create(InitiatePaymentCommand command) {
     PaymentProvider.PaymentResult result =
         provider.initiate(
             command.tenantId() + "/" + java.util.UUID.randomUUID(),
@@ -46,6 +46,6 @@ public class InitiatePaymentService implements InitiatePaymentUseCase {
             result.providerTransactionId(),
             command.amount(),
             command.currency());
-    return PaymentApplicationMapper.toInfo(repository.save(payment));
+    return PaymentApplicationMapper.toResult(repository.save(payment));
   }
 }

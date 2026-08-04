@@ -3,9 +3,9 @@ package com.emme.calendar.adapter.out.google.adapter;
 import com.emme.calendar.adapter.out.google.client.GoogleSheetsClient;
 import com.emme.calendar.adapter.out.persistence.entity.GoogleSpreadsheetLinkEntity;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleSpreadsheetLinkRepository;
-import com.emme.calendar.api.result.GoogleSpreadsheetInfo;
+import com.emme.calendar.api.result.GoogleSpreadsheetDetails;
 import com.emme.calendar.application.port.out.GoogleSheetsExportPort;
-import com.emme.studio.api.result.AppointmentInfo;
+import com.emme.studio.api.result.AppointmentSummary;
 import com.emme.studio.api.result.CustomerSummary;
 import com.emme.studio.api.usecase.ListAppointmentsUseCase;
 import com.emme.studio.api.usecase.ListCustomersUseCase;
@@ -46,7 +46,7 @@ public class GoogleSheetsAdapter implements GoogleSheetsExportPort {
   }
 
   /** Export data to a new spreadsheet. */
-  public GoogleSpreadsheetInfo export(UUID tenantId, String exportType) throws Exception {
+  public GoogleSpreadsheetDetails export(UUID tenantId, String exportType) throws Exception {
     String title =
         "Emme Nails - "
             + switch (exportType) {
@@ -72,11 +72,11 @@ public class GoogleSheetsAdapter implements GoogleSheetsExportPort {
     link.setLastExportedAt(Instant.now());
     var saved = sheetRepo.save(link);
     log.info("Exported spreadsheet: {} (type={}, tenant={})", info.id(), exportType, tenantId);
-    return toInfo(saved);
+    return toResult(saved);
   }
 
   /** Re-export to an existing spreadsheet. */
-  public GoogleSpreadsheetInfo reExport(UUID tenantId, String spreadsheetId) throws Exception {
+  public GoogleSpreadsheetDetails reExport(UUID tenantId, String spreadsheetId) throws Exception {
     var link =
         sheetRepo
             .findByTenantIdAndSpreadsheetId(tenantId, spreadsheetId)
@@ -97,11 +97,11 @@ public class GoogleSheetsAdapter implements GoogleSheetsExportPort {
     link.setLastExportedAt(Instant.now());
     var saved = sheetRepo.save(link);
     log.info("Re-exported spreadsheet: {} (tenant={})", spreadsheetId, tenantId);
-    return toInfo(saved);
+    return toResult(saved);
   }
 
-  private GoogleSpreadsheetInfo toInfo(GoogleSpreadsheetLinkEntity entity) {
-    return new GoogleSpreadsheetInfo(
+  private GoogleSpreadsheetDetails toResult(GoogleSpreadsheetLinkEntity entity) {
+    return new GoogleSpreadsheetDetails(
         entity.getId(),
         entity.getTenantId(),
         entity.getSpreadsheetId(),
@@ -113,12 +113,12 @@ public class GoogleSheetsAdapter implements GoogleSheetsExportPort {
   }
 
   private Object[][] buildAppointmentRows(UUID tenantId) {
-    List<AppointmentInfo> appointments = listAppointments.listAppointments(tenantId);
+    List<AppointmentSummary> appointments = listAppointments.listAppointments(tenantId);
     Object[][] rows = new Object[appointments.size() + 1][];
     rows[0] = new Object[] {"Date", "Time", "Client", "Service", "Artist", "Status"};
 
     for (int i = 0; i < appointments.size(); i++) {
-      AppointmentInfo a = appointments.get(i);
+      AppointmentSummary a = appointments.get(i);
       var startsAt = a.startsAt();
       rows[i + 1] =
           new Object[] {

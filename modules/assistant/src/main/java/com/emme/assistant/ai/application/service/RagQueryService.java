@@ -4,7 +4,7 @@ import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
 import com.emme.assistant.ai.application.port.out.ModelProvider;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.studio.documents.api.query.SearchDocumentChunksQuery;
-import com.emme.studio.documents.api.result.DocumentChunkInfo;
+import com.emme.studio.documents.api.result.DocumentChunkDetails;
 import com.emme.studio.documents.api.usecase.SearchDocumentChunksUseCase;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -38,7 +38,7 @@ public class RagQueryService implements RagQueryUseCase {
         searchDocuments.search(new SearchDocumentChunksQuery(tenantId, queryVector, question, 5));
     String context =
         chunks.stream()
-            .map(DocumentChunkInfo::content)
+            .map(DocumentChunkDetails::content)
             .filter(content -> content != null && !content.isBlank())
             .collect(Collectors.joining("\n\n"));
     if (context.isBlank()) {

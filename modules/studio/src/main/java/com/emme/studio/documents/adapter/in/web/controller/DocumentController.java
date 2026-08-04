@@ -12,7 +12,7 @@ import com.emme.studio.documents.api.command.UploadDocumentCommand;
 import com.emme.studio.documents.api.query.GetDocumentChunksQuery;
 import com.emme.studio.documents.api.query.GetDocumentQuery;
 import com.emme.studio.documents.api.query.ListDocumentsQuery;
-import com.emme.studio.documents.api.result.DocumentInfo;
+import com.emme.studio.documents.api.result.DocumentDetails;
 import com.emme.studio.documents.api.usecase.GetDocumentChunksUseCase;
 import com.emme.studio.documents.api.usecase.GetDocumentUseCase;
 import com.emme.studio.documents.api.usecase.ListDocumentsUseCase;
@@ -69,7 +69,7 @@ public class DocumentController {
       @Valid @RequestBody UploadDocumentRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          DocumentInfo document =
+          DocumentDetails document =
               uploadDocument.upload(
                   new UploadDocumentCommand(tenantId, request.name(), request.sourceType()));
           URI location = URI.create("/api/documents/" + document.id());
@@ -93,7 +93,7 @@ public class DocumentController {
   public ResponseEntity<DocumentResponse> get(@PathVariable UUID id) {
     return withCurrentTenant(
         tenantId -> {
-          DocumentInfo document = getDocument.get(new GetDocumentQuery(tenantId, id));
+          DocumentDetails document = getDocument.get(new GetDocumentQuery(tenantId, id));
           return ResponseEntity.ok(mapper.toResponse(document));
         });
   }
@@ -103,7 +103,8 @@ public class DocumentController {
   public ResponseEntity<DocumentResponse> process(@PathVariable UUID id) {
     return withCurrentTenant(
         tenantId -> {
-          DocumentInfo document = processDocument.process(new ProcessDocumentCommand(tenantId, id));
+          DocumentDetails document =
+              processDocument.process(new ProcessDocumentCommand(tenantId, id));
           return ResponseEntity.ok(mapper.toResponse(document));
         });
   }
@@ -113,7 +114,7 @@ public class DocumentController {
   public ResponseEntity<DocumentResponse> retire(@PathVariable UUID id) {
     return withCurrentTenant(
         tenantId -> {
-          DocumentInfo document = retireDocument.retire(new RetireDocumentCommand(tenantId, id));
+          DocumentDetails document = retireDocument.retire(new RetireDocumentCommand(tenantId, id));
           return ResponseEntity.ok(mapper.toResponse(document));
         });
   }

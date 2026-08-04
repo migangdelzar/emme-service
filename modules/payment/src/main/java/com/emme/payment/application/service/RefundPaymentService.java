@@ -1,7 +1,7 @@
 package com.emme.payment.application.service;
 
 import com.emme.payment.api.command.RefundPaymentCommand;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import com.emme.payment.api.usecase.RefundPaymentUseCase;
 import com.emme.payment.application.mapper.PaymentApplicationMapper;
 import com.emme.payment.application.port.out.PaymentProvider;
@@ -22,12 +22,12 @@ public class RefundPaymentService implements RefundPaymentUseCase {
   }
 
   @Override
-  public PaymentInfo refund(RefundPaymentCommand command) {
+  public PaymentDetails refund(RefundPaymentCommand command) {
     Payment payment =
         PaymentServiceSupport.load(repository, command.tenantId(), command.paymentId());
     PaymentProvider.PaymentResult result =
         provider.refund(payment.providerReference(), payment.amount(), "Refund requested");
     payment.applyProviderStatus(PaymentServiceSupport.status(result.status()));
-    return PaymentApplicationMapper.toInfo(repository.save(payment));
+    return PaymentApplicationMapper.toResult(repository.save(payment));
   }
 }

@@ -1,8 +1,8 @@
 package com.emme.payment.api.usecase;
 
 import com.emme.payment.api.command.RefundPaymentCommand;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 
 public interface RefundPaymentUseCase {
-  PaymentInfo refund(RefundPaymentCommand command);
+  PaymentDetails refund(RefundPaymentCommand command);
 }

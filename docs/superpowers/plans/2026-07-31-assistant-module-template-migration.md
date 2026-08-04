@@ -17,7 +17,7 @@
 - JPA entities live only under `adapter/out/persistence/entity`; application and API code must never expose them.
 - Every materialized production package receives a `package-info.java`; no empty architectural package is created merely to reproduce the maximum template tree.
 - The module root keeps `@ApplicationModule`; grouped API child packages join the logical `api` named interface, and `api.event` is omitted because Assistant currently has no public published event contract.
-- `api.result` uses the existing service convention of descriptive read-model suffixes (`ConversationInfo`, `ConversationEventInfo`, `PendingActionInfo`, `ChatInfo`, `IntentInfo`, `RagAnswerInfo`); HTTP transport records use `*Response`.
+- `api.result` uses the existing service convention of descriptive read-model suffixes (`ConversationDetails`, `ConversationEventDetails`, `PendingActionDetails`, `ChatInfo`, `IntentResult`, `RagAnswerInfo`); HTTP transport records use `*Response`.
 - Every public use-case contract ends with `UseCase`; every application implementation is named `<Verb><Subject>Service`; every persistence implementation is named `<Aggregate>PersistenceAdapter`; every Spring Data repository is named `SpringData<Aggregate>Repository`.
 - External AI and WhatsApp integrations are accessed through application-owned outbound ports. Provider/client classes never become application dependencies.
 - `api.exception` contains only caller-visible expected failures. Domain rule failures remain under `domain.exception`; infrastructure exceptions never cross the module boundary.
@@ -151,11 +151,11 @@ Queries do not mutate Assistant state. AI inference is query-shaped even though 
 
 | File | Required fields |
 |---|---|
-| `api/result/ConversationInfo.java` | existing conversation response fields, including `createdAt` |
-| `api/result/ConversationEventInfo.java` | existing event response fields |
-| `api/result/PendingActionInfo.java` | existing pending-action response fields |
+| `api/result/ConversationDetails.java` | existing conversation response fields, including `createdAt` |
+| `api/result/ConversationEventDetails.java` | existing event response fields |
+| `api/result/PendingActionDetails.java` | existing pending-action response fields |
 | `api/result/ChatInfo.java` | `response` |
-| `api/result/IntentInfo.java` | `intent`, `confidence`, `parameters` |
+| `api/result/IntentResult.java` | `intent`, `confidence`, `parameters` |
 | `api/result/RagAnswerInfo.java` | `answer` |
 
 Results are immutable records and never expose JPA entities, provider response maps, or mutable aggregates.
@@ -408,7 +408,7 @@ git commit -m "refactor(assistant): isolate persistence behind application ports
 - Every class is a top-level type in a filename matching its class name.
 - Commands and queries are immutable records.
 - Result records contain only stable contract values and do not import domain models or entities.
-- `IntentInfo` replaces the nested `ModelProvider.IntentResult` as the public AI result; the provider port receives its own provider-neutral internal result type.
+- `IntentResult` replaces the nested `ModelProvider.IntentResult` as the public AI result; the provider port receives its own provider-neutral internal result type.
 
 - [ ] **Step 1: Add compile-level contract tests**
 

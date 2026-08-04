@@ -1,12 +1,12 @@
 package com.emme.assistant.adapter.in.web.response;
 
-import com.emme.assistant.api.result.ConversationInfo;
+import com.emme.assistant.api.result.ConversationDetails;
 import java.time.Instant;
 import java.util.UUID;
 
 public record ConversationResponse(
     UUID id, UUID tenantId, UUID participantId, String channel, String status, Instant startedAt) {
-  public static ConversationResponse from(ConversationInfo info) {
+  public static ConversationResponse from(ConversationDetails info) {
     return new ConversationResponse(
         info.id(),
         info.tenantId(),

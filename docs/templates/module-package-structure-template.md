@@ -1,6 +1,6 @@
-# Spring Modulith Module Template (API Grouped by Kind)
+# Spring Modulith Module Template (API Grouped by Contract Type)
 
-> Copy this document into a module's design notes, replace every `<placeholder>` with the module's real names, materialize only the branches the module actually needs, and treat the remaining rules as that module's internal package and production-readiness contract. This template complements [modulith-application-template.md](modulith-application-template.md) by detailing one concrete, code-level layout for DDD + Hexagonal modules whose `api` package is grouped by kind (`command`, `query`, `result`, `usecase`, `event`, `exception`, and `type`).
+> Copy this document into a module's design notes, replace every `<placeholder>` with the module's real names, materialize only the branches the module actually needs, and treat the remaining rules as that module's internal package and production-readiness contract. This template complements [modulith-application-template.md](modulith-application-template.md) by detailing one concrete, code-level layout for DDD + Hexagonal modules whose `api` package is grouped by contract type (`command`, `query`, `result`, `usecase`, `event`, `exception`, and `type`).
 
 > **Template status:** Approved baseline. Adopt the mandatory rules for every production module. Mark any deliberate deviation in the module metadata and record the decision in an ADR.
 
@@ -37,7 +37,7 @@
 
 ## 2. Purpose
 
-This template defines a Spring Modulith module built with DDD + Hexagonal Architecture, where the module's public `api` package is standardized by **kind** rather than by feature: every command, query, result, use case, event, exception, and type gets its own dedicated subpackage. The goal is that a developer can answer "what is this class for?" from its package alone, without reading the class body. Input validation follows the [backend validation conventions](../architecture/01-backend/validation.md): Jakarta Bean Validation on inbound records, custom constraints for cross-field transport rules, and explicit domain/application validation for business truth.
+This template defines a Spring Modulith module built with DDD + Hexagonal Architecture, where the module's public `api` package is standardized by **contract type** rather than by feature: every command, query, result, use case, event, exception, and type gets its own dedicated subpackage. The goal is that a developer can answer "what is this class for?" from its package alone, without reading the class body. Input validation follows the [backend validation conventions](../architecture/01-backend/validation.md): Jakarta Bean Validation on inbound records, custom constraints for cross-field transport rules, and explicit domain/application validation for business truth.
 
 The template covers two contracts at once:
 
@@ -50,7 +50,7 @@ Use this layout when a module's `api` package has grown past a handful of flat f
 
 ## 3. Package structure principles
 
-1. `api` is the deliberate public contract other modules may import. Its subpackages classify contracts by kind, not by use case. Every materialized API kind joins the logical `api` named interface; whenever `api.event` exists, it also joins the narrower `events` interface.
+1. `api` is the deliberate public contract other modules may import. Its subpackages classify contracts by contract type, not by use case. Every materialized API contract type joins the logical `api` named interface; whenever `api.event` exists, it also joins the narrower `events` interface.
 2. `domain` contains business rules only and must not depend on Spring, JPA, Kafka, HTTP clients, JSON, or controllers.
 3. `application` orchestrates: it loads aggregates, invokes domain behavior, calls outbound ports, and publishes events. It does not encode business invariants.
 4. `adapter.in` translates external input (web, messaging, scheduler) into calls against `api.usecase`. `adapter.out` implements the outbound ports declared in `application.port.out`.
@@ -155,7 +155,7 @@ modules/<module>/
     │   │   │   │   └── <Subject><Failure>Exception.java
     │   │   │   └── type/
     │   │   │       ├── package-info.java
-    │   │   │       └── <Concept><Qualifier>.java
+    │   │   │       └── <Concept>.java or <Concept>Type.java
     │   │   │
     │   │   ├── application/                              # C: use-case orchestration
     │   │   │   ├── package-info.java
@@ -351,7 +351,7 @@ modules/<module>/
     └── testFixtures/
         ├── java/<base-namespace-path>/<module>/
         │   ├── domain/model/<Aggregate>Mother.java
-        │   └── api/<kind>/<Type>Fixture.java
+        │   └── api/<contract-type>/<Type>Fixture.java
         └── resources/fixtures/<module>/
 ```
 
@@ -409,7 +409,7 @@ The tree names the standard and common optional branches. If a real responsibili
 
 | Extension | Use only when | Typical files |
 |---|---|---|
-| `application.process` | A long-running process has state, compensation, or awaits multiple facts | `<Process>ProcessManager`, `<Process>State` |
+| `application.process` | A long-running process has a lifecycle, compensation, or awaits multiple facts | `<Process>ProcessManager`, `<Process>Status` |
 | `domain.factory` | Valid aggregate construction spans several objects or policies and cannot live cleanly on the aggregate | `<Aggregate>Factory` |
 | `adapter.in.grpc` | The module owns a gRPC endpoint | `<Resource>GrpcService`, request mapper |
 | `adapter.in.graphql` | The module owns GraphQL resolvers | `<Resource>QueryResolver`, `<Resource>MutationResolver` |
@@ -460,7 +460,7 @@ flowchart TD
     ADAPTEROUT ~~~ NOTE2["Compile-time arrows point inward; configuration is the composition boundary"]
 ```
 
-Within `api`, commands, queries, results, use cases, events, and public exceptions may depend on `api.type` and approved shared-kernel primitives, never on application, domain implementations, adapters, or framework/persistence types. `application.port.out` may use domain and API types required by its contract. The domain imports no API kind except immutable `api.type` primitives when the project explicitly adopts that pragmatic identity/value-type policy. Because persistence/client mappers live in sibling adapter packages, those internal implementation types can be Java-`public` when compilation requires it without becoming Modulith named-interface APIs.
+Within `api`, commands, queries, results, use cases, events, and public exceptions may depend on `api.type` and approved shared-kernel primitives, never on application, domain implementations, adapters, or framework/persistence types. `application.port.out` may use domain and API types required by its contract. The domain imports no API contract type except immutable `api.type` primitives when the project explicitly adopts that pragmatic identity/value-type policy. Because persistence/client mappers live in sibling adapter packages, those internal implementation types can be Java-`public` when compilation requires it without becoming Modulith named-interface APIs.
 
 ### Package classification decision
 
@@ -500,12 +500,12 @@ Apply annotations only where they have architectural meaning:
 | Package | Annotation | Purpose |
 |---|---|---|
 | `<module>` | `@ApplicationModule` | Declares the module boundary, display name, and allowed dependencies |
-| `api.command`, `api.query`, `api.result`, `api.usecase`, `api.exception` | `@NamedInterface("api")` | Merges every public API kind into one explicit `module :: api` contract |
+| `api.command`, `api.query`, `api.result`, `api.usecase`, `api.exception` | `@NamedInterface("api")` | Merges every public API contract type into one explicit `module :: api` contract |
 | `api.type` | `@NamedInterface("api")`; optionally add `events` at package or individual-type level | Keeps all API vocabulary in `api` while exposing only event-signature types to event-only consumers |
 | `api.event` | `@NamedInterface({"api", "events"})` | Makes events part of the complete API and available as the narrower `module :: events` contract |
 | Internal packages | None | Javadoc defines responsibility; implementation remains encapsulated |
 
-`@NamedInterface` applies to the annotated package, not automatically to every nested API package. Therefore, annotating only `api/package-info.java` does **not** expose `api.command`, `api.query`, and the other children. Annotate each materialized API kind with the same logical interface name. Spring Modulith merges packages with the same named-interface name.
+`@NamedInterface` applies to the annotated package, not automatically to every nested API package. Therefore, annotating only `api/package-info.java` does **not** expose `api.command`, `api.query`, and the other children. Annotate each materialized API contract type with the same logical interface name. Spring Modulith merges packages with the same named-interface name.
 
 An event-only named interface must be closed over its public signatures. If `QuoteSubmitted` contains a `QuoteId` from `api.type`, that type also joins `events`; otherwise a consumer allowed only `quote :: events` could see the event but not its field type. If every public type in `api.type` is event-safe, the package may join both interfaces. If only a subset is needed, keep the package in `api` and annotate just those types for `events`. Public events may refer only to JDK/shared-kernel types and API types deliberately included in the same interface.
 
@@ -526,7 +526,7 @@ Everything under `api` may be used by other modules. It must remain small, stabl
 | `api.usecase` | What operations does the module expose? | "What capabilities does this module offer?" | `SubmitQuoteUseCase`, `GetQuoteUseCase` |
 | `api.event` | What fact does the module announce? | "This already happened." | `QuoteCreated`, `QuoteSubmitted`, `QuoteApproved` |
 | `api.exception` | What expected failure can callers handle? | "The operation could not complete for an expected reason." | `QuoteNotFoundException` |
-| `api.type` | What stable public vocabulary does the API share? | "This concept has a stable public meaning." | `QuoteId`, `QuoteStatusView`, `HealthCondition` |
+| `api.type` | What stable public vocabulary does the API share? | "This concept has a stable public meaning." | `QuoteId`, `QuoteStatus`, `ActionType` |
 
 ### `api.command`
 
@@ -559,7 +559,7 @@ public record GetQuoteQuery(QuoteId quoteId) {
 
 public record SearchQuotesQuery(
         String customerId,
-        QuoteStatusView status,
+        QuoteStatus status,
         int page,
         int size
 ) {
@@ -573,19 +573,22 @@ Public read models returned to consumers. Not JPA entities; must not expose doma
 ```java
 public record QuoteDetails(
         QuoteId id,
-        QuoteStatusView status,
-        MoneyView premium
+        QuoteStatus status,
+        Money premium
 ) {
 }
 ```
 
-The contract this template enforces is the **package** (`api.result`), not a mandatory class-name suffix. `Details`, `Summary`, and `Page` above are illustrative, not a fixed vocabulary — pick whichever suffix fits what the type represents, and stay consistent within one project:
+The contract this template enforces is the **package** (`api.result`) plus a small, canonical result vocabulary:
 
-- `Details` / `Summary` / `Page` — this template's own convention, useful when a module returns different shapes of the same concept (a full view vs. a list-row view vs. a paginated wrapper).
-- `Info` — a common alternative for a single flat read model (`UserInfo`, `TenantInfo`). Equally valid; adopt it project-wide if a codebase already uses it rather than mixing conventions.
-- `View` / `Result` — also seen in the wild for the same purpose.
+- `Details` means the complete public representation of one resource.
+- `Summary` means a compact representation for lists, search results, or selectors.
+- `Page` means a paginated collection together with page metadata.
+- `Result` is reserved for a genuine operation outcome that is not naturally a resource representation, such as `PaymentAuthorizationResult`.
+- `Info` is rejected for new names because it does not communicate the shape or ownership of the contract.
+- `View` is reserved for an explicitly modeled read projection, not as a generic suffix for API records.
 
-Whichever suffix a project picks, apply it consistently across every module — the failure mode to avoid is not "wrong suffix," it's *inconsistent* suffixes within the same codebase.
+This keeps every module predictable and avoids treating `Details`, `Info`, `Dto`, `View`, and `Result` as interchangeable names.
 
 ### `api.usecase`
 
@@ -681,14 +684,14 @@ public record QuoteId(UUID value) {
 }
 ```
 
-**`MoneyView.java`**
+**`Money.java`**
 
 ```java
-public record MoneyView(
+public record Money(
         BigDecimal amount,
         Currency currency
 ) {
-    public MoneyView {
+    public Money {
         Objects.requireNonNull(amount);
         Objects.requireNonNull(currency);
     }
@@ -704,7 +707,7 @@ public enum QuoteSubmissionFailure {
 }
 ```
 
-Good API types: `QuoteId`, `CustomerId`, `MoneyView`, `QuoteStatusView`, `HealthCondition`.
+Good API types: `QuoteId`, `CustomerId`, `Money`, `QuoteStatus`, `ActionType`, `HealthCondition`.
 Avoid exposing: the `Quote` aggregate, `QuoteEntity`, mutable internal objects.
 
 Choose and enforce one API/domain value-type policy:
@@ -817,8 +820,8 @@ public final class QuoteApplicationMapper {
     public static QuoteDetails toDetails(Quote quote) {
         return new QuoteDetails(
                 quote.id(),
-                QuoteStatusView.valueOf(quote.status().name()),
-                new MoneyView(
+                QuoteStatus.valueOf(quote.status().name()),
+                new Money(
                         quote.premium().amount(),
                         quote.premium().currency()
                 )
@@ -1181,8 +1184,8 @@ static final ArchRule domain_must_not_depend_on_spring =
 | Module graph is acyclic and internal packages are private | `ApplicationModules.verify()` |
 | Actual cross-module dependencies match `allowedDependencies` | `ApplicationModules.verify()` |
 | Module root contains metadata only, so the implicit unnamed interface exposes no business type | ArchUnit/source-tree verification |
-| Every API kind is present in the intended `api`/`events` named interface and each interface is closed over signature types | Custom executable assertion against the Spring Modulith application-module model |
-| Domain imports no Spring, JPA, JSON, messaging, HTTP, adapter code, or API kind other than the approved `api.type` policy | ArchUnit |
+| Every API contract type is present in the intended `api`/`events` named interface and each interface is closed over signature types | Custom executable assertion against the Spring Modulith application-module model |
+| Domain imports no Spring, JPA, JSON, messaging, HTTP, adapter code, or API contract type other than the approved `api.type` policy | ArchUnit |
 | Application imports no concrete adapter | ArchUnit |
 | Inbound adapters import use cases, not repositories or persistence entities | ArchUnit |
 | Outbound adapters implement ports and do not contain application services | ArchUnit |
@@ -1467,9 +1470,9 @@ com.clara.insurancequotes
 │   │   │
 │   │   └── type/
 │   │       ├── QuoteId.java
-│   │       ├── QuoteStatusView.java
+│   │       ├── QuoteStatus.java
 │   │       ├── HealthCondition.java
-│   │       ├── MoneyView.java
+│   │       ├── Money.java
 │   │       └── QuoteSubmissionFailure.java
 │   │
 │   ├── application/
@@ -1610,7 +1613,7 @@ A generic `shared/` sibling is **not** part of the canonical module template. Un
 | Concern | Correct home | Admission rule |
 |---|---|---|
 | Stable cross-domain primitive | A deliberately governed shared-kernel library such as `libraries/kernel` | At least three real consumers, identical semantics, no workflow, architecture approval |
-| Business concept with an owner | The owning module's `api.type`, `api.result`, or another appropriate API kind | Other modules consume the owner's named interface |
+| Business concept with an owner | The owning module's `api.type`, `api.result`, or another appropriate API contract type | Other modules consume the owner's named interface |
 | HTTP problem details / global advice | Application composition root or a precisely named web-support library | No module-specific business failures or policies |
 | Generic pagination mechanism | A contract/support library only when bounds and semantics are truly identical | Do not force unrelated modules into one paging contract |
 | Logging, tracing, metrics conventions | A technical observability library | No business decision-making |
@@ -1694,7 +1697,7 @@ Use `allowedDependencies = {}` when the module has no module dependencies. Do no
 /**
  * Public contract namespace of the <Module> module.
  *
- * Child packages group the contract by kind: commands, queries, results, use
+ * Child packages group the contract by type: commands, queries, results, use
  * cases, events, expected exceptions, and stable public types. Other modules
  * must never import <Module> application, domain, adapter, or configuration
  * packages.
@@ -1828,7 +1831,7 @@ package <base-namespace>.<module>.api.exception;
  * results, use cases, and events. They must be immutable and must not expose
  * the complete domain aggregate or persistence representation.
  *
- * Examples: <Aggregate>Id, <Aggregate>StatusView.
+ * Examples: <Aggregate>Id, <Aggregate>Status, <Subject>Type.
  */
 @org.springframework.modulith.NamedInterface("api")
 package <base-namespace>.<module>.api.type;
@@ -1869,7 +1872,7 @@ Names communicate architectural role before a file is opened. Use the module's u
 | `api.usecase` | `<Verb><Subject>UseCase.java` | `SubmitQuoteUseCase`, `GetQuoteUseCase` | Match exactly one capability and its command/query verb |
 | `api.event` | `<Subject><PastParticiple>.java` | `QuoteCreated`, `QuoteSubmitted` | Completed fact in past tense |
 | `api.exception` | `<Subject><Failure>Exception.java` | `QuoteNotFoundException`, `QuoteUnavailableException` | Expected caller-visible failure |
-| `api.type` | `<Concept><Qualifier>.java` | `QuoteId`, `QuoteStatusView` | Stable semantic public vocabulary |
+| `api.type` | `<Concept>.java` or `<Concept>Type.java` | `QuoteId`, `QuoteStatus`, `ActionType` | Stable semantic public vocabulary; use `Status` for lifecycle and `Type` for classification |
 | `application.service` | `<Verb><Subject>Service.java` | `SubmitQuoteService`, `SearchQuotesService` | Implements the matching use case; never `*ServiceImpl` |
 | `application.service` | `<Subject>ApplicationService.java` | `PaymentApplicationService` | Only when the class is one explicitly named use-case implementation; never a multi-use-case façade or compatibility name |
 | `application.port.out` | `<Capability>Port.java` | `PricingPort`, `CustomerVerificationPort` | External capability with no technology in the name |
@@ -1880,7 +1883,7 @@ Names communicate architectural role before a file is opened. Use the module's u
 | `application.mapper` | `<Module>ApplicationMapper.java` | `QuoteApplicationMapper` | API ↔ domain translation |
 | `application.process` | `<BusinessProcess>ProcessManager.java` | `QuoteUnderwritingProcessManager` | Stateful long-running coordination; never a synonym for service |
 | `domain.model` | Business noun | `Quote`, `HealthProfile`, `Premium` | Aggregate/entity/value-object name from ubiquitous language |
-| `domain.model` | `<Aggregate>Status.java` | `QuoteStatus` | Internal domain enum; use `*View` only in public API |
+| `domain.model` | `<Aggregate>Status.java` | `QuoteStatus` | Internal lifecycle enum; use the same semantic `Status` vocabulary in public API when a separate contract type is required |
 | `domain.service` | `<BusinessConcept>Policy.java` | `QuotePricingPolicy` | Stateless business decision |
 | `domain.service` | `<BusinessConcept>Calculator.java` | `PremiumCalculator` | Pure calculation with a meaningful domain name |
 | `domain.event` | `<Subject><PastParticiple>.java` | `PremiumCalculated` | Internal domain fact; distinguish from public event by package |
@@ -1976,13 +1979,14 @@ Choose one project-wide vocabulary and use it consistently:
 
 | Suffix | Use |
 |---|---|
-| `Details` | Full public view of one resource |
-| `Summary` | Compact list/search item |
-| `Page` | Paginated result containing items plus page metadata |
-| `Info` | Accepted alternative for a general flat public read model |
-| `View` | Public projection where the project consistently uses CQRS/read-view terminology |
+| `Details` | Full public representation of one resource |
+| `Summary` | Compact list/search representation |
+| `Page` | Paginated representation containing items plus page metadata |
+| `Result` | Genuine operation outcome that is not naturally a resource shape |
+| `Info` | Rejected for new names because it is ambiguous |
+| `View` | Reserved for an explicitly modeled CQRS/read projection |
 
-Do not mix `Details`, `Info`, `Dto`, `View`, and `Result` as interchangeable suffixes inside one project. `Result` is best reserved for an operation outcome that is not naturally a resource shape; `Dto` does not communicate which boundary owns the type.
+Do not mix `Details`, `Summary`, `Page`, `Info`, `View`, and `Result` as interchangeable suffixes inside one project. `Dto` is not a semantic name and should not be used for a public contract.
 
 #### A.2.6 File-set blueprints
 

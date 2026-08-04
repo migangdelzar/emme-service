@@ -2,7 +2,7 @@ package com.emme.identity.adapter.out.client.keycloak;
 
 import com.emme.identity.api.exception.IdentityAuthenticationException;
 import com.emme.identity.api.exception.IdentityProviderUnavailableException;
-import com.emme.identity.api.result.UserInfoResult;
+import com.emme.identity.api.result.UserClaimsResult;
 import com.emme.identity.api.result.UserTokenResult;
 import com.emme.identity.application.port.out.UserAuthenticationPort;
 import com.emme.identity.configuration.IdentityKeycloakProperties;
@@ -77,7 +77,7 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
   }
 
   @Override
-  public UserInfoResult getUserInfo(String accessToken) {
+  public UserClaimsResult getUserClaims(String accessToken) {
     Request request =
         new Request.Builder()
             .url(userInfoUrlFromToken(accessToken))
@@ -91,7 +91,7 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
       }
       @SuppressWarnings("unchecked")
       Map<String, Object> claims = objectMapper.readValue(response.body().string(), Map.class);
-      return new UserInfoResult(claims);
+      return new UserClaimsResult(claims);
     } catch (IOException exception) {
       throw new IdentityProviderUnavailableException("Failed to get user info", exception);
     }

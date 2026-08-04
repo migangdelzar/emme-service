@@ -36,6 +36,6 @@ public class CompleteAppointmentService implements CompleteAppointmentUseCase {
   public AppointmentDetails complete(UUID id) {
     Appointment appointment = support.find(id);
     appointment.complete();
-    return support.toView(repository.save(appointment));
+    return support.toDetails(repository.save(appointment));
   }
 }

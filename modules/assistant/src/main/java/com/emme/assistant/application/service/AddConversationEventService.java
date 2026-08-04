@@ -1,7 +1,7 @@
 package com.emme.assistant.application.service;
 
 import com.emme.assistant.api.command.AddConversationEventCommand;
-import com.emme.assistant.api.result.ConversationEventInfo;
+import com.emme.assistant.api.result.ConversationEventDetails;
 import com.emme.assistant.api.usecase.AddConversationEventUseCase;
 import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.ConversationEventRepository;
@@ -23,7 +23,7 @@ public class AddConversationEventService implements AddConversationEventUseCase 
   }
 
   @Override
-  public ConversationEventInfo add(AddConversationEventCommand command) {
+  public ConversationEventDetails add(AddConversationEventCommand command) {
     var conversation =
         AssistantServiceSupport.conversation(
             conversations, command.tenantId(), command.conversationId());
@@ -32,7 +32,7 @@ public class AddConversationEventService implements AddConversationEventUseCase 
             .findLatestByTenantIdAndConversationId(command.tenantId(), command.conversationId())
             .map(event -> event.sequenceNumber() + 1)
             .orElse(1);
-    return AssistantApplicationMapper.toInfo(
+    return AssistantApplicationMapper.toResult(
         events.save(
             new ConversationEvent(
                 java.util.UUID.randomUUID(),

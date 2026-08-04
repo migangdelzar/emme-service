@@ -42,7 +42,7 @@ verified.
 
 ### 2. Normalize public contracts
 
-- ✅ Move `api/AppointmentInfo`, `BusinessProfileInfo`, and `CustomerInfo` to
+- ✅ Move `api/AppointmentSummary`, `BusinessProfileSummary`, and `CustomerInfo` to
   `api/result`.
 - ✅ Move `api/SalonApi` to `api/usecase`.
 - ✅ Keep events under `api/event` and move `DashboardEvent` there because it is a

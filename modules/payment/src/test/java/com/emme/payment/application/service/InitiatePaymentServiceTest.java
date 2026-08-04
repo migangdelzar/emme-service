@@ -3,7 +3,7 @@ package com.emme.payment.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.payment.api.command.InitiatePaymentCommand;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentRepository;
 import com.emme.payment.domain.model.Payment;
@@ -25,7 +25,7 @@ class InitiatePaymentServiceTest {
     RecordingProvider provider = new RecordingProvider();
     InitiatePaymentService service = new InitiatePaymentService(repository, provider);
 
-    PaymentInfo result =
+    PaymentDetails result =
         service.initiate(new InitiatePaymentCommand(tenantId, "provider-1", BigDecimal.TEN, "MXN"));
 
     assertThat(result.id()).isEqualTo(existing.id());
@@ -39,7 +39,7 @@ class InitiatePaymentServiceTest {
     RecordingProvider provider = new RecordingProvider();
     InitiatePaymentService service = new InitiatePaymentService(repository, provider);
 
-    PaymentInfo result =
+    PaymentDetails result =
         service.initiate(new InitiatePaymentCommand(tenantId, "request-1", BigDecimal.TEN, "MXN"));
 
     assertThat(result.providerReference()).isEqualTo("transaction-1");

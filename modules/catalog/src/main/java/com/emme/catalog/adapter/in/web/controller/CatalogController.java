@@ -9,8 +9,8 @@ import com.emme.catalog.adapter.in.web.request.MatchCatalogItemsRequest;
 import com.emme.catalog.adapter.in.web.response.CatalogItemImageResponse;
 import com.emme.catalog.adapter.in.web.response.CatalogItemResponse;
 import com.emme.catalog.adapter.in.web.response.CatalogMatchResponse;
-import com.emme.catalog.api.result.CatalogItemImageInfo;
-import com.emme.catalog.api.result.CatalogItemInfo;
+import com.emme.catalog.api.result.CatalogItemDetails;
+import com.emme.catalog.api.result.CatalogItemImageDetails;
 import com.emme.catalog.api.usecase.AddCatalogItemImageUseCase;
 import com.emme.catalog.api.usecase.CreateCatalogItemUseCase;
 import com.emme.catalog.api.usecase.DeleteCatalogItemUseCase;
@@ -61,7 +61,7 @@ public class CatalogController {
       @Valid @RequestBody CreateCatalogItemRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          CatalogItemInfo info =
+          CatalogItemDetails info =
               createCatalogItemUseCase.create(CatalogWebMapper.toCommand(tenantId, request));
           return ResponseEntity.created(URI.create("/api/catalog/items/" + info.id()))
               .body(CatalogWebMapper.toResponse(info));
@@ -94,7 +94,7 @@ public class CatalogController {
       @PathVariable UUID id, @Valid @RequestBody AddCatalogItemImageRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          CatalogItemImageInfo info =
+          CatalogItemImageDetails info =
               addCatalogItemImageUseCase.addImage(
                   CatalogWebMapper.toCommand(tenantId, id, request));
           return ResponseEntity.created(

@@ -5,7 +5,7 @@ import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 import com.emme.identity.adapter.in.web.request.OverrideFeatureFlagRequest;
 import com.emme.identity.api.command.SetTenantFeatureFlagOverrideCommand;
 import com.emme.identity.api.query.GetEffectiveFeatureFlagsQuery;
-import com.emme.identity.api.result.FeatureFlagInfo;
+import com.emme.identity.api.result.FeatureFlagDetails;
 import com.emme.identity.api.usecase.GetEffectiveFeatureFlagsUseCase;
 import com.emme.identity.api.usecase.SetTenantFeatureFlagOverrideUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,7 +53,7 @@ public class TenantFeatureFlagController {
       @PathVariable String code, @RequestBody OverrideFeatureFlagRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          FeatureFlagInfo featureFlag =
+          FeatureFlagDetails featureFlag =
               setTenantFeatureFlagOverride.set(
                   new SetTenantFeatureFlagOverrideCommand(tenantId, code, request.enabled()));
           return ResponseEntity.ok(

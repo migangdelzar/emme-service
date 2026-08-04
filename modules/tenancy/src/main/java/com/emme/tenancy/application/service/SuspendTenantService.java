@@ -1,7 +1,7 @@
 package com.emme.tenancy.application.service;
 
 import com.emme.tenancy.api.command.SuspendTenantCommand;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.SuspendTenantUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
@@ -18,9 +18,9 @@ public class SuspendTenantService implements SuspendTenantUseCase {
   }
 
   @Override
-  public TenantInfo suspend(SuspendTenantCommand command) {
+  public TenantDetails suspend(SuspendTenantCommand command) {
     var tenant = TenantServiceSupport.require(repository, command.tenantId());
     tenant.suspend();
-    return TenantApplicationMapper.toInfo(repository.save(tenant));
+    return TenantApplicationMapper.toResult(repository.save(tenant));
   }
 }

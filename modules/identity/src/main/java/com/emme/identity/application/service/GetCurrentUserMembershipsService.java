@@ -1,7 +1,7 @@
 package com.emme.identity.application.service;
 
 import com.emme.identity.api.query.GetCurrentUserMembershipsQuery;
-import com.emme.identity.api.result.MembershipInfo;
+import com.emme.identity.api.result.MembershipDetails;
 import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.application.mapper.MembershipApplicationMapper;
 import com.emme.identity.application.port.out.MembershipRepository;
@@ -21,9 +21,9 @@ public class GetCurrentUserMembershipsService implements GetCurrentUserMembershi
   }
 
   @Override
-  public List<MembershipInfo> getMemberships(GetCurrentUserMembershipsQuery query) {
+  public List<MembershipDetails> getMemberships(GetCurrentUserMembershipsQuery query) {
     return membershipRepository.findActiveByUserReference(query.userReference()).stream()
-        .map(MembershipApplicationMapper::toInfo)
+        .map(MembershipApplicationMapper::toResult)
         .toList();
   }
 }

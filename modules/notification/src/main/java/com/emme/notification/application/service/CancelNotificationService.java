@@ -1,7 +1,7 @@
 package com.emme.notification.application.service;
 
 import com.emme.notification.api.command.CancelNotificationCommand;
-import com.emme.notification.api.result.NotificationInfo;
+import com.emme.notification.api.result.NotificationDetails;
 import com.emme.notification.api.usecase.CancelNotificationUseCase;
 import com.emme.notification.application.mapper.NotificationApplicationMapper;
 import com.emme.notification.application.port.out.NotificationRepository;
@@ -19,10 +19,10 @@ public class CancelNotificationService implements CancelNotificationUseCase {
   }
 
   @Override
-  public NotificationInfo cancel(CancelNotificationCommand command) {
+  public NotificationDetails cancel(CancelNotificationCommand command) {
     Notification notification =
         NotificationServiceSupport.load(repository, command.tenantId(), command.notificationId());
     notification.markCancelled();
-    return NotificationApplicationMapper.toInfo(repository.save(notification));
+    return NotificationApplicationMapper.toResult(repository.save(notification));
   }
 }

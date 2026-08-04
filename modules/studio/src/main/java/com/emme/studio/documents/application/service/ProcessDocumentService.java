@@ -2,7 +2,7 @@ package com.emme.studio.documents.application.service;
 
 import com.emme.studio.documents.api.command.ProcessDocumentCommand;
 import com.emme.studio.documents.api.exception.DocumentNotFoundException;
-import com.emme.studio.documents.api.result.DocumentInfo;
+import com.emme.studio.documents.api.result.DocumentDetails;
 import com.emme.studio.documents.api.usecase.ProcessDocumentUseCase;
 import com.emme.studio.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.studio.documents.application.port.out.DocumentRepository;
@@ -22,11 +22,11 @@ public class ProcessDocumentService implements ProcessDocumentUseCase {
   }
 
   @Override
-  public DocumentInfo process(ProcessDocumentCommand command) {
+  public DocumentDetails process(ProcessDocumentCommand command) {
     Document document = findDocument(command.tenantId(), command.documentId());
     document.markProcessing();
     document.markReady();
-    return DocumentApplicationMapper.toInfo(documentRepository.save(document));
+    return DocumentApplicationMapper.toResult(documentRepository.save(document));
   }
 
   private Document findDocument(java.util.UUID tenantId, java.util.UUID documentId) {

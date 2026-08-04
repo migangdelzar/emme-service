@@ -143,12 +143,13 @@ Apply the following mapping to every module that has public contracts:
 | `api.usecase` | `<Verb><Subject>UseCase` | `interface` | Public inbound port; one operation with a clear result. |
 | `api.event` | `<Subject><PastParticiple>` | `record` | Fact that already happened; immutable and versionable. |
 | `api.exception` | `<Subject><Failure>Exception` | `class` | Expected failure intentionally handled by callers. |
-| `api.type` | `<Concept><Qualifier>` | `record`/`enum` | Small stable vocabulary; do not expose aggregate internals. |
+| `api.type` | `<Concept>.java` or `<Concept>Status.java`/`<Concept>Type.java` | `record`/`enum` | Small stable vocabulary; use `Status` for lifecycle and `Type` for classification; do not expose aggregate internals. |
 
 ### B1. Contract migration tasks
 
 - [ ] For every module, align commands, queries, results, use cases, events, exceptions, and types into coherent vertical slices.
 - [ ] Rename ambiguous `Info`, `Data`, `Payload`, `Model`, `Dto`, `DTO`, `View`, and `Response` types to their actual contract shape. Keep `Response` only under a transport adapter.
+- [x] Normalize the public contract names covered by this migration: `Status` for lifecycle/current condition, `Type` for classification, `Details`/`Summary`/`Page` for read shapes, and `Result` only for operation outcomes. Remove ambiguous public `Info`/`View` names and the OIDC query's `UserInfo` suffix.
 - [ ] Convert immutable public data carriers to records and validate them at the transport boundary.
 - [ ] Convert public mutable classes that expose persistence or framework state into dedicated records or stable value types.
 - [ ] Ensure event names are past tense and commands remain imperative. Remove duplicate command/event concepts.
@@ -479,7 +480,7 @@ Implementation order:
 
 - [ ] Every in-scope module has a documented ownership decision and target package tree.
 - [ ] Every materialized package has a real responsibility and package metadata.
-- [ ] Every public contract is grouped by kind and exposed only through intentional named interfaces.
+- [ ] Every public contract is grouped by contract type and exposed only through intentional named interfaces.
 - [ ] Every concrete application service implements exactly one matching use case.
 - [ ] Every type follows the normalized file/class/package naming matrix.
 - [ ] Domain code is framework-free and application code depends on ports rather than technical adapters.

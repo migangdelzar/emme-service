@@ -1,7 +1,7 @@
 package com.emme.notification.application.service;
 
 import com.emme.notification.api.command.RequestNotificationCommand;
-import com.emme.notification.api.result.NotificationInfo;
+import com.emme.notification.api.result.NotificationDetails;
 import com.emme.notification.api.usecase.RequestNotificationUseCase;
 import com.emme.notification.application.mapper.NotificationApplicationMapper;
 import com.emme.notification.application.port.out.NotificationRepository;
@@ -19,8 +19,8 @@ public class RequestNotificationService implements RequestNotificationUseCase {
   }
 
   @Override
-  public NotificationInfo request(RequestNotificationCommand command) {
-    return NotificationApplicationMapper.toInfo(
+  public NotificationDetails request(RequestNotificationCommand command) {
+    return NotificationApplicationMapper.toResult(
         repository.save(
             new Notification(
                 command.tenantId(), command.channel(), command.recipient(), command.message())));

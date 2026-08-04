@@ -62,7 +62,7 @@ final class AppointmentApplicationSupport {
     }
   }
 
-  AppointmentDetails toView(Appointment appointment) {
+  AppointmentDetails toDetails(Appointment appointment) {
     String customerName =
         customerRepository
             .findById(appointment.getCustomerId())

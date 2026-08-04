@@ -1,7 +1,7 @@
 package com.emme.notification.application.service;
 
 import com.emme.notification.api.command.DeliverNotificationCommand;
-import com.emme.notification.api.result.NotificationInfo;
+import com.emme.notification.api.result.NotificationDetails;
 import com.emme.notification.api.usecase.DeliverNotificationUseCase;
 import com.emme.notification.application.mapper.NotificationApplicationMapper;
 import com.emme.notification.application.port.out.EmailSender;
@@ -39,11 +39,11 @@ public class DeliverNotificationService implements DeliverNotificationUseCase {
   }
 
   @Override
-  public NotificationInfo deliver(DeliverNotificationCommand command) {
+  public NotificationDetails deliver(DeliverNotificationCommand command) {
     Notification notification =
         NotificationServiceSupport.load(repository, command.tenantId(), command.notificationId());
     if (notification.status() == com.emme.notification.domain.model.NotificationStatus.DELIVERED) {
-      return NotificationApplicationMapper.toInfo(notification);
+      return NotificationApplicationMapper.toResult(notification);
     }
     try {
       String providerId = send(notification);
@@ -53,12 +53,12 @@ public class DeliverNotificationService implements DeliverNotificationUseCase {
       events.publish(new com.emme.notification.api.event.NotificationDelivered(saved.body()));
       log.info(
           "Notification delivered: channel={}, providerId={}", notification.channel(), providerId);
-      return NotificationApplicationMapper.toInfo(saved);
+      return NotificationApplicationMapper.toResult(saved);
     } catch (Exception exception) {
       log.error(
           "Notification delivery failed: notificationId={}", command.notificationId(), exception);
       notification.markFailed();
-      return NotificationApplicationMapper.toInfo(repository.save(notification));
+      return NotificationApplicationMapper.toResult(repository.save(notification));
     }
   }
 

@@ -2,7 +2,7 @@ package com.emme.tenancy.application.service;
 
 import com.emme.tenancy.api.command.CreateTenantCommand;
 import com.emme.tenancy.api.event.TenantCreated;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.CreateTenantUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
@@ -25,7 +25,7 @@ public class CreateTenantService implements CreateTenantUseCase {
   }
 
   @Override
-  public TenantInfo create(CreateTenantCommand command) {
+  public TenantDetails create(CreateTenantCommand command) {
     if (repository.existsBySlug(command.slug())) {
       throw new IllegalArgumentException(
           "Tenant with slug '" + command.slug() + "' already exists");
@@ -38,6 +38,6 @@ public class CreateTenantService implements CreateTenantUseCase {
             saved.slug(),
             saved.name(),
             "admin@" + saved.slug() + ".emme.app"));
-    return TenantApplicationMapper.toInfo(saved);
+    return TenantApplicationMapper.toResult(saved);
   }
 }

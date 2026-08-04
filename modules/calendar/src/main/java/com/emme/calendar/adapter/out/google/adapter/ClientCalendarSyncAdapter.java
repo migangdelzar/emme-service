@@ -1,7 +1,7 @@
 package com.emme.calendar.adapter.out.google.adapter;
 
 import com.emme.calendar.adapter.out.google.model.PersonaType;
-import com.emme.calendar.api.result.CalendarEventLinkInfo;
+import com.emme.calendar.api.result.CalendarEventLinkDetails;
 import com.emme.calendar.api.usecase.CreateCalendarEventLinkUseCase;
 import com.emme.calendar.api.usecase.FindCalendarEventLinkUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
@@ -97,7 +97,8 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
         summary);
 
     // Check for existing link to avoid duplicates
-    Optional<CalendarEventLinkInfo> existing = findCalendarEventLink.find(tenantId, appointmentId);
+    Optional<CalendarEventLinkDetails> existing =
+        findCalendarEventLink.find(tenantId, appointmentId);
     if (existing.isPresent()) {
       log.info(
           "Appointment {} already linked to event {} — reusing",
@@ -174,7 +175,8 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
         appointmentId,
         userId);
 
-    Optional<CalendarEventLinkInfo> existing = findCalendarEventLink.find(tenantId, appointmentId);
+    Optional<CalendarEventLinkDetails> existing =
+        findCalendarEventLink.find(tenantId, appointmentId);
     if (existing.isEmpty()) {
       log.warn(
           "No calendar event link found for appointment {} — nothing to unsync", appointmentId);

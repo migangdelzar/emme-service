@@ -3,7 +3,7 @@ package com.emme.payment.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentRepository;
 import com.emme.payment.application.port.out.PaymentWebhookEventRepository;
@@ -36,8 +36,8 @@ class ProcessPaymentCallbackServiceTest {
             Map.of("topic", "payment", "id", "provider-payment-1"),
             "signature");
 
-    PaymentInfo first = service.process(command);
-    PaymentInfo duplicate = service.process(command);
+    PaymentDetails first = service.process(command);
+    PaymentDetails duplicate = service.process(command);
 
     assertThat(first.id()).isEqualTo(duplicate.id());
     assertThat(events.claims).containsExactly("event-1");

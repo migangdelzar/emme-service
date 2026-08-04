@@ -34,6 +34,6 @@ public class GetAppointmentService implements GetAppointmentUseCase {
 
   @Override
   public Optional<AppointmentDetails> get(UUID id) {
-    return repository.findById(id).map(support::toView);
+    return repository.findById(id).map(support::toDetails);
   }
 }

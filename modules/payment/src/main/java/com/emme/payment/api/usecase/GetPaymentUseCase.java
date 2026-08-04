@@ -1,9 +1,9 @@
 package com.emme.payment.api.usecase;
 
 import com.emme.payment.api.query.GetPaymentQuery;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import java.util.Optional;
 
 public interface GetPaymentUseCase {
-  Optional<PaymentInfo> get(GetPaymentQuery query);
+  Optional<PaymentDetails> get(GetPaymentQuery query);
 }

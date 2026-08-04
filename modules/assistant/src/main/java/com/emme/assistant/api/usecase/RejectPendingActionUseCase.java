@@ -1,8 +1,8 @@
 package com.emme.assistant.api.usecase;
 
 import com.emme.assistant.api.command.RejectPendingActionCommand;
-import com.emme.assistant.api.result.PendingActionInfo;
+import com.emme.assistant.api.result.PendingActionDetails;
 
 public interface RejectPendingActionUseCase {
-  PendingActionInfo reject(RejectPendingActionCommand command);
+  PendingActionDetails reject(RejectPendingActionCommand command);
 }

@@ -1,7 +1,7 @@
 package com.emme.studio.subscriptions.application.service;
 
 import com.emme.studio.subscriptions.api.command.CreateSubscriptionCommand;
-import com.emme.studio.subscriptions.api.result.SubscriptionInfo;
+import com.emme.studio.subscriptions.api.result.SubscriptionDetails;
 import com.emme.studio.subscriptions.api.usecase.CreateSubscriptionUseCase;
 import com.emme.studio.subscriptions.application.mapper.SubscriptionApplicationMapper;
 import com.emme.studio.subscriptions.application.port.out.SubscriptionRepository;
@@ -20,7 +20,7 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
   }
 
   @Override
-  public SubscriptionInfo create(CreateSubscriptionCommand command) {
+  public SubscriptionDetails create(CreateSubscriptionCommand command) {
     if (repository.findByTenantId(command.tenantId()).isPresent()) {
       throw new IllegalArgumentException(
           "Subscription already exists for tenant: " + command.tenantId());
@@ -28,6 +28,6 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
     Subscription subscription =
         new Subscription(
             command.tenantId(), command.plan(), Instant.now().plusSeconds(365L * 24 * 3600));
-    return SubscriptionApplicationMapper.toInfo(repository.save(subscription));
+    return SubscriptionApplicationMapper.toResult(repository.save(subscription));
   }
 }

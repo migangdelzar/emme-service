@@ -1,8 +1,8 @@
 package com.emme.tenancy.api.usecase;
 
 import com.emme.tenancy.api.command.CreateTenantCommand;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 
 public interface CreateTenantUseCase {
-  TenantInfo create(CreateTenantCommand command);
+  TenantDetails create(CreateTenantCommand command);
 }

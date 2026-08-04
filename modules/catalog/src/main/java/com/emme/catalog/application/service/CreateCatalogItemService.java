@@ -1,7 +1,7 @@
 package com.emme.catalog.application.service;
 
 import com.emme.catalog.api.command.CreateCatalogItemCommand;
-import com.emme.catalog.api.result.CatalogItemInfo;
+import com.emme.catalog.api.result.CatalogItemDetails;
 import com.emme.catalog.api.usecase.CreateCatalogItemUseCase;
 import com.emme.catalog.application.mapper.CatalogApplicationMapper;
 import com.emme.catalog.application.port.out.CatalogItemRepository;
@@ -21,7 +21,7 @@ public class CreateCatalogItemService implements CreateCatalogItemUseCase {
   }
 
   @Override
-  public CatalogItemInfo create(CreateCatalogItemCommand command) {
+  public CatalogItemDetails create(CreateCatalogItemCommand command) {
     CatalogItem item =
         new CatalogItem(
             command.tenantId(),
@@ -33,6 +33,6 @@ public class CreateCatalogItemService implements CreateCatalogItemUseCase {
             command.priceNotes(),
             command.durationMinutes(),
             command.materials());
-    return CatalogApplicationMapper.toInfo(itemRepository.save(item));
+    return CatalogApplicationMapper.toResult(itemRepository.save(item));
   }
 }

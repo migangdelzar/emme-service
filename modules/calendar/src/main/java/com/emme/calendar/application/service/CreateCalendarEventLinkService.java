@@ -1,6 +1,6 @@
 package com.emme.calendar.application.service;
 
-import com.emme.calendar.api.result.CalendarEventLinkInfo;
+import com.emme.calendar.api.result.CalendarEventLinkDetails;
 import com.emme.calendar.api.usecase.CreateCalendarEventLinkUseCase;
 import com.emme.calendar.application.mapper.CalendarEventLinkApplicationMapper;
 import com.emme.calendar.application.port.out.CalendarEventLinkRepository;
@@ -22,11 +22,11 @@ public class CreateCalendarEventLinkService implements CreateCalendarEventLinkUs
   }
 
   @Override
-  public CalendarEventLinkInfo create(
+  public CalendarEventLinkDetails create(
       UUID tenantId, UUID appointmentId, String provider, String externalEventId) {
     CalendarEventLink link =
         CalendarEventLink.pending(
             tenantId, appointmentId, CalendarProvider.valueOf(provider), externalEventId);
-    return CalendarEventLinkApplicationMapper.toInfo(repository.save(link));
+    return CalendarEventLinkApplicationMapper.toResult(repository.save(link));
   }
 }

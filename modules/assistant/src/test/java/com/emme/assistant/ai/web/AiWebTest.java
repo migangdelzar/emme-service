@@ -9,7 +9,7 @@ import com.emme.identity.adapter.out.persistence.repository.SpringDataFeatureFla
 import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
 import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
 import com.emme.studio.subscriptions.api.type.PlanType;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.testing.BaseWebTest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,7 +26,7 @@ class AiWebTest extends BaseWebTest {
 
   @BeforeEach
   void setUp() {
-    TenantInfo tenant = createTenant("ai-web-" + System.nanoTime(), "AI Web Tenant");
+    TenantDetails tenant = createTenant("ai-web-" + System.nanoTime(), "AI Web Tenant");
     tenantId = tenant.id();
     subscriptionRepo.save(
         new SubscriptionEntity(

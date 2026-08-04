@@ -4,7 +4,7 @@ import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.calendar.adapter.out.persistence.entity.GoogleOAuthTokenEntity;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleOAuthTokenRepository;
 import com.emme.calendar.api.event.CalendarSyncRequested;
-import com.emme.calendar.api.result.CalendarEventLinkInfo;
+import com.emme.calendar.api.result.CalendarEventLinkDetails;
 import com.emme.calendar.api.usecase.CreateCalendarEventLinkUseCase;
 import com.emme.calendar.api.usecase.FindCalendarEventLinkUseCase;
 import com.emme.calendar.api.usecase.FindCalendarEventLinksUseCase;
@@ -245,7 +245,7 @@ public class StaffCalendarSyncAdapter {
   // ---------------------------------------------------------------------------
 
   private void deleteEvent(CalendarSyncRequested e) throws Exception {
-    List<CalendarEventLinkInfo> links =
+    List<CalendarEventLinkDetails> links =
         findCalendarEventLinks.findByAppointmentId(e.appointmentId());
     if (links.isEmpty()) {
       log.warn(
@@ -262,7 +262,7 @@ public class StaffCalendarSyncAdapter {
       return;
     }
 
-    for (CalendarEventLinkInfo link : links) {
+    for (CalendarEventLinkDetails link : links) {
       String url =
           String.format(EVENTS_URL, properties.calendarId()) + "/" + link.externalEventId();
       Request request =

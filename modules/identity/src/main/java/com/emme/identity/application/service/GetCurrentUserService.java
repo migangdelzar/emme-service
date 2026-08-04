@@ -2,17 +2,16 @@ package com.emme.identity.application.service;
 
 import com.emme.identity.api.query.GetCurrentUserMembershipsQuery;
 import com.emme.identity.api.query.GetCurrentUserQuery;
-import com.emme.identity.api.result.BusinessProfileSummary;
-import com.emme.identity.api.result.CurrentUserInfo;
-import com.emme.identity.api.result.CurrentUserMembershipInfo;
-import com.emme.identity.api.result.MembershipInfo;
+import com.emme.identity.api.result.CurrentUserDetails;
+import com.emme.identity.api.result.CurrentUserMembershipDetails;
+import com.emme.identity.api.result.MembershipDetails;
 import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetCurrentUserUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
-import com.emme.studio.api.result.BusinessProfileInfo;
+import com.emme.studio.api.result.BusinessProfileSummary;
 import com.emme.studio.api.usecase.GetBusinessProfileUseCase;
 import com.emme.tenancy.api.query.GetTenantQuery;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.util.List;
 import java.util.UUID;
@@ -39,34 +38,32 @@ public final class GetCurrentUserService implements GetCurrentUserUseCase {
   }
 
   @Override
-  public CurrentUserInfo get(GetCurrentUserQuery query) {
-    List<MembershipInfo> membershipResults =
+  public CurrentUserDetails get(GetCurrentUserQuery query) {
+    List<MembershipDetails> membershipResults =
         memberships.getMemberships(new GetCurrentUserMembershipsQuery(query.userId()));
-    List<CurrentUserMembershipInfo> membershipViews =
+    List<CurrentUserMembershipDetails> membershipDetails =
         membershipResults.stream()
-            .map(membership -> toMembershipView(query.userId(), membership))
+            .map(membership -> toMembershipDetails(query.userId(), membership))
             .toList();
 
     UUID selectedTenantId = selectedTenantId(membershipResults, query.selectedTenantId());
     BusinessProfileSummary profile =
         selectedTenantId == null
             ? null
-            : businessProfiles
-                .getBusinessProfile(selectedTenantId)
-                .map(GetCurrentUserService::toProfileSummary)
-                .orElse(null);
+            : businessProfiles.getBusinessProfile(selectedTenantId).orElse(null);
 
-    return new CurrentUserInfo(
-        query.userId(), query.email(), query.displayName(), membershipViews, profile);
+    return new CurrentUserDetails(
+        query.userId(), query.email(), query.displayName(), membershipDetails, profile);
   }
 
-  private CurrentUserMembershipInfo toMembershipView(String userId, MembershipInfo membership) {
-    TenantInfo tenant =
+  private CurrentUserMembershipDetails toMembershipDetails(
+      String userId, MembershipDetails membership) {
+    TenantDetails tenant =
         tenants
             .get(new GetTenantQuery(membership.tenantId()))
             .orElseThrow(
                 () -> new IllegalArgumentException("Tenant not found: " + membership.tenantId()));
-    return new CurrentUserMembershipInfo(
+    return new CurrentUserMembershipDetails(
         membership.tenantId(),
         tenant.slug(),
         tenant.name(),
@@ -76,16 +73,12 @@ public final class GetCurrentUserService implements GetCurrentUserUseCase {
   }
 
   private static UUID selectedTenantId(
-      List<MembershipInfo> memberships, UUID selectedTenantIdFromQuery) {
+      List<MembershipDetails> memberships, UUID selectedTenantIdFromQuery) {
     if (selectedTenantIdFromQuery != null
         && memberships.stream()
             .anyMatch(membership -> membership.tenantId().equals(selectedTenantIdFromQuery))) {
       return selectedTenantIdFromQuery;
     }
     return memberships.size() == 1 ? memberships.getFirst().tenantId() : null;
-  }
-
-  private static BusinessProfileSummary toProfileSummary(BusinessProfileInfo profile) {
-    return new BusinessProfileSummary(profile.tenantId(), profile.displayName(), profile.locale());
   }
 }

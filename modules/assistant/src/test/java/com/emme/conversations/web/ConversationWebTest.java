@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
 import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
 import com.emme.studio.subscriptions.api.type.PlanType;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.testing.BaseWebTest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -23,7 +23,7 @@ class ConversationWebTest extends BaseWebTest {
 
   @BeforeEach
   void setUp() {
-    TenantInfo tenant = createTenant("conv-web-" + System.nanoTime(), "Conv Web Tenant");
+    TenantDetails tenant = createTenant("conv-web-" + System.nanoTime(), "Conv Web Tenant");
     tenantId = tenant.id();
     subscriptionRepo.save(
         new SubscriptionEntity(

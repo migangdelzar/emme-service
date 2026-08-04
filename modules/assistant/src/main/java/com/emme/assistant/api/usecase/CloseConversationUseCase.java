@@ -1,8 +1,8 @@
 package com.emme.assistant.api.usecase;
 
 import com.emme.assistant.api.command.CloseConversationCommand;
-import com.emme.assistant.api.result.ConversationInfo;
+import com.emme.assistant.api.result.ConversationDetails;
 
 public interface CloseConversationUseCase {
-  ConversationInfo close(CloseConversationCommand command);
+  ConversationDetails close(CloseConversationCommand command);
 }

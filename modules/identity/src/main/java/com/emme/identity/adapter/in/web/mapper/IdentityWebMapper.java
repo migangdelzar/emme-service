@@ -4,8 +4,8 @@ import com.emme.identity.adapter.in.web.response.BusinessProfileResponse;
 import com.emme.identity.adapter.in.web.response.CurrentUserResponse;
 import com.emme.identity.adapter.in.web.response.MembershipResponse;
 import com.emme.identity.adapter.in.web.response.TenantMembershipResponse;
-import com.emme.identity.api.result.CurrentUserInfo;
-import com.emme.identity.api.result.MembershipInfo;
+import com.emme.identity.api.result.CurrentUserDetails;
+import com.emme.identity.api.result.MembershipDetails;
 import java.util.List;
 
 /** Maps Identity application data into HTTP response models. */
@@ -13,7 +13,7 @@ public final class IdentityWebMapper {
 
   private IdentityWebMapper() {}
 
-  public static MembershipResponse toMembershipResponse(MembershipInfo membership) {
+  public static MembershipResponse toMembershipResponse(MembershipDetails membership) {
     return new MembershipResponse(
         membership.id(),
         membership.tenantId(),
@@ -23,7 +23,7 @@ public final class IdentityWebMapper {
         membership.createdAt());
   }
 
-  public static CurrentUserResponse toCurrentUserResponse(CurrentUserInfo user) {
+  public static CurrentUserResponse toCurrentUserResponse(CurrentUserDetails user) {
     List<TenantMembershipResponse> memberships =
         user.memberships().stream()
             .map(

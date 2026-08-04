@@ -2,7 +2,7 @@ package com.emme.studio.documents.application.service;
 
 import com.emme.studio.documents.api.exception.DocumentNotFoundException;
 import com.emme.studio.documents.api.query.GetDocumentQuery;
-import com.emme.studio.documents.api.result.DocumentInfo;
+import com.emme.studio.documents.api.result.DocumentDetails;
 import com.emme.studio.documents.api.usecase.GetDocumentUseCase;
 import com.emme.studio.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.studio.documents.application.port.out.DocumentRepository;
@@ -21,10 +21,10 @@ public class GetDocumentService implements GetDocumentUseCase {
   }
 
   @Override
-  public DocumentInfo get(GetDocumentQuery query) {
+  public DocumentDetails get(GetDocumentQuery query) {
     return documentRepository
         .findByTenantIdAndId(query.tenantId(), query.documentId())
-        .map(DocumentApplicationMapper::toInfo)
+        .map(DocumentApplicationMapper::toResult)
         .orElseThrow(() -> new DocumentNotFoundException(query.documentId()));
   }
 }

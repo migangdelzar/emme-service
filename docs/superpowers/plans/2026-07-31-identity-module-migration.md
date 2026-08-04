@@ -17,7 +17,7 @@ infrastructure are explicit outbound/client or inbound-filter adapters.
 ```text
 com.emme.identity
 ├── UserContext/UserContextHolder.java
-├── api/{IdentityApi,MembershipInfo,UserInfo}
+├── api/{IdentityApi,MembershipDetails,UserDetails}
 ├── application/{IdentityService,CustomerAuthService,FeatureFlagService,KeycloakAuthService,CustomerMembershipListener}
 ├── configuration/SecurityConfiguration.java
 ├── entity/{identity,membership,role,permission,feature-flag entities/repositories}
@@ -47,7 +47,7 @@ context, but they must not become business API types accidentally.
 
 - `IdentityApi` becomes a use-case/inbound contract or a named interface grouping
   only the existing cross-module methods; do not expose implementation services.
-- `MembershipInfo` and `UserInfo` move to `api/result`.
+- `MembershipDetails` and `UserDetails` move to `api/result`.
 - Membership/feature-flag mutations use `*Command`; reads use `*Query`; stable
   failures use `*Exception`; emitted membership facts use past-tense `api/event`.
 - `KeycloakAuthService` becomes one or more application services implementing
@@ -136,7 +136,7 @@ context, but they must not become business API types accidentally.
 ## Completed incremental slice — 2026-07-31
 
 - [x] Grouped the existing public use-case contract under `api/usecase`.
-- [x] Grouped `MembershipInfo` and `UserInfo` under `api/result`.
+- [x] Grouped `MembershipDetails` and `UserDetails` under `api/result`.
 - [x] Preserved the `identity-api` named-interface identifier while moving its
   ownership to the grouped packages.
 - [x] Updated Identity's Tenancy contract imports and added a source-tree
@@ -331,8 +331,8 @@ separation.
 
 ## Completed Keycloak application boundary slice — 2026-08-01
 
-- [x] Added grouped `AuthenticateUserCommand`, `GetUserInfoQuery`,
-  `UserTokenResult`, `UserInfoResult`, and `AuthenticateUserUseCase` contracts.
+- [x] Added grouped `AuthenticateUserCommand`, `GetUserClaimsQuery`,
+  `UserTokenResult`, `UserClaimsResult`, and `AuthenticateUserUseCase` contracts.
 - [x] Added the application-owned `UserAuthenticationPort` and
   `AuthenticateUserService`; tenant-realm selection remains application-owned.
 - [x] Moved password-grant and user-info HTTP calls into
@@ -488,11 +488,11 @@ evidence.
 ## Completed current-user application boundary slice — 2026-08-02
 
 - [x] Added `GetCurrentUserQuery`, `GetCurrentUserUseCase`, and immutable
-  `CurrentUserInfo` result models under the grouped Identity API.
+  `CurrentUserDetails` result models under the grouped Identity API.
 - [x] Added one focused `GetCurrentUserService` application service to compose
   memberships, tenant metadata, permissions, and the selected business profile.
 - [x] Kept the Identity API independent from Studio's internal profile model by
-  mapping `BusinessProfileInfo` to an Identity-owned `BusinessProfileSummary`.
+  mapping `BusinessProfileSummary` to an Identity-owned `BusinessProfileSummary`.
 - [x] Reduced `CurrentUserController` to inbound-context extraction and use-case
   delegation.
 - [x] Removed the `AuthController` to `CurrentUserController` dependency; login

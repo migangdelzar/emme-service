@@ -1,7 +1,7 @@
 package com.emme.assistant.application.service;
 
 import com.emme.assistant.api.command.RejectPendingActionCommand;
-import com.emme.assistant.api.result.PendingActionInfo;
+import com.emme.assistant.api.result.PendingActionDetails;
 import com.emme.assistant.api.usecase.RejectPendingActionUseCase;
 import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.PendingActionRepository;
@@ -20,13 +20,13 @@ public class RejectPendingActionService implements RejectPendingActionUseCase {
   }
 
   @Override
-  public PendingActionInfo reject(RejectPendingActionCommand command) {
+  public PendingActionDetails reject(RejectPendingActionCommand command) {
     PendingAction action =
         AssistantServiceSupport.action(repository, command.tenantId(), command.actionId());
     if (action.status() != ActionStatus.PENDING) {
       throw new IllegalStateException("Action not in PENDING state: " + command.actionId());
     }
-    return AssistantApplicationMapper.toInfo(
+    return AssistantApplicationMapper.toResult(
         repository.save(
             new PendingAction(
                 action.id(),

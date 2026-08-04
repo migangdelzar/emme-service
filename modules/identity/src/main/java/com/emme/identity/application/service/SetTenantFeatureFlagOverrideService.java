@@ -1,7 +1,7 @@
 package com.emme.identity.application.service;
 
 import com.emme.identity.api.command.SetTenantFeatureFlagOverrideCommand;
-import com.emme.identity.api.result.FeatureFlagInfo;
+import com.emme.identity.api.result.FeatureFlagDetails;
 import com.emme.identity.api.usecase.SetTenantFeatureFlagOverrideUseCase;
 import com.emme.identity.application.mapper.FeatureFlagApplicationMapper;
 import com.emme.identity.application.port.out.FeatureFlagRepository;
@@ -23,8 +23,8 @@ public class SetTenantFeatureFlagOverrideService implements SetTenantFeatureFlag
   }
 
   @Override
-  public FeatureFlagInfo set(SetTenantFeatureFlagOverrideCommand command) {
-    return FeatureFlagApplicationMapper.toInfo(
+  public FeatureFlagDetails set(SetTenantFeatureFlagOverrideCommand command) {
+    return FeatureFlagApplicationMapper.toResult(
         setOverride(command.tenantId(), command.code(), command.enabled()));
   }
 

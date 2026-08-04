@@ -1,7 +1,7 @@
 package com.emme.payment.application.service;
 
 import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import com.emme.payment.api.usecase.ProcessPaymentCallbackUseCase;
 import com.emme.payment.application.mapper.PaymentApplicationMapper;
 import com.emme.payment.application.port.out.PaymentProvider;
@@ -30,7 +30,7 @@ public class ProcessPaymentCallbackService implements ProcessPaymentCallbackUseC
   }
 
   @Override
-  public PaymentInfo process(ProcessPaymentCallbackCommand command) {
+  public PaymentDetails process(ProcessPaymentCallbackCommand command) {
     if (command.eventId() == null || command.eventId().isBlank()) {
       throw new PaymentProviderException("Payment callback event id is required");
     }
@@ -38,7 +38,7 @@ public class ProcessPaymentCallbackService implements ProcessPaymentCallbackUseC
       String providerReference = providerReference(command.payload());
       return repository
           .findByTenantIdAndProviderReference(command.tenantId(), providerReference)
-          .map(PaymentApplicationMapper::toInfo)
+          .map(PaymentApplicationMapper::toResult)
           .orElseThrow(
               () -> new PaymentProviderException("Duplicate callback has no payment record"));
     }
@@ -58,7 +58,7 @@ public class ProcessPaymentCallbackService implements ProcessPaymentCallbackUseC
                         BigDecimal.ZERO,
                         "MXN"));
     payment.applyProviderStatus(PaymentServiceSupport.status(result.status()));
-    return PaymentApplicationMapper.toInfo(repository.save(payment));
+    return PaymentApplicationMapper.toResult(repository.save(payment));
   }
 
   private String providerReference(java.util.Map<String, String> payload) {

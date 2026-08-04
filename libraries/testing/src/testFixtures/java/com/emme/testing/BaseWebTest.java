@@ -3,7 +3,7 @@ package com.emme.testing;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
 import com.emme.tenancy.api.command.CreateTenantCommand;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.CreateTenantUseCase;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,7 @@ public abstract class BaseWebTest {
 
   protected UUID tenantId;
 
-  protected TenantInfo createTenant(String slug, String name) {
+  protected TenantDetails createTenant(String slug, String name) {
     return createTenantUseCase.create(new CreateTenantCommand(slug, name));
   }
 

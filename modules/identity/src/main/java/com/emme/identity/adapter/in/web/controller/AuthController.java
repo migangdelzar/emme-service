@@ -9,7 +9,7 @@ import com.emme.identity.api.command.AuthenticateUserCommand;
 import com.emme.identity.api.command.UpdateCustomerPhoneCommand;
 import com.emme.identity.api.exception.IdentityAuthenticationException;
 import com.emme.identity.api.query.GetCurrentUserQuery;
-import com.emme.identity.api.query.GetUserInfoQuery;
+import com.emme.identity.api.query.GetUserClaimsQuery;
 import com.emme.identity.api.usecase.AuthenticateCustomerUseCase;
 import com.emme.identity.api.usecase.AuthenticateUserUseCase;
 import com.emme.identity.api.usecase.GetCurrentUserUseCase;
@@ -58,7 +58,9 @@ public class AuthController {
 
       // Get full user claims from Keycloak userinfo (access token has no claims for public clients)
       Map<String, Object> userClaims =
-          authenticateUserUseCase.getUserInfo(new GetUserInfoQuery(tokens.accessToken())).claims();
+          authenticateUserUseCase
+              .getUserClaims(new GetUserClaimsQuery(tokens.accessToken()))
+              .claims();
 
       // Build a Jwt from userinfo claims so the authenticated user context can be reconstructed.
       String sub = (String) userClaims.get("sub");

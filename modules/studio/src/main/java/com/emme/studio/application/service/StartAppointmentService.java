@@ -36,6 +36,6 @@ public class StartAppointmentService implements StartAppointmentUseCase {
   public AppointmentDetails start(UUID id) {
     Appointment appointment = support.find(id);
     appointment.start();
-    return support.toView(repository.save(appointment));
+    return support.toDetails(repository.save(appointment));
   }
 }

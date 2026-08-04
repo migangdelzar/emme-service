@@ -53,7 +53,7 @@ currently exposes them; do not add endpoints.
 ## Normalized names and contracts
 
 ```text
-NotificationInfo
+NotificationDetails
 RequestNotificationUseCase
 ListNotificationsUseCase
 GetNotificationUseCase
@@ -76,7 +76,7 @@ Provider failures are represented as exceptions at the application port boundary
 Provider implementations must never return an error string that could be
 mistaken for a provider message ID; email, SMS, and push adapters use typed
 provider exceptions for rejected or unreachable deliveries.
-`NotificationInfo` exposes only the existing six response fields and never body
+`NotificationDetails` exposes only the existing six response fields and never body
 content unless an approved contract changes that behavior.
 
 ## Tasks
@@ -104,7 +104,7 @@ content unless an approved contract changes that behavior.
 - [x] Move `NotificationDeliveredEvent` to the normalized
   `api/event/NotificationDelivered.java` contract and update Studio imports
   atomically.
-- [x] Move `NotificationInfo` to `api/result` and define use-case interfaces.
+- [x] Move `NotificationDetails` to `api/result` and define use-case interfaces.
 - [x] Replace the multi-operation orchestration with one focused application
   service per current use case.
 - [x] Add outbound delivery ports and application mappers; application code

@@ -1,7 +1,7 @@
 package com.emme.studio.subscriptions.application.service;
 
 import com.emme.studio.subscriptions.api.query.GetSubscriptionQuery;
-import com.emme.studio.subscriptions.api.result.SubscriptionInfo;
+import com.emme.studio.subscriptions.api.result.SubscriptionDetails;
 import com.emme.studio.subscriptions.api.usecase.GetSubscriptionUseCase;
 import com.emme.studio.subscriptions.application.mapper.SubscriptionApplicationMapper;
 import com.emme.studio.subscriptions.application.port.out.SubscriptionRepository;
@@ -19,7 +19,7 @@ public class GetSubscriptionService implements GetSubscriptionUseCase {
   }
 
   @Override
-  public Optional<SubscriptionInfo> get(GetSubscriptionQuery query) {
-    return repository.findByTenantId(query.tenantId()).map(SubscriptionApplicationMapper::toInfo);
+  public Optional<SubscriptionDetails> get(GetSubscriptionQuery query) {
+    return repository.findByTenantId(query.tenantId()).map(SubscriptionApplicationMapper::toResult);
   }
 }

@@ -1,11 +1,11 @@
 package com.emme.calendar.api.usecase;
 
-import com.emme.calendar.api.result.CalendarEventLinkInfo;
+import com.emme.calendar.api.result.CalendarEventLinkDetails;
 import java.util.Optional;
 import java.util.UUID;
 
 /** Finds one tenant-scoped external calendar link for an appointment. */
 public interface FindCalendarEventLinkUseCase {
 
-  Optional<CalendarEventLinkInfo> find(UUID tenantId, UUID appointmentId);
+  Optional<CalendarEventLinkDetails> find(UUID tenantId, UUID appointmentId);
 }

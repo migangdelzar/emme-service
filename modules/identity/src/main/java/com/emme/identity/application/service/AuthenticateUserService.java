@@ -1,8 +1,8 @@
 package com.emme.identity.application.service;
 
 import com.emme.identity.api.command.AuthenticateUserCommand;
-import com.emme.identity.api.query.GetUserInfoQuery;
-import com.emme.identity.api.result.UserInfoResult;
+import com.emme.identity.api.query.GetUserClaimsQuery;
+import com.emme.identity.api.result.UserClaimsResult;
 import com.emme.identity.api.result.UserTokenResult;
 import com.emme.identity.api.usecase.AuthenticateUserUseCase;
 import com.emme.identity.application.port.out.IdentityRealmConfigurationPort;
@@ -35,8 +35,8 @@ public class AuthenticateUserService implements AuthenticateUserUseCase {
   }
 
   @Override
-  public UserInfoResult getUserInfo(GetUserInfoQuery query) {
-    return authenticationPort.getUserInfo(query.accessToken());
+  public UserClaimsResult getUserClaims(GetUserClaimsQuery query) {
+    return authenticationPort.getUserClaims(query.accessToken());
   }
 
   private String resolveRealm(String email) {

@@ -36,6 +36,6 @@ public class MarkAppointmentNoShowService implements MarkAppointmentNoShowUseCas
   public AppointmentDetails markNoShow(UUID id) {
     Appointment appointment = support.find(id);
     appointment.noShow();
-    return support.toView(repository.save(appointment));
+    return support.toDetails(repository.save(appointment));
   }
 }

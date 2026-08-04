@@ -20,7 +20,7 @@ class TenancyPackageConventionTest {
   private static final Path LEGACY_API =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/api/TenantApi.java");
   private static final Path LEGACY_RESULT =
-      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/api/TenantInfo.java");
+      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/api/TenantDetails.java");
   private static final Path EVENT =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/api/event/TenantCreated.java");
   private static final Path LEGACY_EVENT =

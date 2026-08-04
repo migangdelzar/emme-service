@@ -8,7 +8,7 @@ import com.emme.identity.api.result.UserTokenResult;
 import com.emme.identity.application.port.out.IdentityRealmConfigurationPort;
 import com.emme.identity.application.port.out.UserAuthenticationPort;
 import com.emme.tenancy.api.query.ListTenantsQuery;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.ListTenantsUseCase;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ class AuthenticateUserServiceTest {
     when(listTenants.list(new ListTenantsQuery()))
         .thenReturn(
             List.of(
-                new TenantInfo(
+                new TenantDetails(
                     null, "demo-salon", "Demo", "schema", "ACTIVE", "DEDICATED", "emme-demo")));
     when(authenticationPort.authenticate("emme-demo", "owner@demo-salon.test", "secret"))
         .thenReturn(new UserTokenResult("access", null, null));

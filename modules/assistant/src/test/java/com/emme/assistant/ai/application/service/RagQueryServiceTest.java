@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.ModelProvider;
 import com.emme.assistant.ai.configuration.AiProperties;
-import com.emme.studio.documents.api.result.DocumentChunkInfo;
+import com.emme.studio.documents.api.result.DocumentChunkDetails;
 import com.emme.studio.documents.api.usecase.SearchDocumentChunksUseCase;
 import java.util.List;
 import java.util.UUID;
@@ -23,8 +23,8 @@ class RagQueryServiceTest {
     ModelProvider model = mock(ModelProvider.class);
     SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
     RagQueryService service = new RagQueryService(realProperties(), model, search);
-    DocumentChunkInfo chunk =
-        new DocumentChunkInfo(
+    DocumentChunkDetails chunk =
+        new DocumentChunkDetails(
             UUID.randomUUID(), UUID.randomUUID(), 0, "The premium is monthly.", "fingerprint");
 
     when(model.embed("What is the premium?")).thenReturn(List.of(0.1f, 0.2f));

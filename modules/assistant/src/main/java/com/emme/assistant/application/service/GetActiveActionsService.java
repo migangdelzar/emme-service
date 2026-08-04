@@ -1,7 +1,7 @@
 package com.emme.assistant.application.service;
 
 import com.emme.assistant.api.query.GetActiveActionsQuery;
-import com.emme.assistant.api.result.PendingActionInfo;
+import com.emme.assistant.api.result.PendingActionDetails;
 import com.emme.assistant.api.usecase.GetActiveActionsUseCase;
 import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.PendingActionRepository;
@@ -20,12 +20,12 @@ public class GetActiveActionsService implements GetActiveActionsUseCase {
   }
 
   @Override
-  public List<PendingActionInfo> get(GetActiveActionsQuery query) {
+  public List<PendingActionDetails> get(GetActiveActionsQuery query) {
     return repository
         .findByTenantIdAndConversationIdAndStatus(
             query.tenantId(), query.conversationId(), ActionStatus.PENDING)
         .stream()
-        .map(AssistantApplicationMapper::toInfo)
+        .map(AssistantApplicationMapper::toResult)
         .toList();
   }
 }

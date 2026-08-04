@@ -1,7 +1,7 @@
 package com.emme.assistant.application.service;
 
 import com.emme.assistant.api.query.GetConversationQuery;
-import com.emme.assistant.api.result.ConversationInfo;
+import com.emme.assistant.api.result.ConversationDetails;
 import com.emme.assistant.api.usecase.GetConversationUseCase;
 import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.ConversationRepository;
@@ -19,9 +19,9 @@ public class GetConversationService implements GetConversationUseCase {
   }
 
   @Override
-  public Optional<ConversationInfo> get(GetConversationQuery query) {
+  public Optional<ConversationDetails> get(GetConversationQuery query) {
     return repository
         .findByTenantIdAndId(query.tenantId(), query.conversationId())
-        .map(AssistantApplicationMapper::toInfo);
+        .map(AssistantApplicationMapper::toResult);
   }
 }

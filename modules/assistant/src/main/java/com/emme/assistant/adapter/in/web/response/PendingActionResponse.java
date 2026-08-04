@@ -1,6 +1,6 @@
 package com.emme.assistant.adapter.in.web.response;
 
-import com.emme.assistant.api.result.PendingActionInfo;
+import com.emme.assistant.api.result.PendingActionDetails;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -12,7 +12,7 @@ public record PendingActionResponse(
     String details,
     Instant expiresAt,
     Instant createdAt) {
-  public static PendingActionResponse from(PendingActionInfo info) {
+  public static PendingActionResponse from(PendingActionDetails info) {
     return new PendingActionResponse(
         info.id(),
         info.conversationId(),

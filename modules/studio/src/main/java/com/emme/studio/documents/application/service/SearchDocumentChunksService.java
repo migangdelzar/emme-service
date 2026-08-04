@@ -1,7 +1,7 @@
 package com.emme.studio.documents.application.service;
 
 import com.emme.studio.documents.api.query.SearchDocumentChunksQuery;
-import com.emme.studio.documents.api.result.DocumentChunkInfo;
+import com.emme.studio.documents.api.result.DocumentChunkDetails;
 import com.emme.studio.documents.api.usecase.SearchDocumentChunksUseCase;
 import com.emme.studio.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.studio.documents.application.port.out.DocumentRepository;
@@ -29,7 +29,7 @@ public class SearchDocumentChunksService implements SearchDocumentChunksUseCase 
   }
 
   @Override
-  public List<DocumentChunkInfo> search(SearchDocumentChunksQuery query) {
+  public List<DocumentChunkDetails> search(SearchDocumentChunksQuery query) {
     List<DocumentSearchHit> hits =
         search.search(query.tenantId(), query.queryVector(), query.queryText(), query.limit());
     List<java.util.UUID> chunkIds =
@@ -44,7 +44,7 @@ public class SearchDocumentChunksService implements SearchDocumentChunksUseCase 
     return chunkIds.stream()
         .map(chunksById::get)
         .filter(java.util.Objects::nonNull)
-        .map(DocumentApplicationMapper::toInfo)
+        .map(DocumentApplicationMapper::toResult)
         .toList();
   }
 }

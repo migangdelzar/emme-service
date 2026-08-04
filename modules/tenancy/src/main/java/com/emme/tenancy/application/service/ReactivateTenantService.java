@@ -1,7 +1,7 @@
 package com.emme.tenancy.application.service;
 
 import com.emme.tenancy.api.command.ReactivateTenantCommand;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.ReactivateTenantUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
@@ -18,9 +18,9 @@ public class ReactivateTenantService implements ReactivateTenantUseCase {
   }
 
   @Override
-  public TenantInfo reactivate(ReactivateTenantCommand command) {
+  public TenantDetails reactivate(ReactivateTenantCommand command) {
     var tenant = TenantServiceSupport.require(repository, command.tenantId());
     tenant.reactivate();
-    return TenantApplicationMapper.toInfo(repository.save(tenant));
+    return TenantApplicationMapper.toResult(repository.save(tenant));
   }
 }

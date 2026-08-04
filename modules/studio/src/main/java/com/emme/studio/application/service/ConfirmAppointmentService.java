@@ -36,6 +36,6 @@ public class ConfirmAppointmentService implements ConfirmAppointmentUseCase {
   public AppointmentDetails confirm(UUID id) {
     Appointment appointment = support.find(id);
     appointment.confirm();
-    return support.toView(repository.save(appointment));
+    return support.toDetails(repository.save(appointment));
   }
 }

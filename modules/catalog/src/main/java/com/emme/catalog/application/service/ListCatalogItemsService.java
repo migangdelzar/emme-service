@@ -1,7 +1,7 @@
 package com.emme.catalog.application.service;
 
 import com.emme.catalog.api.query.ListCatalogItemsQuery;
-import com.emme.catalog.api.result.CatalogItemInfo;
+import com.emme.catalog.api.result.CatalogItemDetails;
 import com.emme.catalog.api.usecase.ListCatalogItemsUseCase;
 import com.emme.catalog.application.mapper.CatalogApplicationMapper;
 import com.emme.catalog.application.port.out.CatalogItemRepository;
@@ -21,9 +21,9 @@ public class ListCatalogItemsService implements ListCatalogItemsUseCase {
   }
 
   @Override
-  public List<CatalogItemInfo> list(ListCatalogItemsQuery query) {
+  public List<CatalogItemDetails> list(ListCatalogItemsQuery query) {
     return itemRepository.findByTenantId(query.tenantId()).stream()
-        .map(CatalogApplicationMapper::toInfo)
+        .map(CatalogApplicationMapper::toResult)
         .toList();
   }
 }

@@ -7,14 +7,13 @@ import static org.mockito.Mockito.when;
 
 import com.emme.kernel.type.NotificationChannel;
 import com.emme.notification.api.command.DeliverNotificationCommand;
-import com.emme.notification.api.type.NotificationStatusView;
+import com.emme.notification.api.type.NotificationStatus;
 import com.emme.notification.application.port.out.EmailSender;
 import com.emme.notification.application.port.out.NotificationEventPublisher;
 import com.emme.notification.application.port.out.NotificationRepository;
 import com.emme.notification.application.port.out.PushSender;
 import com.emme.notification.application.port.out.SmsSender;
 import com.emme.notification.domain.model.Notification;
-import com.emme.notification.domain.model.NotificationStatus;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,7 +32,7 @@ class NotificationDeliveryBoundaryTest {
             NotificationChannel.EMAIL,
             "recipient",
             "body",
-            NotificationStatus.DELIVERED,
+            com.emme.notification.domain.model.NotificationStatus.DELIVERED,
             Instant.now());
     NotificationRepository repository = mock(NotificationRepository.class);
     EmailSender emailSender = mock(EmailSender.class);
@@ -47,7 +46,7 @@ class NotificationDeliveryBoundaryTest {
         new DeliverNotificationService(repository, emailSender, smsSender, pushSender, events)
             .deliver(new DeliverNotificationCommand(tenantId, notificationId));
 
-    assertThat(result.status()).isEqualTo(NotificationStatusView.DELIVERED);
+    assertThat(result.status()).isEqualTo(NotificationStatus.DELIVERED);
     verifyNoInteractions(emailSender, smsSender, pushSender, events);
   }
 
@@ -79,7 +78,7 @@ class NotificationDeliveryBoundaryTest {
             NotificationChannel.WHATSAPP,
             "recipient",
             "body",
-            NotificationStatus.REQUESTED,
+            com.emme.notification.domain.model.NotificationStatus.REQUESTED,
             Instant.now());
     NotificationRepository repository = mock(NotificationRepository.class);
     EmailSender emailSender = mock(EmailSender.class);
@@ -94,7 +93,7 @@ class NotificationDeliveryBoundaryTest {
         new DeliverNotificationService(repository, emailSender, smsSender, pushSender, events)
             .deliver(new DeliverNotificationCommand(tenantId, notificationId));
 
-    assertThat(result.status()).isEqualTo(NotificationStatusView.FAILED);
+    assertThat(result.status()).isEqualTo(NotificationStatus.FAILED);
     verifyNoInteractions(emailSender, smsSender, pushSender, events);
   }
 }

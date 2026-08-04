@@ -2,7 +2,7 @@ package com.emme.identity.application.service;
 
 import com.emme.identity.api.command.AssignMembershipCommand;
 import com.emme.identity.api.exception.InvalidMembershipRoleException;
-import com.emme.identity.api.result.MembershipInfo;
+import com.emme.identity.api.result.MembershipDetails;
 import com.emme.identity.api.usecase.AssignMembershipUseCase;
 import com.emme.identity.application.mapper.MembershipApplicationMapper;
 import com.emme.identity.application.port.out.MembershipRepository;
@@ -28,7 +28,7 @@ public class AssignMembershipService implements AssignMembershipUseCase {
   }
 
   @Override
-  public MembershipInfo assign(AssignMembershipCommand command) {
+  public MembershipDetails assign(AssignMembershipCommand command) {
     Role role =
         roleRepository
             .findById(command.roleId())
@@ -39,6 +39,6 @@ public class AssignMembershipService implements AssignMembershipUseCase {
     Membership membership =
         membershipRepository.save(
             new Membership(command.tenantId(), role.id(), role.code(), command.userReference()));
-    return MembershipApplicationMapper.toInfo(membership);
+    return MembershipApplicationMapper.toResult(membership);
   }
 }

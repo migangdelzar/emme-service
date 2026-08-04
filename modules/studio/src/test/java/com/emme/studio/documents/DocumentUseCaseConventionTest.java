@@ -16,7 +16,7 @@ class DocumentUseCaseConventionTest {
   void exposesGroupedContractsAndFocusedApplicationServices() throws Exception {
     assertThat(Files.exists(ROOT.resolve("api/command/UploadDocumentCommand.java"))).isTrue();
     assertThat(Files.exists(ROOT.resolve("api/query/GetDocumentQuery.java"))).isTrue();
-    assertThat(Files.exists(ROOT.resolve("api/result/DocumentInfo.java"))).isTrue();
+    assertThat(Files.exists(ROOT.resolve("api/result/DocumentDetails.java"))).isTrue();
     assertThat(Files.exists(ROOT.resolve("api/usecase/UploadDocumentUseCase.java"))).isTrue();
     assertThat(Files.exists(ROOT.resolve("application/service/UploadDocumentService.java")))
         .isTrue();

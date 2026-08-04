@@ -1,8 +1,8 @@
 package com.emme.studio.documents.api.usecase;
 
 import com.emme.studio.documents.api.command.FailDocumentCommand;
-import com.emme.studio.documents.api.result.DocumentInfo;
+import com.emme.studio.documents.api.result.DocumentDetails;
 
 public interface FailDocumentUseCase {
-  DocumentInfo fail(FailDocumentCommand command);
+  DocumentDetails fail(FailDocumentCommand command);
 }

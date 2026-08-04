@@ -1,7 +1,7 @@
 package com.emme.studio.documents.application.mapper;
 
-import com.emme.studio.documents.api.result.DocumentChunkInfo;
-import com.emme.studio.documents.api.result.DocumentInfo;
+import com.emme.studio.documents.api.result.DocumentChunkDetails;
+import com.emme.studio.documents.api.result.DocumentDetails;
 import com.emme.studio.documents.domain.model.Document;
 import com.emme.studio.documents.domain.model.DocumentChunk;
 
@@ -10,8 +10,8 @@ public final class DocumentApplicationMapper {
 
   private DocumentApplicationMapper() {}
 
-  public static DocumentInfo toInfo(Document document) {
-    return new DocumentInfo(
+  public static DocumentDetails toResult(Document document) {
+    return new DocumentDetails(
         document.id(),
         document.tenantId(),
         document.name(),
@@ -20,8 +20,8 @@ public final class DocumentApplicationMapper {
         document.version());
   }
 
-  public static DocumentChunkInfo toInfo(DocumentChunk chunk) {
-    return new DocumentChunkInfo(
+  public static DocumentChunkDetails toResult(DocumentChunk chunk) {
+    return new DocumentChunkDetails(
         chunk.id(),
         chunk.documentId(),
         chunk.chunkIndex(),

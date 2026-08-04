@@ -1,7 +1,7 @@
 package com.emme.tenancy.application.service;
 
 import com.emme.tenancy.api.query.ListActiveTenantsQuery;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.ListActiveTenantsUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
@@ -20,9 +20,9 @@ public class ListActiveTenantsService implements ListActiveTenantsUseCase {
   }
 
   @Override
-  public List<TenantInfo> list(ListActiveTenantsQuery query) {
+  public List<TenantDetails> list(ListActiveTenantsQuery query) {
     return repository.findByStatus(TenantStatus.ACTIVE).stream()
-        .map(TenantApplicationMapper::toInfo)
+        .map(TenantApplicationMapper::toResult)
         .toList();
   }
 }

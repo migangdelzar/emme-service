@@ -46,6 +46,6 @@ public class CancelAppointmentService implements CancelAppointmentUseCase {
     eventPublisher.publish(
         new AppointmentCancelledEvent(
             UUID.randomUUID(), saved.getTenantId(), saved.getId(), Instant.now()));
-    return support.toView(saved);
+    return support.toDetails(saved);
   }
 }

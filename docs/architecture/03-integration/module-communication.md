@@ -12,7 +12,7 @@ Modules communicate through stable, intentional boundaries. The default choice i
 |---|---|---|
 | Immediate decision/result | Synchronous module API | Check tenant entitlement before booking |
 | Independent reaction | Public `api.event` fact plus an explicit delivery mode | Appointment scheduled → notification |
-| Stable shared vocabulary | Owning module's `api.type` / `api.event` | `TenantInfo`, `AppointmentCreated` |
+| Stable shared vocabulary | Owning module's `api.type` / `api.event` | `TenantDetails`, `AppointmentCreated` |
 | Internal implementation detail | Private module call | Aggregate to repository port |
 
 ## Rules

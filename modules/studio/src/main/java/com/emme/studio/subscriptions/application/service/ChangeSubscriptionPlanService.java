@@ -1,7 +1,7 @@
 package com.emme.studio.subscriptions.application.service;
 
 import com.emme.studio.subscriptions.api.command.ChangeSubscriptionPlanCommand;
-import com.emme.studio.subscriptions.api.result.SubscriptionInfo;
+import com.emme.studio.subscriptions.api.result.SubscriptionDetails;
 import com.emme.studio.subscriptions.api.usecase.ChangeSubscriptionPlanUseCase;
 import com.emme.studio.subscriptions.application.mapper.SubscriptionApplicationMapper;
 import com.emme.studio.subscriptions.application.port.out.SubscriptionRepository;
@@ -19,12 +19,12 @@ public class ChangeSubscriptionPlanService implements ChangeSubscriptionPlanUseC
   }
 
   @Override
-  public SubscriptionInfo change(ChangeSubscriptionPlanCommand command) {
+  public SubscriptionDetails change(ChangeSubscriptionPlanCommand command) {
     Subscription subscription =
         repository
             .findByTenantId(command.tenantId())
             .orElseThrow(() -> new IllegalArgumentException("No subscription for tenant"));
     subscription.changePlan(command.plan());
-    return SubscriptionApplicationMapper.toInfo(repository.save(subscription));
+    return SubscriptionApplicationMapper.toResult(repository.save(subscription));
   }
 }

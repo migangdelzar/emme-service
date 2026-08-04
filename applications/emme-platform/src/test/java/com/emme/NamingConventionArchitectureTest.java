@@ -42,4 +42,14 @@ class NamingConventionArchitectureTest {
     NamingRules.useCasesUseUseCaseSuffix().check(CLASSES);
     NamingRules.exceptionsUseExceptionSuffix().check(CLASSES);
   }
+
+  @Test
+  void apiResultsUseSemanticNames() {
+    NamingRules.apiResultsAvoidInfoSuffix().check(CLASSES);
+  }
+
+  @Test
+  void apiTypesUseDomainNamesInsteadOfTransportViews() {
+    NamingRules.apiTypesAvoidViewSuffix().check(CLASSES);
+  }
 }

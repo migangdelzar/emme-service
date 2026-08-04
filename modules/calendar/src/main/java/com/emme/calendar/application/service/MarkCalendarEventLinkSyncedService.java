@@ -1,6 +1,6 @@
 package com.emme.calendar.application.service;
 
-import com.emme.calendar.api.result.CalendarEventLinkInfo;
+import com.emme.calendar.api.result.CalendarEventLinkDetails;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
 import com.emme.calendar.application.mapper.CalendarEventLinkApplicationMapper;
 import com.emme.calendar.application.port.out.CalendarEventLinkRepository;
@@ -21,12 +21,12 @@ public class MarkCalendarEventLinkSyncedService implements MarkCalendarEventLink
   }
 
   @Override
-  public CalendarEventLinkInfo markSynced(UUID tenantId, UUID appointmentId, String etag) {
+  public CalendarEventLinkDetails markSynced(UUID tenantId, UUID appointmentId, String etag) {
     CalendarEventLink link =
         repository
             .findByTenantIdAndAppointmentId(tenantId, appointmentId)
             .orElseThrow(() -> new IllegalArgumentException("No link found for " + appointmentId));
     link.markSynced(etag);
-    return CalendarEventLinkApplicationMapper.toInfo(repository.save(link));
+    return CalendarEventLinkApplicationMapper.toResult(repository.save(link));
   }
 }

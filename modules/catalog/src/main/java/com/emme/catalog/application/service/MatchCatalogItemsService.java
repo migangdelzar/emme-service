@@ -3,9 +3,9 @@ package com.emme.catalog.application.service;
 import com.emme.assistant.ai.api.usecase.CaptionImageUseCase;
 import com.emme.assistant.ai.api.usecase.EmbedTextUseCase;
 import com.emme.catalog.api.query.MatchCatalogItemsQuery;
-import com.emme.catalog.api.result.CatalogMatchInfo;
-import com.emme.catalog.api.result.CatalogMatchListInfo;
-import com.emme.catalog.api.result.MatchedImageInfo;
+import com.emme.catalog.api.result.CatalogMatchDetails;
+import com.emme.catalog.api.result.CatalogMatchList;
+import com.emme.catalog.api.result.MatchedImageDetails;
 import com.emme.catalog.api.usecase.MatchCatalogItemsUseCase;
 import com.emme.catalog.application.port.out.CatalogItemImageRepository;
 import com.emme.catalog.application.port.out.CatalogItemRepository;
@@ -53,7 +53,7 @@ public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
   }
 
   @Override
-  public CatalogMatchListInfo match(MatchCatalogItemsQuery query) {
+  public CatalogMatchList match(MatchCatalogItemsQuery query) {
     UUID tenantId = query.tenantId();
 
     // 1. Build combined query text (caption the image if provided)
@@ -77,7 +77,7 @@ public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
 
     // 5. Aggregate scores: item hits + image hits (mapped to their parent item)
     Map<UUID, Double> itemScores = new HashMap<>();
-    Map<UUID, List<MatchedImageInfo>> itemImages = new HashMap<>();
+    Map<UUID, List<MatchedImageDetails>> itemImages = new HashMap<>();
 
     for (CatalogSearchHit hit : itemHits) {
       itemScores.merge(hit.id(), hit.score(), Double::sum);
@@ -94,11 +94,11 @@ public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
         itemScores.merge(parentId, imgScore, Double::sum);
         itemImages
             .computeIfAbsent(parentId, k -> new ArrayList<>())
-            .add(new MatchedImageInfo(img.getId(), img.getStorageKey()));
+            .add(new MatchedImageDetails(img.getId(), img.getStorageKey()));
       }
     }
 
-    if (itemScores.isEmpty()) return new CatalogMatchListInfo(List.of());
+    if (itemScores.isEmpty()) return new CatalogMatchList(List.of());
 
     // 6. Load catalog items with tenant isolation check
     Map<UUID, CatalogItem> itemsById = new HashMap<>();
@@ -109,12 +109,12 @@ public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
     }
 
     // 7. Build results sorted by score descending
-    List<CatalogMatchInfo> results = new ArrayList<>();
+    List<CatalogMatchDetails> results = new ArrayList<>();
     for (var entry : itemScores.entrySet()) {
       CatalogItem item = itemsById.get(entry.getKey());
       if (item == null) continue;
       results.add(
-          new CatalogMatchInfo(
+          new CatalogMatchDetails(
               item.getId(),
               item.getName(),
               item.getPrice(),
@@ -122,7 +122,7 @@ public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
               itemImages.getOrDefault(entry.getKey(), List.of())));
     }
 
-    results.sort(Comparator.comparingDouble(CatalogMatchInfo::score).reversed());
-    return new CatalogMatchListInfo(results);
+    results.sort(Comparator.comparingDouble(CatalogMatchDetails::score).reversed());
+    return new CatalogMatchList(results);
   }
 }

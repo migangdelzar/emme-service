@@ -12,7 +12,7 @@ state, tenant ownership, endpoints, and authorization behavior.
 com.emme.studio.subscriptions
 ├── application/SubscriptionService.java
 ├── entity/{Subscription,SubscriptionStatus,SubscriptionRepository}
-├── api/{SubscriptionInfo,SubscriptionApi?}
+├── api/{SubscriptionDetails,SubscriptionApi?}
 └── web/SubscriptionController.java
 ```
 

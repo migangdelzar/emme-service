@@ -81,7 +81,7 @@ secret redaction, and service-wide verification.
 
 - The legacy multi-operation `TenantApi` is replaced by focused grouped
   `api/usecase` interfaces; consumers are updated in the same commit.
-- `TenantInfo` moves to `api/result`.
+- `TenantDetails` moves to `api/result`.
 - `TenantCreatedEvent` becomes `api/event/TenantCreated` if its consumers and
   event schema permit the normalized name; otherwise record a compatibility ADR.
 - `Tenant`, `DatabaseRegistry`, and `AuditEvent` are not API types.
@@ -163,7 +163,7 @@ secret redaction, and service-wide verification.
 ## Completed incremental slice — 2026-07-31
 
 - [x] Grouped tenant commands, queries, results, and focused use cases under
-  `api`, with `TenantInfo` under `api/result`.
+  `api`, with `TenantDetails` under `api/result`.
 - [x] Preserved the `tenant-api` and `tenant-events` named-interface identifiers
   while moving contract ownership to grouped packages.
 - [x] Renamed the public event to the normalized past-tense `TenantCreated` and

@@ -50,7 +50,7 @@ flowchart LR
 | `GetCurrentUserQuery` | Carries authenticated user identity and the optional tenant claim. |
 | `GetCurrentUserUseCase` | Stable application capability exposed to inbound adapters. |
 | `GetCurrentUserService` | Coordinates public Identity, Tenancy, and Studio capabilities and selects the profile tenant. |
-| `CurrentUserInfo` | Identity-owned application result; does not expose Studio's profile result type. |
+| `CurrentUserDetails` | Identity-owned application result; does not expose Studio's profile result type. |
 | `CurrentUserController` | Extracts `UserContext`, invokes the use case, and delegates response mapping. |
 | `AuthController` | Performs authentication and invokes the same current-user capability for login enrichment. |
 | `IdentityWebMapper` | Converts the Identity application result to the HTTP response contract. |

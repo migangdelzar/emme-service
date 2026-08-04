@@ -41,7 +41,7 @@ public class ListAppointmentsByDateService implements ListAppointmentsByDateUseC
     var dayStart = ZonedDateTime.of(date.atStartOfDay(), STUDIO_ZONE).toInstant();
     var dayEnd = ZonedDateTime.of(date.plusDays(1).atStartOfDay(), STUDIO_ZONE).toInstant();
     return repository.findByTenantIdAndStartsAtBetween(tenantId, dayStart, dayEnd).stream()
-        .map(support::toView)
+        .map(support::toDetails)
         .toList();
   }
 }

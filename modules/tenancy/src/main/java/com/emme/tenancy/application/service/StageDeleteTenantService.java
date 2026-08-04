@@ -1,7 +1,7 @@
 package com.emme.tenancy.application.service;
 
 import com.emme.tenancy.api.command.StageDeleteTenantCommand;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.StageDeleteTenantUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
@@ -18,9 +18,9 @@ public class StageDeleteTenantService implements StageDeleteTenantUseCase {
   }
 
   @Override
-  public TenantInfo stageDelete(StageDeleteTenantCommand command) {
+  public TenantDetails stageDelete(StageDeleteTenantCommand command) {
     var tenant = TenantServiceSupport.require(repository, command.tenantId());
     tenant.markDeleted();
-    return TenantApplicationMapper.toInfo(repository.save(tenant));
+    return TenantApplicationMapper.toResult(repository.save(tenant));
   }
 }

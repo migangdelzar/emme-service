@@ -1,6 +1,6 @@
 package com.emme.calendar.application.service;
 
-import com.emme.calendar.api.result.CalendarEventLinkInfo;
+import com.emme.calendar.api.result.CalendarEventLinkDetails;
 import com.emme.calendar.api.usecase.FindCalendarEventLinksUseCase;
 import com.emme.calendar.application.mapper.CalendarEventLinkApplicationMapper;
 import com.emme.calendar.application.port.out.CalendarEventLinkRepository;
@@ -21,9 +21,9 @@ public class FindCalendarEventLinksService implements FindCalendarEventLinksUseC
   }
 
   @Override
-  public List<CalendarEventLinkInfo> findByAppointmentId(UUID appointmentId) {
+  public List<CalendarEventLinkDetails> findByAppointmentId(UUID appointmentId) {
     return repository.findByAppointmentId(appointmentId).stream()
-        .map(CalendarEventLinkApplicationMapper::toInfo)
+        .map(CalendarEventLinkApplicationMapper::toResult)
         .toList();
   }
 }

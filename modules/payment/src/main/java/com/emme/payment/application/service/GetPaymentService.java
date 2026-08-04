@@ -1,7 +1,7 @@
 package com.emme.payment.application.service;
 
 import com.emme.payment.api.query.GetPaymentQuery;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import com.emme.payment.api.usecase.GetPaymentUseCase;
 import com.emme.payment.application.mapper.PaymentApplicationMapper;
 import com.emme.payment.application.port.out.PaymentRepository;
@@ -19,9 +19,9 @@ public class GetPaymentService implements GetPaymentUseCase {
   }
 
   @Override
-  public Optional<PaymentInfo> get(GetPaymentQuery query) {
+  public Optional<PaymentDetails> get(GetPaymentQuery query) {
     return repository
         .findByTenantIdAndId(query.tenantId(), query.paymentId())
-        .map(PaymentApplicationMapper::toInfo);
+        .map(PaymentApplicationMapper::toResult);
   }
 }

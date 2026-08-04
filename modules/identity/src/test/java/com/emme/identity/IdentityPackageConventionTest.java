@@ -25,9 +25,9 @@ class IdentityPackageConventionTest {
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/application/service/IdentityApiService.java");
   private static final Path LEGACY_MEMBERSHIP_RESULT =
-      sourcePath("modules/identity/src/main/java/com/emme/identity/api/MembershipInfo.java");
+      sourcePath("modules/identity/src/main/java/com/emme/identity/api/MembershipDetails.java");
   private static final Path LEGACY_USER_RESULT =
-      sourcePath("modules/identity/src/main/java/com/emme/identity/api/UserInfo.java");
+      sourcePath("modules/identity/src/main/java/com/emme/identity/api/UserDetails.java");
   private static final Path LEGACY_PERSISTENCE_PACKAGE =
       sourcePath("modules/identity/src/main/java/com/emme/identity/entity");
   private static final Path PERSISTENCE_PACKAGE =
@@ -758,7 +758,7 @@ class IdentityPackageConventionTest {
             "modules/identity/src/main/java/com/emme/identity/api/query/GetCurrentUserQuery.java");
     Path result =
         sourcePath(
-            "modules/identity/src/main/java/com/emme/identity/api/result/CurrentUserInfo.java");
+            "modules/identity/src/main/java/com/emme/identity/api/result/CurrentUserDetails.java");
     Path useCase =
         sourcePath(
             "modules/identity/src/main/java/com/emme/identity/api/usecase/GetCurrentUserUseCase.java");

@@ -2,7 +2,7 @@ package com.emme.studio.documents.application.service;
 
 import com.emme.studio.documents.api.command.FailDocumentCommand;
 import com.emme.studio.documents.api.exception.DocumentNotFoundException;
-import com.emme.studio.documents.api.result.DocumentInfo;
+import com.emme.studio.documents.api.result.DocumentDetails;
 import com.emme.studio.documents.api.usecase.FailDocumentUseCase;
 import com.emme.studio.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.studio.documents.application.port.out.DocumentRepository;
@@ -25,13 +25,13 @@ public class FailDocumentService implements FailDocumentUseCase {
   }
 
   @Override
-  public DocumentInfo fail(FailDocumentCommand command) {
+  public DocumentDetails fail(FailDocumentCommand command) {
     Document document =
         documentRepository
             .findByTenantIdAndId(command.tenantId(), command.documentId())
             .orElseThrow(() -> new DocumentNotFoundException(command.documentId()));
     document.markFailed();
     log.warn("Document {} failed: {}", command.documentId(), command.error());
-    return DocumentApplicationMapper.toInfo(documentRepository.save(document));
+    return DocumentApplicationMapper.toResult(documentRepository.save(document));
   }
 }

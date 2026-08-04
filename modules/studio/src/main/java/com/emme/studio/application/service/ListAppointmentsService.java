@@ -1,6 +1,6 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.api.result.AppointmentInfo;
+import com.emme.studio.api.result.AppointmentSummary;
 import com.emme.studio.api.usecase.ListAppointmentsUseCase;
 import com.emme.studio.application.port.out.AppointmentRepository;
 import com.emme.studio.application.port.out.ArtistRepository;
@@ -35,13 +35,13 @@ public class ListAppointmentsService implements ListAppointmentsUseCase {
   }
 
   @Override
-  public List<AppointmentInfo> listAppointments(UUID tenantId) {
+  public List<AppointmentSummary> listAppointments(UUID tenantId) {
     return appointmentRepository.findByTenantIdOrderByStartsAtDesc(tenantId).stream()
-        .map(this::toAppointmentInfo)
+        .map(this::toAppointmentSummary)
         .toList();
   }
 
-  private AppointmentInfo toAppointmentInfo(Appointment appointment) {
+  private AppointmentSummary toAppointmentSummary(Appointment appointment) {
     String customerName =
         customerRepository
             .findById(appointment.getCustomerId())
@@ -57,7 +57,7 @@ public class ListAppointmentsService implements ListAppointmentsUseCase {
             .findById(appointment.getArtistId())
             .map(com.emme.studio.domain.model.Artist::getName)
             .orElse(null);
-    return new AppointmentInfo(
+    return new AppointmentSummary(
         appointment.getId(),
         appointment.getStartsAt(),
         appointment.getEndsAt(),

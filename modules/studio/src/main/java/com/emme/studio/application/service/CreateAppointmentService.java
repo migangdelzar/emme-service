@@ -62,6 +62,6 @@ public class CreateAppointmentService implements CreateAppointmentUseCase {
             startsAt,
             endsAt,
             Instant.now()));
-    return support.toView(saved);
+    return support.toDetails(saved);
   }
 }

@@ -1,7 +1,7 @@
 package com.emme.payment.application.service;
 
 import com.emme.payment.api.query.ListPaymentsQuery;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import com.emme.payment.api.usecase.ListPaymentsUseCase;
 import com.emme.payment.application.mapper.PaymentApplicationMapper;
 import com.emme.payment.application.port.out.PaymentRepository;
@@ -19,9 +19,9 @@ public class ListPaymentsService implements ListPaymentsUseCase {
   }
 
   @Override
-  public List<PaymentInfo> list(ListPaymentsQuery query) {
+  public List<PaymentDetails> list(ListPaymentsQuery query) {
     return repository.findByTenantId(query.tenantId()).stream()
-        .map(PaymentApplicationMapper::toInfo)
+        .map(PaymentApplicationMapper::toResult)
         .toList();
   }
 }

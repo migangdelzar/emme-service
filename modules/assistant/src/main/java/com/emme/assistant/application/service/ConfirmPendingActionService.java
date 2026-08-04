@@ -1,7 +1,7 @@
 package com.emme.assistant.application.service;
 
 import com.emme.assistant.api.command.ConfirmPendingActionCommand;
-import com.emme.assistant.api.result.PendingActionInfo;
+import com.emme.assistant.api.result.PendingActionDetails;
 import com.emme.assistant.api.usecase.ConfirmPendingActionUseCase;
 import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.PendingActionRepository;
@@ -20,7 +20,7 @@ public class ConfirmPendingActionService implements ConfirmPendingActionUseCase 
   }
 
   @Override
-  public PendingActionInfo confirm(ConfirmPendingActionCommand command) {
+  public PendingActionDetails confirm(ConfirmPendingActionCommand command) {
     PendingAction action =
         AssistantServiceSupport.action(repository, command.tenantId(), command.actionId());
     if (action.status() != ActionStatus.PENDING) {
@@ -36,6 +36,6 @@ public class ConfirmPendingActionService implements ConfirmPendingActionUseCase 
             action.details(),
             action.expiresAt(),
             action.createdAt());
-    return AssistantApplicationMapper.toInfo(repository.save(confirmed));
+    return AssistantApplicationMapper.toResult(repository.save(confirmed));
   }
 }

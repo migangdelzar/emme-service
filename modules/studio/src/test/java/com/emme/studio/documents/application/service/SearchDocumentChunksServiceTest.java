@@ -6,7 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.studio.documents.api.query.SearchDocumentChunksQuery;
-import com.emme.studio.documents.api.result.DocumentChunkInfo;
+import com.emme.studio.documents.api.result.DocumentChunkDetails;
 import com.emme.studio.documents.application.port.out.DocumentRepository;
 import com.emme.studio.documents.application.port.out.DocumentSearchHit;
 import com.emme.studio.documents.application.port.out.DocumentSearchPort;
@@ -39,11 +39,11 @@ class SearchDocumentChunksServiceTest {
                 new DocumentChunk(
                     secondChunkId, tenantId, documentId, 1, "second", "fingerprint-2")));
 
-    List<DocumentChunkInfo> results =
+    List<DocumentChunkDetails> results =
         service.search(new SearchDocumentChunksQuery(tenantId, List.of(0.25f), "pricing", 5));
 
     assertThat(results)
-        .extracting(DocumentChunkInfo::id)
+        .extracting(DocumentChunkDetails::id)
         .containsExactly(secondChunkId, firstChunkId);
     verify(search).search(tenantId, List.of(0.25f), "pricing", 5);
     verify(repository).findChunksByTenantIdAndIds(tenantId, List.of(secondChunkId, firstChunkId));

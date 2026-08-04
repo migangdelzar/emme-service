@@ -7,7 +7,7 @@ import com.emme.identity.adapter.in.web.security.UserContextHolder;
 import com.emme.identity.api.command.AssignMembershipCommand;
 import com.emme.identity.api.command.RevokeMembershipCommand;
 import com.emme.identity.api.query.GetCurrentUserMembershipsQuery;
-import com.emme.identity.api.result.MembershipInfo;
+import com.emme.identity.api.result.MembershipDetails;
 import com.emme.identity.api.usecase.AssignMembershipUseCase;
 import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
@@ -84,7 +84,7 @@ public class IdentityController {
     return UserContextHolder.withCurrentUser(
         user -> {
           UserContextHolder.requireTenantAccess(request.tenantId());
-          MembershipInfo membership =
+          MembershipDetails membership =
               assignMembership.assign(
                   new AssignMembershipCommand(
                       request.tenantId(), request.roleId(), request.userReference()));
@@ -103,7 +103,7 @@ public class IdentityController {
     return UserContextHolder.withCurrentUser(
         user -> {
           UserContextHolder.requireTenantAccess(user.tenantId());
-          MembershipInfo membership =
+          MembershipDetails membership =
               revokeMembership.revoke(new RevokeMembershipCommand(id, user.tenantId()));
           return ResponseEntity.ok(IdentityWebMapper.toMembershipResponse(membership));
         });

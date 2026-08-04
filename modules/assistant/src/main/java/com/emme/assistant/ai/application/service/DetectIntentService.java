@@ -1,6 +1,6 @@
 package com.emme.assistant.ai.application.service;
 
-import com.emme.assistant.ai.api.result.IntentInfo;
+import com.emme.assistant.ai.api.result.IntentResult;
 import com.emme.assistant.ai.api.usecase.DetectIntentUseCase;
 import com.emme.assistant.ai.application.port.out.ModelProvider;
 import org.springframework.stereotype.Service;
@@ -14,8 +14,8 @@ public class DetectIntentService implements DetectIntentUseCase {
   }
 
   @Override
-  public IntentInfo detect(String message) {
+  public IntentResult detect(String message) {
     ModelProvider.IntentResult result = provider.routeIntent(message);
-    return new IntentInfo(result.intent(), result.confidence(), result.parameters());
+    return new IntentResult(result.intent(), result.confidence(), result.parameters());
   }
 }

@@ -1,7 +1,7 @@
 package com.emme.assistant.application.service;
 
 import com.emme.assistant.api.command.ProposePendingActionCommand;
-import com.emme.assistant.api.result.PendingActionInfo;
+import com.emme.assistant.api.result.PendingActionDetails;
 import com.emme.assistant.api.usecase.ProposePendingActionUseCase;
 import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.ConversationRepository;
@@ -25,11 +25,11 @@ public class ProposePendingActionService implements ProposePendingActionUseCase 
   }
 
   @Override
-  public PendingActionInfo propose(ProposePendingActionCommand command) {
+  public PendingActionDetails propose(ProposePendingActionCommand command) {
     var conversation =
         AssistantServiceSupport.conversation(
             conversations, command.tenantId(), command.conversationId());
-    return AssistantApplicationMapper.toInfo(
+    return AssistantApplicationMapper.toResult(
         actions.save(
             new PendingAction(
                 UUID.randomUUID(),

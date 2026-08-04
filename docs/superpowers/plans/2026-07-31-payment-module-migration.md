@@ -50,7 +50,7 @@ Do not create unused API kinds just to fill the tree.
 ## Normalized contracts
 
 ```text
-PaymentInfo
+PaymentDetails
 GetPaymentUseCase
 InitiatePaymentUseCase
 AuthorizePaymentUseCase
@@ -94,7 +94,7 @@ only performs transport. Provider DTOs remain inside their external-system packa
   only for real public/payment workflow operations.
 - [x] Move `PaymentService` to use-case-oriented application services or a focused
   service implementing the public interfaces.
-- [x] Return `PaymentInfo`/Optional where existing endpoints require it; never
+- [x] Return `PaymentDetails`/Optional where existing endpoints require it; never
   return entities from application services.
 - [x] Add application mapper and provider port contracts.
 

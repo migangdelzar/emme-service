@@ -1,7 +1,7 @@
 package com.emme.assistant.application.service;
 
 import com.emme.assistant.api.command.StartConversationCommand;
-import com.emme.assistant.api.result.ConversationInfo;
+import com.emme.assistant.api.result.ConversationDetails;
 import com.emme.assistant.api.usecase.StartConversationUseCase;
 import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.ConversationRepository;
@@ -19,8 +19,8 @@ public class StartConversationService implements StartConversationUseCase {
   }
 
   @Override
-  public ConversationInfo start(StartConversationCommand command) {
-    return AssistantApplicationMapper.toInfo(
+  public ConversationDetails start(StartConversationCommand command) {
+    return AssistantApplicationMapper.toResult(
         repository.save(
             new Conversation(command.tenantId(), command.participantId(), command.channel())));
   }

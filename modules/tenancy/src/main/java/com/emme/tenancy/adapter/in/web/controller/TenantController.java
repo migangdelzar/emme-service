@@ -11,7 +11,7 @@ import com.emme.tenancy.api.command.SuspendTenantCommand;
 import com.emme.tenancy.api.command.UpdateTenantCommand;
 import com.emme.tenancy.api.query.GetTenantQuery;
 import com.emme.tenancy.api.query.ListTenantsQuery;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.CreateTenantUseCase;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import com.emme.tenancy.api.usecase.ListTenantsUseCase;
@@ -72,7 +72,7 @@ public class TenantController {
   @PostMapping
   @Operation(summary = "Create a new tenant")
   public ResponseEntity<TenantResponse> create(@Valid @RequestBody CreateTenantRequest request) {
-    TenantInfo tenant =
+    TenantDetails tenant =
         createTenant.create(new CreateTenantCommand(request.slug(), request.name()));
     URI location = URI.create("/api/tenants/" + tenant.id());
     return ResponseEntity.created(location).body(mapper.toResponse(tenant));
@@ -99,28 +99,28 @@ public class TenantController {
   @Operation(summary = "Update a tenant name")
   public ResponseEntity<TenantResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateTenantRequest request) {
-    TenantInfo tenant = updateTenant.update(new UpdateTenantCommand(id, request.name()));
+    TenantDetails tenant = updateTenant.update(new UpdateTenantCommand(id, request.name()));
     return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 
   @PostMapping("/{id}/suspend")
   @Operation(summary = "Suspend a tenant")
   public ResponseEntity<TenantResponse> suspend(@PathVariable UUID id) {
-    TenantInfo tenant = suspendTenant.suspend(new SuspendTenantCommand(id));
+    TenantDetails tenant = suspendTenant.suspend(new SuspendTenantCommand(id));
     return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 
   @PostMapping("/{id}/reactivate")
   @Operation(summary = "Reactivate a suspended tenant")
   public ResponseEntity<TenantResponse> reactivate(@PathVariable UUID id) {
-    TenantInfo tenant = reactivateTenant.reactivate(new ReactivateTenantCommand(id));
+    TenantDetails tenant = reactivateTenant.reactivate(new ReactivateTenantCommand(id));
     return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 
   @DeleteMapping("/{id}")
   @Operation(summary = "Stage-delete a tenant")
   public ResponseEntity<TenantResponse> stageDelete(@PathVariable UUID id) {
-    TenantInfo tenant = stageDeleteTenant.stageDelete(new StageDeleteTenantCommand(id));
+    TenantDetails tenant = stageDeleteTenant.stageDelete(new StageDeleteTenantCommand(id));
     return ResponseEntity.ok(mapper.toResponse(tenant));
   }
 }

@@ -941,7 +941,7 @@ secret-redaction contract.
 - Red phase: the source-boundary test failed because the membership controllers
   and web mapper imported `MembershipService` and the domain `Membership` type.
 - Green/refactor phase: grouped membership commands, query, use cases, and
-  `MembershipInfo` mapping now form the web-facing boundary. Controllers depend
+  `MembershipDetails` mapping now form the web-facing boundary. Controllers depend
   only on public use-case contracts and the web mapper depends only on the
   public result model.
 - Membership routes, response status codes, response fields, and tenant
@@ -1902,3 +1902,27 @@ security checks, integration tests, infrastructure validation, and packaging.
 - [x] Add the reusable web Bun setup action and optional workflow inputs.
 - [x] Document CI event modes, parallel job graphs, E2E flow, and reuse boundaries with Mermaid diagrams.
 - [ ] Verify both repositories' changed workflows in GitHub Actions.
+
+## Public contract naming normalization — 2026-08-04
+
+- [x] Establish `Status` as the canonical lifecycle/current-condition suffix and
+  `Type` as the canonical classification suffix; reject `State`, `Kind`, and
+  `StatusView` for new public contracts.
+- [x] Establish `Details`, `Summary`, and `Page` as the canonical public read
+  shapes; reserve `Result` for non-resource operation outcomes and `View` for
+  explicit CQRS/read projections.
+- [x] Rename ambiguous public `*Info`/`*View` contracts across Assistant,
+  Calendar, Catalog, Identity, Notification, Payment, Studio, and Tenancy.
+- [x] Rename the Identity claims query from `GetUserInfoQuery` to
+  `GetUserClaimsQuery` and align the use-case/port operation to `getUserClaims`.
+- [x] Remove the duplicate Identity `BusinessProfileSummary`; Identity now
+  consumes the Studio-owned public summary contract.
+- [x] Add executable naming guards for public API result/type suffixes and
+  verify module tests, Modulith/ArchUnit tests, Spotless, and stale-name scans.
+
+### Results
+
+The naming source of truth is
+`docs/architecture/00-project/naming-conventions.md`. The module and application
+templates now use the same vocabulary, so future modules do not need to choose
+between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis.

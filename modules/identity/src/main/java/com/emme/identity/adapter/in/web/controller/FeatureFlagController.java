@@ -5,7 +5,7 @@ import com.emme.identity.adapter.in.web.request.CreateFeatureFlagRequest;
 import com.emme.identity.adapter.in.web.request.UpdateFeatureFlagRequest;
 import com.emme.identity.adapter.in.web.response.FeatureFlagResponse;
 import com.emme.identity.api.command.SetPlatformFeatureFlagCommand;
-import com.emme.identity.api.result.FeatureFlagInfo;
+import com.emme.identity.api.result.FeatureFlagDetails;
 import com.emme.identity.api.usecase.ListPlatformFeatureFlagsUseCase;
 import com.emme.identity.api.usecase.SetPlatformFeatureFlagUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +47,7 @@ public class FeatureFlagController {
   @PostMapping
   @Operation(summary = "Create a global feature flag")
   public ResponseEntity<FeatureFlagResponse> create(@RequestBody CreateFeatureFlagRequest request) {
-    FeatureFlagInfo featureFlag =
+    FeatureFlagDetails featureFlag =
         setPlatformFeatureFlag.set(
             new SetPlatformFeatureFlagCommand(
                 request.code(), request.enabled(), request.planRequired()));
@@ -58,7 +58,7 @@ public class FeatureFlagController {
   @Operation(summary = "Update a global feature flag")
   public ResponseEntity<FeatureFlagResponse> update(
       @PathVariable String code, @RequestBody UpdateFeatureFlagRequest request) {
-    FeatureFlagInfo featureFlag =
+    FeatureFlagDetails featureFlag =
         setPlatformFeatureFlag.set(
             new SetPlatformFeatureFlagCommand(code, request.enabled(), request.planRequired()));
     return ResponseEntity.ok(FeatureFlagWebMapper.toResponse(featureFlag));

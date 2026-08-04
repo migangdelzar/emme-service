@@ -1,6 +1,6 @@
 package com.emme.payment.adapter.in.web.response;
 
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -12,7 +12,7 @@ public record PaymentResponse(
     String currency,
     String status,
     Instant updatedAt) {
-  public static PaymentResponse from(PaymentInfo payment) {
+  public static PaymentResponse from(PaymentDetails payment) {
     return new PaymentResponse(
         payment.id(),
         payment.providerReference(),

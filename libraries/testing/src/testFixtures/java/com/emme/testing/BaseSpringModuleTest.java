@@ -8,7 +8,7 @@ import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDa
 import com.emme.studio.subscriptions.api.type.PlanType;
 import com.emme.tenancy.api.command.CreateTenantCommand;
 import com.emme.tenancy.api.query.GetTenantQuery;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.CreateTenantUseCase;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.time.Instant;
@@ -64,7 +64,7 @@ public abstract class BaseSpringModuleTest {
 
   /** Create tenant + ENTERPRISE subscription + global feature flags. */
   protected UUID fullSetup() {
-    TenantInfo tenant = createTenant("test-" + System.nanoTime(), "Test Salon");
+    TenantDetails tenant = createTenant("test-" + System.nanoTime(), "Test Salon");
     UUID tid = tenant.id();
     tenantId = tid;
 
@@ -92,11 +92,11 @@ public abstract class BaseSpringModuleTest {
     return tid;
   }
 
-  protected TenantInfo createTenant(String slug, String name) {
+  protected TenantDetails createTenant(String slug, String name) {
     return createTenantUseCase.create(new CreateTenantCommand(slug, name));
   }
 
-  protected TenantInfo findTenant(UUID tenantId) {
+  protected TenantDetails findTenant(UUID tenantId) {
     return getTenantUseCase.get(new GetTenantQuery(tenantId)).orElseThrow();
   }
 

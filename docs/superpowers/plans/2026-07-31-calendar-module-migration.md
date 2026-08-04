@@ -58,7 +58,7 @@ are the authoritative source for future Calendar work.
 
 ```text
 modules/calendar/src/main/java/com/emme/calendar/
-├── api/CalendarEventLinkInfo.java
+├── api/CalendarEventLinkDetails.java
 ├── api/CalendarSyncApi.java
 ├── api/TokenSource.java
 ├── application/CalendarService.java
@@ -97,7 +97,7 @@ modules/calendar/src/main/java/com/emme/calendar/
 ```text
 modules/calendar/src/main/java/com/emme/calendar/
 ├── api/
-│   ├── result/CalendarEventLinkInfo.java
+│   ├── result/CalendarEventLinkDetails.java
 │   ├── usecase/CalendarSyncApi.java
 │   ├── type/TokenSource.java
 │   └── event/CalendarSyncRequested.java
@@ -149,7 +149,7 @@ modules/calendar/src/main/java/com/emme/calendar/
 
 The target names are intentionally explicit. `CalendarSyncApi` remains the
 public API contract for existing internal consumers; `CalendarSyncApiService`
-is the application implementation. The existing public `CalendarEventLinkInfo`
+is the application implementation. The existing public `CalendarEventLinkDetails`
 record remains a result type, and `CalendarSyncRequested` moves to `api.event`
 because it is consumed by Google synchronization adapters.
 
@@ -261,7 +261,7 @@ local TDD checkpoint and the commit is completed after Task 6 makes it green.
 - Create: `modules/calendar/src/main/java/com/emme/calendar/api/result/package-info.java`
 - Create: `modules/calendar/src/main/java/com/emme/calendar/api/usecase/package-info.java`
 - Create: `modules/calendar/src/main/java/com/emme/calendar/api/type/package-info.java`
-- Move: `api/CalendarEventLinkInfo.java` → `api/result/CalendarEventLinkInfo.java`
+- Move: `api/CalendarEventLinkDetails.java` → `api/result/CalendarEventLinkDetails.java`
 - Move: `api/CalendarSyncApi.java` → `api/usecase/CalendarSyncApi.java`
 - Move: `api/TokenSource.java` → `api/type/TokenSource.java`
 - Move: `event/CalendarSyncRequested.java` → `api/event/CalendarSyncRequested.java`
@@ -283,7 +283,7 @@ Add a metadata test to `CalendarPackageConventionTest.java`:
 ```java
 @Test
 void publicContractsAreGroupedByKind() {
-  assertThat(CLASSES.contains("com.emme.calendar.api.result.CalendarEventLinkInfo")).isTrue();
+  assertThat(CLASSES.contains("com.emme.calendar.api.result.CalendarEventLinkDetails")).isTrue();
   assertThat(CLASSES.contains("com.emme.calendar.api.usecase.CalendarSyncApi")).isTrue();
   assertThat(CLASSES.contains("com.emme.calendar.api.type.TokenSource")).isTrue();
   assertThat(CLASSES.contains("com.emme.calendar.api.event.CalendarSyncRequested")).isTrue();
@@ -575,7 +575,7 @@ git commit -m "refactor(calendar): isolate persistence behind outbound ports"
 - Create: `application/mapper/package-info.java`
 - Create: `adapter/in/web/package-info.java`
 - Create: `adapter/in/messaging/package-info.java`
-- Modify: `api/result/CalendarEventLinkInfo.java`
+- Modify: `api/result/CalendarEventLinkDetails.java`
 - Modify: `api/usecase/CalendarSyncApi.java`
 - Modify: `modules/calendar/src/test/java/com/emme/calendar/module/CalendarModuleTest.java`
 - Modify: `modules/calendar/src/integrationTest/java/com/emme/calendar/GoogleCalendarClientLiveTest.java`
@@ -601,7 +601,7 @@ void findsEventLinksThroughTheOutboundPort() {
   CalendarSyncApiService service = new CalendarSyncApiService(repositoryPort);
 
   assertThat(service.findByAppointmentId(appointmentId))
-      .extracting(CalendarEventLinkInfo::externalEventId)
+      .extracting(CalendarEventLinkDetails::externalEventId)
       .containsExactly("event-1");
 }
 ```
@@ -1088,7 +1088,7 @@ After this plan is complete, create separate plans for:
 ## Completed Google Sheets inbound-boundary slice — 2026-08-01
 
 - [x] Added application-owned export and spreadsheet-link query ports.
-- [x] Added the public `GoogleSpreadsheetInfo` result model and persistence
+- [x] Added the public `GoogleSpreadsheetDetails` result model and persistence
   mapping for spreadsheet links.
 - [x] Kept Google Sheets provider and Spring Data implementations in outbound
   adapters.

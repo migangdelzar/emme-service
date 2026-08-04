@@ -1,7 +1,7 @@
 package com.emme.assistant.application.service;
 
 import com.emme.assistant.api.query.ListConversationsQuery;
-import com.emme.assistant.api.result.ConversationInfo;
+import com.emme.assistant.api.result.ConversationDetails;
 import com.emme.assistant.api.usecase.ListConversationsUseCase;
 import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.ConversationRepository;
@@ -19,9 +19,9 @@ public class ListConversationsService implements ListConversationsUseCase {
   }
 
   @Override
-  public List<ConversationInfo> list(ListConversationsQuery query) {
+  public List<ConversationDetails> list(ListConversationsQuery query) {
     return repository.findByTenantId(query.tenantId()).stream()
-        .map(AssistantApplicationMapper::toInfo)
+        .map(AssistantApplicationMapper::toResult)
         .toList();
   }
 }

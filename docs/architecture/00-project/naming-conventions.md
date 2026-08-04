@@ -65,7 +65,7 @@ whose management behavior is explicitly defined.
 | `<module>.api.usecase` | Inbound public capabilities | `<Verb><Subject>UseCase.java` |
 | `<module>.api.event` | Public completed facts | `<Subject><PastParticiple>.java` |
 | `<module>.api.exception` | Caller-visible expected failures | `<Subject><Failure>Exception.java` |
-| `<module>.api.type` | Small stable public vocabulary | `<Concept><Qualifier>.java` |
+| `<module>.api.type` | Small stable public vocabulary | `<Concept>.java` or `<Concept>Type.java` |
 | `<module>.application.service` | Use-case orchestration | `<Verb><Subject>Service.java` |
 | `<module>.application.port.out` | External capabilities required by application | `<Capability>Port.java`, `<Capability>Entry.java`, `<Aggregate>Repository.java`, `<Fact>Publisher.java` |
 | `<module>.application.mapper` | API/domain translation | `<Module>ApplicationMapper.java` |
@@ -122,7 +122,25 @@ flowchart LR
 | Use case | Capability exposed by the module | `<Verb><Subject>UseCase` | `SubmitQuoteUseCase` |
 | Event | Completed fact | `<Subject><PastParticiple>` | `QuoteSubmitted` |
 | Public exception | Expected caller-visible failure | `<Subject><Failure>Exception` | `QuoteNotFoundException` |
-| Public type | Stable semantic vocabulary | `<Concept><Qualifier>` | `QuoteId`, `QuoteStatusView` |
+| Public type | Stable semantic vocabulary | `<Concept>` or `<Concept>Type` | `QuoteId`, `QuoteStatus`, `ActionType` |
+
+### Status and Type vocabulary
+
+Use one vocabulary consistently across domain and public contracts:
+
+| Suffix | Meaning | Examples | Do not use instead |
+|---|---|---|---|
+| `Status` | Lifecycle, state machine, or current condition | `QuoteStatus`, `PaymentStatus`, `ConversationStatus` | `State`, `StatusView` |
+| `Type` | Classification or closed category | `ActionType`, `NotificationType`, `ChannelType` | `Kind`, `Category` when the concept is already called a type |
+| `Role` | Authorization or business role | `MembershipRole`, `UserRole` | `RoleType` unless it is genuinely a type of role |
+| `Scope` | Boundary within which a rule applies | `RoleScope`, `TenantScope` | `ScopeView` |
+
+Domain and API packages may contain separate types with the same semantic name,
+for example `domain.model.PaymentStatus` and `api.type.PaymentStatus`. This is
+intentional boundary protection, not an unnecessary wrapper. The API type must
+remain immutable and behavior-free; the domain type owns business invariants.
+When both types are used in one Java file, qualify one import explicitly rather
+than adding a suffix such as `View`, `Code`, or `State`.
 
 ### Verb vocabulary
 
@@ -144,8 +162,8 @@ flowchart LR
 | `Details` | Full view of one resource | `QuoteDetails` |
 | `Summary` | Compact list/search item | `QuoteSummary` |
 | `Page` | Paginated collection plus metadata | `QuotePage` |
-| `Info` | Existing flat read model or compatibility name | `TenantInfo` |
-| `View` | Explicit CQRS/read-view vocabulary | `QuoteStatusView` |
+| `Info` | Avoid; too ambiguous for a new contract | `TenantDetails` |
+| `View` | Avoid for API types; reserve for an explicitly named CQRS projection | `QuoteSearchView` only when it is a real read projection |
 | `Result` | Non-resource operation outcome | `DeploymentResult` |
 
 Do not use `Dto` as a default suffix. Use `Request`, `Response`, `Command`,
@@ -175,7 +193,8 @@ an adjacent `<Concept>Validator`; see the [validation conventions](../01-backend
 |---|---|---|
 | Domain lifecycle | `<Aggregate>Status` | `QuoteStatus` |
 | Domain role | `<Subject>Role` | `MembershipRole` |
-| Public serialized status | `<Aggregate>StatusView` when it differs from domain | `QuoteStatusView` |
+| Public serialized status | `<Aggregate>Status` | `QuoteStatus`, `PaymentStatus` |
+| Public classification | `<Subject>Type` | `ActionType`, `ChannelType` |
 | Build-logic mode | `<Capability><Concern>` | `QualityGateMode`, `ReleaseChannel` |
 | Values | `UPPER_SNAKE_CASE` | `IN_PROGRESS`, `READ_ONLY` |
 

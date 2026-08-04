@@ -48,8 +48,8 @@ stable.
 com.emme.studio/
 ├── api/
 │   ├── result/
-│   │   ├── AppointmentInfo.java
-│   │   ├── BusinessProfileInfo.java
+│   │   ├── AppointmentSummary.java
+│   │   ├── BusinessProfileSummary.java
 │   │   └── CustomerInfo.java
 │   ├── usecase/
 │   │   └── SalonApi.java

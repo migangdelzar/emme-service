@@ -1,7 +1,7 @@
 package com.emme.tenancy.application.service;
 
 import com.emme.tenancy.api.query.ListTenantsQuery;
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.ListTenantsUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
@@ -19,7 +19,7 @@ public class ListTenantsService implements ListTenantsUseCase {
   }
 
   @Override
-  public List<TenantInfo> list(ListTenantsQuery query) {
-    return repository.findAll().stream().map(TenantApplicationMapper::toInfo).toList();
+  public List<TenantDetails> list(ListTenantsQuery query) {
+    return repository.findAll().stream().map(TenantApplicationMapper::toResult).toList();
   }
 }

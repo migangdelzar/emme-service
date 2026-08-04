@@ -51,7 +51,7 @@ modules/<capability>/
 ├── build.gradle.kts
 └── src/main/java/com/emme/<capability>/
     ├── package-info.java                   # @ApplicationModule
-    ├── api/                                # public contract, grouped by kind
+    ├── api/                                # public contract, grouped by contract type
     │   ├── command/
     │   ├── query/
     │   ├── result/

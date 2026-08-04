@@ -1,8 +1,8 @@
 package com.emme.notification.api.usecase;
 
 import com.emme.notification.api.command.CancelNotificationCommand;
-import com.emme.notification.api.result.NotificationInfo;
+import com.emme.notification.api.result.NotificationDetails;
 
 public interface CancelNotificationUseCase {
-  NotificationInfo cancel(CancelNotificationCommand command);
+  NotificationDetails cancel(CancelNotificationCommand command);
 }

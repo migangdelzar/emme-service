@@ -152,7 +152,7 @@ Schema ownership is logical even when migrations are physically centralized. In 
 
 ### Package-layout invariant
 
-The public contract is grouped by kind:
+The public contract is grouped by contract type:
 
 ```text
 api/{command,query,result,usecase,event,exception,type}
@@ -162,7 +162,7 @@ Do not flatten these types into `api/`, combine them in `api/model`, publish use
 
 ### Class kinds by folder
 
-Folder names describe what kind of class goes where, independent of what triggers the module: an HTTP request, a scheduled tick, a consumed message, or a CLI invocation all end up calling the same `application/service/` orchestrator through a different inbound adapter. Use this table when deciding where a new class belongs, in any module of any application type (web API, background worker, CLI, event-driven consumer).
+Folder names describe what contract type or responsibility goes where, independent of what triggers the module: an HTTP request, a scheduled tick, a consumed message, or a CLI invocation all end up calling the same `application/service/` orchestrator through a different inbound adapter. Use this table when deciding where a new class belongs, in any module of any application type (web API, background worker, CLI, event-driven consumer).
 
 | Folder | Class kind | Example |
 |---|---|---|
@@ -172,7 +172,7 @@ Folder names describe what kind of class goes where, independent of what trigger
 | `api/usecase/` | Inbound use-case interfaces published by the module | `ConfirmBookingUseCase` |
 | `api/event/` | Past-tense public completed facts | `BookingConfirmed` |
 | `api/exception/` | Expected failures intentionally exposed to callers | `BookingNotFoundException` |
-| `api/type/` | Small stable public value types | `BookingId`, `BookingStatusView` |
+| `api/type/` | Small stable public value types | `BookingId`, `BookingStatus`, `BookingType` |
 | `domain/exception/` | Domain rule violations and invariant failures | `InvalidBookingStateException` |
 | `domain/model/` | Aggregates, entities, value objects; state plus invariants | `Booking`, `Money` |
 | `domain/service/` | Stateless business rules spanning domain objects | `BookingCollisionPolicy` |
@@ -226,8 +226,8 @@ The options below describe existing layouts that may be encountered during migra
 
 | Option | Use when | Benefits | Costs |
 |---|---|---|---|
-| A. Flat `service/` | The module has few application-layer files and each one's trigger (request, event, timer) is obvious from its name | Minimal ceremony | Trigger and kind become implicit as the module grows |
-| B. Grouped by kind (`service/`, `listener/`, `scheduler/`) | The module mixes request-driven, event-driven, and/or time-driven orchestration | Trigger is visible from the folder alone | A few more folders to navigate |
+| A. Flat `service/` | The module has few application-layer files and each one's trigger (request, event, timer) is obvious from its name | Minimal ceremony | Trigger and responsibility become implicit as the module grows |
+| B. Grouped by responsibility (`service/`, `listener/`, `scheduler/`) | The module mixes request-driven, event-driven, and/or time-driven orchestration | Trigger is visible from the folder alone | A few more folders to navigate |
 | C. Fully typed (adds `saga/`, `support/`) | The module has genuine multi-step process managers, or internal helpers shared by more than one service | Every orchestration concern has an explicit, greppable home | Highest ceremony; unnecessary without real sagas or shared helpers |
 
 Application-layout decision rules:
@@ -304,7 +304,7 @@ This is the conceptual predecessor of the canonical layout. For future modules, 
 
 | Area | Owns | May depend on | Must not depend on |
 |---|---|---|---|
-| `api.*` | Stable public interfaces, immutable contract types, and published facts grouped by kind | Shared primitives | Adapters, internal domain types |
+| `api.*` | Stable public interfaces, immutable contract types, and published facts grouped by contract type | Shared primitives | Adapters, internal domain types |
 | `domain` | Business invariants and policies | Shared primitives | Web, database, third-party SDKs |
 | `application` | Use-case orchestration and transactions | Domain, required contracts | Concrete external clients |
 | `adapter.in` | Protocol translation into use cases | Module API | Business rules, repositories, another module's internals |
@@ -704,7 +704,7 @@ The core architecture above is framework-neutral. Apply the following mappings w
 | Boundary verification | Spring Modulith + ArchUnit | dependency-cruiser/ESLint/custom tests | import-linter/custom tests |
 | Unit testing | JUnit/Vitest as appropriate | Vitest/Jest | pytest |
 
-For Spring Modulith, keep public contracts in the owning module's kind-specific `api.*` packages and expose them through explicit named interfaces as defined by the [module template](module-package-structure-template.md). `ApplicationModules.verify()` checks cycles, access to module internals, and declared allowed dependencies. For Gradle Java libraries, use `api` only for dependencies exposed through the library's public binary interface and prefer `implementation` otherwise.
+For Spring Modulith, keep public contracts in the owning module's contract-type-specific `api.*` packages and expose them through explicit named interfaces as defined by the [module template](module-package-structure-template.md). `ApplicationModules.verify()` checks cycles, access to module internals, and declared allowed dependencies. For Gradle Java libraries, use `api` only for dependencies exposed through the library's public binary interface and prefer `implementation` otherwise.
 
 ## 22. Generation contract
 
@@ -726,7 +726,7 @@ For each initial module, it generates:
 
 - Only the standard directory branches required by specified responsibilities, each with `package-info.java`.
 - A module manifest with no undeclared dependencies.
-- Module-root metadata plus only the API kinds required by the module specification; no empty export packages.
+- Module-root metadata plus only the API contract types required by the module specification; no empty export packages.
 - One real use-case slice when requested; outbound ports and adapters only when required by that slice.
 - Unit, integration, and architecture test placeholders.
 - A completed module worksheet containing no unresolved architectural choices.

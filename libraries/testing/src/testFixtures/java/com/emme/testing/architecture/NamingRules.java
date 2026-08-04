@@ -100,6 +100,24 @@ public final class NamingRules {
         .because("public API failures use stable exception names");
   }
 
+  /** Public result records use a semantic name instead of the ambiguous Info suffix. */
+  public static ArchRule apiResultsAvoidInfoSuffix() {
+    return classes()
+        .that()
+        .resideInAnyPackage("com.emme..api.result..")
+        .should(notContainToken("Info"))
+        .because("public result records must describe their representation explicitly");
+  }
+
+  /** Public API vocabulary uses the concept name directly instead of the ambiguous View suffix. */
+  public static ArchRule apiTypesAvoidViewSuffix() {
+    return classes()
+        .that()
+        .resideInAnyPackage("com.emme..api.type..")
+        .should(notContainToken("View"))
+        .because("public vocabulary types are not transport-specific views");
+  }
+
   private static ArchCondition<JavaClass> useSuffix(String suffix) {
     return useSuffixExcept(suffix);
   }
@@ -141,6 +159,23 @@ public final class NamingRules {
           events.add(
               SimpleConditionEvent.violated(
                   javaClass, javaClass.getName() + " must be a record ending with " + suffix));
+        }
+      }
+    };
+  }
+
+  private static ArchCondition<JavaClass> notContainToken(String token) {
+    return new ArchCondition<>("not contain the ambiguous token " + token) {
+      @Override
+      public void check(JavaClass javaClass, ConditionEvents events) {
+        String name = javaClass.getSimpleName();
+        if (name.equals("package-info")) {
+          return;
+        }
+        if (name.contains(token)) {
+          events.add(
+              SimpleConditionEvent.violated(
+                  javaClass, javaClass.getName() + " must not contain " + token));
         }
       }
     };

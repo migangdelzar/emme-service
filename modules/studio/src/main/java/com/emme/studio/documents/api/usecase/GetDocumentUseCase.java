@@ -1,8 +1,8 @@
 package com.emme.studio.documents.api.usecase;
 
 import com.emme.studio.documents.api.query.GetDocumentQuery;
-import com.emme.studio.documents.api.result.DocumentInfo;
+import com.emme.studio.documents.api.result.DocumentDetails;
 
 public interface GetDocumentUseCase {
-  DocumentInfo get(GetDocumentQuery query);
+  DocumentDetails get(GetDocumentQuery query);
 }

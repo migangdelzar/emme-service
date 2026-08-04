@@ -3,7 +3,7 @@ package com.emme.payment.adapter.in.webhook;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import com.emme.payment.api.usecase.ProcessPaymentCallbackUseCase;
 import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -116,15 +116,15 @@ class MercadoPagoWebhookControllerTest {
     private ProcessPaymentCallbackCommand command;
 
     @Override
-    public PaymentInfo process(ProcessPaymentCallbackCommand command) {
+    public PaymentDetails process(ProcessPaymentCallbackCommand command) {
       this.command = command;
-      return new PaymentInfo(
+      return new PaymentDetails(
           UUID.randomUUID(),
           command.tenantId(),
           "payment-1",
           BigDecimal.ZERO,
           "MXN",
-          com.emme.payment.api.type.PaymentStatusView.PENDING,
+          com.emme.payment.api.type.PaymentStatus.PENDING,
           java.time.Instant.now());
     }
   }

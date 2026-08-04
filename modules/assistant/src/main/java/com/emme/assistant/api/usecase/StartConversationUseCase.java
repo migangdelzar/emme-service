@@ -1,8 +1,8 @@
 package com.emme.assistant.api.usecase;
 
 import com.emme.assistant.api.command.StartConversationCommand;
-import com.emme.assistant.api.result.ConversationInfo;
+import com.emme.assistant.api.result.ConversationDetails;
 
 public interface StartConversationUseCase {
-  ConversationInfo start(StartConversationCommand command);
+  ConversationDetails start(StartConversationCommand command);
 }

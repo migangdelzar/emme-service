@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
-import com.emme.assistant.api.result.ConversationInfo;
-import com.emme.assistant.api.type.ConversationStatusView;
+import com.emme.assistant.api.result.ConversationDetails;
+import com.emme.assistant.api.type.ConversationStatus;
 import com.emme.assistant.api.usecase.AddConversationEventUseCase;
 import com.emme.assistant.api.usecase.ListConversationsUseCase;
 import com.emme.assistant.api.usecase.StartConversationUseCase;
@@ -44,19 +44,19 @@ class ProcessWhatsAppMessageServiceTest {
 
   private UUID tenantId;
   private UUID participantId;
-  private ConversationInfo conversation;
+  private ConversationDetails conversation;
 
   @BeforeEach
   void setUp() {
     tenantId = UUID.randomUUID();
     participantId = UUID.randomUUID();
     conversation =
-        new ConversationInfo(
+        new ConversationDetails(
             UUID.randomUUID(),
             tenantId,
             participantId,
             ChannelType.WHATSAPP,
-            ConversationStatusView.ACTIVE,
+            ConversationStatus.ACTIVE,
             java.time.Instant.now());
   }
 

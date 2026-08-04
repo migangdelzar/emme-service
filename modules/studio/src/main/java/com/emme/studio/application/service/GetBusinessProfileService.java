@@ -1,6 +1,6 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.api.result.BusinessProfileInfo;
+import com.emme.studio.api.result.BusinessProfileSummary;
 import com.emme.studio.api.usecase.GetBusinessProfileUseCase;
 import com.emme.studio.application.port.out.BusinessProfileRepository;
 import java.util.Optional;
@@ -20,9 +20,9 @@ public class GetBusinessProfileService implements GetBusinessProfileUseCase {
   }
 
   @Override
-  public Optional<BusinessProfileInfo> getBusinessProfile(UUID tenantId) {
+  public Optional<BusinessProfileSummary> getBusinessProfile(UUID tenantId) {
     return profileRepository
         .findByTenantId(tenantId)
-        .map(p -> new BusinessProfileInfo(p.getTenantId(), p.getDisplayName(), p.getLocale()));
+        .map(p -> new BusinessProfileSummary(p.getTenantId(), p.getDisplayName(), p.getLocale()));
   }
 }

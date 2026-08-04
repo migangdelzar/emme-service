@@ -218,7 +218,7 @@
 - Failure mode: a web mapper migrated from the domain `isEnabled()` accessor to
   the API result model but retained the domain accessor name, causing compilation
   to fail.
-- Detection signal: the focused Identity build reported that `FeatureFlagInfo`
+- Detection signal: the focused Identity build reported that `FeatureFlagDetails`
   had no `isEnabled()` method.
 - Prevention rule: when introducing a public result record, update adapters to
   use its exact record component names (`enabled()` here) and run the focused

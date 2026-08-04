@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.testing.BaseSpringModuleTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,8 +51,8 @@ class TenantModuleTest extends BaseSpringModuleTest {
     fullSetup(); // ensures we have at least one tenant
 
     // Create two test tenants via service for predictable slugs
-    TenantInfo t1 = createTenant("test-tenant-a-" + System.nanoTime(), "Salon Alpha");
-    TenantInfo t2 = createTenant("test-tenant-b-" + System.nanoTime(), "Salon Beta");
+    TenantDetails t1 = createTenant("test-tenant-a-" + System.nanoTime(), "Salon Alpha");
+    TenantDetails t2 = createTenant("test-tenant-b-" + System.nanoTime(), "Salon Beta");
 
     mockMvc
         .perform(get("/api/tenants").with(tenantJwt()))
@@ -66,7 +66,7 @@ class TenantModuleTest extends BaseSpringModuleTest {
   @DisplayName("GET /api/tenants/{id} → 200 with correct tenant data")
   void shouldGetTenantById() throws Exception {
     fullSetup();
-    TenantInfo tenant = createTenant("test-tenant-2-" + System.nanoTime(), "Test Salon Two");
+    TenantDetails tenant = createTenant("test-tenant-2-" + System.nanoTime(), "Test Salon Two");
 
     mockMvc
         .perform(get("/api/tenants/" + tenant.id()).with(tenantJwt()))
@@ -81,7 +81,7 @@ class TenantModuleTest extends BaseSpringModuleTest {
   @DisplayName("PATCH /api/tenants/{id} → 200 updates tenant name")
   void shouldUpdateTenant() throws Exception {
     fullSetup();
-    TenantInfo tenant = createTenant("test-tenant-3-" + System.nanoTime(), "Original Name");
+    TenantDetails tenant = createTenant("test-tenant-3-" + System.nanoTime(), "Original Name");
 
     mockMvc
         .perform(

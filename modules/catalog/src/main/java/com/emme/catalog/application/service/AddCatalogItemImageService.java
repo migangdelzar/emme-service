@@ -3,7 +3,7 @@ package com.emme.catalog.application.service;
 import com.emme.assistant.ai.api.usecase.CaptionImageUseCase;
 import com.emme.catalog.api.command.AddCatalogItemImageCommand;
 import com.emme.catalog.api.exception.CatalogItemNotFoundException;
-import com.emme.catalog.api.result.CatalogItemImageInfo;
+import com.emme.catalog.api.result.CatalogItemImageDetails;
 import com.emme.catalog.api.usecase.AddCatalogItemImageUseCase;
 import com.emme.catalog.application.mapper.CatalogApplicationMapper;
 import com.emme.catalog.application.port.out.CatalogItemImageRepository;
@@ -38,7 +38,7 @@ public class AddCatalogItemImageService implements AddCatalogItemImageUseCase {
   }
 
   @Override
-  public CatalogItemImageInfo addImage(AddCatalogItemImageCommand command) {
+  public CatalogItemImageDetails addImage(AddCatalogItemImageCommand command) {
     CatalogItem item = findOwned(command.tenantId(), command.itemId());
     byte[] bytes = Base64.getDecoder().decode(command.imageBase64());
     String storageKey = imageStorage.store(command.tenantId(), bytes);
@@ -46,7 +46,7 @@ public class AddCatalogItemImageService implements AddCatalogItemImageUseCase {
     CatalogItemImage image =
         new CatalogItemImage(
             command.tenantId(), item.getId(), storageKey, caption.isBlank() ? null : caption);
-    return CatalogApplicationMapper.toInfo(imageRepository.save(image));
+    return CatalogApplicationMapper.toResult(imageRepository.save(image));
   }
 
   private CatalogItem findOwned(UUID tenantId, UUID itemId) {

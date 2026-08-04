@@ -2,7 +2,7 @@ package com.emme.studio.documents.application.service;
 
 import com.emme.studio.documents.api.exception.DocumentNotFoundException;
 import com.emme.studio.documents.api.query.GetDocumentChunksQuery;
-import com.emme.studio.documents.api.result.DocumentChunkInfo;
+import com.emme.studio.documents.api.result.DocumentChunkDetails;
 import com.emme.studio.documents.api.usecase.GetDocumentChunksUseCase;
 import com.emme.studio.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.studio.documents.application.port.out.DocumentRepository;
@@ -22,12 +22,12 @@ public class GetDocumentChunksService implements GetDocumentChunksUseCase {
   }
 
   @Override
-  public List<DocumentChunkInfo> getChunks(GetDocumentChunksQuery query) {
+  public List<DocumentChunkDetails> getChunks(GetDocumentChunksQuery query) {
     documentRepository
         .findByTenantIdAndId(query.tenantId(), query.documentId())
         .orElseThrow(() -> new DocumentNotFoundException(query.documentId()));
     return documentRepository.findChunks(query.tenantId(), query.documentId()).stream()
-        .map(DocumentApplicationMapper::toInfo)
+        .map(DocumentApplicationMapper::toResult)
         .toList();
   }
 }

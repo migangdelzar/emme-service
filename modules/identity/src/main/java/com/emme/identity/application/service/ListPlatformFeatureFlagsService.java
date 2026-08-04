@@ -1,6 +1,6 @@
 package com.emme.identity.application.service;
 
-import com.emme.identity.api.result.FeatureFlagInfo;
+import com.emme.identity.api.result.FeatureFlagDetails;
 import com.emme.identity.api.usecase.ListPlatformFeatureFlagsUseCase;
 import com.emme.identity.application.mapper.FeatureFlagApplicationMapper;
 import com.emme.identity.application.port.out.FeatureFlagRepository;
@@ -20,9 +20,9 @@ public class ListPlatformFeatureFlagsService implements ListPlatformFeatureFlags
   }
 
   @Override
-  public List<FeatureFlagInfo> list() {
+  public List<FeatureFlagDetails> list() {
     return repository.findGlobalDefaults().stream()
-        .map(FeatureFlagApplicationMapper::toInfo)
+        .map(FeatureFlagApplicationMapper::toResult)
         .toList();
   }
 }

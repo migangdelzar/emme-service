@@ -1,6 +1,6 @@
 package com.emme.notification.adapter.in.web.response;
 
-import com.emme.notification.api.result.NotificationInfo;
+import com.emme.notification.api.result.NotificationDetails;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -11,7 +11,7 @@ public record NotificationResponse(
     String recipientReference,
     String status,
     Instant createdAt) {
-  public static NotificationResponse from(NotificationInfo notification) {
+  public static NotificationResponse from(NotificationDetails notification) {
     return new NotificationResponse(
         notification.id(),
         notification.tenantId(),

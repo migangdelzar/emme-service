@@ -1,7 +1,7 @@
 package com.emme.notification.application.service;
 
 import com.emme.notification.api.query.ListNotificationsQuery;
-import com.emme.notification.api.result.NotificationInfo;
+import com.emme.notification.api.result.NotificationDetails;
 import com.emme.notification.api.usecase.ListNotificationsUseCase;
 import com.emme.notification.application.mapper.NotificationApplicationMapper;
 import com.emme.notification.application.port.out.NotificationRepository;
@@ -19,9 +19,9 @@ public class ListNotificationsService implements ListNotificationsUseCase {
   }
 
   @Override
-  public List<NotificationInfo> list(ListNotificationsQuery query) {
+  public List<NotificationDetails> list(ListNotificationsQuery query) {
     return repository.findByTenantId(query.tenantId()).stream()
-        .map(NotificationApplicationMapper::toInfo)
+        .map(NotificationApplicationMapper::toResult)
         .toList();
   }
 }

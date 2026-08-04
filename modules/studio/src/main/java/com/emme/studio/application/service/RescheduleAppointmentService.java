@@ -56,6 +56,6 @@ public class RescheduleAppointmentService implements RescheduleAppointmentUseCas
             newStartsAt,
             newEndsAt,
             Instant.now()));
-    return support.toView(saved);
+    return support.toDetails(saved);
   }
 }

@@ -1,8 +1,8 @@
 package com.emme.assistant.api.usecase;
 
 import com.emme.assistant.api.command.ConfirmPendingActionCommand;
-import com.emme.assistant.api.result.PendingActionInfo;
+import com.emme.assistant.api.result.PendingActionDetails;
 
 public interface ConfirmPendingActionUseCase {
-  PendingActionInfo confirm(ConfirmPendingActionCommand command);
+  PendingActionDetails confirm(ConfirmPendingActionCommand command);
 }

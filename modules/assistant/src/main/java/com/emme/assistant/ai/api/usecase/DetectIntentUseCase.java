@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.api.usecase;
 
-import com.emme.assistant.ai.api.result.IntentInfo;
+import com.emme.assistant.ai.api.result.IntentResult;
 
 public interface DetectIntentUseCase {
-  IntentInfo detect(String message);
+  IntentResult detect(String message);
 }

@@ -7,7 +7,7 @@ import com.emme.assistant.ai.adapter.in.web.request.IntentRequest;
 import com.emme.assistant.ai.adapter.in.web.request.RagRequest;
 import com.emme.assistant.ai.adapter.in.web.response.ChatResponse;
 import com.emme.assistant.ai.adapter.in.web.response.RagResponse;
-import com.emme.assistant.ai.api.result.IntentInfo;
+import com.emme.assistant.ai.api.result.IntentResult;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.ai.api.usecase.DetectIntentUseCase;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
@@ -50,8 +50,8 @@ public class AiController {
   @PostMapping("/intent")
   @Operation(summary = "Detect intent from user message")
   @PreAuthorize("@featureFlagService.isEnabled('ai_chat')")
-  public ResponseEntity<IntentInfo> detectIntent(@RequestBody IntentRequest request) {
-    IntentInfo result = detectIntent.detect(request.message());
+  public ResponseEntity<IntentResult> detectIntent(@RequestBody IntentRequest request) {
+    IntentResult result = detectIntent.detect(request.message());
     return ResponseEntity.ok(result);
   }
 

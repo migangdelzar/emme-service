@@ -1,7 +1,7 @@
 package com.emme.payment.application.service;
 
 import com.emme.payment.api.command.CapturePaymentCommand;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 import com.emme.payment.api.usecase.CapturePaymentUseCase;
 import com.emme.payment.application.mapper.PaymentApplicationMapper;
 import com.emme.payment.application.port.out.PaymentProvider;
@@ -22,12 +22,12 @@ public class CapturePaymentService implements CapturePaymentUseCase {
   }
 
   @Override
-  public PaymentInfo capture(CapturePaymentCommand command) {
+  public PaymentDetails capture(CapturePaymentCommand command) {
     Payment payment =
         PaymentServiceSupport.load(repository, command.tenantId(), command.paymentId());
     PaymentProvider.PaymentResult result =
         provider.capture(payment.providerReference(), payment.amount());
     payment.applyProviderStatus(PaymentServiceSupport.status(result.status()));
-    return PaymentApplicationMapper.toInfo(repository.save(payment));
+    return PaymentApplicationMapper.toResult(repository.save(payment));
   }
 }

@@ -32,10 +32,10 @@ public class GoogleSheetsClient {
     this.httpClient = httpClient;
   }
 
-  public record SpreadsheetInfo(String id, String url, String title) {}
+  public record SpreadsheetDetails(String id, String url, String title) {}
 
   /** Create a new Google Sheets spreadsheet. */
-  public SpreadsheetInfo createSpreadsheet(String title) throws Exception {
+  public SpreadsheetDetails createSpreadsheet(String title) throws Exception {
     String token = getToken();
     var body = mapper.createObjectNode();
     var props = body.putObject("properties");
@@ -60,7 +60,7 @@ public class GoogleSheetsClient {
       var id = json.get("spreadsheetId").asText();
       var url = json.get("spreadsheetUrl").asText();
       log.info("Created spreadsheet: {} ({})", title, id);
-      return new SpreadsheetInfo(id, url, title);
+      return new SpreadsheetDetails(id, url, title);
     }
   }
 

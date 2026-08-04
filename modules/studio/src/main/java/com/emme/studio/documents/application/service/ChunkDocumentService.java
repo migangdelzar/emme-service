@@ -2,7 +2,7 @@ package com.emme.studio.documents.application.service;
 
 import com.emme.studio.documents.api.command.ChunkDocumentCommand;
 import com.emme.studio.documents.api.exception.DocumentNotFoundException;
-import com.emme.studio.documents.api.result.DocumentChunkInfo;
+import com.emme.studio.documents.api.result.DocumentChunkDetails;
 import com.emme.studio.documents.api.usecase.ChunkDocumentUseCase;
 import com.emme.studio.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.studio.documents.application.port.out.DocumentRepository;
@@ -28,7 +28,7 @@ public class ChunkDocumentService implements ChunkDocumentUseCase {
   }
 
   @Override
-  public List<DocumentChunkInfo> chunk(ChunkDocumentCommand command) {
+  public List<DocumentChunkDetails> chunk(ChunkDocumentCommand command) {
     Document document =
         documentRepository
             .findByTenantIdAndId(command.tenantId(), command.documentId())
@@ -43,7 +43,7 @@ public class ChunkDocumentService implements ChunkDocumentUseCase {
                 })
             .toList();
     documentRepository.replaceChunks(command.tenantId(), command.documentId(), chunks);
-    return chunks.stream().map(DocumentApplicationMapper::toInfo).toList();
+    return chunks.stream().map(DocumentApplicationMapper::toResult).toList();
   }
 
   private static String sha256(String input) {

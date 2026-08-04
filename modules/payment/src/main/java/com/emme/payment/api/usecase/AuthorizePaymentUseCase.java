@@ -1,8 +1,8 @@
 package com.emme.payment.api.usecase;
 
 import com.emme.payment.api.command.AuthorizePaymentCommand;
-import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.result.PaymentDetails;
 
 public interface AuthorizePaymentUseCase {
-  PaymentInfo authorize(AuthorizePaymentCommand command);
+  PaymentDetails authorize(AuthorizePaymentCommand command);
 }

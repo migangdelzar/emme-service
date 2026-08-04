@@ -33,8 +33,8 @@ class StudioPackageConventionTest {
 
   @Test
   void publicContractsAreGroupedByKind() {
-    assertThat(hasClass("com.emme.studio.api.result.AppointmentInfo")).isTrue();
-    assertThat(hasClass("com.emme.studio.api.result.BusinessProfileInfo")).isTrue();
+    assertThat(hasClass("com.emme.studio.api.result.AppointmentSummary")).isTrue();
+    assertThat(hasClass("com.emme.studio.api.result.BusinessProfileSummary")).isTrue();
     assertThat(hasClass("com.emme.studio.api.result.CustomerSummary")).isTrue();
     assertThat(hasClass("com.emme.studio.api.usecase.GetBusinessProfileUseCase")).isTrue();
     assertThat(hasClass("com.emme.studio.api.usecase.ListAppointmentsUseCase")).isTrue();

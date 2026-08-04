@@ -80,7 +80,7 @@ sequenceDiagram
     Contract->>Tenancy: ListTenantsUseCase
     Tenancy->>Port: find tenants
     Port->>DB: repository query
-    DB-->>Tenancy: TenantInfo mapping
+    DB-->>Tenancy: TenantDetails mapping
     Tenancy-->>Identity: public result
 ```
 

@@ -42,7 +42,7 @@ class CalendarPackageConventionTest {
 
   @Test
   void publicContractsAreGroupedByKind() {
-    assertThat(hasClass("com.emme.calendar.api.result.CalendarEventLinkInfo")).isTrue();
+    assertThat(hasClass("com.emme.calendar.api.result.CalendarEventLinkDetails")).isTrue();
     assertThat(hasClass("com.emme.calendar.api.usecase.GetBusyTimesUseCase")).isTrue();
     assertThat(hasClass("com.emme.calendar.api.usecase.SyncCalendarEventsUseCase")).isTrue();
     assertThat(hasClass("com.emme.calendar.api.usecase.FindCalendarEventLinksUseCase")).isTrue();

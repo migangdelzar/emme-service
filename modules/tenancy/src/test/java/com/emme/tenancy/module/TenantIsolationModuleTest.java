@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.tenancy.api.result.TenantInfo;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.testing.BaseSpringModuleTest;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +22,8 @@ import org.springframework.http.MediaType;
 @DisplayName("Tenant Isolation")
 class TenantIsolationModuleTest extends BaseSpringModuleTest {
 
-  private TenantInfo tenantA;
-  private TenantInfo tenantB;
+  private TenantDetails tenantA;
+  private TenantDetails tenantB;
 
   @BeforeEach
   void createIsolatedTenants() {
@@ -98,7 +98,7 @@ class TenantIsolationModuleTest extends BaseSpringModuleTest {
         .andExpect(jsonPath("$.id").value(specificTenantId.toString()));
 
     // Verify the tenant exists independently
-    TenantInfo found = findTenant(specificTenantId);
+    TenantDetails found = findTenant(specificTenantId);
     assertThat(found.slug()).isEqualTo(tenantA.slug());
     assertThat(found.name()).isEqualTo("Isolation Salon A");
   }

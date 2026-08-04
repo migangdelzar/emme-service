@@ -1,14 +1,14 @@
 package com.emme.catalog.application.mapper;
 
-import com.emme.catalog.api.result.CatalogItemImageInfo;
-import com.emme.catalog.api.result.CatalogItemInfo;
+import com.emme.catalog.api.result.CatalogItemDetails;
+import com.emme.catalog.api.result.CatalogItemImageDetails;
 import com.emme.catalog.domain.model.CatalogItem;
 import com.emme.catalog.domain.model.CatalogItemImage;
 
 public final class CatalogApplicationMapper {
 
-  public static CatalogItemInfo toInfo(CatalogItem item) {
-    return new CatalogItemInfo(
+  public static CatalogItemDetails toResult(CatalogItem item) {
+    return new CatalogItemDetails(
         item.getId(),
         item.getServiceId(),
         item.getCode(),
@@ -21,8 +21,8 @@ public final class CatalogApplicationMapper {
         item.getStatus().name());
   }
 
-  public static CatalogItemImageInfo toInfo(CatalogItemImage image) {
-    return new CatalogItemImageInfo(
+  public static CatalogItemImageDetails toResult(CatalogItemImage image) {
+    return new CatalogItemImageDetails(
         image.getId(), image.getCatalogItemId(), image.getStorageKey(), image.getCaption());
   }
 

@@ -9,7 +9,7 @@ import com.emme.studio.subscriptions.adapter.in.web.request.EnforceEntitlementRe
 import com.emme.studio.subscriptions.adapter.in.web.response.SubscriptionResponse;
 import com.emme.studio.subscriptions.api.command.EnforceEntitlementCommand;
 import com.emme.studio.subscriptions.api.query.GetSubscriptionQuery;
-import com.emme.studio.subscriptions.api.result.SubscriptionInfo;
+import com.emme.studio.subscriptions.api.result.SubscriptionDetails;
 import com.emme.studio.subscriptions.api.usecase.ChangeSubscriptionPlanUseCase;
 import com.emme.studio.subscriptions.api.usecase.CreateSubscriptionUseCase;
 import com.emme.studio.subscriptions.api.usecase.EnforceEntitlementUseCase;
@@ -60,7 +60,7 @@ public class SubscriptionController {
           if (!tenantId.equals(request.tenantId())) {
             return ResponseEntity.notFound().build();
           }
-          SubscriptionInfo subscription = createSubscription.create(request.toCommand());
+          SubscriptionDetails subscription = createSubscription.create(request.toCommand());
           var location = java.net.URI.create("/api/subscriptions/" + subscription.tenantId());
           return ResponseEntity.created(location).body(mapper.toResponse(subscription));
         });
@@ -105,7 +105,7 @@ public class SubscriptionController {
           if (!currentTenant.equals(tenantId)) {
             return ResponseEntity.notFound().build();
           }
-          SubscriptionInfo subscription =
+          SubscriptionDetails subscription =
               changeSubscriptionPlan.change(request.toCommand(tenantId));
           return ResponseEntity.ok(mapper.toResponse(subscription));
         });

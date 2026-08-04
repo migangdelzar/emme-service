@@ -1,7 +1,7 @@
 package com.emme.assistant.application.service;
 
 import com.emme.assistant.api.query.GetConversationHistoryQuery;
-import com.emme.assistant.api.result.ConversationEventInfo;
+import com.emme.assistant.api.result.ConversationEventDetails;
 import com.emme.assistant.api.usecase.GetConversationHistoryUseCase;
 import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.ConversationEventRepository;
@@ -19,11 +19,11 @@ public class GetConversationHistoryService implements GetConversationHistoryUseC
   }
 
   @Override
-  public List<ConversationEventInfo> get(GetConversationHistoryQuery query) {
+  public List<ConversationEventDetails> get(GetConversationHistoryQuery query) {
     return repository
         .findByTenantIdAndConversationId(query.tenantId(), query.conversationId())
         .stream()
-        .map(AssistantApplicationMapper::toInfo)
+        .map(AssistantApplicationMapper::toResult)
         .toList();
   }
 }

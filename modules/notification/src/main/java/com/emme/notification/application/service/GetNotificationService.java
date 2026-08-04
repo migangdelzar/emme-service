@@ -1,7 +1,7 @@
 package com.emme.notification.application.service;
 
 import com.emme.notification.api.query.GetNotificationQuery;
-import com.emme.notification.api.result.NotificationInfo;
+import com.emme.notification.api.result.NotificationDetails;
 import com.emme.notification.api.usecase.GetNotificationUseCase;
 import com.emme.notification.application.mapper.NotificationApplicationMapper;
 import com.emme.notification.application.port.out.NotificationRepository;
@@ -19,9 +19,9 @@ public class GetNotificationService implements GetNotificationUseCase {
   }
 
   @Override
-  public Optional<NotificationInfo> get(GetNotificationQuery query) {
+  public Optional<NotificationDetails> get(GetNotificationQuery query) {
     return repository
         .findByTenantIdAndId(query.tenantId(), query.notificationId())
-        .map(NotificationApplicationMapper::toInfo);
+        .map(NotificationApplicationMapper::toResult);
   }
 }

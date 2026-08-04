@@ -1,8 +1,8 @@
 package com.emme.catalog.api.usecase;
 
 import com.emme.catalog.api.command.CreateCatalogItemCommand;
-import com.emme.catalog.api.result.CatalogItemInfo;
+import com.emme.catalog.api.result.CatalogItemDetails;
 
 public interface CreateCatalogItemUseCase {
-  CatalogItemInfo create(CreateCatalogItemCommand command);
+  CatalogItemDetails create(CreateCatalogItemCommand command);
 }

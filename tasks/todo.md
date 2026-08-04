@@ -166,7 +166,7 @@ Identity verification evidence is recorded in
 - [x] Exactly one runtime overlay is documented as required for application startup.
 - [x] Local, test, and observability overlays remain composable on top of the base and one runtime overlay.
 - [x] Compose configuration validation passes for the JVM and native paths.
-- [ ] Changes are committed and pushed in a logical commit.
+- [x] Changes are committed and pushed in a logical commit.
 
 ### Working notes
 

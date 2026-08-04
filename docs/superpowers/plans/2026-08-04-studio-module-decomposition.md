@@ -219,6 +219,14 @@ Every `com.emme.studio.*` type maps to exactly ONE target module. Use this table
 |---|---|
 | `com.emme.studio.documents.*` | `com.emme.documents.*` |
 
+### Shared exception (services module)
+
+| Original type/pattern | New import |
+|---|---|
+| `com.emme.studio.api.exception.StudioResourceNotFoundException` | `com.emme.services.api.exception.StudioResourceNotFoundException` |
+
+**Note:** All 4 consumers of `StudioResourceNotFoundException` (`AddArtistCapabilityService`, `DeactivateArtistService`, `UpdateArtistService`, `RemoveArtistCapabilityService`) move to the `services` module, so the exception stays in the same module as its consumers.
+
 ---
 
 ## Implementation Tasks
@@ -468,14 +476,22 @@ dependencies {
     allowedDependencies = {"shared :: persistence", "tenancy"})
 package com.emme.services;
 ```
+No named interface needed — only consumed by `appointments` via full module access.
 
 **appointments** (`modules/appointments/src/main/java/com/emme/appointments/package-info.java`):
 ```java
 @org.springframework.modulith.ApplicationModule(
     displayName = "Appointments",
-    allowedDependencies = {"shared :: persistence", "tenancy", "services :: services-api", "clients :: clients-api", "subscriptions :: subscriptions-api"})
+    allowedDependencies = {
+      "shared :: persistence",
+      "tenancy",
+      "services",
+      "clients",
+      "subscriptions :: subscriptions-api"
+    })
 package com.emme.appointments;
 ```
+Full access to `services` and `clients` (needed for repository port interfaces). Only named interface access to `subscriptions` (for `EnforceEntitlementUseCase`).
 
 **salon** (`modules/salon/src/main/java/com/emme/salon/package-info.java`):
 ```java
@@ -561,12 +577,12 @@ const TYPE_MAP = {
   'ExternalCalendarStatus': 'appointments', 'AppointmentCreated': 'appointments',
   'AppointmentCancelled': 'appointments', 'AppointmentRescheduled': 'appointments',
   'AppointmentDetails': 'appointments', 'AppointmentSummary': 'appointments',
-  'AvailableSlot': 'appointments',
+  'AvailableSlot': 'appointments', 'FindAvailableSlot': 'appointments',
   // Services
   'Service': 'services', 'ServiceStatus': 'services',
   'Artist': 'services', 'ArtistStatus': 'services', 'ArtistCapability': 'services',
   'ArtistDetails': 'services', 'ServiceDetails': 'services',
-  'ArtistCapabilityDetails': 'services',
+  'ArtistCapabilityDetails': 'services', 'StudioResourceNotFound': 'services',
   // Clients
   'Customer': 'clients', 'CustomerStatus': 'clients',
   'CustomerDetails': 'clients', 'CustomerSummary': 'clients',
@@ -629,11 +645,15 @@ function migrateDir(srcDir, srcBase, isTest) {
     let targetMod = getTargetModule(originalPkg);
 
     // For core studio files, determine module from file path
+    // IMPORTANT: check patterns in priority order — Customer before Service,
+    // FindAvailableSlot before Appointment, etc. to avoid false matches.
     if (!targetMod) {
       const rel = relative(srcBase, file);
-      if (rel.includes('Appointment') || rel.includes('/sse/') || rel.includes('/messaging/')) targetMod = 'appointments';
-      else if (rel.includes('Artist') || rel.includes('Service')) targetMod = 'services';
-      else if (rel.includes('Customer')) targetMod = 'clients';
+      if (rel.includes('Customer')) targetMod = 'clients';
+      else if (rel.includes('FindAvailableSlot')) targetMod = 'appointments';
+      else if (rel.includes('Appointment') || rel.includes('/sse/') || rel.includes('/messaging/')) targetMod = 'appointments';
+      else if (rel.includes('Artist')) targetMod = 'services';
+      else if (rel.includes('Service')) targetMod = 'services';  // checked AFTER Customer and Appointment
       else if (rel.includes('BusinessProfile') || rel.includes('OperatingHours') || rel.includes('BookingPolicy') || rel.includes('NotificationPreference')) targetMod = 'salon';
       else if (rel.includes('Dashboard')) targetMod = 'appointments';
       else continue; // skip unspecified
@@ -685,9 +705,10 @@ rg "import com\.emme\.studio\." --glob "*.java" modules/services/ modules/client
 ```
 Expected: zero output
 
-- [ ] **Step 4: Create package-info.java files for all sub-packages in new modules**
+- [ ] **Step 4: Create package-info.java files for ALL sub-packages in new modules (main + test)**
 
 ```bash
+# Main source paths
 for mod in services appointments salon subscriptions documents; do
   MOD_DIR="modules/$mod/src/main/java/com/emme/$mod"
   for dir in $(find "$MOD_DIR" -type d 2>/dev/null); do
@@ -696,6 +717,19 @@ for mod in services appointments salon subscriptions documents; do
       echo "package com.emme.$pkg;" > "$dir/package-info.java"
     fi
   done
+done
+
+# Test source paths (required by PackageMetadataArchitectureTest)
+for mod in services appointments salon subscriptions documents clients; do
+  TEST_DIR="modules/$mod/src/test/java/com/emme/$mod"
+  if [ -d "$TEST_DIR" ]; then
+    for dir in $(find "$TEST_DIR" -type d 2>/dev/null); do
+      if [ ! -f "$dir/package-info.java" ]; then
+        pkg=$(echo "$dir" | sed 's|.*/com/emme/||' | tr '/' '.')
+        echo "package com.emme.$pkg;" > "$dir/package-info.java"
+      fi
+    done
+  fi
 done
 ```
 
@@ -856,7 +890,89 @@ done
 
 Replace `"studio :: documents-api"` with `"documents :: documents-api"`.
 
-- [ ] **Step 8: Verify**
+- [ ] **Step 8: Update consumer @ApplicationModule allowedDependencies in package-info.java**
+
+**identity** (`modules/identity/src/main/java/com/emme/identity/package-info.java`) — replace:
+```java
+      "studio :: subscriptions-api",
+      "studio :: studio-api",
+      "studio :: studio-events"
+```
+With:
+```java
+      "subscriptions :: subscriptions-api",
+      "salon :: salon-api",
+      "appointments :: appointments-events"
+```
+
+**calendar** (`modules/calendar/src/main/java/com/emme/calendar/package-info.java`) — replace:
+```java
+      "studio",
+      "studio :: studio-api",
+      "studio :: studio-events"
+```
+With:
+```java
+      "appointments :: appointments-api",
+      "appointments :: appointments-events",
+      "clients :: clients-api"
+```
+(Removed bare `"appointments"` — only named interfaces. calendar imports `AppointmentSummary`, `ListAppointmentsUseCase` from appointments-api; `AppointmentCreated/Rescheduled/Cancelled` from appointments-events; `CustomerSummary`, `ListCustomersUseCase` from clients-api.)
+
+**assistant** (`modules/assistant/src/main/java/com/emme/assistant/package-info.java`) — replace:
+```java
+      "studio :: documents-api"
+```
+With:
+```java
+      "documents :: documents-api"
+```
+
+- [ ] **Step 9: Declare minimal @NamedInterface on new module API packages**
+
+Only expose what external modules actually consume. `services` needs NO named interface (only consumed by `appointments` via full module access).
+
+**clients** — calendar imports `CustomerSummary` and `ListCustomersUseCase`:
+```bash
+echo '@org.springframework.modulith.NamedInterface("clients-api")
+package com.emme.clients.api.usecase;' > modules/clients/src/main/java/com/emme/clients/api/usecase/package-info.java
+echo '@org.springframework.modulith.NamedInterface("clients-api")
+package com.emme.clients.api.result;' > modules/clients/src/main/java/com/emme/clients/api/result/package-info.java
+```
+
+**appointments** — calendar imports `AppointmentSummary`, `ListAppointmentsUseCase`; calendar+identity import events:
+```bash
+echo '@org.springframework.modulith.NamedInterface("appointments-api")
+package com.emme.appointments.api.usecase;' > modules/appointments/src/main/java/com/emme/appointments/api/usecase/package-info.java
+echo '@org.springframework.modulith.NamedInterface("appointments-api")
+package com.emme.appointments.api.result;' > modules/appointments/src/main/java/com/emme/appointments/api/result/package-info.java
+echo '@org.springframework.modulith.NamedInterface("appointments-events")
+package com.emme.appointments.api.event;' > modules/appointments/src/main/java/com/emme/appointments/api/event/package-info.java
+```
+
+**salon** — identity imports `BusinessProfileSummary`, `GetBusinessProfileUseCase`:
+```bash
+echo '@org.springframework.modulith.NamedInterface("salon-api")
+package com.emme.salon.api.usecase;' > modules/salon/src/main/java/com/emme/salon/api/usecase/package-info.java
+echo '@org.springframework.modulith.NamedInterface("salon-api")
+package com.emme.salon.api.result;' > modules/salon/src/main/java/com/emme/salon/api/result/package-info.java
+```
+
+**subscriptions** — identity imports `PlanType`, `GetSubscriptionPlanUseCase`, etc.; appointments imports `EnforceEntitlementUseCase`:
+```bash
+echo '@org.springframework.modulith.NamedInterface("subscriptions-api")
+package com.emme.subscriptions.api;' > modules/subscriptions/src/main/java/com/emme/subscriptions/api/package-info.java
+```
+
+**documents** — assistant imports `SearchDocumentChunksUseCase`, `SearchDocumentChunksQuery`, `DocumentChunkDetails`:
+```bash
+echo '@org.springframework.modulith.NamedInterface("documents-api")
+package com.emme.documents.api;' > modules/documents/src/main/java/com/emme/documents/api/package-info.java
+```
+
+**services** — NO named interface needed (only consumed by `appointments` via full module access `"services"`). No other module imports services API types.
+
+- [ ] **Step 10: Verify consumer modules compile with updated dependencies**
 
 ```bash
 JAVA_HOME=$(mise exec -- printenv JAVA_HOME) ./gradlew :modules:identity:compileJava :modules:calendar:compileJava :modules:assistant:compileJava --no-configuration-cache

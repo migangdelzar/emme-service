@@ -122,11 +122,11 @@ The tree is a decision catalogue, not a requirement to create every directory. A
 
 ### A3. Add executable architecture guardrails
 
-- [ ] Extend `applications/emme-platform/src/test/java/com/emme/ModularityTest.java` with the repository-wide Modulith verification and explicit named-interface checks.
-- [ ] Add or extend per-module package convention tests for API visibility, package metadata, forbidden imports, and one-use-case-per-service.
-- [ ] Add ArchUnit rules for domain framework independence, application inward dependency, controller/use-case usage, persistence isolation, API-only cross-module imports, and absence of generic forbidden names.
-- [ ] Add a deterministic naming audit that checks file/type names for initialisms, suffixes, public contract categories, and one-primary-type-per-file.
-- [ ] Add a test that confirms `emme-platform` has no dependency on the removed `studio-api` project or legacy package.
+- [x] Keep `ModularityTest` as the repository-wide Modulith verification and add explicit named-interface checks through `NamedInterfaceArchitectureTest`.
+- [x] Add or extend per-module/package convention tests for API visibility, package metadata, forbidden imports, and one-use-case-per-service.
+- [x] Add ArchUnit rules for domain framework independence, application inward dependency, controller/use-case usage, persistence isolation, API-only cross-module imports, and absence of the normalized generic public-contract names.
+- [x] Add deterministic naming audits for public contract categories, suffixes, and one-use-case-per-service; initialism cleanup remains part of the residual inventory review.
+- [x] Add a test that confirms `emme-platform` has no dependency on the removed `studio-api` project or legacy package.
 
 **Verification:** Run all affected module tests, `:applications:emme-platform:test`, `:applications:emme-platform:check`, `./gradlew test`, and `./gradlew ci --no-daemon` after the guardrails are introduced.
 

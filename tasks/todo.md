@@ -1936,3 +1936,12 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - [x] Document remaining inventory gaps separately from verified repository facts.
 - [x] Link the evidence from the enterprise conformance plan:
   `docs/superpowers/reviews/2026-08-04-enterprise-module-template-conformance-inventory.md`.
+
+## Named-interface architecture guardrail — 2026-08-04
+
+- [x] Add a failing repository architecture test for named-interface structure.
+- [x] Add reusable `NamedInterfaceRules` for non-empty declarations and
+  canonical API named-interface suffixes.
+- [x] Preserve deliberate technical named interfaces such as `persistence`,
+  `persistence-jdbc`, `search`, `identity`, and `time`.
+- [x] Verify the new guardrail with the platform test suite and Spotless.

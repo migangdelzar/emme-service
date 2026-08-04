@@ -1,6 +1,7 @@
+---
 name: Security Scan
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
   pull_request:
@@ -38,7 +39,9 @@ jobs:
             echo "configured=true" >> "$GITHUB_OUTPUT"
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::OWASP Dependency-Check skipped: configure the NVD_API_KEY repository secret."
+            warning="OWASP Dependency-Check skipped: configure the"
+            warning="${warning} NVD_API_KEY repository secret."
+            echo "::warning::${warning}"
           fi
       - uses: actions/checkout@v4
         if: steps.nvd-key.outputs.configured == 'true'
@@ -49,11 +52,15 @@ jobs:
         if: steps.nvd-key.outputs.configured == 'true'
         with:
           path: ~/.gradle/dependency-check-data
-          key: dependency-check-data-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          key: >-
+            dependency-check-data-${{ runner.os }}-
+            ${{ hashFiles('gradle/libs.versions.toml') }}
           restore-keys: |
             dependency-check-data-${{ runner.os }}-
       - name: Run OWASP dependency check
         if: steps.nvd-key.outputs.configured == 'true'
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: ./gradlew dependencyCheckAnalyze --no-daemon --no-configuration-cache --stacktrace
+        run: >-
+          ./gradlew dependencyCheckAnalyze --no-daemon
+          --no-configuration-cache --stacktrace

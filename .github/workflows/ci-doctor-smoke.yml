@@ -1,8 +1,9 @@
+---
 name: Doctor Smoke
 
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_run:
-    workflows: [Backend CI]
+    workflows: [CI Backend]
     types: [completed]
 
 permissions:
@@ -22,11 +23,13 @@ jobs:
         run: curl -sf https://emme.app/api-docs
       - name: AI smoke
         run: |
-          curl -sf -X POST https://emme.app/api/v1/ai/chat \
+          curl -sf -X POST https://emme.app/api/ai/chat \
             -H "Content-Type: application/json" \
+            -H "API-Version: 1.0" \
             -H "Authorization: Bearer ${{ secrets.SMOKE_TOKEN }}" \
             -d '{"userMessage":"hi","conversationContext":""}'
       - name: Catalog smoke
         run: |
-          curl -sf https://emme.app/api/v1/catalog/items \
+          curl -sf https://emme.app/api/catalog/items \
+            -H "API-Version: 1.0" \
             -H "Authorization: Bearer ${{ secrets.SMOKE_TOKEN }}"

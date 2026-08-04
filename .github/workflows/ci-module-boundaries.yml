@@ -1,6 +1,7 @@
+---
 name: Module Boundary Verification
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
   pull_request:
@@ -20,6 +21,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-gradle
+
+      - name: Verify Spotless formatting
+        run: >-
+          ./gradlew spotlessCheck
+          --no-daemon --no-configuration-cache --stacktrace
 
       - name: Verify module boundaries
         run: >-

@@ -19,6 +19,16 @@ tasks.named("check") {
   dependsOn("spotlessCheck")
 }
 
+tasks.register("coverageCheck") {
+  group = "verification"
+  description = "Run this project test, JaCoCo report, and coverage verification"
+  dependsOn("test", "jacocoTestReport", "jacocoTestCoverageVerification")
+}
+
+tasks.named("jacocoTestCoverageVerification") {
+  dependsOn("jacocoTestReport")
+}
+
 // SonarQube properties — configure via -Psonar.host.url=...
 sonar {
   properties {

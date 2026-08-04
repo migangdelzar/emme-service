@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-08-03 — Do not run overlapping Gradle test writers
+
+- Failure mode: Several Gradle test commands were started concurrently against
+  the same checkout and build directories.
+- Detection signal: Independent tests reported missing
+  `test-results/test/binary/in-progress-results-*.bin` files even though the
+  same focused test passed when rerun alone.
+- Prevention rule: Run Gradle commands that write test reports serially in one
+  checkout; parallelize only isolated worktrees or non-overlapping report
+  directories.
+
 ## 2026-08-03 — Test profiles must use the framework-owned property namespace
 
 - Failure mode: The Kafka integration profile placed datasource and JPA values

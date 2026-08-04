@@ -52,6 +52,37 @@ mise run arch-test
 mise run build
 ```
 
+## Formatting, architecture, and coverage commands
+
+The service keeps Gradle as the only implementation of JVM build behavior.
+Mise exposes stable names for the gates used by developers and CI:
+
+| Task | Responsibility | Mutates files? |
+|---|---|---:|
+| `mise run format-apply` | Apply Spotless formatting | Yes |
+| `mise run format-check` | Validate Spotless formatting | No |
+| `mise run architecture` | Run Spring Modulith and ArchUnit boundary tests | No |
+| `mise run coverage` | Run `emme-platform` tests and JaCoCo verification | No |
+| `mise run quality` | Run compile, formatting, and static analysis | No |
+| `mise run hooks-install` | Configure `.githooks` for this checkout | Configures Git |
+
+`spotlessApply` is deliberately never used as a validation command. A clean
+checkout must be provable with `spotlessCheck`, and the canonical application
+coverage task must pass its JaCoCo threshold. The repository-wide module tests
+remain the source of truth for package boundaries:
+
+```mermaid
+flowchart LR
+    Source[Module source] --> Modulith[Spring Modulith verification]
+    Source --> ArchUnit[ArchUnit layer rules]
+    Source --> Spotless[Spotless check]
+    Tests[emme-platform tests] --> JaCoCo[JaCoCo report and threshold]
+    Modulith --> Merge[Required PR checks]
+    ArchUnit --> Merge
+    Spotless --> Merge
+    JaCoCo --> Merge
+```
+
 The exact task names may evolve, but the namespace and delegation rules are stable architecture.
 
 ## Reproducibility and CI contract

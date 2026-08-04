@@ -14,8 +14,24 @@ description = "Validate Markdown links and code fences"
 run = "node scripts/validate-markdown.mjs"
 
 [tasks.quality]
-description = "Run backend formatting, compilation, and static analysis"
+description = "Run backend formatting, compilation, and static-analysis gates"
 run = "./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon --no-configuration-cache"
+
+[tasks.format-check]
+description = "Validate Java and Gradle formatting without changing files"
+run = "./gradlew spotlessCheck --no-daemon --no-configuration-cache"
+
+[tasks.format-apply]
+description = "Apply the canonical Spotless formatting to the service"
+run = "./gradlew spotlessApply --no-daemon --no-configuration-cache"
+
+[tasks.architecture]
+description = "Verify Spring Modulith and ArchUnit module boundaries"
+run = "./gradlew :applications:emme-platform:test --tests com.emme.ModularityTest --tests com.emme.LayerConventionTest --no-daemon --no-configuration-cache"
+
+[tasks.coverage]
+description = "Verify JaCoCo coverage for the canonical emme-platform application"
+run = "./gradlew :applications:emme-platform:coverageCheck --no-daemon --no-configuration-cache"
 
 [tasks.security-check]
 description = "Run the OWASP dependency vulnerability scan"
@@ -32,3 +48,7 @@ run = "./gradlew :applications:emme-platform:test --tests com.emme.ModularityTes
 [tasks.build]
 description = "Build the deployable backend"
 run = "./gradlew :applications:emme-platform:build --no-configuration-cache"
+
+[tasks.hooks-install]
+description = "Install the repository-native Gradle Git hooks"
+run = "git config core.hooksPath .githooks"

@@ -30,6 +30,16 @@ tasks.named("check") {
     dependsOn("spotlessCheck")
 }
 
+tasks.register("coverageCheck") {
+    group = "verification"
+    description = "Run JaCoCo reporting and coverage verification for emme-platform"
+    dependsOn(
+        ":applications:emme-platform:test",
+        ":applications:emme-platform:jacocoTestReport",
+        ":applications:emme-platform:jacocoTestCoverageVerification",
+    )
+}
+
 gradle.projectsEvaluated {
     tasks.named("ci") {
         dependsOn(subprojects.flatMap { subproject ->

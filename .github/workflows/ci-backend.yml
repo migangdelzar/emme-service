@@ -1,6 +1,7 @@
+---
 name: CI Backend
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
   pull_request:
@@ -15,17 +16,19 @@ concurrency:
 
 jobs:
   quality:
+    name: Backend quality gates
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-gradle
-      - name: Verify documentation
+      - name: Set up Node.js for documentation validation
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: node scripts/validate-markdown.mjs
-      - name: Run Gradle quality lifecycle
+      - name: Validate documentation
+        run: node scripts/validate-markdown.mjs
+      - name: Run Gradle static-analysis lifecycle
         run: >-
           ./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon
           --no-configuration-cache --stacktrace
@@ -47,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-gradle
-      - name: Run all unit and module tests
+      - name: Run all backend unit and module tests
         run: ./gradlew test --no-daemon --no-configuration-cache --stacktrace
       - name: Upload test reports
         if: always()
@@ -80,6 +83,28 @@ jobs:
           path: |
             **/build/reports/tests/**
             **/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  coverage:
+    name: JaCoCo application coverage
+    needs: [quality, test]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-gradle
+      - name: Verify emme-platform JaCoCo coverage
+        run: >-
+          ./gradlew :applications:emme-platform:coverageCheck
+          --no-daemon --no-configuration-cache --stacktrace
+      - name: Upload JaCoCo reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jacoco-reports
+          path: applications/emme-platform/build/reports/jacoco/**
           if-no-files-found: ignore
           retention-days: 7
 
@@ -135,7 +160,7 @@ jobs:
           terraform validate
 
   boot-jar:
-    needs: [quality, test, integration, build-logic, infrastructure]
+    needs: [quality, test, integration, build-logic, infrastructure, coverage]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -174,7 +199,14 @@ jobs:
   summary:
     name: CI summary
     if: always()
-    needs: [quality, test, integration, build-logic, infrastructure, boot-jar]
+    needs:
+      - quality
+      - test
+      - integration
+      - build-logic
+      - infrastructure
+      - coverage
+      - boot-jar
     runs-on: ubuntu-24.04
     steps:
       - name: Publish result summary
@@ -184,6 +216,7 @@ jobs:
           INTEGRATION_RESULT: ${{ needs.integration.result }}
           BUILD_LOGIC_RESULT: ${{ needs['build-logic'].result }}
           INFRASTRUCTURE_RESULT: ${{ needs.infrastructure.result }}
+          COVERAGE_RESULT: ${{ needs.coverage.result }}
           BOOT_JAR_RESULT: ${{ needs['boot-jar'].result }}
         run: |
           echo "## Backend CI" >> "$GITHUB_STEP_SUMMARY"
@@ -191,13 +224,16 @@ jobs:
           echo "- Tests: ${TEST_RESULT}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Integration: ${INTEGRATION_RESULT}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Build logic: ${BUILD_LOGIC_RESULT}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Infrastructure: ${INFRASTRUCTURE_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Infrastructure: ${INFRASTRUCTURE_RESULT}" \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo "- JaCoCo coverage: ${COVERAGE_RESULT}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Boot JAR: ${BOOT_JAR_RESULT}" >> "$GITHUB_STEP_SUMMARY"
           if [[ "${QUALITY_RESULT}" != "success" ||
                 "${TEST_RESULT}" != "success" ||
                 "${INTEGRATION_RESULT}" != "success" ||
                 "${BUILD_LOGIC_RESULT}" != "success" ||
                 "${INFRASTRUCTURE_RESULT}" != "success" ||
+                "${COVERAGE_RESULT}" != "success" ||
                 "${BOOT_JAR_RESULT}" != "success" ]]; then
             exit 1
           fi

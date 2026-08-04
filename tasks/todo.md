@@ -1763,3 +1763,42 @@ limiting, then continue authorization domain/application separation.
 - [x] Verify repository test, Shared integration, formatting, Checkstyle, and
   application Modulith gates.
 - [ ] Add final repository-wide recovery/rollback evidence for Shared changes.
+
+## Developer workflow and verification gates — 2026-08-03
+
+### Goal
+
+Make local developer commands and GitHub Actions use the same production-grade
+backend gates: Spotless validation, Modulith/ArchUnit boundaries, JaCoCo,
+security checks, integration tests, infrastructure validation, and packaging.
+
+### Decisions
+
+- [x] Keep Gradle as the service build and hook implementation; do not add a
+      second Node-based Husky runtime to the Java repository.
+- [x] Use committed `.githooks` scripts installed through Mise.
+- [x] `spotlessApply` is an explicit formatter; hooks and CI validate with
+      `spotlessCheck`.
+- [x] Expose separate Mise tasks for formatting, architecture, coverage,
+      security, tests, integration, and the complete quality lifecycle.
+- [x] Keep Modulith and ArchUnit boundary tests blocking in local verification
+      and pull-request Actions.
+- [x] Keep JaCoCo thresholds honest and ratcheted from measured coverage; do
+      not make a repository-wide 70% gate green by excluding business code.
+
+### Implementation and verification
+
+- [x] Add service-native pre-commit and pre-push hooks plus `mise run hooks-install`.
+- [x] Add explicit `spotlessCheck`, Modulith/ArchUnit, JaCoCo report, and
+      coverage-verification tasks.
+- [x] Normalize Mise task names and make CI delegate to them where practical.
+- [x] Improve backend workflow job and step names without weakening gates.
+- [x] Add Dependabot/security metadata and preserve Gitleaks/OWASP controls.
+- [x] Run the backend gates serially locally to avoid concurrent Gradle report
+      writer collisions.
+- [ ] Push and verify all required GitHub Actions checks.
+
+### Follow-up observations
+
+- [ ] Investigate non-failing Testcontainers prune and application-context
+      shutdown warnings emitted by the integration suite.

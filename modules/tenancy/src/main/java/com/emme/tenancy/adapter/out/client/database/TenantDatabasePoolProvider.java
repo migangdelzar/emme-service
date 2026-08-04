@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -41,6 +42,7 @@ public class TenantDatabasePoolProvider {
   /** Default database pool — held separately, never evicted. */
   private final AtomicReference<HikariDataSource> defaultPoolRef = new AtomicReference<>();
 
+  @Autowired
   public TenantDatabasePoolProvider(
       TenantPoolingProperties config,
       TenantDatabaseConnectionProperties connectionProperties,

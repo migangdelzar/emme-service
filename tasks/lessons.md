@@ -746,3 +746,15 @@
 - **Prevention rule:** Treat the container scan as an independent release gate;
   inspect the resolved runtime dependency graph, update the fixed dependency,
   and refresh Gradle verification metadata before declaring image CI green.
+
+## 2026-08-04 — Mark secondary test constructors explicitly
+
+- **Failure mode:** Adding a package-private constructor for deterministic
+  Caffeine-clock tests made Spring application contexts fail with “No default
+  constructor found” because the component now had multiple constructors.
+- **Detection signal:** The focused unit tests passed, but service-wide module
+  context tests failed while instantiating `TenantDatabasePoolProvider`.
+- **Prevention rule:** When a Spring component has more than one constructor,
+  explicitly annotate the production injection constructor with `@Autowired`;
+  keep test-only constructors package-private and verify at least one real
+  application context after adding them.

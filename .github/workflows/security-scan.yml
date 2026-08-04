@@ -3,6 +3,19 @@ name: Security Scan
 
 'on':
   workflow_call:
+    inputs:
+      require_nvd:
+        description: Fail when the NVD API key is not configured
+        required: false
+        default: false
+        type: boolean
+  workflow_dispatch:
+    inputs:
+      require_nvd:
+        description: Fail when the NVD API key is not configured
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -29,9 +42,13 @@ jobs:
         id: nvd-key
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+          REQUIRE_NVD: ${{ inputs.require_nvd }}
         run: |
           if [[ -n "$NVD_API_KEY" ]]; then
             echo "configured=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$REQUIRE_NVD" == "true" ]]; then
+            echo "::error::NVD_API_KEY is required for this security scan. Configure the repository or environment secret before retrying."
+            exit 1
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
             warning="OWASP Dependency-Check skipped: configure the"

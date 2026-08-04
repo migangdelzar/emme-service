@@ -55,7 +55,7 @@ below is the authoritative order for open work.
 | `event-streaming` | [Kafka + Spring Modulith closure](2026-08-02-kafka-modulith-event-streaming-closure.md); [verification report](../reviews/2026-08-02-kafka-modulith-event-streaming-verification.md) | Implemented and verified for MVP | Verify public event contracts, publication delivery, consumer idempotency, application-restart recovery configuration, broker configuration, and CI evidence |
 
 | `architecture-verification` | [DDD + Hexagonal + Modulith architecture verification design](../specs/2026-08-04-ddd-hexagonal-modulith-architecture-verification-design.md) | Repository-local rules implemented; environment-dependent evidence remains | Execute reusable ArchUnit, JMolecules-compatible, naming, package metadata, persistence ownership, tenant-isolation, event-contract, and Modulith documentation rules |
-| `configuration-properties` | [configuration properties normalization](2026-08-04-configuration-properties-normalization.md) | Planned final governance slice | Prefer immutable records and validate real startup invariants without breaking profile-specific optional providers |
+| `configuration-properties` | [configuration properties normalization](2026-08-04-configuration-properties-normalization.md) | Record conversion baseline complete; conditional provider validation remains | Prefer immutable records and validate real startup invariants without breaking profile-specific optional providers |
 
 ## Remaining execution order: priority and type
 
@@ -77,7 +77,7 @@ not move to the next priority band until its exit criteria are met.
 | P4 | Build platform | Execute the complete Capability-Driven Design build-logic migration | [Build-logic CDD](2026-08-02-build-logic-cdd-migration.md) | All module migrations consume the same build platform; its implementation is now normalized and verified | Complete for the current unreleased service; future capabilities must add provider ownership and TestKit coverage |
 | P4 | Event streaming | Close Kafka + Spring Modulith event-streaming evidence | [Kafka + Modulith](2026-08-02-kafka-modulith-event-streaming-closure.md) | Events cross module and process boundaries; delivery, partitioning, replay, and failure semantics must be explicit | Complete for the current MVP; broker-outage chaos remains a deployment-environment acceptance test |
 | P4 | Architecture verification | Execute DDD + Hexagonal + Spring Modulith structure verification | [Architecture verification design](../specs/2026-08-04-ddd-hexagonal-modulith-architecture-verification-design.md) | Prevents package drift, adapter inversion, public-contract leakage, schema ownership regressions, and undocumented module boundaries after the real E2E slice | Reusable architecture rules, module-specific rules, deliberate red/green coverage, Modulith documentation, PlantUML output, event-contract tests, and CI evidence pass |
-| P5 | Governance and verification | Run final repository-local service verification | [final service verification](../reviews/2026-08-03-final-service-verification.md) | Confirms no migration weakened Modulith boundaries or reintroduced legacy packages | Repository-local architecture, Modulith, Kafka, CI, integration, boot, documentation, and remote checks pass; deployment-only gates remain explicit |
+| P5 | Governance and verification | Run final repository-local service verification | [final service verification](../reviews/2026-08-04-final-service-verification.md) | Confirms no migration weakened Modulith boundaries or reintroduced legacy packages | Repository-local architecture, Modulith, Kafka, CI, integration, boot, documentation, and remote checks pass; deployment-only gates remain explicit |
 
 ### Parallelization rules
 
@@ -148,4 +148,4 @@ The current complete gap inventory is recorded in
 [`2026-08-02-plan-audit.md`](../reviews/2026-08-02-plan-audit.md). The latest
 repository-local closure and its environment-dependent release gates are
 recorded in
-[`2026-08-03-final-service-verification.md`](../reviews/2026-08-03-final-service-verification.md).
+[`2026-08-04-final-service-verification.md`](../reviews/2026-08-04-final-service-verification.md).

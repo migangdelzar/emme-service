@@ -43,6 +43,16 @@ NVD database and skips the dependency job when the secret is absent so a public
 NVD rate-limit stall cannot masquerade as an application failure. Local Gradle
 verification metadata remains required for reproducible builds.
 
+The reusable security workflow also supports a manual, fail-closed run:
+
+```text
+gh workflow run "Security Scan" --ref <branch> -f require_nvd=true
+```
+
+That run fails immediately when `NVD_API_KEY` is missing instead of silently
+reporting a skipped vulnerability scan. Pull-request CI keeps the safe default
+(`require_nvd=false`) until repository administration configures the secret.
+
 See the boundary-specific controls in [API](architecture/01-backend/api.md),
 [integration](architecture/03-integration/frontend-backend.md), and
 [containers](architecture/04-delivery/container.md).

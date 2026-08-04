@@ -1,5 +1,31 @@
 # Service architecture migration checklist
 
+## Authoritative status reconciliation — 2026-08-04
+
+Historical migration checkboxes below preserve the original execution trail.
+They are not an independent backlog. The authoritative state is the plan
+registry, the latest verification reports, and this section.
+
+- [x] Kafka + Spring Modulith event streaming is implemented and verified with
+      contract tests, a real Kafka Testcontainer, JDBC publication tracking,
+      tenant-aware topic keys, and restart-republication configuration.
+- [x] Capability-Driven `build-logic` is implemented and verified with unit
+      tests, TestKit functional tests, lazy providers, configuration-cache
+      coverage, and stable convention/task contracts.
+- [x] Service CI run `30955634288` is green for quality, tests, integration,
+      architecture, build-logic, infrastructure, security, and boot JAR gates.
+- [x] Web CI run `30955214910` is green for the current JVM/Compose lane.
+- [x] Final repository-local architecture evidence is recorded in
+      `docs/superpowers/reviews/2026-08-04-final-service-verification.md`.
+- [x] Operational evidence is classified in
+      `docs/superpowers/reviews/2026-08-04-production-evidence-matrix.md`.
+- [ ] Run the environment-dependent release gates: credentialed providers,
+      real database outage/restore, deployed Kafka outage recovery, native
+      image measurements, and complete real E2E CI execution.
+- [ ] Configure `NVD_API_KEY` and run the fail-closed security workflow; the
+      current PR scan remains intentionally non-blocking when the secret is
+      absent.
+
 ## Immutable configuration-properties normalization — 2026-08-04
 
 - [x] Convert Identity Keycloak, security, and realm-provisioning settings to

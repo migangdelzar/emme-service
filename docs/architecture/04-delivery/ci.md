@@ -132,7 +132,7 @@ to hide it; use a composite action for that boundary.
 |---|---|---|
 | `ci-backend.yml` | Pushes and pull requests targeting `main` | Markdown validation, static Gradle quality, platform tests, module-boundary tests, both bootable JARs |
 | `ci-module-boundaries.yml` | Pushes and pull requests | Spring Modulith and ArchUnit verification |
-| `security-scan.yml` | Pushes, pull requests, weekly schedule | Gitleaks always; OWASP Dependency-Check when `NVD_API_KEY` is configured |
+| `security-scan.yml` | Pushes, pull requests, weekly schedule, and manual dispatch | Gitleaks always; OWASP Dependency-Check when `NVD_API_KEY` is configured; manual `require_nvd=true` runs fail closed |
 | `dependency-review.yml` | Manual dispatch until GitHub Dependency Graph is enabled | High-severity dependency changes are rejected when supported |
 
 The backend quality job runs Gradle `ci` with application test tasks excluded so
@@ -184,6 +184,8 @@ CI may select focused jobs based on changed paths, but the protected branch must
 - Configure the repository `NVD_API_KEY` secret before making OWASP analysis a
   required pull-request check. Without it, the dependency job is intentionally
   skipped instead of timing out against the public NVD rate limit.
+- Run `Security Scan` manually with `require_nvd=true` after configuring the
+  secret to prove that the NVD-backed dependency gate is active.
 
 ### Test execution policy
 

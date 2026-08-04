@@ -7,9 +7,11 @@ CREATE TABLE IF NOT EXISTS notification (
     tenant_id UUID NOT NULL,
     channel VARCHAR(30) NOT NULL CHECK (channel IN ('WHATSAPP','WEB','PUSH','EMAIL')),
     recipient_reference VARCHAR(150) NOT NULL,
+    body VARCHAR(2000),
     status VARCHAR(30) NOT NULL DEFAULT 'REQUESTED' CHECK (status IN ('REQUESTED','SENT','DELIVERED','FAILED','CANCELLED')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 ALTER TABLE notification ENABLE ROW LEVEL SECURITY;
@@ -31,6 +33,7 @@ CREATE TABLE IF NOT EXISTS payment (
     status VARCHAR(30) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','AUTHORIZED','CAPTURED','DECLINED','REFUNDED','CANCELLED')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (tenant_id, provider_reference)
 );
 
@@ -52,7 +55,8 @@ CREATE TABLE IF NOT EXISTS calendar_sync_state (
     last_synced_at TIMESTAMPTZ,
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','STALE','FAILED')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 ALTER TABLE calendar_sync_state ENABLE ROW LEVEL SECURITY;
@@ -73,6 +77,7 @@ CREATE TABLE IF NOT EXISTS calendar_event_link (
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','SYNCED','CONFLICT','DELETED','FAILED')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (tenant_id, provider, external_event_id)
 );
 

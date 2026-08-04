@@ -46,9 +46,22 @@ for (const serviceName of ['emme-platform', 'postgres', 'redis', 'keycloak', 'da
 assert.equal(services['emme-platform'].image, 'emme-service:e2e-contract');
 assert.equal(
   services['emme-platform'].environment.SPRING_DATASOURCE_URL,
-  'jdbc:postgresql://postgres:5432/emme',
+  'jdbc:postgresql://postgres:5432/emme?currentSchema=e2e_studio,emme_core,public',
 );
 assert.equal(services['emme-platform'].environment.SPRING_DATA_REDIS_HOST, 'redis');
+assert.equal(services['emme-platform'].environment.SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA, undefined);
+assert.equal(
+  services['emme-platform'].environment.GOOGLE_TOKEN_ENCRYPTION_KEY,
+  'e2e-token-encryption-32-byte-key',
+);
+assert.equal(
+  services['emme-platform'].environment.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_ID,
+  'emme-salon-app',
+);
+assert.equal(
+  services['emme-platform'].environment.SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI,
+  'http://keycloak:8080/realms/emme',
+);
 assert.equal(
   services['emme-platform'].environment.APP_KEYCLOAK_BASE_URL,
   'http://keycloak:8080',

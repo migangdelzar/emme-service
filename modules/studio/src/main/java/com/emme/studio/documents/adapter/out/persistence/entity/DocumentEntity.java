@@ -24,7 +24,8 @@ public class DocumentEntity extends TenantOwnedEntity {
   @Column(name = "status", nullable = false, length = 30)
   private DocumentStatus status = DocumentStatus.UPLOADED;
 
-  @Column(name = "version", nullable = false)
+  /** Business revision, distinct from the inherited JPA optimistic-lock version. */
+  @Column(name = "document_version", nullable = false)
   private int version = 1;
 
   protected DocumentEntity() {}

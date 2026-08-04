@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS studio_audit_event (
     outcome          VARCHAR(20)  NOT NULL CHECK (outcome IN ('SUCCEEDED','DENIED','FAILED')),
     occurred_at      TIMESTAMPTZ  NOT NULL DEFAULT now(),
     created_at       TIMESTAMPTZ  NOT NULL DEFAULT now(),
-    updated_at       TIMESTAMPTZ  NOT NULL DEFAULT now()
+    updated_at       TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    version          BIGINT       NOT NULL DEFAULT 0
 );
 
 ALTER TABLE studio_audit_event ENABLE ROW LEVEL SECURITY;

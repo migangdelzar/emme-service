@@ -12,9 +12,12 @@ services:
           memory: 1G
     environment:
       SPRING_PROFILES_ACTIVE: e2e
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emme
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emme?currentSchema=${E2E_TENANT_SCHEMA:-e2e_studio},emme_core,public
       SPRING_DATASOURCE_USERNAME: emme
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-emme}
+      # The disposable E2E environment uses one tenant search path so the
+      # tenant-routing DataSource can validate tenant-owned tables at startup.
+      # Production keeps dynamic tenant routing and does not use this overlay.
       SPRING_DATA_REDIS_HOST: redis
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/emme
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/emme/protocol/openid-connect/certs
@@ -23,7 +26,13 @@ services:
       APP_KEYCLOAK_ADMIN_PASSWORD: ${EMME_E2E_KEYCLOAK_ADMIN_PASSWORD:-e2e-admin-password}
       APP_KEYCLOAK_PROVISIONING_ENABLED: "false"
       APP_TENANT_PROVISIONING_ENABLED: "false"
+      GOOGLE_TOKEN_ENCRYPTION_KEY: e2e-token-encryption-32-byte-key
       OTEL_SDK_DISABLED: "true"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_ID: emme-salon-app
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_AUTHORIZATION_GRANT_TYPE: authorization_code
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_SCOPE: openid,profile,email
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_REDIRECT_URI: '{baseUrl}/login/oauth2/code/{registrationId}'
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/emme
     depends_on:
       postgres:
         condition: service_healthy

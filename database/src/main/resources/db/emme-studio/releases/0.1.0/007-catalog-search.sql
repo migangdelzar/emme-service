@@ -21,13 +21,14 @@ CREATE TABLE IF NOT EXISTS catalog_item (
     price_notes VARCHAR(500),
     duration_minutes INTEGER
         CHECK (duration_minutes IS NULL OR (duration_minutes >= 1 AND duration_minutes <= 1440)),
-    materials JSONB,
+    materials VARCHAR(2000),
     status VARCHAR(10) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','RETIRED')),
     search_tsv tsvector
         GENERATED ALWAYS AS (to_tsvector('spanish', name || ' ' || coalesce(description, ''))) STORED,
     embedding vector(1024),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (tenant_id, service_id, code)
 );
 
@@ -41,7 +42,8 @@ CREATE TABLE IF NOT EXISTS catalog_item_image (
         GENERATED ALWAYS AS (to_tsvector('spanish', coalesce(caption, ''))) STORED,
     embedding vector(1024),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 ALTER TABLE catalog_item ENABLE ROW LEVEL SECURITY;

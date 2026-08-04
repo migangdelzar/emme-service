@@ -136,6 +136,22 @@ class ArchitectureInventoryTest {
   }
 
   @Test
+  fun `compose deployment uses normalized base runtime and environment overlays`() {
+    val composeProvider =
+      Files.readString(
+        sourcePath(
+          "build-logic/src/main/kotlin/com/emme/buildlogic/deployment/provider/ComposeProvider.kt",
+        ),
+      )
+
+    assertThat(composeProvider).contains("compose.yaml")
+    assertThat(composeProvider).contains("compose.runtime-")
+    assertThat(composeProvider).contains("compose.environment-")
+    assertThat(composeProvider).contains("if (profile == \"test\") \"ci\" else profile")
+    assertThat(composeProvider).doesNotContain("compose.${'$'}{parameters.profile.get()}.yml")
+  }
+
+  @Test
   fun `quality and api compatibility conventions avoid configuration-time value reads`() {
     val qualityConvention =
       Files.readString(sourcePath("build-logic/src/main/kotlin/emme.quality.gradle.kts"))

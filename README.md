@@ -65,12 +65,12 @@ Select exactly one backend runtime image when starting Compose:
 
 ```bash
 # JVM baseline / rollback artifact
-docker compose -f deployment/compose/compose.yml \
-  -f deployment/compose/compose.jvm.yml up -d
+docker compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml up -d
 
 # Explicit GraalVM Native Image path
-docker compose -f deployment/compose/compose.yml \
-  -f deployment/compose/compose.native.yml up -d
+docker compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-native.yaml up -d
 ```
 
 For K3d/K3s, render or deploy `infra/kubernetes/overlays/dev` or `prod` for

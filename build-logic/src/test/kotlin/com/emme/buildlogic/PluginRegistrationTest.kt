@@ -86,6 +86,7 @@ class PluginRegistrationTest {
 
     val ext = project.extensions.findByType(EmmeDeploymentExtension::class.java)
     assertThat(ext).isNotNull
+    assertThat(ext!!.runtime.get()).isEqualTo("jvm")
   }
 
   @Test

@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import process from 'node:process';
 
 const composeFiles = [
-  'deployment/compose/compose.yml',
-  'deployment/compose/compose.jvm.yml',
-  'deployment/compose/compose.e2e.yml',
+  'deployment/compose/compose.yaml',
+  'deployment/compose/compose.runtime-jvm.yaml',
+  'deployment/compose/compose.environment-e2e.yaml',
 ];
 
 const composeExecutable = (() => {

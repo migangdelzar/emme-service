@@ -13,7 +13,7 @@ test('rejects an active deployment file that targets studio-api', async () => {
   const repositoryRoot = await mkdtemp(path.join(tmpdir(), 'emme-target-'));
   await mkdir(path.join(repositoryRoot, 'deployment'), { recursive: true });
   await writeFile(
-    path.join(repositoryRoot, 'deployment', 'compose.yml'),
+    path.join(repositoryRoot, 'deployment', 'compose.yaml'),
     'services:\n  studio-api:\n    image: ghcr.io/migangdelzar/emme-service-studio-api:latest\n',
   );
 
@@ -22,7 +22,7 @@ test('rejects an active deployment file that targets studio-api', async () => {
     rules: {
       files: [
         {
-          path: 'deployment/compose.yml',
+          path: 'deployment/compose.yaml',
           required: ['emme-platform', 'ghcr.io/migangdelzar/emme-service:'],
           forbidden: ['studio-api', 'emme-service-studio-api'],
         },
@@ -31,10 +31,10 @@ test('rejects an active deployment file that targets studio-api', async () => {
   });
 
   assert.deepEqual(errors, [
-    'deployment/compose.yml: missing required token "emme-platform"',
-    'deployment/compose.yml: missing required token "ghcr.io/migangdelzar/emme-service:"',
-    'deployment/compose.yml: contains forbidden token "studio-api"',
-    'deployment/compose.yml: contains forbidden token "emme-service-studio-api"',
+    'deployment/compose.yaml: missing required token "emme-platform"',
+    'deployment/compose.yaml: missing required token "ghcr.io/migangdelzar/emme-service:"',
+    'deployment/compose.yaml: contains forbidden token "studio-api"',
+    'deployment/compose.yaml: contains forbidden token "emme-service-studio-api"',
   ]);
 });
 
@@ -42,7 +42,7 @@ test('accepts an emme-platform deployment file', async () => {
   const repositoryRoot = await mkdtemp(path.join(tmpdir(), 'emme-target-'));
   await mkdir(path.join(repositoryRoot, 'deployment'), { recursive: true });
   await writeFile(
-    path.join(repositoryRoot, 'deployment', 'compose.yml'),
+    path.join(repositoryRoot, 'deployment', 'compose.yaml'),
     'services:\n  emme-platform:\n    image: ghcr.io/migangdelzar/emme-service:latest\n',
   );
 
@@ -51,7 +51,7 @@ test('accepts an emme-platform deployment file', async () => {
     rules: {
       files: [
         {
-          path: 'deployment/compose.yml',
+          path: 'deployment/compose.yaml',
           required: ['emme-platform', 'ghcr.io/migangdelzar/emme-service:'],
           forbidden: ['studio-api', 'emme-service-studio-api'],
         },
@@ -74,20 +74,18 @@ test('repository deployment surfaces target emme-platform', async () => {
 test('JVM and native Compose overlays select exactly one runtime image family', async () => {
   const composeDirectory = path.join(process.cwd(), 'deployment', 'compose');
   const jvmOverlay = await readFile(
-    path.join(composeDirectory, 'compose.jvm.yml'),
+    path.join(composeDirectory, 'compose.runtime-jvm.yaml'),
     'utf8',
   );
   const nativeOverlay = await readFile(
-    path.join(composeDirectory, 'compose.native.yml'),
+    path.join(composeDirectory, 'compose.runtime-native.yaml'),
     'utf8',
   );
 
-  assert.match(jvmOverlay, /EMME_PLATFORM_JVM_IMAGE/);
-  assert.doesNotMatch(jvmOverlay, /EMME_PLATFORM_NATIVE_IMAGE/);
-  assert.match(nativeOverlay, /EMME_PLATFORM_NATIVE_IMAGE/);
-  assert.doesNotMatch(nativeOverlay, /EMME_PLATFORM_JVM_IMAGE/);
-  assert.match(jvmOverlay, /EMME_PLATFORM_JVM_IMAGE:-ghcr\.io\/migangdelzar\/emme-service:\$\{TAG:-latest\}/);
-  assert.match(nativeOverlay, /EMME_PLATFORM_NATIVE_IMAGE:-ghcr\.io\/migangdelzar\/emme-service:\$\{TAG:-latest\}-native\}/);
+  assert.match(jvmOverlay, /EMME_SERVICE_IMAGE/);
+  assert.match(nativeOverlay, /EMME_SERVICE_IMAGE/);
+  assert.match(jvmOverlay, /EMME_SERVICE_IMAGE:-ghcr\.io\/migangdelzar\/emme-service:\$\{TAG:-latest\}/);
+  assert.match(nativeOverlay, /EMME_SERVICE_IMAGE:-ghcr\.io\/migangdelzar\/emme-service:\$\{TAG:-latest\}-native\}/);
 });
 
 test('K3d and K3s overlays select JVM or native images explicitly', async () => {

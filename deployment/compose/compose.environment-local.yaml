@@ -1,5 +1,6 @@
-# Local environment overlay. Select a runtime image in compose.jvm.yml or
-# compose.native.yml before applying this file.
+# Local environment overlay. Select a runtime image in
+# compose.runtime-jvm.yaml or compose.runtime-native.yaml before applying this
+# file.
 services:
   emme-platform:
     environment:

@@ -17,6 +17,9 @@ abstract class EmmeDeploymentExtension
     /** Profile/environment: "local", "test", "staging", "production" */
     abstract val profile: Property<String>
 
+    /** Runtime variant selected by deployment: "jvm" or "native". */
+    abstract val runtime: Property<String>
+
     /** Namespace for K8s deployments */
     abstract val namespace: Property<String>
 
@@ -41,5 +44,11 @@ abstract class EmmeDeploymentExtension
           .orElse("local"),
       )
       namespace.convention(profile.map { "emme-$it" })
+      runtime.convention(
+        providers
+          .gradleProperty("emme.deployment.runtime")
+          .orElse(providers.environmentVariable("EMME_DEPLOYMENT_RUNTIME"))
+          .orElse("jvm"),
+      )
     }
   }

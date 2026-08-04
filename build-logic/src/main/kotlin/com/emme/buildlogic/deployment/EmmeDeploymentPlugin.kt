@@ -29,6 +29,7 @@ class EmmeDeploymentPlugin : Plugin<Project> {
     val composeDeployment =
       gradle.sharedServices.registerIfAbsent("emmeComposeDeploymentProvider", ComposeProvider::class.java) {
         parameters.profile.set(extension.profile)
+        parameters.runtime.set(extension.runtime)
         parameters.namespace.set(extension.namespace)
         parameters.deploymentDir.set(extension.deploymentDir)
         maxParallelUsages.set(1)
@@ -40,6 +41,7 @@ class EmmeDeploymentPlugin : Plugin<Project> {
         KubernetesProvider::class.java,
       ) {
         parameters.profile.set(extension.profile)
+        parameters.runtime.set(extension.runtime)
         parameters.namespace.set(extension.namespace)
         parameters.deploymentDir.set(extension.deploymentDir)
         maxParallelUsages.set(1)

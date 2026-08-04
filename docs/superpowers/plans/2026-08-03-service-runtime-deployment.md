@@ -24,13 +24,13 @@
 ### Task 1: Normalize the service deployment vocabulary
 
 **Files:**
-- Modify: `deployment/compose/compose.yml`
-- Modify: `deployment/compose/compose.jvm.yml`
-- Modify: `deployment/compose/compose.native.yml`
-- Modify: `deployment/compose/compose.local.yml`
-- Modify: `deployment/compose/compose.test.yml`
-- Modify: `deployment/compose/compose.observability.yml`
-- Modify: `deployment/compose/compose.e2e.yml`
+- Modify: `deployment/compose/compose.yaml`
+- Modify: `deployment/compose/compose.runtime-jvm.yaml`
+- Modify: `deployment/compose/compose.runtime-native.yaml`
+- Modify: `deployment/compose/compose.environment-local.yaml`
+- Modify: `deployment/compose/compose.environment-ci.yaml`
+- Modify: `deployment/compose/compose.observability.yaml`
+- Modify: `deployment/compose/compose.environment-e2e.yaml`
 - Modify: `deployment/kubernetes/overlays/local/kustomization.yml`
 - Modify: `deployment/kubernetes/overlays/production/kustomization.yml`
 - Modify: `infra/kubernetes/overlays/dev/kustomization.yaml`
@@ -58,7 +58,8 @@ Run:
 node scripts/validate-deployment-layout.mjs
 ```
 
-Expected: FAIL because the repository still uses `compose.yml`, runtime-only names, and legacy environment names.
+Expected: FAIL because the repository had not yet materialized the normalized
+base, runtime, and environment overlay names.
 
 - [ ] **Step 3: Rename files and update references.**
 
@@ -100,7 +101,7 @@ git commit -m "refactor(deployment): normalize runtime and cluster naming"
 ### Task 2: Make the E2E Compose runtime execute the service image
 
 **Files:**
-- Modify: `deployment/compose/compose.e2e.yml`
+- Modify: `deployment/compose/compose.environment-e2e.yaml`
 - Modify: `deployment/compose/compose.runtime-jvm.yaml`
 - Create: `tools/e2e-provisioner/`
 - Test: `deployment/compose/compose.e2e.contract.test.mjs`
@@ -150,7 +151,7 @@ Run:
 ```bash
 node deployment/compose/compose.e2e.contract.test.mjs
 ./gradlew :tools:e2e-provisioner:test --no-daemon --no-configuration-cache
-docker compose -f deployment/compose/compose.yml -f deployment/compose/compose.jvm.yml -f deployment/compose/compose.e2e.yml config --quiet
+docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml -f deployment/compose/compose.environment-e2e.yaml config --quiet
 ```
 
 Expected: PASS.
@@ -296,7 +297,7 @@ GraalVM smoke evidence are green.
 
 ```bash
 node scripts/validate-container-workflow.mjs
-docker compose -f deployment/compose/compose.yml -f deployment/compose/compose.jvm.yml config --quiet
+docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml config --quiet
 ```
 
 - [ ] **Step 5: Commit.**
@@ -325,7 +326,7 @@ node scripts/validate-markdown.mjs
 node scripts/validate-container-workflow.mjs
 bash -n database/docker/run-migrations.sh deployment/scripts/*.sh scripts/doctor.sh
 ./gradlew :tools:e2e-provisioner:check --no-daemon --no-configuration-cache
-docker compose -f deployment/compose/compose.yml -f deployment/compose/compose.jvm.yml config --quiet
+docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml config --quiet
 ```
 
 - [ ] **Step 3: Record evidence and push.**

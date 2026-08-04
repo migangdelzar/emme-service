@@ -4,43 +4,69 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 
 abstract class ComposeProvider : DeploymentProvider() {
-  private fun composeFile(): File =
-    parameters.deploymentDir
-      .file("compose/compose.${parameters.profile.get()}.yml")
-      .get()
-      .asFile
+  private val environmentName: String
+    get() =
+      parameters.profile.get().let { profile ->
+        if (profile == "test") "ci" else profile
+      }
+
+  private fun composeFiles(): List<File> {
+    val composeDirectory =
+      parameters.deploymentDir
+        .dir("compose")
+        .get()
+        .asFile
+    return listOf(
+      File(composeDirectory, "compose.yaml"),
+      File(composeDirectory, "compose.runtime-${parameters.runtime.get()}.yaml"),
+      File(composeDirectory, "compose.environment-$environmentName.yaml"),
+    ).filter(File::exists)
+  }
 
   private fun envFile(): File =
     parameters.deploymentDir
-      .file("compose/env/${parameters.profile.get()}.env")
+      .file("compose/env/environment-$environmentName.env")
       .get()
       .asFile
 
+  private fun composeArguments(): MutableList<String> =
+    mutableListOf<String>("compose").also { arguments ->
+      composeFiles().forEach { file ->
+        arguments.addAll(listOf("-f", file.absolutePath))
+      }
+    }
+
   override fun up(): DeployResult {
-    val compose = composeFile()
-    if (!compose.exists()) return DeployResult(false, "Compose file not found: ${compose.absolutePath}")
-    val args = mutableListOf("compose", "-f", compose.absolutePath, "up", "-d")
+    val compose = composeFiles()
+    if (compose.size < 2) return DeployResult(false, "Compose base and runtime files were not found")
+    val args = composeArguments()
     val env = envFile()
     if (env.exists()) args.addAll(listOf("--env-file", env.absolutePath))
+    args.addAll(listOf("up", "-d"))
     return execute("docker", args)
   }
 
   override fun down(): DeployResult {
-    val compose = composeFile()
-    if (!compose.exists()) return DeployResult(false, "Compose file not found")
-    return execute("docker", listOf("compose", "-f", compose.absolutePath, "down", "--volumes", "--remove-orphans"))
+    if (composeFiles().size < 2) return DeployResult(false, "Compose base and runtime files were not found")
+    return execute(
+      "docker",
+      composeArguments().also { it.addAll(listOf("down", "--volumes", "--remove-orphans")) },
+    )
   }
 
   override fun apply(): DeployResult = up()
 
   override fun status(): StatusResult {
-    val output = executeCommand("docker", listOf("compose", "-f", composeFile().absolutePath, "ps", "--format", "json"))
+    val output = executeCommand("docker", composeArguments().also { it.addAll(listOf("ps", "--format", "json")) })
     val pods = output.lines().count { it.isNotBlank() }
     return StatusResult(ready = pods > 0, pods = pods, details = output)
   }
 
   override fun logs(tail: Int): String =
-    executeCommand("docker", listOf("compose", "-f", composeFile().absolutePath, "logs", "--tail=$tail"))
+    executeCommand(
+      "docker",
+      composeArguments().also { it.addAll(listOf("logs", "--tail=$tail")) },
+    )
 
   override fun close() = Unit
 

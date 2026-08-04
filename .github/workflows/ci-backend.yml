@@ -150,10 +150,10 @@ jobs:
           kubectl kustomize infra/kubernetes/overlays/prod-native >/dev/null
       - name: Validate Compose runtime overlays
         run: |
-          docker compose -f deployment/compose/compose.yml \
-            -f deployment/compose/compose.jvm.yml config --quiet
-          docker compose -f deployment/compose/compose.yml \
-            -f deployment/compose/compose.native.yml config --quiet
+          docker compose -f deployment/compose/compose.yaml \
+            -f deployment/compose/compose.runtime-jvm.yaml config --quiet
+          docker compose -f deployment/compose/compose.yaml \
+            -f deployment/compose/compose.runtime-native.yaml config --quiet
       - name: Validate Terraform
         working-directory: infra/terraform
         run: |

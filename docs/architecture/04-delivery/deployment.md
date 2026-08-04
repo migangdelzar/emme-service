@@ -22,7 +22,7 @@ defined once, and the deployment command selects exactly one runtime image.
 
 | Target | JVM | Native |
 |---|---|---|
-| Docker Compose | `deployment/compose/compose.yml` + `compose.jvm.yml` | `deployment/compose/compose.yml` + `compose.native.yml` |
+| Docker Compose | `deployment/compose/compose.yaml` + `compose.runtime-jvm.yaml` | `deployment/compose/compose.yaml` + `compose.runtime-native.yaml` |
 | K3d local | `infra/kubernetes/overlays/dev` | `infra/kubernetes/overlays/dev-native` |
 | K3s | `infra/kubernetes/overlays/prod` | `infra/kubernetes/overlays/prod-native` |
 

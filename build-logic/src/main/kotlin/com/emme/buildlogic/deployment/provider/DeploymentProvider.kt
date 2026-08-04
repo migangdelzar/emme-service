@@ -10,6 +10,7 @@ abstract class DeploymentProvider :
   AutoCloseable {
   interface Params : BuildServiceParameters {
     val profile: Property<String>
+    val runtime: Property<String>
     val namespace: Property<String>
     val deploymentDir: DirectoryProperty
   }

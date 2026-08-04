@@ -91,9 +91,9 @@ flowchart TD
 
 **Files:**
 
-- Modify: `deployment/compose/compose.yml`
-- Modify: `deployment/compose/compose.local.yml`
-- Modify: `deployment/compose/compose.test.yml`
+- Modify: `deployment/compose/compose.yaml`
+- Modify: `deployment/compose/compose.environment-local.yaml`
+- Modify: `deployment/compose/compose.environment-ci.yaml`
 - Modify: `deployment/helm/emme/values.yaml`
 - Modify: `deployment/kubernetes/base/kustomization.yml`
 - Rename: `deployment/kubernetes/base/studio-api/deployment.yml` → `deployment/kubernetes/base/emme-platform/deployment.yml`

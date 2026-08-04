@@ -1,5 +1,5 @@
 # JVM runtime overlay.
-# Usage: docker compose -f compose.yml -f compose.jvm.yml up -d
+# Usage: docker compose -f compose.yaml -f compose.runtime-jvm.yaml up -d
 services:
   emme-platform:
     image: ${EMME_SERVICE_IMAGE:-ghcr.io/migangdelzar/emme-service:${TAG:-latest}}

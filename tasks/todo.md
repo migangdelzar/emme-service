@@ -172,8 +172,8 @@ Identity verification evidence is recorded in
 ### Acceptance criteria
 
 - [x] The canonical Compose file contains shared application and dependency configuration.
-- [x] `compose.jvm.yml` selects the JVM image and contains no native-image selection.
-- [x] `compose.native.yml` selects the native image and contains no JVM-image selection.
+- [x] `compose.runtime-jvm.yaml` selects the JVM image and contains no native-image selection.
+- [x] `compose.runtime-native.yaml` selects the native image and contains no JVM-image selection.
 - [x] Exactly one runtime overlay is documented as required for application startup.
 - [x] Local, test, and observability overlays remain composable on top of the base and one runtime overlay.
 - [x] Compose configuration validation passes for the JVM and native paths.
@@ -181,13 +181,13 @@ Identity verification evidence is recorded in
 
 ### Working notes
 
-- `deployment/compose/compose.yml` remains the shared base for compatibility with existing commands.
+- `deployment/compose/compose.yaml` is the shared base; compatibility is provided by explicit command aliases, not duplicate files.
 - Runtime image references are overridable through environment variables so CI and release automation can provide immutable digests.
 - The JVM artifact remains the default rollback path; native is explicit and never implicitly selected.
 
 ### Results
 
-- Added `deployment/compose/compose.jvm.yml` and `compose.native.yml` over the shared `compose.yml` base.
+- Added `deployment/compose/compose.runtime-jvm.yaml` and `compose.runtime-native.yaml` over the shared `compose.yaml` base.
 - Added explicit K3d/K3s-compatible `dev-native` and `prod-native` Kustomize overlays; existing `dev` and `prod` now identify the JVM baseline.
 - Native Kubernetes overlays remove JVM-only `JAVA_TOOL_OPTIONS` and select `dev-native`/`0.1.0-native` images.
 - Validated both Compose runtime combinations with `docker-compose config --quiet`.

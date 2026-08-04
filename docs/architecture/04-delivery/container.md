@@ -52,8 +52,8 @@ runtime overlay; never combine JVM and native overlays in the same invocation.
 
 ```mermaid
 flowchart LR
-    BASE[compose.yml\nshared services] --> JVM[compose.jvm.yml\nJVM image]
-    BASE --> NATIVE[compose.native.yml\nNative image]
+    BASE[compose.yaml\nshared services] --> JVM[compose.runtime-jvm.yaml\nJVM image]
+    BASE --> NATIVE[compose.runtime-native.yaml\nNative image]
     JVM --> LOCAL[optional local/test/observability overlay]
     NATIVE --> LOCAL
 ```
@@ -61,14 +61,14 @@ flowchart LR
 ```bash
 # JVM rollback/default path
 docker compose \
-  -f deployment/compose/compose.yml \
-  -f deployment/compose/compose.jvm.yml \
+  -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
   up -d
 
 # Explicit native path
 docker compose \
-  -f deployment/compose/compose.yml \
-  -f deployment/compose/compose.native.yml \
+  -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-native.yaml \
   up -d
 ```
 
@@ -76,12 +76,12 @@ The image references are overrideable without editing repository files:
 
 ```bash
 EMME_PLATFORM_JVM_IMAGE=ghcr.io/migangdelzar/emme-service:2026.08.0-jvm \
-  docker compose -f deployment/compose/compose.yml \
-    -f deployment/compose/compose.jvm.yml config
+  docker compose -f deployment/compose/compose.yaml \
+    -f deployment/compose/compose.runtime-jvm.yaml config
 
 EMME_PLATFORM_NATIVE_IMAGE=ghcr.io/migangdelzar/emme-service:2026.08.0-native \
-  docker compose -f deployment/compose/compose.yml \
-    -f deployment/compose/compose.native.yml config
+  docker compose -f deployment/compose/compose.yaml \
+    -f deployment/compose/compose.runtime-native.yaml config
 ```
 
 The JVM overlay is the rollback artifact. The native overlay is valid only

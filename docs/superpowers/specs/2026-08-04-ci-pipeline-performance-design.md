@@ -89,9 +89,65 @@ image work:
 | `native` | `false` | Also build and scan the native image |
 | `publish` | `false` | Push the selected image(s) to GHCR |
 
-## 3. Backend workflow design
+## 3. Parallel execution strategy
 
-### 3.1 Job graph
+Parallelism is a design requirement, not an incidental GitHub Actions feature.
+Every mutually exclusive verification family starts as soon as its own setup
+is complete. A job may depend on another job only when it consumes an artifact,
+requires a validated prerequisite, or must be intentionally fail-fast to avoid
+expensive work.
+
+For this design, tasks are safe to run in parallel only when they are
+independent across all of these dimensions:
+
+- no shared mutable workspace or generated output;
+- no shared database, Docker Compose stack, port, or external test fixture;
+- no artifact or result dependency;
+- no required ordering relationship;
+- no conflicting publication or deployment side effect.
+
+Mutually exclusive means that executing one task cannot change the inputs,
+environment, or observable result of another task. Tasks that share a runtime
+or mutate the same state remain sequential even when they are technically
+different commands.
+
+```mermaid
+flowchart TD
+    Start[Checkout and job-local setup]
+    Start --> Contract[Documentation and workflow contracts]
+    Start --> Gradle[Gradle static analysis]
+    Start --> Tests[Backend unit/module tests + coverage]
+    Start --> Integration[Integration tests]
+    Start --> Logic[Build-logic checks]
+    Start --> Infra[Infrastructure validation]
+    Contract --> Summary[Blocking summary]
+    Gradle --> Summary
+    Tests --> Summary
+    Integration --> Summary
+    Logic --> Summary
+    Infra --> Summary
+    Tests --> Boot[Boot JAR packaging]
+    Integration --> Boot
+    Logic --> Boot
+    Infra --> Boot
+    Gradle --> Boot
+    Boot --> Summary
+```
+
+The preferred graph starts mutually exclusive jobs together rather than making
+all jobs wait behind one large quality job. This gives faster feedback and
+exposes failures from different layers concurrently. The trade-off is additional
+runner consumption, which is controlled through concurrency cancellation and
+by excluding image/native/real-E2E jobs from ordinary pull requests.
+
+Within a job, steps remain sequential when they share the same checkout,
+toolchain, dependency installation, or process state. Splitting those steps
+would require repeating setup on another isolated runner and usually increases
+cost without improving wall-clock time.
+
+## 4. Backend workflow design
+
+### 4.1 Job graph
 
 ```mermaid
 flowchart LR
@@ -118,7 +174,7 @@ The following changes reduce duplicate work:
 4. Keep the summary job unconditional and fail it when any selected required
    job is not successful.
 
-### 3.2 Reusable setup
+### 4.2 Reusable setup
 
 `.github/actions/setup-gradle` remains the service-local composite action. It
 owns the pinned JDK and Gradle cache configuration. Every GitHub job still
@@ -131,7 +187,7 @@ default. For this project, the artifact transfer overhead is higher than the
 benefit for the short quality jobs, and Gradle's dependency/build cache is the
 more appropriate cross-run reuse mechanism.
 
-### 3.3 Conditional heavy jobs
+### 4.3 Conditional heavy jobs
 
 - `ci-backend.yml` runs the normal blocking graph for pull requests and main.
 - Integration work is selected by event defaults and can be disabled only on a
@@ -143,7 +199,7 @@ more appropriate cross-run reuse mechanism.
 - The real full-stack recording workflow remains owned by `emme-web` and is
   manually dispatched with explicit service and web refs.
 
-## 4. Frontend workflow design
+## 5. Frontend workflow design
 
 The frontend quality workflow already has the correct low-overhead shape: one
 job installs Bun and dependencies once, then runs documentation, i18n,
@@ -160,7 +216,7 @@ The changes are limited to explicit optional workflows:
 - real E2E retains one job because service boot, Compose dependencies, browser
   execution, diagnostics, and artifact collection share one disposable runtime.
 
-## 5. Cross-repository real E2E flow
+## 6. Cross-repository real E2E flow
 
 The web repository remains the orchestration root because the test artifacts,
 Playwright configuration, and recording contract belong to the web project.
@@ -190,7 +246,7 @@ added later as a separate manual input after the native image has a stable
 published reference; this prevents a 13-minute compiler step from being hidden
 inside an ordinary browser test run.
 
-## 6. Security and publication rules
+## 7. Security and publication rules
 
 - Trivy scans explicitly use `scanners: vuln` and enforce HIGH/CRITICAL
   vulnerabilities with fixed-version policy.
@@ -202,9 +258,11 @@ inside an ordinary browser test run.
 - Secrets, dependency audits, and architecture checks remain blocking and are
   not bypassed by performance inputs.
 
-## 7. Acceptance criteria
+## 8. Acceptance criteria
 
 - Pull-request workflows do not build JVM or native images by default.
+- Independent verification jobs start in parallel whenever they do not consume
+  another job's output.
 - Native-image compilation is conditional and never runs unless selected.
 - A manual run exposes explicit boolean inputs for expensive behavior.
 - Backend unit tests and coverage execute without a separate duplicate runner.
@@ -215,7 +273,7 @@ inside an ordinary browser test run.
 - Selected jobs still fail the final summary when their checks fail.
 - Workflow syntax, local validators, and repository CI pass after the change.
 
-## 8. Trade-offs
+## 9. Trade-offs
 
 | Choice | Benefit | Cost |
 |---|---|---|

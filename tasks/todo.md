@@ -45,17 +45,19 @@ Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/su
 - [x] Add reusable ArchUnit architecture rules to `libraries/testing` for
       production class importing, domain purity, application direction, and
       inbound/outbound adapter separation.
-- [ ] Verify grouped API visibility, naming, package metadata, and
-      one-use-case-per-service in one consolidated repository-wide suite.
+- [x] Verify grouped API visibility, normalized naming, package metadata, and
+      one-use-case-per-service in the repository-wide architecture suite.
 - [ ] Verify entity/table ownership, `emme_core` boundaries, tenant schemas,
       and tenant-isolation rules.
 - [ ] Strengthen Spring Modulith verification and deterministic Documenter/
       PlantUML generation.
-- [ ] Add event-contract rules for Spring Modulith and Kafka without introducing
-      the conference project's JPA `EntityWithEvents` pipeline.
+- [x] Add immutable public-event naming/record rules for Spring Modulith and
+      Kafka without introducing the conference project's JPA `EntityWithEvents`
+      pipeline.
 - [ ] Evaluate JMolecules and selective MapStruct adoption against the current
       Gradle platform before adding dependencies.
-- [ ] Run deliberate red/green architecture tests for every rule family.
+- [x] Run deliberate red/green architecture tests for package metadata, event
+      contracts, and normalized naming rules.
 
 ## Working notes
 
@@ -74,6 +76,15 @@ Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/su
 - [x] Added the platform execution test for domain framework purity,
       application-to-adapter direction, and inbound-to-outbound adapter
       separation.
+- [x] Added reusable package metadata, event-contract, and naming rules to the
+      shared test fixtures.
+- [x] Materialized missing `package-info.java` files for all production Java
+      packages in modules and supporting libraries.
+- [x] Normalized the Calendar OAuth query package and the Tenancy JDBC
+      provisioning adapter name.
+- [x] Added all architecture rule families to the dedicated GitHub boundary
+      workflow so they are visible and blocking independently of the full test
+      job.
 - [x] Enforced public API independence from domain, application, and adapter
       implementation packages; converted leaking result/command types to
       API-owned views and moved appointment mapping into the application layer.
@@ -81,8 +92,9 @@ Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/su
       Studio capability entities remain under outbound persistence packages.
 - [x] Added dependency-verification checksums for the resolved ArchUnit 1.4.0
       artifacts.
-- [ ] Continue with naming, public named-interface, persistence/schema, tenant,
-      and event-contract rule families.
+- [x] Complete the naming and public-event rule families; persistence/schema,
+      tenant-isolation, and stronger named-interface/documentation evidence
+      remain tracked as follow-up architecture work.
 
 ## Results
 

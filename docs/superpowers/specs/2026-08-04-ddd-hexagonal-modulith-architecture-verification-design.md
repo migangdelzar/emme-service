@@ -2,7 +2,7 @@
 
 | Field | Detail |
 |---|---|
-| Status | Draft for review |
+| Status | Implemented baseline; operational extensions tracked |
 | Date | 2026-08-04 |
 | Scope | `emme-service` business modules and `emme-platform` composition root |
 | Position | Point 5, after real full-stack E2E recordings |
@@ -18,6 +18,13 @@ The implementation will adapt the useful ideas from the Spring I/O conference
 project while preserving Emme's capability-first module template, grouped public
 API, application-owned ports, tenant schemas, JDBC publication registry, and
 Kafka externalization.
+
+The first executable slice is now active in the dedicated boundary workflow. It
+enforces DDD/Hexagonal dependency direction, grouped API naming, package
+metadata, public event shape, persistence ownership, Spring Modulith boundaries,
+Kafka contracts, and controller API-version conventions. Remaining items in this
+document are intentionally tracked as follow-up verification or operational
+evidence rather than being represented as completed architecture rules.
 
 ## 2. Reference patterns to adapt
 
@@ -45,15 +52,12 @@ Reusable predicates and conditions belong in test fixtures:
 ```text
 libraries/testing/
 └── src/testFixtures/java/com/emme/testing/architecture/
-    ├── ArchitectureClasses.java
     ├── ArchitectureTestSupport.java
     ├── DddHexagonalRules.java
     ├── EventContractRules.java
-    ├── ModulithRules.java
     ├── NamingRules.java
     ├── PackageMetadataRules.java
-    ├── PersistenceOwnershipRules.java
-    └── TenantIsolationRules.java
+    └── package-info.java
 ```
 
 The platform composition root owns the repository-wide execution suite:
@@ -65,7 +69,6 @@ applications/emme-platform/src/test/java/com/emme/
 ├── ModularityTest.java
 ├── NamingConventionArchitectureTest.java
 ├── PackageMetadataArchitectureTest.java
-├── PersistenceOwnershipTest.java
 └── SchemaOwnershipTest.java
 ```
 

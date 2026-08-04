@@ -25,6 +25,13 @@ an external broker, a real database outage, or a native-image-capable runner.
 | Recording artifacts | Pass | Playwright videos, traces, screenshots, and report are generated under `emme-web/e2e/src/test-results/real-recordings` |
 | Web quality gates | Pass | E2E typecheck, recording contract tests, frontend coverage, i18n validation, and workspace lint pass; lint has existing non-blocking warnings only |
 | DDD + Hexagonal executable rules | Pass | Shared ArchUnit fixtures verify domain purity, application direction, public API independence, inbound/outbound separation, and nested persistence ownership |
+| Naming, package metadata, and public event gates | Pass | Repository-wide architecture tests verify normalized suffixes, materialized package-info metadata, immutable `api.event` records, and fact-oriented event names |
+| Dedicated boundary CI gate | Pass locally | `ci-module-boundaries.yml` now executes DDD/Hexagonal, naming, package metadata, SchemaOwnership, Modulith, Kafka contract, and API-version tests |
+| Full integration suite | Pass | `./gradlew integrationTest --no-daemon --no-configuration-cache --stacktrace` completed successfully; Testcontainers emitted non-blocking shutdown-time PostgreSQL publication-registry warnings |
+| Coverage gate | Pass | `./gradlew :applications:emme-platform:coverageCheck --no-daemon --no-configuration-cache --stacktrace` completed successfully |
+| Boot JAR packaging | Pass | `./gradlew :applications:emme-platform:bootJar --no-daemon --no-configuration-cache --stacktrace` completed successfully |
+| Kubernetes manifest rendering | Pass | `kubectl kustomize` rendered `k3d-jvm`, `k3d-native`, `k3s-production-jvm`, and `k3s-production-native` overlays |
+| Terraform validation | Not run locally | Terraform is not installed on this host; the CI infrastructure job remains the authoritative Terraform formatter/init/validation gate |
 | Legacy runtime audit | Pass | No RabbitMQ/AMQP runtime integration, active `studio-api` application target, or production direct JDBC connection acquisition remains |
 | Endpoint versioning audit | Pass | Internal controller mappings use Spring header version `1.0`; the unversioned WhatsApp callback remains an external-provider transport contract |
 

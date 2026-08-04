@@ -27,9 +27,18 @@ jobs:
           ./gradlew spotlessCheck
           --no-daemon --no-configuration-cache --stacktrace
 
-      - name: Verify module boundaries
+      - name: Verify DDD, Hexagonal, and Modulith boundaries
         run: >-
           ./gradlew :applications:emme-platform:test
+          --tests com.emme.DddHexagonalArchitectureTest
+          --tests com.emme.ApplicationServiceArchitectureTest
           --tests com.emme.ModularityTest
           --tests com.emme.LayerConventionTest
+          --tests com.emme.NamingConventionArchitectureTest
+          --tests com.emme.PackageMetadataArchitectureTest
+          --tests com.emme.SchemaOwnershipTest
+          --tests com.emme.EventContractArchitectureTest
+          --tests com.emme.KafkaEventContractTest
+          --tests com.emme.KafkaEventStreamingPropertiesTest
+          --tests com.emme.ApiVersionConventionTest
           --no-daemon --no-configuration-cache --stacktrace

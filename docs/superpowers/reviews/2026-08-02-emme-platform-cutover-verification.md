@@ -60,16 +60,16 @@ node scripts/validate-markdown.mjs
 ./gradlew projects --no-daemon --no-configuration-cache
 ./gradlew :build-logic:check :applications:emme-platform:test \
   :applications:emme-platform:bootJar --no-daemon --no-configuration-cache
-kustomize build infra/kubernetes/overlays/dev
-kustomize build infra/kubernetes/overlays/prod
-kustomize build deployment/kubernetes/overlays/local
-kustomize build deployment/kubernetes/overlays/production
+kustomize build infra/kubernetes/overlays/k3d-jvm
+kustomize build infra/kubernetes/overlays/k3s-production-jvm
+kustomize build infra/kubernetes/overlays/k3d-native
+kustomize build infra/kubernetes/overlays/k3s-production-native
 git diff --check
 ```
 
 The Gradle project graph no longer contains `:applications:studio-api`.
 The target validator confirms that settings, CI, `mise`, Compose, Helm values,
-Kubernetes manifests, deployment scripts, and the Kubernetes provider contain
+Kubernetes manifests, and the Kubernetes provider contain
 no active deleted-application target.
 
 Kustomize rendered all four checked overlays successfully. The local machine

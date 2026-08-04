@@ -144,10 +144,12 @@ jobs:
           terraform_version: '1.14.0'
       - name: Render Kubernetes overlays
         run: |
-          kubectl kustomize infra/kubernetes/overlays/dev >/dev/null
-          kubectl kustomize infra/kubernetes/overlays/dev-native >/dev/null
-          kubectl kustomize infra/kubernetes/overlays/prod >/dev/null
-          kubectl kustomize infra/kubernetes/overlays/prod-native >/dev/null
+          kubectl kustomize infra/kubernetes/overlays/k3d-jvm >/dev/null
+          kubectl kustomize infra/kubernetes/overlays/k3d-native >/dev/null
+          kubectl kustomize \
+            infra/kubernetes/overlays/k3s-production-jvm >/dev/null
+          kubectl kustomize \
+            infra/kubernetes/overlays/k3s-production-native >/dev/null
       - name: Validate Compose runtime overlays
         run: |
           docker compose -f deployment/compose/compose.yaml \

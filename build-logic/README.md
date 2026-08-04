@@ -114,13 +114,15 @@ for lazy external state.
 
 ```bash
 # Docker Compose (default)
-./gradlew composeUp composeDown composeLogs
+./gradlew deployUp -Pemme.deployment.target=compose
 
-# k3d local cluster
-./gradlew k3dCreate k3dImport k3dDelete -Pemme.deployment.target=k3d
+# K3d local cluster (mise owns the thin CLI orchestration)
+mise run k3d:apply:jvm
+mise run k3d:apply:native
 
-# Kubernetes
-./gradlew k8sApply k8sDiff k8sRollout -Pemme.deployment.target=kubernetes
+# K3s manifests are rendered locally and applied by the protected delivery path
+mise run k3s:render:jvm
+mise run k3s:render:native
 ```
 
 Override the target with `-Pemme.deployment.target=k3d` or

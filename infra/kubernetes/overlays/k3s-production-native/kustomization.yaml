@@ -1,4 +1,5 @@
-# JVM runtime overlay for the K3s environment.
+---
+# GraalVM Native Image overlay for the K3s environment.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -10,13 +11,15 @@ namespace: emme-prod
 
 images:
   - name: ghcr.io/migangdelzar/emme-service
-    newTag: 0.1.0
+    newTag: 0.1.0-native
 
 patches:
-  - patch: |
+  - patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
         value: "prod"
+      - op: remove
+        path: /spec/template/spec/containers/0/env/1
       - op: replace
         path: /spec/replicas
         value: 2

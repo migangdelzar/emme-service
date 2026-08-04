@@ -73,9 +73,9 @@ docker compose -f deployment/compose/compose.yaml \
   -f deployment/compose/compose.runtime-native.yaml up -d
 ```
 
-For K3d/K3s, render or deploy `infra/kubernetes/overlays/dev` or `prod` for
-JVM, and `dev-native` or `prod-native` for native. Never combine the two
-runtime overlays.
+For K3d/K3s, render or deploy `infra/kubernetes/overlays/k3d-jvm` or
+`k3s-production-jvm` for JVM, and `k3d-native` or
+`k3s-production-native` for native. Never combine the two runtime overlays.
 
 ## Repository structure
 

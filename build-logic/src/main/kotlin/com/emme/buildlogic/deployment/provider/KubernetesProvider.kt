@@ -1,13 +1,16 @@
 package com.emme.buildlogic.deployment.provider
 
+import com.emme.buildlogic.deployment.KubernetesDeploymentTarget
 import java.io.ByteArrayOutputStream
 import java.io.File
 
 abstract class KubernetesProvider : DeploymentProvider() {
   private fun overlayDir(): File =
     parameters.deploymentDir
-      .dir("kubernetes/overlays/${parameters.profile.get()}")
-      .get()
+      .dir(
+        "../infra/kubernetes/overlays/" +
+          KubernetesDeploymentTarget.overlayName(parameters.profile.get(), parameters.runtime.get()),
+      ).get()
       .asFile
 
   override fun up(): DeployResult = apply()

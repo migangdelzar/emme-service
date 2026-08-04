@@ -1,3 +1,4 @@
+---
 # JVM runtime overlay for the local K3d/K3s-compatible environment.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization

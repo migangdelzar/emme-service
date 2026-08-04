@@ -87,7 +87,7 @@ flowchart TD
 - [x] **Step 5: Run focused verification.** Target tests, validator, and build-logic checks pass.
 - [x] **Step 6: Commit.** `c822316 refactor(deployment): make emme-platform the canonical target`.
 
-### Task 3: Switch Compose and legacy deployment manifests
+### Task 3: Switch Compose and canonical deployment manifests
 
 **Files:**
 
@@ -95,25 +95,22 @@ flowchart TD
 - Modify: `deployment/compose/compose.environment-local.yaml`
 - Modify: `deployment/compose/compose.environment-ci.yaml`
 - Modify: `deployment/helm/emme/values.yaml`
-- Modify: `deployment/kubernetes/base/kustomization.yml`
-- Rename: `deployment/kubernetes/base/studio-api/deployment.yml` → `deployment/kubernetes/base/emme-platform/deployment.yml`
-- Rename: `deployment/kubernetes/base/studio-api/service.yml` → `deployment/kubernetes/base/emme-platform/service.yml`
-- Modify: `deployment/kubernetes/overlays/local/kustomization.yml`
-- Modify: `deployment/kubernetes/overlays/production/kustomization.yml`
-- Modify: `deployment/kubernetes/base/ingress/ingress.yml`
-- Modify: `deployment/scripts/wait-for-cluster.sh`
+- Modify: `infra/kubernetes/base/backend-deployment.yaml`
+- Modify: `infra/kubernetes/base/backend-service.yaml`
+- Modify: `infra/kubernetes/overlays/k3d-jvm/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3s-production-jvm/kustomization.yaml`
 
 **Interfaces:**
 
 - Consumes: canonical image and workload names from Tasks 1–2.
-- Produces: local Compose, legacy Kubernetes, and Helm manifests that deploy `emme-platform` while preserving port 8081 and health probes.
+- Produces: local Compose, canonical Kustomize, and Helm manifests that deploy the service while preserving port 8081 and health probes.
 
-- [x] **Step 1: Extend target tests.** Asserted service, deployment, selector, image, Helm, ingress, and wait-script names use `emme-platform`/`emme-service`.
+- [x] **Step 1: Extend target tests.** Asserted service, deployment, selector, image, and Helm names use the canonical service target.
 - [x] **Step 2: Run the target validator to confirm red.** Confirmed old deployment manifests failed the assertions.
 - [x] **Step 3: Rename and update Compose services.** Changed the service key and image while preserving dependency services and health checks.
-- [x] **Step 4: Rename and update Kubernetes resources.** Moved the resource directory and updated names/selectors, image references, overlays, ingress backend, and wait script without changing security contexts or resource limits.
+- [x] **Step 4: Consolidate Kubernetes resources.** Retained `infra/kubernetes` as the only Kustomize source of truth and removed the duplicate deployment tree without changing security contexts or resource limits.
 - [x] **Step 5: Update Helm values.** Switched to the canonical image repository.
-- [x] **Step 6: Render manifests.** Rendered both `infra/kubernetes` overlays and both legacy deployment overlays with Kustomize.
+- [x] **Step 6: Render manifests.** Rendered the canonical K3d and K3s JVM/native overlays with Kustomize.
 - [x] **Step 7: Commit.** `83bd958 refactor(delivery): migrate deployment manifests to emme-platform`.
 
 ### Task 4: Verify application parity and compatibility target

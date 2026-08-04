@@ -23,8 +23,8 @@ defined once, and the deployment command selects exactly one runtime image.
 | Target | JVM | Native |
 |---|---|---|
 | Docker Compose | `deployment/compose/compose.yaml` + `compose.runtime-jvm.yaml` | `deployment/compose/compose.yaml` + `compose.runtime-native.yaml` |
-| K3d local | `infra/kubernetes/overlays/dev` | `infra/kubernetes/overlays/dev-native` |
-| K3s | `infra/kubernetes/overlays/prod` | `infra/kubernetes/overlays/prod-native` |
+| K3d local | `infra/kubernetes/overlays/k3d-jvm` | `infra/kubernetes/overlays/k3d-native` |
+| K3s production | `infra/kubernetes/overlays/k3s-production-jvm` | `infra/kubernetes/overlays/k3s-production-native` |
 
 ```mermaid
 flowchart TD
@@ -42,10 +42,10 @@ runtime overlays to one environment.
 
 ```bash
 # Render before applying; no cluster mutation occurs.
-kubectl kustomize infra/kubernetes/overlays/dev >/dev/null
-kubectl kustomize infra/kubernetes/overlays/dev-native >/dev/null
-kubectl kustomize infra/kubernetes/overlays/prod >/dev/null
-kubectl kustomize infra/kubernetes/overlays/prod-native >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3d-jvm >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3d-native >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3s-production-jvm >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3s-production-native >/dev/null
 ```
 
 ## Flow

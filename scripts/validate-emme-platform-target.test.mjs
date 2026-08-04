@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -71,6 +71,20 @@ test('repository deployment surfaces target emme-platform', async () => {
   assert.deepEqual(errors, []);
 });
 
+test('legacy duplicate Kubernetes and shell deployment trees are absent', async () => {
+  for (const relativePath of [
+    'deployment/kubernetes',
+    'deployment/scripts/bootstrap-local-registry.sh',
+    'deployment/scripts/wait-for-cluster.sh',
+    'infra/kubernetes/overlays/dev',
+    'infra/kubernetes/overlays/dev-native',
+    'infra/kubernetes/overlays/prod',
+    'infra/kubernetes/overlays/prod-native',
+  ]) {
+    await assert.rejects(access(path.join(process.cwd(), relativePath)));
+  }
+});
+
 test('JVM and native Compose overlays select exactly one runtime image family', async () => {
   const composeDirectory = path.join(process.cwd(), 'deployment', 'compose');
   const jvmOverlay = await readFile(
@@ -96,19 +110,19 @@ test('K3d and K3s overlays select JVM or native images explicitly', async () => 
     'overlays',
   );
   const devJvm = await readFile(
-    path.join(overlaysDirectory, 'dev', 'kustomization.yaml'),
+    path.join(overlaysDirectory, 'k3d-jvm', 'kustomization.yaml'),
     'utf8',
   );
   const devNative = await readFile(
-    path.join(overlaysDirectory, 'dev-native', 'kustomization.yaml'),
+    path.join(overlaysDirectory, 'k3d-native', 'kustomization.yaml'),
     'utf8',
   );
   const prodJvm = await readFile(
-    path.join(overlaysDirectory, 'prod', 'kustomization.yaml'),
+    path.join(overlaysDirectory, 'k3s-production-jvm', 'kustomization.yaml'),
     'utf8',
   );
   const prodNative = await readFile(
-    path.join(overlaysDirectory, 'prod-native', 'kustomization.yaml'),
+    path.join(overlaysDirectory, 'k3s-production-native', 'kustomization.yaml'),
     'utf8',
   );
 

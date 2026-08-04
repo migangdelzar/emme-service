@@ -188,8 +188,10 @@ Identity verification evidence is recorded in
 ### Results
 
 - Added `deployment/compose/compose.runtime-jvm.yaml` and `compose.runtime-native.yaml` over the shared `compose.yaml` base.
-- Added explicit K3d/K3s-compatible `dev-native` and `prod-native` Kustomize overlays; existing `dev` and `prod` now identify the JVM baseline.
-- Native Kubernetes overlays remove JVM-only `JAVA_TOOL_OPTIONS` and select `dev-native`/`0.1.0-native` images.
+- Added explicit `k3d-jvm`, `k3d-native`, `k3s-production-jvm`, and
+  `k3s-production-native` Kustomize overlays.
+- Native Kubernetes overlays remove JVM-only `JAVA_TOOL_OPTIONS` and select
+  `dev-native`/`0.1.0-native` images.
 - Validated both Compose runtime combinations with `docker-compose config --quiet`.
 - Rendered all four Kubernetes runtime/environment overlays with `kubectl kustomize`.
 - Passed the target validator and Node source-structure tests.

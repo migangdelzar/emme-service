@@ -52,3 +52,35 @@ run = "./gradlew :applications:emme-platform:build --no-configuration-cache"
 [tasks.hooks-install]
 description = "Install the repository-native Gradle Git hooks"
 run = "git config core.hooksPath .githooks"
+
+[tasks."k3d:bootstrap"]
+description = "Create the disposable local K3d cluster when it does not exist"
+run = "k3d cluster get emme-local >/dev/null 2>&1 || k3d cluster create --config deployment/k3d/cluster.yaml"
+
+[tasks."k3d:destroy"]
+description = "Delete the disposable local K3d cluster"
+run = "k3d cluster delete emme-local"
+
+[tasks."k3d:render:jvm"]
+description = "Render the K3d JVM manifests without applying them"
+run = "kubectl kustomize infra/kubernetes/overlays/k3d-jvm"
+
+[tasks."k3d:render:native"]
+description = "Render the K3d native-image manifests without applying them"
+run = "kubectl kustomize infra/kubernetes/overlays/k3d-native"
+
+[tasks."k3d:apply:jvm"]
+description = "Create K3d and apply the JVM runtime manifests"
+run = "mise run k3d:bootstrap && kubectl apply -k infra/kubernetes/overlays/k3d-jvm"
+
+[tasks."k3d:apply:native"]
+description = "Create K3d and apply the native-image runtime manifests"
+run = "mise run k3d:bootstrap && kubectl apply -k infra/kubernetes/overlays/k3d-native"
+
+[tasks."k3s:render:jvm"]
+description = "Render the K3s production JVM manifests without applying them"
+run = "kubectl kustomize infra/kubernetes/overlays/k3s-production-jvm"
+
+[tasks."k3s:render:native"]
+description = "Render the K3s production native-image manifests without applying them"
+run = "kubectl kustomize infra/kubernetes/overlays/k3s-production-native"

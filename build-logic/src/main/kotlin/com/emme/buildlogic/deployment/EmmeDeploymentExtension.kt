@@ -14,7 +14,7 @@ abstract class EmmeDeploymentExtension
     /** Deployment strategy selected by the project or CI environment. */
     abstract val target: Property<DeploymentTarget>
 
-    /** Profile/environment: "local", "test", "staging", "production" */
+    /** Profile/environment: local, test, staging, or production. */
     abstract val profile: Property<String>
 
     /** Runtime variant selected by deployment: "jvm" or "native". */
@@ -43,7 +43,7 @@ abstract class EmmeDeploymentExtension
           .orElse(providers.environmentVariable("EMME_DEPLOYMENT_PROFILE"))
           .orElse("local"),
       )
-      namespace.convention(profile.map { "emme-$it" })
+      namespace.convention(profile.map(KubernetesDeploymentTarget::namespace))
       runtime.convention(
         providers
           .gradleProperty("emme.deployment.runtime")

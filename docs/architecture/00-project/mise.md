@@ -65,6 +65,11 @@ Mise exposes stable names for the gates used by developers and CI:
 | `mise run coverage` | Run `emme-platform` tests and JaCoCo verification | No |
 | `mise run quality` | Run compile, formatting, and static analysis | No |
 | `mise run hooks-install` | Configure `.githooks` for this checkout | Configures Git |
+| `mise run k3d:apply:jvm` | Create/update the disposable K3d JVM environment | Yes |
+| `mise run k3d:apply:native` | Create/update the disposable K3d native environment | Yes |
+| `mise run k3d:destroy` | Delete the disposable K3d cluster | Yes |
+| `mise run k3s:render:jvm` | Render production JVM manifests for review | No |
+| `mise run k3s:render:native` | Render production native manifests for review | No |
 
 `spotlessApply` is deliberately never used as a validation command. A clean
 checkout must be provable with `spotlessCheck`, and the canonical application

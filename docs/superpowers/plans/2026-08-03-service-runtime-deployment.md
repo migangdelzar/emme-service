@@ -31,12 +31,10 @@
 - Modify: `deployment/compose/compose.environment-ci.yaml`
 - Modify: `deployment/compose/compose.observability.yaml`
 - Modify: `deployment/compose/compose.environment-e2e.yaml`
-- Modify: `deployment/kubernetes/overlays/local/kustomization.yml`
-- Modify: `deployment/kubernetes/overlays/production/kustomization.yml`
-- Modify: `infra/kubernetes/overlays/dev/kustomization.yaml`
-- Modify: `infra/kubernetes/overlays/dev-native/kustomization.yaml`
-- Modify: `infra/kubernetes/overlays/prod/kustomization.yaml`
-- Modify: `infra/kubernetes/overlays/prod-native/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3d-jvm/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3d-native/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3s-production-jvm/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3s-production-native/kustomization.yaml`
 - Modify: `applications/emme-platform/build.gradle.kts`
 - Modify: `.github/workflows/ci-backend.yml`
 - Test: `scripts/validate-deployment-layout.mjs`
@@ -44,13 +42,13 @@
 **Interfaces:**
 - Produces one canonical Compose base, explicit runtime overlays, and explicit environment overlays.
 - Produces one canonical image environment variable: `EMME_SERVICE_IMAGE`.
-- Produces normalized Kubernetes target names: `k3d-jvm`, `k3d-native`, `k3s-staging-jvm`, `k3s-staging-native`, `k3s-production-jvm`, and `k3s-production-native`.
+- Produces normalized Kubernetes target names: `k3d-jvm`, `k3d-native`, `k3s-production-jvm`, and `k3s-production-native`.
 
-- [ ] **Step 1: Write the failing layout test.**
+- [x] **Step 1: Write the failing layout test.**
 
 Create a Node script that asserts the canonical Compose and Kustomize paths exist, old ambiguous names do not remain referenced, and every overlay contains the normalized service image name.
 
-- [ ] **Step 2: Run the layout test.**
+- [x] **Step 2: Run the layout test.**
 
 Run:
 
@@ -61,7 +59,7 @@ node scripts/validate-deployment-layout.mjs
 Expected: FAIL because the repository had not yet materialized the normalized
 base, runtime, and environment overlay names.
 
-- [ ] **Step 3: Rename files and update references.**
+- [x] **Step 3: Rename files and update references.**
 
 Use these names:
 
@@ -77,7 +75,7 @@ compose.observability.yaml
 
 Use `git mv` for tracked renames, then update every workflow, README, Gradle provider, and comment reference. Rename Kubernetes overlays to include target and runtime explicitly.
 
-- [ ] **Step 4: Run the layout and rendering checks.**
+- [x] **Step 4: Run the layout and rendering checks.**
 
 Run:
 
@@ -91,7 +89,7 @@ kubectl kustomize infra/kubernetes/overlays/k3s-production-jvm >/dev/null
 
 Expected: PASS with no legacy deployment file references.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 git add deployment infra applications/emme-platform/build.gradle.kts .github/workflows/ci-backend.yml scripts/validate-deployment-layout.mjs
@@ -218,11 +216,11 @@ git commit -m "feat(container): add reproducible JVM and native image variants"
 ### Task 4: Add K3d local and K3s production deployment contracts
 
 **Files:**
-- Modify: `deployment/k3d/cluster.yml`
-- Modify: `deployment/k3d/registry.yml`
-- Modify: `deployment/scripts/bootstrap-local-registry.sh`
-- Modify: `deployment/scripts/wait-for-cluster.sh`
+- Rename: `deployment/k3d/cluster.yml` → `deployment/k3d/cluster.yaml`
 - Modify: `mise.toml`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/deployment/KubernetesDeploymentTarget.kt`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/deployment/provider/KubernetesProvider.kt`
+- Delete: the duplicate `deployment/kubernetes` tree and shell deployment wrappers
 - Modify: `infra/kubernetes/overlays/k3d-jvm/kustomization.yaml`
 - Modify: `infra/kubernetes/overlays/k3d-native/kustomization.yaml`
 - Modify: `infra/kubernetes/overlays/k3s-production-jvm/kustomization.yaml`
@@ -233,11 +231,11 @@ git commit -m "feat(container): add reproducible JVM and native image variants"
 - Local commands are exposed through `mise run k3d:bootstrap`, `mise run k3d:apply:jvm`, and `mise run k3d:apply:native`.
 - Production receives an immutable `IMAGE_DIGEST` and never uses `latest`.
 
-- [ ] **Step 1: Add manifest and command contract checks.**
+- [x] **Step 1: Add manifest and command contract checks.**
 
 Assert that each Kustomize overlay resolves the canonical service image, uses an explicit namespace, and contains no `latest` tag in production overlays.
 
-- [ ] **Step 2: Implement thin K3d aliases.**
+- [x] **Step 2: Implement thin K3d aliases.**
 
 Keep registry creation and cluster bootstrap as thin wrappers. Replace generic `deploy-k3d.sh` with `mise` tasks delegating directly to `k3d` and `kubectl apply -k`. Do not put manifest content in scripts.
 
@@ -245,7 +243,7 @@ Keep registry creation and cluster bootstrap as thin wrappers. Replace generic `
 
 Add an Actions-ready image digest substitution contract. Production applies a Kustomize overlay only after the image has been built, scanned, published, and approved by the protected environment.
 
-- [ ] **Step 4: Run infrastructure verification.**
+- [x] **Step 4: Run infrastructure verification.**
 
 ```bash
 kubectl kustomize infra/kubernetes/overlays/k3d-jvm >/dev/null
@@ -259,7 +257,7 @@ Expected: PASS.
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add deployment/k3d deployment/scripts mise.toml infra/kubernetes
+git add deployment/k3d mise.toml infra/kubernetes build-logic scripts
 git commit -m "feat(deployment): add explicit k3d and k3s runtime targets"
 ```
 
@@ -324,7 +322,7 @@ git commit -m "ci(container): build and verify immutable service images"
 ```bash
 node scripts/validate-markdown.mjs
 node scripts/validate-container-workflow.mjs
-bash -n database/docker/run-migrations.sh deployment/scripts/*.sh scripts/doctor.sh
+bash -n database/docker/run-migrations.sh scripts/doctor.sh
 ./gradlew :tools:e2e-provisioner:check --no-daemon --no-configuration-cache
 docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml config --quiet
 ```

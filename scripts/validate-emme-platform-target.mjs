@@ -93,69 +93,29 @@ export const canonicalTargetRules = {
       forbidden: ['studio-api'],
     },
     {
-      path: 'infra/kubernetes/overlays/dev/kustomization.yaml',
+      path: 'infra/kubernetes/overlays/k3d-jvm/kustomization.yaml',
       required: ['JVM runtime overlay', 'newTag: dev'],
-      forbidden: ['dev-native'],
+      forbidden: ['k3d-native', 'dev-native'],
     },
     {
-      path: 'infra/kubernetes/overlays/dev-native/kustomization.yaml',
+      path: 'infra/kubernetes/overlays/k3d-native/kustomization.yaml',
       required: ['Native Image overlay', 'newTag: dev-native'],
-      forbidden: ['dev-jvm'],
+      forbidden: ['k3d-jvm', 'dev-jvm'],
     },
     {
-      path: 'infra/kubernetes/overlays/prod/kustomization.yaml',
+      path: 'infra/kubernetes/overlays/k3s-production-jvm/kustomization.yaml',
       required: ['JVM runtime overlay', 'newTag: 0.1.0'],
-      forbidden: ['0.1.0-native'],
+      forbidden: ['k3s-production-native', '0.1.0-native'],
     },
     {
-      path: 'infra/kubernetes/overlays/prod-native/kustomization.yaml',
+      path: 'infra/kubernetes/overlays/k3s-production-native/kustomization.yaml',
       required: ['Native Image overlay', 'newTag: 0.1.0-native'],
-      forbidden: ['0.1.0-jvm'],
+      forbidden: ['k3s-production-jvm', '0.1.0-jvm'],
     },
     {
       path: 'deployment/helm/emme/values.yaml',
       required: ['repository: ghcr.io/migangdelzar/emme-service'],
       forbidden: ['emme-service-studio-api'],
-    },
-    {
-      path: 'deployment/kubernetes/base/kustomization.yml',
-      required: ['emme-platform/deployment.yml', 'emme-platform/service.yml'],
-      forbidden: ['studio-api/'],
-    },
-    {
-      path: 'deployment/kubernetes/base/emme-platform/deployment.yml',
-      required: ['name: emme-platform', 'app: emme-platform', 'ghcr.io/migangdelzar/emme-service:'],
-      forbidden: ['studio-api', 'emme-service-studio-api'],
-    },
-    {
-      path: 'deployment/kubernetes/base/emme-platform/service.yml',
-      required: ['name: emme-platform', 'app: emme-platform'],
-      forbidden: ['studio-api'],
-    },
-    {
-      path: 'deployment/kubernetes/base/ingress/ingress.yml',
-      required: ['name: emme-platform', 'secretName: emme-platform-tls'],
-      forbidden: ['studio-api'],
-    },
-    {
-      path: 'deployment/kubernetes/overlays/local/kustomization.yml',
-      required: ['ghcr.io/migangdelzar/emme-service', 'name: emme-platform'],
-      forbidden: ['studio-api', 'emme-service-studio-api'],
-    },
-    {
-      path: 'deployment/kubernetes/overlays/production/kustomization.yml',
-      required: ['ghcr.io/migangdelzar/emme-service', 'name: emme-platform'],
-      forbidden: ['studio-api', 'emme-service-studio-api'],
-    },
-    {
-      path: 'deployment/kubernetes/components/network-policies/kustomization.yml',
-      required: ['deny-all.yml'],
-      forbidden: ['studio-api'],
-    },
-    {
-      path: 'deployment/scripts/wait-for-cluster.sh',
-      required: ['emme-platform'],
-      forbidden: ['studio-api'],
     },
   ],
 };

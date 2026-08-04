@@ -78,7 +78,7 @@ single universal folder structure.
 | [01 — Backend](01-backend/module.md) | Modules, APIs, validation, application services, domain, infrastructure, controllers, repositories, events, and test profile ownership |
 | Frontend consumer handbook | [emme-web architecture](https://github.com/migangdelzar/emme-web/tree/main/docs/architecture) |
 | [03 — Integration](03-integration/module-communication.md) | Module communication, service contracts, and frontend/backend boundary |
-| [04 — Delivery](04-delivery/container.md) | Containers, native images, deployment, CI, and releases |
+| [04 — Delivery](04-delivery/container.md) | Containers, native images, deployment, CI, releases, and secret boundaries |
 | [05 — Operations](05-operations/production-readiness.md) | Service levels, observability, reliability, recovery, incidents, and approval evidence |
 
 ## Existing focused architecture documents
@@ -92,6 +92,7 @@ single universal folder structure.
 - [Module package structure template](../templates/module-package-structure-template.md) — canonical future-module tree, package meanings, copy-ready `package-info.java` catalog, file/type naming, and approval controls.
 - [Backend validation conventions](01-backend/validation.md) — Jakarta Bean Validation on records, custom cross-field constraints, domain invariants, error mapping, i18n, and test coverage.
 - [Backend test configuration](01-backend/testing.md) — shared Spring profiles, Testcontainers ownership, schema helpers, and DRY test infrastructure.
+- [Secrets and configuration boundary](04-delivery/secrets.md) — CI secret inventory, runtime ownership, local secret storage, and rotation rules.
 - [Module and capability build-logic design](../superpowers/specs/2026-07-30-module-architecture-and-capability-build-logic-design.md) — reconciles the two architecture models and migration documentation.
 
 ## Normative policy links

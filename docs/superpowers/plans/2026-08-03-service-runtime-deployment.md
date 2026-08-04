@@ -267,30 +267,39 @@ git commit -m "feat(deployment): add explicit k3d and k3s runtime targets"
 **Files:**
 - Create: `.github/workflows/container-image.yml`
 - Modify: `.github/workflows/ci-backend.yml`
-- Modify: `.github/workflows/ci-module-boundaries.yml`
+- Create: `scripts/validate-container-workflow.mjs`
 - Modify: `tasks/todo.md`
 
 **Interfaces:**
 - Pull requests validate image creation and scanning without publishing.
-- `main` and release workflows publish immutable JVM and optional Native images to GHCR.
-- The workflow exports `EMME_SERVICE_IMAGE` for the web repository’s dispatchable E2E workflow.
+- `main` and approved manual workflows publish immutable JVM images to GHCR.
+- The web repository builds a local immutable image from the selected service ref
+  for real E2E; published digests are reserved for promotion and deployment.
 
-- [ ] **Step 1: Add workflow contract checks.**
+- [x] **Step 1: Add workflow contract checks.**
 
-Validate with actionlint/YAML parsing that PRs build and scan, while publishing requires `main` or an explicit release event. Confirm no workflow uses `latest` for deployment.
+The contract is implemented by `scripts/validate-container-workflow.mjs` and
+is executed by the backend quality job.
 
-- [ ] **Step 2: Implement the image workflow.**
+- [x] **Step 2: Add the JVM image workflow.**
 
-Use Java setup, Gradle caching, Docker Buildx, `containerBuild`, `containerVerify`, OCI metadata, and GHCR login only on protected publish events. Use `sha-${GITHUB_SHA}` tags and upload scan reports.
+`.github/workflows/container-image.yml` builds the exact `bootBuildImage`
+artifact, scans it with Trivy, uploads SARIF, and publishes only from `main`
+or an explicitly approved manual dispatch.
 
-- [ ] **Step 3: Run local workflow validation.**
+- [ ] **Step 3: Add Native image promotion after JVM evidence.**
+
+Native delivery remains explicitly deferred until the JVM image baseline and
+GraalVM smoke evidence are green.
+
+- [x] **Step 4: Run local workflow validation.**
 
 ```bash
-actionlint .github/workflows/container-image.yml .github/workflows/ci-backend.yml
-docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml config --quiet
+node scripts/validate-container-workflow.mjs
+docker compose -f deployment/compose/compose.yml -f deployment/compose/compose.jvm.yml config --quiet
 ```
 
-- [ ] **Step 4: Commit.**
+- [ ] **Step 5: Commit.**
 
 ```bash
 git add .github/workflows tasks/todo.md
@@ -309,12 +318,14 @@ git commit -m "ci(container): build and verify immutable service images"
 ./gradlew spotlessCheck test :build-logic:check --no-daemon --no-configuration-cache
 ```
 
-- [ ] **Step 2: Run documentation, deployment, shell, and manifest checks.**
+- [ ] **Step 2: Run documentation, deployment, tooling, and manifest checks.**
 
 ```bash
 node scripts/validate-markdown.mjs
-bash -n database/docker/run-migrations.sh deployment/scripts/*.sh infra/keycloak/*.sh
-docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml config --quiet
+node scripts/validate-container-workflow.mjs
+bash -n database/docker/run-migrations.sh deployment/scripts/*.sh scripts/doctor.sh
+./gradlew :tools:e2e-provisioner:check --no-daemon --no-configuration-cache
+docker compose -f deployment/compose/compose.yml -f deployment/compose/compose.jvm.yml config --quiet
 ```
 
 - [ ] **Step 3: Record evidence and push.**

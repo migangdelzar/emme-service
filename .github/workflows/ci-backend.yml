@@ -28,6 +28,8 @@ jobs:
           node-version: '20'
       - name: Validate documentation
         run: node scripts/validate-markdown.mjs
+      - name: Validate container workflow contract
+        run: node scripts/validate-container-workflow.mjs
       - name: Run Gradle static-analysis lifecycle
         run: >-
           ./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon

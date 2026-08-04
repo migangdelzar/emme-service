@@ -287,6 +287,19 @@ Identity verification evidence is recorded in
 - [ ] Run focused tests, full unit tests, integration tests, CI checks, and
   Markdown validation; update this section with evidence.
 
+### Service container delivery — 2026-08-04
+
+- [x] Add a dedicated immutable JVM image workflow using Spring Boot
+      `bootBuildImage`.
+- [x] Scan the exact local image with pinned Trivy action configuration and
+      retain SARIF artifacts.
+- [x] Publish only from `main` or an explicitly approved manual dispatch;
+      pull requests never publish packages.
+- [x] Resolve the published image digest for later K3s promotion.
+- [x] Add a CI contract test preventing a replacement shell image builder.
+- [ ] Add the explicit Native image workflow after the JVM image baseline and
+      GraalVM smoke evidence are green.
+
 ### Working notes
 
 - Keep Emme's RFC 9457 `ProblemDetail`; do not introduce Clara's separate

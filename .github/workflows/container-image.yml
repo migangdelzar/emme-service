@@ -1,0 +1,103 @@
+---
+name: Service container image
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the immutable image to GHCR
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+concurrency:
+  group: service-container-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  jvm:
+    name: Build and scan JVM image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      IMAGE_NAME: ghcr.io/migangdelzar/emme-service:sha-${{ github.sha }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Emme Gradle build
+        uses: ./.github/actions/setup-gradle
+
+      - name: Log in to GHCR
+        if: >-
+          github.event_name != 'pull_request' &&
+          (github.ref_name == 'main' || inputs.publish == true)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build immutable JVM image
+        run: >-
+          ./gradlew :applications:emme-platform:bootBuildImage
+          --imageName="${IMAGE_NAME}"
+          --no-daemon --no-configuration-cache --stacktrace
+
+      - name: Inspect image metadata
+        run: |
+          set -euo pipefail
+          docker image inspect "${IMAGE_NAME}" \
+            --format '{{json .Config.Labels}}'
+          docker image inspect "${IMAGE_NAME}" --format '{{.Id}}'
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}
+          format: sarif
+          output: trivy-image.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Upload image scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-container-scan-${{ github.run_id }}
+          path: trivy-image.sarif
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload image scan to code scanning
+        if: always() && github.event_name != 'pull_request'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-image.sarif
+
+      - name: Push immutable image
+        if: >-
+          github.event_name != 'pull_request' &&
+          (github.ref_name == 'main' || inputs.publish == true)
+        run: docker push "${IMAGE_NAME}"
+
+      - name: Resolve published image digest
+        if: >-
+          github.event_name != 'pull_request' &&
+          (github.ref_name == 'main' || inputs.publish == true)
+        id: digest
+        run: |
+          set -euo pipefail
+          digest="$(docker image inspect "${IMAGE_NAME}" \
+            --format '{{index .RepoDigests 0}}')"
+          echo "IMAGE_DIGEST=${digest##*@}" >> "$GITHUB_OUTPUT"
+          echo "Published ${IMAGE_NAME}@${digest##*@}"

@@ -4,13 +4,16 @@ const workflow = await readFile('.github/workflows/container-image.yml', 'utf8')
 
 const requiredFragments = [
   'workflow_dispatch:',
+  'jvm:',
   'bootBuildImage',
   '--imageName=',
   'aquasecurity/trivy-action@v0.36.0',
   'docker image inspect',
   'docker push',
   'packages: write',
-  "github.event_name != 'pull_request'",
+  "if: github.event_name != 'workflow_dispatch' || inputs.jvm == true",
+  'scanners: vuln',
+  'limit-severities-for-sarif: true',
   'IMAGE_DIGEST',
 ];
 
@@ -34,6 +37,10 @@ for (const fragment of nativeFragments) {
   if (!workflow.includes(fragment)) {
     throw new Error(`Container workflow is missing native fragment: ${fragment}`);
   }
+}
+
+if (/^  pull_request:\s*$/m.test(workflow)) {
+  throw new Error('Container workflow must not build images on pull requests.');
 }
 
 if (workflow.includes('build-image.sh')) {

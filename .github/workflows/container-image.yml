@@ -4,9 +4,13 @@ name: Service container image
 'on':
   push:
     branches: [main]
-  pull_request:
   workflow_dispatch:
     inputs:
+      jvm:
+        description: Build and scan the JVM image
+        required: true
+        default: true
+        type: boolean
       publish:
         description: Publish the immutable image to GHCR
         required: true
@@ -30,6 +34,7 @@ concurrency:
 jobs:
   jvm:
     name: Build and scan JVM image
+    if: github.event_name != 'workflow_dispatch' || inputs.jvm == true
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:

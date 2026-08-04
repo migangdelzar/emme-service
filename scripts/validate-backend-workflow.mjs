@@ -19,6 +19,10 @@ if (/^  coverage:\s*$/m.test(workflow)) {
   throw new Error('Backend workflow must not contain a separate coverage job.');
 }
 
+if (workflow.includes('ubuntu-latest')) {
+  throw new Error('Backend workflow must pin Ubuntu runners to ubuntu-24.04.');
+}
+
 for (const job of ['test', 'integration', 'build-logic', 'infrastructure']) {
   const jobBlock = workflow.match(
     new RegExp(`^  ${job}:\\n([\\s\\S]*?)(?=^  [a-zA-Z][\\w-]*:|$)`, 'm'),

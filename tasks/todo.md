@@ -25,6 +25,23 @@
 - [x] Add the reusable E2E fixture contract template covering identity,
       tenant, business, integration, observability, cleanup, and evidence data.
 
+## Point 5 — DDD + Hexagonal + Spring Modulith architecture verification — 2026-08-04
+
+Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/superpowers/specs/2026-08-04-ddd-hexagonal-modulith-architecture-verification-design.md)
+
+- [ ] Add reusable ArchUnit architecture rules to `libraries/testing`.
+- [ ] Verify domain purity, application dependency direction, adapter ownership,
+      grouped API visibility, naming, package metadata, and one-use-case-per-service.
+- [ ] Verify entity/table ownership, `emme_core` boundaries, tenant schemas,
+      and tenant-isolation rules.
+- [ ] Strengthen Spring Modulith verification and deterministic Documenter/
+      PlantUML generation.
+- [ ] Add event-contract rules for Spring Modulith and Kafka without introducing
+      the conference project's JPA `EntityWithEvents` pipeline.
+- [ ] Evaluate JMolecules and selective MapStruct adoption against the current
+      Gradle platform before adding dependencies.
+- [ ] Run deliberate red/green architecture tests for every rule family.
+
 ## Working notes
 
 - The Modulith handbook is the source of truth for module and build-logic structure.

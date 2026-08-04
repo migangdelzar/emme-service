@@ -1898,6 +1898,6 @@ security checks, integration tests, infrastructure validation, and packaging.
 - [x] Create service and web implementation plans.
 - [x] Add the backend workflow contract validator.
 - [x] Run backend tests and JaCoCo coverage in one Gradle job locally.
-- [ ] Apply the remaining service workflow input and container-trigger changes.
-- [ ] Add the reusable web Bun setup action and optional workflow inputs.
+- [x] Apply the remaining service workflow input and container-trigger changes.
+- [x] Add the reusable web Bun setup action and optional workflow inputs.
 - [ ] Verify both repositories' changed workflows in GitHub Actions.

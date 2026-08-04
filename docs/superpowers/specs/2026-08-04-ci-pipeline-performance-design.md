@@ -187,7 +187,24 @@ default. For this project, the artifact transfer overhead is higher than the
 benefit for the short quality jobs, and Gradle's dependency/build cache is the
 more appropriate cross-run reuse mechanism.
 
-### 4.3 Conditional heavy jobs
+### 4.3 Reusable action library policy
+
+GitHub composite actions are the equivalent of focused Jenkins shared-library
+steps. The current repositories keep their actions local while their contracts
+are evolving:
+
+- `emme-service` owns `setup-gradle`;
+- `emme-web` owns `setup-bun`;
+- each action pins its runtime, cache behavior, and lockfile installation.
+
+Once these contracts are stable, organization-wide, stack-neutral actions may
+move into a versioned private `emme-actions` repository. Consumers must pin a
+release tag or immutable commit SHA. A reusable workflow using `workflow_call`
+is reserved for a complete stable job graph; it should not be used merely to
+hide one or two setup steps. This preserves branch-local evolution now and
+gives the platform a controlled shared-library path later.
+
+### 4.4 Conditional heavy jobs
 
 - `ci-backend.yml` runs the normal blocking graph for pull requests and main.
 - Integration work is selected by event defaults and can be disabled only on a

@@ -34,7 +34,7 @@
 - quality, test, integration, build-logic, and infrastructure are independent jobs.
 - coverageCheck runs from the test job; no separate coverage job remains.
 
-- [ ] Step 1: Write the failing workflow-contract assertion.
+- [x] Step 1: Write the failing workflow-contract assertion.
 
 Create scripts/validate-backend-workflow.mjs that reads .github/workflows/ci-backend.yml and requires these fragments:
 
@@ -47,13 +47,13 @@ Create scripts/validate-backend-workflow.mjs that reads .github/workflows/ci-bac
 
 It must also reject a separate coverage: job and reject needs: quality on the independent jobs.
 
-- [ ] Step 2: Run the contract and verify it fails.
+- [x] Step 2: Run the contract and verify it fails.
 
     node scripts/validate-backend-workflow.mjs
 
 Expected: failure because the current workflow has no input, still has a coverage job, and serializes independent jobs.
 
-- [ ] Step 3: Implement the workflow graph.
+- [x] Step 3: Implement the workflow graph.
 
 Add this dispatch input:
 
@@ -87,7 +87,7 @@ Make boot packaging wait for the independent jobs and accept a deliberately skip
 
 Update the summary to require integration for normal events, while accepting skipped integration only for a manual run with run_integration=false.
 
-- [ ] Step 4: Run the contract and repository validators.
+- [x] Step 4: Run the contract and repository validators.
 
     node scripts/validate-backend-workflow.mjs
     node scripts/validate-markdown.mjs
@@ -95,7 +95,7 @@ Update the summary to require integration for normal events, while accepting ski
 
 Expected: all commands pass.
 
-- [ ] Step 5: Commit.
+- [x] Step 5: Commit.
 
     git add .github/workflows/ci-backend.yml scripts/validate-backend-workflow.mjs tasks/todo.md
     git commit -m "ci(service): parallelize backend verification jobs"
@@ -114,17 +114,17 @@ Expected: all commands pass.
 - JVM images run on main pushes or selected manual dispatch, never pull requests.
 - Native images run only on manual dispatch with native=true.
 
-- [ ] Step 1: Extend the failing contract assertions.
+- [x] Step 1: Extend the failing contract assertions.
 
 Require jvm:, the JVM conditional expression, scanners: vuln, and limit-severities-for-sarif: true. Reject a pull_request: container trigger.
 
-- [ ] Step 2: Run the validator and verify it fails.
+- [x] Step 2: Run the validator and verify it fails.
 
     node scripts/validate-container-workflow.mjs
 
 Expected: failure because the current workflow has no jvm input and still builds on pull requests.
 
-- [ ] Step 3: Implement conditional image jobs.
+- [x] Step 3: Implement conditional image jobs.
 
 Add:
 
@@ -146,14 +146,14 @@ Keep publication separately guarded by publish. Keep the explicit Trivy policy o
     ignore-unfixed: true
     exit-code: '1'
 
-- [ ] Step 4: Run local workflow validation.
+- [x] Step 4: Run local workflow validation.
 
     node scripts/validate-container-workflow.mjs
     git diff --check
 
 Expected: all commands pass.
 
-- [ ] Step 5: Commit.
+- [x] Step 5: Commit.
 
     git add .github/workflows/container-image.yml scripts/validate-container-workflow.mjs
     git commit -m "ci(service): make image jobs explicitly selectable"
@@ -164,7 +164,7 @@ Expected: all commands pass.
 
 - Modify: tasks/todo.md
 
-- [ ] Step 1: Run local backend gates.
+- [x] Step 1: Run local backend gates.
 
     ./gradlew spotlessCheck test :applications:emme-platform:coverageCheck
     ./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon --no-configuration-cache

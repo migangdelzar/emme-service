@@ -93,8 +93,7 @@ deployment/
 │       └── k3s-production-native/
 │
 └── scripts/
-    ├── build-image.sh
-    ├── deploy-k3d.sh
+    ├── bootstrap-k3d-cluster.sh
     ├── provision-e2e-keycloak-realm.sh
     └── seed-e2e-tenant.sh
 ```
@@ -102,6 +101,8 @@ deployment/
 `compose.yaml` is the shared base. Runtime overlays select JVM or Native images. Environment overlays select local, CI, or E2E behavior. Observability remains orthogonal and can be added independently.
 
 `k3d-*` identifies local clusters. `k3s-staging-*` and `k3s-production-*` identify cluster target and runtime variant explicitly. `prod` and `dev` are avoided because they do not describe whether the target is a local K3d cluster, staging K3s cluster, or production K3s cluster.
+
+The scripts directory is deliberately small. It contains only dynamic orchestration that cannot be expressed cleanly through Gradle, Compose, or Kubernetes manifests. Image builds are Gradle/build-logic tasks, and Kubernetes deployment is performed with Kustomize plus GitHub Actions or GitOps. A generic `build-image.sh` or `deploy-k3d.sh` would hide the real tool contract and become a second deployment implementation.
 
 ### Web repository
 
@@ -168,6 +169,16 @@ Rules:
 5. K3d imports local images or pulls from a developer registry.
 6. JVM is the default MVP runtime; Native is an explicit variant with its own build and verification gates.
 7. Build-logic owns Gradle image configuration and task wiring; workflows invoke the Gradle capability instead of duplicating image logic.
+
+The supported image commands are:
+
+```text
+./gradlew :applications:emme-platform:containerBuild
+./gradlew :applications:emme-platform:containerVerify
+./gradlew :applications:emme-platform:containerPush
+```
+
+`mise` may expose these commands as developer-friendly aliases, but it must delegate to Gradle rather than implement a second image builder.
 
 ```mermaid
 flowchart TD
@@ -239,6 +250,16 @@ The recording workflow is intentionally separate from normal quality CI because 
 3. Render the matching `k3d-jvm` or `k3d-native` overlay.
 4. Apply with `kubectl apply -k`.
 
+Local convenience may be exposed as:
+
+```text
+mise run k3d:bootstrap
+mise run k3d:apply:jvm
+mise run k3d:apply:native
+```
+
+These tasks are thin wrappers over `k3d`, `kubectl`, and Kustomize. They do not build images or contain Kubernetes manifests.
+
 ### K3s staging and production
 
 1. CI builds and scans the image.
@@ -249,6 +270,8 @@ The recording workflow is intentionally separate from normal quality CI because 
 6. Readiness, smoke, and rollback checks run against the deployed digest.
 
 Building inside K3s is explicitly prohibited because it makes deployments non-reproducible and increases cluster privileges.
+
+Production deployment is not performed by a repository shell script. GitHub Actions publishes an immutable image and either updates a deployment repository for GitOps reconciliation or applies the selected Kustomize overlay through a protected environment. The deployment mechanism must record the image digest, target environment, actor, and rollback revision.
 
 ## Verification Requirements
 

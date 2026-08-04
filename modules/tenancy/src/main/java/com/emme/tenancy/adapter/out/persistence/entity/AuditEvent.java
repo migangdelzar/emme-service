@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "audit_event")
+@Table(name = "platform_audit_event", schema = "emme_core")
 public class AuditEvent extends PersistedEntity {
 
   @Column(name = "tenant_id")

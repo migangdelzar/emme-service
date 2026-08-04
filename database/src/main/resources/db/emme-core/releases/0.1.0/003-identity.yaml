@@ -35,9 +35,24 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: database_id
+                  type: uuid
+              - column:
                   name: created_at
                   type: timestamptz
                   defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
                   constraints:
                     nullable: false
         - sql:
@@ -81,6 +96,24 @@ databaseChangeLog:
                   defaultValueBoolean: true
                   constraints:
                     nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
         - sql:
             sql: |
               ALTER TABLE emme_core.role
@@ -120,6 +153,24 @@ databaseChangeLog:
                   defaultValueBoolean: true
                   constraints:
                     nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
 
         # --- role_permission ---
         - createTable:
@@ -151,6 +202,24 @@ databaseChangeLog:
                   name: granted_at
                   type: timestamptz
                   defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
                   constraints:
                     nullable: false
         - sql:
@@ -214,6 +283,18 @@ databaseChangeLog:
                   name: created_at
                   type: timestamptz
                   defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
                   constraints:
                     nullable: false
         - sql:

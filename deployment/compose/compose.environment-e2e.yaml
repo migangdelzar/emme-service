@@ -3,6 +3,13 @@
 # service ref. The web repository owns the browser process.
 services:
   emme-platform:
+    # The JVM memory calculator needs more than the shared 512 MiB local
+    # default before Spring can initialize all Modulith modules. Native images
+    # use the separate runtime overlay and do not rely on this JVM budget.
+    deploy:
+      resources:
+        limits:
+          memory: 1G
     environment:
       SPRING_PROFILES_ACTIVE: e2e
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emme

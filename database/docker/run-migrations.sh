@@ -26,6 +26,9 @@ summarize_error() {
   raw_summary="$(printf '%s' "$1" | tr '\r\n' ' ' | tr -s ' ')"
   raw_summary="${raw_summary#"${raw_summary%%[![:space:]]*}"}"
   raw_summary="${raw_summary%"${raw_summary##*[![:space:]]}"}"
+  if (( ${#raw_summary} > 240 )); then
+    raw_summary="${raw_summary: -240}"
+  fi
   printf '%.240s' "${raw_summary}"
 }
 
@@ -94,7 +97,7 @@ for schema in "${tenant_schemas[@]}"; do
     liquibase \
       --search-path=/liquibase/changelog/db \
       --changelog-file=emme-studio/changelog.yaml \
-      --url="jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${DATABASE_NAME}" \
+      --url="jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${DATABASE_NAME}?currentSchema=${schema},emme_core,public" \
       --username="${POSTGRES_USER}" \
       --password="${POSTGRES_PASSWORD}" \
       --default-schema-name="${schema}" \
@@ -105,12 +108,14 @@ for schema in "${tenant_schemas[@]}"; do
     error_summary="$(summarize_error "${liquibase_output}")"
     "${psql_base[@]}" \
       -d "${DATABASE_NAME}" \
-      -c "
-        UPDATE emme_core.tenant_registry
-        SET status = 'FAILED',
-            migration_error = '${error_summary}',
-            updated_at = now()
-        WHERE schema_name = '${schema}';"
+      -v "migration_error=${error_summary}" \
+      -v "tenant_schema=${schema}" <<'SQL'
+UPDATE emme_core.tenant_registry
+SET status = 'FAILED',
+    migration_error = :'migration_error',
+    updated_at = now()
+WHERE schema_name = :'tenant_schema';
+SQL
     printf 'Tenant migration failed for %s: %s\n' "${schema}" "${error_summary}" >&2
     exit 1
   fi

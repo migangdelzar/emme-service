@@ -28,7 +28,10 @@ services:
       - emme-net
 
   postgres:
-    image: postgres:16-alpine
+    # pgvector is part of the authoritative PostgreSQL runtime contract.
+    # Keep the image overridable for CI/production mirrors without silently
+    # falling back to a database image that cannot apply search migrations.
+    image: ${POSTGRES_IMAGE:-pgvector/pgvector:pg17}
     environment:
       POSTGRES_DB: emme
       POSTGRES_USER: emme

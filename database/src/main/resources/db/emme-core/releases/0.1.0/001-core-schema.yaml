@@ -6,6 +6,8 @@ databaseChangeLog:
       changes:
         - sql:
             sql: CREATE SCHEMA IF NOT EXISTS emme_core;
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS vector SCHEMA emme_core;
       rollback:
         - sql:
             sql: DROP SCHEMA IF EXISTS emme_core CASCADE;

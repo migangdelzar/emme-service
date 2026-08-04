@@ -118,6 +118,7 @@ The tree is a decision catalogue, not a requirement to create every directory. A
 - [ ] Inventory all `DataSource#getConnection()` calls, direct JPA repository use from application/web code, direct external SDK use from domain code, and non-Kafka broker configuration.
 - [ ] Inventory empty directories and files with no production references. Delete only after `rg`, compiler, test, and build verification prove they are unused.
 - [x] Store the baseline evidence in `docs/superpowers/reviews/2026-08-03-enterprise-module-template-conformance-baseline.md` and link it from this plan.
+- [x] Refresh the production type, application-service, package-metadata, and boundary inventory in `docs/superpowers/reviews/2026-08-04-enterprise-module-template-conformance-inventory.md` after public contract naming normalization.
 
 ### A3. Add executable architecture guardrails
 

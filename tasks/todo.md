@@ -1926,3 +1926,13 @@ The naming source of truth is
 `docs/architecture/00-project/naming-conventions.md`. The module and application
 templates now use the same vocabulary, so future modules do not need to choose
 between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis.
+
+## Enterprise conformance inventory — 2026-08-04
+
+- [x] Refresh production Java type and application-service counts after the
+  public contract rename migration.
+- [x] Record package metadata, named-interface, direct-connection, repository,
+  and DDD/Hexagonal boundary evidence.
+- [x] Document remaining inventory gaps separately from verified repository facts.
+- [x] Link the evidence from the enterprise conformance plan:
+  `docs/superpowers/reviews/2026-08-04-enterprise-module-template-conformance-inventory.md`.

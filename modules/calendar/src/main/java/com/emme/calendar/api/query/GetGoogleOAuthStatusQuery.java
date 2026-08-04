@@ -1,4 +1,4 @@
-package com.emme.calendar.api.command;
+package com.emme.calendar.api.query;
 
 import com.emme.calendar.api.type.GoogleOAuthPersona;
 import java.util.UUID;

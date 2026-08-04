@@ -53,7 +53,7 @@ class TenancyPackageConventionTest {
           "modules/tenancy/src/main/java/com/emme/tenancy/application/port/out/TenantSchemaMigrationPort.java");
   private static final Path JDBC_TENANT_PROVISIONING_REPOSITORY =
       sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/JdbcTenantProvisioningRepository.java");
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/TenantProvisioningPersistenceAdapter.java");
   private static final Path LIQUIBASE_TENANT_SCHEMA_MIGRATION_ADAPTER =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java");

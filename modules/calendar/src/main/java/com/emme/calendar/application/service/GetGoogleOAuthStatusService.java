@@ -1,6 +1,6 @@
 package com.emme.calendar.application.service;
 
-import com.emme.calendar.api.command.GetGoogleOAuthStatusQuery;
+import com.emme.calendar.api.query.GetGoogleOAuthStatusQuery;
 import com.emme.calendar.api.result.GoogleOAuthConnectionStatus;
 import com.emme.calendar.api.usecase.GetGoogleOAuthStatusUseCase;
 import com.emme.calendar.application.port.out.GoogleOAuthPort;

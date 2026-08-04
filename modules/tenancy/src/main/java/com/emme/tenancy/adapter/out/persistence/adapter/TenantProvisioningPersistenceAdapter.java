@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 
 /** Implements tenant provisioning registry lifecycle operations with JDBC. */
 @Component
-public final class JdbcTenantProvisioningRepository implements TenantProvisioningRepository {
+public final class TenantProvisioningPersistenceAdapter implements TenantProvisioningRepository {
 
   private final JdbcTemplate jdbc;
 
-  public JdbcTenantProvisioningRepository(JdbcTemplate jdbc) {
+  public TenantProvisioningPersistenceAdapter(JdbcTemplate jdbc) {
     this.jdbc = jdbc;
   }
 

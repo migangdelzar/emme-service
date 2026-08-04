@@ -52,4 +52,9 @@ class NamingConventionArchitectureTest {
   void apiTypesUseDomainNamesInsteadOfTransportViews() {
     NamingRules.apiTypesAvoidViewSuffix().check(CLASSES);
   }
+
+  @Test
+  void apiTypesAreStableValuesRatherThanPorts() {
+    NamingRules.apiTypesAreRecordsOrEnums().check(CLASSES);
+  }
 }

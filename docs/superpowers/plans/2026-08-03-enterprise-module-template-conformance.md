@@ -153,7 +153,7 @@ Apply the following mapping to every module that has public contracts:
 - [ ] Rename ambiguous `Info`, `Data`, `Payload`, `Model`, `Dto`, `DTO`, `View`, and `Response` types to their actual contract shape. Keep `Response` only under a transport adapter.
 - [x] Normalize the public contract names covered by this migration: `Status` for lifecycle/current condition, `Type` for classification, `Details`/`Summary`/`Page` for read shapes, and `Result` only for operation outcomes. Remove ambiguous public `Info`/`View` names and the OIDC query's `UserInfo` suffix.
 - [ ] Convert immutable public data carriers to records and validate them at the transport boundary.
-- [ ] Convert public mutable classes that expose persistence or framework state into dedicated records or stable value types.
+- [x] Convert public mutable classes that expose persistence or framework state into dedicated records or stable value types; Calendar's adapter `TokenSource` was removed from `api.type` and renamed `GoogleUserTokenSource` under the Google outbound OAuth adapter.
 - [x] Ensure event names are past tense and commands remain imperative. Remove duplicate command/event concepts; Studio appointment facts are now `AppointmentCreated`, `AppointmentCancelled`, and `AppointmentRescheduled`, while the SSE projection is internal to `adapter/in/web/sse`.
 - [ ] Ensure public exceptions do not expose SQL, JPA, HTTP-client, Kafka, or provider implementation exceptions.
 - [ ] Apply `@NotNull`, `@Size`, `@Pattern`, `@Positive`, `@Valid`, and type-level `@Valid<Concept>` only to inbound records where the rule is transport/application validation. Keep business invariants in the domain.

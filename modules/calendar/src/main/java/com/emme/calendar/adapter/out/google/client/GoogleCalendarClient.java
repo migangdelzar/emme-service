@@ -1,7 +1,7 @@
 package com.emme.calendar.adapter.out.google.client;
 
+import com.emme.calendar.adapter.out.google.oauth.GoogleUserTokenSource;
 import com.emme.calendar.api.result.CalendarBusyTimeRange;
-import com.emme.calendar.api.type.TokenSource;
 import com.emme.calendar.application.port.out.GoogleCalendarPort;
 import com.emme.calendar.configuration.GoogleCalendarProperties;
 import com.emme.calendar.configuration.GoogleHttpClient;
@@ -54,7 +54,7 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
   private final PrivateKey privateKey;
   private final boolean configured;
 
-  private TokenSource userTokenSource;
+  private GoogleUserTokenSource userTokenSource;
 
   private String cachedToken;
   private long tokenExpiresAt;
@@ -62,7 +62,7 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
   /** Production constructor with optional user OAuth token source. */
   @Autowired
   public GoogleCalendarClient(
-      Optional<TokenSource> userTokenSource,
+      Optional<GoogleUserTokenSource> userTokenSource,
       GoogleCalendarProperties properties,
       GoogleHttpClient client,
       ObjectMapper mapper) {

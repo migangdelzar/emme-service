@@ -82,6 +82,9 @@ Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/su
       packages in modules and supporting libraries.
 - [x] Normalized the Calendar OAuth query package and the Tenancy JDBC
   provisioning adapter name.
+- [x] Kept public `api.type` packages limited to stable records/enums by moving
+      Calendar's adapter token source to `adapter.out.google.oauth` as
+      `GoogleUserTokenSource` and enforcing the rule in the architecture suite.
 - [x] Audited production connection acquisition and empty source directories:
       no production `DataSource#getConnection()` calls remain, integration-test
       setup calls are intentional, and the stale empty Tenancy audit test

@@ -2,7 +2,6 @@ package com.emme.calendar.adapter.out.google.oauth;
 
 import com.emme.calendar.adapter.out.google.adapter.GoogleOAuthAdapter;
 import com.emme.calendar.adapter.out.google.model.PersonaType;
-import com.emme.calendar.api.type.TokenSource;
 import com.emme.kernel.context.TenantContext;
 import com.emme.shared.web.security.CurrentUserContextHolder;
 import org.slf4j.Logger;
@@ -10,11 +9,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * User OAuth implementation of TokenSource. Reads tokens from the google_oauth_token table via
- * GoogleOAuthService. Auto-injected into GoogleCalendarClient when the google module is present.
+ * User OAuth implementation of GoogleUserTokenSource. Reads tokens from the google_oauth_token
+ * table via GoogleOAuthService. Auto-injected into GoogleCalendarClient when the google module is
+ * present.
  */
 @Component
-public class OAuthTokenSource implements TokenSource {
+public class OAuthTokenSource implements GoogleUserTokenSource {
 
   private static final Logger log = LoggerFactory.getLogger(OAuthTokenSource.class);
   private final GoogleOAuthAdapter oauthService;

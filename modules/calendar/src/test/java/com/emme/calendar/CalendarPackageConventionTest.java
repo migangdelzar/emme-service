@@ -46,7 +46,8 @@ class CalendarPackageConventionTest {
     assertThat(hasClass("com.emme.calendar.api.usecase.GetBusyTimesUseCase")).isTrue();
     assertThat(hasClass("com.emme.calendar.api.usecase.SyncCalendarEventsUseCase")).isTrue();
     assertThat(hasClass("com.emme.calendar.api.usecase.FindCalendarEventLinksUseCase")).isTrue();
-    assertThat(hasClass("com.emme.calendar.api.type.TokenSource")).isTrue();
+    assertThat(hasClass("com.emme.calendar.adapter.out.google.oauth.GoogleUserTokenSource"))
+        .isTrue();
     assertThat(hasClass("com.emme.calendar.api.event.CalendarSyncRequested")).isTrue();
   }
 

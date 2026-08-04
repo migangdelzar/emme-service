@@ -118,6 +118,30 @@ public final class NamingRules {
         .because("public vocabulary types are not transport-specific views");
   }
 
+  /** Public API types are stable value vocabulary, not implementation ports. */
+  public static ArchRule apiTypesAreRecordsOrEnums() {
+    return classes()
+        .that()
+        .resideInAnyPackage("com.emme..api.type..")
+        .should(
+            new ArchCondition<>("be records or enums") {
+              @Override
+              public void check(JavaClass javaClass, ConditionEvents events) {
+                if (!javaClass.getSimpleName().equals("package-info")
+                    && !javaClass.isRecord()
+                    && !javaClass.isEnum()) {
+                  events.add(
+                      SimpleConditionEvent.violated(
+                          javaClass,
+                          javaClass.getName()
+                              + " must be a record or enum in the public vocabulary package"));
+                }
+              }
+            })
+        .because("interfaces and framework ports belong to application or adapter packages")
+        .allowEmptyShould(true);
+  }
+
   private static ArchCondition<JavaClass> useSuffix(String suffix) {
     return useSuffixExcept(suffix);
   }

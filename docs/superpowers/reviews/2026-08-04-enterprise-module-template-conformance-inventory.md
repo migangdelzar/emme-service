@@ -88,6 +88,7 @@ named `*Service`.
 | Production `DataSource#getConnection()` calls | None found | `rg` source scan; ten remaining calls are integration-test setup only |
 | Public API declarations ending in `Info`, `View`, `State`, or `Kind` | None found for the normalized contract set | Naming architecture test and stale-name scan pass |
 | Public API event declarations ending in `Event` | None found | Event contract architecture test; Studio appointment facts omit the redundant suffix and dashboard SSE data is no longer an API event |
+| Public `api.type` interfaces | None found | Naming architecture test requires public vocabulary types to be records or enums; Calendar's `TokenSource` moved to the Google outbound OAuth adapter as `GoogleUserTokenSource` |
 | Removed `studio-api` project references | None in active build | `ApplicationServiceArchitectureTest` and platform target validator |
 | Domain imports of Spring/JPA/Kafka/adapter infrastructure | No violations | `DddHexagonalArchitectureTest` passes |
 | Application imports of technical adapters | No violations | `DddHexagonalArchitectureTest` passes |

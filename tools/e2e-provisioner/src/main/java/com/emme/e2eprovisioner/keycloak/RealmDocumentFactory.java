@@ -65,7 +65,7 @@ public final class RealmDocumentFactory {
     addTenantMapper(mappers, "tenant-id-mapper", "tenant_id");
     addTenantMapper(mappers, "tenant-slug-mapper", "tenant_slug");
 
-    ArrayNode defaults = document.putArray("defaultDefaultClientScopes");
+    ArrayNode defaults = document.putArray("defaultClientScopes");
     for (var scope :
         new String[] {"tenant-context", "web-origins", "acr", "profile", "roles", "email"}) {
       defaults.add(scope);

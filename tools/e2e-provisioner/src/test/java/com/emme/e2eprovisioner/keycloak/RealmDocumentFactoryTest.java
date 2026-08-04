@@ -2,7 +2,9 @@ package com.emme.e2eprovisioner.keycloak;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.UUID;
+import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 
 class RealmDocumentFactoryTest {
@@ -24,5 +26,12 @@ class RealmDocumentFactoryTest {
         .isEqualTo(tenantId.toString());
     assertThat(document.path("clientScopes").get(0).path("name").asText())
         .isEqualTo("tenant-context");
+    assertThat(document.path("defaultClientScopes").isArray()).isTrue();
+    var defaultScopes =
+        StreamSupport.stream(document.path("defaultClientScopes").spliterator(), false)
+            .map(JsonNode::asText)
+            .toList();
+    assertThat(defaultScopes).contains("profile", "email");
+    assertThat(document.has("defaultDefaultClientScopes")).isFalse();
   }
 }

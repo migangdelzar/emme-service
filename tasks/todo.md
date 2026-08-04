@@ -24,6 +24,19 @@
 - [ ] Keep runtime defaults branch-pinned until both feature branches merge.
 - [x] Add the reusable E2E fixture contract template covering identity,
       tenant, business, integration, observability, cleanup, and evidence data.
+- [x] Provision the disposable tenant-owner realm twice and verify deterministic
+      replay returns the same tenant identity.
+- [x] Run the canonical real tenant-owner recording suite with one worker and
+      archive videos, traces, screenshots, and reports in CI.
+- [x] Replace the JVM image shell-based healthcheck with a shell-free Java
+      actuator probe and verify the container reaches `healthy` locally.
+- [x] Validate both JVM and native Compose runtime overlays.
+- [x] Record the runtime and recording evidence in
+      `docs/superpowers/reviews/2026-08-04-e2e-runtime-and-operational-evidence.md`.
+- [ ] Run live database outage pool eviction/recovery and provisioning rollback
+      evidence in a deployment environment.
+- [ ] Execute credentialed provider, broker outage, native-image, and complete
+      shutdown-diagnostics gates before production release.
 
 ## Point 5 — DDD + Hexagonal + Spring Modulith architecture verification — 2026-08-04
 

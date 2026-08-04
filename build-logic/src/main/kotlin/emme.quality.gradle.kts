@@ -25,7 +25,7 @@ tasks.register("coverageCheck") {
   dependsOn("test", "jacocoTestReport", "jacocoTestCoverageVerification")
 }
 
-tasks.named("jacocoTestCoverageVerification") {
+tasks.withType<JacocoCoverageVerification>().configureEach {
   dependsOn("jacocoTestReport")
 }
 

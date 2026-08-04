@@ -711,3 +711,14 @@
 - Prevention rule: fail fast on the command's exit status and validate with the
   repository-supported Compose executable; CI should install or invoke the
   modern Compose plugin explicitly rather than relying on a local fallback.
+## 2026-08-03 — Guard optional Gradle task wiring
+
+- **Failure mode:** A convention plugin used `tasks.named("jacocoTestCoverageVerification")`
+  even when a functional-test fixture applied the quality convention without a
+  Java component, causing configuration to fail before task discovery.
+- **Detection signal:** The build-logic functional test failed with `Task with
+  name 'jacocoTestCoverageVerification' not found` while the production modules
+  passed.
+- **Prevention rule:** Convention plugins must configure optional capability
+  tasks with `withType<T>().configureEach` or `matching { ... }.configureEach`;
+  use `named(...)` only when the plugin contract guarantees that task exists.

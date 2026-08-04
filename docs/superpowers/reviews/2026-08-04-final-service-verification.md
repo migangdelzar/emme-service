@@ -20,7 +20,7 @@
 | Build-logic CDD | Pass | Capability-owned conventions, plugins, extensions, tasks, providers, ValueSources, TestKit, and configuration-cache tests |
 | Kafka + Spring Modulith | Pass for MVP | Contract tests and Kafka Testcontainers publication test; JDBC publication registry and restart republication configured |
 | Tenant isolation and database ownership | Pass locally | Tenant predicates, schema routing, pool lifecycle tests, and Liquibase ownership checks |
-| Security and dependency gates | Pass with NVD scan conditional | Gitleaks passes; OWASP Dependency-Check is skipped until `NVD_API_KEY` exists |
+| Security and dependency gates | Manual NVD verification in progress | Gitleaks passes; `NVD_API_KEY` is configured and the fail-closed OWASP Dependency-Check run has been dispatched |
 | Boot artifact | Pass | `boot-jar` CI job passed |
 | Web JVM/Compose lane | Pass | Web CI run `30955214910` passed |
 
@@ -55,7 +55,7 @@ credentials or deployment infrastructure:
 - PostgreSQL-backed replay of provider webhooks and durable delivery retries;
 - broker outage and deployed Kafka consumer-recovery drills;
 - GraalVM native-image build plus JVM/native memory and latency comparison;
-- fail-closed OWASP Dependency-Check run with `NVD_API_KEY`.
+- confirmation of the dispatched fail-closed OWASP Dependency-Check run with `NVD_API_KEY`.
 
 ## Decision
 

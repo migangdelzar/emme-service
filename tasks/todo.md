@@ -19,12 +19,20 @@ registry, the latest verification reports, and this section.
       `docs/superpowers/reviews/2026-08-04-final-service-verification.md`.
 - [x] Operational evidence is classified in
       `docs/superpowers/reviews/2026-08-04-production-evidence-matrix.md`.
+- [x] Created protected GitHub environments for service E2E/production and web
+      E2E/k3s staging/production lanes.
+- [x] Configured the existing NVD API key as the service `NVD_API_KEY` Actions
+      secret without storing its value in the repository.
+- [x] Added production configuration hardening for database password naming,
+      Google token encryption, Kafka SASL configuration, and Kubernetes secret
+      references.
+- [x] Added an optional Kafka Compose deployment overlay and CI contract check;
+      production Kubernetes uses an external SASL broker.
 - [ ] Run the environment-dependent release gates: credentialed providers,
       real database outage/restore, deployed Kafka outage recovery, native
       image measurements, and complete real E2E CI execution.
-- [ ] Configure `NVD_API_KEY` and run the fail-closed security workflow; the
-      current PR scan remains intentionally non-blocking when the secret is
-      absent.
+- [ ] Confirm the fail-closed NVD workflow completes successfully; the manual
+      run is currently in progress.
 
 ## Immutable configuration-properties normalization — 2026-08-04
 

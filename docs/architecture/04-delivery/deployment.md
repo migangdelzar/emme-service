@@ -15,6 +15,26 @@ DeploymentProvider
 └── KubernetesProvider    # staging / production
 ```
 
+### Local Kafka event-streaming verification
+
+Kafka is not part of the default low-cost Compose stack. When validating the
+Spring Modulith externalizer locally, add
+`deployment/compose/compose.environment-kafka.yaml` to the base and JVM
+runtime files. The overlay enables event externalization, starts a pinned
+single-node KRaft broker, and gates the application on Kafka health.
+
+```bash
+docker compose \
+  -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.environment-kafka.yaml \
+  up -d
+```
+
+This overlay is disposable verification infrastructure, not a production Kafka
+topology. Production uses an external SASL broker configured through the
+protected secret boundary described in [Secrets](secrets.md).
+
 ## JVM and native runtime overlays
 
 Compose and Kubernetes use the same selection rule: shared infrastructure is

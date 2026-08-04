@@ -165,6 +165,7 @@ jobs:
   e2e:
     name: Service API E2E
     if: github.event_name == 'workflow_dispatch' && inputs.run_e2e == true
+    environment: e2e
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
@@ -227,6 +228,7 @@ jobs:
             -f deployment/compose/compose.runtime-jvm.yaml config --quiet
           docker compose -f deployment/compose/compose.yaml \
             -f deployment/compose/compose.runtime-native.yaml config --quiet
+          node deployment/compose/compose.kafka.contract.test.mjs
       - name: Validate Terraform
         working-directory: infra/terraform
         run: |

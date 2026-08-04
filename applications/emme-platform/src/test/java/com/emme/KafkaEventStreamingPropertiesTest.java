@@ -16,13 +16,16 @@ class KafkaEventStreamingPropertiesTest {
     assertThat(properties.securityProtocol()).isEqualTo("PLAINTEXT");
     assertThat(properties.producerRetries()).isEqualTo(10);
     assertThat(properties.consumerGroup()).isEqualTo("emme-platform");
+    assertThat(properties.saslMechanism()).isEqualTo("PLAIN");
+    assertThat(properties.saslJaasConfig()).isBlank();
     assertThat(properties.isSafeForProduction()).isTrue();
   }
 
   @Test
   void rejectsEnabledLocalPlaintextConfigurationForProduction() {
     KafkaEventStreamingProperties properties =
-        new KafkaEventStreamingProperties(true, "localhost:9092", "PLAINTEXT", 10, "emme-platform");
+        new KafkaEventStreamingProperties(
+            true, "localhost:9092", "PLAINTEXT", 10, "emme-platform", "PLAIN", "");
 
     assertThat(properties.isSafeForProduction()).isFalse();
   }
@@ -31,8 +34,23 @@ class KafkaEventStreamingPropertiesTest {
   void acceptsEnabledSecureRemoteConfiguration() {
     KafkaEventStreamingProperties properties =
         new KafkaEventStreamingProperties(
-            true, "kafka.example.internal:9093", "SASL_SSL", 10, "emme-platform");
+            true,
+            "kafka.example.internal:9093",
+            "SASL_SSL",
+            10,
+            "emme-platform",
+            "PLAIN",
+            "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"user\" password=\"secret\";");
 
     assertThat(properties.isSafeForProduction()).isTrue();
+  }
+
+  @Test
+  void rejectsEnabledSaslConfigurationWithoutAJaasConfig() {
+    KafkaEventStreamingProperties properties =
+        new KafkaEventStreamingProperties(
+            true, "kafka.example.internal:9093", "SASL_SSL", 10, "emme-platform", "PLAIN", "");
+
+    assertThat(properties.isSafeForProduction()).isFalse();
   }
 }

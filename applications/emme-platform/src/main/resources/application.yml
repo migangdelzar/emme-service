@@ -51,6 +51,10 @@ spring:
       properties:
         enable.idempotence: true
         compression.type: zstd
+    properties:
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG:}
 
 server:
   port: 8081
@@ -113,6 +117,8 @@ app:
       security-protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
       producer-retries: ${KAFKA_PRODUCER_RETRIES:10}
       consumer-group: ${KAFKA_CONSUMER_GROUP:emme-platform}
+      sasl-mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl-jaas-config: ${KAFKA_SASL_JAAS_CONFIG:}
   keycloak:
     base-url: http://localhost:8080
     issuer-uri: http://localhost:8080/realms/emme
@@ -196,7 +202,7 @@ app:
       client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
       client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:}
       redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/api/google/oauth/callback}
-      encryption-key: ${GOOGLE_TOKEN_ENCRYPTION_KEY:change-me-in-production}
+      encryption-key: ${GOOGLE_TOKEN_ENCRYPTION_KEY:local-google-token-key-32-bytes!}
   payment:
     provider: mock
     mercadopago:

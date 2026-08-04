@@ -14,7 +14,7 @@ tests that require credentials, a live outage, or a deployed environment.
 | Kafka + Modulith | Event contract tests, Kafka Testcontainer publication, tenant partition keys, idempotent consumers, and restart republication configuration | Deployed broker outage, consumer restart, lag/replay, quarantine, and schema rollback drill |
 | Build-logic CDD | Unit/TestKit tests, lazy provider/task contracts, stable plugin IDs, and configuration-cache verification | Future capabilities must preserve the same ownership and TestKit contracts |
 | Native delivery | JVM/native Compose and Kubernetes manifest contracts plus native convention TestKit coverage | Actual GraalVM image build, startup, memory, latency, and production smoke test |
-| CVE scanning | Gitleaks and dependency verification pass; workflow supports fail-closed NVD execution | Configure `NVD_API_KEY` and run `Security Scan` with `require_nvd=true` |
+| CVE scanning | Gitleaks passes; `NVD_API_KEY` is configured and the fail-closed scan has been dispatched | Confirm the current manual NVD run and remediate any reported vulnerability |
 
 ## Required evidence commands
 

@@ -10,6 +10,8 @@ spring:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     properties:
       security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_SSL}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG}
 
 app:
   keycloak:
@@ -22,10 +24,15 @@ app:
       security-protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_SSL}
       producer-retries: ${KAFKA_PRODUCER_RETRIES:10}
       consumer-group: ${KAFKA_CONSUMER_GROUP:emme-platform}
+      sasl-mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl-jaas-config: ${KAFKA_SASL_JAAS_CONFIG}
+  google:
+    oauth:
+      encryption-key: ${GOOGLE_TOKEN_ENCRYPTION_KEY}
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    password: ${DB_PASSWORD}
   jpa:
     show-sql: false
 

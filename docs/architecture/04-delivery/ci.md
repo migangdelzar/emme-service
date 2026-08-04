@@ -186,6 +186,9 @@ CI may select focused jobs based on changed paths, but the protected branch must
   skipped instead of timing out against the public NVD rate limit.
 - Run `Security Scan` manually with `require_nvd=true` after configuring the
   secret to prove that the NVD-backed dependency gate is active.
+- Validate the optional Kafka Compose overlay and its health-gated broker
+  contract in the infrastructure job; production Kubernetes uses an external
+  SASL broker and secret references instead of bundling Kafka into the cluster.
 
 ### Test execution policy
 

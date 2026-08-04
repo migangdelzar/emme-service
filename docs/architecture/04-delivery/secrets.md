@@ -22,13 +22,12 @@ the service workflows:
 | Secret | Scope | Workflow | Required when | Notes |
 |---|---|---|---|---|
 | `NVD_API_KEY` | Repository secret | `security-scan.yml` | Manual `Security Scan` with `require_nvd=true` | Free NVD API key; not required by the normal fail-open dependency lane |
-| `E2E_ACCESS_TOKEN` | `e2e` environment secret (or repository secret until the environment is created) | `ci-backend.yml` | Manual dispatch with `run_e2e=true` | Token for the explicitly supplied disposable/staging API URL |
+| `E2E_ACCESS_TOKEN` | `e2e` environment secret | `ci-backend.yml` | Manual dispatch with `run_e2e=true` | Token for the explicitly supplied disposable/staging API URL |
 | `SMOKE_TOKEN` | `production` environment secret | `ci-doctor-smoke.yml` | Successful `CI Backend` workflow on `main` | Read-only smoke identity; never use an administrator token |
 
-The current repository has no GitHub environments configured. Create `e2e`
-and `production` before moving the environment-scoped values out of temporary
-repository scope. Protect `production` with required reviewers and branch/tag
-restrictions.
+The repository now has `e2e` and `production` environments. Protect
+`production` with required reviewers and branch/tag restrictions before storing
+the smoke credential there.
 
 ## Runtime secret inventory
 
@@ -46,6 +45,7 @@ jobs. Only configure a provider's values when that provider is enabled.
 | Google integration | `GOOGLE_SA_JSON_BASE64`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_TOKEN_ENCRYPTION_KEY` |
 | Payments | `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `CONEKTA_PRIVATE_KEY`, `CONEKTA_WEBHOOK_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
 | Infrastructure | `GRAFANA_PASSWORD`, `HCLOUD_TOKEN` when Terraform is used |
+| Kafka | `KAFKA_SASL_JAAS_CONFIG` when production uses `SASL_SSL` |
 
 Identifiers such as client IDs, phone IDs, project IDs, bundle IDs, and public
 keys are configuration, not automatically secrets. They still require review
@@ -59,9 +59,8 @@ before being exposed to a browser or logged.
 - Do not allow the production default
   `GOOGLE_TOKEN_ENCRYPTION_KEY=change-me-in-production`; fail startup when a
   production value is absent.
-- If production Kafka uses `SASL_SSL`, add typed username/password or JAAS
-  configuration to the Kafka properties and source those values from the
-  deployment secret store. `KAFKA_BOOTSTRAP_SERVERS` and
+- If production Kafka uses `SASL_SSL`, provide `KAFKA_SASL_JAAS_CONFIG` through
+  the deployment secret store. `KAFKA_BOOTSTRAP_SERVERS` and
   `KAFKA_SECURITY_PROTOCOL` alone do not authenticate a secured broker.
 - Keep local Compose defaults confined to local/E2E profiles and never reuse
   them for a production deployment.

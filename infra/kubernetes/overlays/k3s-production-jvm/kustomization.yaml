@@ -17,7 +17,39 @@ patches:
   - patch: |
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
-        value: "prod"
+        value: "production"
+      - op: remove
+        path: /spec/template/spec/containers/0/env/5
+      - op: remove
+        path: /spec/template/spec/containers/0/env/4
+      - op: remove
+        path: /spec/template/spec/containers/0/env/3
+      - op: remove
+        path: /spec/template/spec/containers/0/env/2
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: emme-secrets
+              key: postgres-password
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: GOOGLE_TOKEN_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: emme-secrets
+              key: google-token-encryption-key
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: KAFKA_SASL_JAAS_CONFIG
+          valueFrom:
+            secretKeyRef:
+              name: emme-secrets
+              key: kafka-sasl-jaas-config
       - op: replace
         path: /spec/replicas
         value: 2

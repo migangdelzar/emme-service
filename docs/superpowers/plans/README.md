@@ -55,6 +55,7 @@ below is the authoritative order for open work.
 | `event-streaming` | [Kafka + Spring Modulith closure](2026-08-02-kafka-modulith-event-streaming-closure.md); [verification report](../reviews/2026-08-02-kafka-modulith-event-streaming-verification.md) | Implemented and verified for MVP | Verify public event contracts, publication delivery, consumer idempotency, application-restart recovery configuration, broker configuration, and CI evidence |
 
 | `architecture-verification` | [DDD + Hexagonal + Modulith architecture verification design](../specs/2026-08-04-ddd-hexagonal-modulith-architecture-verification-design.md) | Repository-local rules implemented; environment-dependent evidence remains | Execute reusable ArchUnit, JMolecules-compatible, naming, package metadata, persistence ownership, tenant-isolation, event-contract, and Modulith documentation rules |
+| `configuration-properties` | [configuration properties normalization](2026-08-04-configuration-properties-normalization.md) | Planned final governance slice | Prefer immutable records and validate real startup invariants without breaking profile-specific optional providers |
 
 ## Remaining execution order: priority and type
 

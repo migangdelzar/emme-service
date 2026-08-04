@@ -509,6 +509,8 @@ reopened by this backlog.
 - [x] Pin and verify GraalVM Native Build Tools dependencies.
 - [x] Add TestKit registration and no-fallback configuration coverage.
 - [x] Document native/JVM rollout, measurement, and rollback controls.
+- [x] Add a manual, opt-in GraalVM container workflow with immutable native
+  tags and Trivy scanning.
 - [ ] Execute the native executable and OCI image spike on a GraalVM/Docker
   runner before adopting native as the production artifact.
 

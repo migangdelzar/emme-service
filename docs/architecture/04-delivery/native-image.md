@@ -58,6 +58,19 @@ Build Tools plugin applied. A Docker daemon or Buildpacks-compatible builder is
 required for an OCI image; a local JDK must provide GraalVM Native Image for
 direct `nativeCompile`.
 
+CI exposes the native path as an explicit manual input, keeping the default
+low-cost JVM workflow unchanged:
+
+```text
+GitHub Actions → Service container image → native=true
+              → GraalVM setup → bootBuildImage
+              → Trivy scan → optional immutable GHCR push
+```
+
+The workflow tag is `sha-<commit>-native`. It must not be promoted to the
+K3s production overlay until the native smoke, memory, startup, and recovery
+evidence is accepted.
+
 ## Production controls
 
 - Build on the target architecture; Native Image does not cross-compile.
@@ -77,10 +90,11 @@ direct `nativeCompile`.
 
 ## Verification status
 
-The opt-in convention and TestKit task registration are verified locally. The
-native executable and OCI image remain deployment-environment evidence because
-this workspace currently has a standard JDK and no available Docker daemon or
-GraalVM Native Image toolchain.
+The opt-in convention, TestKit task registration, workflow contract, and
+no-fallback configuration are verified locally. The native executable and OCI
+image remain deployment-environment evidence because this workspace currently
+has a standard JDK and no available Docker daemon or GraalVM Native Image
+toolchain.
 
 Official references: [Spring Boot native images](https://docs.spring.io/spring-boot/how-to/native-image/developing-your-first-application.html),
 [Spring Boot OCI images](https://docs.spring.io/spring-boot/gradle-plugin/packaging-oci-image.html),

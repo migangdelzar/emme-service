@@ -1,7 +1,7 @@
 ---
 name: Service container image
 
-on:  # yamllint disable-line rule:truthy
+'on':
   push:
     branches: [main]
   pull_request:
@@ -9,6 +9,11 @@ on:  # yamllint disable-line rule:truthy
     inputs:
       publish:
         description: Publish the immutable image to GHCR
+        required: true
+        default: false
+        type: boolean
+      native:
+        description: Build and scan the optional GraalVM Native Image
         required: true
         default: false
         type: boolean
@@ -101,3 +106,66 @@ jobs:
             --format '{{index .RepoDigests 0}}')"
           echo "IMAGE_DIGEST=${digest##*@}" >> "$GITHUB_OUTPUT"
           echo "Published ${IMAGE_NAME}@${digest##*@}"
+
+  native:
+    name: Build and scan native image (manual)
+    if: github.event_name == 'workflow_dispatch' && inputs.native == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      IMAGE_NAME: ghcr.io/migangdelzar/emme-service:sha-${{ github.sha }}-native
+      BP_NATIVE_IMAGE: 'true'
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          distribution: graalvm-community
+          java-version: '25'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: gradle
+
+      - name: Set up Emme Gradle build
+        uses: ./.github/actions/setup-gradle
+        with:
+          skip-java-setup: 'true'
+
+      - name: Log in to GHCR
+        if: inputs.publish == true
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build immutable native image
+        run: >-
+          ./gradlew :applications:emme-platform:bootBuildImage
+          -Pemme.native-image=true
+          --imageName="${IMAGE_NAME}"
+          --no-daemon --no-configuration-cache --stacktrace
+
+      - name: Scan native image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}
+          format: sarif
+          output: trivy-native-image.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Upload native image scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-native-container-scan-${{ github.run_id }}
+          path: trivy-native-image.sarif
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Push immutable native image
+        if: inputs.publish == true
+        run: docker push "${IMAGE_NAME}"

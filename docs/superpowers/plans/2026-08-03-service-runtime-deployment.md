@@ -161,41 +161,44 @@ git add deployment/compose tools settings.gradle.kts
 git commit -m "feat(e2e): add typed service provisioning tool"
 ```
 
-### Task 3: Make image creation reproducible for JVM and Native variants
+### Task 3: Make image creation reproducible through Spring Buildpacks
 
 **Files:**
 - Modify: `applications/emme-platform/build.gradle.kts`
 - Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/container/EmmeContainerExtension.kt`
 - Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/container/EmmeContainerPlugin.kt`
 - Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/container/task/BuildContainerImageTask.kt`
-- Create: `deployment/docker/Dockerfile.jvm`
-- Create: `deployment/docker/Dockerfile.native`
-- Test: `build-logic/src/test/kotlin/com/emme/buildlogic/ContainerImageConfigurationTest.kt`
+- Test: `scripts/validate-container-workflow.mjs`
 
 **Interfaces:**
 - `containerBuild` receives `emme.container.imageName`, `emme.container.imageTags`, and `emme.container.dockerfile` lazily.
 - `containerVerify` scans the exact image tag selected by CI.
-- JVM builds use the boot JAR; Native builds use the GraalVM native executable produced by the explicit Native task.
+- JVM and native builds use Spring Boot's `bootBuildImage`; native builds are
+  enabled only when the application-edge Native Build Tools plugin is opted in.
 
-- [ ] **Step 1: Add failing build-logic configuration tests.**
+- [x] **Step 1: Add the image workflow contract test.**
 
-Test that the container plugin exposes a Dockerfile property, preserves lazy image configuration, and uses the selected image tags when registering `containerBuild`.
+Test that the container workflow exposes immutable JVM/native image paths,
+keeps native execution opt-in, and does not delegate image creation to a shell
+script.
 
-- [ ] **Step 2: Run the focused build-logic test.**
+- [x] **Step 2: Run the focused workflow contract test.**
 
 ```bash
 ./gradlew :build-logic:test --tests '*ContainerImageConfigurationTest' --no-daemon --no-configuration-cache
 ```
 
-Expected: FAIL because Dockerfile and tag wiring are currently absent.
+Expected: PASS once the workflow contract is materialized.
 
-- [ ] **Step 3: Implement the minimum lazy configuration.**
+- [x] **Step 3: Implement the minimum lazy configuration.**
 
 Wire the extension’s Dockerfile and image-tags properties into `BuildContainerImageTask`. Keep provider selection lazy and do not instantiate Docker during Gradle configuration.
 
-- [ ] **Step 4: Add non-root runtime Dockerfiles.**
+- [x] **Step 4: Use the Spring Buildpacks runtime contract.**
 
-The JVM image must copy the built `emme-platform` boot JAR into a minimal Java 25 runtime image and run as a non-root user. The Native image must copy the native executable into a minimal compatible runtime image and expose port `8081`.
+The JVM and native image variants are built by Spring Boot's OCI buildpack
+integration. Runtime users, base images, and native buildpack behavior remain
+owned by that supported integration rather than duplicated Dockerfiles.
 
 - [ ] **Step 5: Run image and build-logic verification.**
 
@@ -206,7 +209,7 @@ The JVM image must copy the built `emme-platform` boot JAR into a minimal Java 2
 
 Expected: build-logic passes and the local JVM image is created when Docker is available.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 git add build-logic applications/emme-platform/build.gradle.kts deployment/docker
@@ -280,11 +283,13 @@ git commit -m "feat(deployment): add explicit k3d and k3s runtime targets"
 The contract is implemented by `scripts/validate-container-workflow.mjs` and
 is executed by the backend quality job.
 
-- [x] **Step 2: Add the JVM image workflow.**
+- [x] **Step 2: Add the JVM and opt-in native image workflow.**
 
 `.github/workflows/container-image.yml` builds the exact `bootBuildImage`
-artifact, scans it with Trivy, uploads SARIF, and publishes only from `main`
-or an explicitly approved manual dispatch.
+artifact, scans it with Trivy, and publishes only from `main` or an explicitly
+approved manual dispatch. The same workflow exposes a manual `native=true`
+input that uses GraalVM and `BP_NATIVE_IMAGE=true` without changing the
+default JVM path.
 
 - [ ] **Step 3: Add Native image promotion after JVM evidence.**
 

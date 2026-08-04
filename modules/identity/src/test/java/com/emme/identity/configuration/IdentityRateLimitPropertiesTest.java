@@ -10,29 +10,26 @@ class IdentityRateLimitPropertiesTest {
 
   @Test
   void providesSecureDefaults() {
-    IdentityRateLimitProperties properties = new IdentityRateLimitProperties();
+    IdentityRateLimitProperties properties = IdentityRateLimitProperties.defaults();
 
-    assertThat(properties.getMaxAttempts()).isEqualTo(5);
-    assertThat(properties.getWindowMs()).isEqualTo(60_000L);
-    assertThat(properties.getTrustedProxies()).isEmpty();
+    assertThat(properties.maxAttempts()).isEqualTo(5);
+    assertThat(properties.windowMs()).isEqualTo(60_000L);
+    assertThat(properties.trustedProxies()).isEmpty();
   }
 
   @Test
   void copiesConfiguredTrustedProxyNetworks() {
-    IdentityRateLimitProperties properties = new IdentityRateLimitProperties();
+    IdentityRateLimitProperties properties =
+        new IdentityRateLimitProperties(5, 60_000L, List.of("10.0.0.0/8"));
 
-    properties.setTrustedProxies(List.of("10.0.0.0/8"));
-
-    assertThat(properties.getTrustedProxies()).containsExactly("10.0.0.0/8");
+    assertThat(properties.trustedProxies()).containsExactly("10.0.0.0/8");
   }
 
   @Test
   void rejectsNonPositiveLimits() {
-    IdentityRateLimitProperties properties = new IdentityRateLimitProperties();
-
-    assertThatThrownBy(() -> properties.setMaxAttempts(0))
+    assertThatThrownBy(() -> new IdentityRateLimitProperties(0, 60_000L, List.of()))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> properties.setWindowMs(0))
+    assertThatThrownBy(() -> new IdentityRateLimitProperties(5, 0L, List.of()))
         .isInstanceOf(IllegalArgumentException.class);
   }
 }

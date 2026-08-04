@@ -8,26 +8,26 @@ class TenantDatabaseConnectionPropertiesTest {
 
   @Test
   void providesSafeLocalDefaultsForTenantPoolCreation() {
-    TenantDatabaseConnectionProperties properties = new TenantDatabaseConnectionProperties();
+    TenantDatabaseConnectionProperties properties = TenantDatabaseConnectionProperties.defaults();
 
-    assertThat(properties.getUrl()).isEmpty();
-    assertThat(properties.getUsername()).isEqualTo("emme");
-    assertThat(properties.getPassword()).isEqualTo("emme");
-    assertThat(properties.getDriverClassName()).isEqualTo("org.postgresql.Driver");
+    assertThat(properties.url()).isEmpty();
+    assertThat(properties.username()).isEqualTo("emme");
+    assertThat(properties.password()).isEqualTo("emme");
+    assertThat(properties.driverClassName()).isEqualTo("org.postgresql.Driver");
   }
 
   @Test
   void exposesTheConnectionSettingsAsACompleteTypedValue() {
-    TenantDatabaseConnectionProperties properties = new TenantDatabaseConnectionProperties();
+    TenantDatabaseConnectionProperties properties =
+        new TenantDatabaseConnectionProperties(
+            "jdbc:postgresql://localhost/emme",
+            "tenant-user",
+            "tenant-password",
+            "org.postgresql.Driver");
 
-    properties.setUrl("jdbc:postgresql://localhost/emme");
-    properties.setUsername("tenant-user");
-    properties.setPassword("tenant-password");
-    properties.setDriverClassName("org.postgresql.Driver");
-
-    assertThat(properties.getUrl()).isEqualTo("jdbc:postgresql://localhost/emme");
-    assertThat(properties.getUsername()).isEqualTo("tenant-user");
-    assertThat(properties.getPassword()).isEqualTo("tenant-password");
-    assertThat(properties.getDriverClassName()).isEqualTo("org.postgresql.Driver");
+    assertThat(properties.url()).isEqualTo("jdbc:postgresql://localhost/emme");
+    assertThat(properties.username()).isEqualTo("tenant-user");
+    assertThat(properties.password()).isEqualTo("tenant-password");
+    assertThat(properties.driverClassName()).isEqualTo("org.postgresql.Driver");
   }
 }

@@ -40,7 +40,7 @@ public class DatabaseRegistryAdapter implements DatabaseRegistryPort {
         connectionDetails
             .map(JdbcConnectionDetails::getJdbcUrl)
             .filter(url -> !url.isBlank())
-            .orElseGet(connectionProperties::getUrl);
+            .orElseGet(connectionProperties::url);
     this.connectionExecutor = connectionExecutor;
   }
 

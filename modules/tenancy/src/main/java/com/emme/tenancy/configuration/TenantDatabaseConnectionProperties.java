@@ -1,47 +1,25 @@
 package com.emme.tenancy.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /** Typed connection settings used when creating tenant database pools. */
-@Component
 @ConfigurationProperties(prefix = "spring.datasource")
-public class TenantDatabaseConnectionProperties {
+public record TenantDatabaseConnectionProperties(
+    String url, String username, String password, String driverClassName) {
 
-  private String url = "";
-  private String username = "emme";
-  private String password = "emme";
-  private String driverClassName = "org.postgresql.Driver";
-
-  public String getUrl() {
-    return url;
+  public TenantDatabaseConnectionProperties(
+      @DefaultValue("") String url,
+      @DefaultValue("emme") String username,
+      @DefaultValue("emme") String password,
+      @DefaultValue("org.postgresql.Driver") String driverClassName) {
+    this.url = url == null ? "" : url;
+    this.username = username == null ? "emme" : username;
+    this.password = password == null ? "emme" : password;
+    this.driverClassName = driverClassName == null ? "org.postgresql.Driver" : driverClassName;
   }
 
-  public void setUrl(String url) {
-    this.url = url;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public String getDriverClassName() {
-    return driverClassName;
-  }
-
-  public void setDriverClassName(String driverClassName) {
-    this.driverClassName = driverClassName;
+  public static TenantDatabaseConnectionProperties defaults() {
+    return new TenantDatabaseConnectionProperties("", "emme", "emme", "org.postgresql.Driver");
   }
 }

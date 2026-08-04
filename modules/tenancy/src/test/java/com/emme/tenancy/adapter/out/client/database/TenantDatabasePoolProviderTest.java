@@ -20,8 +20,8 @@ import org.junit.jupiter.api.Test;
 class TenantDatabasePoolProviderTest {
 
   private final TenantPoolingProperties poolingProperties = new TenantPoolingProperties();
-  private final TenantDatabaseConnectionProperties connectionProperties =
-      new TenantDatabaseConnectionProperties();
+  private TenantDatabaseConnectionProperties connectionProperties =
+      TenantDatabaseConnectionProperties.defaults();
   private final DatabaseRegistryPort registry = mock(DatabaseRegistryPort.class);
 
   @AfterEach
@@ -71,7 +71,12 @@ class TenantDatabasePoolProviderTest {
                     true)));
     poolingProperties.setDefaultMinPoolSize(0);
     poolingProperties.setDefaultMaxPoolSize(1);
-    connectionProperties.setDriverClassName("org.h2.Driver");
+    connectionProperties =
+        new TenantDatabaseConnectionProperties(
+            connectionProperties.url(),
+            connectionProperties.username(),
+            connectionProperties.password(),
+            "org.h2.Driver");
 
     TenantDatabasePoolProvider provider =
         new TenantDatabasePoolProvider(poolingProperties, connectionProperties, registry);
@@ -104,7 +109,12 @@ class TenantDatabasePoolProviderTest {
     poolingProperties.setIdleTimeoutMinutes(1);
     poolingProperties.setDefaultMinPoolSize(0);
     poolingProperties.setDefaultMaxPoolSize(1);
-    connectionProperties.setDriverClassName("org.h2.Driver");
+    connectionProperties =
+        new TenantDatabaseConnectionProperties(
+            connectionProperties.url(),
+            connectionProperties.username(),
+            connectionProperties.password(),
+            "org.h2.Driver");
     ManualTicker ticker = new ManualTicker();
 
     TenantDatabasePoolProvider provider =

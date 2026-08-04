@@ -130,9 +130,9 @@ public class TenantDatabasePoolProvider {
 
     HikariConfig hikariConfig = new HikariConfig();
     hikariConfig.setJdbcUrl(db.jdbcUrl());
-    hikariConfig.setUsername(connectionProperties.getUsername());
-    hikariConfig.setPassword(connectionProperties.getPassword());
-    hikariConfig.setDriverClassName(connectionProperties.getDriverClassName());
+    hikariConfig.setUsername(connectionProperties.username());
+    hikariConfig.setPassword(connectionProperties.password());
+    hikariConfig.setDriverClassName(connectionProperties.driverClassName());
 
     int minSize = (db.minPoolSize() != null) ? db.minPoolSize() : config.getDefaultMinPoolSize();
     int maxSize = (db.maxPoolSize() != null) ? db.maxPoolSize() : config.getDefaultMaxPoolSize();

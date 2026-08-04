@@ -85,11 +85,8 @@ class DatabaseRegistryAdapterTest {
   }
 
   private static TenantDatabaseConnectionProperties connectionProperties() {
-    TenantDatabaseConnectionProperties properties = new TenantDatabaseConnectionProperties();
-    properties.setUrl("jdbc:h2:mem:bootstrap");
-    properties.setUsername("emme");
-    properties.setPassword("secret");
-    return properties;
+    return new TenantDatabaseConnectionProperties(
+        "jdbc:h2:mem:bootstrap", "emme", "secret", "org.h2.Driver");
   }
 
   private static JdbcConnectionDetails connectionDetails() {

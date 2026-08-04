@@ -54,10 +54,7 @@ class LoginRateLimitFilterTest {
 
   private static IdentityRateLimitProperties properties(
       int maxAttempts, List<String> trustedProxies) {
-    IdentityRateLimitProperties properties = new IdentityRateLimitProperties();
-    properties.setMaxAttempts(maxAttempts);
-    properties.setTrustedProxies(trustedProxies);
-    return properties;
+    return new IdentityRateLimitProperties(maxAttempts, 60_000L, trustedProxies);
   }
 
   private static MockHttpServletRequest loginRequest(String remoteAddress, String forwardedFor) {

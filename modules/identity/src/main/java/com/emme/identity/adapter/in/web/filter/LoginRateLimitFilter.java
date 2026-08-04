@@ -34,7 +34,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     this.properties = properties;
     this.rateLimiter = rateLimiter;
     this.trustedProxyMatchers =
-        properties.getTrustedProxies().stream().map(IpAddressMatcher::new).toList();
+        properties.trustedProxies().stream().map(IpAddressMatcher::new).toList();
   }
 
   @Override
@@ -51,8 +51,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
       throws IOException, ServletException {
     String ip = getClientIp(request);
     boolean allowed =
-        rateLimiter.tryAcquire(
-            KEY_PREFIX + ip, properties.getMaxAttempts(), properties.getWindowMs());
+        rateLimiter.tryAcquire(KEY_PREFIX + ip, properties.maxAttempts(), properties.windowMs());
 
     if (!allowed) {
       response.setStatus(429);

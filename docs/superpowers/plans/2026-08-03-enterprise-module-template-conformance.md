@@ -111,7 +111,7 @@ The tree is a decision catalogue, not a requirement to create every directory. A
 ### A2. Produce an evidence-backed inventory
 
 - [ ] Inventory every production Java type in all modules and classify it as API, application, domain, inbound adapter, outbound adapter, configuration, test support, or obsolete.
-- [ ] Inventory every `application/service` class and verify its implemented use-case count, name, transaction mode, and dependency count.
+- [x] Inventory every `application/service` class and verify its implemented use-case count, name, transaction mode, and dependency count; evidence is recorded in `docs/superpowers/reviews/2026-08-04-application-service-audit.md`.
 - [ ] Inventory every `api` package and compare command/query/result/use-case/event/exception/type names as a vertical slice.
 - [ ] Inventory every `package-info.java`, `ApplicationModule`, and `NamedInterface` declaration and detect duplicates, empty interfaces, mismatched names, and missing package metadata.
 - [x] Inventory all imports crossing module boundaries and produce a list of forbidden implementation imports; the executable scan found and removed Calendar's Identity adapter dependency.
@@ -173,7 +173,7 @@ Apply the following mapping to every module that has public contracts:
 - [ ] Keep service classes responsible for loading aggregates, invoking domain behavior, calling outbound ports, mapping results, publishing public events, and defining transaction boundaries.
 - [ ] Move reusable business decisions out of services into aggregate methods, domain policies, specifications, or calculators.
 - [ ] Move workflow input checks into `application/validation`; keep authorization decisions in `application/authorization`; do not mix either with transport parsing.
-- [ ] Use `@Transactional(readOnly = true)` for query services and a single explicit transaction boundary for normal commands.
+- [x] Use `@Transactional(readOnly = true)` for query services and a single explicit transaction boundary for normal commands; external-only provider/orchestration services are explicitly documented exemptions.
 - [ ] Use process managers only for long-running, resumable workflows such as tenant provisioning or payment reconciliation.
 - [ ] Keep application ports in `application/port/out`; name them `<Capability>Port`, `<Aggregate>Repository`, `<Fact>Publisher`, or `<Capability>Entry` according to their role.
 

@@ -1955,4 +1955,17 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - [x] Move Calendar's generic authenticated-subject lookup from Identity's web
   adapter into Shared web security infrastructure.
 - [x] Verify the focused Shared and platform architecture tests pass.
-- [ ] Continue with per-service transaction-mode and dependency-count review.
+- [x] Continue with per-service transaction-mode and dependency-count review;
+  the completed audit is recorded below.
+
+## Application-service transaction and dependency audit — 2026-08-04
+
+- [x] Inventory all 123 application services and their transaction policies.
+- [x] Add a red/green guardrail for one explicit transaction policy per
+  application service, with documented external-only exemptions.
+- [x] Add read-only transaction boundaries to `GetCurrentUserService` and
+  `GetGoogleOAuthStatusService`.
+- [x] Review constructor dependency hotspots without introducing artificial
+  helper/manager classes or violating one-service-per-use-case.
+- [x] Record evidence in
+  `docs/superpowers/reviews/2026-08-04-application-service-audit.md`.

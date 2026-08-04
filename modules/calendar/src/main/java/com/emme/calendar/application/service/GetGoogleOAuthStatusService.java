@@ -5,9 +5,11 @@ import com.emme.calendar.api.result.GoogleOAuthConnectionStatus;
 import com.emme.calendar.api.usecase.GetGoogleOAuthStatusUseCase;
 import com.emme.calendar.application.port.out.GoogleOAuthPort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Coordinates reads of Google OAuth connection state. */
 @Service
+@Transactional(readOnly = true)
 public class GetGoogleOAuthStatusService implements GetGoogleOAuthStatusUseCase {
 
   private final GoogleOAuthPort googleOAuthPort;

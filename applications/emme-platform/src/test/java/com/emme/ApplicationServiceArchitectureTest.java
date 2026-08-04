@@ -15,6 +15,16 @@ import org.junit.jupiter.api.Test;
 /** Repository-wide checks for application-service cohesion and current project ownership. */
 class ApplicationServiceArchitectureTest {
 
+  private static final Set<String> NON_TRANSACTIONAL_SERVICES =
+      Set.of(
+          "AuthenticateUserService",
+          "CaptionImageService",
+          "ChatService",
+          "DetectIntentService",
+          "EmbedTextService",
+          "RagQueryService",
+          "StartGoogleOAuthService");
+
   private static final Pattern SERVICE_DECLARATION =
       Pattern.compile(
           "\\bclass\\s+(\\w+Service)\\b[^\\{]*?implements\\s+([^\\{]+)", Pattern.DOTALL);
@@ -29,6 +39,18 @@ class ApplicationServiceArchitectureTest {
           .filter(path -> path.toString().contains("/application/service/"))
           .filter(path -> path.getFileName().toString().endsWith("Service.java"))
           .forEach(this::assertServiceDeclaration);
+    }
+  }
+
+  @Test
+  void everyApplicationServiceDeclaresItsTransactionPolicy() throws IOException {
+    Path modules = sourcePath("modules");
+    try (Stream<Path> files = Files.walk(modules)) {
+      files
+          .filter(path -> path.toString().contains("src/main/java"))
+          .filter(path -> path.toString().contains("/application/service/"))
+          .filter(path -> path.getFileName().toString().endsWith("Service.java"))
+          .forEach(this::assertTransactionPolicy);
     }
   }
 
@@ -56,6 +78,20 @@ class ApplicationServiceArchitectureTest {
         .as("one use case implemented by %s", sourcePath)
         .containsExactly(
             serviceName.substring(0, serviceName.length() - "Service".length()) + "UseCase");
+  }
+
+  private void assertTransactionPolicy(Path sourcePath) {
+    String source = read(sourcePath);
+    String serviceName = sourcePath.getFileName().toString().replace(".java", "");
+    if (NON_TRANSACTIONAL_SERVICES.contains(serviceName)) {
+      assertThat(source)
+          .as("documented non-transactional application service %s", sourcePath)
+          .doesNotContain("@Transactional");
+      return;
+    }
+    assertThat(source)
+        .as("transaction policy for application service %s", sourcePath)
+        .contains("@Transactional");
   }
 
   private static String read(Path path) {

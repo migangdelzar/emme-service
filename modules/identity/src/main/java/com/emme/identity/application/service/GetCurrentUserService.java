@@ -16,9 +16,11 @@ import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for the current-user read workflow. */
 @Service
+@Transactional(readOnly = true)
 public final class GetCurrentUserService implements GetCurrentUserUseCase {
 
   private final GetCurrentUserMembershipsUseCase memberships;

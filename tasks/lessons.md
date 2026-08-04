@@ -722,3 +722,15 @@
 - **Prevention rule:** Convention plugins must configure optional capability
   tasks with `withType<T>().configureEach` or `matching { ... }.configureEach`;
   use `named(...)` only when the plugin contract guarantees that task exists.
+
+## 2026-08-04 — Verify container scans against resolved runtime dependencies
+
+- **Failure mode:** The JVM container built successfully, but the blocking
+  Trivy scan found a HIGH PostgreSQL driver CVE that was not visible in the
+  source version declaration because dependency management resolved a newer
+  runtime version.
+- **Detection signal:** The container workflow failed at `Scan image with
+  Trivy` while backend and frontend CI remained green.
+- **Prevention rule:** Treat the container scan as an independent release gate;
+  inspect the resolved runtime dependency graph, update the fixed dependency,
+  and refresh Gradle verification metadata before declaring image CI green.

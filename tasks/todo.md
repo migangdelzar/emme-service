@@ -77,6 +77,8 @@ Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/su
 - [x] Enforced public API independence from domain, application, and adapter
       implementation packages; converted leaking result/command types to
       API-owned views and moved appointment mapping into the application layer.
+- [x] Added the reusable persistence-entity ownership rule and verified nested
+      Studio capability entities remain under outbound persistence packages.
 - [x] Added dependency-verification checksums for the resolved ArchUnit 1.4.0
       artifacts.
 - [ ] Continue with naming, public named-interface, persistence/schema, tenant,

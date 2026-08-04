@@ -1,8 +1,10 @@
 package com.emme.testing.architecture;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 import com.tngtech.archunit.lang.ArchRule;
+import jakarta.persistence.Entity;
 
 /** Reusable DDD and Hexagonal dependency rules for Emme production modules. */
 public final class DddHexagonalRules {
@@ -69,6 +71,17 @@ public final class DddHexagonalRules {
         .resideInAnyPackage(
             "com.emme.*.domain..", "com.emme.*.application..", "com.emme.*.adapter..")
         .because("module APIs must expose stable contracts rather than implementation types")
+        .allowEmptyShould(true);
+  }
+
+  /** JPA entities stay inside the owning module's outbound persistence adapter. */
+  public static ArchRule persistenceEntitiesMustBeOutbound() {
+    return classes()
+        .that()
+        .areAnnotatedWith(Entity.class)
+        .should()
+        .resideInAnyPackage("com.emme..adapter.out.persistence.entity..", "com.emme.shared..")
+        .because("persistence representations must not become domain or API types")
         .allowEmptyShould(true);
   }
 }

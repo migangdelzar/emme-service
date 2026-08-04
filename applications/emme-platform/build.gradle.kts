@@ -18,6 +18,28 @@ if (providers.gradleProperty("emme.native-image").map(String::toBoolean).orElse(
 group = "com.emme"
 version = "0.1.0"
 
+// The shell-free container probe is operational tooling, not application
+// behavior; keep it out of the business coverage gate while testing it directly.
+tasks.withType<org.gradle.testing.jacoco.tasks.JacocoReport>().configureEach {
+  classDirectories.setFrom(
+    classDirectories.files.map {
+      fileTree(it) {
+        exclude("com/emme/ContainerHealthCheck.class")
+      }
+    },
+  )
+}
+
+tasks.withType<org.gradle.testing.jacoco.tasks.JacocoCoverageVerification>().configureEach {
+  classDirectories.setFrom(
+    classDirectories.files.map {
+      fileTree(it) {
+        exclude("com/emme/ContainerHealthCheck.class")
+      }
+    },
+  )
+}
+
 // ── E2E Test SourceSet ──
 val e2eTest by sourceSets.creating {
   compileClasspath += sourceSets.main.get().output

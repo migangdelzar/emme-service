@@ -2,20 +2,20 @@
 
 | UC ID | Name | Primary Actor | Status |
 |---|---|---|---|
-| UC-001 | [Access Tenant Workspace](../use_cases/UC-001-access-tenant-workspace.md) | Platform User | Implemented |
-| UC-003 | [Review Business Performance](../use_cases/UC-003-review-business-performance.md) | Salon Owner | Implemented |
-| UC-004 | [Manage Service Catalog](../use_cases/UC-004-manage-service-catalog.md) | Salon Manager | Implemented |
-| UC-005 | [Manage Customers](../use_cases/UC-005-manage-customers.md) | Staff Member | Implemented |
-| UC-006 | [Manage Appointments](../use_cases/UC-006-manage-appointments.md) | Staff Member | Implemented |
-| UC-007 | [Configure Business](../use_cases/UC-007-configure-business.md) | Salon Owner | Implemented |
-| UC-012 | [Review Conversation History](../use_cases/UC-012-review-conversation-history.md) | Staff Member | Implemented |
-| UC-013 | [Manage Knowledge Sources](../use_cases/UC-013-manage-knowledge-sources.md) | Tenant Manager | Implemented |
-| UC-014 | [Deliver Notifications](../use_cases/UC-014-deliver-notifications.md) | Staff Member | Implemented |
-| UC-015 | [Manage Subscription](../use_cases/UC-015-manage-subscription.md) | Salon Owner | Implemented |
-| UC-021 | [Complete Studio Onboarding](../use_cases/UC-021-complete-studio-onboarding.md) | Tenant Owner | Implemented |
-| UC-022 | [Integrate Google Workspace](../use_cases/UC-022-integrate-google-workspace.md) | Salon Owner | Implemented |
-| UC-023 | [Manage Nail Design Catalog](../use_cases/UC-023-manage-nail-design-catalog.md) | Salon Manager | Implemented |
-| UC-024 | [Manage Studio Data and Account](../use_cases/UC-024-manage-studio-data-and-account.md) | Tenant Owner | Implemented |
+| UC-001 | [Access Tenant Workspace](../../use_cases/UC-001-access-tenant-workspace.md) | Platform User | Implemented |
+| UC-003 | [Review Business Performance](../../use_cases/UC-003-review-business-performance.md) | Salon Owner | Implemented |
+| UC-004 | [Manage Service Catalog](../../use_cases/UC-004-manage-service-catalog.md) | Salon Manager | Implemented |
+| UC-005 | [Manage Customers](../../use_cases/UC-005-manage-customers.md) | Staff Member | Implemented |
+| UC-006 | [Manage Appointments](../../use_cases/UC-006-manage-appointments.md) | Staff Member | Implemented |
+| UC-007 | [Configure Business](../../use_cases/UC-007-configure-business.md) | Salon Owner | Implemented |
+| UC-012 | [Review Conversation History](../../use_cases/UC-012-review-conversation-history.md) | Staff Member | Implemented |
+| UC-013 | [Manage Knowledge Sources](../../use_cases/UC-013-manage-knowledge-sources.md) | Tenant Manager | Implemented |
+| UC-014 | [Deliver Notifications](../../use_cases/UC-014-deliver-notifications.md) | Staff Member | Implemented |
+| UC-015 | [Manage Subscription](../../use_cases/UC-015-manage-subscription.md) | Salon Owner | Implemented |
+| UC-021 | [Complete Studio Onboarding](../../use_cases/UC-021-complete-studio-onboarding.md) | Tenant Owner | Implemented |
+| UC-022 | [Integrate Google Workspace](../../use_cases/UC-022-integrate-google-workspace.md) | Salon Owner | Implemented |
+| UC-023 | [Manage Nail Design Catalog](../../use_cases/UC-023-manage-nail-design-catalog.md) | Salon Manager | Implemented |
+| UC-024 | [Manage Studio Data and Account](../../use_cases/UC-024-manage-studio-data-and-account.md) | Tenant Owner | Implemented |
 
 ## Coverage Map
 

@@ -50,6 +50,13 @@ assert.equal(
 );
 assert.equal(services['emme-platform'].environment.SPRING_DATA_REDIS_HOST, 'redis');
 assert.equal(services['emme-platform'].environment.APP_IDENTITY_LOGIN_RATE_LIMIT_MAX_ATTEMPTS, '20');
+assert.deepEqual(services['emme-platform'].healthcheck.test, [
+  'CMD',
+  '/layers/paketo-buildpacks_bellsoft-liberica/jre/bin/java',
+  '-cp',
+  '/workspace/BOOT-INF/classes:/workspace/BOOT-INF/lib/*',
+  'com.emme.ContainerHealthCheck',
+]);
 assert.equal(services['emme-platform'].environment.SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA, undefined);
 assert.equal(
   services['emme-platform'].environment.GOOGLE_TOKEN_ENCRYPTION_KEY,

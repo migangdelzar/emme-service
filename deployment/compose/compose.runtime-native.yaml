@@ -3,3 +3,5 @@
 services:
   emme-platform:
     image: ${EMME_SERVICE_IMAGE:-ghcr.io/migangdelzar/emme-service:${TAG:-latest}-native}
+    healthcheck:
+      disable: true

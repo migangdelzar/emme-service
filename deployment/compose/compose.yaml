@@ -10,12 +10,9 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: ${PROFILE:-local}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+    # Runtime overlays own healthchecks because JVM and native images have
+    # different executable surfaces. The JVM overlay uses the shell-free Java
+    # probe; the native overlay relies on the orchestrator HTTP probe.
     deploy:
       resources:
         limits:

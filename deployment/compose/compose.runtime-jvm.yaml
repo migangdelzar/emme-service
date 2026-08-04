@@ -3,3 +3,16 @@
 services:
   emme-platform:
     image: ${EMME_SERVICE_IMAGE:-ghcr.io/migangdelzar/emme-service:${TAG:-latest}}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/layers/paketo-buildpacks_bellsoft-liberica/jre/bin/java",
+          "-cp",
+          "/workspace/BOOT-INF/classes:/workspace/BOOT-INF/lib/*",
+          "com.emme.ContainerHealthCheck",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

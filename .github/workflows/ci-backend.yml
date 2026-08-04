@@ -22,6 +22,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         default: ''
         type: string
+      run_security:
+        description: Run secret and dependency vulnerability checks
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -229,6 +234,13 @@ jobs:
           terraform init -backend=false -input=false
           terraform validate
 
+  security:
+    name: Security and dependency gates
+    if: >-
+      github.event_name != 'workflow_dispatch' || inputs.run_security == true
+    uses: ./.github/workflows/security-scan.yml
+    secrets: inherit
+
   boot-jar:
     needs: [quality, test, integration, build-logic, infrastructure, boundaries]
     if: >-
@@ -271,6 +283,7 @@ jobs:
       - boundaries
       - e2e
       - boot-jar
+      - security
     runs-on: ubuntu-24.04
     steps:
       - name: Publish result summary
@@ -283,6 +296,7 @@ jobs:
           BOUNDARIES_RESULT: ${{ needs.boundaries.result }}
           E2E_RESULT: ${{ needs.e2e.result }}
           BOOT_JAR_RESULT: ${{ needs['boot-jar'].result }}
+          SECURITY_RESULT: ${{ needs.security.result }}
           INTEGRATION_REQUIRED: >-
             ${{ github.event_name != 'workflow_dispatch' ||
             inputs.run_integration == true }}
@@ -302,6 +316,7 @@ jobs:
           echo "- JaCoCo coverage: included in tests (${TEST_RESULT})" \
             >> "$GITHUB_STEP_SUMMARY"
           echo "- Boot JAR: ${BOOT_JAR_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Security: ${SECURITY_RESULT}" >> "$GITHUB_STEP_SUMMARY"
           integration_ok=false
           if [[ "${INTEGRATION_RESULT}" == "success" ||
                 ("${INTEGRATION_REQUIRED}" == "false" &&
@@ -321,6 +336,8 @@ jobs:
                 "${BOUNDARIES_RESULT}" != "success" ||
                 "${e2e_ok}" != "true" ||
                 "${INFRASTRUCTURE_RESULT}" != "success" ||
-                "${BOOT_JAR_RESULT}" != "success" ]]; then
+                "${BOOT_JAR_RESULT}" != "success" ||
+                ("${SECURITY_RESULT}" != "success" &&
+                "${SECURITY_RESULT}" != "skipped") ]]; then
             exit 1
           fi

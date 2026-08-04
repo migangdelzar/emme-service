@@ -4,10 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.calendar.api.event.CalendarSyncRequested;
 import com.emme.notification.api.event.NotificationDelivered;
-import com.emme.studio.api.event.AppointmentCancelledEvent;
-import com.emme.studio.api.event.AppointmentCreatedEvent;
-import com.emme.studio.api.event.AppointmentRescheduledEvent;
-import com.emme.studio.api.event.DashboardEvent;
+import com.emme.studio.api.event.AppointmentCancelled;
+import com.emme.studio.api.event.AppointmentCreated;
+import com.emme.studio.api.event.AppointmentRescheduled;
 import com.emme.tenancy.api.event.TenantCreated;
 import java.io.IOException;
 import java.lang.reflect.RecordComponent;
@@ -26,11 +25,11 @@ class KafkaEventContractTest {
   void externalizedEventsDeclareStableTopicAndTenantPartitionKey() {
     assertThat(externalizedTarget(TenantCreated.class))
         .isEqualTo("emme.tenancy.tenant-created::#{#this.tenantId()}");
-    assertThat(externalizedTarget(AppointmentCreatedEvent.class))
+    assertThat(externalizedTarget(AppointmentCreated.class))
         .isEqualTo("emme.studio.appointment-created::#{#this.tenantId()}");
-    assertThat(externalizedTarget(AppointmentCancelledEvent.class))
+    assertThat(externalizedTarget(AppointmentCancelled.class))
         .isEqualTo("emme.studio.appointment-cancelled::#{#this.tenantId()}");
-    assertThat(externalizedTarget(AppointmentRescheduledEvent.class))
+    assertThat(externalizedTarget(AppointmentRescheduled.class))
         .isEqualTo("emme.studio.appointment-rescheduled::#{#this.tenantId()}");
   }
 
@@ -39,9 +38,9 @@ class KafkaEventContractTest {
     assertThat(
             Stream.of(
                 TenantCreated.class,
-                AppointmentCreatedEvent.class,
-                AppointmentCancelledEvent.class,
-                AppointmentRescheduledEvent.class))
+                AppointmentCreated.class,
+                AppointmentCancelled.class,
+                AppointmentRescheduled.class))
         .allMatch(Class::isRecord);
   }
 
@@ -51,7 +50,7 @@ class KafkaEventContractTest {
         .anyMatch(
             component ->
                 component.getName().equals("eventId") && component.getType().equals(UUID.class));
-    assertThat(AppointmentCreatedEvent.class.getRecordComponents())
+    assertThat(AppointmentCreated.class.getRecordComponents())
         .anyMatch(
             component ->
                 component.getName().equals("eventId") && component.getType().equals(UUID.class));
@@ -63,21 +62,19 @@ class KafkaEventContractTest {
         List.of(
             CalendarSyncRequested.class,
             NotificationDelivered.class,
-            AppointmentCreatedEvent.class,
-            AppointmentCancelledEvent.class,
-            AppointmentRescheduledEvent.class,
-            DashboardEvent.class,
+            AppointmentCreated.class,
+            AppointmentCancelled.class,
+            AppointmentRescheduled.class,
             TenantCreated.class);
 
     assertThat(allApiEvents.stream().filter(type -> type.isAnnotationPresent(Externalized.class)))
         .containsExactlyInAnyOrder(
-            AppointmentCreatedEvent.class,
-            AppointmentCancelledEvent.class,
-            AppointmentRescheduledEvent.class,
+            AppointmentCreated.class,
+            AppointmentCancelled.class,
+            AppointmentRescheduled.class,
             TenantCreated.class);
 
-    assertThat(
-            List.of(CalendarSyncRequested.class, NotificationDelivered.class, DashboardEvent.class))
+    assertThat(List.of(CalendarSyncRequested.class, NotificationDelivered.class))
         .allMatch(type -> !type.isAnnotationPresent(Externalized.class));
   }
 
@@ -86,9 +83,9 @@ class KafkaEventContractTest {
     assertThat(
             List.of(
                     TenantCreated.class,
-                    AppointmentCreatedEvent.class,
-                    AppointmentCancelledEvent.class,
-                    AppointmentRescheduledEvent.class)
+                    AppointmentCreated.class,
+                    AppointmentCancelled.class,
+                    AppointmentRescheduled.class)
                 .stream()
                 .flatMap(type -> Stream.of(type.getRecordComponents()))
                 .map(RecordComponent::getType))
@@ -98,7 +95,7 @@ class KafkaEventContractTest {
                     || type.getName().startsWith("jakarta.persistence.")
                     || type.getName().startsWith("org.apache.kafka."));
 
-    assertThat(AppointmentCreatedEvent.class.getRecordComponents())
+    assertThat(AppointmentCreated.class.getRecordComponents())
         .anyMatch(component -> component.getType().equals(Instant.class));
   }
 

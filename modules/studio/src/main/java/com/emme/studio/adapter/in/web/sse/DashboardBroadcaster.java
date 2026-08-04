@@ -1,9 +1,8 @@
 package com.emme.studio.adapter.in.web.sse;
 
 import com.emme.notification.api.event.NotificationDelivered;
-import com.emme.studio.api.event.AppointmentCancelledEvent;
-import com.emme.studio.api.event.AppointmentCreatedEvent;
-import com.emme.studio.api.event.DashboardEvent;
+import com.emme.studio.api.event.AppointmentCancelled;
+import com.emme.studio.api.event.AppointmentCreated;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
@@ -23,7 +22,7 @@ public class DashboardBroadcaster {
   private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
   @ApplicationModuleListener
-  public void onAppointmentCreated(AppointmentCreatedEvent event) {
+  public void onAppointmentCreated(AppointmentCreated event) {
     String payload =
         """
                 {"eventId":"%s","tenantId":"%s","appointmentId":"%s","customerId":"%s","artistId":"%s","serviceId":"%s","startsAt":"%s","endsAt":"%s","timestamp":"%s"}"""
@@ -37,16 +36,16 @@ public class DashboardBroadcaster {
                 event.startsAt(),
                 event.endsAt(),
                 event.timestamp());
-    broadcast(DashboardEvent.appointmentCreated(payload));
+    broadcast(DashboardSseEvent.appointmentCreated(payload));
   }
 
   @ApplicationModuleListener
-  public void onAppointmentCancelled(AppointmentCancelledEvent event) {
+  public void onAppointmentCancelled(AppointmentCancelled event) {
     String payload =
         """
                 {"eventId":"%s","tenantId":"%s","appointmentId":"%s","timestamp":"%s"}"""
             .formatted(event.eventId(), event.tenantId(), event.appointmentId(), event.timestamp());
-    broadcast(DashboardEvent.appointmentCancelled(payload));
+    broadcast(DashboardSseEvent.appointmentCancelled(payload));
   }
 
   @EventListener
@@ -67,7 +66,7 @@ public class DashboardBroadcaster {
     log.info("Dashboard subscriber added. Total: {}", emitters.size());
   }
 
-  public void broadcast(DashboardEvent event) {
+  public void broadcast(DashboardSseEvent event) {
     log.debug(
         "Broadcasting dashboard event: type={}, subscribers={}", event.type(), emitters.size());
     for (SseEmitter emitter : emitters) {
@@ -81,7 +80,7 @@ public class DashboardBroadcaster {
 
   public void broadcastNotification(String message) {
     String payload = "{\"message\":\"%s\"}".formatted(escapeJson(message));
-    broadcast(DashboardEvent.notification(payload));
+    broadcast(DashboardSseEvent.notification(payload));
   }
 
   private void removeEmitter(SseEmitter emitter, String reason) {

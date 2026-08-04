@@ -1,6 +1,6 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.api.event.AppointmentCreatedEvent;
+import com.emme.studio.api.event.AppointmentCreated;
 import com.emme.studio.api.result.AppointmentDetails;
 import com.emme.studio.api.usecase.CreateAppointmentUseCase;
 import com.emme.studio.application.port.out.AppointmentCollisionPort;
@@ -52,7 +52,7 @@ public class CreateAppointmentService implements CreateAppointmentUseCase {
         repository.save(
             new Appointment(tenantId, customerId, serviceId, artistId, startsAt, endsAt));
     eventPublisher.publish(
-        new AppointmentCreatedEvent(
+        new AppointmentCreated(
             UUID.randomUUID(),
             tenantId,
             saved.getId(),

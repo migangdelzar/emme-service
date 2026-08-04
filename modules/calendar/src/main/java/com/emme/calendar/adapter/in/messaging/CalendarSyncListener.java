@@ -1,9 +1,9 @@
 package com.emme.calendar.adapter.in.messaging;
 
 import com.emme.calendar.api.event.CalendarSyncRequested;
-import com.emme.studio.api.event.AppointmentCancelledEvent;
-import com.emme.studio.api.event.AppointmentCreatedEvent;
-import com.emme.studio.api.event.AppointmentRescheduledEvent;
+import com.emme.studio.api.event.AppointmentCancelled;
+import com.emme.studio.api.event.AppointmentCreated;
+import com.emme.studio.api.event.AppointmentRescheduled;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ public class CalendarSyncListener {
   }
 
   @ApplicationModuleListener
-  public void onAppointmentCreated(AppointmentCreatedEvent event) {
+  public void onAppointmentCreated(AppointmentCreated event) {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
             event.tenantId(),
@@ -32,14 +32,14 @@ public class CalendarSyncListener {
   }
 
   @ApplicationModuleListener
-  public void onAppointmentCancelled(AppointmentCancelledEvent event) {
+  public void onAppointmentCancelled(AppointmentCancelled event) {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
             event.tenantId(), event.appointmentId(), "DELETE", null, null, null, null, null));
   }
 
   @ApplicationModuleListener
-  public void onAppointmentRescheduled(AppointmentRescheduledEvent event) {
+  public void onAppointmentRescheduled(AppointmentRescheduled event) {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
             event.tenantId(),

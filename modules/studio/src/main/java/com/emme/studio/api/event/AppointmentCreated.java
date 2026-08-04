@@ -4,13 +4,14 @@ import java.time.Instant;
 import java.util.UUID;
 import org.springframework.modulith.events.Externalized;
 
-@Externalized("emme.studio.appointment-rescheduled::#{#this.tenantId()}")
-public record AppointmentRescheduledEvent(
+@Externalized("emme.studio.appointment-created::#{#this.tenantId()}")
+public record AppointmentCreated(
     UUID eventId,
     UUID tenantId,
     UUID appointmentId,
-    Instant oldStartsAt,
-    Instant oldEndsAt,
-    Instant newStartsAt,
-    Instant newEndsAt,
+    UUID customerId,
+    UUID artistId,
+    UUID serviceId,
+    Instant startsAt,
+    Instant endsAt,
     Instant timestamp) {}

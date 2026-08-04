@@ -39,7 +39,7 @@ class StudioPackageConventionTest {
     assertThat(hasClass("com.emme.studio.api.usecase.GetBusinessProfileUseCase")).isTrue();
     assertThat(hasClass("com.emme.studio.api.usecase.ListAppointmentsUseCase")).isTrue();
     assertThat(hasClass("com.emme.studio.api.usecase.ListCustomersUseCase")).isTrue();
-    assertThat(hasClass("com.emme.studio.api.event.DashboardEvent")).isTrue();
+    assertThat(hasClass("com.emme.studio.adapter.in.web.sse.DashboardSseEvent")).isTrue();
   }
 
   @Test

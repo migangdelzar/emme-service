@@ -87,6 +87,7 @@ named `*Service`.
 | Direct `SpringData*Repository` imports from application/inbound code | None found | `rg` source scan; DDD/Hexagonal architecture test passes |
 | Production `DataSource#getConnection()` calls | None found | `rg` source scan; ten remaining calls are integration-test setup only |
 | Public API declarations ending in `Info`, `View`, `State`, or `Kind` | None found for the normalized contract set | Naming architecture test and stale-name scan pass |
+| Public API event declarations ending in `Event` | None found | Event contract architecture test; Studio appointment facts omit the redundant suffix and dashboard SSE data is no longer an API event |
 | Removed `studio-api` project references | None in active build | `ApplicationServiceArchitectureTest` and platform target validator |
 | Domain imports of Spring/JPA/Kafka/adapter infrastructure | No violations | `DddHexagonalArchitectureTest` passes |
 | Application imports of technical adapters | No violations | `DddHexagonalArchitectureTest` passes |
@@ -127,10 +128,7 @@ The dependency-boundary slice additionally passed:
 The following are intentionally still open in the conformance plan because this
 document does not claim evidence that was not collected:
 
-1. Per-service transaction mode and dependency-count review.
-2. Empty-directory and obsolete-file deletion review across generated/build
+1. Empty-directory and obsolete-file deletion review across generated/build
    output and test fixtures.
-3. Provider, replay, rollback, and recovery evidence for the high-risk modules.
-4. Final Kafka/Spring Modulith delivery and production deployment verification.
-4. Provider, replay, rollback, and recovery evidence for the high-risk modules.
-5. Final Kafka/Spring Modulith delivery and production deployment verification.
+2. Provider, replay, rollback, and recovery evidence for the high-risk modules.
+3. Final Kafka/Spring Modulith delivery and production deployment verification.

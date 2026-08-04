@@ -1,15 +1,15 @@
 package com.emme.studio.application.port.out;
 
-import com.emme.studio.api.event.AppointmentCancelledEvent;
-import com.emme.studio.api.event.AppointmentCreatedEvent;
-import com.emme.studio.api.event.AppointmentRescheduledEvent;
+import com.emme.studio.api.event.AppointmentCancelled;
+import com.emme.studio.api.event.AppointmentCreated;
+import com.emme.studio.api.event.AppointmentRescheduled;
 
 /** Publishes appointment facts without coupling application services to Spring events. */
 public interface AppointmentEventPublisher {
 
-  void publish(AppointmentCreatedEvent event);
+  void publish(AppointmentCreated event);
 
-  void publish(AppointmentRescheduledEvent event);
+  void publish(AppointmentRescheduled event);
 
-  void publish(AppointmentCancelledEvent event);
+  void publish(AppointmentCancelled event);
 }

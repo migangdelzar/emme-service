@@ -1,6 +1,6 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.api.event.AppointmentCancelledEvent;
+import com.emme.studio.api.event.AppointmentCancelled;
 import com.emme.studio.api.result.AppointmentDetails;
 import com.emme.studio.api.usecase.CancelAppointmentUseCase;
 import com.emme.studio.application.port.out.AppointmentCollisionPort;
@@ -44,7 +44,7 @@ public class CancelAppointmentService implements CancelAppointmentUseCase {
     saved.cancel();
     saved = repository.save(saved);
     eventPublisher.publish(
-        new AppointmentCancelledEvent(
+        new AppointmentCancelled(
             UUID.randomUUID(), saved.getTenantId(), saved.getId(), Instant.now()));
     return support.toDetails(saved);
   }

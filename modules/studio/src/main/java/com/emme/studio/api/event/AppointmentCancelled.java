@@ -5,5 +5,5 @@ import java.util.UUID;
 import org.springframework.modulith.events.Externalized;
 
 @Externalized("emme.studio.appointment-cancelled::#{#this.tenantId()}")
-public record AppointmentCancelledEvent(
+public record AppointmentCancelled(
     UUID eventId, UUID tenantId, UUID appointmentId, Instant timestamp) {}

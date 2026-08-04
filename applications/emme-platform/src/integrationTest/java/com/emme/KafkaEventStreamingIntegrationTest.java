@@ -2,9 +2,9 @@ package com.emme;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.studio.api.event.AppointmentCancelledEvent;
-import com.emme.studio.api.event.AppointmentCreatedEvent;
-import com.emme.studio.api.event.AppointmentRescheduledEvent;
+import com.emme.studio.api.event.AppointmentCancelled;
+import com.emme.studio.api.event.AppointmentCreated;
+import com.emme.studio.api.event.AppointmentRescheduled;
 import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.testing.integration.annotation.KafkaIntegrationTest;
 import java.time.Duration;
@@ -82,7 +82,7 @@ class KafkaEventStreamingIntegrationTest {
         .execute(
             ignored -> {
               events.publishEvent(
-                  new AppointmentCancelledEvent(
+                  new AppointmentCancelled(
                       UUID.randomUUID(),
                       UUID.fromString(tenantId),
                       UUID.fromString(appointmentId),
@@ -127,7 +127,7 @@ class KafkaEventStreamingIntegrationTest {
                 tenantId.toString(),
                 "streaming-salon"),
             new EventExpectation(
-                new AppointmentCreatedEvent(
+                new AppointmentCreated(
                     UUID.randomUUID(),
                     tenantId,
                     appointmentId,
@@ -141,7 +141,7 @@ class KafkaEventStreamingIntegrationTest {
                 tenantId.toString(),
                 appointmentId.toString()),
             new EventExpectation(
-                new AppointmentRescheduledEvent(
+                new AppointmentRescheduled(
                     UUID.randomUUID(),
                     tenantId,
                     appointmentId,
@@ -154,8 +154,7 @@ class KafkaEventStreamingIntegrationTest {
                 tenantId.toString(),
                 appointmentId.toString()),
             new EventExpectation(
-                new AppointmentCancelledEvent(
-                    UUID.randomUUID(), tenantId, appointmentId, eventTime),
+                new AppointmentCancelled(UUID.randomUUID(), tenantId, appointmentId, eventTime),
                 "emme.studio.appointment-cancelled",
                 tenantId.toString(),
                 appointmentId.toString()));

@@ -1,8 +1,8 @@
 package com.emme.studio.adapter.out.messaging.publisher;
 
-import com.emme.studio.api.event.AppointmentCancelledEvent;
-import com.emme.studio.api.event.AppointmentCreatedEvent;
-import com.emme.studio.api.event.AppointmentRescheduledEvent;
+import com.emme.studio.api.event.AppointmentCancelled;
+import com.emme.studio.api.event.AppointmentCreated;
+import com.emme.studio.api.event.AppointmentRescheduled;
 import com.emme.studio.application.port.out.AppointmentEventPublisher;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -18,17 +18,17 @@ public class SpringAppointmentEventPublisher implements AppointmentEventPublishe
   }
 
   @Override
-  public void publish(AppointmentCreatedEvent event) {
+  public void publish(AppointmentCreated event) {
     publisher.publishEvent(event);
   }
 
   @Override
-  public void publish(AppointmentRescheduledEvent event) {
+  public void publish(AppointmentRescheduled event) {
     publisher.publishEvent(event);
   }
 
   @Override
-  public void publish(AppointmentCancelledEvent event) {
+  public void publish(AppointmentCancelled event) {
     publisher.publishEvent(event);
   }
 }

@@ -1,6 +1,6 @@
 package com.emme.studio.application.service;
 
-import com.emme.studio.api.event.AppointmentRescheduledEvent;
+import com.emme.studio.api.event.AppointmentRescheduled;
 import com.emme.studio.api.result.AppointmentDetails;
 import com.emme.studio.api.usecase.RescheduleAppointmentUseCase;
 import com.emme.studio.application.port.out.AppointmentCollisionPort;
@@ -47,7 +47,7 @@ public class RescheduleAppointmentService implements RescheduleAppointmentUseCas
     appointment.reschedule(newStartsAt, newEndsAt);
     Appointment saved = repository.save(appointment);
     eventPublisher.publish(
-        new AppointmentRescheduledEvent(
+        new AppointmentRescheduled(
             UUID.randomUUID(),
             saved.getTenantId(),
             saved.getId(),

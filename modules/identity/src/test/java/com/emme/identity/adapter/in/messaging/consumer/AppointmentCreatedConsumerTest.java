@@ -5,7 +5,7 @@ import static org.mockito.Mockito.verify;
 
 import com.emme.identity.api.command.EnsureCustomerMembershipCommand;
 import com.emme.identity.api.usecase.EnsureCustomerMembershipUseCase;
-import com.emme.studio.api.event.AppointmentCreatedEvent;
+import com.emme.studio.api.event.AppointmentCreated;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -59,8 +59,8 @@ class AppointmentCreatedConsumerTest {
     SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwt));
   }
 
-  private static AppointmentCreatedEvent event(UUID tenantId) {
-    return new AppointmentCreatedEvent(
+  private static AppointmentCreated event(UUID tenantId) {
+    return new AppointmentCreated(
         UUID.randomUUID(),
         tenantId,
         UUID.randomUUID(),

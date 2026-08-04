@@ -85,6 +85,11 @@ Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/su
 - [x] Added all architecture rule families to the dedicated GitHub boundary
       workflow so they are visible and blocking independently of the full test
       job.
+- [x] Normalized Studio public appointment facts to `AppointmentCreated`,
+      `AppointmentCancelled`, and `AppointmentRescheduled`; moved the
+      transport-only dashboard projection to `adapter.in.web.sse` as
+      `DashboardSseEvent` and added a guard against redundant public `Event`
+      suffixes.
 - [x] Enforced public API independence from domain, application, and adapter
       implementation packages; converted leaking result/command types to
       API-owned views and moved appointment mapping into the application layer.

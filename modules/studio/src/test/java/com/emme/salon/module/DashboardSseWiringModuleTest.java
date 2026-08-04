@@ -20,7 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  * through the application context reaches {@link DashboardBroadcaster} subscribers via its
  * {@code @EventListener}, replacing the former direct cross-module call.
  */
-class DashboardEventWiringModuleTest extends BaseSpringModuleTest {
+class DashboardSseWiringModuleTest extends BaseSpringModuleTest {
 
   @Autowired private ApplicationEventPublisher events;
   @Autowired private DashboardBroadcaster broadcaster;

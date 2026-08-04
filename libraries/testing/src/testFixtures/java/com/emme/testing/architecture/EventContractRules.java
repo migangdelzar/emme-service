@@ -66,4 +66,27 @@ public final class EventContractRules {
         .because("api.event contains facts that already happened, not caller intentions")
         .allowEmptyShould(true);
   }
+
+  /** Public facts do not repeat their package meaning in the type name. */
+  public static ArchRule publicEventNamesAvoidEventSuffix() {
+    return classes()
+        .that()
+        .resideInAnyPackage("com.emme..api.event..")
+        .should(
+            new ArchCondition<>("avoid the redundant Event suffix") {
+              @Override
+              public void check(JavaClass javaClass, ConditionEvents events) {
+                String name = javaClass.getSimpleName();
+                if (!name.equals("package-info") && name.endsWith("Event")) {
+                  events.add(
+                      SimpleConditionEvent.violated(
+                          javaClass,
+                          javaClass.getName()
+                              + " must omit the redundant Event suffix inside api.event"));
+                }
+              }
+            })
+        .because("the api.event package already identifies the type as a public event")
+        .allowEmptyShould(true);
+  }
 }

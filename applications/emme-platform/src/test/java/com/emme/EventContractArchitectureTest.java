@@ -19,4 +19,9 @@ class EventContractArchitectureTest {
   void publicEventsDoNotUseCommandOrQueryNames() {
     EventContractRules.publicEventNamesMustDescribeFacts().check(CLASSES);
   }
+
+  @Test
+  void publicEventNamesDoNotRepeatTheEventPackageName() {
+    EventContractRules.publicEventNamesAvoidEventSuffix().check(CLASSES);
+  }
 }

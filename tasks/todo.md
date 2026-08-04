@@ -1,5 +1,22 @@
 # Service architecture migration checklist
 
+## Immutable configuration-properties normalization — 2026-08-04
+
+- [x] Convert Identity Keycloak, security, and realm-provisioning settings to
+      validated immutable records with constructor binding and explicit defaults.
+- [x] Convert Kafka event-streaming settings to a validated immutable record.
+- [x] Convert tenant pool lifecycle settings to a validated immutable record and
+      preserve pool lifecycle tests without mutable test configuration.
+- [x] Migrate production accessors and focused tests to record accessors.
+- [x] Run focused Identity, tenancy, platform Kafka, and Spotless verification.
+
+### Results
+
+Configuration records now expose immutable state, defensive copies for list
+properties, compact construction at the configuration boundary, and explicit
+validation annotations. Optional local passwords remain allowed to be blank;
+required identifiers, lists, pool limits, and Kafka settings are validated.
+
 ## Acceptance criteria
 
 ## Unified service CI and E2E verification — 2026-08-04

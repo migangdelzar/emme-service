@@ -65,8 +65,8 @@ public class TenantDatabasePoolProvider {
             // Pool eviction is a resource-lifecycle boundary. Run removal callbacks inline so a
             // caller never observes an evicted pool before its Hikari resources are closed.
             .executor(Runnable::run)
-            .expireAfterAccess(config.getIdleTimeoutMinutes(), TimeUnit.MINUTES)
-            .maximumSize(config.getMaxPoolCacheSize())
+            .expireAfterAccess(config.idleTimeoutMinutes(), TimeUnit.MINUTES)
+            .maximumSize(config.maxPoolCacheSize())
             .removalListener(
                 (UUID key, HikariDataSource ds, RemovalCause cause) -> {
                   if (ds != null && !ds.isClosed()) {
@@ -85,7 +85,7 @@ public class TenantDatabasePoolProvider {
    */
   public HikariDataSource getDataSource() {
     UUID databaseId = TenantContextHolder.currentDatabaseOptional().orElse(null);
-    UUID defaultId = UUID.fromString(config.getDefaultDatabaseId());
+    UUID defaultId = UUID.fromString(config.defaultDatabaseId());
 
     if (databaseId == null || defaultId.equals(databaseId)) {
       // Default database — use non-evictable pool via CAS
@@ -105,11 +105,11 @@ public class TenantDatabasePoolProvider {
 
     // Tenant database — Caffeine-managed with idle eviction
     HikariDataSource ds = poolCache.get(databaseId, this::createPool);
-    if (poolCache.estimatedSize() > config.getMaxPoolCacheSize() * 0.8) {
+    if (poolCache.estimatedSize() > config.maxPoolCacheSize() * 0.8) {
       log.warn(
           "Pool cache approaching max size: {}/{}",
           poolCache.estimatedSize(),
-          config.getMaxPoolCacheSize());
+          config.maxPoolCacheSize());
     }
     return ds;
   }
@@ -134,16 +134,15 @@ public class TenantDatabasePoolProvider {
     hikariConfig.setPassword(connectionProperties.password());
     hikariConfig.setDriverClassName(connectionProperties.driverClassName());
 
-    int minSize = (db.minPoolSize() != null) ? db.minPoolSize() : config.getDefaultMinPoolSize();
-    int maxSize = (db.maxPoolSize() != null) ? db.maxPoolSize() : config.getDefaultMaxPoolSize();
+    int minSize = (db.minPoolSize() != null) ? db.minPoolSize() : config.defaultMinPoolSize();
+    int maxSize = (db.maxPoolSize() != null) ? db.maxPoolSize() : config.defaultMaxPoolSize();
 
     // Dynamic sizing: divide global budget across active pools
     long estimatedActivePools = poolCache.estimatedSize() + 1;
     int dynamicMax =
         (int)
             Math.max(
-                minSize,
-                Math.ceil((double) config.getGlobalMaxConnections() / estimatedActivePools));
+                minSize, Math.ceil((double) config.globalMaxConnections() / estimatedActivePools));
     int effectiveMax = Math.min(maxSize, dynamicMax);
 
     // Priority bonus for high-priority databases

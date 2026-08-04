@@ -27,6 +27,6 @@ public class IdentityClientConfiguration {
   @Bean
   public IdentityRealmConfigurationPort identityRealmConfiguration(
       IdentityKeycloakProperties properties) {
-    return properties::getDefaultRealm;
+    return properties::defaultRealm;
   }
 }

@@ -34,11 +34,11 @@ public class SecurityConfiguration {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(securityProperties.getAllowedOrigins());
-    configuration.setAllowedMethods(securityProperties.getAllowedMethods());
-    configuration.setAllowedHeaders(securityProperties.getAllowedHeaders());
-    configuration.setAllowCredentials(securityProperties.isAllowCredentials());
-    configuration.setMaxAge(securityProperties.getMaxAgeSeconds());
+    configuration.setAllowedOrigins(securityProperties.allowedOrigins());
+    configuration.setAllowedMethods(securityProperties.allowedMethods());
+    configuration.setAllowedHeaders(securityProperties.allowedHeaders());
+    configuration.setAllowCredentials(securityProperties.allowCredentials());
+    configuration.setMaxAge(securityProperties.maxAgeSeconds());
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
@@ -72,7 +72,7 @@ public class SecurityConfiguration {
                                 "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
                                     + "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
                                     + "font-src 'self'; connect-src 'self' "
-                                    + securityProperties.getCspConnectSource()))
+                                    + securityProperties.cspConnectSource()))
                     .frameOptions(frame -> frame.deny())
                     .xssProtection(xss -> xss.disable())
                     .contentTypeOptions(contentType -> contentType.disable()))
@@ -147,7 +147,7 @@ public class SecurityConfiguration {
             logout ->
                 logout
                     .logoutUrl("/oauth2/logout")
-                    .logoutSuccessUrl(securityProperties.getLogoutSuccessUrl())
+                    .logoutSuccessUrl(securityProperties.logoutSuccessUrl())
                     .invalidateHttpSession(true)
                     .clearAuthentication(true)
                     .deleteCookies("JSESSIONID"))

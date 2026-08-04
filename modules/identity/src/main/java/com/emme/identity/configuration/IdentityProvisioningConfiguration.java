@@ -14,14 +14,14 @@ public class IdentityProvisioningConfiguration {
       IdentityRealmProvisioningProperties properties) {
     IdentityRealmProvisioningSettings settings =
         new IdentityRealmProvisioningSettings(
-            properties.getClientId(),
-            properties.getRedirectUris(),
-            properties.getInitialAdminUsername(),
-            properties.getInitialAdminPassword(),
-            properties.getInitialAdminRole(),
-            properties.getDefaultRoles(),
-            properties.getMaxAttempts(),
-            properties.getRetryDelayMillis());
+            properties.clientId(),
+            properties.redirectUris(),
+            properties.initialAdminUsername(),
+            properties.initialAdminPassword(),
+            properties.initialAdminRole(),
+            properties.defaultRoles(),
+            properties.maxAttempts(),
+            properties.retryDelayMillis());
     return () -> settings;
   }
 }

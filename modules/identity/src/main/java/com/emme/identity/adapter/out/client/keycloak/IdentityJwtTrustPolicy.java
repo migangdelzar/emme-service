@@ -22,11 +22,11 @@ public final class IdentityJwtTrustPolicy {
   private final String customerAudience;
 
   public IdentityJwtTrustPolicy(IdentityKeycloakProperties properties) {
-    this.platformIssuer = normalizeIssuer(properties.getIssuerUri());
-    this.customerIssuer = normalizeIssuer(properties.getCustomerIssuerUri());
+    this.platformIssuer = normalizeIssuer(properties.issuerUri());
+    this.customerIssuer = normalizeIssuer(properties.customerIssuerUri());
     this.tenantIssuerPrefix = tenantIssuerPrefix(platformIssuer);
-    this.platformAudience = properties.getClientId();
-    this.customerAudience = properties.getCustomerClientId();
+    this.platformAudience = properties.clientId();
+    this.customerAudience = properties.customerClientId();
   }
 
   public boolean acceptsIssuer(String issuer) {

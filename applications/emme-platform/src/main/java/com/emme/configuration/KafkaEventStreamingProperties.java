@@ -4,62 +4,35 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.validation.annotation.Validated;
 
 /** Typed policy and deployment settings for the optional Kafka event stream. */
 @Validated
 @ConfigurationProperties(prefix = "app.messaging.kafka")
-public class KafkaEventStreamingProperties {
+public record KafkaEventStreamingProperties(
+    boolean enabled,
+    @NotBlank String bootstrapServers,
+    @NotBlank String securityProtocol,
+    @Min(1) int producerRetries,
+    @NotBlank String consumerGroup) {
 
-  private boolean enabled;
-
-  @NotBlank private String bootstrapServers = "localhost:9092";
-
-  @NotBlank private String securityProtocol = "PLAINTEXT";
-
-  @Min(1)
-  private int producerRetries = 10;
-
-  @NotBlank private String consumerGroup = "emme-platform";
-
-  public boolean isEnabled() {
-    return enabled;
-  }
-
-  public void setEnabled(boolean enabled) {
+  public KafkaEventStreamingProperties(
+      @DefaultValue("false") boolean enabled,
+      @DefaultValue("localhost:9092") String bootstrapServers,
+      @DefaultValue("PLAINTEXT") String securityProtocol,
+      @DefaultValue("10") int producerRetries,
+      @DefaultValue("emme-platform") String consumerGroup) {
     this.enabled = enabled;
-  }
-
-  public String getBootstrapServers() {
-    return bootstrapServers;
-  }
-
-  public void setBootstrapServers(String bootstrapServers) {
     this.bootstrapServers = bootstrapServers;
-  }
-
-  public String getSecurityProtocol() {
-    return securityProtocol;
-  }
-
-  public void setSecurityProtocol(String securityProtocol) {
     this.securityProtocol = securityProtocol;
-  }
-
-  public int getProducerRetries() {
-    return producerRetries;
-  }
-
-  public void setProducerRetries(int producerRetries) {
     this.producerRetries = producerRetries;
-  }
-
-  public String getConsumerGroup() {
-    return consumerGroup;
-  }
-
-  public void setConsumerGroup(String consumerGroup) {
     this.consumerGroup = consumerGroup;
+  }
+
+  public static KafkaEventStreamingProperties defaults() {
+    return new KafkaEventStreamingProperties(
+        false, "localhost:9092", "PLAINTEXT", 10, "emme-platform");
   }
 
   /** Returns whether the configured stream can be enabled in a production profile. */

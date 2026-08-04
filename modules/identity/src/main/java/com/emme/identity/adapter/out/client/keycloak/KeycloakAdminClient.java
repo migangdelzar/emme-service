@@ -25,10 +25,10 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
 
   public KeycloakAdminClient(
       IdentityKeycloakProperties properties, ObjectMapper objectMapper, OkHttpClient httpClient) {
-    this.baseUrl = properties.getBaseUrl();
-    this.adminRealm = properties.getAdminRealm();
-    this.adminUser = properties.getAdminUsername();
-    this.adminPassword = properties.getAdminPassword();
+    this.baseUrl = properties.baseUrl();
+    this.adminRealm = properties.adminRealm();
+    this.adminUser = properties.adminUsername();
+    this.adminPassword = properties.adminPassword();
     this.objectMapper = objectMapper;
     this.httpClient = httpClient;
   }

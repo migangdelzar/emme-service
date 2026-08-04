@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 class TenantRoutingDataSourceTest {
 
-  private final TenantPoolingProperties poolingProperties = new TenantPoolingProperties();
+  private TenantPoolingProperties poolingProperties = TenantPoolingProperties.defaults();
   private final TenantDatabasePoolProvider poolProvider = mock(TenantDatabasePoolProvider.class);
 
   @AfterEach
@@ -25,7 +25,8 @@ class TenantRoutingDataSourceTest {
   @Test
   void routesToTheConfiguredDefaultDatabaseWithoutTenantContext() {
     UUID defaultDatabaseId = UUID.randomUUID();
-    poolingProperties.setDefaultDatabaseId(defaultDatabaseId.toString());
+    poolingProperties =
+        new TenantPoolingProperties(200, 30, 60, 5, 20, 100, defaultDatabaseId.toString());
     TenantRoutingDataSource routingDataSource =
         new TenantRoutingDataSource(poolProvider, poolingProperties);
 

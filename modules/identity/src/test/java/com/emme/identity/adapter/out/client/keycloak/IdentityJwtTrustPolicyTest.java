@@ -63,12 +63,17 @@ class IdentityJwtTrustPolicyTest {
   }
 
   private static IdentityKeycloakProperties configuredProperties() {
-    IdentityKeycloakProperties properties = new IdentityKeycloakProperties();
-    properties.setIssuerUri("https://identity.example/realms/emme");
-    properties.setClientId("emme-salon-app");
-    properties.setCustomerIssuerUri("https://identity.example/realms/emme-customers");
-    properties.setCustomerClientId("emme-customer-app");
-    return properties;
+    return new IdentityKeycloakProperties(
+        "https://identity.example",
+        "https://identity.example/realms/emme",
+        "",
+        "emme-salon-app",
+        "master",
+        "admin",
+        "",
+        "emme",
+        "https://identity.example/realms/emme-customers",
+        "emme-customer-app");
   }
 
   private static Jwt jwt(List<String> audiences) {

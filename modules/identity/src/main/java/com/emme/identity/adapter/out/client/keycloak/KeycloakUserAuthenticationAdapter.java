@@ -32,14 +32,14 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
 
   public KeycloakUserAuthenticationAdapter(
       OkHttpClient httpClient, ObjectMapper objectMapper, IdentityKeycloakProperties properties) {
-    int realmIndex = properties.getIssuerUri().indexOf("/realms/");
+    int realmIndex = properties.issuerUri().indexOf("/realms/");
     if (realmIndex < 0) {
       throw new IllegalArgumentException("Keycloak issuer URI must contain /realms/");
     }
     this.httpClient = httpClient;
     this.objectMapper = objectMapper;
-    this.baseUrl = properties.getIssuerUri().substring(0, realmIndex);
-    this.clientId = properties.getClientId();
+    this.baseUrl = properties.issuerUri().substring(0, realmIndex);
+    this.clientId = properties.clientId();
     this.properties = properties;
   }
 
@@ -103,10 +103,7 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
       String issuer = jwt.getJWTClaimsSet().getIssuer();
       return issuer + "/protocol/openid-connect/userinfo";
     } catch (ParseException exception) {
-      return baseUrl
-          + "/realms/"
-          + properties.getDefaultRealm()
-          + "/protocol/openid-connect/userinfo";
+      return baseUrl + "/realms/" + properties.defaultRealm() + "/protocol/openid-connect/userinfo";
     }
   }
 }

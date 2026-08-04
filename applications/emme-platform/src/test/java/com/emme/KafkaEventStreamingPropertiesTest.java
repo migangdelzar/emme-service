@@ -9,30 +9,29 @@ class KafkaEventStreamingPropertiesTest {
 
   @Test
   void isDisabledAndLocalSafeByDefault() {
-    KafkaEventStreamingProperties properties = new KafkaEventStreamingProperties();
+    KafkaEventStreamingProperties properties = KafkaEventStreamingProperties.defaults();
 
-    assertThat(properties.isEnabled()).isFalse();
-    assertThat(properties.getBootstrapServers()).isEqualTo("localhost:9092");
-    assertThat(properties.getSecurityProtocol()).isEqualTo("PLAINTEXT");
-    assertThat(properties.getProducerRetries()).isEqualTo(10);
-    assertThat(properties.getConsumerGroup()).isEqualTo("emme-platform");
+    assertThat(properties.enabled()).isFalse();
+    assertThat(properties.bootstrapServers()).isEqualTo("localhost:9092");
+    assertThat(properties.securityProtocol()).isEqualTo("PLAINTEXT");
+    assertThat(properties.producerRetries()).isEqualTo(10);
+    assertThat(properties.consumerGroup()).isEqualTo("emme-platform");
     assertThat(properties.isSafeForProduction()).isTrue();
   }
 
   @Test
   void rejectsEnabledLocalPlaintextConfigurationForProduction() {
-    KafkaEventStreamingProperties properties = new KafkaEventStreamingProperties();
-    properties.setEnabled(true);
+    KafkaEventStreamingProperties properties =
+        new KafkaEventStreamingProperties(true, "localhost:9092", "PLAINTEXT", 10, "emme-platform");
 
     assertThat(properties.isSafeForProduction()).isFalse();
   }
 
   @Test
   void acceptsEnabledSecureRemoteConfiguration() {
-    KafkaEventStreamingProperties properties = new KafkaEventStreamingProperties();
-    properties.setEnabled(true);
-    properties.setBootstrapServers("kafka.example.internal:9093");
-    properties.setSecurityProtocol("SASL_SSL");
+    KafkaEventStreamingProperties properties =
+        new KafkaEventStreamingProperties(
+            true, "kafka.example.internal:9093", "SASL_SSL", 10, "emme-platform");
 
     assertThat(properties.isSafeForProduction()).isTrue();
   }

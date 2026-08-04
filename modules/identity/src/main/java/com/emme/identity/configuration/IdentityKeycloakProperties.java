@@ -1,99 +1,59 @@
 package com.emme.identity.configuration;
 
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.validation.annotation.Validated;
 
 /** Typed Identity settings used by application-level Keycloak orchestration. */
+@Validated
 @ConfigurationProperties(prefix = "app.keycloak")
-public class IdentityKeycloakProperties {
+public record IdentityKeycloakProperties(
+    @NotBlank String baseUrl,
+    @NotBlank String issuerUri,
+    String jwkSetBaseUrl,
+    @NotBlank String clientId,
+    @NotBlank String adminRealm,
+    @NotBlank String adminUsername,
+    String adminPassword,
+    @NotBlank String defaultRealm,
+    @NotBlank String customerIssuerUri,
+    @NotBlank String customerClientId) {
 
-  private String baseUrl = "http://localhost:18080";
-  private String issuerUri = "http://localhost:18080/realms/emme";
-  private String jwkSetBaseUrl = "";
-  private String clientId = "emme-salon-app";
-  private String adminRealm = "master";
-  private String adminUsername = "admin";
-  private String adminPassword = "";
-  private String defaultRealm = "emme";
-  private String customerIssuerUri = "http://localhost:18080/realms/emme-customers";
-  private String customerClientId = "emme-customer-app";
-
-  public String getBaseUrl() {
-    return baseUrl;
-  }
-
-  public void setBaseUrl(String baseUrl) {
+  public IdentityKeycloakProperties(
+      @DefaultValue("http://localhost:18080") String baseUrl,
+      @DefaultValue("http://localhost:18080/realms/emme") String issuerUri,
+      @DefaultValue("") String jwkSetBaseUrl,
+      @DefaultValue("emme-salon-app") String clientId,
+      @DefaultValue("master") String adminRealm,
+      @DefaultValue("admin") String adminUsername,
+      @DefaultValue("") String adminPassword,
+      @DefaultValue("emme") String defaultRealm,
+      @DefaultValue("http://localhost:18080/realms/emme-customers") String customerIssuerUri,
+      @DefaultValue("emme-customer-app") String customerClientId) {
     this.baseUrl = baseUrl;
-  }
-
-  public String getIssuerUri() {
-    return issuerUri;
-  }
-
-  public void setIssuerUri(String issuerUri) {
     this.issuerUri = issuerUri;
-  }
-
-  public String getJwkSetBaseUrl() {
-    return jwkSetBaseUrl;
-  }
-
-  public void setJwkSetBaseUrl(String jwkSetBaseUrl) {
     this.jwkSetBaseUrl = jwkSetBaseUrl;
-  }
-
-  public String getClientId() {
-    return clientId;
-  }
-
-  public void setClientId(String clientId) {
     this.clientId = clientId;
-  }
-
-  public String getAdminRealm() {
-    return adminRealm;
-  }
-
-  public void setAdminRealm(String adminRealm) {
     this.adminRealm = adminRealm;
-  }
-
-  public String getAdminUsername() {
-    return adminUsername;
-  }
-
-  public void setAdminUsername(String adminUsername) {
     this.adminUsername = adminUsername;
-  }
-
-  public String getAdminPassword() {
-    return adminPassword;
-  }
-
-  public void setAdminPassword(String adminPassword) {
     this.adminPassword = adminPassword;
-  }
-
-  public String getDefaultRealm() {
-    return defaultRealm;
-  }
-
-  public void setDefaultRealm(String defaultRealm) {
     this.defaultRealm = defaultRealm;
-  }
-
-  public String getCustomerIssuerUri() {
-    return customerIssuerUri;
-  }
-
-  public void setCustomerIssuerUri(String customerIssuerUri) {
     this.customerIssuerUri = customerIssuerUri;
-  }
-
-  public String getCustomerClientId() {
-    return customerClientId;
-  }
-
-  public void setCustomerClientId(String customerClientId) {
     this.customerClientId = customerClientId;
+  }
+
+  public static IdentityKeycloakProperties defaults() {
+    return new IdentityKeycloakProperties(
+        "http://localhost:18080",
+        "http://localhost:18080/realms/emme",
+        "",
+        "emme-salon-app",
+        "master",
+        "admin",
+        "",
+        "emme",
+        "http://localhost:18080/realms/emme-customers",
+        "emme-customer-app");
   }
 }

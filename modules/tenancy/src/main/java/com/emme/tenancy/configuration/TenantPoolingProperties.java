@@ -1,89 +1,49 @@
 package com.emme.tenancy.configuration;
 
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import java.util.Objects;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.validation.annotation.Validated;
 
-@Component
+/** Typed resource limits and lifecycle settings for tenant database pools. */
+@Validated
 @ConfigurationProperties(prefix = "emme.tenancy.pooling")
-public class TenantPoolingProperties {
+public record TenantPoolingProperties(
+    @Min(1) int globalMaxConnections,
+    @Min(1) int idleTimeoutMinutes,
+    @Min(1) int evictionCheckIntervalSeconds,
+    @Min(0) int defaultMinPoolSize,
+    @Min(1) int defaultMaxPoolSize,
+    @Min(1) int maxPoolCacheSize,
+    @NotBlank String defaultDatabaseId) {
 
-  /** Maximum total connections across ALL database pools */
-  private int globalMaxConnections = 200;
-
-  /** Minutes of inactivity before an idle pool is evicted */
-  private int idleTimeoutMinutes = 30;
-
-  /**
-   * How often the eviction checker runs (seconds). Reserved for future use — Caffeine self-manages
-   * eviction internally.
-   */
-  private int evictionCheckIntervalSeconds = 60;
-
-  /** Minimum pool size per database (overridden by database_registry.min_pool_size if set) */
-  private int defaultMinPoolSize = 5;
-
-  /** Maximum pool size per database (overridden by database_registry.max_pool_size if set) */
-  private int defaultMaxPoolSize = 20;
-
-  /** Maximum number of database pools cached before eviction. Default 100. */
-  private int maxPoolCacheSize = 100;
-
-  /** Default database ID — used when tenant has no database_id assigned */
-  private String defaultDatabaseId = "00000000-0000-0000-0000-000000000000";
-
-  public int getGlobalMaxConnections() {
-    return globalMaxConnections;
-  }
-
-  public void setGlobalMaxConnections(int globalMaxConnections) {
+  public TenantPoolingProperties(
+      @DefaultValue("200") int globalMaxConnections,
+      @DefaultValue("30") int idleTimeoutMinutes,
+      @DefaultValue("60") int evictionCheckIntervalSeconds,
+      @DefaultValue("5") int defaultMinPoolSize,
+      @DefaultValue("20") int defaultMaxPoolSize,
+      @DefaultValue("100") int maxPoolCacheSize,
+      @DefaultValue("00000000-0000-0000-0000-000000000000") String defaultDatabaseId) {
     this.globalMaxConnections = globalMaxConnections;
-  }
-
-  public int getIdleTimeoutMinutes() {
-    return idleTimeoutMinutes;
-  }
-
-  public void setIdleTimeoutMinutes(int idleTimeoutMinutes) {
     this.idleTimeoutMinutes = idleTimeoutMinutes;
-  }
-
-  public int getEvictionCheckIntervalSeconds() {
-    return evictionCheckIntervalSeconds;
-  }
-
-  public void setEvictionCheckIntervalSeconds(int evictionCheckIntervalSeconds) {
     this.evictionCheckIntervalSeconds = evictionCheckIntervalSeconds;
-  }
-
-  public int getDefaultMinPoolSize() {
-    return defaultMinPoolSize;
-  }
-
-  public void setDefaultMinPoolSize(int defaultMinPoolSize) {
     this.defaultMinPoolSize = defaultMinPoolSize;
-  }
-
-  public int getDefaultMaxPoolSize() {
-    return defaultMaxPoolSize;
-  }
-
-  public void setDefaultMaxPoolSize(int defaultMaxPoolSize) {
     this.defaultMaxPoolSize = defaultMaxPoolSize;
-  }
-
-  public int getMaxPoolCacheSize() {
-    return maxPoolCacheSize;
-  }
-
-  public void setMaxPoolCacheSize(int maxPoolCacheSize) {
     this.maxPoolCacheSize = maxPoolCacheSize;
+    this.defaultDatabaseId = Objects.requireNonNull(defaultDatabaseId, "defaultDatabaseId");
   }
 
-  public String getDefaultDatabaseId() {
-    return defaultDatabaseId;
+  public static TenantPoolingProperties defaults() {
+    return new TenantPoolingProperties(
+        200, 30, 60, 5, 20, 100, "00000000-0000-0000-0000-000000000000");
   }
 
-  public void setDefaultDatabaseId(String defaultDatabaseId) {
-    this.defaultDatabaseId = defaultDatabaseId;
+  @AssertTrue(message = "Default minimum pool size must not exceed the default maximum pool size")
+  public boolean hasValidDefaultPoolSize() {
+    return defaultMinPoolSize <= defaultMaxPoolSize;
   }
 }

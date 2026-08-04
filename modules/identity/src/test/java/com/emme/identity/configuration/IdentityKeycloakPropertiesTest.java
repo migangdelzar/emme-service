@@ -8,29 +8,29 @@ class IdentityKeycloakPropertiesTest {
 
   @Test
   void exposesTypedUserAndAdminClientSettings() {
-    IdentityKeycloakProperties properties = new IdentityKeycloakProperties();
+    IdentityKeycloakProperties properties =
+        new IdentityKeycloakProperties(
+            "http://localhost:18080",
+            "http://localhost:18080/realms/emme",
+            "http://keycloak:8080",
+            "emme-salon-app",
+            "master",
+            "admin",
+            "secret",
+            "emme",
+            "http://localhost:18080/realms/emme-customers",
+            "emme-customer-app");
 
-    properties.setBaseUrl("http://localhost:18080");
-    properties.setIssuerUri("http://localhost:18080/realms/emme");
-    properties.setJwkSetBaseUrl("http://keycloak:8080");
-    properties.setClientId("emme-salon-app");
-    properties.setAdminRealm("master");
-    properties.setAdminUsername("admin");
-    properties.setAdminPassword("secret");
-    properties.setDefaultRealm("emme");
-    properties.setCustomerIssuerUri("http://localhost:18080/realms/emme-customers");
-    properties.setCustomerClientId("emme-customer-app");
-
-    assertThat(properties.getBaseUrl()).isEqualTo("http://localhost:18080");
-    assertThat(properties.getIssuerUri()).isEqualTo("http://localhost:18080/realms/emme");
-    assertThat(properties.getJwkSetBaseUrl()).isEqualTo("http://keycloak:8080");
-    assertThat(properties.getClientId()).isEqualTo("emme-salon-app");
-    assertThat(properties.getAdminRealm()).isEqualTo("master");
-    assertThat(properties.getAdminUsername()).isEqualTo("admin");
-    assertThat(properties.getAdminPassword()).isEqualTo("secret");
-    assertThat(properties.getDefaultRealm()).isEqualTo("emme");
-    assertThat(properties.getCustomerIssuerUri())
+    assertThat(properties.baseUrl()).isEqualTo("http://localhost:18080");
+    assertThat(properties.issuerUri()).isEqualTo("http://localhost:18080/realms/emme");
+    assertThat(properties.jwkSetBaseUrl()).isEqualTo("http://keycloak:8080");
+    assertThat(properties.clientId()).isEqualTo("emme-salon-app");
+    assertThat(properties.adminRealm()).isEqualTo("master");
+    assertThat(properties.adminUsername()).isEqualTo("admin");
+    assertThat(properties.adminPassword()).isEqualTo("secret");
+    assertThat(properties.defaultRealm()).isEqualTo("emme");
+    assertThat(properties.customerIssuerUri())
         .isEqualTo("http://localhost:18080/realms/emme-customers");
-    assertThat(properties.getCustomerClientId()).isEqualTo("emme-customer-app");
+    assertThat(properties.customerClientId()).isEqualTo("emme-customer-app");
   }
 }

@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 class TenantDatabasePoolProviderTest {
 
-  private final TenantPoolingProperties poolingProperties = new TenantPoolingProperties();
+  private TenantPoolingProperties poolingProperties = defaultPoolingProperties();
   private TenantDatabaseConnectionProperties connectionProperties =
       TenantDatabaseConnectionProperties.defaults();
   private final DatabaseRegistryPort registry = mock(DatabaseRegistryPort.class);
@@ -43,7 +43,7 @@ class TenantDatabasePoolProviderTest {
 
   @Test
   void failsWithTheDatabaseIdWhenRegistryLookupCannotResolveTheDefaultPool() {
-    UUID defaultDatabaseId = UUID.fromString(poolingProperties.getDefaultDatabaseId());
+    UUID defaultDatabaseId = UUID.fromString(poolingProperties.defaultDatabaseId());
     when(registry.findById(defaultDatabaseId)).thenReturn(Optional.empty());
     TenantDatabasePoolProvider provider =
         new TenantDatabasePoolProvider(poolingProperties, connectionProperties, registry);
@@ -57,7 +57,7 @@ class TenantDatabasePoolProviderTest {
 
   @Test
   void replacesAClosedDefaultPoolOnTheNextLookup() {
-    UUID defaultDatabaseId = UUID.fromString(poolingProperties.getDefaultDatabaseId());
+    UUID defaultDatabaseId = UUID.fromString(poolingProperties.defaultDatabaseId());
     when(registry.findById(defaultDatabaseId))
         .thenReturn(
             Optional.of(
@@ -69,8 +69,7 @@ class TenantDatabasePoolProviderTest {
                     1,
                     0,
                     true)));
-    poolingProperties.setDefaultMinPoolSize(0);
-    poolingProperties.setDefaultMaxPoolSize(1);
+    poolingProperties = poolingProperties(0, 1);
     connectionProperties =
         new TenantDatabaseConnectionProperties(
             connectionProperties.url(),
@@ -106,9 +105,7 @@ class TenantDatabasePoolProviderTest {
                     1,
                     0,
                     true)));
-    poolingProperties.setIdleTimeoutMinutes(1);
-    poolingProperties.setDefaultMinPoolSize(0);
-    poolingProperties.setDefaultMaxPoolSize(1);
+    poolingProperties = poolingProperties(0, 1, 1);
     connectionProperties =
         new TenantDatabaseConnectionProperties(
             connectionProperties.url(),
@@ -143,5 +140,25 @@ class TenantDatabasePoolProviderTest {
     void advance(Duration duration) {
       nanos += duration.toNanos();
     }
+  }
+
+  private static TenantPoolingProperties defaultPoolingProperties() {
+    return TenantPoolingProperties.defaults();
+  }
+
+  private static TenantPoolingProperties poolingProperties(int minPoolSize, int maxPoolSize) {
+    return poolingProperties(minPoolSize, maxPoolSize, 30);
+  }
+
+  private static TenantPoolingProperties poolingProperties(
+      int minPoolSize, int maxPoolSize, int idleTimeoutMinutes) {
+    return new TenantPoolingProperties(
+        200,
+        idleTimeoutMinutes,
+        60,
+        minPoolSize,
+        maxPoolSize,
+        100,
+        "00000000-0000-0000-0000-000000000000");
   }
 }

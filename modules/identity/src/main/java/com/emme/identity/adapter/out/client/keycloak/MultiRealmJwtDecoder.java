@@ -26,7 +26,7 @@ public class MultiRealmJwtDecoder implements JwtDecoder {
 
   public MultiRealmJwtDecoder(IdentityKeycloakProperties properties) {
     this.trustPolicy = new IdentityJwtTrustPolicy(properties);
-    this.jwkSetBaseUrl = properties.getJwkSetBaseUrl();
+    this.jwkSetBaseUrl = properties.jwkSetBaseUrl();
   }
 
   @Override

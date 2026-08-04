@@ -52,13 +52,13 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
   /**
    * Returns the database UUID that identifies which connection pool to use.
    *
-   * <p>Falls back to {@link TenantPoolingProperties#getDefaultDatabaseId()} when the current thread
+   * <p>Falls back to {@link TenantPoolingProperties#defaultDatabaseId()} when the current thread
    * has no tenant context set.
    */
   @Override
   protected Object determineCurrentLookupKey() {
     return TenantContextHolder.currentDatabaseOptional()
-        .orElseGet(() -> UUID.fromString(config.getDefaultDatabaseId()));
+        .orElseGet(() -> UUID.fromString(config.defaultDatabaseId()));
   }
 
   /**

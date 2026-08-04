@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.emme.kernel.type.NotificationChannel;
 import com.emme.notification.api.command.DeliverNotificationCommand;
+import com.emme.notification.api.type.NotificationStatusView;
 import com.emme.notification.application.port.out.EmailSender;
 import com.emme.notification.application.port.out.NotificationEventPublisher;
 import com.emme.notification.application.port.out.NotificationRepository;
@@ -46,7 +47,7 @@ class NotificationDeliveryBoundaryTest {
         new DeliverNotificationService(repository, emailSender, smsSender, pushSender, events)
             .deliver(new DeliverNotificationCommand(tenantId, notificationId));
 
-    assertThat(result.status()).isEqualTo(NotificationStatus.DELIVERED);
+    assertThat(result.status()).isEqualTo(NotificationStatusView.DELIVERED);
     verifyNoInteractions(emailSender, smsSender, pushSender, events);
   }
 
@@ -93,7 +94,7 @@ class NotificationDeliveryBoundaryTest {
         new DeliverNotificationService(repository, emailSender, smsSender, pushSender, events)
             .deliver(new DeliverNotificationCommand(tenantId, notificationId));
 
-    assertThat(result.status()).isEqualTo(NotificationStatus.FAILED);
+    assertThat(result.status()).isEqualTo(NotificationStatusView.FAILED);
     verifyNoInteractions(emailSender, smsSender, pushSender, events);
   }
 }

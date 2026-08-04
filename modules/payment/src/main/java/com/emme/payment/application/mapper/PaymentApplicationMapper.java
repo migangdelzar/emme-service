@@ -1,6 +1,7 @@
 package com.emme.payment.application.mapper;
 
 import com.emme.payment.api.result.PaymentInfo;
+import com.emme.payment.api.type.PaymentStatusView;
 import com.emme.payment.domain.model.Payment;
 
 public final class PaymentApplicationMapper {
@@ -13,7 +14,7 @@ public final class PaymentApplicationMapper {
         payment.providerReference(),
         payment.amount(),
         payment.currency(),
-        payment.status(),
+        PaymentStatusView.valueOf(payment.status().name()),
         payment.updatedAt());
   }
 }

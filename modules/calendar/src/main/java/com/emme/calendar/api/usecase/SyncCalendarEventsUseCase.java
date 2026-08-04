@@ -1,10 +1,10 @@
 package com.emme.calendar.api.usecase;
 
-import com.emme.calendar.domain.model.CalendarSyncState;
+import com.emme.calendar.api.result.CalendarSyncStateInfo;
 import java.util.UUID;
 
 /** Triggers synchronization of a tenant's external calendar events. */
 public interface SyncCalendarEventsUseCase {
 
-  CalendarSyncState sync(UUID tenantId);
+  CalendarSyncStateInfo sync(UUID tenantId);
 }

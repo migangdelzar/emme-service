@@ -3,6 +3,9 @@ package com.emme.assistant.application.mapper;
 import com.emme.assistant.api.result.ConversationEventInfo;
 import com.emme.assistant.api.result.ConversationInfo;
 import com.emme.assistant.api.result.PendingActionInfo;
+import com.emme.assistant.api.type.ActionStatusView;
+import com.emme.assistant.api.type.ActionTypeView;
+import com.emme.assistant.api.type.ConversationStatusView;
 import com.emme.assistant.domain.model.Conversation;
 import com.emme.assistant.domain.model.ConversationEvent;
 import com.emme.assistant.domain.model.PendingAction;
@@ -16,7 +19,7 @@ public final class AssistantApplicationMapper {
         conversation.tenantId(),
         conversation.participantId(),
         conversation.channel(),
-        conversation.status(),
+        ConversationStatusView.valueOf(conversation.status().name()),
         conversation.startedAt());
   }
 
@@ -36,8 +39,8 @@ public final class AssistantApplicationMapper {
         action.id(),
         action.tenantId(),
         action.conversationId(),
-        action.actionType(),
-        action.status(),
+        ActionTypeView.valueOf(action.actionType().name()),
+        ActionStatusView.valueOf(action.status().name()),
         action.details(),
         action.expiresAt(),
         action.createdAt());

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
 import com.emme.assistant.api.result.ConversationInfo;
+import com.emme.assistant.api.type.ConversationStatusView;
 import com.emme.assistant.api.usecase.AddConversationEventUseCase;
 import com.emme.assistant.api.usecase.ListConversationsUseCase;
 import com.emme.assistant.api.usecase.StartConversationUseCase;
@@ -15,7 +16,6 @@ import com.emme.assistant.application.port.out.ChannelParticipantRepository;
 import com.emme.assistant.application.port.out.WhatsAppReplyPort;
 import com.emme.assistant.application.port.out.WhatsAppWebhookEventRepository;
 import com.emme.assistant.domain.model.ChannelParticipant;
-import com.emme.assistant.domain.model.ConversationStatus;
 import com.emme.kernel.type.ChannelType;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +56,7 @@ class ProcessWhatsAppMessageServiceTest {
             tenantId,
             participantId,
             ChannelType.WHATSAPP,
-            ConversationStatus.ACTIVE,
+            ConversationStatusView.ACTIVE,
             java.time.Instant.now());
   }
 

@@ -1,6 +1,6 @@
 package com.emme.assistant.api.result;
 
-import com.emme.assistant.domain.model.ConversationStatus;
+import com.emme.assistant.api.type.ConversationStatusView;
 import com.emme.kernel.type.ChannelType;
 import java.time.Instant;
 import java.util.UUID;
@@ -10,5 +10,5 @@ public record ConversationInfo(
     UUID tenantId,
     UUID participantId,
     ChannelType channel,
-    ConversationStatus status,
+    ConversationStatusView status,
     Instant startedAt) {}

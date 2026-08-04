@@ -124,7 +124,7 @@ class MercadoPagoWebhookControllerTest {
           "payment-1",
           BigDecimal.ZERO,
           "MXN",
-          com.emme.payment.domain.model.PaymentStatus.PENDING,
+          com.emme.payment.api.type.PaymentStatusView.PENDING,
           java.time.Instant.now());
     }
   }

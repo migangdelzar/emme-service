@@ -1,6 +1,6 @@
 package com.emme.payment.api.result;
 
-import com.emme.payment.domain.model.PaymentStatus;
+import com.emme.payment.api.type.PaymentStatusView;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -11,5 +11,5 @@ public record PaymentInfo(
     String providerReference,
     BigDecimal amount,
     String currency,
-    PaymentStatus status,
+    PaymentStatusView status,
     Instant updatedAt) {}

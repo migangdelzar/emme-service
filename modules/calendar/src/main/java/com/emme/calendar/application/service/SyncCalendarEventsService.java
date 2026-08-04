@@ -1,5 +1,6 @@
 package com.emme.calendar.application.service;
 
+import com.emme.calendar.api.result.CalendarSyncStateInfo;
 import com.emme.calendar.api.usecase.SyncCalendarEventsUseCase;
 import com.emme.calendar.application.port.out.CalendarSyncStateRepository;
 import com.emme.calendar.domain.model.CalendarProvider;
@@ -24,7 +25,7 @@ public class SyncCalendarEventsService implements SyncCalendarEventsUseCase {
   }
 
   @Override
-  public CalendarSyncState sync(UUID tenantId) {
+  public CalendarSyncStateInfo sync(UUID tenantId) {
     CalendarSyncState state =
         repository
             .findByTenantIdAndProvider(tenantId, CalendarProvider.GOOGLE_CALENDAR)
@@ -39,6 +40,8 @@ public class SyncCalendarEventsService implements SyncCalendarEventsUseCase {
       state.updateSync(state.syncToken(), Instant.now());
       log.info("Calendar synced for tenant={}", tenantId);
     }
-    return repository.save(state);
+    CalendarSyncState saved = repository.save(state);
+    return new CalendarSyncStateInfo(
+        saved.id(), saved.tenantId(), saved.provider().name(), saved.status().name());
   }
 }

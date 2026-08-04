@@ -6,6 +6,7 @@ import com.emme.assistant.api.usecase.ProposePendingActionUseCase;
 import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.ConversationRepository;
 import com.emme.assistant.application.port.out.PendingActionRepository;
+import com.emme.assistant.domain.model.ActionType;
 import com.emme.assistant.domain.model.PendingAction;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ public class ProposePendingActionService implements ProposePendingActionUseCase 
                 UUID.randomUUID(),
                 command.tenantId(),
                 command.conversationId(),
-                command.actionType(),
+                ActionType.valueOf(command.actionType().name()),
                 com.emme.assistant.domain.model.ActionStatus.PENDING,
                 command.details(),
                 command.expiresAt(),

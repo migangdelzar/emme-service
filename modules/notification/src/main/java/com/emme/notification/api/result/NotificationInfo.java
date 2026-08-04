@@ -1,7 +1,7 @@
 package com.emme.notification.api.result;
 
 import com.emme.kernel.type.NotificationChannel;
-import com.emme.notification.domain.model.NotificationStatus;
+import com.emme.notification.api.type.NotificationStatusView;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -11,5 +11,5 @@ public record NotificationInfo(
     NotificationChannel channel,
     String recipientReference,
     String body,
-    NotificationStatus status,
+    NotificationStatusView status,
     Instant createdAt) {}

@@ -1,6 +1,7 @@
 package com.emme.studio.application.service;
 
 import com.emme.studio.api.result.AppointmentDetails;
+import com.emme.studio.application.mapper.AppointmentApplicationMapper;
 import com.emme.studio.application.port.out.AppointmentCollisionPort;
 import com.emme.studio.application.port.out.AppointmentRepository;
 import com.emme.studio.application.port.out.ArtistRepository;
@@ -74,6 +75,7 @@ final class AppointmentApplicationSupport {
             .orElse(null);
     String artistName =
         artistRepository.findById(appointment.getArtistId()).map(Artist::getName).orElse(null);
-    return AppointmentDetails.from(appointment, customerName, serviceName, artistName);
+    return AppointmentApplicationMapper.toDetails(
+        appointment, customerName, serviceName, artistName);
   }
 }

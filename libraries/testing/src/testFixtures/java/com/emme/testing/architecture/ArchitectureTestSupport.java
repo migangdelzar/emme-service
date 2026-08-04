@@ -13,7 +13,6 @@ public final class ArchitectureTestSupport {
   public static JavaClasses productionClasses(String... packages) {
     return new ClassFileImporter()
         .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-        .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_JARS)
         .importPackages(packages);
   }
 }

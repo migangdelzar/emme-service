@@ -127,7 +127,7 @@ class AssistantPackageConventionTest {
     assertThat(actionRequest)
         .contains("import jakarta.validation.constraints.NotBlank;")
         .contains("import jakarta.validation.constraints.NotNull;")
-        .contains("@NotNull ActionType actionType")
+        .contains("@NotNull ActionTypeView actionType")
         .contains("@NotBlank String details")
         .contains("@NotNull Instant expiresAt");
   }

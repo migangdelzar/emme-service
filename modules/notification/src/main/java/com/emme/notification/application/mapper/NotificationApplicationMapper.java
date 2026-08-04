@@ -1,6 +1,7 @@
 package com.emme.notification.application.mapper;
 
 import com.emme.notification.api.result.NotificationInfo;
+import com.emme.notification.api.type.NotificationStatusView;
 import com.emme.notification.domain.model.Notification;
 
 public final class NotificationApplicationMapper {
@@ -13,7 +14,7 @@ public final class NotificationApplicationMapper {
         notification.channel(),
         notification.recipientReference(),
         notification.body(),
-        notification.status(),
+        NotificationStatusView.valueOf(notification.status().name()),
         notification.createdAt());
   }
 }

@@ -3,6 +3,7 @@ package com.emme;
 import static com.emme.testing.architecture.DddHexagonalRules.applicationLayerMustNotDependOnAdapters;
 import static com.emme.testing.architecture.DddHexagonalRules.domainLayerMustBeFrameworkFree;
 import static com.emme.testing.architecture.DddHexagonalRules.inboundAdaptersMustNotDependOnOutboundAdapters;
+import static com.emme.testing.architecture.DddHexagonalRules.publicApiMustNotDependOnImplementation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.testing.architecture.ArchitectureTestSupport;
@@ -27,6 +28,11 @@ class DddHexagonalArchitectureTest {
   @Test
   void inboundAdaptersDoNotDependOnOutboundAdapters() {
     inboundAdaptersMustNotDependOnOutboundAdapters().check(CLASSES);
+  }
+
+  @Test
+  void publicApiDoesNotDependOnImplementationPackages() {
+    publicApiMustNotDependOnImplementation().check(CLASSES);
   }
 
   @Test

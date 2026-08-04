@@ -34,7 +34,7 @@ public class AssignMembershipService implements AssignMembershipUseCase {
             .findById(command.roleId())
             .orElseThrow(() -> new IllegalArgumentException("Role not found: " + command.roleId()));
     if (role.scope() != RoleScope.TENANT) {
-      throw new InvalidMembershipRoleException(role.scope());
+      throw new InvalidMembershipRoleException(role.scope().name());
     }
     Membership membership =
         membershipRepository.save(

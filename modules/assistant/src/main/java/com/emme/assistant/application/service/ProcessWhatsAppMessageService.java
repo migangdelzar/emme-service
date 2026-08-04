@@ -6,6 +6,7 @@ import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
 import com.emme.assistant.api.command.StartConversationCommand;
 import com.emme.assistant.api.query.ListConversationsQuery;
 import com.emme.assistant.api.result.ConversationInfo;
+import com.emme.assistant.api.type.ConversationStatusView;
 import com.emme.assistant.api.usecase.AddConversationEventUseCase;
 import com.emme.assistant.api.usecase.ListConversationsUseCase;
 import com.emme.assistant.api.usecase.ProcessWhatsAppMessageUseCase;
@@ -15,7 +16,6 @@ import com.emme.assistant.application.port.out.WhatsAppReplyPort;
 import com.emme.assistant.application.port.out.WhatsAppWebhookEventRepository;
 import com.emme.assistant.domain.model.ChannelParticipant;
 import com.emme.assistant.domain.model.ConsentStatus;
-import com.emme.assistant.domain.model.ConversationStatus;
 import com.emme.kernel.type.ChannelType;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -97,7 +97,7 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
         listConversations.list(new ListConversationsQuery(command.tenantId()));
     return conversations.stream()
         .filter(conversation -> conversation.participantId().equals(participant.id()))
-        .filter(conversation -> conversation.status() == ConversationStatus.ACTIVE)
+        .filter(conversation -> conversation.status() == ConversationStatusView.ACTIVE)
         .findFirst()
         .orElseGet(
             () ->

@@ -58,4 +58,17 @@ public final class DddHexagonalRules {
         .because("inbound adapters must invoke use cases rather than technical integrations")
         .allowEmptyShould(true);
   }
+
+  /** Public contracts do not leak domain, application, or adapter implementation types. */
+  public static ArchRule publicApiMustNotDependOnImplementation() {
+    return noClasses()
+        .that()
+        .resideInAnyPackage("com.emme.*.api..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage(
+            "com.emme.*.domain..", "com.emme.*.application..", "com.emme.*.adapter..")
+        .because("module APIs must expose stable contracts rather than implementation types")
+        .allowEmptyShould(true);
+  }
 }

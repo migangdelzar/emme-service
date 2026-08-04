@@ -1900,4 +1900,5 @@ security checks, integration tests, infrastructure validation, and packaging.
 - [x] Run backend tests and JaCoCo coverage in one Gradle job locally.
 - [x] Apply the remaining service workflow input and container-trigger changes.
 - [x] Add the reusable web Bun setup action and optional workflow inputs.
+- [x] Document CI event modes, parallel job graphs, E2E flow, and reuse boundaries with Mermaid diagrams.
 - [ ] Verify both repositories' changed workflows in GitHub Actions.

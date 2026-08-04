@@ -30,6 +30,102 @@ flowchart LR
     SECURITY --> ARTIFACT[Traceable artifact]
 ```
 
+## Execution architecture
+
+The pipeline has two dimensions: the event selects the default verification
+mode, and an explicit manual dispatch selects expensive or environment-specific
+work. Inputs select jobs; they never disable checks inside a selected job.
+
+```mermaid
+flowchart TD
+    E[Pull request or main push] --> P[Protected default gates]
+    M[Manual workflow dispatch] --> I{Boolean inputs}
+    I --> P
+    I --> X[Optional integration]
+    I --> J[JVM image]
+    I --> N[Native image]
+    I --> R[Real full-stack recording]
+    I --> U[Publish or deploy]
+    P --> S[Required status summary]
+    X --> S
+    J --> S
+    N --> S
+    R --> S
+    U --> S
+```
+
+### Backend job graph
+
+The backend verification families use isolated GitHub runners and therefore
+start in parallel. Boot packaging is deliberately downstream because it is an
+artifact-producing operation that consumes the results of every blocking gate.
+
+```mermaid
+flowchart LR
+    C[Checkout + setup per job]
+    C --> Q[Quality and architecture]
+    C --> T[Unit and module tests<br/>+ JaCoCo coverage]
+    C --> I[Integration tests<br/>Testcontainers]
+    C --> B[Build-logic unit + TestKit]
+    C --> F[Infrastructure manifests]
+    Q --> J[Boot JAR packaging]
+    T --> J
+    I --> J
+    B --> J
+    F --> J
+    J --> A[Reports and status summary]
+    Q --> A
+    T --> A
+    I --> A
+    B --> A
+    F --> A
+```
+
+The graph intentionally does not place every job behind `quality`. A dependency
+is added only when a job consumes another job's output or requires ordering.
+Jobs keep their own checkout and toolchain setup because GitHub-hosted runners
+are isolated; repository-local composite actions remove setup drift without
+pretending that a runner's installed state is shared.
+
+### Frontend and real E2E graph
+
+Frontend quality remains one job because installation, formatting, typechecking,
+tests, coverage, build, and mock browser flows share one workspace. Real E2E is
+separate and manual-only because it owns a disposable full-stack runtime and
+large recording artifacts.
+
+```mermaid
+flowchart TD
+    W[emme-web checkout] --> S[setup-bun composite action]
+    S --> Q[Docs + i18n + format + typecheck]
+    Q --> L[Lint + unit tests + coverage + build]
+    L --> E[Mock Playwright flows]
+    E --> F[Frontend CI summary]
+
+    D[Manual real-E2E dispatch] --> C[Checkout pinned service + web refs]
+    C --> R[Build JVM service + start Compose dependencies]
+    R --> T[Provision disposable tenant owner]
+    T --> P[Run real Playwright journeys]
+    P --> V[Videos + traces + screenshots + reports]
+    V --> Z[Upload artifacts + collect logs]
+```
+
+### Reuse boundary
+
+The reuse boundary is intentionally explicit:
+
+| GitHub Actions mechanism | Use in Emme | Equivalent Jenkins concept |
+|---|---|---|
+| Local composite action | `setup-gradle`, `setup-bun` | Focused shared-library step |
+| `workflow_call` reusable workflow | Future stable complete job graph | Shared pipeline/template |
+| Versioned `emme-actions` repository | Future cross-repository stable actions | Organization-level library |
+
+Local actions are preferred while the service and web contracts are evolving.
+When a cross-repository action is stable, publish it from a private,
+versioned `emme-actions` repository and consume a release tag or immutable
+commit SHA. Do not centralize a two-line setup step in a reusable workflow just
+to hide it; use a composite action for that boundary.
+
 ## Repository workflows
 
 | Workflow | Trigger | Required evidence |

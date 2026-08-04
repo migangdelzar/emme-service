@@ -770,3 +770,15 @@
 - **Prevention rule:** Resource-owning cache removal callbacks must use a
   deterministic executor (inline for this small lifecycle action) so callers
   cannot observe a replacement before the evicted resource is released.
+
+## 2026-08-04 — Match repository time-bound tests to database precision
+
+- **Failure mode:** An appointment saved at an `Instant` with nanoseconds was
+  truncated by the database, then excluded by an inclusive lower-bound query
+  using the original higher-precision value.
+- **Detection signal:** CI intermittently returned one appointment instead of
+  two from the artist/date-range repository test; the failure was isolated to
+  the exact boundary value.
+- **Prevention rule:** Time-based persistence tests must use the precision
+  supported by the target database (microseconds for PostgreSQL `TIMESTAMPTZ`)
+  when asserting inclusive boundaries.

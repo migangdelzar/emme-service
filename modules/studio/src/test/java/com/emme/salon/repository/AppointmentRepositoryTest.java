@@ -68,7 +68,10 @@ class AppointmentRepositoryTest extends BaseRepositoryTest {
 
   @Test
   void shouldFindAppointmentsByArtistAndDateRange() {
-    Instant now = Instant.now().plus(2, ChronoUnit.DAYS);
+    // PostgreSQL TIMESTAMPTZ and H2 timestamp values are persisted with microsecond precision.
+    // Use the same precision for the inclusive lower-bound parameter so the test does not depend
+    // on nanoseconds that the database cannot retain.
+    Instant now = Instant.now().plus(2, ChronoUnit.DAYS).truncatedTo(ChronoUnit.MICROS);
     Instant start1 = now;
     Instant end1 = now.plus(1, ChronoUnit.HOURS);
     Instant start2 = now.plus(3, ChronoUnit.HOURS);

@@ -787,3 +787,9 @@
 - **Failure mode:** The remote Tenancy module test intermittently failed with an optimistic-lock exception while patching a tenant.
 - **Detection signal:** `TenantCreatedConsumer` was active in the shared L4 test context because `app.keycloak.provisioning.enabled` defaulted to `true`; its asynchronous Modulith listener updated the same tenant aggregate during the HTTP assertion.
 - **Prevention rule:** Shared in-memory integration profiles must disable asynchronous external-provider listeners by default. Cover the provider workflow with focused tests and enable it only in an explicit provider-integration context.
+
+## 2026-08-04 — Fail closed for external provisioning conditions
+
+- **Failure mode:** A missing `app.keycloak.provisioning.enabled` property enabled an asynchronous external identity listener through `matchIfMissing = true`.
+- **Detection signal:** A generic test profile had to override the listener after it raced a tenant update; the same omission could activate provisioning in an incomplete deployment profile.
+- **Prevention rule:** External-provider listeners must require an explicit `true` property (`matchIfMissing = false`). Production profiles must opt in deliberately, while test profiles must opt out explicitly.

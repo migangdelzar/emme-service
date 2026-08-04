@@ -656,6 +656,12 @@ reopened by this backlog.
 
 ### P5 — Final governance verification
 
+- [ ] Perform the final configuration-properties normalization pass: prefer
+  immutable records for stable constructor-bound groups, retain mutable classes
+  only with a documented binder/framework reason, and apply startup validation
+  only to real active-mode invariants (`@NotBlank`, `@NotNull`, numeric bounds,
+  and conditional provider checks). Add focused properties tests and update the
+  module registry after each conversion.
 - [x] Run the repository-local service-wide architecture, Modulith, CI,
   integration, boot-artifact, documentation, formatting, and remote PR checks.
 - [x] Commit the final evidence report at

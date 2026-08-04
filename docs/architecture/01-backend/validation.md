@@ -38,6 +38,40 @@ The ownership rule is:
 Do not move a rule to an easier layer if that layer does not own the truth.
 Boundary validation improves feedback; it never replaces domain validation.
 
+## Configuration properties: record-first and constraint-driven
+
+Use an immutable Java `record` for constructor-bound configuration whenever the
+property group is stable and does not require framework mutation after binding.
+Use a mutable `@ConfigurationProperties` class only when the current binder,
+framework integration, or an explicitly tracked migration still requires
+setters. Record that exception in the module plan and remove it when the
+dependency is ready.
+
+Validation is selective, not decorative. Annotate a property when its invariant
+is known at startup and the value is required for the active mode:
+
+| Property shape | Preferred rule | Example | Do not do this |
+|---|---|---|---|
+| Required text | `@NotBlank` | provider name, consumer group | `@NotBlank` on an optional credential for a disabled provider |
+| Required reference | `@NotNull` | required nested configuration | `@NotNull` on a primitive (`boolean`, `int`, `long`) |
+| Positive count | `@Positive` or `@Min(1)` | retry count, pool size | Accept zero and fail later in a client or pool |
+| Bounded count | `@Min` + `@Max` | page size, pool limit | Use arbitrary limits without documenting the operational reason |
+| URI/identifier format | A stable URI/format constraint | endpoint or UUID text | Validate provider-specific syntax with a generic regex |
+| Conditional configuration | Type-level constraint or startup validator | enabled provider requires credentials | Put cross-field checks in controllers or domain objects |
+| Secret | Presence/length only when enabled | API key or admin password | Log, normalize, or expose the secret in a result |
+
+Nested records must use `@Valid` where the binding/validation path requires
+cascading. Optional provider blocks may remain nullable when the provider is not
+selected; a conditional validator or provider-specific startup check should
+enforce their required fields only when that provider is active. Defaults are
+appropriate for local/test-safe values, never as a substitute for production
+secrets or secure transport.
+
+The repository therefore does not convert every properties class blindly:
+records are preferred for immutable binding, while constraints express real
+startup invariants. This keeps disabled integrations usable in tests and local
+development without weakening validation for an enabled production integration.
+
 ## Terminology: “fluent validation” in Java
 
 `FluentValidation` is primarily the name of a .NET library. The Java baseline

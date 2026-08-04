@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(
     name = "app.keycloak.provisioning.enabled",
     havingValue = "true",
-    matchIfMissing = true)
+    matchIfMissing = false)
 public class TenantCreatedConsumer {
 
   private final ProvisionTenantIdentityUseCase useCase;

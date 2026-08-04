@@ -54,7 +54,7 @@ below is the authoritative order for open work.
 | `build-logic` | [build-logic CDD migration](2026-08-02-build-logic-cdd-migration.md); [verification report](../reviews/2026-08-02-build-logic-cdd-verification.md) | Implemented and verified | Capability-owned Gradle conventions, binary plugins, lazy providers, normalized tasks/models, TestKit, and configuration-cache coverage |
 | `event-streaming` | [Kafka + Spring Modulith closure](2026-08-02-kafka-modulith-event-streaming-closure.md); [verification report](../reviews/2026-08-02-kafka-modulith-event-streaming-verification.md) | Implemented and verified for MVP | Verify public event contracts, publication delivery, consumer idempotency, application-restart recovery configuration, broker configuration, and CI evidence |
 
-| `architecture-verification` | [DDD + Hexagonal + Modulith architecture verification design](../specs/2026-08-04-ddd-hexagonal-modulith-architecture-verification-design.md) | Design ready; implementation follows real full-stack recordings | Execute reusable ArchUnit, JMolecules-compatible, naming, package metadata, persistence ownership, tenant-isolation, event-contract, and Modulith documentation rules |
+| `architecture-verification` | [DDD + Hexagonal + Modulith architecture verification design](../specs/2026-08-04-ddd-hexagonal-modulith-architecture-verification-design.md) | Repository-local rules implemented; environment-dependent evidence remains | Execute reusable ArchUnit, JMolecules-compatible, naming, package metadata, persistence ownership, tenant-isolation, event-contract, and Modulith documentation rules |
 
 ## Remaining execution order: priority and type
 

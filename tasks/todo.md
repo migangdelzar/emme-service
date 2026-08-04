@@ -77,15 +77,15 @@ Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/su
       inbound/outbound adapter separation.
 - [x] Verify grouped API visibility, normalized naming, package metadata, and
       one-use-case-per-service in the repository-wide architecture suite.
-- [ ] Verify entity/table ownership, `emme_core` boundaries, tenant schemas,
-      and tenant-isolation rules.
-- [ ] Strengthen Spring Modulith verification and deterministic Documenter/
-      PlantUML generation.
+- [x] Verify entity/table ownership, `emme_core` boundaries, tenant schemas,
+      and tenant-isolation rules with `SchemaOwnershipTest`.
+- [x] Strengthen Spring Modulith verification and deterministic Documenter/
+      PlantUML generation with `ModularityTest` output assertions.
 - [x] Add immutable public-event naming/record rules for Spring Modulith and
       Kafka without introducing the conference project's JPA `EntityWithEvents`
       pipeline.
-- [ ] Evaluate JMolecules and selective MapStruct adoption against the current
-      Gradle platform before adding dependencies.
+- [x] Evaluate JMolecules and selective MapStruct adoption against the current
+      Gradle platform; record the no-blanket-dependency decision in ADR 0007.
 - [x] Run deliberate red/green architecture tests for package metadata, event
       contracts, and normalized naming rules.
 

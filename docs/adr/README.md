@@ -28,6 +28,7 @@ to the decision it supersedes.
 - [ADR-0004: Shared and Audit ownership](0004-shared-and-audit-ownership.md)
 - [ADR-0005: Spring Modulith event streaming through Kafka](0005-spring-modulith-kafka-event-streaming.md)
 - [ADR-0006: Low-cost MVP runtime boundary](0006-mvp-low-cost-runtime-boundary.md)
+- [ADR-0007: Selective architecture metadata and mapping generation](0007-selective-architecture-metadata-and-mapping.md)
 
 ## Index
 
@@ -39,6 +40,7 @@ to the decision it supersedes.
 | [0004](0004-shared-and-audit-ownership.md) | Shared technical capability and reserved Audit ownership | Accepted | 2026-08-01 |
 | [0005](0005-spring-modulith-kafka-event-streaming.md) | Spring Modulith event streaming through Kafka | Accepted | 2026-08-02 |
 | [0006](0006-mvp-low-cost-runtime-boundary.md) | Low-cost MVP runtime boundary | Accepted with release gates open | 2026-08-03 |
+| [0007](0007-selective-architecture-metadata-and-mapping.md) | Selective architecture metadata and mapping generation | Accepted | 2026-08-04 |
 
 Create a new ADR when a decision changes. Do not rewrite an accepted ADR to
 hide its historical rationale.

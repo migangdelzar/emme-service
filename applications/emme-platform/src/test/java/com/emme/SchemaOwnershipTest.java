@@ -3,6 +3,7 @@ package com.emme;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.shared.persistence.TenantOwnedEntity;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
@@ -75,8 +76,24 @@ class SchemaOwnershipTest {
   }
 
   @Test
+  void tenantOwnedEntitiesUseTheActiveTenantSchema() {
+    for (JavaClass clazz : CLASSES) {
+      if (!clazz.isAnnotatedWith(Entity.class) || !clazz.isAssignableTo(TenantOwnedEntity.class)) {
+        continue;
+      }
+      Table table =
+          clazz
+              .tryGetAnnotationOfType(Table.class)
+              .orElseThrow(() -> new AssertionError(clazz.getName() + " must declare @Table"));
+      assertThat(table.schema())
+          .as("tenant-owned entity %s must not be pinned to emme_core", clazz.getName())
+          .isBlank();
+    }
+  }
+
+  @Test
   void emmeCoreIsNotReferencedOutsideOwningModules() throws IOException {
-    Path root = Path.of("src/main/java/com/emme");
+    Path root = repositoryRoot().resolve("modules");
     try (Stream<Path> files = Files.walk(root)) {
       List<String> offenders =
           files
@@ -106,6 +123,18 @@ class SchemaOwnershipTest {
   private static String moduleOf(JavaClass clazz) {
     String remainder = clazz.getPackageName().substring("com.emme".length());
     return remainder.isEmpty() ? "(root)" : remainder.substring(1).split("\\.")[0];
+  }
+
+  private static Path repositoryRoot() {
+    Path current = Path.of("").toAbsolutePath();
+    while (current != null) {
+      if (Files.isDirectory(current.resolve("modules"))
+          && Files.isDirectory(current.resolve("applications/emme-platform"))) {
+        return current;
+      }
+      current = current.getParent();
+    }
+    throw new IllegalStateException("Cannot locate repository root");
   }
 
   private static DescribedPredicate<JavaClass> declareTableSchema(String schema) {

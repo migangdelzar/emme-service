@@ -1,5 +1,17 @@
 # Engineering lessons
 
+## 2026-08-04 — Read-only transactions also require proxyable services
+
+- Failure mode: Adding `@Transactional(readOnly = true)` to the final
+  `GetCurrentUserService` caused every Spring context test to fail during bean
+  creation.
+- Detection signal: Spring reported `Cannot subclass final class` from the
+  configured CGLIB transaction proxy.
+- Prevention rule: Treat every class-level transaction annotation as an AOP
+  change; keep Spring-managed services non-final when the application uses
+  class-based proxies, and run a full context test after changing transaction
+  boundaries.
+
 ## 2026-08-03 — Do not run overlapping Gradle test writers
 
 - Failure mode: Several Gradle test commands were started concurrently against

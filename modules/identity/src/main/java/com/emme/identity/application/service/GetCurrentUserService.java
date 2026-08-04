@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 /** Application service for the current-user read workflow. */
 @Service
 @Transactional(readOnly = true)
-public final class GetCurrentUserService implements GetCurrentUserUseCase {
+public class GetCurrentUserService implements GetCurrentUserUseCase {
 
   private final GetCurrentUserMembershipsUseCase memberships;
   private final GetUserPermissionsUseCase permissions;

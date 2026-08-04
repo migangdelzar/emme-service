@@ -1,4 +1,4 @@
-# JVM runtime overlay for the local K3d/K3s-compatible environment.
+# GraalVM Native Image overlay for the local K3d/K3s-compatible environment.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -13,7 +13,7 @@ namePrefix: dev-
 images:
   - name: ghcr.io/migangdelzar/emme-service
     newName: emme-modulith
-    newTag: dev
+    newTag: dev-native
   - name: ghcr.io/migangdelzar/emme-web
     newName: emme-frontend
     newTag: dev
@@ -23,6 +23,8 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
         value: "dev"
+      - op: remove
+        path: /spec/template/spec/containers/0/env/1
     target:
       kind: Deployment
       name: backend

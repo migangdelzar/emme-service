@@ -44,6 +44,52 @@ flowchart LR
 
 `emme.container` should expose a typed extension, register lazy tasks such as `buildContainerImage`, `verifyContainerImage`, and `pushContainerImage`, and select Docker/Podman through a provider abstraction. The module build script declares the capability; the plugin owns the wiring.
 
+## Runtime image selection
+
+Runtime selection is explicit. The shared Compose base contains the service,
+dependency, network, volume, port, and health configuration. Apply exactly one
+runtime overlay; never combine JVM and native overlays in the same invocation.
+
+```mermaid
+flowchart LR
+    BASE[compose.yml\nshared services] --> JVM[compose.jvm.yml\nJVM image]
+    BASE --> NATIVE[compose.native.yml\nNative image]
+    JVM --> LOCAL[optional local/test/observability overlay]
+    NATIVE --> LOCAL
+```
+
+```bash
+# JVM rollback/default path
+docker compose \
+  -f deployment/compose/compose.yml \
+  -f deployment/compose/compose.jvm.yml \
+  up -d
+
+# Explicit native path
+docker compose \
+  -f deployment/compose/compose.yml \
+  -f deployment/compose/compose.native.yml \
+  up -d
+```
+
+The image references are overrideable without editing repository files:
+
+```bash
+EMME_PLATFORM_JVM_IMAGE=ghcr.io/migangdelzar/emme-service:2026.08.0-jvm \
+  docker compose -f deployment/compose/compose.yml \
+    -f deployment/compose/compose.jvm.yml config
+
+EMME_PLATFORM_NATIVE_IMAGE=ghcr.io/migangdelzar/emme-service:2026.08.0-native \
+  docker compose -f deployment/compose/compose.yml \
+    -f deployment/compose/compose.native.yml config
+```
+
+The JVM overlay is the rollback artifact. The native overlay is valid only
+after the native image has passed the same health, authentication, tenant,
+customer, catalog, and appointment smoke checks. The selected image must be
+immutable in CI and production; use a release tag or digest rather than
+`latest`.
+
 ## Container hardening
 
 ### Image supply chain

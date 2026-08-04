@@ -15,6 +15,39 @@ DeploymentProvider
 └── KubernetesProvider    # staging / production
 ```
 
+## JVM and native runtime overlays
+
+Compose and Kubernetes use the same selection rule: shared infrastructure is
+defined once, and the deployment command selects exactly one runtime image.
+
+| Target | JVM | Native |
+|---|---|---|
+| Docker Compose | `deployment/compose/compose.yml` + `compose.jvm.yml` | `deployment/compose/compose.yml` + `compose.native.yml` |
+| K3d local | `infra/kubernetes/overlays/dev` | `infra/kubernetes/overlays/dev-native` |
+| K3s | `infra/kubernetes/overlays/prod` | `infra/kubernetes/overlays/prod-native` |
+
+```mermaid
+flowchart TD
+    COMMON[Shared base manifests] --> JVM[JVM overlay]
+    COMMON --> NATIVE[Native overlay]
+    JVM --> K3D[K3d local]
+    NATIVE --> K3D_NATIVE[K3d native smoke]
+    JVM --> K3S[K3s]
+    NATIVE --> K3S_NATIVE[K3s native smoke]
+```
+
+The JVM overlays are the default rollback path. Native overlays remove JVM
+runtime flags and select a separately built native image. Do not apply both
+runtime overlays to one environment.
+
+```bash
+# Render before applying; no cluster mutation occurs.
+kubectl kustomize infra/kubernetes/overlays/dev >/dev/null
+kubectl kustomize infra/kubernetes/overlays/dev-native >/dev/null
+kubectl kustomize infra/kubernetes/overlays/prod >/dev/null
+kubectl kustomize infra/kubernetes/overlays/prod-native >/dev/null
+```
+
 ## Flow
 
 ```text

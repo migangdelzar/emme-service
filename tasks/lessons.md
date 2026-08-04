@@ -689,3 +689,14 @@
   clean test execution before changing production mapping or transaction code;
   retain the failure as a service-wide test-stability follow-up when it cannot
   be reproduced deterministically.
+
+## 2026-08-03 — Compose plugin availability differs by Docker installation
+
+- Failure mode: the local Docker CLI accepted `docker` but did not provide the
+  `docker compose` subcommand, so an initial validation command did not execute
+  Compose parsing.
+- Detection signal: Docker reported `unknown shorthand flag: 'f' in -f`, while
+  the separately installed `docker-compose` binary was available.
+- Prevention rule: fail fast on the command's exit status and validate with the
+  repository-supported Compose executable; CI should install or invoke the
+  modern Compose plugin explicitly rather than relying on a local fallback.

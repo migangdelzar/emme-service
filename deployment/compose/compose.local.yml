@@ -1,8 +1,7 @@
-# Local dev — mounts source for hot reload
+# Local environment overlay. Select a runtime image in compose.jvm.yml or
+# compose.native.yml before applying this file.
 services:
   emme-platform:
-    build:
-      context: ../..
     environment:
       SPRING_PROFILES_ACTIVE: local
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"

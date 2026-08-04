@@ -118,7 +118,15 @@ jobs:
       - name: Render Kubernetes overlays
         run: |
           kubectl kustomize infra/kubernetes/overlays/dev >/dev/null
+          kubectl kustomize infra/kubernetes/overlays/dev-native >/dev/null
           kubectl kustomize infra/kubernetes/overlays/prod >/dev/null
+          kubectl kustomize infra/kubernetes/overlays/prod-native >/dev/null
+      - name: Validate Compose runtime overlays
+        run: |
+          docker compose -f deployment/compose/compose.yml \
+            -f deployment/compose/compose.jvm.yml config --quiet
+          docker compose -f deployment/compose/compose.yml \
+            -f deployment/compose/compose.native.yml config --quiet
       - name: Validate Terraform
         working-directory: infra/terraform
         run: |

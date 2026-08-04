@@ -73,6 +73,16 @@ export const canonicalTargetRules = {
       forbidden: ['studio-api', 'emme-service-studio-api'],
     },
     {
+      path: 'deployment/compose/compose.jvm.yml',
+      required: ['services:', 'emme-platform:', 'EMME_PLATFORM_JVM_IMAGE'],
+      forbidden: ['EMME_PLATFORM_NATIVE_IMAGE', 'studio-api'],
+    },
+    {
+      path: 'deployment/compose/compose.native.yml',
+      required: ['services:', 'emme-platform:', 'EMME_PLATFORM_NATIVE_IMAGE'],
+      forbidden: ['EMME_PLATFORM_JVM_IMAGE', 'studio-api'],
+    },
+    {
       path: 'deployment/compose/compose.local.yml',
       required: ['emme-platform'],
       forbidden: ['studio-api'],
@@ -81,6 +91,26 @@ export const canonicalTargetRules = {
       path: 'deployment/compose/compose.test.yml',
       required: ['emme-platform'],
       forbidden: ['studio-api'],
+    },
+    {
+      path: 'infra/kubernetes/overlays/dev/kustomization.yaml',
+      required: ['JVM runtime overlay', 'newTag: dev'],
+      forbidden: ['dev-native'],
+    },
+    {
+      path: 'infra/kubernetes/overlays/dev-native/kustomization.yaml',
+      required: ['Native Image overlay', 'newTag: dev-native'],
+      forbidden: ['dev-jvm'],
+    },
+    {
+      path: 'infra/kubernetes/overlays/prod/kustomization.yaml',
+      required: ['JVM runtime overlay', 'newTag: 0.1.0'],
+      forbidden: ['0.1.0-native'],
+    },
+    {
+      path: 'infra/kubernetes/overlays/prod-native/kustomization.yaml',
+      required: ['Native Image overlay', 'newTag: 0.1.0-native'],
+      forbidden: ['0.1.0-jvm'],
     },
     {
       path: 'deployment/helm/emme/values.yaml',

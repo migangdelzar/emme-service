@@ -6,7 +6,7 @@
 /api/services
 /api/artists
 /api/appointments
-/api/catalog
+/api/catalog/items
 /api/notifications
 /api/payments
 /api/documents

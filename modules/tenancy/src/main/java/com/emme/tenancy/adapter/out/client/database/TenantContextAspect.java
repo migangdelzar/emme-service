@@ -23,7 +23,9 @@ public class TenantContextAspect {
     this.entityManager = entityManager;
   }
 
-  @Before("execution(* com.emme..*Repository.*(..)) && !within(com.emme.tenancy..*)")
+  @Before(
+      "execution(* com.emme..*Repository.*(..))"
+          + " && !execution(* com.emme.tenancy..*Repository.*(..))")
   public void setTenantContext() {
     UUID tenantId = TenantContext.getCurrentTenantId();
     if (tenantId == null) {

@@ -3,6 +3,7 @@ package com.emme.identity.adapter.out.client.keycloak;
 import com.emme.identity.configuration.IdentityKeycloakProperties;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
+import java.net.URI;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,9 +22,11 @@ public class MultiRealmJwtDecoder implements JwtDecoder {
 
   private final Map<String, NimbusJwtDecoder> decoders = new ConcurrentHashMap<>();
   private final IdentityJwtTrustPolicy trustPolicy;
+  private final String jwkSetBaseUrl;
 
   public MultiRealmJwtDecoder(IdentityKeycloakProperties properties) {
     this.trustPolicy = new IdentityJwtTrustPolicy(properties);
+    this.jwkSetBaseUrl = properties.getJwkSetBaseUrl();
   }
 
   @Override
@@ -45,11 +48,31 @@ public class MultiRealmJwtDecoder implements JwtDecoder {
         decoders.computeIfAbsent(
             issuer,
             iss -> {
-              String jwksUri = iss + "/protocol/openid-connect/certs";
+              String jwksUri = keySetUri(iss, jwkSetBaseUrl);
               NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwksUri).build();
               jwtDecoder.setJwtValidator(trustPolicy.validatorFor(iss));
               return jwtDecoder;
             });
     return decoder.decode(token);
+  }
+
+  static String keySetUri(String issuer, String baseUrl) {
+    String normalizedIssuer = stripTrailingSlash(issuer);
+    if (baseUrl == null || baseUrl.isBlank()) {
+      return normalizedIssuer + "/protocol/openid-connect/certs";
+    }
+
+    URI issuerUri = URI.create(normalizedIssuer);
+    String path = issuerUri.getPath();
+    int realmsIndex = path.indexOf("/realms/");
+    if (realmsIndex < 0) {
+      throw new IllegalArgumentException("Identity issuer must contain /realms/");
+    }
+    String realmPath = path.substring(realmsIndex);
+    return stripTrailingSlash(baseUrl) + realmPath + "/protocol/openid-connect/certs";
+  }
+
+  private static String stripTrailingSlash(String value) {
+    return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
   }
 }

@@ -211,6 +211,16 @@ class TenancyPackageConventionTest {
   }
 
   @Test
+  void doesNotApplyTenantRlsAdviceToTheCoreTenantRegistryRepository() throws IOException {
+    String aspect = Files.readString(DATABASE_CONTEXT_ASPECT);
+
+    assertThat(aspect)
+        .contains("!execution(* com.emme.tenancy..*Repository.*(..))")
+        .contains("SET LOCAL app.current_tenant_id")
+        .contains("SET LOCAL search_path");
+  }
+
+  @Test
   void removesLegacyUngroupedContractFilesAndUsesPastTenseEventNaming() {
     assertThat(Files.exists(LEGACY_API)).isFalse();
     assertThat(Files.exists(LEGACY_RESULT)).isFalse();

@@ -12,6 +12,7 @@ class IdentityKeycloakPropertiesTest {
 
     properties.setBaseUrl("http://localhost:18080");
     properties.setIssuerUri("http://localhost:18080/realms/emme");
+    properties.setJwkSetBaseUrl("http://keycloak:8080");
     properties.setClientId("emme-salon-app");
     properties.setAdminRealm("master");
     properties.setAdminUsername("admin");
@@ -22,6 +23,7 @@ class IdentityKeycloakPropertiesTest {
 
     assertThat(properties.getBaseUrl()).isEqualTo("http://localhost:18080");
     assertThat(properties.getIssuerUri()).isEqualTo("http://localhost:18080/realms/emme");
+    assertThat(properties.getJwkSetBaseUrl()).isEqualTo("http://keycloak:8080");
     assertThat(properties.getClientId()).isEqualTo("emme-salon-app");
     assertThat(properties.getAdminRealm()).isEqualTo("master");
     assertThat(properties.getAdminUsername()).isEqualTo("admin");

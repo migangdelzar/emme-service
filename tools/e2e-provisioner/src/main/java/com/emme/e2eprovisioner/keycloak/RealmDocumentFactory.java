@@ -26,6 +26,15 @@ public final class RealmDocumentFactory {
     client.put("standardFlowEnabled", true);
     client.putArray("redirectUris").add(configuration.webOrigin() + "/*");
     client.putArray("webOrigins").add(configuration.webOrigin());
+    var audienceMapper = client.putArray("protocolMappers").addObject();
+    audienceMapper.put("name", "emme-platform-audience");
+    audienceMapper.put("protocol", "openid-connect");
+    audienceMapper.put("protocolMapper", "oidc-audience-mapper");
+    audienceMapper
+        .putObject("config")
+        .put("included.client.audience", "emme-salon-app")
+        .put("id.token.claim", "false")
+        .put("access.token.claim", "true");
 
     var roles = document.putObject("roles").putArray("realm");
     for (var role :

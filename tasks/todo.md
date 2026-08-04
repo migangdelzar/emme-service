@@ -2,6 +2,36 @@
 
 ## Acceptance criteria
 
+## Unified service CI and E2E verification — 2026-08-04
+
+### Goal
+
+Expose backend quality, architecture boundaries, build-logic checks,
+infrastructure validation, integration tests, and the service API E2E lane from
+one CI workflow with parallel jobs. Keep image delivery and security/CVE scans
+as separate workflows.
+
+### Acceptance criteria
+
+- [ ] Backend CI includes the Modulith/DDD/Hexagonal boundary job.
+- [ ] Backend CI can run the `emme-platform` E2E source set explicitly.
+- [ ] Service E2E requires an explicit base URL and fails closed otherwise.
+- [ ] The obsolete duplicate boundary workflow is removed after its checks are
+      merged into backend CI.
+- [ ] Backend workflow contract validation is updated and passes.
+- [ ] Compose/runtime and Kubernetes manifest validation remain green.
+- [ ] Local service E2E is executed against a disposable runtime or its exact
+      external prerequisite is documented.
+
+### Execution checklist
+
+- [ ] Add failing workflow-contract coverage for the merged boundary and E2E
+      jobs.
+- [ ] Merge boundary verification into `ci-backend.yml` as a parallel job.
+- [ ] Add a manually selectable `run_e2e` input and E2E job.
+- [ ] Run focused Gradle tests and service E2E with a provisioned base URL.
+- [ ] Run full backend CI-equivalent verification.
+
 - [x] CDD build-logic architecture baseline is documented and used by the
   current included build.
 - [x] Execute the complete build-logic CDD migration plan before the final
@@ -1980,4 +2010,29 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - [x] Review constructor dependency hotspots without introducing artificial
   helper/manager classes or violating one-service-per-use-case.
 - [x] Record evidence in
-  `docs/superpowers/reviews/2026-08-04-application-service-audit.md`.
+      `docs/superpowers/reviews/2026-08-04-application-service-audit.md`.
+
+## Canonical E2E user extension and runtime verification — 2026-08-04
+
+- [x] Review the former `studio-api` `@WithUser` lifecycle and precedence
+      model.
+- [x] Add repeatable `@WithUser` and `E2eUserExtension` support to the current
+      `emme-platform` E2E source set.
+- [x] Add immutable `E2eUsers` record support for multiple configured users.
+- [x] Give each `UserSession` an explicit bearer token and canonical
+      `API-Version: 1.0` header.
+- [x] Derive the active tenant from the token claim instead of hard-coding a
+      historical tenant UUID in E2E tests.
+- [x] Prevent tenant RLS advice from intercepting the core tenant-registry
+      repository outside a transaction.
+- [x] Normalize stale E2E expectations for current API routes and configured
+      mock providers.
+- [x] Run authenticated service E2E against the local disposable stack:
+      `45 tests completed, BUILD SUCCESSFUL`.
+- [x] Run the tenancy convention guardrail and E2E source compilation.
+- [x] Add the base i18n bundle used when a locale-specific bundle is not
+      available, preventing runtime message-source warnings for locales such as
+      `en-MX`.
+- [ ] Replace remaining functional-wrapper test bodies with direct extension
+      parameter injection in a separate cleanup slice; the single `e2eTest`
+      task and runtime flow are already canonical.

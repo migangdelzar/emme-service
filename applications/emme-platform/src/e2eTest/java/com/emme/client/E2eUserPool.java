@@ -53,6 +53,35 @@ public final class E2eUserPool {
     return user;
   }
 
+  /** Acquires a user whose provisioned roles include {@code role}. */
+  public synchronized TestUser acquire(String role) {
+    return acquire(role, "");
+  }
+
+  /** Acquires a user whose provisioned roles include {@code role} and tenant matches when set. */
+  public synchronized TestUser acquire(String role, String tenantId) {
+    if (role == null || role.isBlank()) {
+      return acquire();
+    }
+    var selected =
+        available.stream()
+            .filter(user -> user.roles().contains(role))
+            .filter(
+                user -> tenantId == null || tenantId.isBlank() || user.tenantId().equals(tenantId))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        "No E2E user matching role "
+                            + role
+                            + (tenantId == null || tenantId.isBlank()
+                                ? ""
+                                : " and tenant " + tenantId)));
+    available.remove(selected);
+    inUse.add(selected.userId());
+    return selected;
+  }
+
   public synchronized void release(String userId) {
     if (!inUse.remove(userId)) {
       System.out.printf("[E2eUserPool] WARN: user %s not in use, skipping release%n", userId);

@@ -43,7 +43,7 @@ export const canonicalTargetRules = {
       forbidden: ['include(":applications:studio-api")'],
     },
     {
-      path: '.github/workflows/ci-module-boundaries.yml',
+      path: '.github/workflows/ci-backend.yml',
       required: [':applications:emme-platform:test'],
       forbidden: [':applications:studio-api:test'],
     },

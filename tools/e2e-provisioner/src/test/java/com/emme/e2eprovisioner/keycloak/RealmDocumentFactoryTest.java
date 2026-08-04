@@ -21,6 +21,15 @@ class RealmDocumentFactoryTest {
     assertThat(document.path("realm").asText()).isEqualTo("emme");
     assertThat(document.path("clients").get(0).path("clientId").asText())
         .isEqualTo("emme-salon-app");
+    assertThat(
+            document
+                .path("clients")
+                .get(0)
+                .path("protocolMappers")
+                .get(0)
+                .path("protocolMapper")
+                .asText())
+        .isEqualTo("oidc-audience-mapper");
     assertThat(document.path("users").get(0).path("username").asText()).isEqualTo("owner@emme.app");
     assertThat(document.path("users").get(0).path("attributes").path("tenant_id").get(0).asText())
         .isEqualTo(tenantId.toString());

@@ -37,6 +37,52 @@ requirement that cannot be represented by the shared baseline. Such an override
 must be named `application-<profile>.yml`, contain only the delta, and be
 covered by the owning module's test.
 
+## E2E identity injection
+
+The service uses one Gradle `e2eTest` source set and one execution task. User
+identity is selected declaratively with a JUnit 5 extension; provider mode or
+deployment target must not create a second Java test flow.
+
+```java
+@ExtendWith(E2eUserExtension.class)
+@WithUser(role = Roles.TENANT_OWNER, tokenEnvironmentVariable = "E2E_OWNER_TOKEN")
+class TenantApiTest {
+
+  @Test
+  void listsTenantData(UserSession session) {
+    session.tenants().list();
+  }
+}
+```
+
+Use repeatable `@WithUser` declarations when a scenario requires distinct
+identities. Inject the immutable `E2eUsers` record and select sessions by
+position. Each session owns its bearer token and sends the canonical
+`API-Version: 1.0` header.
+
+```java
+@WithUser(tokenEnvironmentVariable = "E2E_OWNER_TOKEN")
+@WithUser(role = Roles.TENANT_STAFF, tokenEnvironmentVariable = "E2E_STAFF_TOKEN")
+void enforcesTenantBoundary(E2eUsers users) {
+  users.first().tenants().list();
+  users.get(1).customers().list();
+}
+```
+
+`PER_METHOD` is the default and gives each test isolation. `PER_CLASS` is
+allowed only for read-only suites and must be declared at class scope. Method
+declarations override class declarations, and all repeated declarations in one
+test must use the same lifecycle. `E2E_ACCESS_TOKEN` is the default token; indexed tokens
+`E2E_ACCESS_TOKEN_1`, `E2E_ACCESS_TOKEN_2`, or explicit annotation variables
+enable multiple identities without exposing credentials in test code.
+
+Configuration properties follow the same rule as application contracts:
+immutable Java `record` types are preferred for stable, constructor-bound
+settings; mutable bean properties remain only where legacy setter binding or
+incremental migration requires them. Spring profiles remain the mechanism for
+selecting infrastructure (`test`, `web`, `repository`, `integration-test`, and
+`e2e`); records do not replace profiles.
+
 ## Database ownership
 
 ```mermaid

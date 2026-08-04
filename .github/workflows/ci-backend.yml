@@ -12,6 +12,16 @@ on:  # yamllint disable-line rule:truthy
         required: true
         default: true
         type: boolean
+      run_e2e:
+        description: Run service API E2E tests against a provisioned environment
+        required: true
+        default: false
+        type: boolean
+      e2e_base_url:
+        description: Base URL for the provisioned service API E2E environment
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -77,7 +87,9 @@ jobs:
 
   integration:
     name: Integration tests
-    if: github.event_name != 'workflow_dispatch' || inputs.run_integration == true
+    if: >-
+      github.event_name != 'workflow_dispatch' ||
+      inputs.run_integration == true
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -118,6 +130,72 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  boundaries:
+    name: DDD, Hexagonal, and Modulith boundaries
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-gradle
+      - name: Verify Spotless formatting
+        run: >-
+          ./gradlew spotlessCheck
+          --no-daemon --no-configuration-cache --stacktrace
+      - name: Verify architecture boundaries
+        run: >-
+          ./gradlew :applications:emme-platform:test
+          --tests com.emme.DddHexagonalArchitectureTest
+          --tests com.emme.ApplicationServiceArchitectureTest
+          --tests com.emme.ModularityTest
+          --tests com.emme.LayerConventionTest
+          --tests com.emme.NamingConventionArchitectureTest
+          --tests com.emme.PackageMetadataArchitectureTest
+          --tests com.emme.SchemaOwnershipTest
+          --tests com.emme.EventContractArchitectureTest
+          --tests com.emme.KafkaEventContractTest
+          --tests com.emme.KafkaEventStreamingPropertiesTest
+          --tests com.emme.ApiVersionConventionTest
+          --no-daemon --no-configuration-cache --stacktrace
+
+  e2e:
+    name: Service API E2E
+    if: github.event_name == 'workflow_dispatch' && inputs.run_e2e == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      EMME_E2E_BASE_URL: ${{ inputs.e2e_base_url }}
+      E2E_ACCESS_TOKEN: ${{ secrets.E2E_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-gradle
+      - name: Validate E2E environment contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${EMME_E2E_BASE_URL}" || {
+            echo 'e2e_base_url is required when run_e2e is enabled'
+            exit 1
+          }
+          test -n "${E2E_ACCESS_TOKEN}" || {
+            echo 'E2E_ACCESS_TOKEN repository/environment secret is required'
+            exit 1
+          }
+      - name: Run service API E2E tests
+        run: >-
+          ./gradlew :applications:emme-platform:e2eTest
+          -Pemme.e2e.base-url="${EMME_E2E_BASE_URL}"
+          --no-daemon --no-configuration-cache --stacktrace
+      - name: Upload E2E reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-api-e2e-reports
+          path: |
+            applications/emme-platform/build/reports/tests/e2eTest/**
+            applications/emme-platform/build/test-results/e2eTest/**
+          if-no-files-found: ignore
+          retention-days: 7
+
   infrastructure:
     name: Validate infrastructure manifests
     runs-on: ubuntu-24.04
@@ -152,11 +230,12 @@ jobs:
           terraform validate
 
   boot-jar:
-    needs: [quality, test, integration, build-logic, infrastructure]
+    needs: [quality, test, integration, build-logic, infrastructure, boundaries]
     if: >-
       always() && needs.quality.result == 'success' &&
       needs.test.result == 'success' &&
       needs.build-logic.result == 'success' &&
+      needs.boundaries.result == 'success' &&
       needs.infrastructure.result == 'success' &&
       (needs.integration.result == 'success' ||
       needs.integration.result == 'skipped')
@@ -189,6 +268,8 @@ jobs:
       - integration
       - build-logic
       - infrastructure
+      - boundaries
+      - e2e
       - boot-jar
     runs-on: ubuntu-24.04
     steps:
@@ -199,8 +280,15 @@ jobs:
           INTEGRATION_RESULT: ${{ needs.integration.result }}
           BUILD_LOGIC_RESULT: ${{ needs['build-logic'].result }}
           INFRASTRUCTURE_RESULT: ${{ needs.infrastructure.result }}
+          BOUNDARIES_RESULT: ${{ needs.boundaries.result }}
+          E2E_RESULT: ${{ needs.e2e.result }}
           BOOT_JAR_RESULT: ${{ needs['boot-jar'].result }}
-          INTEGRATION_REQUIRED: ${{ github.event_name != 'workflow_dispatch' || inputs.run_integration == true }}
+          INTEGRATION_REQUIRED: >-
+            ${{ github.event_name != 'workflow_dispatch' ||
+            inputs.run_integration == true }}
+          E2E_REQUIRED: >-
+            ${{ github.event_name == 'workflow_dispatch' &&
+            inputs.run_e2e == true }}
         run: |
           echo "## Backend CI" >> "$GITHUB_STEP_SUMMARY"
           echo "- Quality: ${QUALITY_RESULT}" >> "$GITHUB_STEP_SUMMARY"
@@ -209,6 +297,8 @@ jobs:
           echo "- Build logic: ${BUILD_LOGIC_RESULT}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Infrastructure: ${INFRASTRUCTURE_RESULT}" \
             >> "$GITHUB_STEP_SUMMARY"
+          echo "- Boundaries: ${BOUNDARIES_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Service API E2E: ${E2E_RESULT}" >> "$GITHUB_STEP_SUMMARY"
           echo "- JaCoCo coverage: included in tests (${TEST_RESULT})" \
             >> "$GITHUB_STEP_SUMMARY"
           echo "- Boot JAR: ${BOOT_JAR_RESULT}" >> "$GITHUB_STEP_SUMMARY"
@@ -218,10 +308,18 @@ jobs:
                 "${INTEGRATION_RESULT}" == "skipped") ]]; then
             integration_ok=true
           fi
+          e2e_ok=false
+          if [[ "${E2E_RESULT}" == "success" ||
+                ("${E2E_REQUIRED}" == "false" &&
+                "${E2E_RESULT}" == "skipped") ]]; then
+            e2e_ok=true
+          fi
           if [[ "${QUALITY_RESULT}" != "success" ||
                 "${TEST_RESULT}" != "success" ||
                 "${integration_ok}" != "true" ||
                 "${BUILD_LOGIC_RESULT}" != "success" ||
+                "${BOUNDARIES_RESULT}" != "success" ||
+                "${e2e_ok}" != "true" ||
                 "${INFRASTRUCTURE_RESULT}" != "success" ||
                 "${BOOT_JAR_RESULT}" != "success" ]]; then
             exit 1

@@ -8,6 +8,7 @@ public class IdentityKeycloakProperties {
 
   private String baseUrl = "http://localhost:18080";
   private String issuerUri = "http://localhost:18080/realms/emme";
+  private String jwkSetBaseUrl = "";
   private String clientId = "emme-salon-app";
   private String adminRealm = "master";
   private String adminUsername = "admin";
@@ -30,6 +31,14 @@ public class IdentityKeycloakProperties {
 
   public void setIssuerUri(String issuerUri) {
     this.issuerUri = issuerUri;
+  }
+
+  public String getJwkSetBaseUrl() {
+    return jwkSetBaseUrl;
+  }
+
+  public void setJwkSetBaseUrl(String jwkSetBaseUrl) {
+    this.jwkSetBaseUrl = jwkSetBaseUrl;
   }
 
   public String getClientId() {

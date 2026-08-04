@@ -3,6 +3,7 @@ package com.emme.e2e.tests;
 import static com.emme.client.E2eTest.withSession;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.client.E2eJson;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -21,12 +22,22 @@ class CatalogApiTest {
   void shouldCreateCatalogItem() {
     withSession(
         s -> {
+          var serviceId =
+              E2eJson.extract(
+                  s.services()
+                      .create(
+                          "E2E Catalog Service",
+                          "E2E-CATALOG-" + UUID.randomUUID().toString().substring(0, 8),
+                          300,
+                          60,
+                          "E2E"),
+                  "id");
           String uniqueCode = "E2E-" + UUID.randomUUID().toString().substring(0, 8);
           String body =
               """
-                {"serviceId":"00000000-0000-0000-0000-000000000000","code":"%s","name":"E2E Test Catalog Item","price":300.00}
+                {"serviceId":"%s","code":"%s","name":"E2E Test Catalog Item","price":300.00}
                 """
-                  .formatted(uniqueCode);
+                  .formatted(serviceId, uniqueCode);
           var result = s.post("/api/catalog/items", body);
           assertThat(result).isNotNull();
         });
@@ -40,7 +51,7 @@ class CatalogApiTest {
               """
                 {"query":"E2E"}
                 """;
-          var result = s.post("/api/catalog/match", body, 500);
+          var result = s.post("/api/catalog/match", body, 200);
           assertThat(result).isNotNull();
         });
   }

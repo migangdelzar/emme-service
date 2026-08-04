@@ -3,7 +3,9 @@ package com.emme.client;
 import com.emme.client.E2eUserPool.TestUser;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Base64;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -15,24 +17,36 @@ import okhttp3.logging.HttpLoggingInterceptor;
  * Per-user HTTP session. Each test user gets their own OkHttpClient with optional auth token
  * injection.
  *
- * <p>Created by {@link E2eTest#withSession} (authenticated) or {@link E2eTest#withUnauthenticated}
- * (no auth).
+ * <p>Created by {@link E2eUserExtension} for annotation-driven tests or by {@link E2eTest} for
+ * compatibility with existing flow helpers.
  */
 public final class UserSession implements AutoCloseable {
 
   private final URI baseUrl;
   private final TestUser user;
+  private final String accessToken;
   private final OkHttpClient httpClient;
 
   /** Authenticated session. */
   UserSession(URI baseUrl, TestUser user) {
-    this(baseUrl, user, true);
+    this(baseUrl, user, resolveAccessToken(), true);
   }
 
   /** Session with optional auth. {@code authenticated=false} skips token injection. */
   UserSession(URI baseUrl, TestUser user, boolean authenticated) {
+    this(baseUrl, user, resolveAccessToken(), authenticated);
+  }
+
+  /** Session with an explicit token, which is required for multiple-user scenarios. */
+  UserSession(URI baseUrl, TestUser user, String accessToken) {
+    this(baseUrl, user, accessToken, true);
+  }
+
+  /** Session with explicit token and authentication mode. */
+  UserSession(URI baseUrl, TestUser user, String accessToken, boolean authenticated) {
     this.baseUrl = baseUrl;
     this.user = user != null ? user : E2eUserPool.newTestUser(-1);
+    this.accessToken = accessToken == null ? "" : accessToken;
     this.httpClient = buildClient(authenticated);
   }
 
@@ -45,17 +59,22 @@ public final class UserSession implements AutoCloseable {
             .connectTimeout(Duration.ofSeconds(10))
             .readTimeout(Duration.ofSeconds(30))
             .retryOnConnectionFailure(true)
+            .addInterceptor(
+                chain ->
+                    chain.proceed(
+                        chain.request().newBuilder().header("API-Version", "1.0").build()))
             .addInterceptor(logging);
 
     if (authenticated) {
       builder.addInterceptor(
           chain -> {
-            var token =
-                System.getProperty(
-                    "E2E_ACCESS_TOKEN", System.getenv().getOrDefault("E2E_ACCESS_TOKEN", ""));
-            if (!token.isEmpty()) {
+            if (!accessToken.isEmpty()) {
               var req =
-                  chain.request().newBuilder().header("Authorization", "Bearer " + token).build();
+                  chain
+                      .request()
+                      .newBuilder()
+                      .header("Authorization", "Bearer " + accessToken)
+                      .build();
               return chain.proceed(req);
             }
             return chain.proceed(chain.request());
@@ -68,6 +87,21 @@ public final class UserSession implements AutoCloseable {
   /** The test user (dummy for unauthenticated sessions). */
   public TestUser user() {
     return user;
+  }
+
+  /** Returns the token used by this session, without exposing it in logs. */
+  public String accessToken() {
+    return accessToken;
+  }
+
+  /** Returns the tenant claim from this session's token, falling back to the fixture metadata. */
+  public String tenantId() {
+    var tokenTenantId = jwtClaim("tenant_id");
+    if (!tokenTenantId.isBlank()) {
+      return tokenTenantId;
+    }
+    return System.getProperty(
+        "E2E_TENANT_ID", System.getenv().getOrDefault("E2E_TENANT_ID", user.tenantId()));
   }
 
   /** Returns the raw OkHttpClient (advanced use). */
@@ -218,5 +252,26 @@ public final class UserSession implements AutoCloseable {
   public void close() {
     httpClient.dispatcher().executorService().shutdown();
     httpClient.connectionPool().evictAll();
+  }
+
+  private static String resolveAccessToken() {
+    return System.getProperty(
+        "E2E_ACCESS_TOKEN", System.getenv().getOrDefault("E2E_ACCESS_TOKEN", ""));
+  }
+
+  private String jwtClaim(String name) {
+    if (accessToken.isBlank()) {
+      return "";
+    }
+    try {
+      var parts = accessToken.split("\\.");
+      if (parts.length < 2) {
+        return "";
+      }
+      var payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+      return E2eJson.stringField(payload, name);
+    } catch (IllegalArgumentException exception) {
+      return "";
+    }
   }
 }

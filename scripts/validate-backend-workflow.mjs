@@ -4,8 +4,11 @@ const workflow = await readFile('.github/workflows/ci-backend.yml', 'utf8');
 
 const requiredFragments = [
   'run_integration:',
+  'run_e2e:',
   'coverageCheck',
-  'needs: [quality, test, integration, build-logic, infrastructure]',
+  'boundaries:',
+  'e2eTest',
+  'needs: [quality, test, integration, build-logic, infrastructure, boundaries]',
   'if: always()',
 ];
 

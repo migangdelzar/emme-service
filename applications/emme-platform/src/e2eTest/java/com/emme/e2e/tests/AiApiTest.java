@@ -9,15 +9,15 @@ import org.junit.jupiter.api.Test;
 class AiApiTest {
 
   @Test
-  void shouldRejectAiChatWithoutFeatureFlag() {
+  void shouldUseTheConfiguredMockProvider() {
     withSession(
         s -> {
           String body =
               """
                 {"userMessage":"Hello","conversationContext":"e2e-test"}
                 """;
-          var result = s.post("/api/ai/chat", body, 403);
-          assertThat(result).isNotNull();
+          var result = s.post("/api/ai/chat", body, 200);
+          assertThat(result).contains("MOCK");
         });
   }
 

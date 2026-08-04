@@ -64,6 +64,15 @@ the actual user workflow.
 | Membership | tenant ID, user reference, role ID, active status | Membership is unique and active | Current-user and access checks |
 | Feature flags | explicit key, value, tenant scope | Defaults are deterministic | Conditional UI and capability checks |
 
+For service-side REST E2E tests, use the JUnit 5 `E2eUserExtension` rather than
+manually acquiring users inside test bodies. A single user is injected as
+`UserSession`; scenarios requiring multiple identities use repeatable
+`@WithUser` declarations and inject the immutable `E2eUsers` record. The
+default `E2E_ACCESS_TOKEN` is suitable for one identity; use explicit token
+environment variables or indexed `E2E_ACCESS_TOKEN_1` / `E2E_ACCESS_TOKEN_2`
+values for distinct users. All sessions send `API-Version: 1.0` and derive the
+tenant from the token claim when available.
+
 The owner password is supplied only through the CI secret store. The
 provisioner must never print it, persist it, or include it in an artifact.
 

@@ -782,3 +782,8 @@
 - **Prevention rule:** Time-based persistence tests must use the precision
   supported by the target database (microseconds for PostgreSQL `TIMESTAMPTZ`)
   when asserting inclusive boundaries.
+## 2026-08-04 — Disable asynchronous provider listeners in generic integration contexts
+
+- **Failure mode:** The remote Tenancy module test intermittently failed with an optimistic-lock exception while patching a tenant.
+- **Detection signal:** `TenantCreatedConsumer` was active in the shared L4 test context because `app.keycloak.provisioning.enabled` defaulted to `true`; its asynchronous Modulith listener updated the same tenant aggregate during the HTTP assertion.
+- **Prevention rule:** Shared in-memory integration profiles must disable asynchronous external-provider listeners by default. Cover the provider workflow with focused tests and enable it only in an explicit provider-integration context.

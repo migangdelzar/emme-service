@@ -26,6 +26,10 @@ app:
     issuer-uri: https://test-issuer/realms/emme
     client-id: test-client
     provisioning:
+      # Generic test contexts must not run asynchronous external identity
+      # provisioning against the shared in-memory database. Enable it only in
+      # an explicit provider-integration test context.
+      enabled: false
       initial-admin-password: test-provisioning-password
   google:
     oauth:

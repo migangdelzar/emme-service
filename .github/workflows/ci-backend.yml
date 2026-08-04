@@ -41,10 +41,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-gradle
       - name: Set up Node.js for documentation validation
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
       - name: Validate documentation
@@ -59,7 +59,7 @@ jobs:
           --no-configuration-cache --stacktrace
       - name: Upload quality reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-quality-reports
           path: |
@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-gradle
       - name: Run all backend unit, module, and coverage checks
         run: >-
@@ -80,7 +80,7 @@ jobs:
           --no-daemon --no-configuration-cache --stacktrace
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-test-reports
           path: |
@@ -98,7 +98,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-gradle
       - name: Run integration tests
         run: >-
@@ -106,7 +106,7 @@ jobs:
           --stacktrace
       - name: Upload integration reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-integration-reports
           path: |
@@ -120,7 +120,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-gradle
       - name: Run build-logic checks
         run: >-
@@ -128,7 +128,7 @@ jobs:
           --stacktrace
       - name: Upload build-logic reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-logic-reports
           path: build-logic/build/reports/**
@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-gradle
       - name: Verify Spotless formatting
         run: >-
@@ -171,7 +171,7 @@ jobs:
       EMME_E2E_BASE_URL: ${{ inputs.e2e_base_url }}
       E2E_ACCESS_TOKEN: ${{ secrets.E2E_ACCESS_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-gradle
       - name: Validate E2E environment contract
         shell: bash
@@ -192,7 +192,7 @@ jobs:
           --no-daemon --no-configuration-cache --stacktrace
       - name: Upload E2E reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: service-api-e2e-reports
           path: |
@@ -206,11 +206,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: azure/setup-kubectl@v4
+      - uses: actions/checkout@v7
+      - uses: azure/setup-kubectl@v5
         with:
           version: 'v1.34.1'
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: '1.14.0'
       - name: Render Kubernetes overlays
@@ -254,7 +254,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-gradle
       - name: Build canonical platform boot JAR
         run: >-
@@ -262,7 +262,7 @@ jobs:
           --no-configuration-cache --stacktrace
       - name: Upload boot JAR and reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: emme-platform-boot-jar
           path: |

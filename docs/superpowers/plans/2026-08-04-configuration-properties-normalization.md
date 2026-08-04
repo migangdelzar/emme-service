@@ -4,7 +4,7 @@
 |---|---|
 | **Scope** | Spring Boot `@ConfigurationProperties` in `emme-service` |
 | **Architecture rule** | Record-first, constraint-driven startup validation |
-| **Status** | Planned final governance slice |
+| **Status** | Record conversion baseline complete; conditional validation remains |
 | **Depends on** | Module migrations, provider boundaries, and deployment profiles |
 | **Out of scope** | Replacing Spring profiles, introducing a fluent-validation library, or validating disabled provider credentials |
 
@@ -26,7 +26,7 @@ explicitly according to the module policy.
 
 | Property type | Current shape | Target | Validation focus | Reason for current exception, if any |
 |---|---|---|---|---|
-| `KafkaEventStreamingProperties` | Mutable class | Record after binder compatibility check | Bootstrap, group, retries, encrypted transport when enabled | Cross-field production safety rule already exists |
+| `KafkaEventStreamingProperties` | Record | Keep record | Bootstrap, group, retries, encrypted transport when enabled | Cross-field production safety rule already exists |
 | `CalendarProperties` | Record | Keep record | Non-blank calendar identifier when external sync is enabled | Stable local default is valid |
 | `GoogleCalendarProperties` | Record | Keep record | Endpoint URI and credential presence when Google sync is enabled | Credential is optional for mock/local mode |
 | `GoogleOAuthProperties` | Record | Keep record | Client/redirect/encryption requirements when OAuth is enabled | All values are not required in every profile |
@@ -35,12 +35,12 @@ explicitly according to the module policy.
 | `WhatsAppProperties` | Record | Keep record | UUID tenant and required webhook secret/token when enabled | Existing UUID parsing is a domain-neutral configuration check |
 | `NotificationProperties` | Nested records | Keep record; add conditional provider validation | Active channel credentials and endpoint values | Provider blocks are intentionally optional |
 | `PaymentProperties` | Nested records | Keep record; add conditional provider validation | Active provider credentials and webhook secrets | Mock provider and unused provider blocks remain optional |
-| `IdentityRealmProvisioningProperties` | Mutable class | Record after constructor-binding migration | Role lists, redirect URIs, attempts, retry delay, password when enabled | Existing setter-based tests and process wiring must migrate together |
-| `IdentityKeycloakProperties` | Mutable class | Record after binding migration | URI/client/realm values and admin secret when administration is enabled | Secret and customer realm are profile-dependent |
-| `IdentitySecurityProperties` | Mutable class | Record after security configuration migration | Origins, methods, headers, max age, CSP source | Collections need defensive immutable copies |
-| `IdentityRateLimitProperties` | Mutable class | Record | Positive attempts/window and valid proxy entries | Current setters encode invariants; tests must move to construction |
-| `TenantDatabaseConnectionProperties` | Mutable class | Record only if Spring datasource fallback binding remains compatible | URL, driver, and credentials when fallback is active | Composition-root datasource lifecycle is sensitive |
-| `TenantPoolingProperties` | Mutable class | Record after pool/provider constructor migration | Positive global/cache/pool limits and min ≤ max | Pool lifecycle code currently consumes bean getters |
+| `IdentityRealmProvisioningProperties` | Record | Keep record | Role lists, redirect URIs, attempts, retry delay, password when enabled | Constructor binding and immutable list copies are in place |
+| `IdentityKeycloakProperties` | Record | Keep record | URI/client/realm values and admin secret when administration is enabled | Secret and customer realm are profile-dependent |
+| `IdentitySecurityProperties` | Record | Keep record | Origins, methods, headers, max age, CSP source | Collections use defensive immutable copies |
+| `IdentityRateLimitProperties` | Record | Keep record | Positive attempts/window and valid proxy entries | Constructor binding and validation are in place |
+| `TenantDatabaseConnectionProperties` | Record | Keep record | URL, driver, and credentials when fallback is active | Composition-root datasource lifecycle now consumes accessors |
+| `TenantPoolingProperties` | Record | Keep record | Positive global/cache/pool limits and min ≤ max | Pool/provider consumers now use immutable accessors |
 | `RateLimitProperties` | Record | Keep record | Positive requests and non-zero duration | Defaults are safe for local/test profiles |
 
 ## Implementation phases
@@ -49,7 +49,7 @@ explicitly according to the module policy.
 
 - [ ] Add failing properties tests for missing, blank, zero, negative, and
   conditional values for each active provider/configuration group.
-- [ ] Convert one module at a time to constructor-bound records.
+- [x] Convert production configuration properties to constructor-bound records.
 - [ ] Preserve profile-specific defaults and never use a production secret as a
   record default.
 - [ ] Add `@Valid` for nested records where Spring Boot cascades binding
@@ -57,11 +57,11 @@ explicitly according to the module policy.
 
 ### Phase B — Consumer migration
 
-- [ ] Replace JavaBean getter calls with record accessors at composition roots,
+- [x] Replace JavaBean getter calls with record accessors at composition roots,
   adapters, and application services.
-- [ ] Remove setters only after all construction and test fixtures use the
+- [x] Remove setters after all construction and test fixtures use the
   canonical record constructor.
-- [ ] Preserve dependency injection boundaries; properties remain configuration
+- [x] Preserve dependency injection boundaries; properties remain configuration
   inputs and never become provider/application services.
 
 ### Phase C — Conditional provider safety
@@ -92,3 +92,22 @@ explicitly according to the module policy.
 - Do not introduce `FluentValidation` or another validation framework without a
   separate ADR proving that Jakarta Bean Validation and a focused custom
   validator cannot express the contract.
+
+## Baseline results — 2026-08-04
+
+- All production `@ConfigurationProperties` declarations are now immutable
+  records, including nested provider configuration records.
+- Constructor binding uses explicit defaults where local/test profiles require
+  them; no production secret is introduced as a default value.
+- Consumers and focused tests were migrated to record accessors and immutable
+  constructor fixtures.
+- `node scripts/validate-markdown.mjs` passes.
+- `./gradlew spotlessCheck test --no-daemon --no-configuration-cache` passes.
+- `./gradlew :applications:emme-platform:coverageCheck --no-daemon
+  --no-configuration-cache` passes.
+
+The remaining work is intentionally limited to conditional provider validation,
+startup-context coverage, and final service-wide verification. Records provide
+the lower ceremony and safer structure for immutable configuration; they do not
+replace cross-field validation or mutable framework state where such state is
+genuinely required.

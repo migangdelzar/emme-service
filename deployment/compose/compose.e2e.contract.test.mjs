@@ -49,6 +49,7 @@ assert.equal(
   'jdbc:postgresql://postgres:5432/emme?currentSchema=e2e_studio,emme_core,public',
 );
 assert.equal(services['emme-platform'].environment.SPRING_DATA_REDIS_HOST, 'redis');
+assert.equal(services['emme-platform'].environment.APP_IDENTITY_LOGIN_RATE_LIMIT_MAX_ATTEMPTS, '20');
 assert.equal(services['emme-platform'].environment.SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA, undefined);
 assert.equal(
   services['emme-platform'].environment.GOOGLE_TOKEN_ENCRYPTION_KEY,

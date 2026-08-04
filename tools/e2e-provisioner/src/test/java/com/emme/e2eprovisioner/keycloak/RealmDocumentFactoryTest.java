@@ -26,12 +26,15 @@ class RealmDocumentFactoryTest {
         .isEqualTo(tenantId.toString());
     assertThat(document.path("clientScopes").get(0).path("name").asText())
         .isEqualTo("tenant-context");
-    assertThat(document.path("defaultClientScopes").isArray()).isTrue();
+    assertThat(document.path("clientScopes"))
+        .extracting(node -> node.path("name").asText())
+        .contains("profile", "email", "roles");
+    assertThat(document.path("defaultDefaultClientScopes").isArray()).isTrue();
     var defaultScopes =
-        StreamSupport.stream(document.path("defaultClientScopes").spliterator(), false)
+        StreamSupport.stream(document.path("defaultDefaultClientScopes").spliterator(), false)
             .map(JsonNode::asText)
             .toList();
     assertThat(defaultScopes).contains("profile", "email");
-    assertThat(document.has("defaultDefaultClientScopes")).isFalse();
+    assertThat(document.has("defaultClientScopes")).isFalse();
   }
 }

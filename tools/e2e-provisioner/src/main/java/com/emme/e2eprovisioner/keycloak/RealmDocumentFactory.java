@@ -65,7 +65,11 @@ public final class RealmDocumentFactory {
     addTenantMapper(mappers, "tenant-id-mapper", "tenant_id");
     addTenantMapper(mappers, "tenant-slug-mapper", "tenant_slug");
 
-    ArrayNode defaults = document.putArray("defaultClientScopes");
+    addProfileScope(scopes);
+    addEmailScope(scopes);
+    addRolesScope(scopes);
+
+    ArrayNode defaults = document.putArray("defaultDefaultClientScopes");
     for (var scope :
         new String[] {"tenant-context", "web-origins", "acr", "profile", "roles", "email"}) {
       defaults.add(scope);
@@ -86,5 +90,86 @@ public final class RealmDocumentFactory {
         .put("access.token.claim", "true")
         .put("userinfo.token.claim", "true")
         .put("jsonType.label", "String");
+  }
+
+  private static void addProfileScope(ArrayNode scopes) {
+    var scope = addScope(scopes, "profile", true);
+    var mappers = scope.putArray("protocolMappers");
+    addUserAttributeMapper(mappers, "username", "username", "preferred_username");
+    var fullName = mappers.addObject();
+    fullName.put("name", "full name");
+    fullName.put("protocol", "openid-connect");
+    fullName.put("protocolMapper", "oidc-full-name-mapper");
+    fullName
+        .putObject("config")
+        .put("id.token.claim", "true")
+        .put("access.token.claim", "true")
+        .put("userinfo.token.claim", "true")
+        .put("introspection.token.claim", "true");
+  }
+
+  private static void addEmailScope(ArrayNode scopes) {
+    var scope = addScope(scopes, "email", true);
+    var mappers = scope.putArray("protocolMappers");
+    addUserAttributeMapper(mappers, "email", "email", "email");
+    var verified = mappers.addObject();
+    verified.put("name", "email verified");
+    verified.put("protocol", "openid-connect");
+    verified.put("protocolMapper", "oidc-usermodel-property-mapper");
+    verified
+        .putObject("config")
+        .put("user.attribute", "emailVerified")
+        .put("claim.name", "email_verified")
+        .put("jsonType.label", "boolean")
+        .put("id.token.claim", "true")
+        .put("access.token.claim", "true")
+        .put("userinfo.token.claim", "true")
+        .put("introspection.token.claim", "true");
+  }
+
+  private static void addRolesScope(ArrayNode scopes) {
+    var scope = addScope(scopes, "roles", false);
+    var mapper = scope.putArray("protocolMappers").addObject();
+    mapper.put("name", "realm roles");
+    mapper.put("protocol", "openid-connect");
+    mapper.put("protocolMapper", "oidc-usermodel-realm-role-mapper");
+    mapper
+        .putObject("config")
+        .put("user.attribute", "foo")
+        .put("claim.name", "realm_access.roles")
+        .put("jsonType.label", "String")
+        .put("multivalued", "true")
+        .put("id.token.claim", "true")
+        .put("access.token.claim", "true")
+        .put("userinfo.token.claim", "true")
+        .put("introspection.token.claim", "true");
+  }
+
+  private static ObjectNode addScope(ArrayNode scopes, String name, boolean inTokenScope) {
+    var scope = scopes.addObject();
+    scope.put("name", name);
+    scope.put("protocol", "openid-connect");
+    scope
+        .putObject("attributes")
+        .put("include.in.token.scope", Boolean.toString(inTokenScope))
+        .put("display.on.consent.screen", "false");
+    return scope;
+  }
+
+  private static void addUserAttributeMapper(
+      ArrayNode mappers, String name, String attribute, String claimName) {
+    var mapper = mappers.addObject();
+    mapper.put("name", name);
+    mapper.put("protocol", "openid-connect");
+    mapper.put("protocolMapper", "oidc-usermodel-attribute-mapper");
+    mapper
+        .putObject("config")
+        .put("user.attribute", attribute)
+        .put("claim.name", claimName)
+        .put("jsonType.label", "String")
+        .put("id.token.claim", "true")
+        .put("access.token.claim", "true")
+        .put("userinfo.token.claim", "true")
+        .put("introspection.token.claim", "true");
   }
 }

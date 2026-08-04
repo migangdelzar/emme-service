@@ -50,7 +50,7 @@ export const canonicalTargetRules = {
     {
       path: '.github/workflows/ci-backend.yml',
       required: [':applications:emme-platform:bootJar'],
-      forbidden: [':applications:studio-api:bootJar'],
+      forbidden: [':applications:studio-api:bootJar', './gradlew deploy', '-Pprovider='],
     },
     {
       path: 'mise.toml',

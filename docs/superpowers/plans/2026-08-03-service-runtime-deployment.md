@@ -37,7 +37,7 @@
 - Modify: `infra/kubernetes/overlays/k3s-production-native/kustomization.yaml`
 - Modify: `applications/emme-platform/build.gradle.kts`
 - Modify: `.github/workflows/ci-backend.yml`
-- Test: `scripts/validate-deployment-layout.mjs`
+- Test: `scripts/validate-emme-platform-target.test.mjs`
 
 **Interfaces:**
 - Produces one canonical Compose base, explicit runtime overlays, and explicit environment overlays.
@@ -53,7 +53,7 @@ Create a Node script that asserts the canonical Compose and Kustomize paths exis
 Run:
 
 ```bash
-node scripts/validate-deployment-layout.mjs
+node scripts/validate-emme-platform-target.test.mjs
 ```
 
 Expected: FAIL because the repository had not yet materialized the normalized
@@ -80,7 +80,7 @@ Use `git mv` for tracked renames, then update every workflow, README, Gradle pro
 Run:
 
 ```bash
-node scripts/validate-deployment-layout.mjs
+node scripts/validate-emme-platform-target.test.mjs
 docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml config --quiet
 docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-native.yaml config --quiet
 kubectl kustomize infra/kubernetes/overlays/k3d-jvm >/dev/null
@@ -92,7 +92,7 @@ Expected: PASS with no legacy deployment file references.
 - [x] **Step 5: Commit.**
 
 ```bash
-git add deployment infra applications/emme-platform/build.gradle.kts .github/workflows/ci-backend.yml scripts/validate-deployment-layout.mjs
+git add deployment infra applications/emme-platform/build.gradle.kts .github/workflows/ci-backend.yml scripts/validate-emme-platform-target.mjs scripts/validate-emme-platform-target.test.mjs
 git commit -m "refactor(deployment): normalize runtime and cluster naming"
 ```
 

@@ -185,21 +185,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  deploy:
-    needs: [boot-jar, summary]
-    if: github.ref_name == 'main'
-    runs-on: ubuntu-latest
-    environment: production
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-gradle
-      - name: Deploy
-        run: >-
-          ./gradlew deploy -Paction=up
-          -Pprovider=${{ github.ref_name == 'main' && 'prod' || 'k3d' }}
-          --no-daemon --no-configuration-cache
-
   summary:
     name: CI summary
     if: always()

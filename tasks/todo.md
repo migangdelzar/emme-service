@@ -42,9 +42,11 @@
 
 Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/superpowers/specs/2026-08-04-ddd-hexagonal-modulith-architecture-verification-design.md)
 
-- [ ] Add reusable ArchUnit architecture rules to `libraries/testing`.
-- [ ] Verify domain purity, application dependency direction, adapter ownership,
-      grouped API visibility, naming, package metadata, and one-use-case-per-service.
+- [x] Add reusable ArchUnit architecture rules to `libraries/testing` for
+      production class importing, domain purity, application direction, and
+      inbound/outbound adapter separation.
+- [ ] Verify grouped API visibility, naming, package metadata, and
+      one-use-case-per-service in one consolidated repository-wide suite.
 - [ ] Verify entity/table ownership, `emme_core` boundaries, tenant schemas,
       and tenant-isolation rules.
 - [ ] Strengthen Spring Modulith verification and deterministic Documenter/
@@ -64,6 +66,18 @@ Design: [DDD + Hexagonal + Spring Modulith architecture verification](../docs/su
 - The web repository already has a shared `@emme/i18n` package; the migration will
   improve its type safety and locale boundary instead of introducing a duplicate
   package.
+
+### Results — architecture rules slice — 2026-08-04
+
+- [x] Added `ArchitectureTestSupport` and `DddHexagonalRules` to the shared test
+      fixtures so modules reuse one production classpath import policy.
+- [x] Added the platform execution test for domain framework purity,
+      application-to-adapter direction, and inbound-to-outbound adapter
+      separation.
+- [x] Added dependency-verification checksums for the resolved ArchUnit 1.4.0
+      artifacts.
+- [ ] Continue with naming, public named-interface, persistence/schema, tenant,
+      and event-contract rule families.
 
 ## Results
 

@@ -18,6 +18,7 @@ dependencies {
   testFixturesImplementation("org.springframework.boot:spring-boot-autoconfigure")
   testFixturesImplementation(libs.spring.boot.starter.data.redis)
   testFixturesImplementation(libs.spring.security.test)
+  testFixturesImplementation(libs.archunit.junit5)
   testFixturesImplementation(libs.jackson.databind)
   testFixturesImplementation(libs.okhttp)
   testFixturesImplementation(libs.spring.modulith.starter.jpa)

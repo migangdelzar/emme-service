@@ -1,5 +1,24 @@
 # Service architecture migration checklist
 
+## Remaining execution gates — 2026-08-05
+
+### Immediate (code fixes — COMMITTED)
+
+- [x] E2E tenant-schema: Hibernate `default_schema` was missing → added `application-e2e.yml` with `hibernate.default_schema: e2e_studio`
+- [x] Database/runtime fixes: Liquibase schemas, emme_core, pgvector image, E2E JVM memory, Docker context, audit entity — all committed
+
+### Environment-dependent (needs real infra)
+
+- [ ] Real full-stack recordings: boot service, run tenant-owner Playwright, store videos/traces
+- [ ] GitHub Actions: merge recording workflow to default branch
+- [ ] E2E provider: verify MockProvider/RealProvider use common contract without mode-specific logic
+- [ ] Native image: Docker 8GB+, build native, verify health/flows, compare JVM/native size/RSS/startup
+- [ ] Production evidence: tenancy pool eviction/recovery, provisioning rollback, identity migration, assistant provider, notification retry, payment provider
+- [ ] Deployment: immutable image by digest, K3s verification, CVE scans, full CI gates
+- [ ] Documentation: enterprise plan, runtime deployment plan reconciliation
+
+---
+
 ## Studio module decomposition execution — 2026-08-05
 
 - [x] Reconcile the decomposition plan and ADR with the current source tree;

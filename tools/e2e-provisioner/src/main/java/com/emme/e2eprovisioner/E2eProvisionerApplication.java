@@ -23,6 +23,9 @@ public final class E2eProvisionerApplication {
     var tenantSeeder = JdbcTenantSeeder.create(dataSource);
     var tenantId = tenantSeeder.ensureTenant(environment.tenantSlug(), environment.tenantName());
 
+    // Clean previous test data for clean E2E run
+    tenantSeeder.cleanTenantData(tenantId);
+
     var keycloak =
         new HttpKeycloakAdminClient(
             HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build(),

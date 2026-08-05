@@ -20,12 +20,14 @@
   ],
   "seedData": {
     "services": [
-      { "name": "Manicure Clásica", "price": 350, "duration": 45, "category": "Manicura y Cuidado Natural" },
+      { "name": "Manicure Clasica", "price": 350, "duration": 45, "category": "Manicura y Cuidado Natural" },
       { "name": "Manicure Rusa", "price": 750, "duration": 90, "category": "Manicura y Cuidado Natural" },
       { "name": "Soft Gel Premium", "price": 1200, "duration": 120, "category": "Extensiones y Estructura" }
     ],
     "customers": [
-      { "name": "Cliente Demo", "phone": "555-0000", "email": "demo@emme.app" }
+      { "name": "Valeria Arriaza", "phone": "555-0101", "email": "valeria@test.com" },
+      { "name": "Elena Garcia", "phone": "555-0102", "email": "elena@test.com" },
+      { "name": "Maria Jose", "phone": "555-0103", "email": "maria@test.com" }
     ]
   }
 }

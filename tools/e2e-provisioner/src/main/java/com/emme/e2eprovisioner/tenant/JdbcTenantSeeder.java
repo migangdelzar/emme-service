@@ -46,6 +46,19 @@ public final class JdbcTenantSeeder implements TenantSeeder {
         });
   }
 
+  @Override
+  public void cleanTenantData(UUID tenantId) throws SQLException {
+    connectionExecutor.consumeWithConnection(
+        connection -> {
+          inTransaction(
+              connection,
+              ignored -> {
+                cleanBusinessData(connection, tenantId);
+                return null;
+              });
+        });
+  }
+
   private static UUID ensureTenant(Connection connection, String slug, String name)
       throws SQLException {
     UUID tenantId;
@@ -119,6 +132,30 @@ public final class JdbcTenantSeeder implements TenantSeeder {
             """)) {
       statement.setObject(1, tenantId);
       statement.executeUpdate();
+    }
+  }
+
+  private static void cleanBusinessData(Connection connection, UUID tenantId)
+      throws SQLException {
+    try (var stmt = connection.prepareStatement(
+        "DELETE FROM e2e_studio.appointment WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId); stmt.executeUpdate();
+    }
+    try (var stmt = connection.prepareStatement(
+        "DELETE FROM e2e_studio.customer WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId); stmt.executeUpdate();
+    }
+    try (var stmt = connection.prepareStatement(
+        "DELETE FROM e2e_studio.service WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId); stmt.executeUpdate();
+    }
+    try (var stmt = connection.prepareStatement(
+        "DELETE FROM e2e_studio.artist_capability WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId); stmt.executeUpdate();
+    }
+    try (var stmt = connection.prepareStatement(
+        "DELETE FROM e2e_studio.artist WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId); stmt.executeUpdate();
     }
   }
 

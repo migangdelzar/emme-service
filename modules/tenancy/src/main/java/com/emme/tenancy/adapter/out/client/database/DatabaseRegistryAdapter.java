@@ -8,6 +8,7 @@ import com.emme.tenancy.configuration.TenantDatabaseConnectionProperties;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,8 @@ public class DatabaseRegistryAdapter implements DatabaseRegistryPort {
   public DatabaseRegistryAdapter(
       TenantDatabaseConnectionProperties connectionProperties,
       Optional<JdbcConnectionDetails> connectionDetails,
-      Optional<JdbcConnectionExecutor> connectionExecutor) {
+      @Qualifier("bootstrapJdbcConnectionExecutor")
+          Optional<JdbcConnectionExecutor> connectionExecutor) {
     this.bootstrapUrl =
         connectionDetails
             .map(JdbcConnectionDetails::getJdbcUrl)

@@ -1,5 +1,6 @@
 package com.emme.tenancy.adapter.out.client.database;
 
+import com.emme.tenancy.adapter.out.client.database.TenantDatabasePoolProvider;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -17,20 +18,28 @@ public class SchemaAwareMultiTenantConnectionProvider
       LoggerFactory.getLogger(SchemaAwareMultiTenantConnectionProvider.class);
   private static final String CORE_SCHEMA = "emme_core";
 
-  private DataSource core() {
-    return ApplicationContextProvider.get().getBean(DataSource.class);
+  private DataSource coreDataSource() {
+    var ctx = ApplicationContextProvider.get();
+    if (ctx != null) {
+      return ctx.getBean("coreDataSource", DataSource.class);
+    }
+    throw new IllegalStateException("coreDataSource not available — context not initialized");
   }
 
-  private TenantDatabasePoolProvider tenant() {
-    return ApplicationContextProvider.get().getBean(TenantDatabasePoolProvider.class);
+  private TenantDatabasePoolProvider tenantPoolProvider() {
+    var ctx = ApplicationContextProvider.get();
+    if (ctx != null) {
+      return ctx.getBean(TenantDatabasePoolProvider.class);
+    }
+    throw new IllegalStateException("tenantPoolProvider not available — context not initialized");
   }
 
   @Override
   public Connection getConnection(String tenantIdentifier) throws SQLException {
     if (CORE_SCHEMA.equals(tenantIdentifier)) {
-      return core().getConnection();
+      return coreDataSource().getConnection();
     }
-    Connection connection = tenant().getDataSource().getConnection();
+    Connection connection = tenantPoolProvider().getDataSource().getConnection();
     connection.setSchema(tenantIdentifier);
     log.debug("Connection routed to schema {}", tenantIdentifier);
     return connection;
@@ -49,7 +58,7 @@ public class SchemaAwareMultiTenantConnectionProvider
   @Override
   public Connection getAnyConnection() throws SQLException {
     if (ApplicationContextProvider.get() != null) {
-      return core().getConnection();
+      return coreDataSource().getConnection();
     }
     var host = System.getenv().getOrDefault("DB_HOST", "localhost");
     var port = System.getenv().getOrDefault("DB_PORT", "5432");

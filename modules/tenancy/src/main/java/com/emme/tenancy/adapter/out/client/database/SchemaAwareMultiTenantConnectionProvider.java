@@ -1,5 +1,6 @@
 package com.emme.tenancy.adapter.out.client.database;
 
+import com.emme.tenancy.adapter.out.client.database.TenantDatabasePoolProvider;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -7,12 +8,9 @@ import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.hibernate.service.UnknownUnwrapTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnBean(name = "coreDataSource")
 public class SchemaAwareMultiTenantConnectionProvider
     implements MultiTenantConnectionProvider<String> {
 
@@ -20,22 +18,28 @@ public class SchemaAwareMultiTenantConnectionProvider
       LoggerFactory.getLogger(SchemaAwareMultiTenantConnectionProvider.class);
   private static final String CORE_SCHEMA = "emme_core";
 
-  private final DataSource coreDataSource;
-  private final TenantDatabasePoolProvider tenantPoolProvider;
+  private DataSource coreDataSource() {
+    var ctx = ApplicationContextProvider.get();
+    if (ctx != null) {
+      return ctx.getBean("coreDataSource", DataSource.class);
+    }
+    throw new IllegalStateException("coreDataSource not available — context not initialized");
+  }
 
-  public SchemaAwareMultiTenantConnectionProvider(
-      @Qualifier("coreDataSource") DataSource coreDataSource,
-      TenantDatabasePoolProvider tenantPoolProvider) {
-    this.coreDataSource = coreDataSource;
-    this.tenantPoolProvider = tenantPoolProvider;
+  private TenantDatabasePoolProvider tenantPoolProvider() {
+    var ctx = ApplicationContextProvider.get();
+    if (ctx != null) {
+      return ctx.getBean(TenantDatabasePoolProvider.class);
+    }
+    throw new IllegalStateException("tenantPoolProvider not available — context not initialized");
   }
 
   @Override
   public Connection getConnection(String tenantIdentifier) throws SQLException {
     if (CORE_SCHEMA.equals(tenantIdentifier)) {
-      return coreDataSource.getConnection();
+      return coreDataSource().getConnection();
     }
-    Connection connection = tenantPoolProvider.getDataSource().getConnection();
+    Connection connection = tenantPoolProvider().getDataSource().getConnection();
     connection.setSchema(tenantIdentifier);
     log.debug("Connection routed to schema {}", tenantIdentifier);
     return connection;
@@ -53,7 +57,11 @@ public class SchemaAwareMultiTenantConnectionProvider
 
   @Override
   public Connection getAnyConnection() throws SQLException {
-    return coreDataSource.getConnection();
+    if (ApplicationContextProvider.get() != null) {
+      return coreDataSource().getConnection();
+    }
+    return java.sql.DriverManager.getConnection(
+        "jdbc:postgresql://localhost:5432/emme", "emme", "emme");
   }
 
   @Override

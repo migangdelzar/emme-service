@@ -54,7 +54,7 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
 
     var userDoc = objectMapper.createObjectNode();
     userDoc.put("username", configuration.username());
-    userDoc.put("email", configuration.username() + "@e2e.emme.app");
+    userDoc.put("email", configuration.username() + "@" + configuration.tenantSlug() + ".local");
     userDoc.put("emailVerified", true);
     userDoc.put("enabled", true);
     userDoc.put("firstName", "E2E");

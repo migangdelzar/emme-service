@@ -6,25 +6,24 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnBean(name = "bootstrapJdbcTemplate")
 public class CurrentTenantIdentifierResolver
     implements org.hibernate.context.spi.CurrentTenantIdentifierResolver<String> {
 
   private static final Logger log = LoggerFactory.getLogger(CurrentTenantIdentifierResolver.class);
   private static final String CORE_SCHEMA = "emme_core";
 
-  private final JdbcTemplate bootstrapJdbc;
   private final Map<UUID, String> schemaCache = new ConcurrentHashMap<>();
 
-  public CurrentTenantIdentifierResolver(
-      @Qualifier("bootstrapJdbcTemplate") JdbcTemplate bootstrapJdbc) {
-    this.bootstrapJdbc = bootstrapJdbc;
+  private JdbcTemplate bootstrapJdbc() {
+    var ctx = ApplicationContextProvider.get();
+    if (ctx == null) {
+      return null;
+    }
+    return ctx.getBean("bootstrapJdbcTemplate", JdbcTemplate.class);
   }
 
   @Override
@@ -37,9 +36,13 @@ public class CurrentTenantIdentifierResolver
   }
 
   private String lookupSchemaName(UUID tenantId) {
+    var jdbc = bootstrapJdbc();
+    if (jdbc == null) {
+      return CORE_SCHEMA;
+    }
     try {
       String schemaName =
-          bootstrapJdbc.queryForObject(
+          jdbc.queryForObject(
               "SELECT schema_name FROM emme_core.tenant_registry WHERE tenant_id = ?::uuid",
               String.class,
               tenantId.toString());

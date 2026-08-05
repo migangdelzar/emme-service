@@ -1,8 +1,13 @@
-# E2E profile — schema-per-tenant via TenantContextAspect (SET LOCAL search_path).
+# E2E profile — schema-per-tenant via Hibernate multi-tenancy (bean: prefix).
 spring:
   jpa:
     hibernate:
       ddl-auto: none
+    properties:
+      hibernate:
+        multi_tenancy: SCHEMA
+        multi_tenant_connection_provider: com.emme.tenancy.adapter.out.client.database.SchemaMultiTenantConnectionProvider
+        tenant_identifier_resolver: com.emme.tenancy.adapter.out.client.database.TenantIdentifierResolver
   datasource:
     url: "jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/emme?currentSchema=emme_core"
     username: ${DB_USERNAME:emme}

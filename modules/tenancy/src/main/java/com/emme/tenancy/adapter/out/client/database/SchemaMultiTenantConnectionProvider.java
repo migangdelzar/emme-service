@@ -1,6 +1,5 @@
 package com.emme.tenancy.adapter.out.client.database;
 
-import com.emme.tenancy.adapter.out.client.database.TenantDatabasePoolProvider;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -8,40 +7,32 @@ import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.hibernate.service.UnknownUnwrapTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
-@Component
-public class SchemaAwareMultiTenantConnectionProvider
+public class SchemaMultiTenantConnectionProvider
     implements MultiTenantConnectionProvider<String> {
 
   private static final Logger log =
-      LoggerFactory.getLogger(SchemaAwareMultiTenantConnectionProvider.class);
+      LoggerFactory.getLogger(SchemaMultiTenantConnectionProvider.class);
   private static final String CORE_SCHEMA = "emme_core";
 
-  private DataSource coreDataSource() {
-    var ctx = ApplicationContextProvider.get();
-    if (ctx != null) {
-      return ctx.getBean("coreDataSource", DataSource.class);
-    }
-    throw new IllegalStateException("coreDataSource not available — context not initialized");
+  private DataSource metadata() {
+    return ApplicationContextProvider.get().getBean(DataSource.class);
   }
 
-  private TenantDatabasePoolProvider tenantPoolProvider() {
-    var ctx = ApplicationContextProvider.get();
-    if (ctx != null) {
-      return ctx.getBean(TenantDatabasePoolProvider.class);
-    }
-    throw new IllegalStateException("tenantPoolProvider not available — context not initialized");
+  private TenantDatabasePoolProvider tenant() {
+    return ApplicationContextProvider.get().getBean(TenantDatabasePoolProvider.class);
   }
 
   @Override
   public Connection getConnection(String tenantIdentifier) throws SQLException {
+    Connection connection;
     if (CORE_SCHEMA.equals(tenantIdentifier)) {
-      return coreDataSource().getConnection();
+      connection = metadata().getConnection();
+    } else {
+      connection = tenant().getDataSource().getConnection();
+      connection.setSchema(tenantIdentifier);
+      log.debug("Connection routed to schema {}", tenantIdentifier);
     }
-    Connection connection = tenantPoolProvider().getDataSource().getConnection();
-    connection.setSchema(tenantIdentifier);
-    log.debug("Connection routed to schema {}", tenantIdentifier);
     return connection;
   }
 
@@ -58,7 +49,7 @@ public class SchemaAwareMultiTenantConnectionProvider
   @Override
   public Connection getAnyConnection() throws SQLException {
     if (ApplicationContextProvider.get() != null) {
-      return coreDataSource().getConnection();
+      return metadata().getConnection();
     }
     var host = System.getenv().getOrDefault("DB_HOST", "localhost");
     var port = System.getenv().getOrDefault("DB_PORT", "5432");

@@ -1,8 +1,8 @@
 package com.emme.appointments.adapter.in.web.sse;
 
-import com.emme.notification.api.event.NotificationDelivered;
 import com.emme.appointments.api.event.AppointmentCancelled;
 import com.emme.appointments.api.event.AppointmentCreated;
+import com.emme.notification.api.event.NotificationDelivered;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;

@@ -60,7 +60,8 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
     userDoc.put("firstName", "E2E");
     userDoc.put("lastName", "Owner");
     userDoc.putArray("requiredActions");
-    userDoc.putArray("credentials")
+    userDoc
+        .putArray("credentials")
         .addObject()
         .put("type", "password")
         .put("value", configuration.password())
@@ -71,8 +72,11 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
     var existingResponse =
         send(
             HttpRequest.newBuilder(
-                    uri("/admin/realms/" + realmName + "/users?username="
-                        + URLEncoder.encode(configuration.username(), StandardCharsets.UTF_8)))
+                    uri(
+                        "/admin/realms/"
+                            + realmName
+                            + "/users?username="
+                            + URLEncoder.encode(configuration.username(), StandardCharsets.UTF_8)))
                 .header("Authorization", "Bearer " + adminToken)
                 .GET()
                 .build());
@@ -99,8 +103,11 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
     var lookupResponse =
         send(
             HttpRequest.newBuilder(
-                    uri("/admin/realms/" + realmName + "/users?username="
-                        + URLEncoder.encode(configuration.username(), StandardCharsets.UTF_8)))
+                    uri(
+                        "/admin/realms/"
+                            + realmName
+                            + "/users?username="
+                            + URLEncoder.encode(configuration.username(), StandardCharsets.UTF_8)))
                 .header("Authorization", "Bearer " + adminToken)
                 .GET()
                 .build());

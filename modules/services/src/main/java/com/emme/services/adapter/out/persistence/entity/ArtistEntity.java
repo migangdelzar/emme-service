@@ -1,7 +1,7 @@
 package com.emme.services.adapter.out.persistence.entity;
 
-import com.emme.shared.persistence.TenantOwnedEntity;
 import com.emme.services.domain.model.ArtistStatus;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

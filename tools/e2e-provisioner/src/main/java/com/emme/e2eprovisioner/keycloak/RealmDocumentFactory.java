@@ -190,8 +190,7 @@ public final class RealmDocumentFactory {
     }
   }
 
-  private static void addCustomProfileAttribute(
-      ArrayNode attrs, String name, String displayName) {
+  private static void addCustomProfileAttribute(ArrayNode attrs, String name, String displayName) {
     var attr = attrs.addObject();
     attr.put("name", name);
     attr.put("displayName", displayName);

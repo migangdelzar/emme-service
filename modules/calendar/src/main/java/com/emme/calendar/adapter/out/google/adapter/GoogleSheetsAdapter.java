@@ -1,13 +1,13 @@
 package com.emme.calendar.adapter.out.google.adapter;
 
+import com.emme.appointments.api.result.AppointmentSummary;
+import com.emme.appointments.api.usecase.ListAppointmentsUseCase;
 import com.emme.calendar.adapter.out.google.client.GoogleSheetsClient;
 import com.emme.calendar.adapter.out.persistence.entity.GoogleSpreadsheetLinkEntity;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleSpreadsheetLinkRepository;
 import com.emme.calendar.api.result.GoogleSpreadsheetDetails;
 import com.emme.calendar.application.port.out.GoogleSheetsExportPort;
-import com.emme.appointments.api.result.AppointmentSummary;
 import com.emme.clients.api.result.CustomerSummary;
-import com.emme.appointments.api.usecase.ListAppointmentsUseCase;
 import com.emme.clients.api.usecase.ListCustomersUseCase;
 import java.time.Instant;
 import java.time.ZoneId;

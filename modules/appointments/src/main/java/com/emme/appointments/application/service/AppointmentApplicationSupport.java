@@ -4,12 +4,12 @@ import com.emme.appointments.api.result.AppointmentDetails;
 import com.emme.appointments.application.mapper.AppointmentApplicationMapper;
 import com.emme.appointments.application.port.out.AppointmentCollisionPort;
 import com.emme.appointments.application.port.out.AppointmentRepository;
-import com.emme.services.application.port.out.ArtistRepository;
-import com.emme.clients.application.port.out.CustomerRepository;
-import com.emme.services.application.port.out.ServiceRepository;
 import com.emme.appointments.domain.model.Appointment;
-import com.emme.services.domain.model.Artist;
+import com.emme.clients.application.port.out.CustomerRepository;
 import com.emme.clients.domain.model.Customer;
+import com.emme.services.application.port.out.ArtistRepository;
+import com.emme.services.application.port.out.ServiceRepository;
+import com.emme.services.domain.model.Artist;
 import java.time.Instant;
 import java.util.UUID;
 

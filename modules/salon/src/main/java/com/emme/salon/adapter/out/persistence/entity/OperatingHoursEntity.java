@@ -1,7 +1,7 @@
 package com.emme.salon.adapter.out.persistence.entity;
 
-import com.emme.shared.persistence.TenantOwnedEntity;
 import com.emme.salon.domain.model.DayOfWeek;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

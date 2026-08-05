@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Test;
 
 class DocumentUseCaseConventionTest {
 
-  private static final Path ROOT =
-      sourcePath("modules/documents/src/main/java/com/emme/documents");
+  private static final Path ROOT = sourcePath("modules/documents/src/main/java/com/emme/documents");
 
   @Test
   void exposesGroupedContractsAndFocusedApplicationServices() throws Exception {

@@ -13,8 +13,7 @@ import org.junit.jupiter.api.Test;
 
 class DocumentsPackageConventionTest {
 
-  private static final Path ROOT =
-      sourcePath("modules/documents/src/main/java/com/emme/documents");
+  private static final Path ROOT = sourcePath("modules/documents/src/main/java/com/emme/documents");
   private static final JavaClasses CLASSES =
       new ClassFileImporter()
           .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
@@ -49,8 +48,7 @@ class DocumentsPackageConventionTest {
         .doesNotContain("org.springframework");
     noClasses()
         .that()
-        .resideInAnyPackage(
-            "com.emme.documents.domain..", "com.emme.documents.application..")
+        .resideInAnyPackage("com.emme.documents.domain..", "com.emme.documents.application..")
         .should()
         .dependOnClassesThat()
         .resideInAnyPackage("com.emme.documents.adapter.out..")

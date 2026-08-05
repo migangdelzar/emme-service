@@ -1,9 +1,9 @@
 package com.emme.documents.adapter.out.search;
 
-import com.emme.shared.search.HybridSearch;
-import com.emme.shared.search.SearchTarget;
 import com.emme.documents.application.port.out.DocumentSearchHit;
 import com.emme.documents.application.port.out.DocumentSearchPort;
+import com.emme.shared.search.HybridSearch;
+import com.emme.shared.search.SearchTarget;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;

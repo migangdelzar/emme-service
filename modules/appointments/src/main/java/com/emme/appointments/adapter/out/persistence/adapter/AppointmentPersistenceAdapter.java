@@ -18,8 +18,7 @@ public class AppointmentPersistenceAdapter implements AppointmentRepository {
   private final SpringDataAppointmentRepository repository;
   private final AppointmentPersistenceMapper mapper;
 
-  public AppointmentPersistenceAdapter(
-      SpringDataAppointmentRepository repository) {
+  public AppointmentPersistenceAdapter(SpringDataAppointmentRepository repository) {
     this.repository = repository;
     this.mapper = new AppointmentPersistenceMapper();
   }

@@ -140,32 +140,36 @@ public final class JdbcTenantSeeder implements TenantSeeder {
     }
   }
 
-  private static void cleanBusinessData(Connection connection, UUID tenantId)
-      throws SQLException {
-    try (var stmt = connection.prepareStatement(
-        "DELETE FROM e2e_studio.appointment WHERE tenant_id = ?")) {
-      stmt.setObject(1, tenantId); stmt.executeUpdate();
+  private static void cleanBusinessData(Connection connection, UUID tenantId) throws SQLException {
+    try (var stmt =
+        connection.prepareStatement("DELETE FROM e2e_studio.appointment WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId);
+      stmt.executeUpdate();
     }
-    try (var stmt = connection.prepareStatement(
-        "DELETE FROM e2e_studio.customer WHERE tenant_id = ?")) {
-      stmt.setObject(1, tenantId); stmt.executeUpdate();
+    try (var stmt =
+        connection.prepareStatement("DELETE FROM e2e_studio.customer WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId);
+      stmt.executeUpdate();
     }
-    try (var stmt = connection.prepareStatement(
-        "DELETE FROM e2e_studio.service WHERE tenant_id = ?")) {
-      stmt.setObject(1, tenantId); stmt.executeUpdate();
+    try (var stmt =
+        connection.prepareStatement("DELETE FROM e2e_studio.service WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId);
+      stmt.executeUpdate();
     }
-    try (var stmt = connection.prepareStatement(
-        "DELETE FROM e2e_studio.artist_capability WHERE tenant_id = ?")) {
-      stmt.setObject(1, tenantId); stmt.executeUpdate();
+    try (var stmt =
+        connection.prepareStatement(
+            "DELETE FROM e2e_studio.artist_capability WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId);
+      stmt.executeUpdate();
     }
-    try (var stmt = connection.prepareStatement(
-        "DELETE FROM e2e_studio.artist WHERE tenant_id = ?")) {
-      stmt.setObject(1, tenantId); stmt.executeUpdate();
+    try (var stmt =
+        connection.prepareStatement("DELETE FROM e2e_studio.artist WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId);
+      stmt.executeUpdate();
     }
   }
 
-  private static void ensureSubscription(Connection connection, UUID tenantId)
-      throws SQLException {
+  private static void ensureSubscription(Connection connection, UUID tenantId) throws SQLException {
     try (var statement =
         connection.prepareStatement(
             """
@@ -178,30 +182,39 @@ public final class JdbcTenantSeeder implements TenantSeeder {
     }
   }
 
-  private static void ensurePermissions(Connection connection, UUID tenantId)
-      throws SQLException {
+  private static void ensurePermissions(Connection connection, UUID tenantId) throws SQLException {
     // Seed read/write permissions for the business_owner role
-    var permissions = new String[] {
-      "appointment:read", "appointment:write", "appointment:cancel",
-      "customer:read", "customer:write",
-      "service:read", "service:write",
-      "artist:read", "artist:write",
-      "finances:read", "business:read", "business:write"
-    };
+    var permissions =
+        new String[] {
+          "appointment:read",
+          "appointment:write",
+          "appointment:cancel",
+          "customer:read",
+          "customer:write",
+          "service:read",
+          "service:write",
+          "artist:read",
+          "artist:write",
+          "finances:read",
+          "business:read",
+          "business:write"
+        };
     for (var perm : permissions) {
       var permId = UUID.nameUUIDFromBytes(perm.getBytes());
-      try (var s = connection.prepareStatement(
-          "INSERT INTO emme_core.permission (id, code, name, description, active) " +
-          "VALUES (?, ?, ?, ?, true) ON CONFLICT (code) DO UPDATE SET active = true")) {
+      try (var s =
+          connection.prepareStatement(
+              "INSERT INTO emme_core.permission (id, code, name, description, active) "
+                  + "VALUES (?, ?, ?, ?, true) ON CONFLICT (code) DO UPDATE SET active = true")) {
         s.setObject(1, permId);
         s.setString(2, perm);
         s.setString(3, perm);
         s.setString(4, "E2E auto-granted permission");
         s.executeUpdate();
       }
-      try (var s = connection.prepareStatement(
-          "INSERT INTO emme_core.role_permission (id, role_id, permission_id, granted_at) " +
-          "VALUES (gen_random_uuid(), ?, ?, now()) ON CONFLICT DO NOTHING")) {
+      try (var s =
+          connection.prepareStatement(
+              "INSERT INTO emme_core.role_permission (id, role_id, permission_id, granted_at) "
+                  + "VALUES (gen_random_uuid(), ?, ?, now()) ON CONFLICT DO NOTHING")) {
         s.setObject(1, BUSINESS_OWNER_ROLE_ID);
         s.setObject(2, permId);
         s.executeUpdate();

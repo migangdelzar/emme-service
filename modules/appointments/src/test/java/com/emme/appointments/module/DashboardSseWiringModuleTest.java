@@ -4,8 +4,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.emme.notification.api.event.NotificationDelivered;
 import com.emme.appointments.adapter.in.web.sse.DashboardBroadcaster;
+import com.emme.notification.api.event.NotificationDelivered;
 import com.emme.testing.BaseSpringModuleTest;
 import java.io.IOException;
 import org.junit.jupiter.api.AfterEach;

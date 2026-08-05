@@ -1,8 +1,8 @@
 package com.emme.salon.adapter.out.persistence.entity;
 
 import com.emme.kernel.type.NotificationChannel;
-import com.emme.shared.persistence.TenantOwnedEntity;
 import com.emme.salon.domain.model.TemplatePolicy;
+import com.emme.shared.persistence.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

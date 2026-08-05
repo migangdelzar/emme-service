@@ -1223,6 +1223,125 @@ git add -A && git commit -m "refactor: final verification — all tests pass, 17
 
 ---
 
+### Task 11: Clean up test package naming (DDD/hex alignment)
+
+Several existing modules have test packages that don't mirror the main DDD structure. Fix these as part of the decomposition to ensure all modules follow the same conventions.
+
+- [ ] **Step 1: Fix notification `notifications` → `notification` package (plural→singular)**
+
+```bash
+# The test module has both com.emme.notification and com.emme.notifications
+# Move notifications tests into the correct singular package
+mkdir -p modules/notification/src/test/java/com/emme/notification/module
+mv modules/notification/src/test/java/com/emme/notifications/module/*.java modules/notification/src/test/java/com/emme/notification/module/ 2>/dev/null || true
+rm -rf modules/notification/src/test/java/com/emme/notifications
+
+# Fix package declarations
+for f in modules/notification/src/test/java/com/emme/notification/module/*.java; do
+  sed -i '' 's/^package com\.emme\.notifications\.module;/package com.emme.notification.module;/g' "$f"
+  sed -i '' 's/import com\.emme\.notifications\./import com.emme.notification./g' "$f"
+done
+```
+
+- [ ] **Step 2: Fix assistant `conversations` → `assistant` test packages**
+
+```bash
+# Move conversations tests under the assistant package
+for dir in module web; do
+  if [ -d "modules/assistant/src/test/java/com/emme/conversations/$dir" ]; then
+    mkdir -p "modules/assistant/src/test/java/com/emme/assistant/$dir"
+    mv "modules/assistant/src/test/java/com/emme/conversations/$dir"/*.java "modules/assistant/src/test/java/com/emme/assistant/$dir/" 2>/dev/null || true
+  fi
+done
+rm -rf modules/assistant/src/test/java/com/emme/conversations
+
+# Fix package declarations
+for f in modules/assistant/src/test/java/com/emme/assistant/module/*.java modules/assistant/src/test/java/com/emme/assistant/web/*.java; do
+  [ -f "$f" ] && sed -i '' 's/^package com\.emme\.conversations\./package com.emme.assistant./g' "$f"
+  [ -f "$f" ] && sed -i '' 's/import com\.emme\.conversations\./import com.emme.assistant./g' "$f"
+done
+```
+
+- [ ] **Step 3: Rename `repository/` test packages → `adapter/out/persistence/repository/`**
+
+```bash
+# Fix: identity, tenancy, calendar, catalog
+for mod in identity tenancy calendar catalog; do
+  SRC="modules/$mod/src/test/java/com/emme/$mod/repository"
+  DST="modules/$mod/src/test/java/com/emme/$mod/adapter/out/persistence/repository"
+  if [ -d "$SRC" ]; then
+    mkdir -p "$DST"
+    mv "$SRC"/*.java "$DST/" 2>/dev/null || true
+    rm -rf "$SRC"
+    # Fix package declarations
+    for f in "$DST"/*.java; do
+      [ -f "$f" ] && sed -i '' "s/^package com\.emme\.$mod\.repository;/package com.emme.$mod.adapter.out.persistence.repository;/g" "$f"
+    done
+  fi
+done
+```
+
+- [ ] **Step 4: Rename `web/` test packages → `adapter/in/web/`**
+
+```bash
+# Fix: tenancy (web/), assistant (ai/web/), assistant (web/)
+for mod_info in "tenancy"; do
+  SRC="modules/$mod_info/src/test/java/com/emme/$mod_info/web"
+  DST="modules/$mod_info/src/test/java/com/emme/$mod_info/adapter/in/web"
+  if [ -d "$SRC" ]; then
+    mkdir -p "$DST"
+    mv "$SRC"/*.java "$DST/" 2>/dev/null || true
+    rm -rf "$SRC"
+    for f in "$DST"/*.java; do
+      [ -f "$f" ] && sed -i '' "s/^package com\.emme\.$mod_info\.web;/package com.emme.$mod_info.adapter.in.web;/g" "$f"
+    done
+  fi
+done
+
+# Fix: assistant ai/web/
+SRC="modules/assistant/src/test/java/com/emme/assistant/ai/web"
+DST="modules/assistant/src/test/java/com/emme/assistant/ai/adapter/in/web"
+if [ -d "$SRC" ]; then
+  mkdir -p "$DST"
+  mv "$SRC"/*.java "$DST/" 2>/dev/null || true
+  rm -rf "$SRC"
+  for f in "$DST"/*.java; do
+    [ -f "$f" ] && sed -i '' 's/^package com\.emme\.assistant\.ai\.web;/package com.emme.assistant.ai.adapter.in.web;/g' "$f"
+  done
+fi
+```
+
+- [ ] **Step 5: Add package-info.java to ALL test sub-packages**
+
+```bash
+for mod in identity tenancy calendar assistant notification payment catalog shared; do
+  TEST_DIR="modules/$mod/src/test/java/com/emme/$mod"
+  [ -d "$TEST_DIR" ] || continue
+  for dir in $(find "$TEST_DIR" -type d 2>/dev/null); do
+    if [ ! -f "$dir/package-info.java" ]; then
+      pkg=$(echo "$dir" | sed 's|.*/com/emme/||' | tr '/' '.')
+      echo "package com.emme.$pkg;" > "$dir/package-info.java"
+    fi
+  done
+done
+```
+
+- [ ] **Step 6: Verify all test compilations**
+
+```bash
+JAVA_HOME=$(mise exec -- printenv JAVA_HOME) ./gradlew compileTestJava --no-configuration-cache
+```
+Expected: BUILD SUCCESSFUL
+
+```bash
+git add -A && git commit -m "refactor: align test packages with DDD/hex conventions
+
+- Fixed notification notifications→notification (plural→singular)
+- Fixed assistant conversations→assistant package
+- Renamed repository/ → adapter/out/persistence/repository/ (identity, tenancy, calendar, catalog)
+- Renamed web/ → adapter/in/web/ (tenancy, assistant)
+- Added package-info.java to all test sub-packages"
+
 ### Task 10: Update documentation
 
 - [ ] **Step 1: Update docs/architecture/README.md** — replace any `studio` references with new module names

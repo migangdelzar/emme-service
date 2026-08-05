@@ -94,7 +94,7 @@
 | FR-C034 | Browse service catalog | As a customer, I want to view available salon services with descriptions and prices so that I can choose what to book. | High | Implemented |
 | FR-C035 | Match nail design | As a customer, I want to submit a nail design image and find matching catalog services so that I can request the look I want. | Medium | Implemented |
 | FR-C036 | Browse nail designs | As a customer, I want to browse the salon's nail design catalog so that I can explore inspiration before booking. | Medium | Implemented |
-| FR-C037 | Customer sign in with Google | As a customer, I want to sign in with my Google account so that I can access my booking history and profile without creating a separate password. | High | Open |
+| FR-C037 | Customer sign in with social identity | As a customer, I want to sign in using any Keycloak-brokered social account (Google, Apple, Facebook, GitHub, Microsoft, Twitter/X, LinkedIn, and more) so that I can access my booking history and profile without creating a separate password. | High | Open |
 
 ## Non-Functional Requirements
 
@@ -118,7 +118,8 @@
 | ID | Title | Constraint | Category | Priority | Status |
 |---|---|---|---|---|---|
 | C-C001 | WhatsApp integration | Production WhatsApp must integrate directly with Meta WhatsApp Cloud API; no third-party WhatsApp gateway is allowed. | Technical | High | Implemented |
-| C-C002 | AI framework | AI orchestration, model access, tools, and vector-store integration must use Spring AI 2.0 inside the Modulith. | Technical | High | Implemented |
+| C-C002 | Keycloak identity brokering | All customer social identity authentication must be delegated to Keycloak 26's identity brokering. The backend must never handle provider OAuth tokens directly. Adding a new social provider requires only Keycloak realm configuration — no backend code changes. | Technical | High | Open |
+| C-C003 | AI framework | AI orchestration, model access, tools, and vector-store integration must use Spring AI 2.0 inside the Modulith. | Technical | High | Implemented |
 | C-C003 | Local AI | Ollama must support local development models and the approved production embedding model. | Technical | Medium | Implemented |
 | C-C004 | Channel normalization | WhatsApp and web chat must use the same business conversation capabilities after channel normalization; channel-specific logic must be isolated to adapter layers. | Technical | High | Implemented |
 | C-C005 | Customer authentication | Customer login must use phone-number-based token authentication through the Keycloak-backed identity module. | Technical | High | Implemented |

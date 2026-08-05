@@ -30,9 +30,6 @@ spring:
         jdbc:
           time_zone: UTC
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        multi_tenancy: DATABASE
-        multi_tenant_connection_provider: com.emme.tenancy.adapter.out.client.database.SchemaAwareMultiTenantConnectionProvider
-        tenant_identifier_resolver: com.emme.tenancy.adapter.out.client.database.CurrentTenantIdentifierResolver
   liquibase:
     change-log: classpath:db/changelog-root.yml
     contexts: dev

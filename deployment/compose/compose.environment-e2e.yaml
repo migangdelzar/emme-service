@@ -9,7 +9,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1536M
+          memory: 1G
     environment:
       SPRING_PROFILES_ACTIVE: e2e
       JAVA_TOOL_OPTIONS: "-XX:ReservedCodeCacheSize=128M -XX:MaxMetaspaceSize=256M"

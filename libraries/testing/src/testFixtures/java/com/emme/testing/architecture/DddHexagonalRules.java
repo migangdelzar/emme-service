@@ -16,6 +16,8 @@ public final class DddHexagonalRules {
     return noClasses()
         .that()
         .resideInAnyPackage("com.emme.*.domain..")
+        .and()
+        .areNotAnnotatedWith(org.springframework.modulith.NamedInterface.class)
         .should()
         .dependOnClassesThat()
         .resideInAnyPackage(

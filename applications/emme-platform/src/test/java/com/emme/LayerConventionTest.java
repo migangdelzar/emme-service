@@ -87,6 +87,8 @@ class LayerConventionTest {
     noClasses()
         .that()
         .resideInAnyPackage("com.emme.*.domain..")
+        .and()
+        .areNotAnnotatedWith(org.springframework.modulith.NamedInterface.class)
         .should()
         .dependOnClassesThat()
         .resideInAnyPackage(

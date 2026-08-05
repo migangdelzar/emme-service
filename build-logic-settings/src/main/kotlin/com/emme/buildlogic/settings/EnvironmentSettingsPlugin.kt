@@ -10,22 +10,30 @@ class EnvironmentSettingsPlugin : Plugin<Settings> {
   override fun apply(settings: Settings) {
     val environment = resolveEnvironment(settings)
     val values = resolveValues(settings, environment)
-    settings.gradle.extensions.extraProperties.set(ENVIRONMENT_NAME_KEY, environment.id)
+    settings.gradle.extensions.extraProperties.set(ENVIRONMENT_NAME_KEY, environment)
     settings.gradle.extensions.extraProperties.set(ENVIRONMENT_VALUES_KEY, values)
   }
 
-  private fun resolveEnvironment(settings: Settings): EnvironmentName =
+  private fun resolveEnvironment(settings: Settings): String =
     settings.providers
       .gradleProperty("environment")
       .orElse(settings.providers.environmentVariable("EMME_ENV"))
-      .map(EnvironmentName::parse)
-      .getOrElse(EnvironmentName.DEV)
+      .map(String::trim)
+      .map(String::lowercase)
+      .orElse("dev")
+      .get()
+      .also { environment ->
+        val supported = supportedEnvironments(settings.rootDir)
+        require(environment in supported) {
+          "Unsupported environment '$environment'; expected ${supported.sorted().joinToString()}"
+        }
+      }
 
   private fun resolveValues(
     settings: Settings,
-    environment: EnvironmentName,
+    environment: String,
   ): Map<String, String> {
-    val fileValues = loadProperties(settings.rootDir.resolve("gradle/environments/${environment.id}.properties"))
+    val fileValues = loadProperties(settings.rootDir.resolve("gradle/environments/$environment.properties"))
     val processValues =
       System.getenv()
         .filterKeys { it.startsWith("EMME_") && it != "EMME_ENV" }
@@ -52,29 +60,19 @@ class EnvironmentSettingsPlugin : Plugin<Settings> {
     return values
   }
 
+  private fun supportedEnvironments(rootDir: File): Set<String> =
+    rootDir
+      .resolve("gradle/environments")
+      .listFiles()
+      .orEmpty()
+      .filter { it.isFile && it.extension == "properties" }
+      .map { it.nameWithoutExtension.lowercase() }
+      .toSet()
+
   private fun isSecretLike(key: String): Boolean =
     listOf("password", "secret", "token", "private-key", "private_key").any(
       key.lowercase()::contains,
     )
-
-  private enum class EnvironmentName(
-    val id: String,
-  ) {
-    LOCAL("local"),
-    DEV("dev"),
-    REGRESSION("regression"),
-    STAGING("staging"),
-    PRODUCTION("production"),
-    ;
-
-    companion object {
-      fun parse(value: String): EnvironmentName =
-        entries.firstOrNull { it.id == value.trim().lowercase() }
-          ?: throw IllegalArgumentException(
-            "Unsupported environment '$value'; expected ${entries.joinToString { it.id }}",
-          )
-    }
-  }
 
   private companion object {
     const val ENVIRONMENT_NAME_KEY = "com.emme.environment.name"

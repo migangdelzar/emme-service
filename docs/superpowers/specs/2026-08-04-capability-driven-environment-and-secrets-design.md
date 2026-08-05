@@ -111,6 +111,11 @@ build-logic-settings/
 └── src/main/kotlin/com/emme/buildlogic/settings/EnvironmentSettingsPlugin.kt
 ```
 
+It intentionally uses a normalized string validated against the available
+environment property filenames. Typed models such as `EnvironmentName` and
+`RuntimeKind` exist only in the main `build-logic` build, so the bootstrap build
+does not duplicate build-domain classes.
+
 ## Gradle Cache and Configuration-Cache Rules
 
 - Read properties through Gradle `ProviderFactory` and `ValueSource` APIs.

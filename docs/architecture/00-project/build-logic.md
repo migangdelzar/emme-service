@@ -23,6 +23,11 @@ non-secret property map before project plugin resolution. The main
 `build-logic` build exposes typed projections and capability-owned tasks. The
 settings build stays dependency-light and never resolves secrets.
 
+The settings build deliberately uses a normalized `String` and the environment
+property filenames as its contract. It does not duplicate `EnvironmentName`,
+`RuntimeKind`, or any delivery model. The main build-logic is the sole owner of
+typed build-domain models; the settings build only bootstraps values early.
+
 Individual `build.gradle.kts` files should describe what a project is and which capabilities it needs. They should not repeat how Java, Spring, tests, containers, publishing, or deployment are wired.
 
 ```kotlin

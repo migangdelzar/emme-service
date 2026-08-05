@@ -70,6 +70,8 @@ build-logic-settings/
 
 The settings plugin publishes only the selected environment and a generic
 non-secret property map. Project capabilities expose typed projections from it.
+It uses strings and the environment property filenames only; typed models such
+as `EnvironmentName` remain owned by the main build-logic build.
 
 ## Convention plugins
 

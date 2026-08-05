@@ -64,16 +64,20 @@ public final class JdbcTenantSeeder implements TenantSeeder {
     UUID tenantId;
     try (var statement =
         connection.prepareStatement(
-            "SELECT tenant_id FROM emme_core.tenant_registry WHERE slug = ?")) {
+            "INSERT INTO emme_core.tenant_registry (slug, schema_name, database_mode, status) "
+                + "VALUES (?, ?, 'SHARED', 'PROVISIONING') "
+                + "ON CONFLICT (slug) DO UPDATE SET status = 'PROVISIONING' "
+                + "RETURNING tenant_id")) {
+      var schemaName = slug.replaceAll("[^a-z0-9-]", "").replace("-", "_");
       statement.setString(1, slug);
+      statement.setString(2, schemaName);
       try (var result = statement.executeQuery()) {
-        if (!result.next()) {
-          throw new SQLException("E2E tenant registry entry was not found for slug: " + slug);
-        }
+        if (!result.next()) throw new SQLException("Failed to create tenant: " + slug);
         tenantId = result.getObject(1, UUID.class);
       }
     }
 
+    // Also create the tenant metadata record
     try (var statement =
         connection.prepareStatement(
             """
@@ -82,8 +86,7 @@ public final class JdbcTenantSeeder implements TenantSeeder {
             ON CONFLICT (id) DO UPDATE SET
               slug = EXCLUDED.slug,
               name = EXCLUDED.name,
-              status = EXCLUDED.status,
-              keycloak_realm = EXCLUDED.keycloak_realm
+              status = 'ACTIVE'
             """)) {
       statement.setObject(1, tenantId);
       statement.setString(2, slug);

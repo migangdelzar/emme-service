@@ -12,7 +12,7 @@ services:
           memory: 1G
     environment:
       SPRING_PROFILES_ACTIVE: e2e
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emme?currentSchema=${E2E_TENANT_SCHEMA:-e2e_studio},emme_core,public
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emme?currentSchema=emme_core,public
       SPRING_DATASOURCE_USERNAME: emme
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-emme}
       # The disposable E2E environment uses one tenant search path so the

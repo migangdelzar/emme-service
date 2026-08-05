@@ -48,6 +48,7 @@ dependencies {
   implementation(libs.sonarqube.gradle.plugin)
   implementation(libs.japicmp.gradle.plugin)
   implementation(libs.graalvm.native.gradle.plugin)
+  implementation(libs.jackson.databind)
 
   testImplementation(gradleTestKit())
   testImplementation(platform(libs.junit.bom))
@@ -90,23 +91,31 @@ gradlePlugin {
   plugins {
     register("emmeRoot") {
       id = "com.emme.root"
-      implementationClass = "com.emme.buildlogic.root.EmmeRootPlugin"
+      implementationClass = "com.emme.buildlogic.root.RootPlugin"
     }
     register("emmeContainerBinary") {
       id = "com.emme.container-binary"
-      implementationClass = "com.emme.buildlogic.container.EmmeContainerPlugin"
+      implementationClass = "com.emme.buildlogic.container.ContainerPlugin"
     }
     register("emmePublishingBinary") {
       id = "com.emme.publishing-binary"
-      implementationClass = "com.emme.buildlogic.publishing.EmmePublishingPlugin"
+      implementationClass = "com.emme.buildlogic.publishing.PublishingPlugin"
     }
     register("emmeDeployment") {
       id = "com.emme.deployment"
-      implementationClass = "com.emme.buildlogic.deployment.EmmeDeploymentPlugin"
+      implementationClass = "com.emme.buildlogic.deployment.DeploymentPlugin"
+    }
+    register("emmeEnvironment") {
+      id = "com.emme.environment"
+      implementationClass = "com.emme.buildlogic.environment.EnvironmentPlugin"
+    }
+    register("emmeSecrets") {
+      id = "com.emme.secrets"
+      implementationClass = "com.emme.buildlogic.secrets.SecretsPlugin"
     }
     register("emmeSecurityBinary") {
       id = "com.emme.security-binary"
-      implementationClass = "com.emme.buildlogic.security.EmmeSecurityPlugin"
+      implementationClass = "com.emme.buildlogic.security.SecurityPlugin"
     }
   }
 }

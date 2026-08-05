@@ -1,6 +1,7 @@
 plugins {
     base
     id("com.emme.root")
+    id("emme.secrets")
     alias(libs.plugins.spotless)
     alias(libs.plugins.owasp.dependency.check)
 }

@@ -1211,7 +1211,6 @@ Expected: 17
 ls modules/ | sort
 ```
 Expected:
-```
 appointments  assistant  audit  booking  calendar  catalog  clients
 documents  identity  notification  payment  salon  services
 shared  staffing  subscriptions  tenancy

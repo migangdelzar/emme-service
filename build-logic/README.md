@@ -12,6 +12,11 @@ build-logic structure.
 `build-logic` uses Capability-Driven Design. It is intentionally different from
 the DDD + Hexagonal package structure used by backend business modules.
 
+Environment selection is resolved before project plugin resolution by the
+separate `build-logic-settings` included build. The main build-logic build then
+consumes that immutable, non-secret context. `RootPlugin` remains a thin
+repository lifecycle coordinator; it does not own environment or secret logic.
+
 ```text
 Business module                         Gradle build-logic
 DDD bounded capability                  Build capability
@@ -42,8 +47,10 @@ build-logic/
     │       ├── deployment/         # plugin, DSL, tasks, providers, results
     │       ├── publishing/         # plugin, DSL, tasks, providers, results
     │       ├── registry/           # registry boundary and results
-    │       ├── security/           # scanner plugin, tasks, providers
-    │       ├── quality/            # quality capability implementation
+    │       ├── security/            # scanner plugin, tasks, providers
+    │       ├── environment/        # typed projections over generic config
+    │       ├── secrets/             # provider validation and rotation
+    │       ├── quality/             # quality capability implementation
     │       └── git/                # Git ValueSources
     ├── test/kotlin/
     └── functionalTest/kotlin/
@@ -52,6 +59,17 @@ build-logic/
 The implementation does not use global `plugin/`, `extension/`, `task/`,
 `provider/`, or `value/` buckets. Shared primitives are in `core/`; capability
 specific files live under the capability that owns their behavior.
+
+The settings-time boundary is intentionally separate:
+
+```text
+build-logic-settings/
+└── src/main/kotlin/com/emme/buildlogic/settings/
+    └── EnvironmentSettingsPlugin.kt
+```
+
+The settings plugin publishes only the selected environment and a generic
+non-secret property map. Project capabilities expose typed projections from it.
 
 ## Convention plugins
 
@@ -74,6 +92,8 @@ specific files live under the capability that owns their behavior.
 | `emme.publishing` | SBOM, signing, metadata, releases | Published artifacts |
 | `emme.deployment` | Compose/k3d/Kubernetes strategy dispatch | Deployable applications |
 | `emme.security` | Security scanner task and provider dispatch | Projects requiring security gates |
+| `emme.environment` | Environment selection and typed non-secret configuration | Projects consuming delivery defaults |
+| `emme.secrets` | Provider-neutral validation and explicit rotation | Root/release security gates |
 
 Convention plugins remain declarative, composable, small, opinionated, and reusable.
 Complex behavior belongs in a capability-owned binary plugin.
@@ -109,6 +129,12 @@ module build.gradle.kts
 Use typed extensions for configuration, custom tasks for execution, provider ports
 for external tools, result models for stable outcomes, and `Provider`/`ValueSource`
 for lazy external state.
+
+Configuration precedence is `capability defaults` → environment properties file →
+`EMME_*` process variables → `gradle.properties` → `-Pname=value` (highest).
+Secret-like properties never enter the shared environment map. The secret
+manifest contains references and generation policy only; `rotateSecrets` is
+dry-run unless an explicit apply mode and provider are selected.
 
 ## Deployment targets
 

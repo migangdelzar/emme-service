@@ -1,5 +1,6 @@
 plugins {
   java
+  id("emme.environment")
   id("emme.quality")
   checkstyle
 }

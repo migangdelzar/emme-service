@@ -10,7 +10,7 @@ build logic.
 ## Responsibilities
 
 - Pin or select tool versions for local development and CI.
-- Group commands into profiles such as `dev`, `local`, `regression`, and `prod`.
+- Group commands into profiles such as `dev`, `local`, `regression`, and `production`.
 - Expose short tasks that delegate to Gradle, Docker, or Kubernetes tooling.
 - Keep environment setup separate from application business logic.
 
@@ -106,7 +106,7 @@ The exact task names may evolve, but the namespace and delegation rules are stab
 | `dev` | Fast local feedback, mocks permitted | No production credentials |
 | `local` | Disposable real infrastructure | Explicit cleanup task |
 | `regression` | Full REST/UI confidence | Isolated test data and reports |
-| `prod` | Protected release/deployment operations | Approval, immutable artifact, audit trail |
+| `production` | Protected release/deployment operations | Approval, immutable artifact, audit trail |
 
 ### CI parity
 

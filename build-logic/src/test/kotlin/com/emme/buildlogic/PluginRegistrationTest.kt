@@ -1,15 +1,15 @@
 package com.emme.buildlogic
 
-import com.emme.buildlogic.container.EmmeContainerExtension
-import com.emme.buildlogic.container.EmmeContainerPlugin
-import com.emme.buildlogic.deployment.EmmeDeploymentExtension
-import com.emme.buildlogic.deployment.EmmeDeploymentPlugin
-import com.emme.buildlogic.publishing.EmmePublishingExtension
-import com.emme.buildlogic.publishing.EmmePublishingPlugin
-import com.emme.buildlogic.root.EmmeBuildExtension
-import com.emme.buildlogic.root.EmmeRootPlugin
-import com.emme.buildlogic.security.EmmeSecurityExtension
-import com.emme.buildlogic.security.EmmeSecurityPlugin
+import com.emme.buildlogic.container.ContainerExtension
+import com.emme.buildlogic.container.ContainerPlugin
+import com.emme.buildlogic.deployment.DeploymentExtension
+import com.emme.buildlogic.deployment.DeploymentPlugin
+import com.emme.buildlogic.publishing.PublishingExtension
+import com.emme.buildlogic.publishing.PublishingPlugin
+import com.emme.buildlogic.root.BuildExtension
+import com.emme.buildlogic.root.RootPlugin
+import com.emme.buildlogic.security.SecurityExtension
+import com.emme.buildlogic.security.SecurityPlugin
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
@@ -21,16 +21,16 @@ class PluginRegistrationTest {
   @Test
   fun `emme root plugin registers extension`() {
     val project = project()
-    project.pluginManager.apply(EmmeRootPlugin::class.java)
+    project.pluginManager.apply(RootPlugin::class.java)
 
-    val ext = project.extensions.findByType(EmmeBuildExtension::class.java)
+    val ext = project.extensions.findByType(BuildExtension::class.java)
     assertThat(ext).isNotNull
   }
 
   @Test
   fun `emme root plugin registers CI task`() {
     val project = project()
-    project.pluginManager.apply(EmmeRootPlugin::class.java)
+    project.pluginManager.apply(RootPlugin::class.java)
 
     assertThat(project.tasks.findByName("ci")).isNotNull
     assertThat(project.tasks.findByName("full")).isNotNull
@@ -39,9 +39,9 @@ class PluginRegistrationTest {
   @Test
   fun `emme container plugin registers extension`() {
     val project = project()
-    project.pluginManager.apply(EmmeContainerPlugin::class.java)
+    project.pluginManager.apply(ContainerPlugin::class.java)
 
-    val ext = project.extensions.findByType(EmmeContainerExtension::class.java)
+    val ext = project.extensions.findByType(ContainerExtension::class.java)
     assertThat(ext).isNotNull
     assertThat(ext!!.enabled.get()).isFalse()
     assertThat(ext.imageTags.get()).contains("latest")
@@ -50,7 +50,7 @@ class PluginRegistrationTest {
   @Test
   fun `emme container plugin registers tasks`() {
     val project = project()
-    project.pluginManager.apply(EmmeContainerPlugin::class.java)
+    project.pluginManager.apply(ContainerPlugin::class.java)
 
     assertThat(project.tasks.findByName("containerBuild")).isNotNull
     assertThat(project.tasks.findByName("containerPush")).isNotNull
@@ -60,9 +60,9 @@ class PluginRegistrationTest {
   @Test
   fun `emme publishing plugin registers extension`() {
     val project = project()
-    project.pluginManager.apply(EmmePublishingPlugin::class.java)
+    project.pluginManager.apply(PublishingPlugin::class.java)
 
-    val ext = project.extensions.findByType(EmmePublishingExtension::class.java)
+    val ext = project.extensions.findByType(PublishingExtension::class.java)
     assertThat(ext).isNotNull
     assertThat(ext!!.enabled.get()).isFalse()
   }
@@ -70,7 +70,7 @@ class PluginRegistrationTest {
   @Test
   fun `emme publishing plugin registers tasks`() {
     val project = project()
-    project.pluginManager.apply(EmmePublishingPlugin::class.java)
+    project.pluginManager.apply(PublishingPlugin::class.java)
 
     assertThat(project.tasks.findByName("publishBuildInfo")).isNotNull
     assertThat(project.tasks.findByName("publishManifest")).isNotNull
@@ -82,9 +82,9 @@ class PluginRegistrationTest {
   @Test
   fun `emme deployment plugin registers extension with defaults`() {
     val project = project()
-    project.pluginManager.apply(EmmeDeploymentPlugin::class.java)
+    project.pluginManager.apply(DeploymentPlugin::class.java)
 
-    val ext = project.extensions.findByType(EmmeDeploymentExtension::class.java)
+    val ext = project.extensions.findByType(DeploymentExtension::class.java)
     assertThat(ext).isNotNull
     assertThat(ext!!.runtime.get()).isEqualTo("jvm")
   }
@@ -92,8 +92,8 @@ class PluginRegistrationTest {
   @Test
   fun `emme security plugin registers extension`() {
     val project = project()
-    project.pluginManager.apply(EmmeSecurityPlugin::class.java)
+    project.pluginManager.apply(SecurityPlugin::class.java)
 
-    assertThat(project.extensions.findByType(EmmeSecurityExtension::class.java)).isNotNull
+    assertThat(project.extensions.findByType(SecurityExtension::class.java)).isNotNull
   }
 }

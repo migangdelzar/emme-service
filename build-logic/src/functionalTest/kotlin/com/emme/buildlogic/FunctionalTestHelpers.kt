@@ -16,6 +16,19 @@ fun findBuildLogicDir(): Path {
   return Path.of(System.getProperty("user.dir")).resolve("build-logic").toAbsolutePath()
 }
 
+fun findBuildLogicSettingsDir(): Path {
+  val cwd = Path.of(System.getProperty("user.dir"))
+  var path: Path? = cwd
+  while (path != null) {
+    val candidate = path.resolve("build-logic-settings")
+    if (candidate.toFile().isDirectory) {
+      return candidate.toAbsolutePath()
+    }
+    path = path.parent
+  }
+  return Path.of(System.getProperty("user.dir")).resolve("build-logic-settings").toAbsolutePath()
+}
+
 fun findCatalogPath(): Path {
   val cwd = Path.of(System.getProperty("user.dir"))
   var path = cwd

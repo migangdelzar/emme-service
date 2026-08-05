@@ -14,6 +14,15 @@ reports containing environment metadata.
 
 GitHub provides `GITHUB_TOKEN` automatically. It must not be created manually.
 
+## Canonical environments
+
+Build and deployment configuration uses exactly these environment names:
+
+`local`, `dev`, `regression`, `staging`, and `production`.
+
+`e2e` and `prod` are not valid environment names. E2E execution belongs to the
+`regression` environment, while `production` is always written in full.
+
 ## GitHub Actions secrets
 
 The following are the only manually configured secrets currently referenced by
@@ -22,10 +31,10 @@ the service workflows:
 | Secret | Scope | Workflow | Required when | Notes |
 |---|---|---|---|---|
 | `NVD_API_KEY` | Repository secret | `security-scan.yml` | Manual `Security Scan` with `require_nvd=true` | Free NVD API key; not required by the normal fail-open dependency lane |
-| `E2E_ACCESS_TOKEN` | `e2e` environment secret | `ci-backend.yml` | Manual dispatch with `run_e2e=true` | Token for the explicitly supplied disposable/staging API URL |
+| `E2E_ACCESS_TOKEN` | `regression` environment secret | `ci-backend.yml` | Manual dispatch with `run_e2e=true` | Token for the explicitly supplied disposable/staging API URL |
 | `SMOKE_TOKEN` | `production` environment secret | `ci-doctor-smoke.yml` | Successful `CI Backend` workflow on `main` | Read-only smoke identity; never use an administrator token |
 
-The repository now has `e2e` and `production` environments. Protect
+The repository should use `regression` and `production` environments. Protect
 `production` with required reviewers and branch/tag restrictions before storing
 the smoke credential there.
 
@@ -72,7 +81,7 @@ rotating any credential that has been exposed outside its secret manager:
 
 ```bash
 gh secret set NVD_API_KEY --repo migangdelzar/emme-service
-gh secret set E2E_ACCESS_TOKEN --repo migangdelzar/emme-service --env e2e
+gh secret set E2E_ACCESS_TOKEN --repo migangdelzar/emme-service --env regression
 gh secret set SMOKE_TOKEN --repo migangdelzar/emme-service --env production
 ```
 
@@ -83,7 +92,7 @@ into tickets.
 ## Verification checklist
 
 - [ ] `gh secret list --repo migangdelzar/emme-service` contains no unexpected values.
-- [ ] `e2e` and `production` environments have protection rules.
+- [ ] `regression` and `production` environments have protection rules.
 - [ ] Pull-request jobs cannot read production secrets.
 - [ ] Manual NVD execution with `require_nvd=true` fails closed when the key is absent.
 - [ ] Provider credentials are tested only in disposable or approved environments.

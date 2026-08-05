@@ -1,9 +1,14 @@
 pluginManagement {
     includeBuild("build-logic")
+    includeBuild("build-logic-settings")
     repositories {
         gradlePluginPortal()
         mavenCentral()
     }
+}
+
+plugins {
+    id("com.emme.environment-settings")
 }
 
 dependencyResolutionManagement {

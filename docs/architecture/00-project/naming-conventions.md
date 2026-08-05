@@ -275,8 +275,8 @@ module.
 | Build-logic location/type | Naming pattern | Example |
 |---|---|---|
 | Precompiled convention plugin | `emme.<capability>.gradle.kts` | `emme.container.gradle.kts` |
-| Binary plugin | `Emme<Capability>Plugin` | `EmmeContainerPlugin` |
-| Extension | `Emme<Capability>Extension` | `EmmeContainerExtension` |
+| Binary plugin | `<Capability>Plugin` | `ContainerPlugin` |
+| Extension | `<Capability>Extension` | `ContainerExtension` |
 | Capability model | `<Capability><Concern>` | `ContainerRuntime` |
 | Gradle task | Verb-oriented `<Action><Subject>Task` | `BuildContainerImageTask` |
 | Task input/output model | `<Operation>Result` or `<Operation>Spec` | `DeploymentResult` |
@@ -284,8 +284,8 @@ module.
 | Provider implementation | `<Technology><Capability>Provider` | `KubernetesDeploymentProvider` |
 | Value source | `<ExternalValue>ValueSource` | `GitCommitValueSource` |
 | Shared build primitive | Explicit role name in `core` | `PluginIds`, `TaskNames` |
-| Root plugin | `EmmeRootPlugin` | `EmmeRootPlugin` |
-| Root extension | `EmmeBuildExtension` | `EmmeBuildExtension` |
+| Root plugin | `RootPlugin` | `RootPlugin` |
+| Root extension | `BuildExtension` | `BuildExtension` |
 | Unit test | `<Type>Test` | `ContainerRuntimeTest` |
 | Plugin registration test | `<Capability>PluginTest` | `ContainerPluginTest` |
 | TestKit functional test | `<Convention>FunctionalTest` | `SpringModuleConventionFunctionalTest` |

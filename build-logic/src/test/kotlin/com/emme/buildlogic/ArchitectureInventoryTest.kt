@@ -14,6 +14,7 @@ class ArchitectureInventoryTest {
         "emme.api-compat.gradle.kts",
         "emme.container.gradle.kts",
         "emme.deployment.gradle.kts",
+        "emme.environment.gradle.kts",
         "emme.feature-flags.gradle.kts",
         "emme.integration-testing.gradle.kts",
         "emme.java-base.gradle.kts",
@@ -25,6 +26,7 @@ class ArchitectureInventoryTest {
         "emme.publishing.gradle.kts",
         "emme.quality.gradle.kts",
         "emme.security.gradle.kts",
+        "emme.secrets.gradle.kts",
         "emme.spring-application.gradle.kts",
         "emme.spring-module.gradle.kts",
         "emme.spring-web.gradle.kts",
@@ -47,15 +49,15 @@ class ArchitectureInventoryTest {
   fun `capability implementation packages own complex behavior`() {
     val sourceRoot = sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic")
 
-    assertThat(Files.exists(sourceRoot.resolve("container/EmmeContainerPlugin.kt"))).isTrue()
-    assertThat(Files.exists(sourceRoot.resolve("deployment/EmmeDeploymentPlugin.kt"))).isTrue()
-    assertThat(Files.exists(sourceRoot.resolve("publishing/EmmePublishingPlugin.kt"))).isTrue()
-    assertThat(Files.exists(sourceRoot.resolve("security/EmmeSecurityPlugin.kt"))).isTrue()
-    assertThat(Files.exists(sourceRoot.resolve("root/EmmeRootPlugin.kt"))).isTrue()
+    assertThat(Files.exists(sourceRoot.resolve("container/ContainerPlugin.kt"))).isTrue()
+    assertThat(Files.exists(sourceRoot.resolve("deployment/DeploymentPlugin.kt"))).isTrue()
+    assertThat(Files.exists(sourceRoot.resolve("publishing/PublishingPlugin.kt"))).isTrue()
+    assertThat(Files.exists(sourceRoot.resolve("security/SecurityPlugin.kt"))).isTrue()
+    assertThat(Files.exists(sourceRoot.resolve("root/RootPlugin.kt"))).isTrue()
     assertThat(Files.exists(sourceRoot.resolve("container/task/BuildContainerImageTask.kt"))).isTrue()
     assertThat(Files.exists(sourceRoot.resolve("container/task/PushContainerImageTask.kt"))).isTrue()
     assertThat(Files.exists(sourceRoot.resolve("container/task/VerifyContainerImageTask.kt"))).isTrue()
-    assertThat(Files.exists(sourceRoot.resolve("core/EmmeContainerPlugin.kt"))).isFalse()
+    assertThat(Files.exists(sourceRoot.resolve("core/ContainerPlugin.kt"))).isFalse()
     assertThat(Files.exists(sourceRoot.resolve("core/DeployTask.kt"))).isFalse()
   }
 
@@ -96,7 +98,7 @@ class ArchitectureInventoryTest {
   @Test
   fun `root extension does not own capability configuration`() {
     val rootExtension =
-      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/root/EmmeBuildExtension.kt"))
+      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/root/BuildExtension.kt"))
 
     assertThat(rootExtension).doesNotContain("com.emme.buildlogic.container")
     assertThat(rootExtension).doesNotContain("val container")
@@ -115,7 +117,7 @@ class ArchitectureInventoryTest {
   @Test
   fun `container capability selects runtime providers lazily`() {
     val containerPlugin =
-      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/container/EmmeContainerPlugin.kt"))
+      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/container/ContainerPlugin.kt"))
 
     assertThat(containerPlugin).doesNotContain("extension.runtime.map { it.name.lowercase() }.get()")
     assertThat(containerPlugin).contains("PodmanProvider")
@@ -125,9 +127,9 @@ class ArchitectureInventoryTest {
   @Test
   fun `deployment and security capabilities select providers lazily without fallback`() {
     val deploymentPlugin =
-      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/deployment/EmmeDeploymentPlugin.kt"))
+      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/deployment/DeploymentPlugin.kt"))
     val securityPlugin =
-      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/security/EmmeSecurityPlugin.kt"))
+      Files.readString(sourcePath("build-logic/src/main/kotlin/com/emme/buildlogic/security/SecurityPlugin.kt"))
 
     assertThat(deploymentPlugin).doesNotContain("ext.target.get()")
     assertThat(deploymentPlugin).doesNotContain("else -> ComposeProvider")

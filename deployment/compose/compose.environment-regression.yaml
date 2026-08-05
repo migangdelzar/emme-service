@@ -1,0 +1,74 @@
+# Disposable full-stack regression overlay.
+# The application runs as the exact service image built from the selected
+# service ref. The web repository owns the browser process.
+services:
+  emme-platform:
+    # The JVM memory calculator needs more than the shared 512 MiB local
+    # default before Spring can initialize all Modulith modules. Native images
+    # use the separate runtime overlay and do not rely on this JVM budget.
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    environment:
+      SPRING_PROFILES_ACTIVE: regression
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emme?currentSchema=${E2E_TENANT_SCHEMA:-e2e_studio},emme_core,public
+      SPRING_DATASOURCE_USERNAME: emme
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-emme}
+      # The disposable E2E environment uses one tenant search path so the
+      # tenant-routing DataSource can validate tenant-owned tables at startup.
+      # Production keeps dynamic tenant routing and does not use this overlay.
+      SPRING_DATA_REDIS_HOST: redis
+      # Browser-issued tokens carry the host-facing issuer. The container uses
+      # the internal JWK endpoint below for key retrieval while validating that
+      # externally observable issuer claim.
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: ${E2E_KEYCLOAK_ISSUER_URI:-http://127.0.0.1:18080/realms/emme}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/emme/protocol/openid-connect/certs
+      APP_KEYCLOAK_BASE_URL: http://keycloak:8080
+      APP_KEYCLOAK_ISSUER_URI: ${E2E_KEYCLOAK_ISSUER_URI:-http://127.0.0.1:18080/realms/emme}
+      APP_KEYCLOAK_JWK_SET_BASE_URL: http://keycloak:8080
+      APP_KEYCLOAK_ADMIN_PASSWORD: ${EMME_E2E_KEYCLOAK_ADMIN_PASSWORD:-e2e-admin-password}
+      APP_KEYCLOAK_PROVISIONING_ENABLED: "false"
+      APP_TENANT_PROVISIONING_ENABLED: "false"
+      APP_IDENTITY_LOGIN_RATE_LIMIT_MAX_ATTEMPTS: "20"
+      GOOGLE_TOKEN_ENCRYPTION_KEY: e2e-token-encryption-32-byte-key
+      OTEL_SDK_DISABLED: "true"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_ID: emme-salon-app
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_AUTHORIZATION_GRANT_TYPE: authorization_code
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_SCOPE: openid,profile,email
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_REDIRECT_URI: '{baseUrl}/login/oauth2/code/{registrationId}'
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/emme
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${EMME_E2E_KEYCLOAK_ADMIN_PASSWORD:-e2e-admin-password}
+    ports:
+      - "18080:8080"
+    networks:
+      - emme-net
+
+  database-migrations:
+    build:
+      context: ../..
+      dockerfile: database/Dockerfile
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: emme
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-emme}
+      DATABASE_NAME: emme
+      LIQUIBASE_CONTEXTS: ${LIQUIBASE_CONTEXTS:-dev}
+      TENANT_SEED_SLUGS: ${TENANT_SEED_SLUGS:-e2e-studio}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - emme-net

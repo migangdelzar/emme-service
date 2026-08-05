@@ -1,5 +1,31 @@
 # Service architecture migration checklist
 
+## Settings-first environment and provider-neutral secrets — 2026-08-05
+
+- [x] Keep `RootPlugin` as a thin repository lifecycle composition root.
+- [x] Resolve the selected environment before project plugin resolution through
+      the separate `build-logic-settings` included build.
+- [x] Expose a generic non-secret environment map plus typed projections through
+      the capability-first `environment` package.
+- [x] Apply environment properties to delivery capabilities without making task
+      names or provider implementations the configuration API.
+- [x] Add provider-neutral secret validation for environment variables, GitHub
+      Actions, Kubernetes references, and Bitwarden.
+- [x] Add metadata-only secret manifest declarations and secure generator support.
+- [x] Add explicit `rotateSecrets` with dry-run default and provider-owned apply
+      behavior; never print or persist secret values.
+- [x] Run the final build-logic check, TestKit functional test, configuration
+      cache verification, and repository diff review.
+
+### Working notes
+
+- Canonical environments are `local`, `dev`, `regression`, `staging`, and
+  `production`; `e2e` and `prod` are rejected.
+- Local Bitwarden JSON remains outside the repository and is not rewritten by
+  Gradle. Provider adapters update their own stores when explicitly requested.
+- Environment configuration is non-secret only. Secret values must be injected
+  by the selected provider at execution time.
+
 ## Authoritative status reconciliation — 2026-08-04
 
 Historical migration checkboxes below preserve the original execution trail.

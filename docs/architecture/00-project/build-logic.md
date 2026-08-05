@@ -6,6 +6,23 @@
 
 `build-logic` contains the reusable build architecture of the platform. It owns project conventions, Gradle capabilities, custom plugins, tasks, lazy providers, external build-tool integrations, quality gates, release behavior, and deployment behavior.
 
+Environment resolution is a separate settings-time included build:
+
+```text
+root settings.gradle.kts
+        ↓ resolves before project plugins
+build-logic-settings/com.emme.environment-settings
+        ↓ publishes non-secret immutable context
+build-logic/com.emme.environment
+        ↓ configures project capabilities
+build-logic/com.emme.secrets
+```
+
+`build-logic-settings` resolves the canonical environment and an arbitrary
+non-secret property map before project plugin resolution. The main
+`build-logic` build exposes typed projections and capability-owned tasks. The
+settings build stays dependency-light and never resolves secrets.
+
 Individual `build.gradle.kts` files should describe what a project is and which capabilities it needs. They should not repeat how Java, Spring, tests, containers, publishing, or deployment are wired.
 
 ```kotlin
@@ -48,6 +65,12 @@ The package organization is capability-first. Do not create global `plugin/`, `t
 ## Recommended structure
 
 ```text
+build-logic-settings/
+├── build.gradle.kts
+├── settings.gradle.kts
+└── src/main/kotlin/com/emme/buildlogic/settings/
+    └── EnvironmentSettingsPlugin.kt
+
 build-logic/
 ├── build.gradle.kts
 ├── settings.gradle.kts
@@ -93,17 +116,17 @@ build-logic/
     │                   │   └── TestConfiguration.kt
     │                   │
     │                   ├── model/
-    │                   │   ├── EmmeModuleType.kt
+    │                   │   ├── ModuleType.kt
     │                   │   ├── QualityGateMode.kt
     │                   │   └── ReleaseChannel.kt
     │                   │
     │                   ├── root/
-    │                   │   ├── EmmeRootPlugin.kt
-    │                   │   └── EmmeBuildExtension.kt
+    │                   │   ├── RootPlugin.kt
+    │                   │   └── BuildExtension.kt
     │                   │
     │                   ├── container/
-    │                   │   ├── EmmeContainerPlugin.kt
-    │                   │   ├── EmmeContainerExtension.kt
+    │                   │   ├── ContainerPlugin.kt
+    │                   │   ├── ContainerExtension.kt
     │                   │   ├── ContainerRuntime.kt
     │                   │   ├── task/
     │                   │   │   ├── BuildContainerImageTask.kt
@@ -116,8 +139,8 @@ build-logic/
     │                   │       └── PodmanProvider.kt
     │                   │
     │                   ├── deployment/
-    │                   │   ├── EmmeDeploymentPlugin.kt
-    │                   │   ├── EmmeDeploymentExtension.kt
+    │                   │   ├── DeploymentPlugin.kt
+    │                   │   ├── DeploymentExtension.kt
     │                   │   ├── DeploymentTarget.kt
     │                   │   ├── task/
     │                   │   │   ├── DeployTask.kt
@@ -129,8 +152,8 @@ build-logic/
     │                   │       └── KubernetesProvider.kt
     │                   │
     │                   ├── publishing/
-    │                   │   ├── EmmePublishingPlugin.kt
-    │                   │   ├── EmmePublishingExtension.kt
+    │                   │   ├── PublishingPlugin.kt
+    │                   │   ├── PublishingExtension.kt
     │                   │   ├── task/
     │                   │   │   ├── GenerateBuildInfoTask.kt
     │                   │   │   ├── GenerateReleaseManifestTask.kt
@@ -148,8 +171,8 @@ build-logic/
     │                   │   └── RegistryResult.kt
     │                   │
     │                   ├── security/
-    │                   │   ├── EmmeSecurityPlugin.kt
-    │                   │   ├── EmmeSecurityExtension.kt
+    │                   │   ├── SecurityPlugin.kt
+    │                   │   ├── SecurityExtension.kt
     │                   │   ├── SecurityScanner.kt
     │                   │   ├── task/
     │                   │   │   └── SecurityScanTask.kt
@@ -159,7 +182,37 @@ build-logic/
     │                   │       └── TrivyProvider.kt
     │                   │
     │                   ├── quality/
-    │                   │   └── EmmeQualityExtension.kt
+    │                   │   └── QualityExtension.kt
+    │                   │
+    │                   ├── environment/
+    │                   │   ├── EnvironmentPlugin.kt
+    │                   │   ├── EnvironmentExtension.kt
+    │                   │   ├── EnvironmentContext.kt
+    │                   │   ├── EnvironmentName.kt
+    │                   │   ├── RuntimeKind.kt
+    │                   │   ├── EnvironmentPropertiesValueSource.kt
+    │                   │   └── task/
+    │                   │       ├── EnvironmentReportTask.kt
+    │                   │       └── VerifyEnvironmentTask.kt
+    │                   │
+    │                   ├── secrets/
+    │                   │   ├── SecretsPlugin.kt
+    │                   │   ├── SecretsExtension.kt
+    │                   │   ├── SecretProviderKind.kt
+    │                   │   ├── generator/
+    │                   │   │   ├── SecretGenerator.kt
+    │                   │   │   └── SecureSecretGenerator.kt
+    │                   │   ├── provider/
+    │                   │   │   ├── SecretProvider.kt
+    │                   │   │   ├── SecretProviderFactory.kt
+    │                   │   │   ├── EnvironmentSecretProvider.kt
+    │                   │   │   ├── GitHubActionsSecretProvider.kt
+    │                   │   │   ├── KubernetesSecretReferenceProvider.kt
+    │                   │   │   └── BitwardenSecretProvider.kt
+    │                   │   └── task/
+    │                   │       ├── VerifySecretsTask.kt
+    │                   │       ├── VerifySecretReferencesTask.kt
+    │                   │       └── RotateSecretsTask.kt
     │                   │
     │                   └── git/
     │                       ├── GitBranchValueSource.kt
@@ -189,6 +242,13 @@ every file. A simple convention may remain a single precompiled script. A comple
 capability owns only the plugin, extension, tasks, providers, models, results, and
 value sources that it actually needs.
 
+The settings plugin is intentionally not part of the main capability build. It
+must only publish `com.emme.environment.name` and
+`com.emme.environment.values` as non-secret Gradle extra properties. Project
+plugins consume that context after plugin resolution. This avoids a plugin
+classpath cycle and ensures environment selection is available before project
+configuration without making the root plugin a configuration god object.
+
 ## Design rules
 
 - Keep `build-logic` as an included build.
@@ -201,6 +261,36 @@ value sources that it actually needs.
 - Keep `core/` small and limited to genuinely shared build primitives.
 - Separate module-type plugins from optional capability plugins.
 - Test isolated classes with unit tests and real plugin behavior with Gradle TestKit functional tests.
+
+## Environment and secrets capability
+
+The environment capability is the single source for non-secret build and
+deployment configuration. Its property map follows this precedence:
+
+```text
+capability defaults
+    ↓
+gradle/environments/<environment>.properties
+    ↓
+EMME_* process variables
+    ↓
+gradle.properties
+    ↓
+-Pname=value (highest)
+```
+
+The settings-time included build resolves that map before project plugin
+resolution. The main build-logic capability exposes typed values such as
+`EnvironmentName`, `DeploymentTarget`, `RuntimeKind`, and `imageTag` while
+retaining the map for future capabilities. Secret-like keys are excluded from
+the shared map.
+
+The separate `secrets` capability owns provider selection and provider-specific
+validation/rotation. `gradle/secrets/manifest.json` contains only logical names,
+references, and generation policy. `rotateSecrets` is a dry-run by default;
+applying a rotation requires an explicit mode and provider. No secret value is
+stored in Gradle properties, task inputs, task outputs, reports, logs, or the
+configuration cache.
 
 ## Convention categories
 
@@ -302,8 +392,8 @@ flowchart LR
 
 ```text
 <capability>/
-├── Emme<Capability>Plugin.kt
-├── Emme<Capability>Extension.kt       # only when a public DSL is needed
+├── <Capability>Plugin.kt
+├── <Capability>Extension.kt            # only when a public DSL is needed
 ├── <Capability>Model.kt                # only when capability-specific state exists
 ├── task/
 │   └── <Action>Task.kt
@@ -436,7 +526,7 @@ Convention plugins should remain declarative, composable, small, opinionated, an
 Binary plugins own complex Gradle behavior:
 
 ```text
-Emme<Capability>Plugin
+<Capability>Plugin
 ├── create typed extension
 ├── register custom tasks lazily
 ├── connect task inputs and outputs
@@ -570,12 +660,19 @@ Examples include `GitBranchValueSource`, `GitCommitValueSource`, and `GitTagValu
 
 ### 10. Root plugin
 
-`EmmeRootPlugin` coordinates repository-wide behavior only:
+`RootPlugin` is retained as the thin composition root for repository-wide
+behavior only:
 
 - aggregate verification and lifecycle tasks;
 - project metadata and build information;
 - release coordination;
 - shared repository checks.
+
+It does not parse environment files, load secrets, select external providers,
+or own module-specific configuration. Those responsibilities remain in the
+`environment`, `secrets`, and delivery capabilities. Keeping this small root
+plugin gives the repository one place for aggregate lifecycle wiring without
+turning it into a global configuration object.
 
 It must not become a global configuration object for every module. Projects still apply the module-type and capability plugins they need. Avoid `allprojects {}` and `subprojects {}` as substitutes for explicit composition.
 
@@ -609,8 +706,8 @@ Do not encode every possible capability into a module-type plugin. Explicit comp
 | Kind | Convention |
 |---|---|
 | Precompiled plugin | `emme.<capability>.gradle.kts` |
-| Binary plugin | `Emme<Capability>Plugin` |
-| Extension | `Emme<Capability>Extension` |
+| Binary plugin | `<Capability>Plugin` |
+| Extension | `<Capability>Extension` |
 | Task | Verb-oriented: `BuildContainerImageTask`, `GenerateSbomTask` |
 | Provider port | `<Capability>Provider` |
 | Provider implementation | `<Technology>Provider` |
@@ -727,8 +824,8 @@ capability-owned layout has already been implemented.
 | Result models | Sections 8–9 | `<capability>/provider/*Result.kt` | Implemented beside the owning provider port |
 | Capability-specific models | Section 9 | Capability-owned packages | Global `model/` retains only shared concepts |
 | Gradle `ValueSource` | Section 9 | `com.emme.buildlogic.git` | Implemented in the owning capability-independent package |
-| Root coordination | Section 10 | `root/EmmeRootPlugin.kt`, `root/EmmeBuildExtension.kt` | Implemented in `root/` |
-| Module types versus capabilities | Section 11 | `model/EmmeModuleType`, convention plugin IDs | Shared module types plus explicit capability plugins |
+| Root coordination | Section 10 | `root/RootPlugin.kt`, `root/BuildExtension.kt` | Implemented in `root/` |
+| Module types versus capabilities | Section 11 | `model/ModuleType`, convention plugin IDs | Shared module types plus explicit capability plugins |
 | Capability-first naming | Section 12 | Capability-owned packages | Implemented; convention IDs remain stable |
 | Unit and TestKit functional tests | Section 13 | `src/test`, `src/functionalTest` | Tests grouped by capability where ownership is clear |
 | Change isolation | Section 14 | Capability-owned files | Capability-owned files that change together |

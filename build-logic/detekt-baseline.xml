@@ -2,11 +2,11 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>ForbiddenComment:EmmeContainerPlugin.kt:EmmeContainerPlugin$// TODO: add PodmanProvider when implemented; both currently map to DockerProvider</ID>
-    <ID>LongMethod:EmmeContainerPlugin.kt:EmmeContainerPlugin$override fun apply</ID>
+    <ID>ForbiddenComment:ContainerPlugin.kt:ContainerPlugin$// TODO: add PodmanProvider when implemented; both currently map to DockerProvider</ID>
+    <ID>LongMethod:ContainerPlugin.kt:ContainerPlugin$override fun apply</ID>
     <ID>MagicNumber:ComposeProvider.kt:ComposeProvider$1000</ID>
     <ID>MagicNumber:DockerProvider.kt:DockerProvider$1000</ID>
-    <ID>MagicNumber:EmmeQualityExtension.kt:EmmeQualityExtension$0.70</ID>
+    <ID>MagicNumber:QualityExtension.kt:QualityExtension$0.70</ID>
     <ID>MagicNumber:GenerateSbomTask.kt:GenerateSbomTask$1000</ID>
     <ID>MagicNumber:GhcrPublisherProvider.kt:GhcrPublisherProvider$1000</ID>
     <ID>MagicNumber:KubernetesProvider.kt:KubernetesProvider$1000</ID>

@@ -94,6 +94,7 @@
 | FR-C034 | Browse service catalog | As a customer, I want to view available salon services with descriptions and prices so that I can choose what to book. | High | Implemented |
 | FR-C035 | Match nail design | As a customer, I want to submit a nail design image and find matching catalog services so that I can request the look I want. | Medium | Implemented |
 | FR-C036 | Browse nail designs | As a customer, I want to browse the salon's nail design catalog so that I can explore inspiration before booking. | Medium | Implemented |
+| FR-C037 | Customer sign in with Google | As a customer, I want to sign in with my Google account so that I can access my booking history and profile without creating a separate password. | High | Open |
 
 ## Non-Functional Requirements
 

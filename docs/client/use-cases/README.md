@@ -10,6 +10,7 @@
 | UC-016 | [Process Payments](UC-016-process-payments.md) | Customer | Implemented |
 | UC-025 | [Discover Services and Designs](UC-025-discover-services-and-designs.md) | Customer | Implemented |
 | UC-026 | [Sync Personal Calendar](UC-026-sync-personal-calendar.md) | Customer | Implemented |
+| UC-027 | [Sign In with Social Identity](UC-027-sign-in-with-social-identity.md) | Customer | Draft |
 
 ## Coverage Map
 
@@ -25,3 +26,4 @@
 | FR-C030 – FR-C031 Notifications | UC-014 |
 | FR-C032 – FR-C033 Personal calendar sync | UC-026 |
 | FR-C034 – FR-C036 Service discovery | UC-025 |
+| FR-C037 Google sign-in | UC-027 |

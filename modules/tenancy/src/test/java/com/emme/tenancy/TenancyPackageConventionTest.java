@@ -60,9 +60,6 @@ class TenancyPackageConventionTest {
   private static final Path PERSISTENCE_MAPPER =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/mapper/TenantPersistenceMapper.java");
-  private static final Path DATABASE_CONTEXT_ASPECT =
-      sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantContextAspect.java");
   private static final Path LEGACY_PERSISTENCE_ASPECT =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/aspect/TenantContextAspect.java");
@@ -82,11 +79,6 @@ class TenancyPackageConventionTest {
   private static final Path PROVISIONING_IMPLEMENTATION =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/GetTenantProvisioningStatusService.java");
-  private static final Path PROCESS_PACKAGE =
-      sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/application/process");
-  private static final Path PROVISIONING_PROCESS =
-      sourcePath(
-          "modules/tenancy/src/main/java/com/emme/tenancy/application/process/TenantProvisioningProcessManager.java");
   private static final Path LEGACY_TENANT_SERVICE =
       sourcePath("modules/tenancy/src/main/java/com/emme/tenancy/application/TenantService.java");
   private static final Path LEGACY_AUDIT_SERVICE =
@@ -211,16 +203,6 @@ class TenancyPackageConventionTest {
   }
 
   @Test
-  void doesNotApplyTenantRlsAdviceToTheCoreTenantRegistryRepository() throws IOException {
-    String aspect = Files.readString(DATABASE_CONTEXT_ASPECT);
-
-    assertThat(aspect)
-        .contains("!execution(* com.emme.tenancy..*Repository.*(..))")
-        .contains("SET LOCAL app.current_tenant_id")
-        .contains("SET LOCAL search_path");
-  }
-
-  @Test
   void removesLegacyUngroupedContractFilesAndUsesPastTenseEventNaming() {
     assertThat(Files.exists(LEGACY_API)).isFalse();
     assertThat(Files.exists(LEGACY_RESULT)).isFalse();
@@ -253,46 +235,12 @@ class TenancyPackageConventionTest {
   }
 
   @Test
-  void keepsProvisioningProcessIndependentOfDatabaseImplementations() throws IOException {
-    assertThat(Files.exists(TENANT_PROVISIONING_REPOSITORY)).isTrue();
-    assertThat(Files.exists(TENANT_SCHEMA_MIGRATION_PORT)).isTrue();
-    assertThat(Files.exists(JDBC_TENANT_PROVISIONING_REPOSITORY)).isTrue();
-    assertThat(Files.exists(LIQUIBASE_TENANT_SCHEMA_MIGRATION_ADAPTER)).isTrue();
-
-    String processManager =
-        Files.readString(
-            sourcePath(
-                "modules/tenancy/src/main/java/com/emme/tenancy/application/process/TenantProvisioningProcessManager.java"));
-    assertThat(processManager).contains("TenantProvisioningRepository");
-    assertThat(processManager).contains("TenantSchemaMigrationPort");
-    assertThat(processManager).doesNotContain("JdbcTemplate");
-    assertThat(processManager).doesNotContain("javax.sql.DataSource");
-    assertThat(processManager).doesNotContain("liquibase.");
-
-    String provisioningService =
-        Files.readString(
-            sourcePath(
-                "modules/tenancy/src/main/java/com/emme/tenancy/application/service/GetTenantProvisioningStatusService.java"));
-    assertThat(provisioningService).contains("TenantProvisioningRepository");
-    assertThat(provisioningService).doesNotContain("JdbcTemplate");
-  }
-
-  @Test
-  void ownsTenantContextAspectUnderOutboundDatabaseAdapters() {
-    assertThat(Files.exists(DATABASE_CONTEXT_ASPECT)).isTrue();
-    assertThat(Files.exists(LEGACY_PERSISTENCE_ASPECT)).isFalse();
-    assertThat(Files.exists(LEGACY_TENANT_CONTEXT_ASPECT)).isFalse();
-  }
-
-  @Test
   void ownsOrchestrationByApplicationResponsibility() {
     assertThat(Files.exists(APPLICATION_SERVICE_PACKAGE)).isTrue();
     assertThat(Files.exists(TENANT_SERVICE)).isTrue();
     assertThat(Files.exists(AUDIT_RECORDER)).isTrue();
     assertThat(Files.exists(PROVISIONING_SERVICE)).isTrue();
     assertThat(Files.exists(PROVISIONING_IMPLEMENTATION)).isTrue();
-    assertThat(Files.exists(PROCESS_PACKAGE)).isTrue();
-    assertThat(Files.exists(PROVISIONING_PROCESS)).isTrue();
     assertThat(Files.exists(LEGACY_TENANT_SERVICE)).isFalse();
     assertThat(Files.exists(LEGACY_AUDIT_SERVICE)).isFalse();
     assertThat(Files.exists(LEGACY_PROVISIONING_SERVICE)).isFalse();

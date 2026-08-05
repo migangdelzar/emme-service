@@ -60,8 +60,12 @@ public class SchemaAwareMultiTenantConnectionProvider
     if (ApplicationContextProvider.get() != null) {
       return coreDataSource().getConnection();
     }
+    var host = System.getenv().getOrDefault("DB_HOST", "localhost");
+    var port = System.getenv().getOrDefault("DB_PORT", "5432");
+    var user = System.getenv().getOrDefault("DB_USERNAME", "emme");
+    var pass = System.getenv().getOrDefault("DB_PASSWORD", "emme");
     return java.sql.DriverManager.getConnection(
-        "jdbc:postgresql://localhost:5432/emme", "emme", "emme");
+        "jdbc:postgresql://" + host + ":" + port + "/emme", user, pass);
   }
 
   @Override

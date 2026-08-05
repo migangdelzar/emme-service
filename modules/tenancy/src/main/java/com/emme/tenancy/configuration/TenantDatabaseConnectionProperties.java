@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /** Typed connection settings used when creating tenant database pools. */
-@ConfigurationProperties(prefix = "spring.datasource")
+@ConfigurationProperties(prefix = "spring.datasource.tenant")
 public record TenantDatabaseConnectionProperties(
     String url, String username, String password, String driverClassName) {
 

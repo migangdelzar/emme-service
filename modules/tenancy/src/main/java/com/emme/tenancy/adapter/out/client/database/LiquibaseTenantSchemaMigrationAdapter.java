@@ -19,7 +19,9 @@ public final class LiquibaseTenantSchemaMigrationAdapter implements TenantSchema
 
   private final JdbcConnectionExecutor connectionExecutor;
 
-  public LiquibaseTenantSchemaMigrationAdapter(JdbcConnectionExecutor connectionExecutor) {
+  public LiquibaseTenantSchemaMigrationAdapter(
+      @org.springframework.beans.factory.annotation.Qualifier("bootstrapJdbcConnectionExecutor")
+      JdbcConnectionExecutor connectionExecutor) {
     this.connectionExecutor = connectionExecutor;
   }
 

@@ -43,8 +43,11 @@ public class SchemaAwareMultiTenantConnectionProvider
   @Override
   public void releaseConnection(String tenantIdentifier, Connection connection)
       throws SQLException {
-    connection.setSchema(CORE_SCHEMA);
-    connection.close();
+    try {
+      connection.setSchema(CORE_SCHEMA);
+    } finally {
+      connection.close();
+    }
   }
 
   @Override

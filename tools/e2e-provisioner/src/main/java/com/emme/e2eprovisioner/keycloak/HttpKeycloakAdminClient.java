@@ -114,7 +114,33 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
     if (!users.isArray() || users.isEmpty() || !users.get(0).hasNonNull("id")) {
       throw new IOException("Keycloak tenant-owner user was not found after creation");
     }
-    return users.get(0).path("id").asText();
+    var userId = users.get(0).path("id").asText();
+
+    // Set user attributes via PUT (tenant_id, tenant_slug)
+    var userWithAttributes = objectMapper.createObjectNode();
+    userWithAttributes.put("username", configuration.username());
+    userWithAttributes.put("email", configuration.username() + "@e2e.emme.app");
+    userWithAttributes.put("enabled", true);
+    userWithAttributes.put("emailVerified", true);
+    userWithAttributes.putArray("requiredActions");
+    userWithAttributes.put("firstName", "E2E");
+    userWithAttributes.put("lastName", "Owner");
+    userWithAttributes.putArray("realmRoles").add("business_owner");
+    var attrs = userWithAttributes.putObject("attributes");
+    attrs.putArray("tenant_id").add(configuration.tenantId().toString());
+    attrs.putArray("tenant_slug").add(configuration.tenantSlug());
+    var attrResponse =
+        send(
+            HttpRequest.newBuilder(uri("/admin/realms/emme/users/" + userId))
+                .header("Authorization", "Bearer " + adminToken)
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(userWithAttributes.toString()))
+                .build());
+    if (attrResponse.statusCode() != 204 && attrResponse.statusCode() != 200) {
+      throw unexpectedStatus("user attribute update", attrResponse);
+    }
+
+    return userId;
   }
 
   private String requestAdminToken() throws IOException, InterruptedException {

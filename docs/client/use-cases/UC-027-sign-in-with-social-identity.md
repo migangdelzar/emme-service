@@ -22,19 +22,10 @@
 | Google | OpenID Connect | Available |
 | Apple | OpenID Connect | Available |
 | Facebook | OpenID Connect | Available |
-| GitHub | OpenID Connect | Available |
-| Microsoft / Azure AD | OpenID Connect | Available |
 | Twitter / X | OpenID Connect | Available |
-| LinkedIn | OpenID Connect | Available |
-| GitLab | OpenID Connect | Available |
-| Bitbucket | OpenID Connect | Available |
 | Instagram | OpenID Connect | Available |
-| PayPal | OpenID Connect | Available |
-| Stack Overflow | OpenID Connect | Available |
-| Generic OpenID Connect v1.0 | OpenID Connect | Available |
-| Generic SAML v2.0 | SAML | Available |
 
-**Note:** The EMME backend delegates all social identity brokering to Keycloak. Adding a new provider requires only Keycloak realm configuration — no backend code changes.
+Providers available via Keycloak but NOT exposed in v1: GitHub, Microsoft, LinkedIn, GitLab, Bitbucket, PayPal, Stack Overflow, generic OIDC, generic SAML. These can be enabled per tenant in future releases without backend code changes.
 
 ## Main Success Scenario
 
@@ -124,4 +115,4 @@ If a configured social identity provider is unavailable or the customer declines
 
 ### BR-040: Tenant-Scoped Provider Selection
 
-Each tenant may configure which identity providers are displayed to their customers. A tenant may choose to offer a subset, all available providers, or none (phone-only). All 14 Keycloak built-in providers are available from day one — no provider is deferred.
+Each tenant may configure which of the five supported identity providers (Google, Apple, Facebook, Twitter/X, Instagram) are displayed to their customers. A tenant may choose to offer a subset, all five, or none (phone-only). Additional providers can be exposed per tenant in future releases via Keycloak realm configuration without backend code changes.

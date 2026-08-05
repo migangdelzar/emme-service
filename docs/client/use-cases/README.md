@@ -2,14 +2,14 @@
 
 | UC ID | Name | Primary Actor | Status |
 |---|---|---|---|
-| UC-001 | [Access Tenant Workspace](../../use_cases/UC-001-access-tenant-workspace.md) | Platform User | Implemented |
-| UC-008 | [Converse Through Channels](../../use_cases/UC-008-converse-through-channels.md) | Customer | Implemented |
-| UC-009 | [Normalize Multimodal Input](../../use_cases/UC-009-normalize-multimodal-input.md) | Customer | Implemented |
-| UC-010 | [Receive AI Guidance](../../use_cases/UC-010-receive-ai-guidance.md) | Customer | Implemented |
-| UC-011 | [Complete Conversational Booking](../../use_cases/UC-011-complete-conversational-booking.md) | Customer | Implemented |
-| UC-016 | [Process Payments](../../use_cases/UC-016-process-payments.md) | Customer | Implemented |
-| UC-025 | [Discover Services and Designs](../../use_cases/UC-025-discover-services-and-designs.md) | Customer | Implemented |
-| UC-026 | [Sync Personal Calendar](../../use_cases/UC-026-sync-personal-calendar.md) | Customer | Implemented |
+| UC-001 | [Access Tenant Workspace](UC-001-access-tenant-workspace.md) | Platform User | Implemented |
+| UC-008 | [Converse Through Channels](UC-008-converse-through-channels.md) | Customer | Implemented |
+| UC-009 | [Normalize Multimodal Input](UC-009-normalize-multimodal-input.md) | Customer | Implemented |
+| UC-010 | [Receive AI Guidance](UC-010-receive-ai-guidance.md) | Customer | Implemented |
+| UC-011 | [Complete Conversational Booking](UC-011-complete-conversational-booking.md) | Customer | Implemented |
+| UC-016 | [Process Payments](UC-016-process-payments.md) | Customer | Implemented |
+| UC-025 | [Discover Services and Designs](UC-025-discover-services-and-designs.md) | Customer | Implemented |
+| UC-026 | [Sync Personal Calendar](UC-026-sync-personal-calendar.md) | Customer | Implemented |
 
 ## Coverage Map
 

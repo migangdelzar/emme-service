@@ -237,14 +237,14 @@ Every `com.emme.studio.*` type maps to exactly ONE target module. Use this table
 
 ### Task 1: Rename empty modules
 
-- [ ] **Step 1: Rename directories**
+- [x] **Step 1: Rename directories**
 
 ```bash
 git mv modules/customer modules/clients
 git mv modules/workforce modules/staffing
 ```
 
-- [ ] **Step 2: Move Java sources to new package directories**
+- [x] **Step 2: Move Java sources to new package directories**
 
 ```bash
 # clients: move from com/emme/customer/ to com/emme/clients/
@@ -268,7 +268,7 @@ cp modules/staffing/src/test/java/com/emme/workforce/*.java modules/staffing/src
 rm -rf modules/staffing/src/test/java/com/emme/workforce
 ```
 
-- [ ] **Step 3: Update package-info.java annotations**
+- [x] **Step 3: Update package-info.java annotations**
 
 `modules/clients/src/main/java/com/emme/clients/package-info.java`:
 ```java
@@ -296,7 +296,7 @@ package com.emme.staffing;
 package com.emme.staffing.api;
 ```
 
-- [ ] **Step 4: Update test file package declarations**
+- [x] **Step 4: Update test file package declarations**
 
 ```bash
 sed -i '' 's/package com\.emme\.customer;/package com.emme.clients;/g' modules/clients/src/test/java/com/emme/clients/*.java
@@ -305,22 +305,22 @@ sed -i '' 's/package com\.emme\.workforce;/package com.emme.staffing;/g' modules
 sed -i '' 's/"workforce"/"staffing"/g' modules/staffing/src/test/java/com/emme/staffing/WorkforceModuleTest.java
 ```
 
-- [ ] **Step 5: Update settings.gradle.kts**
+- [x] **Step 5: Update settings.gradle.kts**
 
 Replace `include(":modules:customer")` with `include(":modules:clients")`
 Replace `include(":modules:workforce")` with `include(":modules:staffing")`
 
-- [ ] **Step 6: Update emme-platform/build.gradle.kts**
+- [x] **Step 6: Update emme-platform/build.gradle.kts**
 
 Replace `implementation(project(":modules:customer"))` with `implementation(project(":modules:clients"))`
 Replace `implementation(project(":modules:workforce"))` with `implementation(project(":modules:staffing"))`
 
-- [ ] **Step 7: Update booking/build.gradle.kts**
+- [x] **Step 7: Update booking/build.gradle.kts**
 
 Replace `implementation(project(":modules:customer"))` with `implementation(project(":modules:clients"))`
 Replace `implementation(project(":modules:workforce"))` with `implementation(project(":modules:staffing"))`
 
-- [ ] **Step 8: Verify and commit**
+- [x] **Step 8: Verify and commit**
 
 ```bash
 JAVA_HOME=$(mise exec -- printenv JAVA_HOME) ./gradlew :modules:clients:compileJava :modules:staffing:compileJava --no-configuration-cache

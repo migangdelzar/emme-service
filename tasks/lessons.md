@@ -793,3 +793,15 @@
 - **Failure mode:** A missing `app.keycloak.provisioning.enabled` property enabled an asynchronous external identity listener through `matchIfMissing = true`.
 - **Detection signal:** A generic test profile had to override the listener after it raced a tenant update; the same omission could activate provisioning in an incomplete deployment profile.
 - **Prevention rule:** External-provider listeners must require an explicit `true` property (`matchIfMissing = false`). Production profiles must opt in deliberately, while test profiles must opt out explicitly.
+
+## 2026-08-05 — Validate destination directories before module renames
+
+- **Failure mode:** `git mv modules/customer modules/clients` nested the tracked
+  module under `modules/clients/customer` because ignored Gradle build output had
+  already created the destination directory.
+- **Detection signal:** The tracked `build.gradle.kts` appeared at
+  `modules/clients/customer/build.gradle.kts` instead of the module root.
+- **Prevention rule:** Before directory renames, inspect the destination with
+  `git status --ignored --short` and require it to be absent of source files;
+  when ignored build output exists, move tracked files explicitly and verify
+  `modules/<new-name>/build.gradle.kts` plus `src/` are at the module root.

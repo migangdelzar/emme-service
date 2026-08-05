@@ -5,7 +5,7 @@
 - [x] Reconcile the decomposition plan and ADR with the current source tree;
       retain the removed `studio-api` application boundary and treat
       `modules/studio` as the remaining business-module source.
-- [ ] Rename the empty `customer` and `workforce` modules to `clients` and
+- [x] Rename the empty `customer` and `workforce` modules to `clients` and
       `staffing`.
 - [ ] Create `services`, `appointments`, `salon`, `subscriptions`, and
       `documents` module shells with Gradle and Modulith metadata.

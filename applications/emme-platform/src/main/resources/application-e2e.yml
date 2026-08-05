@@ -1,0 +1,16 @@
+# E2E profile — disposable full-stack environment.
+# The e2e profile is activated by the Compose overlay
+# deployment/compose/compose.environment-e2e.yaml.
+spring:
+  jpa:
+    properties:
+      hibernate:
+        default_schema: "${E2E_TENANT_SCHEMA:e2e_studio}"
+  datasource:
+    url: "jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/emme?currentSchema=${E2E_TENANT_SCHEMA:e2e_studio},emme_core,public"
+
+app:
+  keycloak:
+    provisioning:
+      enabled: true
+    admin-password: "${E2E_KEYCLOAK_ADMIN_PASSWORD:}"

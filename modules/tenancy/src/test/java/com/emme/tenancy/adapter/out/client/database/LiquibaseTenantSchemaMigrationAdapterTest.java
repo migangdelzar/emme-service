@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.emme.shared.persistence.jdbc.JdbcConnectionExecutor;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class LiquibaseTenantSchemaMigrationAdapterTest {
@@ -16,8 +17,8 @@ class LiquibaseTenantSchemaMigrationAdapterTest {
       new LiquibaseTenantSchemaMigrationAdapter(connectionExecutor);
 
   @Test
-  void rejectsUnsafeSchemaNamesBeforeOpeningAConnection() {
-    assertThatThrownBy(() -> adapter.migrate("studio_a; DROP SCHEMA public"))
+  void rejectsEmptySchemaNamesBeforeOpeningAConnection() {
+    assertThatThrownBy(() -> adapter.migrate(UUID.randomUUID(), ""))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Invalid tenant schema name");
 
@@ -26,7 +27,7 @@ class LiquibaseTenantSchemaMigrationAdapterTest {
 
   @Test
   void executesMigrationThroughTheConnectionExecutor() {
-    adapter.migrate("studio_a");
+    adapter.migrate(UUID.randomUUID(), "studio_a");
 
     verify(connectionExecutor).consumeWithConnection(any());
   }

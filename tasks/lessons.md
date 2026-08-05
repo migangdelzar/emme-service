@@ -794,7 +794,29 @@
 - **Detection signal:** A generic test profile had to override the listener after it raced a tenant update; the same omission could activate provisioning in an incomplete deployment profile.
 - **Prevention rule:** External-provider listeners must require an explicit `true` property (`matchIfMissing = false`). Production profiles must opt in deliberately, while test profiles must opt out explicitly.
 
-## 2026-08-05 — Validate destination directories before module renames
+## 2026-08-05 — Modulith 2.1 cross-module access requires @NamedInterface on every access path
+
+- **Failure mode:** After splitting the monolithic `studio` module into 6 bounded contexts, `ModularityTest.verify()` rejected cross-module access to `domain.model.*` and `application.port.out.*` packages even when the consumer declared bare module access (`"services"`) in `allowedDependencies`.
+- **Detection signal:** `Violations: Module 'appointments' depends on module 'services' via ... -> com.emme.services.domain.model.Service. Allowed targets: ... services, ...`
+- **Prevention rule:** Modulith 2.1 requires `@NamedInterface` annotations on every leaf package accessed cross-module. Bare module names in `allowedDependencies` do not grant access to sub-packages. Place `@NamedInterface` on `domain/`, `domain/model/`, `application/`, and `application/port/out/` for internal module sharing. Architecture tests must allow `@NamedInterface` in domain packages (it is metadata, not business logic).
+
+## 2026-08-05 — Architecture test per-module boundary requires every consumed package to be exposed
+
+- **Failure mode:** Consumer modules reference named interfaces like `"appointments :: appointments-api"` but the target module's `api/usecase/package-info.java` had no `@NamedInterface` declaration.
+- **Detection signal:** `ModularityTest` reported dependencies through unregistered named interfaces.
+- **Prevention rule:** Every package consumed cross-module must declare `@NamedInterface` matching the consumer's `allowedDependencies` reference. Add `@NamedInterface` to the leaf package (not just a parent) so Modulith can resolve the access path.
+
+## 2026-08-05 — Migration script file-path heuristics fail on shared suffixes
+
+- **Failure mode:** The migration script used `includes('Service')` to route service-related files, but `ListCustomersService.java` matched the `Service` check before the `Customer` check, sending CRM files to the wrong module.
+- **Detection signal:** Files like `ListCustomersService.java` and `ListTenantCustomersService.java` were routed to `services/` instead of `clients/`.
+- **Prevention rule:** File-path heuristics must check more specific patterns first (`Customer`, `FindAvailableSlot`) before generic ones (`Service`, `Appointment`). Verify a sample of edge-case filenames before running the full migration.
+
+## 2026-08-05 — git mv into pre-existing ignored directory
+
+- **Failure mode:** `git mv modules/customer modules/clients` nested the tracked module under `modules/clients/customer/` because ignored Gradle build output had already created the destination directory.
+- **Detection signal:** The tracked `build.gradle.kts` appeared at `modules/clients/customer/build.gradle.kts` instead of the module root.
+- **Prevention rule:** Before directory renames, inspect the destination with `git status --ignored --short` and require it to be absent of source files. When ignored build output exists, move tracked files explicitly.
 
 - **Failure mode:** `git mv modules/customer modules/clients` nested the tracked
   module under `modules/clients/customer` because ignored Gradle build output had

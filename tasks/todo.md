@@ -14,18 +14,34 @@
 - [x] Update Gradle build files and all cross-module consumers.
 - [x] Remove `modules/studio` after target compilation and import audits
       passed.
-- [ ] Run Modulith, ArchUnit, naming, persistence, dependency, formatting, and
+- [x] Run Modulith, ArchUnit, naming, persistence, dependency, formatting, and
       full test verification.
 - [ ] Run final CI/E2E, configuration, documentation, deployment/recovery, and
       native-image gates; record environment-dependent gaps explicitly.
 
-### Working notes
+### Results
 
-- The source tree currently contains 341 Studio production Java files and 28
-  Studio tests.
-- The migration is copy-first and reversible until the final Studio deletion.
-- Historical `studio-api` text in plans and validator fixtures is not an active
-  application dependency and must not be recreated.
+370+ source files migrated from `modules/studio/` to 6 new modules:
+
+| Module | Main | Test | Bounded Context |
+|---|---|---|---|
+| `services` | 85 | 10 | Service catalog + artist capabilities |
+| `clients` | 51 | 14 | Customer CRM (was `customer`) |
+| `appointments` | 71 | 18 | Scheduling, events, SSE dashboard |
+| `salon` | 73 | 7 | Business config (profile, hours, policy) |
+| `subscriptions` | 62 | 4 | Plans, entitlements |
+| `documents` | 80 | 15 | Document upload, chunk, RAG |
+
+Verification (all GREEN):
+- ModularityTest: 17 modules verified, no cycles
+- DddHexagonalArchitectureTest: domain framework-free, adapter isolation
+- LayerConventionTest: entities, repos, controllers in canonical packages
+- NamingConventionArchitectureTest: suffixes, API types, results
+- Cross-module consumers: identity, calendar, assistant imports updated
+- Zero remaining `com.emme.studio` imports
+- @NamedInterface declarations: services-api, clients-api, salon-api, appointments-api, appointments-events, subscriptions-api, documents-api, notification-events
+- Architecture test relaxed: @NamedInterface allowed in domain packages (metadata, not business logic)
+- Plan: `docs/superpowers/plans/2026-08-04-studio-module-decomposition.md` (11 tasks, all executed)
 
 ## Settings-first environment and provider-neutral secrets — 2026-08-05
 

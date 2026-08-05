@@ -746,7 +746,7 @@ git add -A && git commit -m "refactor: migrate studio source files to new module
 
 ---
 
-### Task 4: Update settings.gradle.kts and emme-platform build.gradle.kts
+### Task 4: Update settings.gradle.kts, emme-platform, and ALL build.gradle.kts references
 
 - [ ] **Step 1: Update settings.gradle.kts**
 
@@ -804,6 +804,51 @@ Expected: BUILD SUCCESSFUL
 
 ```bash
 git add -A && git commit -m "build: update settings and platform deps for new modules"
+```
+
+- [ ] **Step 5: Update build-logic archive name**
+
+`build-logic/src/main/kotlin/emme.spring-application.gradle.kts` — replace:
+```kotlin
+  archiveFileName.set("emme-studio.jar")
+```
+With:
+```kotlin
+  archiveFileName.set("emme-platform.jar")
+```
+
+- [ ] **Step 6: Update libraries/testing/build.gradle.kts**
+
+Replace:
+```kotlin
+  testFixturesImplementation(project(":modules:studio"))
+```
+With:
+```kotlin
+  testFixturesImplementation(project(":modules:salon"))
+  testFixturesImplementation(project(":modules:subscriptions"))
+```
+(BaseSpringModuleTest needs `SpringDataBusinessProfileRepository` from salon and `PlanType` + `SubscriptionFixtures` from subscriptions. The direct `SubscriptionEntity`/`SpringDataSubscriptionRepository` imports are removed in Task 6.)
+
+- [ ] **Step 7: Update ALL module build.gradle.kts files that declare studio as dependency**
+
+Each of these files has `implementation(project(":modules:studio"))` — update to the correct new modules:
+
+| File | Replace with |
+|---|---|
+| `modules/identity/build.gradle.kts` | `implementation(project(":modules:salon"))` + `implementation(project(":modules:appointments"))` + `implementation(project(":modules:subscriptions"))` |
+| `modules/calendar/build.gradle.kts` | `implementation(project(":modules:appointments"))` + `implementation(project(":modules:clients"))` |
+| `modules/assistant/build.gradle.kts` | `implementation(project(":modules:documents"))` |
+
+- [ ] **Step 8: Verify all build files**
+
+```bash
+JAVA_HOME=$(mise exec -- printenv JAVA_HOME) ./gradlew :applications:emme-platform:compileJava --no-configuration-cache
+```
+Expected: BUILD SUCCESSFUL
+
+```bash
+git add -A && git commit -m "build: update all build files for new modules (build-logic, testing libs, module deps)"
 ```
 
 ---

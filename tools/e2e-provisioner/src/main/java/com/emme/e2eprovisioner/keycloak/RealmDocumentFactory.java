@@ -45,23 +45,6 @@ public final class RealmDocumentFactory {
     }
 
     var users = document.putArray("users");
-    var user = users.addObject();
-    user.put("username", configuration.username());
-    user.put("email", configuration.username());
-    user.put("emailVerified", true);
-    user.put("enabled", true);
-    user.put("firstName", "E2E");
-    user.put("lastName", "Owner");
-    user.putArray("credentials")
-        .addObject()
-        .put("type", "password")
-        .put("value", configuration.password())
-        .put("temporary", false);
-    user.putArray("realmRoles").add("business_owner");
-    var attributes = user.putObject("attributes");
-    attributes.putArray("tenant_id").add(configuration.tenantId().toString());
-    attributes.putArray("tenant_slug").add(configuration.tenantSlug());
-
     var scopes = document.putArray("clientScopes");
     var tenantScope = scopes.addObject();
     tenantScope.put("name", "tenant-context");

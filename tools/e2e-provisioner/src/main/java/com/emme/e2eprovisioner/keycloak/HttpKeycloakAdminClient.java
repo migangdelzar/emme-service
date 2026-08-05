@@ -51,21 +51,68 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
       throw unexpectedStatus("realm creation", realmResponse);
     }
 
-    var usersResponse =
+    // Create user via Admin API (not embedded in realm JSON — avoids direct-grant issues)
+    var userDoc = objectMapper.createObjectNode();
+    userDoc.put("username", configuration.username());
+    userDoc.put("email", configuration.username() + "@e2e.emme.app");
+    userDoc.put("emailVerified", true);
+    userDoc.put("enabled", true);
+    userDoc.put("firstName", "E2E");
+    userDoc.put("lastName", "Owner");
+    userDoc.putArray("requiredActions");
+    userDoc.putArray("credentials")
+        .addObject()
+        .put("type", "password")
+        .put("value", configuration.password())
+        .put("temporary", false);
+    userDoc.putArray("realmRoles").add("business_owner");
+    var attributes = userDoc.putObject("attributes");
+    attributes.putArray("tenant_id").add(configuration.tenantId().toString());
+    attributes.putArray("tenant_slug").add(configuration.tenantSlug());
+
+    // Check if user already exists
+    var existingResponse =
         send(
             HttpRequest.newBuilder(
-                    uri(
-                        "/admin/realms/emme/users?username="
-                            + URLEncoder.encode(configuration.username(), StandardCharsets.UTF_8)))
+                    uri("/admin/realms/emme/users?username="
+                        + URLEncoder.encode(configuration.username(), StandardCharsets.UTF_8)))
                 .header("Authorization", "Bearer " + adminToken)
                 .GET()
                 .build());
-    if (usersResponse.statusCode() != 200) {
-      throw unexpectedStatus("user lookup", usersResponse);
+    if (existingResponse.statusCode() == 200) {
+      var existing = objectMapper.readTree(existingResponse.body());
+      if (existing.isArray() && !existing.isEmpty() && existing.get(0).hasNonNull("id")) {
+        return existing.get(0).path("id").asText();
+      }
     }
-    var users = objectMapper.readTree(usersResponse.body());
+
+    // Create user
+    var createResponse =
+        send(
+            HttpRequest.newBuilder(uri("/admin/realms/emme/users"))
+                .header("Authorization", "Bearer " + adminToken)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(userDoc.toString()))
+                .build());
+    if (createResponse.statusCode() != 201 && createResponse.statusCode() != 409) {
+      throw unexpectedStatus("user creation", createResponse);
+    }
+
+    // Look up created user to get ID
+    var lookupResponse =
+        send(
+            HttpRequest.newBuilder(
+                    uri("/admin/realms/emme/users?username="
+                        + URLEncoder.encode(configuration.username(), StandardCharsets.UTF_8)))
+                .header("Authorization", "Bearer " + adminToken)
+                .GET()
+                .build());
+    if (lookupResponse.statusCode() != 200) {
+      throw unexpectedStatus("user lookup after creation", lookupResponse);
+    }
+    var users = objectMapper.readTree(lookupResponse.body());
     if (!users.isArray() || users.isEmpty() || !users.get(0).hasNonNull("id")) {
-      throw new IOException("Keycloak tenant-owner user was not found after realm provisioning");
+      throw new IOException("Keycloak tenant-owner user was not found after creation");
     }
     return users.get(0).path("id").asText();
   }

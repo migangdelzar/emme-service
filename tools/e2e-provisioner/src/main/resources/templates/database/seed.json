@@ -1,0 +1,31 @@
+{
+  "tenant": {
+    "slug": "${E2E_TENANT_SLUG}",
+    "name": "${E2E_TENANT_NAME}",
+    "status": "ACTIVE",
+    "keycloakRealm": "emme"
+  },
+  "subscription": {
+    "plan": "PRO",
+    "status": "ACTIVE",
+    "periodDays": 30
+  },
+  "permissions": [
+    "appointment:read", "appointment:write", "appointment:cancel",
+    "customer:read", "customer:write",
+    "service:read", "service:write",
+    "artist:read", "artist:write",
+    "finances:read",
+    "business:read", "business:write"
+  ],
+  "seedData": {
+    "services": [
+      { "name": "Manicure Clásica", "price": 350, "duration": 45, "category": "Manicura y Cuidado Natural" },
+      { "name": "Manicure Rusa", "price": 750, "duration": 90, "category": "Manicura y Cuidado Natural" },
+      { "name": "Soft Gel Premium", "price": 1200, "duration": 120, "category": "Extensiones y Estructura" }
+    ],
+    "customers": [
+      { "name": "Cliente Demo", "phone": "555-0000", "email": "demo@emme.app" }
+    ]
+  }
+}

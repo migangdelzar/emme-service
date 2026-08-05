@@ -1,0 +1,114 @@
+{
+  "realm": "emme",
+  "enabled": true,
+  "sslRequired": "none",
+  "clients": [
+    {
+      "clientId": "emme-salon-app",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["${E2E_WEB_ORIGIN}/*"],
+      "webOrigins": ["${E2E_WEB_ORIGIN}"],
+      "protocolMappers": [
+        {
+          "name": "emme-platform-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "emme-salon-app",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "business_owner" },
+      { "name": "business_manager" },
+      { "name": "front_desk" },
+      { "name": "nail_artist" },
+      { "name": "read_only" }
+    ]
+  },
+  "clientScopes": [
+    {
+      "name": "tenant-context",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "tenant-id-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenant_id",
+            "claim.name": "tenant_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "tenant-slug-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenant_slug",
+            "claim.name": "tenant_slug",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        { "name": "username", "protocolMapper": "oidc-usermodel-attribute-mapper", "config": { "user.attribute": "username", "claim.name": "preferred_username", "id.token.claim": "true", "access.token.claim": "true" } },
+        { "name": "full name", "protocolMapper": "oidc-full-name-mapper", "config": { "id.token.claim": "true", "access.token.claim": "true", "userinfo.token.claim": "true" } }
+      ]
+    },
+    {
+      "name": "email",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        { "name": "email", "protocolMapper": "oidc-usermodel-attribute-mapper", "config": { "user.attribute": "email", "claim.name": "email", "id.token.claim": "true", "access.token.claim": "true" } },
+        { "name": "email verified", "protocolMapper": "oidc-usermodel-property-mapper", "config": { "user.attribute": "emailVerified", "claim.name": "email_verified", "jsonType.label": "boolean" } }
+      ]
+    },
+    {
+      "name": "roles",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        { "name": "realm roles", "protocolMapper": "oidc-usermodel-realm-role-mapper", "config": { "claim.name": "realm_access.roles", "jsonType.label": "String", "multivalued": "true", "id.token.claim": "true", "access.token.claim": "true" } }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "tenant-context", "web-origins", "acr", "profile", "roles", "email"
+  ],
+  "userProfile": {
+    "attributes": [
+      { "name": "username", "displayName": "${username}", "permissions": { "view": ["admin","user"], "edit": ["admin","user"] } },
+      { "name": "email", "displayName": "${email}", "permissions": { "view": ["admin","user"], "edit": ["admin","user"] }, "required": { "roles": ["user"] } },
+      { "name": "firstName", "displayName": "${firstName}", "permissions": { "view": ["admin","user"], "edit": ["admin","user"] } },
+      { "name": "lastName", "displayName": "${lastName}", "permissions": { "view": ["admin","user"], "edit": ["admin","user"] } },
+      { "name": "tenant_id", "displayName": "Tenant ID", "permissions": { "view": ["admin"], "edit": ["admin"] } },
+      { "name": "tenant_slug", "displayName": "Tenant Slug", "permissions": { "view": ["admin"], "edit": ["admin"] } }
+    ]
+  }
+}

@@ -10,21 +10,26 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 @Configuration
-@ConditionalOnExpression("!'${spring.datasource.url:}'.contains('h2')")
+@ConditionalOnExpression(
+    "'${spring.datasource.core.url:}' != '' && !'${spring.datasource.core.url:}'.contains('h2')")
 public class DataSourceConfiguration {
 
   @Bean(name = "coreDataSource")
   @Primary
-  public DataSource coreDataSource(
-      @Value("${spring.datasource.url}") String url,
-      @Value("${spring.datasource.username}") String username,
-      @Value("${spring.datasource.password}") String password) {
+  DataSource coreDataSource(
+      @Value("${spring.datasource.core.url}") String url,
+      @Value("${spring.datasource.core.username}") String username,
+      @Value("${spring.datasource.core.password}") String password,
+      @Value("${spring.datasource.core.hikari.maximum-pool-size:5}") int maxPoolSize,
+      @Value("${spring.datasource.core.hikari.minimum-idle:2}") int minIdle,
+      @Value("${spring.datasource.core.hikari.pool-name:emme-core-pool}") String poolName) {
     HikariConfig config = new HikariConfig();
     config.setJdbcUrl(url);
     config.setUsername(username);
     config.setPassword(password);
-    config.setMinimumIdle(2);
-    config.setMaximumPoolSize(5);
+    config.setMaximumPoolSize(maxPoolSize);
+    config.setMinimumIdle(minIdle);
+    config.setPoolName(poolName);
     config.setConnectionInitSql("SET search_path TO emme_core, public");
     return new HikariDataSource(config);
   }

@@ -51,6 +51,9 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
       throw unexpectedStatus("realm creation", realmResponse);
     }
 
+    // Configure user profile to allow tenant_id and tenant_slug attributes (Keycloak 26+)
+    configureUserProfile(adminToken);
+
     // Create user via Admin API (not embedded in realm JSON — avoids direct-grant issues)
     var userDoc = objectMapper.createObjectNode();
     userDoc.put("username", configuration.username());
@@ -141,6 +144,32 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
     }
 
     return userId;
+  }
+
+  private void configureUserProfile(String adminToken) throws IOException, InterruptedException {
+    var payload = """
+        {
+          "attributes": [
+            {"name":"username","displayName":"${username}","permissions":{"view":["admin","user"],"edit":["admin","user"]}},
+            {"name":"email","displayName":"${email}","permissions":{"view":["admin","user"],"edit":["admin","user"]}},
+            {"name":"firstName","displayName":"${firstName}","permissions":{"view":["admin","user"],"edit":["admin","user"]}},
+            {"name":"lastName","displayName":"${lastName}","permissions":{"view":["admin","user"],"edit":["admin","user"]}},
+            {"name":"tenant_id","displayName":"Tenant ID","permissions":{"view":["admin"],"edit":["admin"]}},
+            {"name":"tenant_slug","displayName":"Tenant Slug","permissions":{"view":["admin"],"edit":["admin"]}}
+          ],
+          "groups": []
+        }
+        """;
+    var response =
+        send(
+            HttpRequest.newBuilder(uri("/admin/realms/emme/users/profile"))
+                .header("Authorization", "Bearer " + adminToken)
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(payload))
+                .build());
+    if (response.statusCode() != 200 && response.statusCode() != 204) {
+      System.err.println("User profile configuration returned " + response.statusCode());
+    }
   }
 
   private String requestAdminToken() throws IOException, InterruptedException {

@@ -164,4 +164,40 @@ public final class RealmDocumentFactory {
         .put("userinfo.token.claim", "true")
         .put("introspection.token.claim", "true");
   }
+
+  /** Configures user profile to accept tenant_id and tenant_slug custom attributes. */
+  private static void configureUserProfile(ObjectNode document) {
+    var upConfig = document.putObject("userProfile");
+    var attributes = upConfig.putArray("attributes");
+    addProfileAttribute(attributes, "username", true);
+    addProfileAttribute(attributes, "email", false);
+    addProfileAttribute(attributes, "firstName", false);
+    addProfileAttribute(attributes, "lastName", false);
+    // E2E-only custom attributes for tenant routing
+    addCustomProfileAttribute(attributes, "tenant_id", "Tenant ID");
+    addCustomProfileAttribute(attributes, "tenant_slug", "Tenant Slug");
+  }
+
+  private static void addProfileAttribute(ArrayNode attrs, String name, boolean required) {
+    var attr = attrs.addObject();
+    attr.put("name", name);
+    attr.put("displayName", "${" + name + "}");
+    var permissions = attr.putObject("permissions");
+    permissions.putArray("view").add("admin").add("user");
+    permissions.putArray("edit").add("admin").add("user");
+    if (required) {
+      attr.put("required", MAPPER.createObjectNode());
+    }
+  }
+
+  private static void addCustomProfileAttribute(
+      ArrayNode attrs, String name, String displayName) {
+    var attr = attrs.addObject();
+    attr.put("name", name);
+    attr.put("displayName", displayName);
+    var permissions = attr.putObject("permissions");
+    permissions.putArray("view").add("admin");
+    permissions.putArray("edit").add("admin");
+    attr.put("multivalued", false);
+  }
 }

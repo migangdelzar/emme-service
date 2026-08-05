@@ -8,6 +8,10 @@
 
 **Tech Stack:** Java 25, Spring Boot 4.1, Spring Modulith 2.1, Gradle Kotlin DSL, Bun (for migration script)
 
+**Execution note:** This plan is being executed against the current repository
+baseline. The old `applications/studio-api` application is already removed;
+the remaining `studio` references below refer to the business module only.
+
 ## Global Constraints
 
 - Java 25: `JAVA_HOME=$(mise exec -- printenv JAVA_HOME)`
@@ -562,7 +566,21 @@ git add -A && git commit -m "feat: create module shells for studio decomposition
 
 - [ ] **Step 1: Create the migration script**
 
-Write `scripts/migrate-studio.mjs`:
+Write `scripts/migrate-studio.mjs`. The script must:
+
+- process `modules/studio/src/main/java` and `src/test/java` exactly once;
+- map nested `documents` and `subscriptions` packages before generic Studio
+  packages;
+- map historical `com.emme.salon.*` tests by test class to their target module;
+- copy files without deleting `modules/studio`;
+- fail on an unmapped production class instead of silently skipping it;
+- be idempotent and expose a `--check` mode for CI;
+- preserve package-relative paths after changing `com.emme.studio` to the target
+  package.
+
+The script should be covered by `scripts/migrate-studio.test.mjs` before it is
+run against the repository. Do not use the original duplicate `migrateDir`
+calls for Documents and Subscriptions; one traversal is sufficient.
 
 ```javascript
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'fs';
@@ -683,11 +701,9 @@ function migrateDir(srcDir, srcBase, isTest) {
 }
 
 const mainCount = migrateDir(`${STUDIO_SRC}/com/emme/studio`, STUDIO_SRC, false);
-const docCount = migrateDir(`${STUDIO_SRC}/com/emme/studio/documents`, STUDIO_SRC, false);
-const subCount = migrateDir(`${STUDIO_SRC}/com/emme/studio/subscriptions`, STUDIO_SRC, false);
 const testCount = migrateDir(STUDIO_TEST, STUDIO_TEST, true);
 
-console.log(`Migrated: ${mainCount} core + ${docCount} documents + ${subCount} subscriptions + ${testCount} test = ${mainCount + docCount + subCount + testCount} total files`);
+console.log(`Migrated: ${mainCount} production + ${testCount} test files`);
 ```
 
 - [ ] **Step 2: Run the migration script**
@@ -708,7 +724,8 @@ Expected: zero output
 - [ ] **Step 4: Create package-info.java files for ALL sub-packages in new modules (main + test)**
 
 ```bash
-# Main source paths
+# Main source paths. Existing package-info files are preserved when they carry
+# Modulith annotations; only missing metadata files are generated.
 for mod in services appointments salon subscriptions documents; do
   MOD_DIR="modules/$mod/src/main/java/com/emme/$mod"
   for dir in $(find "$MOD_DIR" -type d 2>/dev/null); do
@@ -1076,15 +1093,18 @@ mkdir -p modules/subscriptions/src/testFixtures/java/com/emme/subscriptions
 echo "package com.emme.subscriptions;" > modules/subscriptions/src/testFixtures/java/com/emme/subscriptions/package-info.java
 ```
 
-- [ ] **Step 3: Update 11 test files to use SubscriptionFixtures**
+- [ ] **Step 3: Update tests to use SubscriptionFixtures only where a test needs
+  a persisted subscription**
 
 Files to update (replace `SubscriptionEntity` + `SpringDataSubscriptionRepository` with `SubscriptionFixtures`):
-- `modules/appointments/src/test/java/com/emme/appointments/AppointmentWebTest.java`
-- `modules/clients/src/test/java/com/emme/clients/CustomerWebTest.java`
-- `modules/documents/src/test/java/com/emme/documents/DocumentWebTest.java`
 - `modules/assistant/src/test/java/com/emme/assistant/ai/web/AiWebTest.java`
 - `modules/assistant/src/test/java/com/emme/conversations/web/ConversationWebTest.java`
 - `libraries/testing/src/testFixtures/java/com/emme/testing/BaseSpringModuleTest.java`
+
+The appointments, clients, and documents tests must not acquire subscription
+entities unless their behavior actually requires entitlement state. Keep their
+fixtures local when no subscription boundary is involved. This prevents a
+test-fixture dependency cycle between the extracted modules.
 
 For each test file:
 - Remove `import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;`

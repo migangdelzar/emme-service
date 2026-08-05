@@ -1,5 +1,32 @@
 # Service architecture migration checklist
 
+## Studio module decomposition execution — 2026-08-05
+
+- [x] Reconcile the decomposition plan and ADR with the current source tree;
+      retain the removed `studio-api` application boundary and treat
+      `modules/studio` as the remaining business-module source.
+- [ ] Rename the empty `customer` and `workforce` modules to `clients` and
+      `staffing`.
+- [ ] Create `services`, `appointments`, `salon`, `subscriptions`, and
+      `documents` module shells with Gradle and Modulith metadata.
+- [ ] Copy Studio production and test sources exactly once using a tested,
+      fail-closed migration script.
+- [ ] Update Gradle build files and all cross-module consumers.
+- [ ] Remove `modules/studio` only after target compilation and import audits
+      pass.
+- [ ] Run Modulith, ArchUnit, naming, persistence, dependency, formatting, and
+      full test verification.
+- [ ] Run final CI/E2E, configuration, documentation, deployment/recovery, and
+      native-image gates; record environment-dependent gaps explicitly.
+
+### Working notes
+
+- The source tree currently contains 341 Studio production Java files and 28
+  Studio tests.
+- The migration is copy-first and reversible until the final Studio deletion.
+- Historical `studio-api` text in plans and validator fixtures is not an active
+  application dependency and must not be recreated.
+
 ## Settings-first environment and provider-neutral secrets — 2026-08-05
 
 - [x] Keep `RootPlugin` as a thin repository lifecycle composition root.

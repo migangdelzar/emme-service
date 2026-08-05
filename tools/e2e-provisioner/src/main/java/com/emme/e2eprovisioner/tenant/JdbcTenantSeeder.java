@@ -82,15 +82,17 @@ public final class JdbcTenantSeeder implements TenantSeeder {
         connection.prepareStatement(
             """
             INSERT INTO emme_core.tenant (id, slug, name, status, keycloak_realm)
-            VALUES (?, ?, ?, 'ACTIVE', 'emme')
+            VALUES (?, ?, ?, 'ACTIVE', 'emme-' || ?)
             ON CONFLICT (id) DO UPDATE SET
               slug = EXCLUDED.slug,
               name = EXCLUDED.name,
-              status = 'ACTIVE'
+              status = 'ACTIVE',
+              keycloak_realm = EXCLUDED.keycloak_realm
             """)) {
       statement.setObject(1, tenantId);
       statement.setString(2, slug);
       statement.setString(3, name);
+      statement.setString(4, slug);
       statement.executeUpdate();
     }
     return tenantId;

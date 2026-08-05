@@ -37,6 +37,7 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
   @Override
   public String provisionTenantOwner(RealmConfiguration configuration)
       throws IOException, InterruptedException {
+    var realmName = "emme-" + configuration.tenantSlug();
     var adminToken = requestAdminToken();
     var realmResponse =
         send(
@@ -51,10 +52,6 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
       throw unexpectedStatus("realm creation", realmResponse);
     }
 
-    // Configure user profile to allow tenant_id and tenant_slug attributes (Keycloak 26+)
-    configureUserProfile(adminToken);
-
-    // Create user via Admin API (not embedded in realm JSON — avoids direct-grant issues)
     var userDoc = objectMapper.createObjectNode();
     userDoc.put("username", configuration.username());
     userDoc.put("email", configuration.username() + "@e2e.emme.app");
@@ -69,15 +66,12 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
         .put("value", configuration.password())
         .put("temporary", false);
     userDoc.putArray("realmRoles").add("business_owner");
-    var attributes = userDoc.putObject("attributes");
-    attributes.putArray("tenant_id").add(configuration.tenantId().toString());
-    attributes.putArray("tenant_slug").add(configuration.tenantSlug());
 
     // Check if user already exists
     var existingResponse =
         send(
             HttpRequest.newBuilder(
-                    uri("/admin/realms/emme/users?username="
+                    uri("/admin/realms/" + realmName + "/users?username="
                         + URLEncoder.encode(configuration.username(), StandardCharsets.UTF_8)))
                 .header("Authorization", "Bearer " + adminToken)
                 .GET()
@@ -92,7 +86,7 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
     // Create user
     var createResponse =
         send(
-            HttpRequest.newBuilder(uri("/admin/realms/emme/users"))
+            HttpRequest.newBuilder(uri("/admin/realms/" + realmName + "/users"))
                 .header("Authorization", "Bearer " + adminToken)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(userDoc.toString()))
@@ -105,7 +99,7 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
     var lookupResponse =
         send(
             HttpRequest.newBuilder(
-                    uri("/admin/realms/emme/users?username="
+                    uri("/admin/realms/" + realmName + "/users?username="
                         + URLEncoder.encode(configuration.username(), StandardCharsets.UTF_8)))
                 .header("Authorization", "Bearer " + adminToken)
                 .GET()
@@ -117,59 +111,7 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
     if (!users.isArray() || users.isEmpty() || !users.get(0).hasNonNull("id")) {
       throw new IOException("Keycloak tenant-owner user was not found after creation");
     }
-    var userId = users.get(0).path("id").asText();
-
-    // Set user attributes via PUT (tenant_id, tenant_slug)
-    var userWithAttributes = objectMapper.createObjectNode();
-    userWithAttributes.put("username", configuration.username());
-    userWithAttributes.put("email", configuration.username() + "@e2e.emme.app");
-    userWithAttributes.put("enabled", true);
-    userWithAttributes.put("emailVerified", true);
-    userWithAttributes.putArray("requiredActions");
-    userWithAttributes.put("firstName", "E2E");
-    userWithAttributes.put("lastName", "Owner");
-    userWithAttributes.putArray("realmRoles").add("business_owner");
-    var attrs = userWithAttributes.putObject("attributes");
-    attrs.putArray("tenant_id").add(configuration.tenantId().toString());
-    attrs.putArray("tenant_slug").add(configuration.tenantSlug());
-    var attrResponse =
-        send(
-            HttpRequest.newBuilder(uri("/admin/realms/emme/users/" + userId))
-                .header("Authorization", "Bearer " + adminToken)
-                .header("Content-Type", "application/json")
-                .PUT(HttpRequest.BodyPublishers.ofString(userWithAttributes.toString()))
-                .build());
-    if (attrResponse.statusCode() != 204 && attrResponse.statusCode() != 200) {
-      throw unexpectedStatus("user attribute update", attrResponse);
-    }
-
-    return userId;
-  }
-
-  private void configureUserProfile(String adminToken) throws IOException, InterruptedException {
-    var payload = """
-        {
-          "attributes": [
-            {"name":"username","displayName":"${username}","permissions":{"view":["admin","user"],"edit":["admin","user"]}},
-            {"name":"email","displayName":"${email}","permissions":{"view":["admin","user"],"edit":["admin","user"]}},
-            {"name":"firstName","displayName":"${firstName}","permissions":{"view":["admin","user"],"edit":["admin","user"]}},
-            {"name":"lastName","displayName":"${lastName}","permissions":{"view":["admin","user"],"edit":["admin","user"]}},
-            {"name":"tenant_id","displayName":"Tenant ID","permissions":{"view":["admin"],"edit":["admin"]}},
-            {"name":"tenant_slug","displayName":"Tenant Slug","permissions":{"view":["admin"],"edit":["admin"]}}
-          ],
-          "groups": []
-        }
-        """;
-    var response =
-        send(
-            HttpRequest.newBuilder(uri("/admin/realms/emme/users/profile"))
-                .header("Authorization", "Bearer " + adminToken)
-                .header("Content-Type", "application/json")
-                .PUT(HttpRequest.BodyPublishers.ofString(payload))
-                .build());
-    if (response.statusCode() != 200 && response.statusCode() != 204) {
-      System.err.println("User profile configuration returned " + response.statusCode());
-    }
+    return users.get(0).path("id").asText();
   }
 
   private String requestAdminToken() throws IOException, InterruptedException {

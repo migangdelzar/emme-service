@@ -13,7 +13,7 @@ public final class RealmDocumentFactory {
 
   public static ObjectNode create(RealmConfiguration configuration) {
     var document = MAPPER.createObjectNode();
-    document.put("realm", "emme");
+    document.put("realm", "emme-" + configuration.tenantSlug());
     document.put("enabled", true);
     document.put("sslRequired", "none");
 

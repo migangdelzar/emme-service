@@ -25,9 +25,18 @@ spring:
         maximum-pool-size: 10
         minimum-idle: 2
         pool-name: emme-tenant-pool
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${E2E_ISSUER_URI:http://localhost:8080/realms/emme-e2e-studio}
+          jwk-set-uri: ${E2E_ISSUER_URI:http://localhost:8080/realms/emme-e2e-studio}/protocol/openid-connect/certs
 
 app:
   keycloak:
+    base-url: ${E2E_KEYCLOAK_BASE_URL:http://localhost:8080}
+    issuer-uri: ${E2E_ISSUER_URI:http://localhost:8080/realms/emme-e2e-studio}
+    client-id: emme-salon-app
     provisioning:
       enabled: true
     admin-password: "${E2E_KEYCLOAK_ADMIN_PASSWORD:}"

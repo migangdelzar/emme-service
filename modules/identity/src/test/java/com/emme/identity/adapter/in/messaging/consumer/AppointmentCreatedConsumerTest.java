@@ -5,7 +5,7 @@ import static org.mockito.Mockito.verify;
 
 import com.emme.identity.api.command.EnsureCustomerMembershipCommand;
 import com.emme.identity.api.usecase.EnsureCustomerMembershipUseCase;
-import com.emme.studio.api.event.AppointmentCreated;
+import com.emme.appointments.api.event.AppointmentCreated;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;

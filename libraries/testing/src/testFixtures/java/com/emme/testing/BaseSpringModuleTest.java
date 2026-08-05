@@ -2,10 +2,10 @@ package com.emme.testing;
 
 import com.emme.identity.adapter.out.persistence.entity.FeatureFlagEntity;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataFeatureFlagRepository;
-import com.emme.studio.adapter.out.persistence.repository.SpringDataBusinessProfileRepository;
-import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
-import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
-import com.emme.studio.subscriptions.api.type.PlanType;
+import com.emme.salon.adapter.out.persistence.repository.SpringDataBusinessProfileRepository;
+import com.emme.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
+import com.emme.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
+import com.emme.subscriptions.api.type.PlanType;
 import com.emme.tenancy.api.command.CreateTenantCommand;
 import com.emme.tenancy.api.query.GetTenantQuery;
 import com.emme.tenancy.api.result.TenantDetails;

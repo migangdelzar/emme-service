@@ -5,8 +5,8 @@
       "shared :: web-security",
       "tenancy",
       "identity :: identity-security",
-      "studio",
-      "studio :: studio-api",
-      "studio :: studio-events"
+      "appointments :: appointments-api",
+      "appointments :: appointments-events",
+      "clients :: clients-api"
     })
 package com.emme.calendar;

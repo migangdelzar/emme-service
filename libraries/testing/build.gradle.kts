@@ -25,6 +25,7 @@ dependencies {
 
   testFixturesImplementation(project(":modules:shared"))
   testFixturesImplementation(project(":modules:identity"))
-  testFixturesImplementation(project(":modules:studio"))
+  testFixturesImplementation(project(":modules:salon"))
+  testFixturesImplementation(project(":modules:subscriptions"))
   testFixturesImplementation(project(":modules:tenancy"))
 }

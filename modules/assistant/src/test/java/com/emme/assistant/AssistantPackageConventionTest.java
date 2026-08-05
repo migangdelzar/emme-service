@@ -43,15 +43,15 @@ class AssistantPackageConventionTest {
     String ragService =
         Files.readString(ROOT.resolve("ai/application/service/RagQueryService.java"));
 
-    assertThat(build).contains("implementation(project(\":modules:studio\"))");
-    assertThat(metadata).contains("studio :: documents-api");
+    assertThat(build).contains("implementation(project(\":modules:documents\"))");
+    assertThat(metadata).contains("documents-api");
     assertThat(ragService)
-        .contains("com.emme.studio.documents.api")
-        .doesNotContain("com.emme.studio.documents.adapter")
-        .doesNotContain("com.emme.studio.documents.application")
-        .doesNotContain("com.emme.studio.domain");
+        .contains("com.emme.documents.api")
+        .doesNotContain("com.emme.documents.adapter")
+        .doesNotContain("com.emme.documents.application")
+        .doesNotContain("com.emme.documents.domain");
     assertThat(Arrays.stream(build.split("\\R")))
-        .noneMatch(line -> line.contains("testImplementation(project(\":modules:studio\"))"));
+        .noneMatch(line -> line.contains("testImplementation(project(\":modules:documents\"))"));
   }
 
   @Test

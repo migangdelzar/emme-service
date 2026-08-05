@@ -9,8 +9,8 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.ModelProvider;
 import com.emme.assistant.ai.configuration.AiProperties;
-import com.emme.studio.documents.api.result.DocumentChunkDetails;
-import com.emme.studio.documents.api.usecase.SearchDocumentChunksUseCase;
+import com.emme.documents.api.result.DocumentChunkDetails;
+import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

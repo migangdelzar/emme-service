@@ -1,4 +1,4 @@
 @org.springframework.modulith.ApplicationModule(
     displayName = "Assistant",
-    allowedDependencies = {"shared :: persistence", "tenancy", "studio :: documents-api"})
+    allowedDependencies = {"shared :: persistence", "tenancy", "documents :: documents-api"})
 package com.emme.assistant;

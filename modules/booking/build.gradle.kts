@@ -11,7 +11,6 @@ dependencies {
   implementation(project(":libraries:kernel"))
   implementation(project(":modules:tenancy"))
   implementation(project(":libraries:kernel"))
-  implementation(project(":modules:studio"))
   implementation(project(":libraries:kernel"))
   implementation(project(":modules:clients"))
   implementation(project(":libraries:kernel"))

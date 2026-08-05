@@ -169,7 +169,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":modules:customer"))
+    implementation(project(":modules:clients"))
     implementation(project(":modules:catalog"))
 }
 ```

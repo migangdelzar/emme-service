@@ -5,8 +5,9 @@
       "tenancy",
       "tenancy :: tenant-api",
       "tenancy :: tenant-events",
-      "studio :: subscriptions-api",
-      "studio :: studio-api",
-      "studio :: studio-events"
+      "appointments :: appointments-api",
+      "appointments :: appointments-events",
+      "salon :: salon-api",
+      "subscriptions :: subscriptions-api"
     })
 package com.emme.identity;

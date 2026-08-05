@@ -3,17 +3,17 @@
 ## Studio module decomposition execution — 2026-08-05
 
 - [x] Reconcile the decomposition plan and ADR with the current source tree;
-      retain the removed `studio-api` application boundary and treat
-      `modules/studio` as the remaining business-module source.
+      retain the removed `studio-api` application boundary and treat the
+      extracted modules as the current business-module source.
 - [x] Rename the empty `customer` and `workforce` modules to `clients` and
       `staffing`.
-- [ ] Create `services`, `appointments`, `salon`, `subscriptions`, and
+- [x] Create `services`, `appointments`, `salon`, `subscriptions`, and
       `documents` module shells with Gradle and Modulith metadata.
-- [ ] Copy Studio production and test sources exactly once using a tested,
+- [x] Copy Studio production and test sources exactly once using a tested,
       fail-closed migration script.
-- [ ] Update Gradle build files and all cross-module consumers.
-- [ ] Remove `modules/studio` only after target compilation and import audits
-      pass.
+- [x] Update Gradle build files and all cross-module consumers.
+- [x] Remove `modules/studio` after target compilation and import audits
+      passed.
 - [ ] Run Modulith, ArchUnit, naming, persistence, dependency, formatting, and
       full test verification.
 - [ ] Run final CI/E2E, configuration, documentation, deployment/recovery, and

@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.emme.identity.application.support.FeatureFlagTestRepository;
 import com.emme.identity.domain.model.FeatureFlag;
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.studio.subscriptions.api.type.PlanType;
+import com.emme.subscriptions.api.type.PlanType;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

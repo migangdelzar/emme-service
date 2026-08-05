@@ -9,7 +9,8 @@ dependencies {
   implementation(project(":modules:shared"))
   implementation(project(":libraries:kernel"))
   implementation(project(":modules:tenancy"))
-  implementation(project(":modules:studio"))
+  implementation(project(":modules:appointments"))
+  implementation(project(":modules:clients"))
   implementation(project(":modules:identity"))
 
   implementation(libs.spring.boot.starter.web)

@@ -2,9 +2,9 @@ package com.emme;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.studio.api.event.AppointmentCancelled;
-import com.emme.studio.api.event.AppointmentCreated;
-import com.emme.studio.api.event.AppointmentRescheduled;
+import com.emme.appointments.api.event.AppointmentCancelled;
+import com.emme.appointments.api.event.AppointmentCreated;
+import com.emme.appointments.api.event.AppointmentRescheduled;
 import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.testing.integration.annotation.KafkaIntegrationTest;
 import java.time.Duration;

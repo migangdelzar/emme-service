@@ -4,9 +4,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.studio.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
-import com.emme.studio.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
-import com.emme.studio.subscriptions.api.type.PlanType;
+import com.emme.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
+import com.emme.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
+import com.emme.subscriptions.api.type.PlanType;
 import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.testing.BaseWebTest;
 import java.time.Instant;

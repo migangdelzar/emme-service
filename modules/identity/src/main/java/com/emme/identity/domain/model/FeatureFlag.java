@@ -1,6 +1,6 @@
 package com.emme.identity.domain.model;
 
-import com.emme.studio.subscriptions.api.type.PlanType;
+import com.emme.subscriptions.api.type.PlanType;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;

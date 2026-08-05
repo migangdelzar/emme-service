@@ -1,0 +1,10 @@
+package com.emme.appointments.domain.model;
+
+public enum AppointmentStatus {
+  DRAFT,
+  CONFIRMED,
+  IN_PROGRESS,
+  COMPLETED,
+  CANCELLED,
+  NO_SHOW
+}

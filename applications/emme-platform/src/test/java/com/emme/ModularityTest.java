@@ -19,14 +19,18 @@ class ModularityTest {
           "booking",
           "calendar",
           "catalog",
-          "customer",
+          "clients",
           "identity",
           "notification",
           "payment",
           "shared",
-          "studio",
+          "services",
+          "appointments",
+          "salon",
+          "subscriptions",
+          "documents",
           "tenancy",
-          "workforce");
+          "staffing");
 
   static final ApplicationModules modules = ApplicationModules.of(EmmeApplication.class);
 
@@ -42,7 +46,7 @@ class ModularityTest {
       assertThat(output.resolve("module-" + module + ".puml")).isRegularFile();
     }
     assertThat(Files.readString(output.resolve("all-docs.adoc")))
-        .contains("Identity", "Tenancy", "Studio");
+        .contains("Identity", "Tenancy", "Appointments");
   }
 
   @Test

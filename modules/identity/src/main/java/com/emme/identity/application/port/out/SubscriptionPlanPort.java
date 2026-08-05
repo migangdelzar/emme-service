@@ -1,6 +1,6 @@
 package com.emme.identity.application.port.out;
 
-import com.emme.studio.subscriptions.api.type.PlanType;
+import com.emme.subscriptions.api.type.PlanType;
 import java.util.Optional;
 import java.util.UUID;
 

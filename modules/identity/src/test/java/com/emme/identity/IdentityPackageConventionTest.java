@@ -86,9 +86,9 @@ class IdentityPackageConventionTest {
   private static final Path IDENTITY_PROVIDER_ADMINISTRATION_PORT =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/application/port/out/IdentityProviderAdministrationPort.java");
-  private static final Path TENANT_CREATED_CONSUMER =
+  private static final Path TENANT_REALM_PROVISIONING_LISTENER =
       sourcePath(
-          "modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/TenantCreatedConsumer.java");
+          "modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/TenantRealmProvisioningListener.java");
   private static final Path LEGACY_SECURITY_CONFIGURATION =
       sourcePath("modules/identity/src/main/java/com/emme/identity/config/SecurityConfig.java");
   private static final Path LEGACY_INFRASTRUCTURE =
@@ -401,12 +401,13 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(SECURITY_AUDIT_LOGGER)).isTrue();
     assertThat(Files.exists(KEYCLOAK_ADMIN_CLIENT)).isTrue();
     assertThat(Files.exists(REALM_PROVISIONING_PROCESS)).isTrue();
-    assertThat(Files.exists(TENANT_CREATED_CONSUMER)).isTrue();
-    String tenantCreatedConsumer = Files.readString(TENANT_CREATED_CONSUMER);
-    assertThat(tenantCreatedConsumer).contains("@ApplicationModuleListener");
-    assertThat(tenantCreatedConsumer).doesNotContain("@EventListener");
-    assertThat(tenantCreatedConsumer).contains("ProvisionTenantIdentityUseCase");
-    assertThat(tenantCreatedConsumer).doesNotContain("KeycloakRealmProvisioningProcessManager");
+    assertThat(Files.exists(TENANT_REALM_PROVISIONING_LISTENER)).isTrue();
+    String tenantRealmProvisioningListener =
+        Files.readString(TENANT_REALM_PROVISIONING_LISTENER);
+    assertThat(tenantRealmProvisioningListener).contains("@ApplicationModuleListener");
+    assertThat(tenantRealmProvisioningListener).doesNotContain("@EventListener");
+    assertThat(tenantRealmProvisioningListener).contains("TenantRealmReady");
+    assertThat(tenantRealmProvisioningListener).doesNotContain("KeycloakRealmProvisioningProcessManager");
     assertThat(Files.exists(LEGACY_SECURITY_CONFIGURATION)).isFalse();
     assertThat(hasJavaSources(LEGACY_INFRASTRUCTURE)).isFalse();
   }

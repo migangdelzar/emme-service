@@ -48,8 +48,7 @@ public final class LiquibaseTenantSchemaMigrationAdapter implements TenantSchema
           });
       return schemaName;
     } catch (RuntimeException exception) {
-      throw new IllegalStateException(
-          "Failed to migrate tenant schema: " + schemaName, exception);
+      throw new IllegalStateException("Failed to migrate tenant schema: " + schemaName, exception);
     }
   }
 }

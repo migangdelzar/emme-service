@@ -402,12 +402,12 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(KEYCLOAK_ADMIN_CLIENT)).isTrue();
     assertThat(Files.exists(REALM_PROVISIONING_PROCESS)).isTrue();
     assertThat(Files.exists(TENANT_REALM_PROVISIONING_LISTENER)).isTrue();
-    String tenantRealmProvisioningListener =
-        Files.readString(TENANT_REALM_PROVISIONING_LISTENER);
+    String tenantRealmProvisioningListener = Files.readString(TENANT_REALM_PROVISIONING_LISTENER);
     assertThat(tenantRealmProvisioningListener).contains("@ApplicationModuleListener");
     assertThat(tenantRealmProvisioningListener).doesNotContain("@EventListener");
     assertThat(tenantRealmProvisioningListener).contains("TenantRealmReady");
-    assertThat(tenantRealmProvisioningListener).doesNotContain("KeycloakRealmProvisioningProcessManager");
+    assertThat(tenantRealmProvisioningListener)
+        .doesNotContain("KeycloakRealmProvisioningProcessManager");
     assertThat(Files.exists(LEGACY_SECURITY_CONFIGURATION)).isFalse();
     assertThat(hasJavaSources(LEGACY_INFRASTRUCTURE)).isFalse();
   }

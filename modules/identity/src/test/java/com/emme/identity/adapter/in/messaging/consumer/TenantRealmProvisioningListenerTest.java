@@ -2,13 +2,12 @@ package com.emme.identity.adapter.in.messaging.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import com.emme.identity.api.event.TenantRealmReady;
 import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
 import com.emme.identity.application.port.out.IdentityRealmProvisioningConfigurationPort;
 import com.emme.identity.application.port.out.IdentityRealmProvisioningSettings;
 import com.emme.identity.application.port.out.TenantIdentityRealmPort;
+import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.api.event.TenantSchemaReady;
 import java.util.List;
 import java.util.UUID;
@@ -54,8 +53,7 @@ class TenantRealmProvisioningListenerTest {
             settings.initialAdminRole());
     verify(tenantIdentityRealmPort).updateRealm(tenantId, "emme-test-slug");
 
-    ArgumentCaptor<TenantRealmReady> captor =
-        ArgumentCaptor.forClass(TenantRealmReady.class);
+    ArgumentCaptor<TenantRealmReady> captor = ArgumentCaptor.forClass(TenantRealmReady.class);
     verify(eventPublisher).publishEvent(captor.capture());
     assertThat(captor.getValue().keycloakRealm()).isEqualTo("emme-test-slug");
     assertThat(captor.getValue().tenantId()).isEqualTo(tenantId);

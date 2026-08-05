@@ -1,8 +1,8 @@
 package com.emme.identity.adapter.in.messaging.consumer;
 
+import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.identity.api.command.EnsureCustomerMembershipCommand;
 import com.emme.identity.api.usecase.EnsureCustomerMembershipUseCase;
-import com.emme.appointments.api.event.AppointmentCreated;
 import java.util.UUID;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.core.context.SecurityContextHolder;

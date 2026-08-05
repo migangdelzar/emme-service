@@ -68,4 +68,12 @@ public final class TenantProvisioningPersistenceAdapter implements TenantProvisi
         error,
         tenantId);
   }
+
+  @Override
+  public String findSchemaName(UUID tenantId) {
+    return jdbc.queryForObject(
+        "SELECT schema_name FROM emme_core.tenant_registry WHERE tenant_id = ?::uuid",
+        String.class,
+        tenantId.toString());
+  }
 }

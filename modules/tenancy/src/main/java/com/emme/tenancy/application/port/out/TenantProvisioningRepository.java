@@ -17,6 +17,8 @@ public interface TenantProvisioningRepository {
 
   void markFailed(UUID tenantId, String error);
 
+  String findSchemaName(UUID tenantId);
+
   record TenantProvisioningStatus(
       String status, String schemaName, Instant lastMigratedAt, String error) {}
 

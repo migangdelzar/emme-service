@@ -38,10 +38,11 @@ public class CurrentTenantIdentifierResolver
 
   private String lookupSchemaName(UUID tenantId) {
     try {
-      String schemaName = bootstrapJdbc.queryForObject(
-          "SELECT schema_name FROM emme_core.tenant_registry WHERE tenant_id = ?::uuid",
-          String.class,
-          tenantId.toString());
+      String schemaName =
+          bootstrapJdbc.queryForObject(
+              "SELECT schema_name FROM emme_core.tenant_registry WHERE tenant_id = ?::uuid",
+              String.class,
+              tenantId.toString());
       if (schemaName != null) {
         String validated = TenantSchemaName.requireValid(schemaName);
         log.debug("Resolved tenant {} to schema {}", tenantId, validated);

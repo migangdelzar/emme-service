@@ -17,8 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class TenantSchemaProvisioningListener {
 
-  private static final Logger log =
-      LoggerFactory.getLogger(TenantSchemaProvisioningListener.class);
+  private static final Logger log = LoggerFactory.getLogger(TenantSchemaProvisioningListener.class);
 
   private final TenantSchemaMigrationPort schemaMigrationPort;
   private final TenantProvisioningRepository provisioningRepository;
@@ -43,12 +42,10 @@ public class TenantSchemaProvisioningListener {
       log.info("Schema {} provisioned for tenant {}", schemaName, event.tenantId());
 
       TenantSchemaReady ready =
-          new TenantSchemaReady(
-              UUID.randomUUID(), event.tenantId(), event.slug(), schemaName);
+          new TenantSchemaReady(UUID.randomUUID(), event.tenantId(), event.slug(), schemaName);
       eventPublisher.publishEvent(ready);
     } catch (Exception e) {
-      log.error(
-          "Schema provisioning failed for tenant {}: {}", event.tenantId(), e.getMessage());
+      log.error("Schema provisioning failed for tenant {}: {}", event.tenantId(), e.getMessage());
       provisioningRepository.markFailed(event.tenantId(), e.getMessage());
       throw e;
     }

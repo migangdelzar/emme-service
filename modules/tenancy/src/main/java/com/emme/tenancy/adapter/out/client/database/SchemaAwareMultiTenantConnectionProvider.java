@@ -16,7 +16,8 @@ import org.springframework.stereotype.Component;
 public class SchemaAwareMultiTenantConnectionProvider
     implements MultiTenantConnectionProvider<String> {
 
-  private static final Logger log = LoggerFactory.getLogger(SchemaAwareMultiTenantConnectionProvider.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(SchemaAwareMultiTenantConnectionProvider.class);
   private static final String CORE_SCHEMA = "emme_core";
 
   private final DataSource coreDataSource;

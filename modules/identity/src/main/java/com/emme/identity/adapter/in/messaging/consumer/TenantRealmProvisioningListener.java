@@ -1,10 +1,10 @@
 package com.emme.identity.adapter.in.messaging.consumer;
 
-import com.emme.identity.api.event.TenantRealmReady;
 import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
 import com.emme.identity.application.port.out.IdentityRealmProvisioningConfigurationPort;
 import com.emme.identity.application.port.out.IdentityRealmProvisioningSettings;
 import com.emme.identity.application.port.out.TenantIdentityRealmPort;
+import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.api.event.TenantSchemaReady;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -22,8 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
     matchIfMissing = false)
 public class TenantRealmProvisioningListener {
 
-  private static final Logger log =
-      LoggerFactory.getLogger(TenantRealmProvisioningListener.class);
+  private static final Logger log = LoggerFactory.getLogger(TenantRealmProvisioningListener.class);
 
   private final IdentityProviderAdministrationPort administrationPort;
   private final TenantIdentityRealmPort tenantIdentityRealmPort;
@@ -44,8 +43,7 @@ public class TenantRealmProvisioningListener {
   @ApplicationModuleListener
   @Transactional
   public void onTenantSchemaReady(TenantSchemaReady event) {
-    log.info(
-        "Provisioning Keycloak realm for tenant {} (slug={})", event.tenantId(), event.slug());
+    log.info("Provisioning Keycloak realm for tenant {} (slug={})", event.tenantId(), event.slug());
 
     String realm = "emme-" + event.slug();
 
@@ -62,8 +60,11 @@ public class TenantRealmProvisioningListener {
       String adminUsername = settings.initialAdminUsername();
       String adminEmail = adminUsername + "@" + event.slug() + ".local";
       administrationPort.createUser(
-          realm, adminUsername, adminEmail,
-          settings.initialAdminPassword(), settings.initialAdminRole());
+          realm,
+          adminUsername,
+          adminEmail,
+          settings.initialAdminPassword(),
+          settings.initialAdminRole());
 
       tenantIdentityRealmPort.updateRealm(event.tenantId(), realm);
       log.info("Keycloak realm {} provisioned for tenant {}", realm, event.tenantId());
@@ -71,8 +72,7 @@ public class TenantRealmProvisioningListener {
       eventPublisher.publishEvent(
           new TenantRealmReady(UUID.randomUUID(), event.tenantId(), event.slug(), realm));
     } catch (Exception e) {
-      log.error(
-          "Realm provisioning failed for tenant {}: {}", event.tenantId(), e.getMessage());
+      log.error("Realm provisioning failed for tenant {}: {}", event.tenantId(), e.getMessage());
       throw new RuntimeException("Failed to provision realm for tenant " + event.slug(), e);
     }
   }

@@ -3,9 +3,9 @@ package com.emme.identity.adapter.in.messaging.consumer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.identity.api.command.EnsureCustomerMembershipCommand;
 import com.emme.identity.api.usecase.EnsureCustomerMembershipUseCase;
-import com.emme.appointments.api.event.AppointmentCreated;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;

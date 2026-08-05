@@ -34,8 +34,7 @@ class TenantSchemaProvisioningListenerTest {
 
     listener.onTenantCreated(event);
 
-    ArgumentCaptor<TenantSchemaReady> captor =
-        ArgumentCaptor.forClass(TenantSchemaReady.class);
+    ArgumentCaptor<TenantSchemaReady> captor = ArgumentCaptor.forClass(TenantSchemaReady.class);
     verify(eventPublisher).publishEvent(captor.capture());
     TenantSchemaReady ready = captor.getValue();
     assertThat(ready.tenantId()).isEqualTo(tenantId);
@@ -47,8 +46,7 @@ class TenantSchemaProvisioningListenerTest {
   void onTenantCreated_marksFailedAndRethrows_onException() {
     UUID tenantId = UUID.randomUUID();
     TenantCreated event =
-        new TenantCreated(
-            UUID.randomUUID(), tenantId, "test", "Test", "admin@test.com");
+        new TenantCreated(UUID.randomUUID(), tenantId, "test", "Test", "admin@test.com");
     RuntimeException ex = new RuntimeException("DB down");
     when(schemaMigrationPort.migrate(tenantId, "test")).thenThrow(ex);
 

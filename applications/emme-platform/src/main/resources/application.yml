@@ -5,22 +5,13 @@ spring:
     virtual:
       enabled: true
   datasource:
-    core:
-      url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/emme?currentSchema=emme_core
-      username: ${DB_USERNAME:emme}
-      password: ${DB_PASSWORD:emme}
-      hikari:
-        maximum-pool-size: 5
-        minimum-idle: 2
-        pool-name: emme-core-pool
-    tenant:
-      url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/emme
-      username: ${DB_USERNAME:emme}
-      password: ${DB_PASSWORD:emme}
-      hikari:
-        maximum-pool-size: 20
-        minimum-idle: 5
-        pool-name: emme-tenant-pool
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/emme?currentSchema=emme_core
+    username: ${DB_USERNAME:emme}
+    password: ${DB_PASSWORD:emme}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      pool-name: emme-core-pool
   jpa:
     hibernate:
       ddl-auto: validate

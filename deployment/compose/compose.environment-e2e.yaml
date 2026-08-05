@@ -16,12 +16,12 @@ services:
       DB_PORT: "5432"
       DB_USERNAME: emme
       DB_PASSWORD: ${DB_PASSWORD:-emme}
-      SPRING_DATASOURCE_CORE_URL: jdbc:postgresql://postgres:5432/emme?currentSchema=emme_core
-      SPRING_DATASOURCE_CORE_USERNAME: emme
-      SPRING_DATASOURCE_CORE_PASSWORD: ${DB_PASSWORD:-emme}
-      SPRING_DATASOURCE_TENANT_URL: jdbc:postgresql://postgres:5432/emme
-      SPRING_DATASOURCE_TENANT_USERNAME: emme
-      SPRING_DATASOURCE_TENANT_PASSWORD: ${DB_PASSWORD:-emme}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emme?currentSchema=emme_core
+      SPRING_DATASOURCE_USERNAME: emme
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-emme}
+      EMME_TENANCY_TENANT_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emme
+      EMME_TENANCY_TENANT_DATASOURCE_USERNAME: emme
+      EMME_TENANCY_TENANT_DATASOURCE_PASSWORD: ${DB_PASSWORD:-emme}
       SPRING_DATA_REDIS_HOST: redis
       # Browser-issued tokens carry the host-facing issuer. The container uses
       # the internal JWK endpoint below for key retrieval while validating that

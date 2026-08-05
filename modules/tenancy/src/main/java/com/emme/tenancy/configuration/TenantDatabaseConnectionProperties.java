@@ -1,22 +1,19 @@
 package com.emme.tenancy.configuration;
 
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.validation.annotation.Validated;
 
-/** Typed connection settings used when creating tenant database pools. */
-@ConfigurationProperties(prefix = "spring.datasource.tenant")
+@Validated
+@ConfigurationProperties(prefix = "emme.tenancy.tenant-datasource")
 public record TenantDatabaseConnectionProperties(
-    String url, String username, String password, String driverClassName) {
+    @NotBlank String url,
+    @NotBlank String username,
+    @NotBlank String password,
+    @NotBlank String driverClassName) {
 
-  public TenantDatabaseConnectionProperties(
-      @DefaultValue("") String url,
-      @DefaultValue("emme") String username,
-      @DefaultValue("emme") String password,
-      @DefaultValue("org.postgresql.Driver") String driverClassName) {
-    this.url = url == null ? "" : url;
-    this.username = username == null ? "emme" : username;
-    this.password = password == null ? "emme" : password;
-    this.driverClassName = driverClassName == null ? "org.postgresql.Driver" : driverClassName;
+  public TenantDatabaseConnectionProperties {
+    if (driverClassName == null) driverClassName = "org.postgresql.Driver";
   }
 
   public static TenantDatabaseConnectionProperties defaults() {

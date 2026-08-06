@@ -1,5 +1,17 @@
 # Engineering lessons
 
+## 2026-08-05 — Confirm the owning repository before deployment changes
+
+- Failure mode: deployment design work was started in `emme-modulith` even
+  though the requested owning repository was `emme-service`.
+- Detection signal: the user corrected the repository scope before deployment
+  implementation began.
+- Prevention rule: before changing deployment or release configuration, verify
+  the target repository, its branch, and ownership of frontend source versus
+  deployment manifests; keep the frontend Vite/Nginx source with the web app
+  and place service-owned Kubernetes/Compose/secret orchestration with the
+  service repository.
+
 ## 2026-08-04 — Read-only transactions also require proxyable services
 
 - Failure mode: Adding `@Transactional(readOnly = true)` to the final

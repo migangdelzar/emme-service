@@ -3,7 +3,7 @@
 | Field | Detail |
 |---|---|
 | Date | 2026-08-06 |
-| Status | Draft — ready for user review |
+| Status | Approved for implementation planning |
 | Owning repository | `emme-service` |
 | Related repository | `emme-web` |
 | Scope | Java 25, GraalVM 25, Compose, Kustomize, Kubernetes Secrets, frontend proxying, CI/CD, observability, rollback, and release evidence |
@@ -13,6 +13,8 @@
 Complete the release path for the EMME platform by converting the existing 15-factor checklist into executable repository changes and evidence gates. The service repository owns backend delivery and environment orchestration. The web repository owns the Vite application and frontend Nginx image source.
 
 The release model keeps Java 25 Temurin as the JVM baseline and adds an explicit GraalVM 25 Native Image track. JVM and native artifacts are built independently, scanned, smoke-tested, and promoted by immutable digest. The JVM artifact remains the immediate rollback path until native evidence is accepted.
+
+This project-specific checklist is named **EMME 15-Factor Release Controls**. It is a release-readiness control model, not a claim that there is one universal fifteen-factor standard.
 
 ## 2. Repository Ownership
 
@@ -39,7 +41,22 @@ Frontend source and proxy configuration are not duplicated into `emme-service`. 
 | `staging` | Kubernetes JVM or native | `staging-jvm` / `staging-native` | `emme-staging` | Promoted immutable digest |
 | `prod` | Kubernetes JVM or native | `prod-jvm` / `prod-native` | `emme-prod` | Approved immutable digest |
 
-Environment selection is explicit through `EMME_ENV` or `-Penvironment`. `production`, `test`, `ci`, `k3d-*`, and `k3s-production-*` remain migration aliases only; new files and commands use the canonical names.
+Environment selection is explicit through `EMME_ENV` or `-Penvironment`. The unreleased service uses only the canonical identifiers `local`, `dev`, `regression`, `staging`, and `prod`; obsolete names such as `production`, `test`, `ci`, `k3d-*`, and `k3s-production-*` are removed rather than retained as indefinite aliases.
+
+The canonical environment contract is:
+
+```text
+EnvironmentName
+  → gradle/environments/<environment>.properties
+  → deployment overlay
+  → namespace / Compose project
+  → Secret project and Kubernetes Secret keys
+  → image promotion metadata
+  → CI environment
+  → public hostname
+```
+
+The environment identifier is passed unchanged through each boundary. Runtime is a separate value (`jvm` or `native`) and the overlay name is derived from environment plus runtime; it is not independently configured in a second source of truth.
 
 ## 4. Release Flow
 
@@ -64,6 +81,40 @@ release record and tested rollback reference
 ```
 
 No staging or production image is rebuilt. A release promotion must reference the exact backend and frontend digests validated by regression.
+
+Each release produces a backend/frontend release bundle before promotion:
+
+```yaml
+release: 2026.08.06-rc.1
+apiContract: 1.0
+backend:
+  image: ghcr.io/migangdelzar/emme-service
+  digest: sha256:<backend-digest>
+  sourceSha: <service-sha>
+frontend:
+  image: ghcr.io/migangdelzar/emme-web
+  digest: sha256:<frontend-digest>
+  sourceSha: <web-sha>
+```
+
+Staging, production, and rollback consume this pair rather than independently selecting tags.
+
+## 4.1 Standardized Runtime and Secret Contracts
+
+The canonical application service name is `backend` in both Compose and Kubernetes. The image remains `ghcr.io/migangdelzar/emme-service`. The frontend image remains `ghcr.io/migangdelzar/emme-web` and receives `EMME_API_UPSTREAM=backend:8081` in Kubernetes.
+
+Runtime secrets use these namespaced Kubernetes Secret objects:
+
+| Secret | Required key groups |
+|---|---|
+| `emme-runtime-secrets` | application encryption/signing keys and external integration tokens |
+| `emme-database-credentials` | database username, password, and connection credentials |
+| `emme-identity-credentials` | OAuth/Keycloak client and administrator credentials |
+| `emme-messaging-credentials` | Kafka credentials when messaging is enabled |
+
+Bitwarden and GitHub Actions are source providers. A provider-specific resolver validates required keys, then materializes the same Kubernetes Secret contract with `kubectl` before workload apply. No provider silently falls back to another provider. Secret values are never committed, rendered into source-controlled files, or logged.
+
+Java build execution uses Temurin 25. Native compilation uses an explicit GraalVM Community 25 installation supplied through `GRAALVM_HOME`/`JAVA_HOME`; Native Build Tools automatic vendor detection is not the release contract. Native fallback remains disabled.
 
 ## 5. Point-by-Point Implementation and Verification Plan
 
@@ -183,6 +234,7 @@ Primary files:
 Evidence:
 
 - `java -version` reports Java 25 for local/CI Gradle execution.
+- `native-image --version` reports GraalVM 25 for the native lane.
 - `nativeCompile` succeeds under GraalVM 25.
 - Native image has no JVM fallback.
 - Backend/frontend image digests are immutable and promotable.
@@ -421,6 +473,11 @@ The final release gate will run, with Java 25 selected explicitly:
 
 ```bash
 java -version
+./gradlew verifyEnvironment -Penvironment=local --no-daemon --no-configuration-cache
+./gradlew verifyEnvironment -Penvironment=dev --no-daemon --no-configuration-cache
+./gradlew verifyEnvironment -Penvironment=regression --no-daemon --no-configuration-cache
+./gradlew verifyEnvironment -Penvironment=staging --no-daemon --no-configuration-cache
+./gradlew verifyEnvironment -Penvironment=prod --no-daemon --no-configuration-cache
 ./gradlew ci --no-daemon --no-configuration-cache
 ./gradlew :applications:emme-platform:nativeCompile \
   -Pemme.native-image=true --no-daemon --no-configuration-cache
@@ -465,4 +522,3 @@ Then the real-browser regression suite will exercise the frontend-origin API, OA
 - [Spring Boot system requirements](https://docs.spring.io/spring-boot/system-requirements.html)
 - [Spring Boot Native Image](https://docs.spring.io/spring-boot/reference/packaging/native-image/index.html)
 - [GraalVM Native Build Tools Gradle plugin](https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html)
-

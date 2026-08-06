@@ -67,6 +67,9 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
         .put("value", configuration.password())
         .put("temporary", false);
     userDoc.putArray("realmRoles").add("business_owner");
+    var attributes = userDoc.putObject("attributes");
+    attributes.put("tenant_id", configuration.tenantId().toString());
+    attributes.put("tenant_slug", configuration.tenantSlug());
 
     // Check if user already exists
     var existingResponse =

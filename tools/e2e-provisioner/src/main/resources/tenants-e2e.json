@@ -1,26 +1,7 @@
 {
   "platformUrl": "http://localhost:8081",
-  "keycloakUrl": "http://localhost:18080",
-  "keycloakAdminUsername": "admin",
-  "keycloakAdminPassword": "e2e-admin-password",
-  "databaseUrl": "jdbc:postgresql://localhost:5432/emme",
-  "databaseUsername": "emme",
-  "databasePassword": "emme",
-  "webOrigin": "http://localhost:3000",
   "tenants": [
-    {
-      "slug": "e2e-studio",
-      "name": "E2E Studio",
-      "ownerUsername": "e2e-owner",
-      "ownerPassword": "E2e-Studio-Owner-2026!",
-      "ownerEmail": "e2e-owner@e2e-studio.local"
-    },
-    {
-      "slug": "e2e-salon",
-      "name": "E2E Salon",
-      "ownerUsername": "e2e-owner-salon",
-      "ownerPassword": "E2e-Salon-Owner-2026!",
-      "ownerEmail": "e2e-owner-salon@e2e-salon.local"
-    }
+    { "slug": "e2e-studio", "name": "E2E Studio" },
+    { "slug": "e2e-salon", "name": "E2E Salon" }
   ]
 }

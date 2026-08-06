@@ -12,4 +12,6 @@ public interface TenantSeeder {
       throws SQLException;
 
   void cleanTenantData(UUID tenantId, String schemaName) throws SQLException;
+
+  void ensureMembership(UUID tenantId, String userReference, String roleCode) throws SQLException;
 }

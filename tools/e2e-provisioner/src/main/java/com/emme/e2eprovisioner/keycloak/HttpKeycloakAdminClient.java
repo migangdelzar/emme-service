@@ -2,6 +2,7 @@ package com.emme.e2eprovisioner.keycloak;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -11,6 +12,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.UUID;
 
 /** HTTP adapter for the Keycloak Admin REST API used only by disposable E2E setup. */
 public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
@@ -120,6 +122,67 @@ public final class HttpKeycloakAdminClient implements KeycloakAdminClient {
     var users = objectMapper.readTree(lookupResponse.body());
     if (!users.isArray() || users.isEmpty() || !users.get(0).hasNonNull("id")) {
       throw new IOException("Keycloak tenant-owner user was not found after creation");
+    }
+    return users.get(0).path("id").asText();
+  }
+
+  @Override
+  public String createUser(String realm, String username, String email, String password,
+      String firstName, String lastName, String role, UUID tenantId, String tenantSlug)
+      throws IOException, InterruptedException {
+    var adminToken = requestAdminToken();
+    var realmName = "emme-" + realm;
+
+    var userDoc = objectMapper.createObjectNode();
+    userDoc.put("username", username);
+    userDoc.put("email", email);
+    userDoc.put("emailVerified", true);
+    userDoc.put("enabled", true);
+    userDoc.put("firstName", firstName);
+    userDoc.put("lastName", lastName);
+    userDoc.putArray("requiredActions");
+    userDoc.putArray("credentials").addObject()
+        .put("type", "password").put("value", password).put("temporary", false);
+    userDoc.putArray("realmRoles").add(role);
+    var attributes = userDoc.putObject("attributes");
+    attributes.put("tenant_id", tenantId.toString());
+    attributes.put("tenant_slug", tenantSlug);
+
+    return upsertUser(realmName, username, userDoc, adminToken);
+  }
+
+  private String upsertUser(String realmName, String username, ObjectNode userDoc, String adminToken)
+      throws IOException, InterruptedException {
+    // Check if user already exists
+    var existing = send(HttpRequest.newBuilder(
+            uri("/admin/realms/" + realmName + "/users?username="
+                + URLEncoder.encode(username, StandardCharsets.UTF_8)))
+        .header("Authorization", "Bearer " + adminToken).GET().build());
+    if (existing.statusCode() == 200) {
+      var users = objectMapper.readTree(existing.body());
+      if (users.isArray() && !users.isEmpty() && users.get(0).hasNonNull("id")) {
+        return users.get(0).path("id").asText();
+      }
+    }
+
+    var create = send(HttpRequest.newBuilder(uri("/admin/realms/" + realmName + "/users"))
+        .header("Authorization", "Bearer " + adminToken)
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(userDoc.toString())).build());
+    if (create.statusCode() != 201 && create.statusCode() != 409) {
+      throw unexpectedStatus("user creation", create);
+    }
+
+    var lookup = send(HttpRequest.newBuilder(
+            uri("/admin/realms/" + realmName + "/users?username="
+                + URLEncoder.encode(username, StandardCharsets.UTF_8)))
+        .header("Authorization", "Bearer " + adminToken).GET().build());
+    if (lookup.statusCode() != 200) {
+      throw unexpectedStatus("user lookup", lookup);
+    }
+    var users = objectMapper.readTree(lookup.body());
+    if (!users.isArray() || users.isEmpty() || !users.get(0).hasNonNull("id")) {
+      throw new IOException("Keycloak user not found after creation: " + username);
     }
     return users.get(0).path("id").asText();
   }

@@ -60,6 +60,17 @@ public final class JdbcTenantSeeder implements TenantSeeder {
         });
   }
 
+  @Override
+  public void ensureMembership(UUID tenantId, String userReference, String roleCode)
+      throws SQLException {
+    connectionExecutor.consumeWithConnection(
+        connection -> inTransaction(connection, ignored -> {
+          ensureRole(connection, roleCode);
+          ensureMembership(connection, tenantId, userReference, roleCode);
+          return null;
+        }));
+  }
+
   private static UUID ensureTenant(Connection connection, String slug, String name)
       throws SQLException {
     UUID tenantId;
@@ -254,6 +265,30 @@ public final class JdbcTenantSeeder implements TenantSeeder {
       connection.rollback();
     } catch (SQLException rollbackFailure) {
       original.addSuppressed(rollbackFailure);
+    }
+  }
+
+  private static void ensureRole(Connection connection, String roleCode) throws SQLException {
+    try (var stmt = connection.prepareStatement(
+        "INSERT INTO emme_core.role (id, code, name, scope, active) "
+            + "VALUES (gen_random_uuid(), ?, ?, 'TENANT', true) "
+            + "ON CONFLICT (code) DO UPDATE SET active = true")) {
+      stmt.setString(1, roleCode);
+      stmt.setString(2, roleCode.replace("_", " "));
+      stmt.executeUpdate();
+    }
+  }
+
+  private static void ensureMembership(Connection connection, UUID tenantId,
+      String userReference, String roleCode) throws SQLException {
+    try (var stmt = connection.prepareStatement(
+        "INSERT INTO emme_core.membership (tenant_id, role_id, user_reference, status) "
+            + "SELECT ?, r.id, ?, 'ACTIVE' FROM emme_core.role r WHERE r.code = ? "
+            + "ON CONFLICT DO NOTHING")) {
+      stmt.setObject(1, tenantId);
+      stmt.setString(2, userReference);
+      stmt.setString(3, roleCode);
+      stmt.executeUpdate();
     }
   }
 }

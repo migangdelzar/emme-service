@@ -7,4 +7,8 @@ public interface KeycloakAdminClient {
 
   String provisionTenantOwner(RealmConfiguration configuration)
       throws IOException, InterruptedException;
+
+  String createUser(String realm, String username, String email, String password,
+      String firstName, String lastName, String role, java.util.UUID tenantId, String tenantSlug)
+      throws IOException, InterruptedException;
 }

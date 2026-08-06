@@ -61,8 +61,7 @@ public final class IdentityJwtTrustPolicy {
     if (realmSeparator < 0) {
       throw new IllegalArgumentException("Identity issuer must contain /realms/");
     }
-    return issuer.substring(0, realmSeparator + "/realms/".length())
-        + issuer.substring(realmSeparator + "/realms/".length())
-        + "-";
+    String baseUrl = issuer.substring(0, realmSeparator + "/realms/".length());
+    return baseUrl + "emme-";
   }
 }

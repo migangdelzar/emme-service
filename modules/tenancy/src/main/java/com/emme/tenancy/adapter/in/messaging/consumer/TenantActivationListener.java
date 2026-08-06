@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class TenantActivationListener {
 
   private static final Logger log = LoggerFactory.getLogger(TenantActivationListener.class);
-
   private final TenantProvisioningRepository provisioningRepository;
   private final ApplicationEventPublisher eventPublisher;
 
@@ -34,19 +33,12 @@ public class TenantActivationListener {
 
     provisioningRepository.markActive(event.tenantId());
 
-    TenantActivated activated =
-        new TenantActivated(
-            UUID.randomUUID(),
-            event.tenantId(),
-            event.slug(),
-            provisioningRepository.findSchemaName(event.tenantId()),
-            event.keycloakRealm());
+    String schemaName = provisioningRepository.findSchemaName(event.tenantId());
+    TenantActivated activated = new TenantActivated(
+        UUID.randomUUID(), event.tenantId(), event.slug(), schemaName, event.keycloakRealm());
     eventPublisher.publishEvent(activated);
 
-    log.info(
-        "Tenant {} activated. Schema={}, Realm={}",
-        event.tenantId(),
-        activated.schemaName(),
-        activated.keycloakRealm());
+    log.info("Tenant {} activated. Schema={}, Realm={}",
+        event.tenantId(), schemaName, event.keycloakRealm());
   }
 }

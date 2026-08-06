@@ -1,5 +1,6 @@
 plugins {
   id("emme.spring-module")
+  id("emme.messaging")
   id("emme.integration-testing")
   id("emme.spring-web")
   id("emme.persistence")

@@ -1,4 +1,4 @@
-# 15-Factor Release Readiness Design
+# 16-Factor Release Readiness Design
 
 | Field | Detail |
 |---|---|
@@ -6,15 +6,15 @@
 | Status | Approved for implementation planning |
 | Owning repository | `emme-service` |
 | Related repository | `emme-web` |
-| Scope | Java 25, GraalVM 25, Compose, Kustomize, Kubernetes Secrets, frontend proxying, CI/CD, observability, rollback, and release evidence |
+| Scope | Java 25, GraalVM 25, Compose, Kustomize, Kubernetes Secrets, frontend proxying, CI/CD, observability, rollback, self-managed k3s deployment, and release evidence |
 
 ## 1. Objective
 
-Complete the release path for the EMME platform by converting the existing 15-factor checklist into executable repository changes and evidence gates. The service repository owns backend delivery and environment orchestration. The web repository owns the Vite application and frontend Nginx image source.
+Complete the release path for the EMME platform by converting the existing release checklist into executable repository changes and evidence gates. The service repository owns backend delivery and environment orchestration. The web repository owns the Vite application and frontend Nginx image source.
 
 The release model keeps Java 25 Temurin as the JVM baseline and adds an explicit GraalVM 25 Native Image track. JVM and native artifacts are built independently, scanned, smoke-tested, and promoted by immutable digest. The JVM artifact remains the immediate rollback path until native evidence is accepted.
 
-This project-specific checklist is named **EMME 15-Factor Release Controls**. It is a release-readiness control model, not a claim that there is one universal fifteen-factor standard.
+This project-specific checklist is named **EMME 16-Factor Release Controls**. It is a release-readiness control model, not a claim that there is one universal sixteen-factor standard.
 
 ## 2. Repository Ownership
 
@@ -27,6 +27,7 @@ This project-specific checklist is named **EMME 15-Factor Release Controls**. It
 | Backend/frontend image deployment | `emme-service` | `infra/kubernetes` and CI release workflow |
 | Compose environments | `emme-service` | `deployment/compose` |
 | Kubernetes environments | `emme-service` | `infra/kubernetes` Kustomize overlays |
+| Self-managed Kubernetes infrastructure | `emme-service` | `infra/terraform`, `infra/k3s`, and deployment runbooks |
 | Secret materialization | `emme-service` | Bitwarden/GitHub Actions provider and Kubernetes Secret contract |
 
 Frontend source and proxy configuration are not duplicated into `emme-service`. The service repository configures the deployed web image with the Kubernetes service upstream and verifies the cross-repository contract.
@@ -36,10 +37,10 @@ Frontend source and proxy configuration are not duplicated into `emme-service`. 
 | Environment | Runtime | Overlay/profile | Namespace/project | Artifact policy |
 |---|---|---|---|---|
 | `local` | Docker Compose JVM | `compose.local` | `emme-local` Compose project | Local build/tag |
-| `dev` | K3d/Kubernetes JVM or native | `dev-jvm` / `dev-native` | `emme-dev` | Development tag or digest |
+| `dev` | Single-node self-managed k3s JVM or native | `dev-jvm` / `dev-native` | `emme-dev` | Development tag or digest |
 | `regression` | Docker Compose JVM; optional native lane | `compose.regression` | `emme-regression` Compose project | Candidate digest |
-| `staging` | Kubernetes JVM or native | `staging-jvm` / `staging-native` | `emme-staging` | Promoted immutable digest |
-| `prod` | Kubernetes JVM or native | `prod-jvm` / `prod-native` | `emme-prod` | Approved immutable digest |
+| `staging` | Single-node self-managed k3s JVM or native | `staging-jvm` / `staging-native` | `emme-staging` | Promoted immutable digest |
+| `prod` | HA self-managed k3s JVM or native | `prod-jvm` / `prod-native` | `emme-prod` | Approved immutable digest |
 
 Environment selection is explicit through `EMME_ENV` or `-Penvironment`. The unreleased service uses only the canonical identifiers `local`, `dev`, `regression`, `staging`, and `prod`; obsolete names such as `production`, `test`, `ci`, `k3d-*`, and `k3s-production-*` are removed rather than retained as indefinite aliases.
 
@@ -529,6 +530,51 @@ Evidence:
 - No plaintext secret reaches Git, an image, a rendered artifact, or logs.
 - Production requires explicit authorization.
 
+### Factor 16 — Deployment platform and landing zone
+
+The first production target is self-managed k3s on dedicated Linux VMs. The existing Terraform profile is the starting provider implementation and will be completed for Hetzner Cloud; provider-specific abstractions must not leak into Kubernetes manifests. DigitalOcean remains a future provider profile, not a second release path in this scope.
+
+The approved topology is:
+
+| Environment | Platform | Topology | Primary purpose |
+|---|---|---|---|
+| `local` | K3d | Disposable local cluster | Developer Kubernetes parity |
+| `dev` | Self-managed k3s | One server node | Fast shared development validation |
+| `regression` | Docker Compose | Disposable Compose project | Full REST/UI regression and release-candidate verification |
+| `staging` | Self-managed k3s | One server node with production-like manifests | Promotion, telemetry, load, and rollback rehearsal |
+| `prod` | Self-managed k3s | Three server nodes with embedded etcd plus worker nodes | High-availability production workload |
+
+The single-node dev/staging choice is intentional: it reduces cost and operational overhead, while staging must be rebuildable from Terraform and its data must be restorable from tested backups. Production uses an odd number of server nodes because embedded etcd requires quorum. Worker nodes run application workloads; control-plane nodes are tainted unless capacity evidence justifies otherwise.
+
+Infrastructure and workload boundaries are:
+
+- Terraform owns VM instances, private networking, firewalls, floating/public IPs, DNS records, and the S3-compatible backup bucket.
+- k3s bootstrap configuration owns the pinned k3s version, server/agent roles, cluster token handling, secrets encryption, cluster CIDR, service CIDR, and registration address.
+- Kustomize owns application namespaces, Deployments, Services, Ingress, NetworkPolicies, resource limits, and immutable image digests.
+- The bundled k3s Traefik controller owns external HTTP/TLS ingress. It is configured through supported HelmChartConfig resources; generated k3s manifests are never edited in place.
+- The frontend Nginx container remains the browser-facing reverse proxy from the public frontend Service to the internal `backend:8081` Service. The backend Service is never exposed as a public LoadBalancer.
+
+Stateful placement is explicit per environment. Dev may use k3s local-path storage for disposable data. Staging must use replicated or dedicated persistent storage and exercise restore. Production PostgreSQL/pgvector, Kafka, and backup/object storage must use dedicated persistent hosts or a tested storage/operator layer; Ollama GPU capacity must use dedicated worker/GPU hosts and must not be scheduled on control-plane nodes. Redis and Keycloak may run in-cluster only when their persistence, replica, and recovery tests pass.
+
+Factor 16 requires these operational controls:
+
+1. Pin the Linux image, k3s version, Terraform providers, VM types, regions, and node labels.
+2. Provision each environment through Terraform with no manually created production node.
+3. Bootstrap a single server, join staging/dev nodes, and bootstrap production with `cluster-init` plus two additional server nodes.
+4. Restrict firewall access: SSH to the operations network, Kubernetes API through a private/fixed registration path, and public traffic only to the ingress ports.
+5. Configure DNS, TLS issuance/renewal, ingress health, and certificate expiry alerting.
+6. Apply storage classes, quotas, pod disruption budgets, node affinity, taints, and topology spread rules.
+7. Enable Kubernetes Secret encryption and materialize runtime secrets through the approved provider contract.
+8. Schedule k3s etcd snapshots to encrypted S3-compatible storage and back up the k3s server token with equivalent protection.
+9. Back up application data separately from cluster state and execute a documented restore drill.
+10. Verify node replacement, server quorum, worker drain, pod rescheduling, and public endpoint recovery.
+11. Define a pinned upgrade sequence, pre-upgrade snapshot, canary node, rollback procedure, and maintenance window.
+12. Collect cluster, node, ingress, workload, database, and release-bundle evidence for every promotion.
+13. Validate capacity, cost, resource requests/limits, and failure behavior before production authorization.
+14. Test a rebuild-from-zero in a clean account/project using only Terraform, bootstrap artifacts, backups, and the release bundle.
+
+The deployment target is accepted only when dev, staging, and production can be rendered and reconciled through the same `kubernetes:*` task interface, staging can be restored from backup, production survives one server-node failure without losing etcd quorum, and the release record contains the cluster, node, k3s, overlay, image digest, backup, and rollback evidence.
+
 ## 6. Verification Commands
 
 The final release gate will run, with Java 25 selected explicitly:
@@ -548,6 +594,10 @@ for env in dev staging prod; do
   done
 done
 EMME_ENV=prod EMME_RUNTIME=jvm mise run kubernetes:apply --dry-run
+terraform -chdir=infra/terraform validate
+EMME_ENV=dev mise run kubernetes:status
+EMME_ENV=staging mise run kubernetes:status
+EMME_ENV=prod mise run kubernetes:status
 ```
 
 The web release gate will run:
@@ -564,7 +614,7 @@ Then the real-browser regression suite will exercise the frontend-origin API, OA
 
 ## 7. Definition of Done
 
-- All 15 factors have an executable check and stored evidence.
+- All 16 factors have an executable check and stored evidence.
 - Java 25 is the only supported service build baseline.
 - GraalVM 25 native build succeeds with fallback disabled.
 - JVM and native images are scanned and traceable by digest.
@@ -574,6 +624,7 @@ Then the real-browser regression suite will exercise the frontend-origin API, OA
 - Critical browser journeys pass through the frontend origin.
 - Staging rollout, telemetry, and rollback are verified.
 - Production deployment is protected and reproducible.
+- Self-managed k3s dev/staging/prod infrastructure is Terraform-provisioned, backed up, upgradeable, observable, and rebuildable.
 - Gradle and mise task names, environment variables, configuration ownership, and migration rules conform to the standardized task contract.
 - Existing tests and unrelated user changes remain intact.
 
@@ -582,3 +633,7 @@ Then the real-browser regression suite will exercise the frontend-origin API, OA
 - [Spring Boot system requirements](https://docs.spring.io/spring-boot/system-requirements.html)
 - [Spring Boot Native Image](https://docs.spring.io/spring-boot/reference/packaging/native-image/index.html)
 - [GraalVM Native Build Tools Gradle plugin](https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html)
+- [K3s high-availability embedded etcd](https://docs.k3s.io/datastore/ha-embedded)
+- [K3s backup and restore](https://docs.k3s.io/datastore/backup-restore)
+- [K3s networking services and Traefik](https://docs.k3s.io/networking/networking-services)
+- [K3s rollback procedure](https://docs.k3s.io/upgrades/roll-back)

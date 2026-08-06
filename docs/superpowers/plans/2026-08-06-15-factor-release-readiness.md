@@ -1,10 +1,10 @@
-# 15-Factor Release Readiness Implementation Plan
+# 16-Factor Release Readiness Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Implement and verify the EMME 15-Factor Release Controls across `emme-service` and `emme-web`, including Java 25, GraalVM 25, canonical environments, Kubernetes Secrets, same-origin proxying, immutable release bundles, and staged promotion.
+**Goal:** Implement and verify the EMME 16-Factor Release Controls across `emme-service` and `emme-web`, including Java 25, GraalVM 25, canonical environments, Kubernetes Secrets, same-origin proxying, immutable release bundles, staged promotion, and self-managed k3s infrastructure.
 
-**Architecture:** `emme-service` owns backend builds, release metadata, Compose, Kustomize, Kubernetes Secrets, ingress, and promotion. `emme-web` owns Vite and the frontend Nginx image source. Compose serves `local` and `regression`; Kustomize serves `dev`, `staging`, and `prod`. A release bundle binds backend/frontend image digests, source SHAs, and API contract version.
+**Architecture:** `emme-service` owns backend builds, release metadata, Compose, Kustomize, Kubernetes Secrets, Terraform-provisioned self-managed k3s, ingress, and promotion. `emme-web` owns Vite and the frontend Nginx image source. Compose serves `local` and `regression`; Kustomize serves `dev`, `staging`, and `prod`. A release bundle binds backend/frontend image digests, source SHAs, API contract version, and deployment evidence.
 
 **Tech Stack:** Java 25, Gradle 9.4.1, Spring Boot 4.1, GraalVM Community 25, GraalVM Native Build Tools 1.1.5, Kotlin DSL, Docker Compose, Kubernetes, Kustomize, GitHub Actions, Bitwarden/GitHub Actions Secrets, Bun, Vite, Nginx, Vitest, Playwright, JUnit 5, Gradle TestKit, Trivy, Prometheus, Grafana, and Locust.
 
@@ -14,6 +14,10 @@
 - Runtime is independently `jvm` or `native`; overlay names follow examples such as `dev-jvm`, `staging-native`, and `prod-jvm`.
 - `backend` is the canonical service name in Compose and Kubernetes; the image remains `ghcr.io/migangdelzar/emme-service`.
 - Compose is limited to `local` and `regression`; Kubernetes/Kustomize owns `dev`, `staging`, and `prod`.
+- Deployment topology is fixed for this release: K3d local, single-node k3s dev, Compose regression, single-node k3s staging, and three-server HA k3s production with worker nodes.
+- The initial self-managed provider profile is Hetzner Cloud through the existing `infra/terraform` module; provider-specific details stay outside Kubernetes manifests.
+- Production k3s uses embedded etcd with an odd number of server nodes, encrypted snapshots, and a protected server token backup.
+- The bundled k3s Traefik controller owns external ingress; frontend Nginx owns browser-to-backend proxying; `backend` remains ClusterIP-only.
 - Java 25 Temurin runs normal Gradle/JVM builds; explicit GraalVM Community 25 runs Native Image builds.
 - Native Image fallback is disabled; the JVM image remains the rollback artifact until native evidence is accepted.
 - Kubernetes runtime credentials are namespaced Secret objects; secret values never enter Git, images, rendered source-controlled manifests, or logs.
@@ -65,6 +69,17 @@
 - `infra/kubernetes/overlays/staging-jvm/*` and `staging-native/*` — staging overlays.
 - `infra/kubernetes/overlays/prod-jvm/*` and `prod-native/*` — production overlays.
 - `infra/kubernetes/jobs/*` — migrations and administrative jobs.
+- `infra/terraform/main.tf` — Hetzner Cloud VM, firewall, IP, and backup infrastructure.
+- `infra/terraform/variables.tf` — environment, node, region, domain, and backup inputs.
+- `infra/terraform/cloud-init.yaml` — pinned k3s bootstrap prerequisites and node configuration.
+- `infra/terraform/README.md` — provider and operator runbook.
+- `infra/k3s/server-config.yaml` — shared server flags and secrets-encryption contract.
+- `infra/k3s/agent-config.yaml` — worker-node registration and scheduling contract.
+- `infra/k3s/traefik-helmchartconfig.yaml` — supported Traefik ingress customization.
+- `infra/k3s/backup-policy.yaml` — etcd snapshot and S3-compatible backup policy.
+- `scripts/validate-k3s-topology.mjs` — environment/topology and node-role validator.
+- `scripts/validate-k3s-topology.test.mjs` — topology, firewall, and recovery contract tests.
+- `docs/architecture/04-delivery/k3s-platform.md` — self-managed platform architecture and operations runbook.
 - `scripts/validate-emme-platform-target.mjs` — canonical deployment validator.
 - `scripts/validate-emme-platform-target.test.mjs` — deployment validator tests.
 - `scripts/validate-release-bundle.mjs` — release bundle validator.
@@ -121,6 +136,13 @@ release bundle
   ├── staging promotion
   ├── production promotion
   └── rollback
+
+self-managed platform
+  ├── Terraform VMs / firewall / DNS / backup storage
+  ├── k3s bootstrap and node roles
+  ├── Traefik ingress
+  ├── Kustomize workload reconciliation
+  └── upgrade / restore / rebuild evidence
 
 frontend proxy contract
   ├── Vite local development
@@ -953,6 +975,91 @@ git add .github infra/kubernetes scripts deployment/releases docs/architecture
 git commit -m "ci(release): enforce secure staged promotion and rollback"
 ```
 
+### Task 16: Self-managed k3s platform, landing zone, and disaster recovery
+
+**Files:**
+
+- Modify: `infra/terraform/main.tf`
+- Modify: `infra/terraform/variables.tf`
+- Modify: `infra/terraform/cloud-init.yaml`
+- Modify: `infra/terraform/terraform.tfvars.example`
+- Modify: `infra/terraform/README.md`
+- Create: `infra/k3s/server-config.yaml`
+- Create: `infra/k3s/agent-config.yaml`
+- Create: `infra/k3s/traefik-helmchartconfig.yaml`
+- Create: `infra/k3s/backup-policy.yaml`
+- Modify: `infra/kubernetes/base/*` for storage, quotas, topology spread, ingress, and policies
+- Modify: `infra/kubernetes/overlays/dev-*`, `staging-*`, and `prod-*`
+- Create: `scripts/validate-k3s-topology.mjs`
+- Create: `scripts/validate-k3s-topology.test.mjs`
+- Create: `docs/architecture/04-delivery/k3s-platform.md`
+- Modify: `docs/architecture/04-delivery/deployment.md`
+- Modify: `docs/architecture/04-delivery/secrets.md`
+- Modify: `mise.toml` with `kubernetes:bootstrap`, `kubernetes:status`, `kubernetes:upgrade`, `kubernetes:backup`, `kubernetes:restore`, and `kubernetes:rebuild` tasks.
+
+**Approved topology:**
+
+- K3d remains the local Kubernetes parity environment.
+- `dev` uses one self-managed k3s server node.
+- `regression` remains Docker Compose.
+- `staging` uses one self-managed k3s server node with production-like manifests and tested restore.
+- `prod` uses three k3s server nodes with embedded etcd and worker nodes for application scheduling.
+- The initial infrastructure provider is Hetzner Cloud through the existing Terraform module. Provider-specific details stay in Terraform and cloud-init, not in Kustomize.
+- Production PostgreSQL/pgvector, Kafka, and backup/object storage use dedicated persistent hosts or a tested storage/operator layer. Ollama uses dedicated GPU capacity. In-cluster Redis/Keycloak is permitted only after persistence and recovery tests pass.
+
+- [ ] **Step 1: Add failing topology and infrastructure contract tests**
+
+Add Node tests that validate the environment-to-topology matrix, require one server for dev/staging, require three servers plus workers for prod, reject public Kubernetes API exposure, require private server-to-server reachability, and reject an unpinned k3s installer. Add Terraform validation fixtures for required variables, firewall rules, backup configuration, and state backend policy.
+
+- [ ] **Step 2: Run tests and confirm failure**
+
+```bash
+node --test scripts/validate-k3s-topology.test.mjs
+terraform -chdir=infra/terraform fmt -check
+terraform -chdir=infra/terraform validate
+```
+
+Expected: FAIL because the current Terraform module provisions one server, disables Traefik, lacks the approved HA topology, and installs k3s without a pinned release contract.
+
+- [ ] **Step 3: Implement Terraform landing zones**
+
+Extend Terraform inputs and resources for `dev`, `staging`, and `prod`. Provision private networking, role-labelled nodes, restricted firewalls, floating/public ingress IPs, DNS, encrypted remote Terraform state, and S3-compatible backup storage. Use one server for dev/staging and three server nodes plus worker nodes for prod. Keep the Kubernetes API private or reachable only through an authenticated operations path.
+
+- [ ] **Step 4: Implement pinned k3s bootstrap and ingress**
+
+Replace the unpinned installer with an explicit k3s version. Configure server and agent roles consistently, enable Kubernetes Secret encryption, preserve the production cluster token securely, and use `cluster-init` plus two joining servers for production. Keep Traefik enabled and configure it through `HelmChartConfig`; do not edit generated manifests. Route public traffic to frontend Nginx, and keep `backend:8081` ClusterIP-only.
+
+- [ ] **Step 5: Implement workload scheduling and stateful placement**
+
+Add node labels/taints, resource quotas, requests/limits, pod disruption budgets, topology spread, storage classes, and NetworkPolicies. Use disposable local-path storage only for dev. Require replicated or dedicated persistent storage for staging. Require an explicit production placement and backup contract for PostgreSQL/pgvector, Kafka, Redis, Keycloak, Ollama, and object storage.
+
+- [ ] **Step 6: Implement backup, restore, upgrade, and rebuild operations**
+
+Schedule encrypted k3s etcd snapshots to S3-compatible storage and protect the server token backup. Add separate application-data backup and restore procedures. Add dry-run and status commands for upgrades, a pre-upgrade snapshot gate, a canary-node sequence, rollback instructions, and a clean-account rebuild procedure using only Terraform, bootstrap artifacts, backups, and the release bundle.
+
+- [ ] **Step 7: Verify the platform contract**
+
+```bash
+node --test scripts/validate-k3s-topology.test.mjs
+terraform -chdir=infra/terraform fmt -check
+terraform -chdir=infra/terraform validate
+EMME_ENV=dev mise run kubernetes:status
+EMME_ENV=staging mise run kubernetes:status
+EMME_ENV=prod mise run kubernetes:status
+EMME_ENV=prod mise run kubernetes:backup
+EMME_ENV=staging mise run kubernetes:restore --dry-run
+EMME_ENV=prod mise run kubernetes:upgrade --dry-run
+```
+
+Acceptance evidence must show one Ready server for dev/staging, three Ready server nodes and worker capacity for prod, no public port 6443, healthy TLS/Ingress, a valid etcd snapshot, a successful staging restore, and a production one-server failure rehearsal without loss of etcd quorum.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add infra/terraform infra/k3s infra/kubernetes scripts/validate-k3s-topology.* mise.toml docs/architecture
+git commit -m "ops(k3s): add self-managed deployment landing zones"
+```
+
 ## Final Release Gate
 
 - [ ] Run all service unit, integration, architecture, formatting, dependency, and security checks with Java 25.
@@ -965,14 +1072,15 @@ git commit -m "ci(release): enforce secure staged promotion and rollback"
 - [ ] Run regression browser tests through the frontend origin.
 - [ ] Run staging rollout, telemetry, load, and rollback evidence.
 - [ ] Verify production approval and immutable promotion controls.
-- [ ] Update the 15-factor evidence matrix with command, artifact, threshold, owner, and result.
+- [ ] Update the 16-factor evidence matrix with command, artifact, threshold, owner, and result.
+- [ ] Validate Terraform landing zones, k3s node topology, ingress, backup/restore, upgrade, and rebuild evidence.
 - [ ] Update deployment, secrets, native-image, release, and web proxy documentation.
 - [ ] Verify the Gradle/mise task taxonomy, environment-variable contract, configuration ownership, and absence of obsolete task aliases.
 - [ ] Commit each logical task and push both repository branches.
 
 ## Definition of Done
 
-- Every Factor 1–15 has a passing executable check and stored evidence artifact.
+- Every Factor 1–16 has a passing executable check and stored evidence artifact.
 - No canonical environment or deployment path depends on an obsolete name.
 - Java 25 is the only JVM build baseline; GraalVM 25 native builds are explicit and fallback-disabled.
 - Backend/frontend releases are paired by immutable digest and source provenance.
@@ -981,5 +1089,6 @@ git commit -m "ci(release): enforce secure staged promotion and rollback"
 - Backend is cluster-internal and frontend is the public application boundary.
 - Staging deployment, telemetry, load, and rollback are verified.
 - Production deployment requires protected authorization and immutable release evidence.
+- Self-managed k3s dev/staging/prod infrastructure is Terraform-provisioned, backed up, upgradeable, observable, and rebuildable.
 - Gradle task groups and mise namespaces are standardized, documented, tested, and used consistently by local commands and CI.
 - Existing user worktree changes remain untouched.

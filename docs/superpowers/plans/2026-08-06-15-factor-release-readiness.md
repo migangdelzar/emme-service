@@ -14,7 +14,7 @@
 - Runtime is independently `jvm` or `native`; overlay names follow examples such as `dev-jvm`, `staging-native`, and `prod-jvm`.
 - `backend` is the canonical service name in Compose and Kubernetes; the image remains `ghcr.io/migangdelzar/emme-service`.
 - Compose is limited to `local` and `regression`; Kubernetes/Kustomize owns `dev`, `staging`, and `prod`.
-- Deployment topology is fixed for this release: K3d local, single-node k3s dev, Compose regression, single-node k3s staging, and three-server HA k3s production with worker nodes.
+- Deployment topology is fixed for this release: Compose local by default plus optional K3d local parity, single-node k3s dev, Compose regression, single-node k3s staging, and three-server HA k3s production with worker nodes.
 - The initial self-managed provider profile is Hetzner Cloud through the existing `infra/terraform` module; provider-specific details stay outside Kubernetes manifests.
 - Production k3s uses embedded etcd with an odd number of server nodes, encrypted snapshots, and a protected server token backup.
 - The bundled k3s Traefik controller owns external ingress; frontend Nginx owns browser-to-backend proxying; `backend` remains ClusterIP-only.
@@ -65,6 +65,7 @@
 - `deployment/compose/env/local.env.example` — non-secret local inputs.
 - `deployment/compose/env/regression.env.example` — non-secret regression inputs.
 - `infra/kubernetes/base/*` — shared service, frontend, Secret references, ingress, probes, policies, and telemetry.
+- `infra/kubernetes/local/*` — local K3d Kubernetes-parity overlay and disposable dependencies.
 - `infra/kubernetes/overlays/dev-jvm/*` and `dev-native/*` — development overlays.
 - `infra/kubernetes/overlays/staging-jvm/*` and `staging-native/*` — staging overlays.
 - `infra/kubernetes/overlays/prod-jvm/*` and `prod-native/*` — production overlays.
@@ -422,7 +423,7 @@ Replace the current `compile`, `test`, `quality`, `format-check`, `format-apply`
 
 - [ ] **Step 5: Migrate all callers and documentation**
 
-Update GitHub Actions, shell scripts, deployment documentation, architecture documentation, and developer instructions to use the new names. Use `EMME_ENV=local|regression` for Compose and `EMME_ENV=dev|staging|prod` for Kubernetes; use `EMME_RUNTIME=jvm|native` instead of encoding runtime in task names.
+Update GitHub Actions, shell scripts, deployment documentation, architecture documentation, and developer instructions to use the new names. Use `EMME_ENV=local|regression` for Compose and `EMME_ENV=local|dev|staging|prod` for Kubernetes; use `EMME_RUNTIME=jvm|native` instead of encoding runtime in task names.
 
 - [ ] **Step 6: Verify the complete task matrix**
 
@@ -999,7 +1000,7 @@ git commit -m "ci(release): enforce secure staged promotion and rollback"
 
 **Approved topology:**
 
-- K3d remains the local Kubernetes parity environment.
+- Local has two supported lanes: Compose is the default developer workflow; K3d is an explicit Kubernetes-parity workflow for early contract detection.
 - `dev` uses one self-managed k3s server node.
 - `regression` remains Docker Compose.
 - `staging` uses one self-managed k3s server node with production-like manifests and tested restore.
@@ -1009,7 +1010,7 @@ git commit -m "ci(release): enforce secure staged promotion and rollback"
 
 - [ ] **Step 1: Add failing topology and infrastructure contract tests**
 
-Add Node tests that validate the environment-to-topology matrix, require one server for dev/staging, require three servers plus workers for prod, reject public Kubernetes API exposure, require private server-to-server reachability, and reject an unpinned k3s installer. Add Terraform validation fixtures for required variables, firewall rules, backup configuration, and state backend policy.
+Add Node tests that validate the environment-to-topology matrix, require both local Compose and local K3d lanes, require one server for dev/staging, require three servers plus workers for prod, reject public Kubernetes API exposure, require private server-to-server reachability, and reject an unpinned k3s installer. Add Terraform validation fixtures for required variables, firewall rules, backup configuration, and state backend policy.
 
 - [ ] **Step 2: Run tests and confirm failure**
 
@@ -1043,6 +1044,8 @@ Schedule encrypted k3s etcd snapshots to S3-compatible storage and protect the s
 node --test scripts/validate-k3s-topology.test.mjs
 terraform -chdir=infra/terraform fmt -check
 terraform -chdir=infra/terraform validate
+EMME_ENV=local EMME_RUNTIME=jvm mise run compose:config
+EMME_ENV=local EMME_RUNTIME=jvm mise run kubernetes:render >/dev/null
 EMME_ENV=dev mise run kubernetes:status
 EMME_ENV=staging mise run kubernetes:status
 EMME_ENV=prod mise run kubernetes:status
@@ -1051,7 +1054,7 @@ EMME_ENV=staging mise run kubernetes:restore --dry-run
 EMME_ENV=prod mise run kubernetes:upgrade --dry-run
 ```
 
-Acceptance evidence must show one Ready server for dev/staging, three Ready server nodes and worker capacity for prod, no public port 6443, healthy TLS/Ingress, a valid etcd snapshot, a successful staging restore, and a production one-server failure rehearsal without loss of etcd quorum.
+Acceptance evidence must show successful local Compose configuration, successful local K3d rendering/apply smoke, one Ready server for dev/staging, three Ready server nodes and worker capacity for prod, no public port 6443, healthy TLS/Ingress, a valid etcd snapshot, a successful staging restore, and a production one-server failure rehearsal without loss of etcd quorum.
 
 - [ ] **Step 8: Commit**
 
@@ -1065,7 +1068,7 @@ git commit -m "ops(k3s): add self-managed deployment landing zones"
 - [ ] Run all service unit, integration, architecture, formatting, dependency, and security checks with Java 25.
 - [ ] Run GraalVM 25 `nativeCompile`, native startup, health, and smoke checks.
 - [ ] Run frontend typecheck, lint, unit tests, build, and proxy validator.
-- [ ] Validate local and regression Compose configuration.
+- [ ] Validate both local Compose and local K3d parity lanes, plus regression Compose configuration.
 - [ ] Render all six Kustomize runtime overlays.
 - [ ] Validate Secret contracts without printing values.
 - [ ] Validate both backend/frontend digests and release bundle.

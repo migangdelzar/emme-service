@@ -36,7 +36,7 @@ Frontend source and proxy configuration are not duplicated into `emme-service`. 
 
 | Environment | Runtime | Overlay/profile | Namespace/project | Artifact policy |
 |---|---|---|---|---|
-| `local` | Docker Compose JVM | `compose.local` | `emme-local` Compose project | Local build/tag |
+| `local` | Docker Compose JVM by default; optional K3d JVM/native parity lane | `compose.local` / `local-k3d` (`infra/kubernetes/local`) | `emme-local` Compose project or local K3d cluster | Local build/tag |
 | `dev` | Single-node self-managed k3s JVM or native | `dev-jvm` / `dev-native` | `emme-dev` | Development tag or digest |
 | `regression` | Docker Compose JVM; optional native lane | `compose.regression` | `emme-regression` Compose project | Candidate digest |
 | `staging` | Single-node self-managed k3s JVM or native | `staging-jvm` / `staging-native` | `emme-staging` | Promoted immutable digest |
@@ -147,7 +147,7 @@ Mise exposes namespaced commands whose names describe intent and target. The pub
 | `container:*` | `container:build`, `container:verify`, `container:push`, `container:multi-arch` | Immutable image references and release metadata. |
 | `release:*` | `release:validate`, `release:manifest`, `release:sbom`, `release:sign`, `release:promote`, `release:rollback` | Release bundle and explicit target. |
 | `compose:*` | `compose:config`, `compose:up`, `compose:down`, `compose:logs` | `EMME_ENV=local|regression`, optional `EMME_RUNTIME`. |
-| `kubernetes:*` | `kubernetes:bootstrap`, `kubernetes:render`, `kubernetes:apply`, `kubernetes:status`, `kubernetes:logs`, `kubernetes:rollback` | `EMME_ENV=dev|staging|prod`, `EMME_RUNTIME`, and cluster context. |
+| `kubernetes:*` | `kubernetes:bootstrap`, `kubernetes:render`, `kubernetes:apply`, `kubernetes:status`, `kubernetes:logs`, `kubernetes:rollback` | `EMME_ENV=local|dev|staging|prod`, `EMME_RUNTIME`, and cluster context. |
 | `e2e:*` | `e2e:provision`, `e2e:clean`, `e2e:reset`, `e2e:smoke` | Explicit environment and test data scope. |
 
 The old top-level mise names (`compile`, `test`, `quality`, `format-check`, `format-apply`, `architecture`, `arch-test`, `coverage`, `security-check`, and `build`) are migrated to the namespaced contract. Infrastructure-specific names (`k3d:*`, `k3s:*`) become `kubernetes:*` with `EMME_ENV` selecting the environment. Ambiguous `platform:*` tasks become `compose:*`, `container:*`, or `build:*` according to their actual intent. Because this service is unreleased, obsolete names are removed after all CI, documentation, and developer scripts are migrated; compatibility aliases are not retained indefinitely.
@@ -538,13 +538,13 @@ The approved topology is:
 
 | Environment | Platform | Topology | Primary purpose |
 |---|---|---|---|
-| `local` | K3d | Disposable local cluster | Developer Kubernetes parity |
+| `local` | Docker Compose plus optional K3d | Compose is the fast default; K3d is an early Kubernetes-parity lane | Daily development and early deployment-contract detection |
 | `dev` | Self-managed k3s | One server node | Fast shared development validation |
 | `regression` | Docker Compose | Disposable Compose project | Full REST/UI regression and release-candidate verification |
 | `staging` | Self-managed k3s | One server node with production-like manifests | Promotion, telemetry, load, and rollback rehearsal |
 | `prod` | Self-managed k3s | Three server nodes with embedded etcd plus worker nodes | High-availability production workload |
 
-The single-node dev/staging choice is intentional: it reduces cost and operational overhead, while staging must be rebuildable from Terraform and its data must be restorable from tested backups. Production uses an odd number of server nodes because embedded etcd requires quorum. Worker nodes run application workloads; control-plane nodes are tainted unless capacity evidence justifies otherwise.
+The dual local lanes are intentional: Compose gives developers a fast and debuggable default, while K3d detects Kubernetes-specific failures early. Both lanes exercise the same frontend-origin proxy contract. The single-node dev/staging choice reduces cost and operational overhead, while staging must be rebuildable from Terraform and its data must be restorable from tested backups. Production uses an odd number of server nodes because embedded etcd requires quorum. Worker nodes run application workloads; control-plane nodes are tainted unless capacity evidence justifies otherwise.
 
 Infrastructure and workload boundaries are:
 
@@ -573,7 +573,7 @@ Factor 16 requires these operational controls:
 13. Validate capacity, cost, resource requests/limits, and failure behavior before production authorization.
 14. Test a rebuild-from-zero in a clean account/project using only Terraform, bootstrap artifacts, backups, and the release bundle.
 
-The deployment target is accepted only when dev, staging, and production can be rendered and reconciled through the same `kubernetes:*` task interface, staging can be restored from backup, production survives one server-node failure without losing etcd quorum, and the release record contains the cluster, node, k3s, overlay, image digest, backup, and rollback evidence.
+The deployment target is accepted only when both local lanes pass their contract checks, dev/staging/production can be rendered and reconciled through the same `kubernetes:*` task interface, staging can be restored from backup, production survives one server-node failure without losing etcd quorum, and the release record contains the cluster, node, k3s, overlay, image digest, backup, and rollback evidence.
 
 ## 6. Verification Commands
 
@@ -588,6 +588,8 @@ mise run quality:all
 EMME_RUNTIME=jvm mise run build:package
 EMME_RUNTIME=native mise run build:native
 EMME_ENV=regression EMME_RUNTIME=jvm mise run compose:config
+EMME_ENV=local EMME_RUNTIME=jvm mise run compose:config
+EMME_ENV=local EMME_RUNTIME=jvm mise run kubernetes:render >/dev/null
 for env in dev staging prod; do
   for runtime in jvm native; do
     EMME_ENV="$env" EMME_RUNTIME="$runtime" mise run kubernetes:render >/dev/null

@@ -1,96 +1,160 @@
 package com.emme.e2eprovisioner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
 
 /**
- * Provisions a disposable E2E environment by calling the platform API.
+ * Provisions E2E tenants by calling the platform API.
  *
- * <p>Only Keycloak realm bootstrapping is direct (infrastructure setup).
- * Tenant creation, schema migration, and realm provisioning are handled
- * by the platform's event-driven provisioning chain via POST /api/tenants.
- * Uses java.net.http.HttpClient (zero dependencies beyond JDK).
+ * <p>Reads tenant templates from a JSON file. Creates a Keycloak realm + admin user
+ * for each tenant via the platform's Keycloak Admin API, then calls POST /api/tenants
+ * on the platform to trigger the event-driven provisioning chain (schema migration
+ * and realm provisioning handled by the platform).
+ *
+ * <p><strong>Prerequisites:</strong>
+ * <ul>
+ *   <li>PostgreSQL with emme_core schema migrated</li>
+ *   <li>Keycloak running with master realm admin accessible</li>
+ *   <li>Platform healthy on the configured URL</li>
+ * </ul>
+ *
+ * <p>Usage:
+ * <pre>
+ * java -cp ... com.emme.e2eprovisioner.E2eProvisionerApplication tenants.json
+ * </pre>
+ *
+ * <p>Template format:
+ * <pre>
+ * {
+ *   "platformUrl": "http://localhost:8081",
+ *   "keycloakUrl": "http://localhost:18080",
+ *   "keycloakAdminUsername": "admin",
+ *   "keycloakAdminPassword": "e2e-admin-password",
+ *   "databaseUrl": "jdbc:postgresql://localhost:5432/emme",
+ *   "databaseUsername": "emme",
+ *   "databasePassword": "emme",
+ *   "webOrigin": "http://localhost:3000",
+ *   "tenants": [
+ *     {
+ *       "slug": "e2e-studio",
+ *       "name": "E2E Studio",
+ *       "ownerUsername": "e2e-owner",
+ *       "ownerPassword": "E2e-Studio-Owner-2026!",
+ *       "ownerEmail": "e2e-owner@e2e-studio.local"
+ *     },
+ *     {
+ *       "slug": "e2e-salon",
+ *       "name": "E2E Salon",
+ *       "ownerUsername": "e2e-owner-salon",
+ *       "ownerPassword": "E2e-Salon-Owner-2026!",
+ *       "ownerEmail": "e2e-owner-salon@e2e-salon.local"
+ *     }
+ *   ]
+ * }
+ * </pre>
  */
 public final class E2eProvisionerApplication {
 
   private static final String API_VERSION = "1.0";
   private static final HttpClient HTTP = HttpClient.newBuilder()
       .connectTimeout(Duration.ofSeconds(10)).build();
-  private static final com.fasterxml.jackson.databind.ObjectMapper JSON =
-      new com.fasterxml.jackson.databind.ObjectMapper();
+  private static final ObjectMapper JSON = new ObjectMapper();
 
   private E2eProvisionerApplication() {}
 
   public static void main(String[] args) throws Exception {
-    var env = Environment.fromSystem();
-
-    System.out.println("E2E Provisioner — bootstrapping via platform API");
-    System.out.println("   platform: " + env.platformUrl);
-    System.out.println("   keycloak: " + env.keycloakUrl);
-
-    System.out.println("Done. Create tenants via:");
-    System.out.println("  curl -X POST " + env.platformUrl + "/api/tenants \\");
-    System.out.println("    -H 'Authorization: Bearer <token>' \\");
-    System.out.println("    -H 'API-Version: 1.0' \\");
-    System.out.println("    -d '{\"slug\":\"my-tenant\",\"name\":\"My Tenant\"}'");
-  }
-
-  private static HttpResponse<String> post(String url, String body, String token,
-      String tenantSlug) throws Exception {
-    var builder = HttpRequest.newBuilder()
-        .uri(URI.create(url))
-        .header("Content-Type", "application/json")
-        .header("API-Version", API_VERSION);
-    if (token != null) builder.header("Authorization", "Bearer " + token);
-    if (tenantSlug != null) builder.header("X-Tenant-Slug", tenantSlug);
-    var request = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
-    return HTTP.send(request, HttpResponse.BodyHandlers.ofString());
-  }
-
-  private static HttpResponse<String> get(String url, String token, String tenantSlug)
-      throws Exception {
-    var builder = HttpRequest.newBuilder()
-        .uri(URI.create(url))
-        .header("API-Version", API_VERSION);
-    if (token != null) builder.header("Authorization", "Bearer " + token);
-    if (tenantSlug != null) builder.header("X-Tenant-Slug", tenantSlug);
-    return HTTP.send(builder.GET().build(), HttpResponse.BodyHandlers.ofString());
-  }
-
-  private record Environment(
-      String keycloakUrl, String keycloakAdminUsername, String keycloakAdminPassword,
-      String ownerUsername, String ownerPassword,
-      String tenantSlug, String tenantName, String webOrigin,
-      String platformUrl, String databaseUrl, String databaseUsername, String databasePassword) {
-
-    static Environment fromSystem() {
-      return new Environment(
-          required("KEYCLOAK_URL", "http://127.0.0.1:18080"),
-          required("KEYCLOAK_ADMIN_USERNAME", "admin"),
-          required("KEYCLOAK_ADMIN_PASSWORD"),
-          required("E2E_OWNER_USERNAME"),
-          required("E2E_OWNER_PASSWORD"),
-          required("E2E_TENANT_SLUG", "e2e-studio"),
-          required("E2E_TENANT_NAME", "E2E Studio"),
-          required("E2E_WEB_ORIGIN", "http://localhost:3000"),
-          required("E2E_PLATFORM_URL", "http://127.0.0.1:8081"),
-          required("E2E_DATABASE_URL", "jdbc:postgresql://127.0.0.1:5432/emme"),
-          required("E2E_DATABASE_USERNAME", "emme"),
-          required("E2E_DATABASE_PASSWORD", "emme"));
+    var templatePath = args.length > 0 ? args[0] : "tenants-e2e.json";
+    var template = JSON.readTree(E2eProvisionerApplication.class
+        .getClassLoader().getResourceAsStream(templatePath));
+    if (template == null) {
+      System.err.println("Template not found: " + templatePath);
+      System.exit(1);
     }
 
-    private static String required(String name) {
-      var value = System.getenv(name);
-      if (value == null || value.isBlank()) throw new IllegalArgumentException(name + " must be configured");
-      return value;
+    var platformUrl = template.get("platformUrl").asText();
+    var keycloakUrl = template.get("keycloakUrl").asText();
+    var adminUser = template.get("keycloakAdminUsername").asText();
+    var adminPass = template.get("keycloakAdminPassword").asText();
+    var dbUrl = template.get("databaseUrl").asText();
+    var dbUser = template.get("databaseUsername").asText();
+    var dbPass = template.get("databasePassword").asText();
+    var webOrigin = template.get("webOrigin").asText();
+
+    var keycloak = new com.emme.e2eprovisioner.keycloak.HttpKeycloakAdminClient(
+        HTTP, JSON, keycloakUrl, adminUser, adminPass);
+
+    var ds = new org.springframework.jdbc.datasource.DriverManagerDataSource();
+    ds.setDriverClassName("org.postgresql.Driver");
+    ds.setUrl(dbUrl);
+    ds.setUsername(dbUser);
+    ds.setPassword(dbPass);
+    var seeder = com.emme.e2eprovisioner.tenant.JdbcTenantSeeder.create(ds);
+
+    System.out.println("=== E2E Provisioner ===");
+
+    for (var tenant : template.get("tenants")) {
+      var slug = tenant.get("slug").asText();
+      var name = tenant.get("name").asText();
+      var ownerUser = tenant.get("ownerUsername").asText();
+      var ownerPass = tenant.get("ownerPassword").asText();
+      var ownerEmail = tenant.get("ownerEmail").asText();
+      var schema = slug.replaceAll("[^a-z0-9-]", "").replace("-", "_");
+
+      System.out.println("\nProvisioning: " + slug);
+
+      // 1. Create Keycloak realm + admin user (infrastructure bootstrap)
+      var realmConfig = new com.emme.e2eprovisioner.keycloak.RealmConfiguration(
+          ownerUser, ownerPass, java.util.UUID.randomUUID(), slug, webOrigin);
+      var userRef = keycloak.provisionTenantOwner(realmConfig);
+
+      // 2. Seed tenant record in DB (needed for platform auth)
+      var tenantId = seeder.ensureTenant(slug, name);
+      seeder.cleanTenantData(tenantId, schema);
+      seeder.activateOwnerMembership(tenantId, userRef, schema);
+
+      // 3. Authenticate against platform
+      var loginBody = JSON.createObjectNode()
+          .put("email", ownerEmail)
+          .put("password", ownerPass);
+      var loginReq = HttpRequest.newBuilder()
+          .uri(URI.create(platformUrl + "/api/auth/login"))
+          .header("Content-Type", "application/json")
+          .header("API-Version", API_VERSION)
+          .header("X-Tenant-Slug", slug)
+          .POST(HttpRequest.BodyPublishers.ofString(loginBody.toString()))
+          .build();
+      var loginResp = HTTP.send(loginReq, HttpResponse.BodyHandlers.ofString());
+      if (loginResp.statusCode() != 200) {
+        System.err.println("  Auth failed for " + slug);
+        continue;
+      }
+      var token = JSON.readTree(loginResp.body()).get("accessToken").asText();
+
+      // 4. Create tenant via platform API (triggers event-driven provisioning)
+      var createBody = JSON.createObjectNode()
+          .put("slug", slug)
+          .put("name", name);
+      var createReq = HttpRequest.newBuilder()
+          .uri(URI.create(platformUrl + "/api/tenants"))
+          .header("Content-Type", "application/json")
+          .header("API-Version", API_VERSION)
+          .header("Authorization", "Bearer " + token)
+          .header("X-Tenant-Slug", "emme-core")
+          .POST(HttpRequest.BodyPublishers.ofString(createBody.toString()))
+          .build();
+      var createResp = HTTP.send(createReq, HttpResponse.BodyHandlers.ofString());
+      if (createResp.statusCode() >= 400 && createResp.statusCode() != 409) {
+        System.out.println("  API response: " + createResp.body());
+      }
+
+      System.out.println("  ✓ Provisioned: " + slug + " (" + tenantId + ")");
     }
 
-    private static String required(String name, String fallback) {
-      var value = System.getenv(name);
-      return value == null || value.isBlank() ? fallback : value;
-    }
+    System.out.println("\n=== Done ===");
   }
 }

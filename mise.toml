@@ -84,3 +84,87 @@ run = "kubectl kustomize infra/kubernetes/overlays/k3s-production-jvm"
 [tasks."k3s:render:native"]
 description = "Render the K3s production native-image manifests without applying them"
 run = "kubectl kustomize infra/kubernetes/overlays/k3s-production-native"
+
+[tasks."platform:up"]
+description = "Start the E2E platform stack (Postgres, Keycloak, Redis, Emme)"
+run = """
+docker-compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.environment-e2e.yaml \
+  up -d --wait
+"""
+
+[tasks."platform:down"]
+description = "Stop the E2E platform and remove volumes"
+run = """
+docker-compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.environment-e2e.yaml \
+  down -v
+"""
+
+[tasks."platform:build"]
+description = "Build the platform Docker image"
+run = "./gradlew :applications:emme-platform:bootBuildImage --no-configuration-cache"
+
+[tasks."platform:restart"]
+description = "Rebuild and restart the platform"
+run = """
+mise run platform:build && \
+docker tag emme-platform:0.1.0 emme-service:local-e2e && \
+EMME_SERVICE_IMAGE=emme-service:local-e2e docker-compose \
+  -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.environment-e2e.yaml \
+  up -d --force-recreate emme-platform
+"""
+
+[tasks."e2e:provision"]
+description = "Provision E2E tenants via the platform API"
+run = """
+KEYCLOAK_ADMIN_PASSWORD=e2e-admin-password \
+E2E_OWNER_USERNAME=e2e-owner \
+E2E_OWNER_PASSWORD=E2e-Studio-Owner-2026! \
+./gradlew :tools:e2e-provisioner:run --no-configuration-cache
+"""
+
+[tasks."e2e:provision:fast"]
+description = "Provision E2E tenants without rebuilding the provisioner jar"
+run = """
+KEYCLOAK_ADMIN_PASSWORD=e2e-admin-password \
+E2E_OWNER_USERNAME=e2e-owner \
+E2E_OWNER_PASSWORD=E2e-Studio-Owner-2026! \
+./gradlew :tools:e2e-provisioner:run --no-configuration-cache -x compileJava
+"""
+
+[tasks."e2e:clean"]
+description = "Remove E2E tenant data from DB and Keycloak"
+run = """
+docker exec compose-postgres-1 psql -U emme -d emme -c \
+  "DELETE FROM emme_core.membership; DELETE FROM emme_core.tenant_registry; DELETE FROM emme_core.tenant; DROP SCHEMA IF EXISTS e2e_studio CASCADE; DROP SCHEMA IF EXISTS e2e_salon CASCADE;" && \
+ADMIN_TOKEN=$$(curl -s -X POST 'http://localhost:18080/realms/master/protocol/openid-connect/token' -d 'grant_type=password&client_id=admin-cli&username=admin&password=e2e-admin-password' | python3 -c "import sys,json; print(json.load(sys.stdin).get('access_token',''))") && \
+for realm in emme-e2e-studio emme-e2e-salon; do \
+  curl -s -X DELETE "http://localhost:18080/admin/realms/$$realm" -H "Authorization: Bearer $$ADMIN_TOKEN" > /dev/null 2>&1; \
+done && \
+echo "E2E data cleaned"
+"""
+
+[tasks."e2e:smoke"]
+description = "Run the E2E real smoke tests"
+run = """
+cd ../emme-web/e2e/src && \
+E2E_MODE=real E2E_API_URL=http://localhost:8081 E2E_TENANT_SLUG=e2e-studio \
+bun run test:real -- --grep @smoke
+"""
+
+[tasks."e2e:all"]
+description = "Run all E2E tests (mock + real)"
+run = "cd ../emme-web && bun run test && cd e2e/src && bun run test && E2E_MODE=real E2E_API_URL=http://localhost:8081 E2E_TENANT_SLUG=e2e-studio bun run test:real"
+
+[tasks."ci:test"]
+description = "Run backend unit tests"
+run = "./gradlew test --no-configuration-cache"
+
+[tasks."ci:build"]
+description = "Full CI build (test + integration + build)"
+run = "./gradlew build --no-configuration-cache"

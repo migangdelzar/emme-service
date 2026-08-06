@@ -7,7 +7,7 @@ import java.util.UUID;
 /** Registry lifecycle capability required by the tenant provisioning process. */
 public interface TenantProvisioningRepository {
 
-  UUID requestProvisioning(String slug, String schemaName);
+  UUID requestProvisioning(UUID tenantId, String slug, String schemaName);
 
   TenantProvisioningStatus findStatus(UUID tenantId);
 

@@ -18,8 +18,9 @@ public class RequestTenantProvisioningService implements RequestTenantProvisioni
 
   @Override
   public UUID request(RequestTenantProvisioningCommand command) {
+    var tenantId = UUID.randomUUID();
     String schemaName =
         command.slug().replace('-', '_').replaceAll("[^a-z0-9_]", "_").toLowerCase();
-    return repository.requestProvisioning(command.slug(), schemaName);
+    return repository.requestProvisioning(tenantId, command.slug(), schemaName);
   }
 }

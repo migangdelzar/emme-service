@@ -11,8 +11,7 @@ class EnsureTenantMembershipService implements EnsureTenantMembershipUseCase {
 
   private final JdbcTemplate jdbc;
 
-  EnsureTenantMembershipService(
-      @Qualifier("bootstrapJdbcTemplate") JdbcTemplate jdbc) {
+  EnsureTenantMembershipService(@Qualifier("bootstrapJdbcTemplate") JdbcTemplate jdbc) {
     this.jdbc = jdbc;
   }
 

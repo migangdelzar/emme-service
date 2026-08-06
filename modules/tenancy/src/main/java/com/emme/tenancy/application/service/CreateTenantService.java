@@ -5,6 +5,7 @@ import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.CreateTenantUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
+import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
 import com.emme.tenancy.application.port.out.TenantRepository;
 import com.emme.tenancy.domain.model.Tenant;
 import java.util.UUID;
@@ -16,11 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CreateTenantService implements CreateTenantUseCase {
   private final TenantRepository repository;
+  private final TenantProvisioningRepository provisioningRepository;
   private final ApplicationEventPublisher eventPublisher;
 
   public CreateTenantService(
-      TenantRepository repository, ApplicationEventPublisher eventPublisher) {
+      TenantRepository repository,
+      TenantProvisioningRepository provisioningRepository,
+      ApplicationEventPublisher eventPublisher) {
     this.repository = repository;
+    this.provisioningRepository = provisioningRepository;
     this.eventPublisher = eventPublisher;
   }
 
@@ -31,13 +36,10 @@ public class CreateTenantService implements CreateTenantUseCase {
           "Tenant with slug '" + command.slug() + "' already exists");
     }
     Tenant saved = repository.save(new Tenant(command.slug(), command.name()));
+    var schemaName = command.slug().replace("-", "_");
+    provisioningRepository.requestProvisioning(saved.id(), command.slug(), schemaName);
     eventPublisher.publishEvent(
-        new TenantCreated(
-            UUID.randomUUID(),
-            saved.id(),
-            saved.slug(),
-            saved.name(),
-            "admin@" + saved.slug() + ".emme.app"));
+        new TenantCreated(UUID.randomUUID(), saved.id(), saved.slug(), saved.name()));
     return TenantApplicationMapper.toResult(saved);
   }
 }

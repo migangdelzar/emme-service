@@ -1,79 +1,71 @@
 package com.emme.tenancy.adapter.out.persistence.adapter;
 
+import com.emme.tenancy.adapter.out.persistence.entity.TenantRegistryEntity;
+import com.emme.tenancy.adapter.out.persistence.repository.SpringDataTenantRegistryRepository;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-/** Implements tenant provisioning registry lifecycle operations with JDBC. */
 @Component
-public final class TenantProvisioningPersistenceAdapter implements TenantProvisioningRepository {
+@Transactional
+public class TenantProvisioningPersistenceAdapter implements TenantProvisioningRepository {
 
-  private final JdbcTemplate jdbc;
+  private final SpringDataTenantRegistryRepository repository;
 
-  public TenantProvisioningPersistenceAdapter(JdbcTemplate jdbc) {
-    this.jdbc = jdbc;
+  public TenantProvisioningPersistenceAdapter(SpringDataTenantRegistryRepository repository) {
+    this.repository = repository;
   }
 
   @Override
-  public UUID requestProvisioning(String slug, String schemaName) {
-    return jdbc.queryForObject(
-        "INSERT INTO emme_core.tenant_registry (slug, schema_name, status) VALUES (?, ?, 'PROVISIONING') "
-            + "ON CONFLICT (slug) DO UPDATE SET updated_at = now() "
-            + "WHERE emme_core.tenant_registry.schema_name = EXCLUDED.schema_name "
-            + "RETURNING tenant_id",
-        UUID.class,
-        slug,
-        schemaName);
+  public UUID requestProvisioning(UUID tenantId, String slug, String schemaName) {
+    repository.findBySlug(slug).ifPresentOrElse(
+        existing -> {},
+        () -> repository.save(new TenantRegistryEntity(tenantId, slug, schemaName, "PROVISIONING")));
+    return tenantId;
   }
 
   @Override
   public TenantProvisioningStatus findStatus(UUID tenantId) {
-    return jdbc.queryForObject(
-        "SELECT status, schema_name, last_migrated_at, migration_error FROM emme_core.tenant_registry WHERE tenant_id = ?",
-        (rs, rowNum) ->
-            new TenantProvisioningStatus(
-                rs.getString("status"),
-                rs.getString("schema_name"),
-                rs.getTimestamp("last_migrated_at") != null
-                    ? rs.getTimestamp("last_migrated_at").toInstant()
-                    : null,
-                rs.getString("migration_error")),
-        tenantId);
+    return repository.findByTenantId(tenantId)
+        .map(e -> new TenantProvisioningStatus(
+            e.getStatus(), e.getSchemaName(), e.getLastMigratedAt(), e.getMigrationError()))
+        .orElseThrow(() -> new IllegalArgumentException("Tenant registry not found: " + tenantId));
   }
 
   @Override
   public List<TenantProvisioningRequest> findPending() {
-    return jdbc.query(
-        "SELECT tenant_id, slug, schema_name FROM emme_core.tenant_registry WHERE status = 'PROVISIONING'",
-        (rs, rowNum) ->
-            new TenantProvisioningRequest(
-                rs.getObject("tenant_id", UUID.class),
-                rs.getString("slug"),
-                rs.getString("schema_name")));
+    return repository.findByStatus("PROVISIONING").stream()
+        .map(e -> new TenantProvisioningRequest(e.getTenantId(), e.getSlug(), e.getSchemaName()))
+        .toList();
   }
 
   @Override
   public void markActive(UUID tenantId) {
-    jdbc.update(
-        "UPDATE emme_core.tenant_registry SET status = 'ACTIVE', schema_version = '0.1.0', last_migrated_at = now(), migration_error = NULL, updated_at = now() WHERE tenant_id = ?",
-        tenantId);
+    repository.findByTenantId(tenantId).ifPresent(entity -> {
+      entity.setStatus("ACTIVE");
+      entity.setSchemaVersion("0.1.0");
+      entity.setLastMigratedAt(Instant.now());
+      entity.setMigrationError(null);
+      repository.save(entity);
+    });
   }
 
   @Override
   public void markFailed(UUID tenantId, String error) {
-    jdbc.update(
-        "UPDATE emme_core.tenant_registry SET status = 'FAILED', migration_error = ?, updated_at = now() WHERE tenant_id = ?",
-        error,
-        tenantId);
+    repository.findByTenantId(tenantId).ifPresent(entity -> {
+      entity.setStatus("FAILED");
+      entity.setMigrationError(error);
+      repository.save(entity);
+    });
   }
 
   @Override
   public String findSchemaName(UUID tenantId) {
-    return jdbc.queryForObject(
-        "SELECT schema_name FROM emme_core.tenant_registry WHERE tenant_id = ?::uuid",
-        String.class,
-        tenantId.toString());
+    return repository.findByTenantId(tenantId)
+        .map(TenantRegistryEntity::getSchemaName)
+        .orElseThrow(() -> new IllegalArgumentException("Tenant registry not found: " + tenantId));
   }
 }

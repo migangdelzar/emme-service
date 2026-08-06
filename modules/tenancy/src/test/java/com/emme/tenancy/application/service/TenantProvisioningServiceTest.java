@@ -2,6 +2,7 @@ package com.emme.tenancy.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 
 import com.emme.tenancy.api.command.RequestTenantProvisioningCommand;
@@ -13,6 +14,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.ArgumentMatchers;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,7 +25,7 @@ class TenantProvisioningServiceTest {
   @Test
   void delegatesProvisioningRequestCreationToTheRepositoryPort() {
     UUID tenantId = UUID.randomUUID();
-    when(provisioningRepository.requestProvisioning("studio-a", "studio_a")).thenReturn(tenantId);
+    when(provisioningRepository.requestProvisioning(org.mockito.ArgumentMatchers.any(), eq("studio-a"), eq("studio_a"))).thenReturn(tenantId);
     RequestTenantProvisioningService service =
         new RequestTenantProvisioningService(provisioningRepository);
 
@@ -33,7 +35,7 @@ class TenantProvisioningServiceTest {
                 "studio-a", "Studio A", "America/Mexico_City", "en"));
 
     assertThat(result).isEqualTo(tenantId);
-    verify(provisioningRepository).requestProvisioning("studio-a", "studio_a");
+    verify(provisioningRepository).requestProvisioning(org.mockito.ArgumentMatchers.any(), eq("studio-a"), eq("studio_a"));
   }
 
   @Test

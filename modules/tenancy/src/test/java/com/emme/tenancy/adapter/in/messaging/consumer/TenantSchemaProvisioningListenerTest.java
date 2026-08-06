@@ -29,7 +29,7 @@ class TenantSchemaProvisioningListenerTest {
     UUID tenantId = UUID.randomUUID();
     TenantCreated event =
         new TenantCreated(
-            UUID.randomUUID(), tenantId, "test-studio", "Test Studio", "admin@test.com");
+            UUID.randomUUID(), tenantId, "test-studio", "Test Studio");
     when(schemaMigrationPort.migrate(tenantId, "test-studio")).thenReturn("test_studio");
 
     listener.onTenantCreated(event);
@@ -46,7 +46,7 @@ class TenantSchemaProvisioningListenerTest {
   void onTenantCreated_marksFailedAndRethrows_onException() {
     UUID tenantId = UUID.randomUUID();
     TenantCreated event =
-        new TenantCreated(UUID.randomUUID(), tenantId, "test", "Test", "admin@test.com");
+        new TenantCreated(UUID.randomUUID(), tenantId, "test", "Test");
     RuntimeException ex = new RuntimeException("DB down");
     when(schemaMigrationPort.migrate(tenantId, "test")).thenThrow(ex);
 

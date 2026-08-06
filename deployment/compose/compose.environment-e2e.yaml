@@ -27,13 +27,14 @@ services:
       # Browser-issued tokens carry the host-facing issuer. The container uses
       # the internal JWK endpoint below for key retrieval while validating that
       # externally observable issuer claim.
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: ${E2E_KEYCLOAK_ISSUER_URI:-http://127.0.0.1:18080/realms/emme-e2e-studio}
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/emme-e2e-studio/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/emme-core
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/emme-core/protocol/openid-connect/certs
       APP_KEYCLOAK_BASE_URL: http://keycloak:8080
-      APP_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/emme-e2e-studio
+      APP_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/emme-core
       APP_KEYCLOAK_JWK_SET_BASE_URL: http://keycloak:8080
       APP_KEYCLOAK_ADMIN_PASSWORD: ${EMME_E2E_KEYCLOAK_ADMIN_PASSWORD:-e2e-admin-password}
       APP_KEYCLOAK_PROVISIONING_ENABLED: "true"
+      APP_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_PASSWORD: "E2e-Tenant-Admin-2026!"
       APP_TENANT_PROVISIONING_ENABLED: "true"
       APP_IDENTITY_LOGIN_RATE_LIMIT_MAX_ATTEMPTS: "20"
       GOOGLE_TOKEN_ENCRYPTION_KEY: e2e-token-encryption-32-byte-key
@@ -42,7 +43,7 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_AUTHORIZATION_GRANT_TYPE: authorization_code
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_SCOPE: openid,profile,email
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_REDIRECT_URI: '{baseUrl}/login/oauth2/code/{registrationId}'
-      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/emme-e2e-studio
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/emme-core
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,7 +59,7 @@ services:
     ports:
       - "18080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /realms/master/.well-known/openid-configuration HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q issuer || exit 1"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /realms/emme-core/.well-known/openid-configuration HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q issuer || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10

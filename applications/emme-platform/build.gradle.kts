@@ -53,6 +53,8 @@ dependencies {
   implementation(project(":modules:shared"))
   implementation(project(":modules:tenancy"))
   implementation(project(":modules:identity"))
+  // Liquibase changelogs for runtime tenant schema provisioning
+  runtimeOnly(project(":database"))
   implementation(project(":modules:clients"))
   implementation(project(":modules:staffing"))
   implementation(project(":modules:services"))

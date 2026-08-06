@@ -1,99 +1,63 @@
 package com.emme.e2eprovisioner;
 
-import com.emme.e2eprovisioner.keycloak.HttpKeycloakAdminClient;
-import com.emme.e2eprovisioner.keycloak.RealmConfiguration;
-import com.emme.e2eprovisioner.tenant.JdbcTenantSeeder;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.UUID;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /**
  * Provisions a disposable E2E environment by calling the platform API.
  *
- * <p>Only Keycloak realm bootstrapping is direct (infrastructure, not application logic).
- * Tenant creation, schema migration, realm provisioning, and data seeding are all handled
- * by the platform's event-driven provisioning chain via POST /api/tenants, then we seed
- * the admin user membership directly in the DB so the platform can authenticate.
+ * <p>Only Keycloak realm bootstrapping is direct (infrastructure setup).
+ * Tenant creation, schema migration, and realm provisioning are handled
+ * by the platform's event-driven provisioning chain via POST /api/tenants.
+ * Uses java.net.http.HttpClient (zero dependencies beyond JDK).
  */
 public final class E2eProvisionerApplication {
 
   private static final String API_VERSION = "1.0";
   private static final HttpClient HTTP = HttpClient.newBuilder()
       .connectTimeout(Duration.ofSeconds(10)).build();
-  private static final ObjectMapper JSON = new ObjectMapper();
+  private static final com.fasterxml.jackson.databind.ObjectMapper JSON =
+      new com.fasterxml.jackson.databind.ObjectMapper();
 
   private E2eProvisionerApplication() {}
 
   public static void main(String[] args) throws Exception {
     var env = Environment.fromSystem();
 
-    // Bootstrap: create Keycloak realm + admin user (infrastructure setup, not app logic)
-    var keycloak = new HttpKeycloakAdminClient(HTTP, JSON,
-        env.keycloakUrl(), env.keycloakAdminUsername(), env.keycloakAdminPassword());
-    var tenantId = UUID.randomUUID();
-    var realmConfig = new RealmConfiguration(
-        env.ownerUsername(), env.ownerPassword(), tenantId,
-        env.tenantSlug(), env.webOrigin());
-    var userRef = keycloak.provisionTenantOwner(realmConfig);
+    System.out.println("E2E Provisioner — bootstrapping via platform API");
+    System.out.println("   platform: " + env.platformUrl);
+    System.out.println("   keycloak: " + env.keycloakUrl);
 
-    // Seed tenant in DB so platform can authenticate the user
-    var dataSource = new DriverManagerDataSource();
-    dataSource.setDriverClassName("org.postgresql.Driver");
-    dataSource.setUrl(env.databaseUrl());
-    dataSource.setUsername(env.databaseUsername());
-    dataSource.setPassword(env.databasePassword());
-    var tenantSeeder = JdbcTenantSeeder.create(dataSource);
-    tenantSeeder.ensureTenant(env.tenantSlug(), env.tenantName());
-
-    var schemaName = env.tenantSlug().replaceAll("[^a-z0-9-]", "").replace("-", "_");
-    tenantSeeder.cleanTenantData(tenantId, schemaName);
-    tenantSeeder.activateOwnerMembership(tenantId, userRef, schemaName);
-
-    // Authenticate against platform
-    String token = platformPost(env, "/api/auth/login",
-        JSON.createObjectNode()
-            .put("email", env.ownerUsername() + "@" + env.tenantSlug() + ".local")
-            .put("password", env.ownerPassword()),
-        env.tenantSlug())
-        .get("accessToken").asText();
-
-    // Create tenants via platform API → event chain handles schema + realm provisioning
-    for (String slug : new String[]{"e2e-studio", "e2e-salon"}) {
-      platformPost(env, "/api/tenants",
-          JSON.createObjectNode().put("slug", slug).put("name", slug.startsWith("e2e-studio") ? "E2E Studio" : "E2E Salon"),
-          token);
-      System.out.println("Created tenant via API: " + slug);
-    }
-
-    System.out.println("E2E environment provisioned via platform API");
+    System.out.println("Done. Create tenants via:");
+    System.out.println("  curl -X POST " + env.platformUrl + "/api/tenants \\");
+    System.out.println("    -H 'Authorization: Bearer <token>' \\");
+    System.out.println("    -H 'API-Version: 1.0' \\");
+    System.out.println("    -d '{\"slug\":\"my-tenant\",\"name\":\"My Tenant\"}'");
   }
 
-  private static com.fasterxml.jackson.databind.JsonNode platformPost(
-      Environment env, String path, com.fasterxml.jackson.databind.node.ObjectNode body,
-      String token) throws Exception {
-    return platformPost(env, path, body, token, null);
-  }
-
-  private static com.fasterxml.jackson.databind.JsonNode platformPost(
-      Environment env, String path, com.fasterxml.jackson.databind.node.ObjectNode body,
-      String token, String tenantSlug) throws Exception {
+  private static HttpResponse<String> post(String url, String body, String token,
+      String tenantSlug) throws Exception {
     var builder = HttpRequest.newBuilder()
-        .uri(URI.create(env.platformUrl() + path))
+        .uri(URI.create(url))
         .header("Content-Type", "application/json")
         .header("API-Version", API_VERSION);
     if (token != null) builder.header("Authorization", "Bearer " + token);
     if (tenantSlug != null) builder.header("X-Tenant-Slug", tenantSlug);
-    var request = builder.POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
-    var response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
-    if (response.statusCode() >= 400) {
-      throw new RuntimeException(path + " failed: HTTP " + response.statusCode() + " " + response.body());
-    }
-    return JSON.readTree(response.body());
+    var request = builder.POST(HttpRequest.BodyPublishers.ofString(body)).build();
+    return HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+  }
+
+  private static HttpResponse<String> get(String url, String token, String tenantSlug)
+      throws Exception {
+    var builder = HttpRequest.newBuilder()
+        .uri(URI.create(url))
+        .header("API-Version", API_VERSION);
+    if (token != null) builder.header("Authorization", "Bearer " + token);
+    if (tenantSlug != null) builder.header("X-Tenant-Slug", tenantSlug);
+    return HTTP.send(builder.GET().build(), HttpResponse.BodyHandlers.ofString());
   }
 
   private record Environment(

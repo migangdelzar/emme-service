@@ -16,11 +16,9 @@ import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for the current-user read workflow. */
 @Service
-@Transactional(readOnly = true)
 public class GetCurrentUserService implements GetCurrentUserUseCase {
 
   private final GetCurrentUserMembershipsUseCase memberships;
@@ -49,10 +47,14 @@ public class GetCurrentUserService implements GetCurrentUserUseCase {
             .toList();
 
     UUID selectedTenantId = selectedTenantId(membershipResults, query.selectedTenantId());
-    BusinessProfileSummary profile =
-        selectedTenantId == null
-            ? null
-            : businessProfiles.getBusinessProfile(selectedTenantId).orElse(null);
+    BusinessProfileSummary profile = null;
+    if (selectedTenantId != null) {
+      try {
+        profile = businessProfiles.getBusinessProfile(selectedTenantId).orElse(null);
+      } catch (Exception ignored) {
+        // Business profile not available for this tenant
+      }
+    }
 
     return new CurrentUserDetails(
         query.userId(), query.email(), query.displayName(), membershipDetails, profile);

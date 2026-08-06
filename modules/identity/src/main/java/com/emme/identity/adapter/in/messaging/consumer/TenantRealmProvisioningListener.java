@@ -6,6 +6,7 @@ import com.emme.identity.application.port.out.IdentityRealmProvisioningSettings;
 import com.emme.identity.application.port.out.TenantIdentityRealmPort;
 import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.api.event.TenantSchemaReady;
+import com.emme.tenancy.api.usecase.EnsureTenantMembershipUseCase;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,16 +30,19 @@ public class TenantRealmProvisioningListener {
   private final TenantIdentityRealmPort tenantIdentityRealmPort;
   private final IdentityRealmProvisioningSettings settings;
   private final ApplicationEventPublisher eventPublisher;
+  private final EnsureTenantMembershipUseCase ensureMembership;
 
   public TenantRealmProvisioningListener(
       IdentityProviderAdministrationPort administrationPort,
       TenantIdentityRealmPort tenantIdentityRealmPort,
       IdentityRealmProvisioningConfigurationPort configuration,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      EnsureTenantMembershipUseCase ensureMembership) {
     this.administrationPort = administrationPort;
     this.tenantIdentityRealmPort = tenantIdentityRealmPort;
     this.settings = configuration.settings();
     this.eventPublisher = eventPublisher;
+    this.ensureMembership = ensureMembership;
   }
 
   @ApplicationModuleListener
@@ -60,12 +64,12 @@ public class TenantRealmProvisioningListener {
 
       String adminUsername = settings.initialAdminUsername();
       String adminEmail = adminUsername + "@" + event.slug() + ".local";
-      administrationPort.createUser(
-          realm,
-          adminUsername,
-          adminEmail,
-          settings.initialAdminPassword(),
-          settings.initialAdminRole());
+      String userReference =
+          administrationPort.createUser(
+              realm, adminUsername, adminEmail,
+              settings.initialAdminPassword(), settings.initialAdminRole());
+
+      ensureMembership.ensure(event.tenantId(), userReference, settings.initialAdminRole());
 
       tenantIdentityRealmPort.updateRealm(event.tenantId(), realm);
       log.info("Keycloak realm {} provisioned for tenant {}", realm, event.tenantId());
@@ -77,4 +81,5 @@ public class TenantRealmProvisioningListener {
       throw new RuntimeException("Failed to provision realm for tenant " + event.slug(), e);
     }
   }
+
 }

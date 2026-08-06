@@ -7,8 +7,6 @@ import com.emme.identity.api.result.CurrentUserDetails;
 import com.emme.identity.api.result.MembershipDetails;
 import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
-import com.emme.salon.api.result.BusinessProfileSummary;
-import com.emme.salon.api.usecase.GetBusinessProfileUseCase;
 import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.util.List;
@@ -40,12 +38,9 @@ class GetCurrentUserServiceTest {
                     "ACTIVE",
                     "DEDICATED",
                     "emme-tenant"));
-    GetBusinessProfileUseCase profiles =
-        requestedTenantId ->
-            Optional.of(new BusinessProfileSummary(requestedTenantId, "Studio", "en-US"));
 
     GetCurrentUserService service =
-        new GetCurrentUserService(memberships, permissions, tenants, profiles);
+        new GetCurrentUserService(memberships, permissions, tenants);
 
     CurrentUserDetails result =
         service.get(new GetCurrentUserQuery("user-1", "user@example.com", "User", tenantId));
@@ -53,6 +48,6 @@ class GetCurrentUserServiceTest {
     assertThat(result.userId()).isEqualTo("user-1");
     assertThat(result.memberships()).hasSize(1);
     assertThat(result.memberships().getFirst().permissions()).containsExactly("tenant:read");
-    assertThat(result.profile()).isEqualTo(new BusinessProfileSummary(tenantId, "Studio", "en-US"));
+    assertThat(result.profile()).isNull();
   }
 }

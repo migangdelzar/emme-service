@@ -8,35 +8,28 @@ import com.emme.identity.api.result.MembershipDetails;
 import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetCurrentUserUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
-import com.emme.salon.api.result.BusinessProfileSummary;
-import com.emme.salon.api.usecase.GetBusinessProfileUseCase;
 import com.emme.tenancy.api.query.GetTenantQuery;
 import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for the current-user read workflow. */
 @Service
-@Transactional(readOnly = true, noRollbackFor = Exception.class)
 public class GetCurrentUserService implements GetCurrentUserUseCase {
 
   private final GetCurrentUserMembershipsUseCase memberships;
   private final GetUserPermissionsUseCase permissions;
   private final GetTenantUseCase tenants;
-  private final GetBusinessProfileUseCase businessProfiles;
 
   public GetCurrentUserService(
       GetCurrentUserMembershipsUseCase memberships,
       GetUserPermissionsUseCase permissions,
-      GetTenantUseCase tenants,
-      GetBusinessProfileUseCase businessProfiles) {
+      GetTenantUseCase tenants) {
     this.memberships = memberships;
     this.permissions = permissions;
     this.tenants = tenants;
-    this.businessProfiles = businessProfiles;
   }
 
   @Override
@@ -49,17 +42,9 @@ public class GetCurrentUserService implements GetCurrentUserUseCase {
             .toList();
 
     UUID selectedTenantId = selectedTenantId(membershipResults, query.selectedTenantId());
-    BusinessProfileSummary profile = null;
-    if (selectedTenantId != null) {
-      try {
-        profile = businessProfiles.getBusinessProfile(selectedTenantId).orElse(null);
-      } catch (Exception ignored) {
-        // Business profile not available for this tenant
-      }
-    }
 
     return new CurrentUserDetails(
-        query.userId(), query.email(), query.displayName(), membershipDetails, profile);
+        query.userId(), query.email(), query.displayName(), membershipDetails, null);
   }
 
   private CurrentUserMembershipDetails toMembershipDetails(

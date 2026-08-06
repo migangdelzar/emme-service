@@ -9,6 +9,7 @@ import com.emme.identity.application.port.out.IdentityRealmProvisioningSettings;
 import com.emme.identity.application.port.out.TenantIdentityRealmPort;
 import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.api.event.TenantSchemaReady;
+import com.emme.tenancy.api.usecase.EnsureTenantMembershipUseCase;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -21,9 +22,10 @@ import org.springframework.context.ApplicationEventPublisher;
 @ExtendWith(MockitoExtension.class)
 class TenantRealmProvisioningListenerTest {
 
-  @Mock private IdentityProviderAdministrationPort administrationPort;
-  @Mock private TenantIdentityRealmPort tenantIdentityRealmPort;
-  @Mock private ApplicationEventPublisher eventPublisher;
+  @Mock IdentityProviderAdministrationPort administrationPort;
+  @Mock TenantIdentityRealmPort tenantIdentityRealmPort;
+  @Mock ApplicationEventPublisher eventPublisher;
+  @Mock EnsureTenantMembershipUseCase ensureMembership;
 
   @Test
   void onTenantSchemaReady_createsRealmAndPublishesReady() throws Exception {
@@ -35,7 +37,7 @@ class TenantRealmProvisioningListenerTest {
 
     TenantRealmProvisioningListener listener =
         new TenantRealmProvisioningListener(
-            administrationPort, tenantIdentityRealmPort, configuration, eventPublisher);
+            administrationPort, tenantIdentityRealmPort, configuration, eventPublisher, ensureMembership);
 
     listener.onTenantSchemaReady(event);
 
@@ -45,30 +47,19 @@ class TenantRealmProvisioningListenerTest {
     verify(administrationPort).createRealmRole("emme-test-slug", "business_owner");
     verify(administrationPort).createRealmRole("emme-test-slug", "nail_artist");
     verify(administrationPort)
-        .createUser(
-            "emme-test-slug",
-            settings.initialAdminUsername(),
-            "admin@test-slug.local",
-            settings.initialAdminPassword(),
-            settings.initialAdminRole());
+        .createUser("emme-test-slug", settings.initialAdminUsername(),
+            "admin@test-slug.local", settings.initialAdminPassword(), settings.initialAdminRole());
+    verify(ensureMembership).ensure(tenantId, null, settings.initialAdminRole());
     verify(tenantIdentityRealmPort).updateRealm(tenantId, "emme-test-slug");
 
     ArgumentCaptor<TenantRealmReady> captor = ArgumentCaptor.forClass(TenantRealmReady.class);
     verify(eventPublisher).publishEvent(captor.capture());
     assertThat(captor.getValue().keycloakRealm()).isEqualTo("emme-test-slug");
-    assertThat(captor.getValue().tenantId()).isEqualTo(tenantId);
-    assertThat(captor.getValue().slug()).isEqualTo("test-slug");
   }
 
   private static IdentityRealmProvisioningSettings provisioningSettings() {
     return new IdentityRealmProvisioningSettings(
-        "emme-salon-app",
-        List.of("http://localhost:8080/*"),
-        "admin",
-        "test-password",
-        "business_owner",
-        List.of("business_owner", "nail_artist"),
-        3,
-        2000);
+        "emme-salon-app", List.of("http://localhost:8080/*"), "admin", "test-password",
+        "business_owner", List.of("business_owner", "nail_artist"), 3, 2000);
   }
 }

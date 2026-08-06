@@ -116,6 +116,68 @@ Bitwarden and GitHub Actions are source providers. A provider-specific resolver 
 
 Java build execution uses Temurin 25. Native compilation uses an explicit GraalVM Community 25 installation supplied through `GRAALVM_HOME`/`JAVA_HOME`; Native Build Tools automatic vendor detection is not the release contract. Native fallback remains disabled.
 
+## 4.2 Gradle, mise, and configuration standard
+
+Gradle is the canonical implementation and CI API for backend behavior. `mise` is the stable developer-facing and operator-facing command API. A mise task may select tools, normalize environment variables, and delegate to Gradle, Compose, Kustomize, or a release script, but it must not contain a second implementation of backend build logic.
+
+Gradle task identifiers use conventional camelCase names and are grouped by their `group` metadata. They must remain stable across environments:
+
+| Gradle group | Canonical tasks | Contract |
+|---|---|---|
+| `environment` | `verifyEnvironment`, `environmentReport` | Validate and report the canonical environment contract. |
+| `quality` | `spotlessCheck`, `spotlessApply`, `architectureTest`, `coverageCheck`, `securityScan`, `apiCheck` | Formatting, architecture, coverage, dependency/security, and API gates. |
+| `build` | `compileJava`, `test`, `integrationTest`, `e2eTest`, `build`, `ci`, `full` | JVM compilation, tests, packaging, and aggregate gates. |
+| `native` | `nativeCompile`, `nativeTest` | Explicit GraalVM 25 Native Image lane; no JVM fallback. |
+| `container` | `containerBuild`, `containerPush`, `containerVerify`, `containerMultiArch` | Image construction, publication, verification, and multi-architecture output. |
+| `release` | `publishBuildInfo`, `publishManifest`, `publishVerifyVersion`, `publishSign`, `publishSbom` | Release metadata, signing, version, and SBOM artifacts. |
+| `deploy` | `deployUp`, `deployDown`, `deployApply`, `deployStatus`, `deployLogs` | Environment-aware deployment operations. |
+
+Existing task implementations are renamed or grouped to satisfy this table; new lifecycle tasks must compose existing tasks instead of duplicating their shell commands. Gradle task names must not encode an infrastructure vendor (`k3d`, `k3s`) or an obsolete environment (`production`).
+
+Mise exposes namespaced commands whose names describe intent and target. The public task contract is:
+
+| Mise namespace | Examples | Required inputs |
+|---|---|---|
+| `toolchain:*` | `toolchain:jvm`, `toolchain:native` | Toolchain lane only. |
+| `env:*` | `env:verify`, `env:report` | `EMME_ENV`. |
+| `docs:*` | `docs:check` | None beyond the checkout. |
+| `quality:*` | `quality:format:check`, `quality:format:apply`, `quality:architecture`, `quality:coverage`, `quality:security`, `quality:all` | `EMME_ENV` only when a gate is environment-aware. |
+| `build:*` | `build:compile`, `build:test`, `build:integration`, `build:e2e`, `build:package`, `build:native` | `EMME_RUNTIME` where applicable. |
+| `container:*` | `container:build`, `container:verify`, `container:push`, `container:multi-arch` | Immutable image references and release metadata. |
+| `release:*` | `release:validate`, `release:manifest`, `release:sbom`, `release:sign`, `release:promote`, `release:rollback` | Release bundle and explicit target. |
+| `compose:*` | `compose:config`, `compose:up`, `compose:down`, `compose:logs` | `EMME_ENV=local|regression`, optional `EMME_RUNTIME`. |
+| `kubernetes:*` | `kubernetes:bootstrap`, `kubernetes:render`, `kubernetes:apply`, `kubernetes:status`, `kubernetes:logs`, `kubernetes:rollback` | `EMME_ENV=dev|staging|prod`, `EMME_RUNTIME`, and cluster context. |
+| `e2e:*` | `e2e:provision`, `e2e:clean`, `e2e:reset`, `e2e:smoke` | Explicit environment and test data scope. |
+
+The old top-level mise names (`compile`, `test`, `quality`, `format-check`, `format-apply`, `architecture`, `arch-test`, `coverage`, `security-check`, and `build`) are migrated to the namespaced contract. Infrastructure-specific names (`k3d:*`, `k3s:*`) become `kubernetes:*` with `EMME_ENV` selecting the environment. Ambiguous `platform:*` tasks become `compose:*`, `container:*`, or `build:*` according to their actual intent. Because this service is unreleased, obsolete names are removed after all CI, documentation, and developer scripts are migrated; compatibility aliases are not retained indefinitely.
+
+The shared configuration contract is:
+
+```text
+EMME_ENV=local|dev|regression|staging|prod
+EMME_RUNTIME=jvm|native
+EMME_DEPLOYMENT_TARGET=compose|kubernetes
+EMME_SECRETS_PROVIDER=bitwarden|github-actions|environment
+EMME_BACKEND_IMAGE=<immutable image reference>
+EMME_FRONTEND_IMAGE=<immutable image reference>
+EMME_RELEASE_BUNDLE=<release bundle path or identifier>
+```
+
+The corresponding Gradle properties are `-Penvironment`, `-Pdeployment.runtime`, `-Pdeployment.target`, `-Psecrets.provider`, `-Pbackend.image`, `-Pfrontend.image`, and `-Prelease.bundle`. Mise tasks translate environment variables to these properties in one shared helper; CI invokes the same mise commands or the same Gradle tasks with the same values. `EMME_SECRETS_PROVIDER=environment` is permitted only for `local` and `regression` and must never be accepted by staging or production tasks.
+
+Configuration ownership is deliberately non-overlapping:
+
+| Layer | Owns | Must not own |
+|---|---|---|
+| `mise.toml` | Tool versions, task names, delegation, safe defaults | Application settings, credentials, duplicate Gradle logic |
+| `gradle/environments/<env>.properties` | Non-secret backend/build settings for one canonical environment | Secret values, overlay names, image promotion state |
+| `deployment/compose/*.yaml` and `env/*.env.example` | Disposable local/regression service wiring and examples | Staging/prod credentials or Kubernetes-only routing |
+| `infra/kubernetes` Kustomize overlays | Environment/runtime patches, namespaces, image digests, resource policy | Provider-specific secret values or duplicate base manifests |
+| Secret provider materialization | Runtime secret values | Non-secret configuration and source-controlled manifests |
+| Release bundle | Paired image digests, source SHAs, API contract, promotion metadata | Mutable tags or secret values |
+
+Every task that changes state must declare its environment and runtime, print the resolved non-secret target, support a dry-run/render mode where applicable, and provide a corresponding status or rollback command. Every task used by CI must be non-interactive and return a non-zero exit code on contract violations.
+
 ## 5. Point-by-Point Implementation and Verification Plan
 
 ### Factor 1 — Codebase and provenance
@@ -472,23 +534,20 @@ Evidence:
 The final release gate will run, with Java 25 selected explicitly:
 
 ```bash
-java -version
-./gradlew verifyEnvironment -Penvironment=local --no-daemon --no-configuration-cache
-./gradlew verifyEnvironment -Penvironment=dev --no-daemon --no-configuration-cache
-./gradlew verifyEnvironment -Penvironment=regression --no-daemon --no-configuration-cache
-./gradlew verifyEnvironment -Penvironment=staging --no-daemon --no-configuration-cache
-./gradlew verifyEnvironment -Penvironment=prod --no-daemon --no-configuration-cache
-./gradlew ci --no-daemon --no-configuration-cache
-./gradlew :applications:emme-platform:nativeCompile \
-  -Pemme.native-image=true --no-daemon --no-configuration-cache
-./gradlew dependencyCheckAnalyze --no-daemon --no-configuration-cache
-docker compose -f deployment/compose/compose.base.yaml \
-  -f deployment/compose/compose.runtime-jvm.yaml \
-  -f deployment/compose/compose.regression.yaml config
-for overlay in dev-jvm dev-native staging-jvm staging-native prod-jvm prod-native; do
-  kubectl kustomize "infra/kubernetes/overlays/$overlay" >/dev/null
+mise run toolchain:jvm
+for env in local dev regression staging prod; do
+  EMME_ENV="$env" mise run env:verify
 done
-kubectl apply --dry-run=server -k infra/kubernetes/overlays/prod-jvm
+mise run quality:all
+EMME_RUNTIME=jvm mise run build:package
+EMME_RUNTIME=native mise run build:native
+EMME_ENV=regression EMME_RUNTIME=jvm mise run compose:config
+for env in dev staging prod; do
+  for runtime in jvm native; do
+    EMME_ENV="$env" EMME_RUNTIME="$runtime" mise run kubernetes:render >/dev/null
+  done
+done
+EMME_ENV=prod EMME_RUNTIME=jvm mise run kubernetes:apply --dry-run
 ```
 
 The web release gate will run:
@@ -515,6 +574,7 @@ Then the real-browser regression suite will exercise the frontend-origin API, OA
 - Critical browser journeys pass through the frontend origin.
 - Staging rollout, telemetry, and rollback are verified.
 - Production deployment is protected and reproducible.
+- Gradle and mise task names, environment variables, configuration ownership, and migration rules conform to the standardized task contract.
 - Existing tests and unrelated user changes remain intact.
 
 ## 8. Technical References

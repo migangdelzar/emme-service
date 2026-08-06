@@ -583,6 +583,26 @@ Task rules:
 - Make external operations deterministic and idempotent where possible.
 - Keep task classes free of project-wide wiring; the plugin owns registration and lifecycle.
 
+### Task naming and command-surface contract
+
+Gradle is the canonical build API. Its task identifiers use camelCase and its
+task groups communicate ownership: `environment`, `quality`, `build`,
+`native`, `container`, `release`, and `deploy`. The stable task names are
+defined centrally in `core/TaskNames.kt`; lifecycle tasks compose existing task
+providers rather than duplicating command implementations.
+
+mise is a command facade, not a second build system. Its public names use
+colon-separated intent namespaces such as `env:verify`, `quality:all`,
+`build:package`, `compose:config`, `kubernetes:render`, and
+`release:validate`. Environment and runtime are inputs (`EMME_ENV` and
+`EMME_RUNTIME`), never encoded into new task implementations. CI and local
+documentation must use the same facade or the corresponding canonical Gradle
+task.
+
+The task contract is tested. Adding, removing, or renaming a public task
+requires updating the Gradle task contract test, the mise task validator, CI
+callers, and this architecture documentation together.
+
 ### 8. Providers are ports and adapters
 
 Providers isolate external tools from build logic:

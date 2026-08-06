@@ -24,6 +24,9 @@
 - Existing dirty user changes must remain unstaged and unmodified.
 - Use `JAVA_HOME=$(mise exec -- printenv JAVA_HOME)` or the approved Java 25 equivalent for Gradle commands.
 - Do not run Gradle test/report writers concurrently in the same checkout.
+- Gradle owns implementation; namespaced mise tasks own the stable developer/CI command surface.
+- `EMME_ENV`, `EMME_RUNTIME`, `EMME_DEPLOYMENT_TARGET`, `EMME_SECRETS_PROVIDER`, image references, and release bundle identity are the only shared task inputs.
+- `mise.toml` must not duplicate Gradle build logic or contain environment secrets; environment properties and deployment manifests remain the source of truth for non-secret configuration.
 
 ## File Map
 
@@ -31,6 +34,8 @@
 
 - `build-logic/src/main/kotlin/com/emme/buildlogic/environment/EnvironmentName.kt` — canonical environment enum.
 - `build-logic/src/main/kotlin/com/emme/buildlogic/environment/task/VerifyEnvironmentTask.kt` — environment contract validation.
+- `build-logic/src/main/kotlin/com/emme/buildlogic/core/TaskNames.kt` — stable Gradle task names and groups.
+- `build-logic/src/test/kotlin/com/emme/buildlogic/TaskNamesContractTest.kt` — Gradle task taxonomy contract.
 - `build-logic/src/main/kotlin/com/emme/buildlogic/deployment/KubernetesDeploymentTarget.kt` — environment/runtime-to-overlay and namespace resolver.
 - `build-logic/src/main/kotlin/com/emme/buildlogic/deployment/provider/ComposeProvider.kt` — canonical Compose file selection.
 - `build-logic/src/main/kotlin/com/emme/buildlogic/secrets/*` — provider and Kubernetes Secret contract.
@@ -66,6 +71,8 @@
 - `scripts/validate-release-bundle.test.mjs` — release bundle tests.
 - `scripts/validate-toolchain.mjs` — Java/GraalVM version validator.
 - `scripts/validate-toolchain.test.mjs` — toolchain validator tests.
+- `scripts/validate-mise-tasks.mjs` — namespaced mise task and configuration validator.
+- `scripts/validate-mise-tasks.test.mjs` — mise task taxonomy and forbidden-alias tests.
 - `deployment/releases/release.schema.yaml` — release bundle shape.
 - `.github/actions/setup-gradle/action.yml` — Java 25 JVM setup.
 - `.github/actions/setup-graalvm/action.yml` — reusable GraalVM 25 setup.
@@ -77,6 +84,7 @@
 - `docs/architecture/04-delivery/deployment.md` — deployment naming and workflow.
 - `docs/architecture/04-delivery/secrets.md` — Secret provider/runtime contract.
 - `docs/architecture/04-delivery/native-image.md` — Java 25/GraalVM 25 workflow.
+- `docs/architecture/00-project/mise.md` — developer/CI task namespace and configuration ownership.
 
 ### `emme-web` files to modify or create
 
@@ -337,6 +345,89 @@ git add build-logic gradle/environments scripts/validate-emme-platform-target.*
 git commit -m "refactor(environment): standardize canonical release environments"
 ```
 
+### Task 3A: Standardize Gradle task taxonomy, mise commands, and configuration inputs
+
+**Files:**
+
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/core/TaskNames.kt`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/root/RootPlugin.kt`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/environment/EnvironmentPlugin.kt`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/deployment/DeploymentPlugin.kt`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/container/ContainerPlugin.kt`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/publishing/PublishingPlugin.kt`
+- Modify: `build-logic/src/main/kotlin/emme.quality.gradle.kts`
+- Modify: `build.gradle.kts`
+- Create: `build-logic/src/test/kotlin/com/emme/buildlogic/TaskNamesContractTest.kt`
+- Create: `scripts/validate-mise-tasks.mjs`
+- Create: `scripts/validate-mise-tasks.test.mjs`
+- Modify: `mise.toml`
+- Modify: `docs/architecture/00-project/mise.md`
+- Modify: `docs/architecture/00-project/build-logic.md`
+- Modify: CI workflows and scripts that invoke migrated task names.
+
+**Canonical contracts:**
+
+- Gradle keeps camelCase task identifiers and assigns each task one of the `environment`, `quality`, `build`, `native`, `container`, `release`, or `deploy` groups defined in the design specification.
+- Mise exposes namespaced commands such as `env:verify`, `quality:format:check`, `build:package`, `compose:config`, `kubernetes:render`, and `release:validate`.
+- Mise delegates to Gradle or the repository's existing deployment validator; it does not reproduce Gradle task logic in shell snippets.
+- The shared inputs are `EMME_ENV`, `EMME_RUNTIME`, `EMME_DEPLOYMENT_TARGET`, `EMME_SECRETS_PROVIDER`, `EMME_BACKEND_IMAGE`, `EMME_FRONTEND_IMAGE`, and `EMME_RELEASE_BUNDLE`.
+- Mise translates these values to the canonical Gradle properties `environment`, `deployment.runtime`, `deployment.target`, `secrets.provider`, `backend.image`, `frontend.image`, and `release.bundle`.
+- `EMME_SECRETS_PROVIDER=environment` is rejected for `staging` and `prod`.
+- The legacy top-level mise names, `k3d:*`, `k3s:*`, and ambiguous `platform:*` names are removed after all callers are migrated. No permanent compatibility alias is added.
+
+- [ ] **Step 1: Add failing taxonomy tests**
+
+Add a Gradle TestKit contract test that applies the root/build-logic plugins and asserts the canonical task names, groups, and descriptions. Add Node tests that parse `mise.toml` and assert every required namespaced task exists, every task delegates to an approved implementation, and forbidden legacy task names do not remain.
+
+- [ ] **Step 2: Run the tests and confirm failure**
+
+```bash
+JAVA_HOME=$(mise exec -- printenv JAVA_HOME) ./gradlew :build-logic:test --tests '*TaskNamesContractTest' --no-daemon --no-configuration-cache
+node --test scripts/validate-mise-tasks.test.mjs
+```
+
+Expected: FAIL because the current task surface still contains unnamespaced top-level tasks and infrastructure-specific aliases.
+
+- [ ] **Step 3: Implement the Gradle task contract**
+
+Centralize task constants and group metadata in `TaskNames.kt`. Keep existing implementation tasks where they already match the contract, add only missing lifecycle tasks, and make aggregate tasks depend on existing task providers. Do not create colon-separated Gradle task identifiers; namespaces belong to mise.
+
+Update environment, deployment, container, publishing, quality, and root plugins so their tasks have stable names, descriptions, inputs, and non-interactive behavior. All environment-sensitive tasks must consume the canonical environment model from Task 3 rather than reading overlay names directly.
+
+- [ ] **Step 4: Implement the mise command contract**
+
+Replace the current `compile`, `test`, `quality`, `format-check`, `format-apply`, `architecture`, `arch-test`, `coverage`, `security-check`, `build`, `k3d:*`, `k3s:*`, and `platform:*` entries with the namespaced commands from the specification. Add a shared environment-to-Gradle-property helper so command definitions do not drift. Keep `mise.toml` limited to tool versions, task descriptions, delegation, safe defaults, and explicit destructive-command guards.
+
+- [ ] **Step 5: Migrate all callers and documentation**
+
+Update GitHub Actions, shell scripts, deployment documentation, architecture documentation, and developer instructions to use the new names. Use `EMME_ENV=local|regression` for Compose and `EMME_ENV=dev|staging|prod` for Kubernetes; use `EMME_RUNTIME=jvm|native` instead of encoding runtime in task names.
+
+- [ ] **Step 6: Verify the complete task matrix**
+
+```bash
+node --test scripts/validate-mise-tasks.test.mjs
+JAVA_HOME=$(mise exec -- printenv JAVA_HOME) ./gradlew tasks --all --no-daemon --no-configuration-cache
+for env in local dev regression staging prod; do
+  EMME_ENV="$env" mise run env:verify
+done
+EMME_ENV=local EMME_RUNTIME=jvm mise run compose:config
+EMME_ENV=regression EMME_RUNTIME=jvm mise run compose:config
+for env in dev staging prod; do
+  for runtime in jvm native; do
+    EMME_ENV="$env" EMME_RUNTIME="$runtime" mise run kubernetes:render >/dev/null
+  done
+done
+```
+
+Expected: all canonical tasks resolve without obsolete names, invalid environment/provider combinations fail before side effects, and every environment/runtime pair renders through the same task interface.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add build-logic build.gradle.kts mise.toml scripts/validate-mise-tasks.* docs/architecture .github
+git commit -m "build(tasks): standardize Gradle and mise command contracts"
+```
+
 ### Task 4: Backing service and Compose standardization
 
 **Files:**
@@ -347,7 +438,7 @@ git commit -m "refactor(environment): standardize canonical release environments
 - Remove or migrate: `compose.environment-ci.yaml`, `compose.environment-e2e.yaml`, and `.bak` compatibility files
 - Modify: `compose.runtime-jvm.yaml`, `compose.runtime-native.yaml`, `compose.observability.yaml`, `compose.kafka.contract.test.mjs`, `compose.e2e.contract.test.mjs`
 - Modify: `deployment/compose/env/*.env.example`
-- Modify: `build-logic` Compose provider and `mise.toml`
+- Modify: `build-logic` Compose provider and the standardized `compose:*` mise tasks from Task 3A
 
 - [ ] **Step 1: Update contract tests to require new paths and service name**
 
@@ -388,7 +479,7 @@ git commit -m "refactor(compose): standardize local and regression environments"
 - Create: `infra/kubernetes/overlays/staging-jvm/kustomization.yaml`
 - Create: `infra/kubernetes/overlays/staging-native/kustomization.yaml`
 - Modify: `infra/kubernetes/base/namespace.yaml`
-- Modify: `KubernetesDeploymentTargetTest.kt`, mise tasks, CI validators, and all workflow references
+- Modify: `KubernetesDeploymentTargetTest.kt`, standardized `kubernetes:*` mise task inputs, CI validators, and all workflow references
 
 - [ ] **Step 1: Add red overlay matrix tests**
 
@@ -876,6 +967,7 @@ git commit -m "ci(release): enforce secure staged promotion and rollback"
 - [ ] Verify production approval and immutable promotion controls.
 - [ ] Update the 15-factor evidence matrix with command, artifact, threshold, owner, and result.
 - [ ] Update deployment, secrets, native-image, release, and web proxy documentation.
+- [ ] Verify the Gradle/mise task taxonomy, environment-variable contract, configuration ownership, and absence of obsolete task aliases.
 - [ ] Commit each logical task and push both repository branches.
 
 ## Definition of Done
@@ -889,4 +981,5 @@ git commit -m "ci(release): enforce secure staged promotion and rollback"
 - Backend is cluster-internal and frontend is the public application boundary.
 - Staging deployment, telemetry, load, and rollback are verified.
 - Production deployment requires protected authorization and immutable release evidence.
+- Gradle task groups and mise namespaces are standardized, documented, tested, and used consistently by local commands and CI.
 - Existing user worktree changes remain untouched.

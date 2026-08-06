@@ -47,8 +47,11 @@ public class TenantContextFilter extends OncePerRequestFilter {
       tenantId = TrustedTenantResolver.fromAuthentication(authentication);
 
       if (tenantId == null) {
-        // Try X-Tenant-Slug header
+        // Try X-Tenant-Slug header (or X-Emme-Tenant-Slug for E2E tests)
         String headerSlug = request.getHeader("X-Tenant-Slug");
+        if (headerSlug == null || headerSlug.isBlank()) {
+          headerSlug = request.getHeader("X-Emme-Tenant-Slug");
+        }
         if (headerSlug != null && !headerSlug.isBlank()) {
           tenantId = TrustedTenantResolver.fromQueryParam(headerSlug.trim(), tenantRepository);
           if (tenantId != null) log.debug("Tenant from X-Tenant-Slug header: {}", tenantId);

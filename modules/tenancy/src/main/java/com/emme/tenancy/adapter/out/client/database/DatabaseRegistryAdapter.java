@@ -34,8 +34,7 @@ public class DatabaseRegistryAdapter implements DatabaseRegistryPort {
   public DatabaseRegistryAdapter(
       TenantDatabaseConnectionProperties connectionProperties,
       Optional<JdbcConnectionDetails> connectionDetails,
-      @Qualifier("bootstrapJdbcConnectionExecutor")
-          Optional<JdbcConnectionExecutor> connectionExecutor) {
+      Optional<JdbcConnectionExecutor> connectionExecutor) {
     this.bootstrapUrl =
         connectionDetails
             .map(JdbcConnectionDetails::getJdbcUrl)

@@ -77,9 +77,6 @@ class IdentityPackageConventionTest {
   private static final Path KEYCLOAK_ADMIN_CLIENT =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/KeycloakAdminClient.java");
-  private static final Path REALM_PROVISIONING_PROCESS =
-      sourcePath(
-          "modules/identity/src/main/java/com/emme/identity/application/process/KeycloakRealmProvisioningProcessManager.java");
   private static final Path PROVISION_TENANT_IDENTITY_USE_CASE =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/api/usecase/ProvisionTenantIdentityUseCase.java");
@@ -400,14 +397,11 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(MULTI_REALM_JWT_DECODER)).isTrue();
     assertThat(Files.exists(SECURITY_AUDIT_LOGGER)).isTrue();
     assertThat(Files.exists(KEYCLOAK_ADMIN_CLIENT)).isTrue();
-    assertThat(Files.exists(REALM_PROVISIONING_PROCESS)).isTrue();
     assertThat(Files.exists(TENANT_REALM_PROVISIONING_LISTENER)).isTrue();
     String tenantRealmProvisioningListener = Files.readString(TENANT_REALM_PROVISIONING_LISTENER);
     assertThat(tenantRealmProvisioningListener).contains("@ApplicationModuleListener");
     assertThat(tenantRealmProvisioningListener).doesNotContain("@EventListener");
     assertThat(tenantRealmProvisioningListener).contains("TenantRealmReady");
-    assertThat(tenantRealmProvisioningListener)
-        .doesNotContain("KeycloakRealmProvisioningProcessManager");
     assertThat(Files.exists(LEGACY_SECURITY_CONFIGURATION)).isFalse();
     assertThat(hasJavaSources(LEGACY_INFRASTRUCTURE)).isFalse();
   }
@@ -482,11 +476,11 @@ class IdentityPackageConventionTest {
 
   @Test
   void keepsProvisioningProcessIndependentFromConfigurationProperties() throws IOException {
-    Path provisioningProcess =
+    Path listener =
         sourcePath(
-            "modules/identity/src/main/java/com/emme/identity/application/process/KeycloakRealmProvisioningProcessManager.java");
+            "modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/TenantRealmProvisioningListener.java");
 
-    assertThat(Files.readString(provisioningProcess))
+    assertThat(Files.readString(listener))
         .doesNotContain("com.emme.identity.configuration.IdentityRealmProvisioningProperties")
         .doesNotContain("org.springframework.boot.context.properties");
   }
@@ -503,11 +497,11 @@ class IdentityPackageConventionTest {
 
   @Test
   void keepsProvisioningProcessIndependentFromTenantModuleService() throws IOException {
-    Path provisioningProcess =
+    Path listener =
         sourcePath(
-            "modules/identity/src/main/java/com/emme/identity/application/process/KeycloakRealmProvisioningProcessManager.java");
+            "modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/TenantRealmProvisioningListener.java");
 
-    assertThat(Files.readString(provisioningProcess))
+    assertThat(Files.readString(listener))
         .doesNotContain("com.emme.tenancy.api.usecase.TenantApi");
   }
 
@@ -742,14 +736,14 @@ class IdentityPackageConventionTest {
 
   @Test
   void keepsRealmProvisioningDependentOnAnApplicationPort() throws IOException {
-    String processSource = Files.readString(REALM_PROVISIONING_PROCESS);
+    var listenerSource = Files.readString(TENANT_REALM_PROVISIONING_LISTENER);
 
     assertThat(Files.exists(IDENTITY_PROVIDER_ADMINISTRATION_PORT)).isTrue();
     assertThat(Files.exists(PROVISION_TENANT_IDENTITY_USE_CASE)).isTrue();
-    assertThat(processSource).contains("IdentityProviderAdministrationPort");
-    assertThat(processSource).doesNotContain("KeycloakAdminClient");
-    assertThat(processSource).doesNotContain("admin123");
-    assertThat(processSource).doesNotContain("Thread.sleep");
+    assertThat(listenerSource).contains("IdentityProviderAdministrationPort");
+    assertThat(listenerSource).doesNotContain("KeycloakAdminClient");
+    assertThat(listenerSource).doesNotContain("admin123");
+    assertThat(listenerSource).doesNotContain("Thread.sleep");
   }
 
   @Test

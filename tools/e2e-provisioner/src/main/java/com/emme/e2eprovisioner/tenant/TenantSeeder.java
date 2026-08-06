@@ -8,7 +8,8 @@ public interface TenantSeeder {
 
   UUID ensureTenant(String slug, String name) throws SQLException;
 
-  void activateOwnerMembership(UUID tenantId, String userReference) throws SQLException;
+  void activateOwnerMembership(UUID tenantId, String userReference, String schemaName)
+      throws SQLException;
 
-  void cleanTenantData(UUID tenantId) throws SQLException;
+  void cleanTenantData(UUID tenantId, String schemaName) throws SQLException;
 }

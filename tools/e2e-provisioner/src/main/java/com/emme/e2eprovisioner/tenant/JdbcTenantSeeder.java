@@ -32,14 +32,15 @@ public final class JdbcTenantSeeder implements TenantSeeder {
   }
 
   @Override
-  public void activateOwnerMembership(UUID tenantId, String userReference) throws SQLException {
+  public void activateOwnerMembership(UUID tenantId, String userReference, String schemaName)
+      throws SQLException {
     connectionExecutor.consumeWithConnection(
         connection -> {
           inTransaction(
               connection,
               ignored -> {
                 activateOwnerMembership(connection, tenantId, userReference);
-                ensureSubscription(connection, tenantId);
+                ensureSubscription(connection, tenantId, schemaName);
                 ensurePermissions(connection, tenantId);
                 return null;
               });
@@ -47,13 +48,13 @@ public final class JdbcTenantSeeder implements TenantSeeder {
   }
 
   @Override
-  public void cleanTenantData(UUID tenantId) throws SQLException {
+  public void cleanTenantData(UUID tenantId, String schemaName) throws SQLException {
     connectionExecutor.consumeWithConnection(
         connection -> {
           inTransaction(
               connection,
               ignored -> {
-                cleanBusinessData(connection, tenantId);
+                cleanBusinessData(connection, tenantId, schemaName);
                 return null;
               });
         });
@@ -140,43 +141,48 @@ public final class JdbcTenantSeeder implements TenantSeeder {
     }
   }
 
-  private static void cleanBusinessData(Connection connection, UUID tenantId) throws SQLException {
+  private static void cleanBusinessData(Connection connection, UUID tenantId, String schemaName)
+      throws SQLException {
     try (var stmt =
-        connection.prepareStatement("DELETE FROM e2e_studio.appointment WHERE tenant_id = ?")) {
-      stmt.setObject(1, tenantId);
-      stmt.executeUpdate();
-    }
-    try (var stmt =
-        connection.prepareStatement("DELETE FROM e2e_studio.customer WHERE tenant_id = ?")) {
-      stmt.setObject(1, tenantId);
-      stmt.executeUpdate();
-    }
-    try (var stmt =
-        connection.prepareStatement("DELETE FROM e2e_studio.service WHERE tenant_id = ?")) {
+        connection.prepareStatement(
+            "DELETE FROM " + schemaName + ".appointment WHERE tenant_id = ?")) {
       stmt.setObject(1, tenantId);
       stmt.executeUpdate();
     }
     try (var stmt =
         connection.prepareStatement(
-            "DELETE FROM e2e_studio.artist_capability WHERE tenant_id = ?")) {
+            "DELETE FROM " + schemaName + ".customer WHERE tenant_id = ?")) {
       stmt.setObject(1, tenantId);
       stmt.executeUpdate();
     }
     try (var stmt =
-        connection.prepareStatement("DELETE FROM e2e_studio.artist WHERE tenant_id = ?")) {
+        connection.prepareStatement(
+            "DELETE FROM " + schemaName + ".service WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId);
+      stmt.executeUpdate();
+    }
+    try (var stmt =
+        connection.prepareStatement(
+            "DELETE FROM " + schemaName + ".artist_capability WHERE tenant_id = ?")) {
+      stmt.setObject(1, tenantId);
+      stmt.executeUpdate();
+    }
+    try (var stmt =
+        connection.prepareStatement(
+            "DELETE FROM " + schemaName + ".artist WHERE tenant_id = ?")) {
       stmt.setObject(1, tenantId);
       stmt.executeUpdate();
     }
   }
 
-  private static void ensureSubscription(Connection connection, UUID tenantId) throws SQLException {
+  private static void ensureSubscription(Connection connection, UUID tenantId, String schemaName)
+      throws SQLException {
     try (var statement =
         connection.prepareStatement(
-            """
-            INSERT INTO e2e_studio.subscription (id, tenant_id, plan, status, period_ends_at, updated_at)
-            VALUES (gen_random_uuid(), ?, 'PRO', 'ACTIVE', now() + interval '30 days', now())
-            ON CONFLICT DO NOTHING
-            """)) {
+            "INSERT INTO " + schemaName + ".subscription "
+                + "(id, tenant_id, plan, status, period_ends_at, updated_at) "
+                + "VALUES (gen_random_uuid(), ?, 'PRO', 'ACTIVE', now() + interval '30 days', now()) "
+                + "ON CONFLICT DO NOTHING")) {
       statement.setObject(1, tenantId);
       statement.executeUpdate();
     }

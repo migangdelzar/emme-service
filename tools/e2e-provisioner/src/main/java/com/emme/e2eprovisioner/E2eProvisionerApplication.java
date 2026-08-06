@@ -22,9 +22,10 @@ public final class E2eProvisionerApplication {
 
     var tenantSeeder = JdbcTenantSeeder.create(dataSource);
     var tenantId = tenantSeeder.ensureTenant(environment.tenantSlug(), environment.tenantName());
+    var schemaName = environment.tenantSlug().replaceAll("[^a-z0-9-]", "").replace("-", "_");
 
     // Clean previous test data for clean E2E run
-    tenantSeeder.cleanTenantData(tenantId);
+    tenantSeeder.cleanTenantData(tenantId, schemaName);
 
     var keycloak =
         new HttpKeycloakAdminClient(
@@ -42,7 +43,7 @@ public final class E2eProvisionerApplication {
                 environment.tenantSlug(),
                 environment.webOrigin()));
 
-    tenantSeeder.activateOwnerMembership(tenantId, userReference);
+    tenantSeeder.activateOwnerMembership(tenantId, userReference, schemaName);
     System.out.printf(
         "Provisioned tenant-owner E2E environment for tenant %s (%s)%n",
         environment.tenantSlug(), tenantId);

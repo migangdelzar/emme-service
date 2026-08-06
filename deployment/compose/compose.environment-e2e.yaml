@@ -9,10 +9,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 2G
     environment:
       SPRING_PROFILES_ACTIVE: e2e
-      JAVA_TOOL_OPTIONS: "-XX:ReservedCodeCacheSize=128M -XX:MaxMetaspaceSize=256M"
+      JAVA_TOOL_OPTIONS: "-XX:ReservedCodeCacheSize=80M -XX:MaxMetaspaceSize=200M -Xss512K"
       DB_HOST: postgres
       DB_PORT: "5432"
       DB_USERNAME: emme

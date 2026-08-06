@@ -11,12 +11,13 @@ application {
 
 dependencies {
   implementation(platform(project(":platform")))
-  implementation(project(":modules:shared"))
   implementation(libs.jackson.databind)
-  implementation(libs.postgresql)
-  implementation(libs.spring.jdbc)
-  testImplementation(platform(project(":platform")))
-  testImplementation(libs.assertj.core)
-  testImplementation(libs.junit.jupiter)
-  testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.register<JavaExec>("e2eProvision") {
+  group = "e2e"
+  description = "Provision E2E tenants via platform API"
+  classpath = sourceSets["main"].runtimeClasspath
+  mainClass = "com.emme.e2eprovisioner.E2eProvisionerApplication"
+  environment("E2E_ADMIN_PASSWORD", System.getenv().getOrDefault("E2E_ADMIN_PASSWORD", "E2e-Platform-Admin-2026!"))
 }

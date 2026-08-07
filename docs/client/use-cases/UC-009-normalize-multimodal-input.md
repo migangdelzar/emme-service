@@ -6,7 +6,7 @@
 **Use Case Name:** Normalize Multimodal Input
 **Primary Actor:** Customer
 **Goal:** Convert supported text, voice, and image content into one understandable request.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

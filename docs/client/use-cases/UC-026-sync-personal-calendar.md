@@ -6,7 +6,7 @@
 **Use Case Name:** Sync Personal Calendar
 **Primary Actor:** Customer
 **Goal:** Sync confirmed appointments to my personal calendar so that I can see them alongside my other events.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

@@ -21,9 +21,9 @@
 | FR-C008 – FR-C010 Multimodal input | UC-009 |
 | FR-C011 – FR-C016 AI guidance | UC-010 |
 | FR-C017 – FR-C022 Conversational booking | UC-011 |
-| FR-C023 – FR-C026 Appointment booking | UC-006, UC-011 |
+| FR-C023 – FR-C026 Appointment booking | UC-006 (studio), UC-011 |
 | FR-C027 – FR-C029 Conversation history | UC-008 |
-| FR-C030 – FR-C031 Notifications | UC-014 |
+| FR-C030 – FR-C031 Notifications | UC-014 (studio) |
 | FR-C032 – FR-C033 Personal calendar sync | UC-026 |
 | FR-C034 – FR-C036 Service discovery | UC-025 |
 | FR-C037 Google sign-in | UC-027 |

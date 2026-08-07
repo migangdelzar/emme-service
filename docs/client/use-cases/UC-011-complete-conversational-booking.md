@@ -6,7 +6,7 @@
 **Use Case Name:** Complete Conversational Booking
 **Primary Actor:** Customer
 **Goal:** Confirm and create one valid appointment through conversation.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

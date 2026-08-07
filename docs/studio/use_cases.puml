@@ -1,0 +1,54 @@
+@startuml Studio App — Use Cases Overview
+left to right direction
+
+actor "Platform User" as platformUser
+actor "Staff Member" as staff
+actor "Salon Manager" as manager
+actor "Salon Owner" as owner
+actor "Tenant Manager" as tenantManager
+actor "Tenant Owner" as tenantOwner
+
+rectangle "EmmeNails Studio Manager" {
+    usecase "UC-001\nAccess Tenant Workspace" as UC001
+    usecase "UC-003\nReview Business Performance" as UC003
+    usecase "UC-004\nManage Service Catalog" as UC004
+    usecase "UC-005\nManage Customers" as UC005
+    usecase "UC-006\nManage Appointments" as UC006
+    usecase "UC-007\nConfigure Business" as UC007
+    usecase "UC-012\nReview Conversation History" as UC012
+    usecase "UC-013\nManage Knowledge Sources" as UC013
+    usecase "UC-014\nDeliver Notifications" as UC014
+    usecase "UC-015\nManage Subscription" as UC015
+    usecase "UC-016\nProcess Payments" as UC016
+    usecase "UC-021\nComplete Studio Onboarding" as UC021
+    usecase "UC-022\nIntegrate Google Workspace" as UC022
+    usecase "UC-023\nManage Nail Design Catalog" as UC023
+    usecase "UC-024\nManage Studio Data and Account" as UC024
+    usecase "UC-028\nUse AI Chat Assistant" as UC028
+}
+
+platformUser --> UC001
+
+staff --> UC005
+staff --> UC006
+staff --> UC012
+staff --> UC014
+staff --> UC028
+
+manager --> UC004
+manager --> UC023
+
+owner --> UC003
+owner --> UC007
+owner --> UC015
+owner --> UC016
+owner --> UC022
+
+tenantManager --> UC013
+
+tenantOwner --> UC021
+tenantOwner --> UC024
+
+UC028 ..> UC013 : <<include>>
+
+@enduml

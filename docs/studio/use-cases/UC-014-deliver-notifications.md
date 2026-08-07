@@ -6,7 +6,7 @@
 **Use Case Name:** Deliver Notifications
 **Primary Actor:** Staff Member
 **Goal:** Deliver an approved tenant notification and record its outcome.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

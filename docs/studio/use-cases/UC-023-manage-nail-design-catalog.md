@@ -6,7 +6,7 @@
 **Use Case Name:** Manage Nail Design Catalog
 **Primary Actor:** Salon Manager
 **Goal:** Maintain a browsable catalog of nail designs with images so that customers can discover inspiration and match their desired looks.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 
@@ -57,10 +57,10 @@
 
 ## Business Rules
 
-### BR-028: Image Size and Format
+### BR-046: Image Size and Format
 
 Catalog images must be JPEG, PNG, or WEBP format and not exceed 10 MB per image.
 
-### BR-029: Tenant-Isolated Catalog
+### BR-047: Tenant-Isolated Catalog
 
 Catalog items are scoped to the tenant; cross-tenant design visibility is prohibited.

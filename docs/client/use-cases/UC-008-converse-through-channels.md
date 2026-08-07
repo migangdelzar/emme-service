@@ -6,7 +6,7 @@
 **Use Case Name:** Converse Through Channels
 **Primary Actor:** Customer
 **Goal:** Exchange messages with the salon through an approved channel using shared conversation behavior.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

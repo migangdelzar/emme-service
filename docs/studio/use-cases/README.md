@@ -12,10 +12,12 @@
 | UC-013 | [Manage Knowledge Sources](UC-013-manage-knowledge-sources.md) | Tenant Manager | Implemented |
 | UC-014 | [Deliver Notifications](UC-014-deliver-notifications.md) | Staff Member | Implemented |
 | UC-015 | [Manage Subscription](UC-015-manage-subscription.md) | Salon Owner | Implemented |
+| UC-016 | [Process Payments](UC-016-process-payments.md) | Salon Owner | Implemented |
 | UC-021 | [Complete Studio Onboarding](UC-021-complete-studio-onboarding.md) | Tenant Owner | Implemented |
 | UC-022 | [Integrate Google Workspace](UC-022-integrate-google-workspace.md) | Salon Owner | Implemented |
 | UC-023 | [Manage Nail Design Catalog](UC-023-manage-nail-design-catalog.md) | Salon Manager | Implemented |
 | UC-024 | [Manage Studio Data and Account](UC-024-manage-studio-data-and-account.md) | Tenant Owner | Implemented |
+| UC-028 | [Use AI Chat Assistant](UC-028-ai-chat-assistant.md) | Staff Member | Implemented |
 
 ## Coverage Map
 
@@ -39,3 +41,4 @@
 | FR-S088 – FR-S089 Notifications | UC-014 |
 | FR-S090 – FR-S093 Nail design catalog | UC-023 |
 | FR-S094 – FR-S096 Data management | UC-024 |
+| AI chat, intent detection, RAG queries | UC-028 |

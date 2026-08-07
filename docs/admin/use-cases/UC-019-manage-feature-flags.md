@@ -6,7 +6,7 @@
 **Use Case Name:** Manage Feature Flags
 **Primary Actor:** Platform Administrator
 **Goal:** Define, toggle, and selectively override feature flags across the platform without redeploying.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

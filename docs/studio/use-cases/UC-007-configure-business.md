@@ -6,7 +6,7 @@
 **Use Case Name:** Configure Business
 **Primary Actor:** Salon Owner
 **Goal:** Configure business profile, hours, policies, notifications, and calendar connections.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

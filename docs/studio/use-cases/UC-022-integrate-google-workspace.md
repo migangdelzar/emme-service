@@ -6,7 +6,7 @@
 **Use Case Name:** Integrate Google Workspace
 **Primary Actor:** Salon Owner
 **Goal:** Connect Google Calendar and Google Sheets so that appointments sync automatically and business data can be exported.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 
@@ -82,14 +82,14 @@
 
 ## Business Rules
 
-### BR-025: OAuth Token Storage
+### BR-043: OAuth Token Storage
 
 Google OAuth refresh tokens must be stored encrypted and never exposed in client-side configuration or logs.
 
-### BR-026: One Google Account per Tenant
+### BR-044: One Google Account per Tenant
 
 A tenant may connect only one Google account at a time; connecting a new account revokes the previous one.
 
-### BR-027: Spreadsheet Retention
+### BR-045: Spreadsheet Retention
 
 Exported spreadsheets remain accessible as long as the Google account is connected; disconnecting the account does not delete previously created spreadsheets.

@@ -6,7 +6,7 @@
 **Use Case Name:** Manage Subscription
 **Primary Actor:** Salon Owner
 **Goal:** Review the tenant subscription and operate within its subscription entitlements.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

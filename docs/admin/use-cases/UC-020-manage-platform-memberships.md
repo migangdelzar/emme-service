@@ -6,7 +6,7 @@
 **Use Case Name:** Manage Platform Memberships
 **Primary Actor:** Platform Administrator
 **Goal:** Assign, view, and revoke tenant memberships and permissions across the platform.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

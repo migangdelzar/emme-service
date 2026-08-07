@@ -6,7 +6,7 @@
 **Use Case Name:** Review Business Performance
 **Primary Actor:** Salon Owner
 **Goal:** Review tenant-scoped operational and financial performance for a selected period.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

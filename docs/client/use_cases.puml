@@ -1,0 +1,35 @@
+@startuml Client App — Use Cases Overview
+left to right direction
+
+actor "Customer" as customer
+actor "External Provider" as provider
+
+rectangle "EMME Client" {
+    usecase "UC-001\nAccess Tenant Workspace" as UC001
+    usecase "UC-008\nConverse Through Channels" as UC008
+    usecase "UC-009\nNormalize Multimodal Input" as UC009
+    usecase "UC-010\nReceive AI Guidance" as UC010
+    usecase "UC-011\nComplete Conversational Booking" as UC011
+    usecase "UC-016\nProcess Payments" as UC016
+    usecase "UC-025\nDiscover Services and Designs" as UC025
+    usecase "UC-026\nSync Personal Calendar" as UC026
+    usecase "UC-027\nSign In with Social Identity" as UC027
+}
+
+customer --> UC001
+customer --> UC008
+provider --> UC008
+customer --> UC009
+provider --> UC009
+customer --> UC010
+customer --> UC011
+customer --> UC016
+customer --> UC025
+customer --> UC026
+customer --> UC027
+
+UC009 ..> UC008 : <<extend>>
+UC010 ..> UC008 : <<extend>>
+UC011 ..> UC010 : <<extend>>
+
+@enduml

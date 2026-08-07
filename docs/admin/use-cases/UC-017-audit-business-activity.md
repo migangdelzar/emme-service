@@ -6,7 +6,7 @@
 **Use Case Name:** Audit Business Activity
 **Primary Actor:** Platform Administrator
 **Goal:** Review traceable security-sensitive and consequential business activity.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

@@ -6,7 +6,7 @@
 **Use Case Name:** Access Tenant Workspace
 **Primary Actor:** Platform User
 **Goal:** Enter an authorized active tenant workspace with the correct permissions.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

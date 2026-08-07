@@ -6,7 +6,7 @@
 **Use Case Name:** Receive AI Guidance
 **Primary Actor:** Customer
 **Goal:** Receive a tenant-grounded recommendation, price estimate, or policy answer.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

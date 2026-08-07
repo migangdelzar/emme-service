@@ -6,7 +6,7 @@
 **Use Case Name:** Maintain Search Projections
 **Primary Actor:** System Operator
 **Goal:** Keep tenant vector and graph search projections current and rebuildable from authoritative records.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

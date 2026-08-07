@@ -6,7 +6,7 @@
 **Use Case Name:** Review Conversation History
 **Primary Actor:** Staff Member
 **Goal:** Review authorized tenant conversation history for customer support and audit.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

@@ -6,7 +6,7 @@
 **Use Case Name:** Manage Knowledge Sources
 **Primary Actor:** Tenant Manager
 **Goal:** Add and maintain approved tenant knowledge for grounded retrieval.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

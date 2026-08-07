@@ -6,7 +6,7 @@
 **Use Case Name:** Manage Appointments
 **Primary Actor:** Staff Member
 **Goal:** Create, reschedule, progress, or cancel a valid appointment without schedule conflicts.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

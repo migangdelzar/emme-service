@@ -6,7 +6,7 @@
 **Use Case Name:** Manage Studio Data and Account
 **Primary Actor:** Tenant Owner
 **Goal:** Export business data for backup and manage the studio account lifecycle including deletion.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 
@@ -67,14 +67,14 @@
 
 ## Business Rules
 
-### BR-030: Deletion Audit Hold
+### BR-048: Deletion Audit Hold
 
 Account deletion is staged, not immediate. A platform administrator must approve final destruction.
 
-### BR-031: Backup Excludes System Data
+### BR-049: Backup Excludes System Data
 
 Exported backups contain business data only; platform metadata, feature flags, and system configuration are excluded.
 
-### BR-032: Confirmation Phrase
+### BR-050: Confirmation Phrase
 
 Account deletion requires typing the tenant name exactly as confirmation; no one-click deletion is allowed.

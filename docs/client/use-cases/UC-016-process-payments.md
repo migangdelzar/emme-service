@@ -6,7 +6,7 @@
 **Use Case Name:** Process Payments
 **Primary Actor:** Customer
 **Goal:** Complete or reverse one eligible payment with a reconciled outcome.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

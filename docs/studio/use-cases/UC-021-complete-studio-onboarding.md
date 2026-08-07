@@ -6,7 +6,7 @@
 **Use Case Name:** Complete Studio Onboarding
 **Primary Actor:** Tenant Owner
 **Goal:** Configure the initial business setup so the salon can begin operating on day one.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 
@@ -60,10 +60,10 @@
 
 ## Business Rules
 
-### BR-023: Minimum Viable Configuration
+### BR-041: Minimum Viable Configuration
 
 A studio must have at minimum: business name, at least one active operating day, a booking policy, and at least one active service before appointments can be created.
 
-### BR-024: Onboarding Persistence
+### BR-042: Onboarding Persistence
 
 Onboarding progress is saved incrementally; the owner can close and resume without losing entered data.

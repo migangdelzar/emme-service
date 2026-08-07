@@ -6,7 +6,7 @@
 **Use Case Name:** Manage Service Catalog
 **Primary Actor:** Salon Manager
 **Goal:** Maintain accurate services, prices, durations, and artist capabilities.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

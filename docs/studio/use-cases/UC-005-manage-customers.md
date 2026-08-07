@@ -6,7 +6,7 @@
 **Use Case Name:** Manage Customers
 **Primary Actor:** Staff Member
 **Goal:** Maintain an accurate tenant customer profile and review its service history.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

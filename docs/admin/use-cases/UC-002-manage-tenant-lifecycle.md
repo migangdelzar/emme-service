@@ -6,7 +6,7 @@
 **Use Case Name:** Manage Tenant Lifecycle
 **Primary Actor:** Platform Administrator
 **Goal:** Create or change a tenant through a safe and auditable lifecycle transition.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

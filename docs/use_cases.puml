@@ -1,52 +1,77 @@
-@startuml EMME Use Cases Overview
+@startuml EMME Modulith — System Use Cases Overview
 left to right direction
 
+' ── Actors ──
 actor "Customer" as customer
 actor "Staff Member" as staff
+actor "Salon Manager" as manager
 actor "Salon Owner" as owner
 actor "Platform Administrator" as platformAdmin
 actor "System Operator" as operator
 actor "External Provider" as provider
 
-rectangle "EMME Modulith" {
+' ── System boundary ──
+rectangle "EMME Modulith\n(appointments | assistant | calendar | catalog | clients\n documents | identity | notification | payment | salon\n services | staffing | subscriptions | tenancy)" {
+
+    ' ── Shared ──
     usecase "UC-001\nAccess Tenant Workspace" as UC001
+
+    ' ── Admin App ──
     usecase "UC-002\nManage Tenant Lifecycle" as UC002
+    usecase "UC-017\nAudit Business Activity" as UC017
+    usecase "UC-018\nMaintain Search Projections" as UC018
+    usecase "UC-019\nManage Feature Flags" as UC019
+    usecase "UC-020\nManage Platform Memberships" as UC020
+
+    ' ── Studio App ──
     usecase "UC-003\nReview Business Performance" as UC003
     usecase "UC-004\nManage Service Catalog" as UC004
     usecase "UC-005\nManage Customers" as UC005
     usecase "UC-006\nManage Appointments" as UC006
     usecase "UC-007\nConfigure Business" as UC007
-    usecase "UC-008\nConverse Through Channels" as UC008
-    usecase "UC-009\nNormalize Multimodal Input" as UC009
-    usecase "UC-010\nReceive AI Guidance" as UC010
-    usecase "UC-011\nComplete Conversational Booking" as UC011
     usecase "UC-012\nReview Conversation History" as UC012
     usecase "UC-013\nManage Knowledge Sources" as UC013
     usecase "UC-014\nDeliver Notifications" as UC014
     usecase "UC-015\nManage Subscription" as UC015
     usecase "UC-016\nProcess Payments" as UC016
-    usecase "UC-017\nAudit Business Activity" as UC017
-    usecase "UC-018\nMaintain Search Projections" as UC018
+    usecase "UC-021\nComplete Studio Onboarding" as UC021
+    usecase "UC-022\nIntegrate Google Workspace" as UC022
+    usecase "UC-023\nManage Nail Design Catalog" as UC023
+    usecase "UC-024\nManage Studio Data and Account" as UC024
+    usecase "UC-028\nUse AI Chat Assistant" as UC028
+
+    ' ── Client App ──
+    usecase "UC-008\nConverse Through Channels" as UC008
+    usecase "UC-009\nNormalize Multimodal Input" as UC009
+    usecase "UC-010\nReceive AI Guidance" as UC010
+    usecase "UC-011\nComplete Conversational Booking" as UC011
+    usecase "UC-025\nDiscover Services and Designs" as UC025
+    usecase "UC-026\nSync Personal Calendar" as UC026
+    usecase "UC-027\nSign In with Social Identity" as UC027
 }
 
+' ── Shared connections ──
 staff --> UC001
 owner --> UC001
 platformAdmin --> UC001
+
+' ── Admin ──
 platformAdmin --> UC002
+platformAdmin --> UC017
+operator --> UC017
+operator --> UC018
+platformAdmin --> UC019
+platformAdmin --> UC020
+
+' ── Studio ──
 owner --> UC003
-owner --> UC004
+manager --> UC004
 staff --> UC004
 owner --> UC005
 staff --> UC005
 customer --> UC006
 staff --> UC006
 owner --> UC007
-customer --> UC008
-provider --> UC008
-customer --> UC009
-provider --> UC009
-customer --> UC010
-customer --> UC011
 staff --> UC012
 owner --> UC013
 staff --> UC014
@@ -55,33 +80,58 @@ owner --> UC015
 customer --> UC016
 owner --> UC016
 provider --> UC016
-platformAdmin --> UC017
-operator --> UC017
-operator --> UC018
+owner --> UC021
+owner --> UC022
+manager --> UC023
+owner --> UC024
+staff --> UC028
 
+' ── Client ──
+customer --> UC008
+provider --> UC008
+customer --> UC009
+provider --> UC009
+customer --> UC010
+customer --> UC011
+customer --> UC025
+customer --> UC026
+customer --> UC027
+
+' ── Relationships ──
 UC009 ..> UC008 : <<extend>>
 UC010 ..> UC008 : <<extend>>
 UC011 ..> UC010 : <<extend>>
 UC014 ..> UC006 : <<extend>>
 UC018 ..> UC013 : <<include>>
+UC028 ..> UC013 : <<include>>
 
-note right of UC001 : FR-001 through FR-007
-note right of UC002 : FR-008 through FR-017
-note right of UC003 : FR-018, FR-038, FR-039
-note right of UC004 : FR-019 through FR-023
-note right of UC005 : FR-024 through FR-028
-note right of UC006 : FR-029 through FR-037
-note right of UC007 : FR-040, FR-041
-note right of UC008 : FR-042 through FR-046
-note right of UC009 : FR-047 through FR-049
-note right of UC010 : FR-050 through FR-053, FR-060
-note right of UC011 : FR-054 through FR-057
-note right of UC012 : FR-058, FR-059
-note right of UC013 : FR-061 through FR-065
-note right of UC014 : FR-066 through FR-069
-note right of UC015 : FR-070, FR-071
-note right of UC016 : FR-072 through FR-074
-note right of UC017 : FR-075
-note right of UC018 : FR-076, FR-077
+' ── Requirement traceability (app-prefixed) ──
+note right of UC001 : FR-S001–S006\nFR-A014–A018\nFR-C001–C002
+note right of UC002 : FR-A001–A010
+note right of UC003 : FR-S051–S063
+note right of UC004 : FR-S018–S029
+note right of UC005 : FR-S030–S037
+note right of UC006 : FR-S038–S050\nFR-C023–C026
+note right of UC007 : FR-S008–S017
+note right of UC008 : FR-C003–C007
+note right of UC009 : FR-C008–C010
+note right of UC010 : FR-C011–C016
+note right of UC011 : FR-C017–C022
+note right of UC012 : FR-S084–S087\nFR-C027–C029
+note right of UC013 : FR-S080–S083
+note right of UC014 : FR-S088–S089\nFR-C030–C031
+note right of UC015 : FR-S074–S075
+note right of UC016 : FR-S076–S079
+note right of UC017 : FR-A021
+note right of UC018 : FR-A022
+note right of UC019 : FR-A011–A013
+note right of UC020 : FR-A014–A018
+note right of UC021 : FR-S007
+note right of UC022 : FR-S064–S073
+note right of UC023 : FR-S090–S093
+note right of UC024 : FR-S094–S096
+note right of UC025 : FR-C034–C036
+note right of UC026 : FR-C032–C033
+note right of UC027 : FR-C037
 
 @enduml

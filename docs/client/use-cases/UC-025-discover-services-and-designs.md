@@ -6,7 +6,7 @@
 **Use Case Name:** Discover Services and Designs
 **Primary Actor:** Customer
 **Goal:** Browse available salon services and nail designs so that I can choose what to book or request.
-**Status:** Draft
+**Status:** Implemented
 
 ## Preconditions
 

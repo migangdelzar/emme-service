@@ -5,12 +5,22 @@ spring:
     virtual:
       enabled: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/emme
-    username: ${DB_USERNAME:emme}
-    password: ${DB_PASSWORD:emme}
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
+    core:
+      url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/emme?currentSchema=emme_core
+      username: ${DB_USERNAME:emme}
+      password: ${DB_PASSWORD:emme}
+      hikari:
+        maximum-pool-size: 5
+        minimum-idle: 2
+        pool-name: emme-core-pool
+    tenant:
+      url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/emme
+      username: ${DB_USERNAME:emme}
+      password: ${DB_PASSWORD:emme}
+      hikari:
+        maximum-pool-size: 20
+        minimum-idle: 5
+        pool-name: emme-tenant-pool
   jpa:
     hibernate:
       ddl-auto: validate
@@ -20,6 +30,9 @@ spring:
         jdbc:
           time_zone: UTC
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        multi_tenancy: SCHEMA
+        multi_tenant_connection_provider: com.emme.tenancy.adapter.out.client.database.SchemaMultiTenantConnectionProvider
+        tenant_identifier_resolver: com.emme.tenancy.adapter.out.client.database.TenantIdentifierResolver
   liquibase:
     change-log: classpath:db/changelog-root.yml
     contexts: dev
@@ -27,10 +40,14 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/emme
-          jwk-set-uri: http://localhost:8080/realms/emme/protocol/openid-connect/certs
+          issuer-uri: http://localhost:8080/realms/emme-core
+          jwk-set-uri: http://localhost:8080/realms/emme-core/protocol/openid-connect/certs
   modulith:
     events:
+      externalization:
+        enabled: ${EMME_KAFKA_EVENTS_ENABLED:false}
+        serialize-externalization: true
+      republish-outstanding-events-on-restart: true
       jdbc:
         schema-initialization:
           enabled: false
@@ -39,6 +56,18 @@ spring:
     redis:
       host: localhost
       port: 6379
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      retries: 10
+      properties:
+        enable.idempotence: true
+        compression.type: zstd
+    properties:
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG:}
 
 server:
   port: 8081
@@ -94,13 +123,36 @@ otel:
 
 # App-specific configuration
 app:
+  messaging:
+    kafka:
+      enabled: ${EMME_KAFKA_EVENTS_ENABLED:false}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      security-protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      producer-retries: ${KAFKA_PRODUCER_RETRIES:10}
+      consumer-group: ${KAFKA_CONSUMER_GROUP:emme-platform}
+      sasl-mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl-jaas-config: ${KAFKA_SASL_JAAS_CONFIG:}
+  keycloak:
+    base-url: http://localhost:8080
+    issuer-uri: http://localhost:8080/realms/emme-core
+    client-id: salon-app
+    platform-client-id: admin-app
+    default-realm: emme-core
+    customer-issuer-uri: http://localhost:8080/realms/emme-customers
+    customer-client-id: client-app
+    admin-password: ${EMME_KEYCLOAK_ADMIN_PASSWORD:}
+    provisioning:
+      enabled: ${EMME_KEYCLOAK_PROVISIONING_ENABLED:true}
+      initial-admin-password: ${EMME_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_PASSWORD:}
+      initial-owner-password: ${EMME_KEYCLOAK_PROVISIONING_INITIAL_OWNER_PASSWORD:}
   ai:
     provider: mock
     # provider: ollama  # switch to Ollama (needs ollama running)
-    # provider: groq   # switch to Groq (needs GROQ_API_KEY env var)
+    # provider: groq   # switch to Groq
     chat:
       model: llama-3.3-70b-versatile
       base-url: https://api.groq.com/openai/v1
+      api-key: ${GROQ_API_KEY:}
       temperature: 0.7
       # model: gemma3:4b          # Ollama chat model
       # base-url: http://localhost:11434  # Ollama base URL
@@ -110,9 +162,12 @@ app:
       dimension: 1024
       # model: nomic-embed-text   # alternative Ollama embedding model (768 — change dimension too)
   whatsapp:
-    verify-token: ${WHATSAPP_VERIFY_TOKEN:emme_verify_token}
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:}
     app-secret: ${WHATSAPP_APP_SECRET:}
+    tenant-id: ${WHATSAPP_TENANT_ID:}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
     phone-number-id: ${WHATSAPP_PHONE_ID:}
+    api-base-url: ${WHATSAPP_API_BASE_URL:https://graph.facebook.com/v21.0}
   notification:
     email:
       provider: mock
@@ -136,28 +191,34 @@ app:
       from-number: ${TWILIO_FROM_NUMBER:}
     messagebird:
       api-key: ${MESSAGEBIRD_API_KEY:}
+      originator: ${MESSAGEBIRD_ORIGINATOR:Emme}
     vonage:
       api-key: ${VONAGE_API_KEY:}
       api-secret: ${VONAGE_API_SECRET:}
+      from-number: ${VONAGE_FROM_NUMBER:Emme}
     push:
       provider: mock
     fcm:
       service-account: ${FCM_SERVICE_ACCOUNT_BASE64:}
+      project-id: ${FCM_PROJECT_ID:}
     apns:
       key-id: ${APNS_KEY_ID:}
       team-id: ${APNS_TEAM_ID:}
       private-key: ${APNS_PRIVATE_KEY_BASE64:}
       bundle-id: ${APNS_BUNDLE_ID:com.emme.salon}
+      sandbox: ${APNS_USE_SANDBOX:false}
   calendar:
     google:
-      service-account: ${GOOGLE_SA_JSON_BASE64:}
+      service-account-json-base64: ${GOOGLE_SA_JSON_BASE64:}
+      token-url: https://oauth2.googleapis.com/token
+      free-busy-url: https://www.googleapis.com/calendar/v3/freeBusy
     calendar-id: ${GOOGLE_CALENDAR_ID:primary}
   google:
     oauth:
       client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
       client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:}
-      redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/api/v1/google/oauth/callback}
-      encryption-key: ${GOOGLE_TOKEN_ENCRYPTION_KEY:change-me-in-production}
+      redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/api/google/oauth/callback}
+      encryption-key: ${GOOGLE_TOKEN_ENCRYPTION_KEY:local-google-token-key-32-bytes!}
   payment:
     provider: mock
     mercadopago:

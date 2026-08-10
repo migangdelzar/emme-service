@@ -1,6 +1,8 @@
 plugins {
     base
     id("com.emme.root")
+    id("emme.secrets")
+    id("emme.google-identity")
     alias(libs.plugins.spotless)
     alias(libs.plugins.owasp.dependency.check)
 }
@@ -19,7 +21,31 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
 configure<org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension> {
     formats.set(listOf("HTML", "JSON", "SARIF"))
     failBuildOnCVSS.set(7.0f)
-    failOnError.set(true)
-    skipTestGroups.set(true)
-    outputDirectory.set(layout.buildDirectory.dir("reports/dependency-check"))
+  failOnError.set(true)
+  skipTestGroups.set(true)
+  outputDirectory.set(layout.buildDirectory.dir("reports/dependency-check"))
+  nvd.apiKey.set(providers.environmentVariable("NVD_API_KEY"))
+  nvd.validForHours.set(24)
+}
+
+tasks.named("check") {
+    dependsOn("spotlessCheck")
+}
+
+tasks.register("coverageCheck") {
+    group = "verification"
+    description = "Run JaCoCo reporting and coverage verification for emme-platform"
+    dependsOn(
+        ":applications:emme-platform:test",
+        ":applications:emme-platform:jacocoTestReport",
+        ":applications:emme-platform:jacocoTestCoverageVerification",
+    )
+}
+
+gradle.projectsEvaluated {
+    tasks.named("ci") {
+        dependsOn(subprojects.flatMap { subproject ->
+            subproject.tasks.matching { task -> task.name == "check" }
+        })
+    }
 }

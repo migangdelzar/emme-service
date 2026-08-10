@@ -11,7 +11,7 @@ public class PaymentCrud {
 
   public String create(String providerRef, String amount, String currency) {
     return session.post(
-        "/api/v1/payments",
+        "/api/payments",
         "{\"providerReference\":\""
             + providerRef
             + "\",\"amount\":"
@@ -22,10 +22,10 @@ public class PaymentCrud {
   }
 
   public String list() {
-    return session.get("/api/v1/payments");
+    return session.get("/api/payments");
   }
 
   public String getById(String id) {
-    return session.get("/api/v1/payments/" + id);
+    return session.get("/api/payments/" + id);
   }
 }

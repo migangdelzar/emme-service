@@ -11,14 +11,15 @@ import com.emme.catalog.api.command.CreateCatalogItemCommand;
 import com.emme.catalog.api.command.DeleteCatalogItemCommand;
 import com.emme.catalog.api.query.ListCatalogItemsQuery;
 import com.emme.catalog.api.query.MatchCatalogItemsQuery;
-import com.emme.catalog.api.result.CatalogItemImageInfo;
-import com.emme.catalog.api.result.CatalogItemInfo;
-import com.emme.catalog.api.result.CatalogMatchListInfo;
+import com.emme.catalog.api.result.CatalogItemDetails;
+import com.emme.catalog.api.result.CatalogItemImageDetails;
+import com.emme.catalog.api.result.CatalogMatchList;
 import java.util.UUID;
 
 public final class CatalogWebMapper {
 
-  public static CreateCatalogItemCommand toCommand(UUID tenantId, CreateCatalogItemRequest request) {
+  public static CreateCatalogItemCommand toCommand(
+      UUID tenantId, CreateCatalogItemRequest request) {
     return new CreateCatalogItemCommand(
         tenantId,
         request.serviceId(),
@@ -48,7 +49,7 @@ public final class CatalogWebMapper {
     return new MatchCatalogItemsQuery(tenantId, request.query(), request.imageBase64());
   }
 
-  public static CatalogItemResponse toResponse(CatalogItemInfo info) {
+  public static CatalogItemResponse toResponse(CatalogItemDetails info) {
     return new CatalogItemResponse(
         info.id(),
         info.serviceId(),
@@ -62,11 +63,11 @@ public final class CatalogWebMapper {
         info.status());
   }
 
-  public static CatalogItemImageResponse toResponse(CatalogItemImageInfo info) {
+  public static CatalogItemImageResponse toResponse(CatalogItemImageDetails info) {
     return new CatalogItemImageResponse(info.id(), info.storageKey(), info.caption());
   }
 
-  public static CatalogMatchResponse toResponse(CatalogMatchListInfo info) {
+  public static CatalogMatchResponse toResponse(CatalogMatchList info) {
     return new CatalogMatchResponse(
         info.matches().stream()
             .map(
@@ -77,7 +78,10 @@ public final class CatalogWebMapper {
                         m.price(),
                         m.score(),
                         m.matchedImages().stream()
-                            .map(mi -> new CatalogMatchResponse.MatchedImage(mi.imageId(), mi.storageKey()))
+                            .map(
+                                mi ->
+                                    new CatalogMatchResponse.MatchedImage(
+                                        mi.imageId(), mi.storageKey()))
                             .toList()))
             .toList());
   }

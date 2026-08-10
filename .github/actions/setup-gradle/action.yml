@@ -1,0 +1,28 @@
+---
+name: Set up Emme Gradle build
+description: Install the pinned JDK and configure Gradle dependency caching.
+inputs:
+  java-version:
+    description: Java version used by the repository build.
+    required: false
+    default: '25'
+  skip-java-setup:
+    description: >-
+      Skip JDK installation when a caller already installed a compatible
+      toolchain.
+    required: false
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - name: Set up Java
+      if: inputs.skip-java-setup != 'true'
+      uses: actions/setup-java@v5
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: temurin
+        cache: gradle
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        cache-read-only: ${{ github.event_name == 'pull_request' }}

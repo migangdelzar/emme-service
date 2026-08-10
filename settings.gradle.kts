@@ -1,9 +1,14 @@
 pluginManagement {
     includeBuild("build-logic")
+    includeBuild("build-logic-settings")
     repositories {
         gradlePluginPortal()
         mavenCentral()
     }
+}
+
+plugins {
+    id("com.emme.environment-settings")
 }
 
 dependencyResolutionManagement {
@@ -25,16 +30,19 @@ rootProject.name = "emme-service"
 include(":platform")
 
 // ── Application ──
-include(":applications:studio-api")
 include(":applications:emme-platform")
 
 // ── Business Modules ──
 include(":modules:shared")
 include(":modules:tenancy")
 include(":modules:identity")
-include(":modules:studio")
-include(":modules:customer")
-include(":modules:workforce")
+include(":modules:clients")
+include(":modules:staffing")
+include(":modules:services")
+include(":modules:appointments")
+include(":modules:salon")
+include(":modules:subscriptions")
+include(":modules:documents")
 include(":modules:catalog")
 include(":modules:booking")
 include(":modules:calendar")
@@ -52,3 +60,6 @@ include(":libraries:test-containers")
 // ── Database ──
 include(":database")
 include(":libraries:observability-support")
+
+// ── Operational tools ──
+include(":tools:e2e-provisioner")

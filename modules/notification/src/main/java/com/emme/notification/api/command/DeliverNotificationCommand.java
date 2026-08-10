@@ -1,0 +1,5 @@
+package com.emme.notification.api.command;
+
+import java.util.UUID;
+
+public record DeliverNotificationCommand(UUID tenantId, UUID notificationId) {}

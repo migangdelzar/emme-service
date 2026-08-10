@@ -21,7 +21,7 @@ class PaymentModuleTest extends BaseSpringModuleTest {
   void shouldCreatePayment() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/payments")
+            post("/api/payments")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -37,7 +37,7 @@ class PaymentModuleTest extends BaseSpringModuleTest {
     var result =
         mockMvc
             .perform(
-                post("/api/v1/payments")
+                post("/api/payments")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -52,7 +52,7 @@ class PaymentModuleTest extends BaseSpringModuleTest {
             .replaceAll(".*\"id\"\\s*:\\s*\"([^\"]+)\".*", "$1");
 
     mockMvc
-        .perform(get("/api/v1/payments/{id}", paymentId).with(tenantJwt()))
+        .perform(get("/api/payments/{id}", paymentId).with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(paymentId))
         .andExpect(jsonPath("$.amount").value(50.00));
@@ -62,7 +62,7 @@ class PaymentModuleTest extends BaseSpringModuleTest {
   void shouldRejectWithoutJwt() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/payments")
+            post("/api/payments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\"providerReference\":\"unauth\",\"amount\":10.00,\"currency\":\"USD\"}"))

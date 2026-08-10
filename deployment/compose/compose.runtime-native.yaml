@@ -1,0 +1,7 @@
+# GraalVM Native Image runtime overlay.
+# Usage: docker compose -f compose.yaml -f compose.runtime-native.yaml up -d
+services:
+  emme-platform:
+    image: ${EMME_SERVICE_IMAGE:-ghcr.io/migangdelzar/emme-service:${TAG:-latest}-native}
+    healthcheck:
+      disable: true

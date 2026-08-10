@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS notification_preference (
     metadata        JSONB,
     created_at      TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at      TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    version         BIGINT       NOT NULL DEFAULT 0,
     UNIQUE (tenant_id, channel)
 );
 

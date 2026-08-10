@@ -7,13 +7,12 @@ import org.junit.jupiter.api.Test;
 
 class SubscriptionApiTest {
 
-  private static final String DEMO_TENANT = "00000000-0000-0000-0000-100000000000";
-
   @Test
   void shouldGetSubscriptionForTenant() {
     withSession(
         s -> {
-          var result = s.subscriptions().get(DEMO_TENANT);
+          s.setup().subscription(s.tenantId());
+          var result = s.subscriptions().get(s.tenantId());
           assertThat(result).isNotNull();
         });
   }
@@ -22,11 +21,12 @@ class SubscriptionApiTest {
   void shouldEnforceEntitlement() {
     withSession(
         s -> {
+          s.setup().subscription(s.tenantId());
           String body =
               """
                 {"entitlement":"customers:write"}
                 """;
-          var result = s.post("/api/v1/subscriptions/" + DEMO_TENANT + "/enforce", body, 200);
+          var result = s.post("/api/subscriptions/" + s.tenantId() + "/enforce", body, 200);
           assertThat(result).isNotNull();
         });
   }

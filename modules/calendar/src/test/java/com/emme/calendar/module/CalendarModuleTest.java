@@ -22,7 +22,7 @@ class CalendarModuleTest extends BaseSpringModuleTest {
   void shouldGetBusyTimes() throws Exception {
     mockMvc
         .perform(
-            get("/api/v1/calendar/busy")
+            get("/api/calendar/busy")
                 .with(tenantJwt())
                 .param("artistId", UUID.randomUUID().toString())
                 .param("date", LocalDate.now().plusDays(1).toString()))
@@ -32,7 +32,7 @@ class CalendarModuleTest extends BaseSpringModuleTest {
   @Test
   void shouldTriggerSync() throws Exception {
     mockMvc
-        .perform(post("/api/v1/calendar/sync").with(tenantJwt()))
+        .perform(post("/api/calendar/sync").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").exists());
   }
@@ -41,7 +41,7 @@ class CalendarModuleTest extends BaseSpringModuleTest {
   void shouldRejectWithoutJwt() throws Exception {
     mockMvc
         .perform(
-            get("/api/v1/calendar/busy")
+            get("/api/calendar/busy")
                 .param("artistId", UUID.randomUUID().toString())
                 .param("date", LocalDate.now().toString()))
         .andExpect(status().isUnauthorized());
@@ -49,8 +49,6 @@ class CalendarModuleTest extends BaseSpringModuleTest {
 
   @Test
   void shouldReturnBadRequestWithoutParams() throws Exception {
-    mockMvc
-        .perform(get("/api/v1/calendar/busy").with(tenantJwt()))
-        .andExpect(status().isBadRequest());
+    mockMvc.perform(get("/api/calendar/busy").with(tenantJwt())).andExpect(status().isBadRequest());
   }
 }

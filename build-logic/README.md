@@ -12,6 +12,11 @@ build-logic structure.
 `build-logic` uses Capability-Driven Design. It is intentionally different from
 the DDD + Hexagonal package structure used by backend business modules.
 
+Environment selection is resolved before project plugin resolution by the
+separate `build-logic-settings` included build. The main build-logic build then
+consumes that immutable, non-secret context. `RootPlugin` remains a thin
+repository lifecycle coordinator; it does not own environment or secret logic.
+
 ```text
 Business module                         Gradle build-logic
 DDD bounded capability                  Build capability
@@ -42,17 +47,31 @@ build-logic/
     │       ├── deployment/         # plugin, DSL, tasks, providers, results
     │       ├── publishing/         # plugin, DSL, tasks, providers, results
     │       ├── registry/           # registry boundary and results
-    │       ├── security/           # scanner plugin, tasks, providers
-    │       ├── quality/            # quality capability implementation
+    │       ├── security/            # scanner plugin, tasks, providers
+    │       ├── environment/        # typed projections over generic config
+    │       ├── secrets/             # provider validation and rotation
+    │       ├── quality/             # quality capability implementation
     │       └── git/                # Git ValueSources
     ├── test/kotlin/
     └── functionalTest/kotlin/
 ```
 
-`internal/`, global `plugin/`, `extension/`, `task/`, `provider/`, and `value/`
-packages are transitional implementation buckets. They are migrated by capability
-ownership, not by a blind global rename. `internal/` becomes `core/`; capability
-specific files move into their owning capability.
+The implementation does not use global `plugin/`, `extension/`, `task/`,
+`provider/`, or `value/` buckets. Shared primitives are in `core/`; capability
+specific files live under the capability that owns their behavior.
+
+The settings-time boundary is intentionally separate:
+
+```text
+build-logic-settings/
+└── src/main/kotlin/com/emme/buildlogic/settings/
+    └── EnvironmentSettingsPlugin.kt
+```
+
+The settings plugin publishes only the selected environment and a generic
+non-secret property map. Project capabilities expose typed projections from it.
+It uses strings and the environment property filenames only; typed models such
+as `EnvironmentName` remain owned by the main build-logic build.
 
 ## Convention plugins
 
@@ -74,6 +93,9 @@ specific files move into their owning capability.
 | `emme.container` | Container image lifecycle | Containerized applications |
 | `emme.publishing` | SBOM, signing, metadata, releases | Published artifacts |
 | `emme.deployment` | Compose/k3d/Kubernetes strategy dispatch | Deployable applications |
+| `emme.security` | Security scanner task and provider dispatch | Projects requiring security gates |
+| `emme.environment` | Environment selection and typed non-secret configuration | Projects consuming delivery defaults |
+| `emme.secrets` | Provider-neutral validation and explicit rotation | Root/release security gates |
 
 Convention plugins remain declarative, composable, small, opinionated, and reusable.
 Complex behavior belongs in a capability-owned binary plugin.
@@ -110,17 +132,25 @@ Use typed extensions for configuration, custom tasks for execution, provider por
 for external tools, result models for stable outcomes, and `Provider`/`ValueSource`
 for lazy external state.
 
+Configuration precedence is `capability defaults` → environment properties file →
+`EMME_*` process variables → `gradle.properties` → `-Pname=value` (highest).
+Secret-like properties never enter the shared environment map. The secret
+manifest contains references and generation policy only; `rotateSecrets` is
+dry-run unless an explicit apply mode and provider are selected.
+
 ## Deployment targets
 
 ```bash
 # Docker Compose (default)
-./gradlew composeUp composeDown composeLogs
+./gradlew deployUp -Pemme.deployment.target=compose
 
-# k3d local cluster
-./gradlew k3dCreate k3dImport k3dDelete -Pemme.deployment.target=k3d
+# K3d local cluster (mise owns the thin CLI orchestration)
+mise run k3d:apply:jvm
+mise run k3d:apply:native
 
-# Kubernetes
-./gradlew k8sApply k8sDiff k8sRollout -Pemme.deployment.target=kubernetes
+# K3s manifests are rendered locally and applied by the protected delivery path
+mise run k3s:render:jvm
+mise run k3s:render:native
 ```
 
 Override the target with `-Pemme.deployment.target=k3d` or
@@ -139,7 +169,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":modules:customer"))
+    implementation(project(":modules:clients"))
     implementation(project(":modules:catalog"))
 }
 ```

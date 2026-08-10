@@ -1,0 +1,63 @@
+---
+# GraalVM Native Image overlay for the local K3d/K3s-compatible environment.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - ../../jobs
+
+namespace: emme-dev
+
+namePrefix: dev-
+
+images:
+  - name: ghcr.io/migangdelzar/emme-service
+    newName: emme-modulith
+    newTag: dev-native
+  - name: ghcr.io/migangdelzar/emme-web
+    newName: emme-frontend
+    newTag: dev
+
+patches:
+  - patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: "dev"
+      - op: remove
+        path: /spec/template/spec/containers/0/env/1
+    target:
+      kind: Deployment
+      name: backend
+  - patch: |
+      - op: replace
+        path: /spec/type
+        value: NodePort
+      - op: replace
+        path: /spec/ports/0/nodePort
+        value: 30080
+    target:
+      kind: Service
+      name: backend
+  - patch: |
+      - op: replace
+        path: /spec/type
+        value: NodePort
+      - op: replace
+        path: /spec/ports/0/nodePort
+        value: 30081
+    target:
+      kind: Service
+      name: frontend
+  - patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: TENANT_SEED_SLUGS
+          value: "studio-a,nails-by-maria,e2e-test-a,e2e-test-b"
+      - op: replace
+        path: /spec/template/spec/containers/0/env/6/value
+        value: "dev"
+    target:
+      kind: Job
+      name: database-migrations

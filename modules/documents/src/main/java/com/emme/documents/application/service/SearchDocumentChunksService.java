@@ -1,0 +1,50 @@
+package com.emme.documents.application.service;
+
+import com.emme.documents.api.query.SearchDocumentChunksQuery;
+import com.emme.documents.api.result.DocumentChunkDetails;
+import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
+import com.emme.documents.application.mapper.DocumentApplicationMapper;
+import com.emme.documents.application.port.out.DocumentRepository;
+import com.emme.documents.application.port.out.DocumentSearchHit;
+import com.emme.documents.application.port.out.DocumentSearchPort;
+import com.emme.documents.domain.model.DocumentChunk;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/** Executes tenant-scoped document retrieval and restores search rank ordering. */
+@Service
+@Transactional(readOnly = true)
+public class SearchDocumentChunksService implements SearchDocumentChunksUseCase {
+
+  private final DocumentSearchPort search;
+  private final DocumentRepository repository;
+
+  public SearchDocumentChunksService(DocumentSearchPort search, DocumentRepository repository) {
+    this.search = search;
+    this.repository = repository;
+  }
+
+  @Override
+  public List<DocumentChunkDetails> search(SearchDocumentChunksQuery query) {
+    List<DocumentSearchHit> hits =
+        search.search(query.tenantId(), query.queryVector(), query.queryText(), query.limit());
+    List<java.util.UUID> chunkIds =
+        hits.stream().map(DocumentSearchHit::chunkId).distinct().toList();
+    if (chunkIds.isEmpty()) {
+      return List.of();
+    }
+
+    Map<java.util.UUID, DocumentChunk> chunksById =
+        repository.findChunksByTenantIdAndIds(query.tenantId(), chunkIds).stream()
+            .collect(Collectors.toMap(DocumentChunk::id, Function.identity()));
+    return chunkIds.stream()
+        .map(chunksById::get)
+        .filter(java.util.Objects::nonNull)
+        .map(DocumentApplicationMapper::toResult)
+        .toList();
+  }
+}

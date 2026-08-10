@@ -1,0 +1,17 @@
+---
+apiVersion: k3d.io/v1alpha4
+kind: Simple
+metadata:
+  name: emme-local
+servers: 1
+agents: 2
+image: rancher/k3s:v1.30.0-k3s1
+ports:
+  - port: 8081:80
+    nodeFilters:
+      - loadbalancer
+registries:
+  create:
+    name: emme-registry.local
+    host: "0.0.0.0"
+    hostPort: "5000"

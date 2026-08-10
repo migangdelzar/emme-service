@@ -1,0 +1,27 @@
+# Shared PostgreSQL integration profile for tests using @PostgresIntegrationTest.
+# The annotation activates this profile and supplies the Testcontainers database.
+spring:
+  task:
+    scheduling:
+      enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        hbm2ddl:
+          create_namespaces: true
+  modulith:
+    events:
+      jdbc:
+        schema-initialization:
+          enabled: true
+  liquibase:
+    enabled: false
+
+app:
+  tenant:
+    provisioning:
+      enabled: false

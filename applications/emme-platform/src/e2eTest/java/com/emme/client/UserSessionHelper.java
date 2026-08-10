@@ -17,7 +17,7 @@ public class UserSessionHelper {
   /** Create a tenant and return its slug. */
   public String createTenant(String slug, String name) {
     var body = Template.load("tenant-create.json").set("slug", slug).set("name", name).render();
-    session.post("/api/v1/tenants", body);
+    session.post("/api/tenants", body);
     return slug;
   }
 
@@ -29,7 +29,7 @@ public class UserSessionHelper {
               .set("tenantId", tenantId)
               .set("plan", "ENTERPRISE")
               .render();
-      session.post("/api/v1/subscriptions", body);
+      session.post("/api/subscriptions", body);
     } catch (AssertionError e) {
       // Already exists — ignore
     }
@@ -44,7 +44,7 @@ public class UserSessionHelper {
             .set("email", email)
             .set("phone", phone)
             .render();
-    return session.post("/api/v1/customers", body);
+    return session.post("/api/customers", body);
   }
 
   /** Create a service. */
@@ -57,23 +57,23 @@ public class UserSessionHelper {
             .set("duration", duration)
             .set("category", category)
             .render();
-    return session.post("/api/v1/services", body);
+    return session.post("/api/services", body);
   }
 
   /** Create an artist. */
   public String createArtist(String name) {
     var body = Template.load("artist-create.json").set("name", name).render();
-    return session.post("/api/v1/artists", body);
+    return session.post("/api/artists", body);
   }
 
   /** List tenants. */
   public String listTenants() {
-    return session.get("/api/v1/tenants");
+    return session.get("/api/tenants");
   }
 
   /** List customers. */
   public String listCustomers() {
-    return session.get("/api/v1/customers");
+    return session.get("/api/customers");
   }
 
   /** Get current session. */

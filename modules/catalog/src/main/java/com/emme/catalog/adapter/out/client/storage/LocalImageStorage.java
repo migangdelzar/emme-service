@@ -1,12 +1,12 @@
 package com.emme.catalog.adapter.out.client.storage;
 
 import com.emme.catalog.application.port.out.ImageStorage;
+import com.emme.catalog.configuration.CatalogImageStorageProperties;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,8 +14,8 @@ class LocalImageStorage implements ImageStorage {
 
   private final Path baseDir;
 
-  LocalImageStorage(@Value("${app.catalog.image-dir:./data/catalog-images}") String baseDir) {
-    this.baseDir = Path.of(baseDir);
+  LocalImageStorage(CatalogImageStorageProperties properties) {
+    this.baseDir = Path.of(properties.imageDir());
   }
 
   @Override

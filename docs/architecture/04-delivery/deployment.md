@@ -1,5 +1,7 @@
 # Deployment
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 Deployment moves a verified image and its configuration to a target environment. Target-specific commands are isolated behind a deployment provider or strategy.
@@ -11,6 +13,59 @@ DeploymentProvider
 ├── ComposeProvider       # local development
 ├── K3dProvider           # local Kubernetes-like CI environment
 └── KubernetesProvider    # staging / production
+```
+
+### Local Kafka event-streaming verification
+
+Kafka is not part of the default low-cost Compose stack. When validating the
+Spring Modulith externalizer locally, add
+`deployment/compose/compose.environment-kafka.yaml` to the base and JVM
+runtime files. The overlay enables event externalization, starts a pinned
+single-node KRaft broker, and gates the application on Kafka health.
+
+```bash
+docker compose \
+  -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.environment-kafka.yaml \
+  up -d
+```
+
+This overlay is disposable verification infrastructure, not a production Kafka
+topology. Production uses an external SASL broker configured through the
+protected secret boundary described in [Secrets](secrets.md).
+
+## JVM and native runtime overlays
+
+Compose and Kubernetes use the same selection rule: shared infrastructure is
+defined once, and the deployment command selects exactly one runtime image.
+
+| Target | JVM | Native |
+|---|---|---|
+| Docker Compose | `deployment/compose/compose.yaml` + `compose.runtime-jvm.yaml` | `deployment/compose/compose.yaml` + `compose.runtime-native.yaml` |
+| K3d local | `infra/kubernetes/overlays/k3d-jvm` | `infra/kubernetes/overlays/k3d-native` |
+| K3s production | `infra/kubernetes/overlays/k3s-production-jvm` | `infra/kubernetes/overlays/k3s-production-native` |
+
+```mermaid
+flowchart TD
+    COMMON[Shared base manifests] --> JVM[JVM overlay]
+    COMMON --> NATIVE[Native overlay]
+    JVM --> K3D[K3d local]
+    NATIVE --> K3D_NATIVE[K3d native smoke]
+    JVM --> K3S[K3s]
+    NATIVE --> K3S_NATIVE[K3s native smoke]
+```
+
+The JVM overlays are the default rollback path. Native overlays remove JVM
+runtime flags and select a separately built native image. Do not apply both
+runtime overlays to one environment.
+
+```bash
+# Render before applying; no cluster mutation occurs.
+kubectl kustomize infra/kubernetes/overlays/k3d-jvm >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3d-native >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3s-production-jvm >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3s-production-native >/dev/null
 ```
 
 ## Flow

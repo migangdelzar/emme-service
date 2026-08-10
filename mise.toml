@@ -9,14 +9,161 @@ _.source = "scripts/mise/env.sh"
 description = "Compile the backend"
 run = "./gradlew compileJava --no-configuration-cache"
 
+[tasks.docs-check]
+description = "Validate Markdown links and code fences"
+run = "node scripts/validate-markdown.mjs"
+
+[tasks.quality]
+description = "Run backend formatting, compilation, and static-analysis gates"
+run = "./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon --no-configuration-cache"
+
+[tasks.format-check]
+description = "Validate Java and Gradle formatting without changing files"
+run = "./gradlew spotlessCheck --no-daemon --no-configuration-cache"
+
+[tasks.format-apply]
+description = "Apply the canonical Spotless formatting to the service"
+run = "./gradlew spotlessApply --no-daemon --no-configuration-cache"
+
+[tasks.architecture]
+description = "Verify Spring Modulith and ArchUnit module boundaries"
+run = "./gradlew :applications:emme-platform:test --tests com.emme.ModularityTest --tests com.emme.LayerConventionTest --no-daemon --no-configuration-cache"
+
+[tasks.coverage]
+description = "Verify JaCoCo coverage for the canonical emme-platform application"
+run = "./gradlew :applications:emme-platform:coverageCheck --no-daemon --no-configuration-cache"
+
+[tasks.security-check]
+description = "Run the OWASP dependency vulnerability scan"
+run = "./gradlew dependencyCheckAnalyze --no-daemon --no-configuration-cache"
+
 [tasks.test]
 description = "Run backend tests"
 run = "./gradlew test --no-configuration-cache"
 
 [tasks.arch-test]
 description = "Verify Spring Modulith and ArchUnit boundaries"
-run = "./gradlew :applications:emme-platform:archTest --no-configuration-cache"
+run = "./gradlew :applications:emme-platform:test --tests com.emme.ModularityTest --tests com.emme.LayerConventionTest --no-daemon --no-configuration-cache"
 
 [tasks.build]
 description = "Build the deployable backend"
 run = "./gradlew :applications:emme-platform:build --no-configuration-cache"
+
+[tasks.hooks-install]
+description = "Install the repository-native Gradle Git hooks"
+run = "git config core.hooksPath .githooks"
+
+[tasks."k3d:bootstrap"]
+description = "Create the disposable local K3d cluster when it does not exist"
+run = "k3d cluster get emme-local >/dev/null 2>&1 || k3d cluster create --config deployment/k3d/cluster.yaml"
+
+[tasks."k3d:destroy"]
+description = "Delete the disposable local K3d cluster"
+run = "k3d cluster delete emme-local"
+
+[tasks."k3d:render:jvm"]
+description = "Render the K3d JVM manifests without applying them"
+run = "kubectl kustomize infra/kubernetes/overlays/k3d-jvm"
+
+[tasks."k3d:render:native"]
+description = "Render the K3d native-image manifests without applying them"
+run = "kubectl kustomize infra/kubernetes/overlays/k3d-native"
+
+[tasks."k3d:apply:jvm"]
+description = "Create K3d and apply the JVM runtime manifests"
+run = "mise run k3d:bootstrap && kubectl apply -k infra/kubernetes/overlays/k3d-jvm"
+
+[tasks."k3d:apply:native"]
+description = "Create K3d and apply the native-image runtime manifests"
+run = "mise run k3d:bootstrap && kubectl apply -k infra/kubernetes/overlays/k3d-native"
+
+[tasks."k3s:render:jvm"]
+description = "Render the K3s production JVM manifests without applying them"
+run = "kubectl kustomize infra/kubernetes/overlays/k3s-production-jvm"
+
+[tasks."k3s:render:native"]
+description = "Render the K3s production native-image manifests without applying them"
+run = "kubectl kustomize infra/kubernetes/overlays/k3s-production-native"
+
+[tasks."platform:up"]
+description = "Start the E2E platform stack (Postgres, Keycloak, Redis, Emme)"
+run = """
+docker-compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.environment-e2e.yaml \
+  up -d --build --wait
+"""
+
+[tasks."keycloak:configure-google"]
+description = "Configure Google OIDC customer login in emme-customers through Gradle"
+run = "./gradlew configureCustomerOidc --no-configuration-cache"
+
+[tasks."google:configure-customer-oidc"]
+description = "Configure Google OIDC customer login in emme-customers"
+run = "./gradlew configureCustomerOidc --no-configuration-cache"
+
+[tasks."google:configure-tenant-oauth"]
+description = "Validate the salon/studio Google OAuth2 client and backend callback"
+run = "./gradlew configureTenantOAuth --no-configuration-cache"
+
+[tasks."platform:up:local"]
+description = "Build and start the complete E2E platform stack from the local image"
+run = """
+mise run platform:build && \
+docker tag emme-platform:0.1.0 emme-service:local-e2e && \
+EMME_SERVICE_IMAGE=emme-service:local-e2e docker-compose \
+  -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.environment-e2e.yaml \
+  up -d --build --wait
+"""
+
+[tasks."platform:down"]
+description = "Stop the E2E platform and remove volumes"
+run = """
+docker-compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.environment-e2e.yaml \
+  down -v
+"""
+
+[tasks."platform:build"]
+description = "Build the platform Docker image"
+run = "./gradlew :applications:emme-platform:bootBuildImage --no-configuration-cache"
+
+[tasks."platform:restart"]
+description = "Rebuild and restart the platform"
+run = "mise run platform:up:local"
+
+[tasks."ci:test"]
+description = "Run backend unit tests"
+run = "./gradlew test --no-configuration-cache"
+
+[tasks."ci:build"]
+description = "Full CI build (test + integration + build)"
+run = "./gradlew build --no-configuration-cache"
+
+
+[tasks."e2e:provision"]
+description = "Provision E2E tenants via platform API"
+run = "./gradlew :tools:e2e-provisioner:e2eProvision --no-configuration-cache"
+
+[tasks."e2e:bootstrap"]
+description = "Build, start, and provision the complete local E2E platform"
+run = """
+mise run platform:down || true
+mise run platform:up:local && \
+mise run e2e:provision
+"""
+
+[tasks."e2e:clean"]
+description = "Remove E2E tenant data from DB and Keycloak"
+run = "scripts/e2e-clean.sh"
+
+[tasks."e2e:reset"]
+description = "Clean and re-provision E2E tenants"
+run = "mise run e2e:clean && mise run e2e:provision"
+
+[tasks."e2e:smoke"]
+description = "Run E2E real smoke tests"
+run = "cd ../emme-web/e2e/src && E2E_MODE=real E2E_API_URL=http://localhost:8081 E2E_TENANT_SLUG=e2e-studio bun run test:real -- --grep @smoke"

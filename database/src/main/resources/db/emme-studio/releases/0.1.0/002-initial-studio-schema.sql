@@ -9,7 +9,9 @@ CREATE TABLE IF NOT EXISTS business_profile (
     locale VARCHAR(10) NOT NULL DEFAULT 'es-MX',
     display_name VARCHAR(150),
     metadata JSONB,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS operating_hours (
@@ -20,6 +22,9 @@ CREATE TABLE IF NOT EXISTS operating_hours (
     opens_at TIME NOT NULL,
     closes_at TIME NOT NULL,
     active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (tenant_id, day_of_week)
 );
 
@@ -30,7 +35,9 @@ CREATE TABLE IF NOT EXISTS booking_policy (
     max_advance_days INTEGER NOT NULL DEFAULT 30,
     cancellation_window_minutes INTEGER NOT NULL DEFAULT 120,
     allow_overlap BOOLEAN NOT NULL DEFAULT false,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS customer (
@@ -41,7 +48,9 @@ CREATE TABLE IF NOT EXISTS customer (
     email VARCHAR(200),
     status VARCHAR(10) NOT NULL DEFAULT 'ACTIVE'
         CHECK (status IN ('ACTIVE', 'RETIRED')),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS channel_participant (
@@ -53,6 +62,8 @@ CREATE TABLE IF NOT EXISTS channel_participant (
     consent_status VARCHAR(10) NOT NULL DEFAULT 'UNKNOWN'
         CHECK (consent_status IN ('UNKNOWN', 'GRANTED', 'REVOKED')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (tenant_id, channel, provider_reference)
 );
 
@@ -61,10 +72,15 @@ CREATE TABLE IF NOT EXISTS service (
     tenant_id UUID NOT NULL,
     code VARCHAR(50) NOT NULL,
     name VARCHAR(200) NOT NULL,
+    category VARCHAR(120) NOT NULL DEFAULT 'GENERAL',
+    description VARCHAR(1000),
     duration_minutes INTEGER NOT NULL CHECK (duration_minutes >= 1 AND duration_minutes <= 1440),
     base_price DECIMAL(10,2) NOT NULL CHECK (base_price >= 0),
     status VARCHAR(10) NOT NULL DEFAULT 'ACTIVE'
         CHECK (status IN ('ACTIVE', 'RETIRED')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (tenant_id, code)
 );
 
@@ -74,7 +90,9 @@ CREATE TABLE IF NOT EXISTS artist (
     name VARCHAR(200) NOT NULL,
     status VARCHAR(10) NOT NULL DEFAULT 'ACTIVE'
         CHECK (status IN ('ACTIVE', 'INACTIVE')),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS artist_capability (
@@ -83,7 +101,9 @@ CREATE TABLE IF NOT EXISTS artist_capability (
     artist_id UUID NOT NULL REFERENCES artist(id),
     service_id UUID NOT NULL REFERENCES service(id),
     active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (artist_id, service_id)
 );
 
@@ -99,7 +119,9 @@ CREATE TABLE IF NOT EXISTS appointment (
         CHECK (status IN ('DRAFT','CONFIRMED','IN_PROGRESS','COMPLETED','CANCELLED','NO_SHOW')),
     external_calendar_status VARCHAR(15) NOT NULL DEFAULT 'NOT_SYNCED'
         CHECK (external_calendar_status IN ('NOT_SYNCED','SYNCED','CONFLICT','FAILED')),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS subscription (
@@ -109,7 +131,9 @@ CREATE TABLE IF NOT EXISTS subscription (
     status VARCHAR(15) NOT NULL DEFAULT 'TRIAL'
         CHECK (status IN ('TRIAL','ACTIVE','PAST_DUE','SUSPENDED','CANCELLED')),
     period_ends_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE OR REPLACE FUNCTION current_tenant_id()

@@ -1,13 +1,13 @@
-package com.emme.assistant.web;
+package com.emme.assistant.adapter.in.web.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.studio.subscriptions.api.PlanType;
-import com.emme.studio.subscriptions.entity.Subscription;
-import com.emme.studio.subscriptions.entity.SubscriptionRepository;
-import com.emme.tenancy.application.TenantService;
+import com.emme.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
+import com.emme.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
+import com.emme.subscriptions.api.type.PlanType;
+import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.testing.BaseWebTest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -19,23 +19,22 @@ import org.springframework.http.MediaType;
 
 class ConversationWebTest extends BaseWebTest {
 
-  @Autowired private TenantService tenantService;
-
-  @Autowired private SubscriptionRepository subscriptionRepo;
+  @Autowired private SpringDataSubscriptionRepository subscriptionRepo;
 
   @BeforeEach
   void setUp() {
-    var tenant = tenantService.create("conv-web-" + System.nanoTime(), "Conv Web Tenant");
-    tenantId = tenant.getId();
+    TenantDetails tenant = createTenant("conv-web-" + System.nanoTime(), "Conv Web Tenant");
+    tenantId = tenant.id();
     subscriptionRepo.save(
-        new Subscription(tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
+        new SubscriptionEntity(
+            tenantId, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));
   }
 
   @Test
   void shouldRejectUnauthenticatedRequest() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/conversations")
+            post("/api/conversations")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\"participantId\":\"" + UUID.randomUUID() + "\",\"channel\":\"WHATSAPP\"}"))
@@ -46,7 +45,7 @@ class ConversationWebTest extends BaseWebTest {
   void shouldAcceptValidConversationRequest() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/conversations")
+            post("/api/conversations")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(

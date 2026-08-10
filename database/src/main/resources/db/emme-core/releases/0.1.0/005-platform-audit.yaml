@@ -21,6 +21,9 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: tenant_id
+                  type: uuid
+              - column:
                   name: action
                   type: varchar(120)
                   constraints:
@@ -46,6 +49,12 @@ databaseChangeLog:
                   name: updated_at
                   type: timestamptz
                   defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
                   constraints:
                     nullable: false
         - sql:

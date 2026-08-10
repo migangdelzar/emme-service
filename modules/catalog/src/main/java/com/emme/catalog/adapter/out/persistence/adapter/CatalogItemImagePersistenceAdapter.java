@@ -1,5 +1,6 @@
 package com.emme.catalog.adapter.out.persistence.adapter;
 
+import com.emme.catalog.adapter.out.persistence.entity.CatalogItemImageEntity;
 import com.emme.catalog.adapter.out.persistence.repository.SpringDataCatalogItemImageRepository;
 import com.emme.catalog.application.port.out.CatalogItemImageRepository;
 import com.emme.catalog.domain.model.CatalogItemImage;
@@ -18,21 +19,23 @@ class CatalogItemImagePersistenceAdapter implements CatalogItemImageRepository {
 
   @Override
   public List<CatalogItemImage> findByCatalogItemId(UUID catalogItemId) {
-    return repository.findByCatalogItemId(catalogItemId);
+    return repository.findByCatalogItemId(catalogItemId).stream()
+        .map(CatalogItemImageEntity::toDomain)
+        .toList();
   }
 
   @Override
   public List<CatalogItemImage> findAllById(Iterable<UUID> ids) {
-    return repository.findAllById(ids);
+    return repository.findAllById(ids).stream().map(CatalogItemImageEntity::toDomain).toList();
   }
 
   @Override
   public CatalogItemImage save(CatalogItemImage image) {
-    return repository.save(image);
+    return repository.save(CatalogItemImageEntity.from(image)).toDomain();
   }
 
   @Override
   public void deleteAll(List<CatalogItemImage> images) {
-    repository.deleteAll(images);
+    repository.deleteAll(images.stream().map(CatalogItemImageEntity::from).toList());
   }
 }

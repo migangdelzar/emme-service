@@ -1,0 +1,112 @@
+# Disposable full-stack E2E overlay.
+# The application runs as the exact service image built from the selected
+# service ref. The web repository owns the browser process.
+services:
+  emme-platform:
+    # The JVM memory calculator needs more than the shared 512 MiB local
+    # default before Spring can initialize all Modulith modules. Native images
+    # use the separate runtime overlay and do not rely on this JVM budget.
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    environment:
+      SPRING_PROFILES_ACTIVE: e2e
+      JAVA_TOOL_OPTIONS: "-XX:ReservedCodeCacheSize=128M -XX:MaxMetaspaceSize=256M"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USERNAME: emme
+      DB_PASSWORD: ${DB_PASSWORD:-emme}
+      DEFAULT_DATABASE_JDBC_URL: jdbc:postgresql://postgres:5432/emme?currentSchema=e2e_default,emme_core,public
+      # The reserved default pool is resolved from spring.datasource.url rather
+      # than emme_core.database_registry. Keep it on the seeded tenant schema
+      # so Spring Modulith can see its event_publication table during startup.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/emme?currentSchema=e2e_default,emme_core,public
+      SPRING_DATASOURCE_CORE_URL: jdbc:postgresql://postgres:5432/emme?currentSchema=emme_core
+      SPRING_DATASOURCE_CORE_USERNAME: emme
+      SPRING_DATASOURCE_CORE_PASSWORD: ${DB_PASSWORD:-emme}
+      SPRING_DATASOURCE_TENANT_URL: jdbc:postgresql://postgres:5432/emme
+      SPRING_DATASOURCE_TENANT_USERNAME: emme
+      SPRING_DATASOURCE_TENANT_PASSWORD: ${DB_PASSWORD:-emme}
+      SPRING_DATA_REDIS_HOST: redis
+      # Browser-issued tokens carry the host-facing issuer. The container uses
+      # the internal JWK endpoint below for key retrieval while validating that
+      # externally observable issuer claim.
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/emme-core
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/emme-core/protocol/openid-connect/certs
+      APP_KEYCLOAK_BASE_URL: http://keycloak:8080
+      APP_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/emme-core
+      # Spring's dynamic tenant decoder reads JWKS from the host-published
+      # Keycloak endpoint in local Compose. Password grants and provisioning
+      # continue to use the internal service address above.
+      APP_KEYCLOAK_JWK_SET_BASE_URL: http://host.docker.internal:18080
+      APP_KEYCLOAK_DEFAULT_REALM: emme-core
+      APP_KEYCLOAK_CLIENT_ID: salon-app
+      APP_KEYCLOAK_PLATFORM_CLIENT_ID: admin-app
+      APP_KEYCLOAK_CUSTOMER_ISSUER_URI: http://keycloak:8080/realms/emme-customers
+      APP_KEYCLOAK_CUSTOMER_CLIENT_ID: client-app
+      APP_KEYCLOAK_ADMIN_PASSWORD: ${EMME_E2E_KEYCLOAK_ADMIN_PASSWORD:-e2e-admin-password}
+      APP_KEYCLOAK_PROVISIONING_ENABLED: "true"
+      APP_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_PASSWORD: "E2e-Tenant-Owner-2026!"
+      APP_KEYCLOAK_PROVISIONING_INITIAL_OWNER_PASSWORD: "E2e-Tenant-Owner-2026!"
+      APP_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_USERNAME: "admin"
+      APP_KEYCLOAK_PROVISIONING_INITIAL_OWNER_USERNAME: "owner"
+      APP_TENANT_PROVISIONING_ENABLED: "true"
+      APP_IDENTITY_LOGIN_RATE_LIMIT_MAX_ATTEMPTS: "20"
+      GOOGLE_TOKEN_ENCRYPTION_KEY: e2e-token-encryption-32-byte-key
+      OTEL_SDK_DISABLED: "true"
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_ID: admin-app
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_AUTHORIZATION_GRANT_TYPE: authorization_code
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_SCOPE: openid,profile,email
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_REDIRECT_URI: '{baseUrl}/login/oauth2/code/{registrationId}'
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/emme-core
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      database-migrations:
+        condition: service_completed_successfully
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${EMME_E2E_KEYCLOAK_ADMIN_PASSWORD:-e2e-admin-password}
+    ports:
+      - "18080:8080"
+    volumes:
+      - ../../tools/e2e-provisioner/src/main/resources/templates/keycloak/realm.json:/opt/keycloak/data/import/emme-core-realm.json:ro
+      - ../../tools/e2e-provisioner/src/main/resources/templates/keycloak/customers-realm.json:/opt/keycloak/data/import/emme-customers-realm.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /realms/emme-core/.well-known/openid-configuration HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q issuer || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - emme-net
+
+  database-migrations:
+    build:
+      context: ../..
+      dockerfile: database/Dockerfile
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: emme
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-emme}
+      DATABASE_NAME: emme
+      DEFAULT_DATABASE_JDBC_URL: jdbc:postgresql://postgres:5432/emme?currentSchema=e2e_default,emme_core,public
+      LIQUIBASE_CONTEXTS: ${LIQUIBASE_CONTEXTS:-dev}
+      # Only seed an internal default schema. The provisioner owns the two
+      # real salon tenants and their realm/user lifecycle.
+      TENANT_SEED_SLUGS: ${TENANT_SEED_SLUGS:-e2e-default}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - emme-net

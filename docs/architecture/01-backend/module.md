@@ -1,5 +1,7 @@
 # Backend Module
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 A backend module owns one cohesive business capability or bounded context. It owns its language, rules, data, public contracts, events, and operational behavior while hiding implementation details.
@@ -49,7 +51,7 @@ modules/<capability>/
 ├── build.gradle.kts
 └── src/main/java/com/emme/<capability>/
     ├── package-info.java                   # @ApplicationModule
-    ├── api/                                # public contract, grouped by kind
+    ├── api/                                # public contract, grouped by contract type
     │   ├── command/
     │   ├── query/
     │   ├── result/
@@ -59,17 +61,20 @@ modules/<capability>/
     │   └── type/
     ├── application/
     │   ├── service/
+    │   ├── validation/                   # optional application workflow validation
+    │   ├── authorization/                # optional use-case authorization
+    │   ├── process/                      # optional long-running process managers
     │   ├── port/out/
     │   └── mapper/
     ├── domain/
-    │   ├── model/
+    │   ├── model/                        # aggregate/entity/valueobject/etc. as needed
     │   ├── service/
     │   ├── event/
     │   ├── exception/
     │   └── specification/
     ├── adapter/
-    │   ├── in/                            # web, messaging, scheduler
-    │   └── out/                           # persistence, messaging, client, observability
+    │   ├── in/                            # web, webhook, messaging, scheduler, listener
+    │   └── out/                           # persistence, messaging, provider, client, observability
     └── configuration/                     # framework wiring only
 ```
 

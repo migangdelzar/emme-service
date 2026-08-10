@@ -1,5 +1,7 @@
 # Module Communication
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 Modules communicate through stable, intentional boundaries. The default choice is the smallest mechanism that preserves correctness and ownership.
@@ -10,7 +12,7 @@ Modules communicate through stable, intentional boundaries. The default choice i
 |---|---|---|
 | Immediate decision/result | Synchronous module API | Check tenant entitlement before booking |
 | Independent reaction | Public `api.event` fact plus an explicit delivery mode | Appointment scheduled → notification |
-| Stable shared vocabulary | Owning module's `api.type` / `api.event` | `TenantInfo`, `AppointmentCreated` |
+| Stable shared vocabulary | Owning module's `api.type` / `api.event` | `TenantDetails`, `AppointmentCreated` |
 | Internal implementation detail | Private module call | Aggregate to repository port |
 
 ## Rules

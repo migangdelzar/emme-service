@@ -1,10 +1,13 @@
 @org.springframework.modulith.ApplicationModule(
     displayName = "Identity & Security",
     allowedDependencies = {
-      "shared",
+      "shared :: persistence",
       "tenancy",
       "tenancy :: tenant-api",
-      "studio :: subscriptions-api",
-      "studio :: studio-api"
+      "tenancy :: tenant-events",
+      "appointments :: appointments-api",
+      "appointments :: appointments-events",
+      "salon :: salon-api",
+      "subscriptions :: subscriptions-api"
     })
 package com.emme.identity;

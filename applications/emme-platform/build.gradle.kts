@@ -1,13 +1,44 @@
 plugins {
   id("emme.spring-application")
   id("emme.modulith")
+  id("emme.messaging")
+  id("emme.integration-testing")
   id("emme.container")
   id("emme.publishing")
   id("emme.deployment")
 }
 
+// Native delivery is an explicit application-edge experiment. Keeping the JVM
+// path as the default makes ordinary development and CI deterministic while
+// still exposing the same application to a reproducible native build command.
+if (providers.gradleProperty("emme.native-image").map(String::toBoolean).orElse(false).get()) {
+  pluginManager.apply("emme.native-image")
+}
+
 group = "com.emme"
 version = "0.1.0"
+
+// The shell-free container probe is operational tooling, not application
+// behavior; keep it out of the business coverage gate while testing it directly.
+tasks.withType<org.gradle.testing.jacoco.tasks.JacocoReport>().configureEach {
+  classDirectories.setFrom(
+    classDirectories.files.map {
+      fileTree(it) {
+        exclude("com/emme/ContainerHealthCheck.class")
+      }
+    },
+  )
+}
+
+tasks.withType<org.gradle.testing.jacoco.tasks.JacocoCoverageVerification>().configureEach {
+  classDirectories.setFrom(
+    classDirectories.files.map {
+      fileTree(it) {
+        exclude("com/emme/ContainerHealthCheck.class")
+      }
+    },
+  )
+}
 
 // ── E2E Test SourceSet ──
 val e2eTest by sourceSets.creating {
@@ -16,13 +47,21 @@ val e2eTest by sourceSets.creating {
 }
 
 dependencies {
+  implementation(libs.jackson.databind)
+
   // Business Modules
   implementation(project(":modules:shared"))
   implementation(project(":modules:tenancy"))
   implementation(project(":modules:identity"))
-  implementation(project(":modules:studio"))
-  implementation(project(":modules:customer"))
-  implementation(project(":modules:workforce"))
+  // Liquibase changelogs for runtime tenant schema provisioning
+  runtimeOnly(project(":database"))
+  implementation(project(":modules:clients"))
+  implementation(project(":modules:staffing"))
+  implementation(project(":modules:services"))
+  implementation(project(":modules:appointments"))
+  implementation(project(":modules:salon"))
+  implementation(project(":modules:subscriptions"))
+  implementation(project(":modules:documents"))
   implementation(project(":modules:catalog"))
   implementation(project(":modules:booking"))
   implementation(project(":modules:calendar"))
@@ -54,6 +93,20 @@ dependencies {
   "e2eTestImplementation"(libs.assertj.core)
   "e2eTestImplementation"(libs.okhttp)
   "e2eTestImplementation"(libs.okhttp.logging.interceptor)
+
+  add("integrationTestImplementation", libs.testcontainers.kafka)
+  add("integrationTestImplementation", libs.spring.kafka)
+  add("integrationTestImplementation", libs.spring.modulith.events.kafka)
+  add("integrationTestImplementation", libs.spring.boot.starter.oauth2.client)
+  add("integrationTestImplementation", project(":modules:appointments"))
+  add("integrationTestImplementation", project(":modules:subscriptions"))
+  add("integrationTestImplementation", project(":modules:tenancy"))
+  add("integrationTestRuntimeOnly", libs.h2)
+}
+
+sourceSets.named("integrationTest") {
+  compileClasspath += sourceSets.main.get().output
+  runtimeClasspath += sourceSets.main.get().output
 }
 
 tasks.register<Test>("e2eTest") {
@@ -61,7 +114,7 @@ tasks.register<Test>("e2eTest") {
   group = "verification"
   testClassesDirs = e2eTest.output.classesDirs
   classpath = e2eTest.runtimeClasspath
-  shouldRunAfter(tasks.named("integrationTest"))
+  shouldRunAfter(tasks.matching { it.name == "integrationTest" })
   useJUnitPlatform()
   jvmArgs("--enable-preview", "-Djava.net.preferIPv4Stack=true")
   systemProperty(

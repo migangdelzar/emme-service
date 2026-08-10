@@ -1,0 +1,7 @@
+/**
+ * Namespace for Client public contracts.
+ *
+ * <p>Materialize a grouped API child package only when Customer owns a real public command, query,
+ * result, use case, event, exception, or type.
+ */
+package com.emme.clients.api;

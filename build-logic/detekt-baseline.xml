@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ForbiddenComment:ContainerPlugin.kt:ContainerPlugin$// TODO: add PodmanProvider when implemented; both currently map to DockerProvider</ID>
+    <ID>LongMethod:ContainerPlugin.kt:ContainerPlugin$override fun apply</ID>
+    <ID>MagicNumber:ComposeProvider.kt:ComposeProvider$1000</ID>
+    <ID>MagicNumber:DockerProvider.kt:DockerProvider$1000</ID>
+    <ID>MagicNumber:QualityExtension.kt:QualityExtension$0.70</ID>
+    <ID>MagicNumber:GenerateSbomTask.kt:GenerateSbomTask$1000</ID>
+    <ID>MagicNumber:GhcrPublisherProvider.kt:GhcrPublisherProvider$1000</ID>
+    <ID>MagicNumber:KubernetesProvider.kt:KubernetesProvider$1000</ID>
+    <ID>MagicNumber:VerifyContainerImage.kt:VerifyContainerImage$2000</ID>
+    <ID>TooGenericExceptionCaught:ComposeProvider.kt:ComposeProvider$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:KubernetesProvider.kt:KubernetesProvider$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:DeployTask.kt:DeployTask$throw RuntimeException("Deployment failed: ${result.message}")</ID>
+    <ID>UnusedParameter:ContainerResult.kt:ScanResult$maxSeverity: String = "CRITICAL"</ID>
+  </CurrentIssues>
+</SmellBaseline>

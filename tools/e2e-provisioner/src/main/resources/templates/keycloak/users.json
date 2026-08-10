@@ -1,0 +1,34 @@
+{
+  "users": [
+    {
+      "username": "${E2E_ADMIN_USERNAME}",
+      "email": "${E2E_ADMIN_USERNAME}@e2e.emme.app",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "firstName": "E2E",
+      "lastName": "Admin",
+      "password": "${E2E_ADMIN_PASSWORD}",
+      "realmRoles": ["tenant_owner"],
+      "attributes": {
+        "tenant_id": ["${E2E_TENANT_ID}"],
+        "tenant_slug": ["${E2E_TENANT_SLUG}"]
+      }
+    },
+    {
+      "username": "${E2E_OWNER_USERNAME}",
+      "email": "${E2E_OWNER_USERNAME}@e2e.emme.app",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "firstName": "E2E",
+      "lastName": "Owner",
+      "password": "${E2E_OWNER_PASSWORD}",
+      "realmRoles": ["tenant_owner"],
+      "attributes": {
+        "tenant_id": ["${E2E_TENANT_ID}"],
+        "tenant_slug": ["${E2E_TENANT_SLUG}"]
+      }
+    }
+  ]
+}

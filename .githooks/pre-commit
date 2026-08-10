@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+git diff --cached --check
+./gradlew spotlessCheck --no-daemon --no-configuration-cache

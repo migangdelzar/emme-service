@@ -1,0 +1,118 @@
+{
+  "realm": "emme-core",
+  "enabled": true,
+  "sslRequired": "none",
+  "clients": [
+    {
+      "clientId": "admin-app",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["http://localhost:3002/*"],
+      "webOrigins": ["http://localhost:3002"],
+      "protocolMappers": [
+        {
+          "name": "emme-platform-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "admin-app",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "admin" }
+    ]
+  },
+  "clientScopes": [
+    {
+      "name": "tenant-context",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "tenant-id-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenant_id",
+            "claim.name": "tenant_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "tenant-slug-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenant_slug",
+            "claim.name": "tenant_slug",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        { "name": "username", "protocol": "openid-connect", "protocolMapper": "oidc-usermodel-attribute-mapper", "config": { "user.attribute": "username", "claim.name": "preferred_username", "id.token.claim": "true", "access.token.claim": "true" } },
+        { "name": "full name", "protocol": "openid-connect", "protocolMapper": "oidc-full-name-mapper", "config": { "id.token.claim": "true", "access.token.claim": "true", "userinfo.token.claim": "true" } }
+      ]
+    },
+    {
+      "name": "email",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        { "name": "email", "protocol": "openid-connect", "protocolMapper": "oidc-usermodel-attribute-mapper", "config": { "user.attribute": "email", "claim.name": "email", "id.token.claim": "true", "access.token.claim": "true" } },
+        { "name": "email verified", "protocol": "openid-connect", "protocolMapper": "oidc-usermodel-property-mapper", "config": { "user.attribute": "emailVerified", "claim.name": "email_verified", "jsonType.label": "boolean" } }
+      ]
+    },
+    {
+      "name": "roles",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        { "name": "realm roles", "protocol": "openid-connect", "protocolMapper": "oidc-usermodel-realm-role-mapper", "config": { "claim.name": "realm_access.roles", "jsonType.label": "String", "multivalued": "true", "id.token.claim": "true", "access.token.claim": "true" } }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "tenant-context", "profile", "roles", "email"
+  ],
+  "users": [
+    {
+      "username": "admin@emme-core.local",
+      "email": "admin@emme-core.local",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Platform",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "E2e-Platform-Admin-2026!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["admin"]
+    }
+  ]
+}

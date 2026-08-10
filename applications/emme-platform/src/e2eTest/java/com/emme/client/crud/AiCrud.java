@@ -10,6 +10,6 @@ public class AiCrud {
   }
 
   public String chat(String message) {
-    return session.post("/api/v1/ai/chat", "{\"userMessage\":\"" + message + "\"}", 200);
+    return session.post("/api/ai/chat", "{\"userMessage\":\"" + message + "\"}", 200);
   }
 }

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+./gradlew spotlessCheck test --no-daemon --no-configuration-cache
+./gradlew :applications:emme-platform:coverageCheck --no-daemon --no-configuration-cache

@@ -4,7 +4,7 @@ package com.emme.client;
 public final class Roles {
   private Roles() {}
 
-  public static final String PLATFORM_ADMIN = "platform_admin";
+  public static final String PLATFORM_ADMIN = "admin";
   public static final String TENANT_OWNER = "tenant_owner";
   public static final String TENANT_STAFF = "tenant_staff";
   public static final String BUSINESS_OWNER = "business_owner";

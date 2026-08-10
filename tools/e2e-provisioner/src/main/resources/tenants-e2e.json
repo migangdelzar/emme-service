@@ -1,0 +1,7 @@
+{
+  "platformUrl": "http://localhost:8081",
+  "tenants": [
+    { "slug": "e2e-studio", "name": "E2E Studio" },
+    { "slug": "e2e-salon", "name": "E2E Salon" }
+  ]
+}

@@ -1,69 +1,345 @@
+---
 name: CI Backend
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_integration:
+        description: Run Testcontainers integration tests
+        required: true
+        default: true
+        type: boolean
+      run_e2e:
+        description: Run service API E2E tests against a provisioned environment
+        required: true
+        default: false
+        type: boolean
+      e2e_base_url:
+        description: Base URL for the provisioned service API E2E environment
+        required: false
+        default: ''
+        type: string
+      run_security:
+        description: Run secret and dependency vulnerability checks
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  compile:
-    runs-on: ubuntu-latest
+  quality:
+    name: Backend quality gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-gradle
+      - name: Set up Node.js for documentation validation
+        uses: actions/setup-node@v7
         with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew compileJava --no-configuration-cache
+          node-version: '20'
+      - name: Validate documentation
+        run: node scripts/validate-markdown.mjs
+      - name: Validate container workflow contract
+        run: node scripts/validate-container-workflow.mjs
+      - name: Validate backend workflow contract
+        run: node scripts/validate-backend-workflow.mjs
+      - name: Run Gradle static-analysis lifecycle
+        run: >-
+          ./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon
+          --no-configuration-cache --stacktrace
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-quality-reports
+          path: |
+            **/build/reports/**
+            **/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 7
 
   test:
-    needs: compile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-gradle
+      - name: Run all backend unit, module, and coverage checks
+        run: >-
+          ./gradlew test :applications:emme-platform:coverageCheck
+          --no-daemon --no-configuration-cache --stacktrace
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :applications:emme-platform:test --no-configuration-cache
+          name: backend-test-reports
+          path: |
+            **/build/reports/tests/**
+            **/build/test-results/**
+            applications/emme-platform/build/reports/jacoco/**
+          if-no-files-found: ignore
+          retention-days: 7
 
-  arch-test:
-    needs: compile
-    runs-on: ubuntu-latest
+  integration:
+    name: Integration tests
+    if: >-
+      github.event_name != 'workflow_dispatch' ||
+      inputs.run_integration == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-gradle
+      - name: Run integration tests
+        run: >-
+          ./gradlew integrationTest --no-daemon --no-configuration-cache
+          --stacktrace
+      - name: Upload integration reports
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :applications:emme-platform:archTest --no-configuration-cache
+          name: backend-integration-reports
+          path: |
+            **/build/reports/tests/**
+            **/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  build-logic:
+    name: Build-logic unit and functional tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-gradle
+      - name: Run build-logic checks
+        run: >-
+          ./gradlew :build-logic:check --no-daemon --no-configuration-cache
+          --stacktrace
+      - name: Upload build-logic reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-logic-reports
+          path: build-logic/build/reports/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  boundaries:
+    name: DDD, Hexagonal, and Modulith boundaries
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-gradle
+      - name: Verify Spotless formatting
+        run: >-
+          ./gradlew spotlessCheck
+          --no-daemon --no-configuration-cache --stacktrace
+      - name: Verify architecture boundaries
+        run: >-
+          ./gradlew :applications:emme-platform:test
+          --tests com.emme.DddHexagonalArchitectureTest
+          --tests com.emme.ApplicationServiceArchitectureTest
+          --tests com.emme.ModularityTest
+          --tests com.emme.LayerConventionTest
+          --tests com.emme.NamingConventionArchitectureTest
+          --tests com.emme.PackageMetadataArchitectureTest
+          --tests com.emme.SchemaOwnershipTest
+          --tests com.emme.EventContractArchitectureTest
+          --tests com.emme.KafkaEventContractTest
+          --tests com.emme.KafkaEventStreamingPropertiesTest
+          --tests com.emme.ApiVersionConventionTest
+          --no-daemon --no-configuration-cache --stacktrace
+
+  e2e:
+    name: Service API E2E
+    if: github.event_name == 'workflow_dispatch' && inputs.run_e2e == true
+    environment: e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      EMME_E2E_BASE_URL: ${{ inputs.e2e_base_url }}
+      E2E_ACCESS_TOKEN: ${{ secrets.E2E_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-gradle
+      - name: Validate E2E environment contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${EMME_E2E_BASE_URL}" || {
+            echo 'e2e_base_url is required when run_e2e is enabled'
+            exit 1
+          }
+          test -n "${E2E_ACCESS_TOKEN}" || {
+            echo 'E2E_ACCESS_TOKEN repository/environment secret is required'
+            exit 1
+          }
+      - name: Run service API E2E tests
+        run: >-
+          ./gradlew :applications:emme-platform:e2eTest
+          -Pemme.e2e.base-url="${EMME_E2E_BASE_URL}"
+          --no-daemon --no-configuration-cache --stacktrace
+      - name: Upload E2E reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: service-api-e2e-reports
+          path: |
+            applications/emme-platform/build/reports/tests/e2eTest/**
+            applications/emme-platform/build/test-results/e2eTest/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  infrastructure:
+    name: Validate infrastructure manifests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/setup-kubectl@v5
+        with:
+          version: 'v1.34.1'
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: '1.14.0'
+      - name: Render Kubernetes overlays
+        run: |
+          kubectl kustomize infra/kubernetes/overlays/k3d-jvm >/dev/null
+          kubectl kustomize infra/kubernetes/overlays/k3d-native >/dev/null
+          kubectl kustomize \
+            infra/kubernetes/overlays/k3s-production-jvm >/dev/null
+          kubectl kustomize \
+            infra/kubernetes/overlays/k3s-production-native >/dev/null
+      - name: Validate Compose runtime overlays
+        run: |
+          docker compose -f deployment/compose/compose.yaml \
+            -f deployment/compose/compose.runtime-jvm.yaml config --quiet
+          docker compose -f deployment/compose/compose.yaml \
+            -f deployment/compose/compose.runtime-native.yaml config --quiet
+          node deployment/compose/compose.kafka.contract.test.mjs
+      - name: Validate Terraform
+        working-directory: infra/terraform
+        run: |
+          terraform fmt -check -recursive
+          terraform init -backend=false -input=false
+          terraform validate
+
+  security:
+    name: Security and dependency gates
+    if: >-
+      github.event_name != 'workflow_dispatch' || inputs.run_security == true
+    uses: ./.github/workflows/security-scan.yml
+    secrets: inherit
 
   boot-jar:
-    needs: test
-    runs-on: ubuntu-latest
+    needs: [quality, test, integration, build-logic, infrastructure, boundaries]
+    if: >-
+      always() && needs.quality.result == 'success' &&
+      needs.test.result == 'success' &&
+      needs.build-logic.result == 'success' &&
+      needs.boundaries.result == 'success' &&
+      needs.infrastructure.result == 'success' &&
+      (needs.integration.result == 'success' ||
+      needs.integration.result == 'skipped')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-gradle
+      - name: Build canonical platform boot JAR
+        run: >-
+          ./gradlew :applications:emme-platform:bootJar --no-daemon
+          --no-configuration-cache --stacktrace
+      - name: Upload boot JAR and reports
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :applications:emme-platform:bootJar --no-configuration-cache
+          name: emme-platform-boot-jar
+          path: |
+            applications/emme-platform/build/libs/*.jar
+            applications/emme-platform/build/reports/**
+          if-no-files-found: ignore
+          retention-days: 14
 
-  deploy:
-    needs: boot-jar
-    if: github.ref_name == 'main'
-    runs-on: ubuntu-latest
+  summary:
+    name: CI summary
+    if: always()
+    needs:
+      - quality
+      - test
+      - integration
+      - build-logic
+      - infrastructure
+      - boundaries
+      - e2e
+      - boot-jar
+      - security
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v4
-      - name: Deploy
-        run: ./gradlew deploy -Paction=up -Pprovider=${{ github.ref_name == 'main' && 'prod' || 'k3d' }}
+      - name: Publish result summary
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          INTEGRATION_RESULT: ${{ needs.integration.result }}
+          BUILD_LOGIC_RESULT: ${{ needs['build-logic'].result }}
+          INFRASTRUCTURE_RESULT: ${{ needs.infrastructure.result }}
+          BOUNDARIES_RESULT: ${{ needs.boundaries.result }}
+          E2E_RESULT: ${{ needs.e2e.result }}
+          BOOT_JAR_RESULT: ${{ needs['boot-jar'].result }}
+          SECURITY_RESULT: ${{ needs.security.result }}
+          INTEGRATION_REQUIRED: >-
+            ${{ github.event_name != 'workflow_dispatch' ||
+            inputs.run_integration == true }}
+          E2E_REQUIRED: >-
+            ${{ github.event_name == 'workflow_dispatch' &&
+            inputs.run_e2e == true }}
+        run: |
+          echo "## Backend CI" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Quality: ${QUALITY_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tests: ${TEST_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Integration: ${INTEGRATION_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Build logic: ${BUILD_LOGIC_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Infrastructure: ${INFRASTRUCTURE_RESULT}" \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo "- Boundaries: ${BOUNDARIES_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Service API E2E: ${E2E_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- JaCoCo coverage: included in tests (${TEST_RESULT})" \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo "- Boot JAR: ${BOOT_JAR_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Security: ${SECURITY_RESULT}" >> "$GITHUB_STEP_SUMMARY"
+          integration_ok=false
+          if [[ "${INTEGRATION_RESULT}" == "success" ||
+                ("${INTEGRATION_REQUIRED}" == "false" &&
+                "${INTEGRATION_RESULT}" == "skipped") ]]; then
+            integration_ok=true
+          fi
+          e2e_ok=false
+          if [[ "${E2E_RESULT}" == "success" ||
+                ("${E2E_REQUIRED}" == "false" &&
+                "${E2E_RESULT}" == "skipped") ]]; then
+            e2e_ok=true
+          fi
+          if [[ "${QUALITY_RESULT}" != "success" ||
+                "${TEST_RESULT}" != "success" ||
+                "${integration_ok}" != "true" ||
+                "${BUILD_LOGIC_RESULT}" != "success" ||
+                "${BOUNDARIES_RESULT}" != "success" ||
+                "${e2e_ok}" != "true" ||
+                "${INFRASTRUCTURE_RESULT}" != "success" ||
+                "${BOOT_JAR_RESULT}" != "success" ||
+                ("${SECURITY_RESULT}" != "success" &&
+                "${SECURITY_RESULT}" != "skipped") ]]; then
+            exit 1
+          fi

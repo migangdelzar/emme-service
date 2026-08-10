@@ -1,0 +1,337 @@
+# Service Runtime Deployment Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Make `emme-service` the single source of truth for service images, Compose runtime overlays, K3d/K3s manifests, and disposable E2E infrastructure.
+
+**Architecture:** Gradle/build-logic owns image build and verification tasks. Docker Compose owns disposable local/CI runtime composition. Kustomize owns Kubernetes manifests and overlays. GitHub Actions publishes immutable images and deploys through protected environments or GitOps; production is never built inside K3s.
+
+**Tech Stack:** Gradle 9, Kotlin build logic, Spring Boot 4, Docker, Docker Compose, Kustomize, K3d, K3s, Keycloak, PostgreSQL, Liquibase, GitHub Actions.
+
+## Global Constraints
+
+- Service runtime configuration is owned by `emme-service`; `emme-web` must not duplicate backend infrastructure.
+- Image tags used by CI and production are immutable `sha-<git-sha>` tags or resolved digests.
+- `latest` is permitted only for local convenience.
+- JVM is the default runtime; Native is an explicit separately verified variant.
+- Typed Java tools own dynamic E2E provisioning; shell is limited to migration wrappers and thin local bootstrap adapters.
+- Kubernetes manifests are declarative and are applied with Kustomize.
+- Credentials never appear in committed Compose, Kubernetes, or realm files.
+- Every changed file is formatted, validated, committed, and pushed.
+
+---
+
+### Task 1: Normalize the service deployment vocabulary
+
+**Files:**
+- Modify: `deployment/compose/compose.yaml`
+- Modify: `deployment/compose/compose.runtime-jvm.yaml`
+- Modify: `deployment/compose/compose.runtime-native.yaml`
+- Modify: `deployment/compose/compose.environment-local.yaml`
+- Modify: `deployment/compose/compose.environment-ci.yaml`
+- Modify: `deployment/compose/compose.observability.yaml`
+- Modify: `deployment/compose/compose.environment-e2e.yaml`
+- Modify: `infra/kubernetes/overlays/k3d-jvm/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3d-native/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3s-production-jvm/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3s-production-native/kustomization.yaml`
+- Modify: `applications/emme-platform/build.gradle.kts`
+- Modify: `.github/workflows/ci-backend.yml`
+- Test: `scripts/validate-emme-platform-target.test.mjs`
+
+**Interfaces:**
+- Produces one canonical Compose base, explicit runtime overlays, and explicit environment overlays.
+- Produces one canonical image environment variable: `EMME_SERVICE_IMAGE`.
+- Produces normalized Kubernetes target names: `k3d-jvm`, `k3d-native`, `k3s-production-jvm`, and `k3s-production-native`.
+
+- [x] **Step 1: Write the failing layout test.**
+
+Create a Node script that asserts the canonical Compose and Kustomize paths exist, old ambiguous names do not remain referenced, and every overlay contains the normalized service image name.
+
+- [x] **Step 2: Run the layout test.**
+
+Run:
+
+```bash
+node scripts/validate-emme-platform-target.test.mjs
+```
+
+Expected: FAIL because the repository had not yet materialized the normalized
+base, runtime, and environment overlay names.
+
+- [x] **Step 3: Rename files and update references.**
+
+Use these names:
+
+```text
+compose.yaml
+compose.runtime-jvm.yaml
+compose.runtime-native.yaml
+compose.environment-local.yaml
+compose.environment-ci.yaml
+compose.environment-e2e.yaml
+compose.observability.yaml
+```
+
+Use `git mv` for tracked renames, then update every workflow, README, Gradle provider, and comment reference. Rename Kubernetes overlays to include target and runtime explicitly.
+
+- [x] **Step 4: Run the layout and rendering checks.**
+
+Run:
+
+```bash
+node scripts/validate-emme-platform-target.test.mjs
+docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml config --quiet
+docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-native.yaml config --quiet
+kubectl kustomize infra/kubernetes/overlays/k3d-jvm >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3s-production-jvm >/dev/null
+```
+
+Expected: PASS with no legacy deployment file references.
+
+- [x] **Step 5: Commit.**
+
+```bash
+git add deployment infra applications/emme-platform/build.gradle.kts .github/workflows/ci-backend.yml scripts/validate-emme-platform-target.mjs scripts/validate-emme-platform-target.test.mjs
+git commit -m "refactor(deployment): normalize runtime and cluster naming"
+```
+
+### Task 2: Make the E2E Compose runtime execute the service image
+
+**Files:**
+- Modify: `deployment/compose/compose.environment-e2e.yaml`
+- Modify: `deployment/compose/compose.runtime-jvm.yaml`
+- Create: `tools/e2e-provisioner/`
+- Test: `deployment/compose/compose.e2e.contract.test.mjs`
+
+**Interfaces:**
+- Consumes `EMME_SERVICE_IMAGE`, `E2E_TENANT_SLUG`, and Keycloak E2E secrets. The typed provisioning tool consumes the database and Keycloak endpoints through environment-backed configuration.
+- Produces a healthy `emme-platform` container reachable on host port `8081`.
+- Produces the exact Keycloak user UUID in memory for membership seeding.
+
+- [x] **Step 1: Add Compose contract assertions.**
+
+The test must parse `docker compose config --format json` and assert that the E2E overlay contains `keycloak`, `database-migrations`, and `emme-platform`; the platform service uses `EMME_SERVICE_IMAGE`; and its container environment points to `postgres`, `redis`, and `keycloak`, not `localhost`.
+
+- [x] **Step 2: Run the contract test before implementation.**
+
+Run:
+
+```bash
+node deployment/compose/compose.e2e.contract.test.mjs
+```
+
+Expected: FAIL because the draft starts the application on the runner instead of in Compose.
+
+- [x] **Step 3: Implement the container runtime overlay.**
+
+Add service environment values for:
+
+```text
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/emme
+SPRING_DATA_REDIS_HOST=redis
+SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://keycloak:8080/realms/emme
+SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://keycloak:8080/realms/emme/protocol/openid-connect/certs
+APP_KEYCLOAK_BASE_URL=http://keycloak:8080
+APP_KEYCLOAK_ISSUER_URI=http://keycloak:8080/realms/emme
+```
+
+The workflow must explicitly start the platform service after migrations and provisioning. The overlay must not define a second host-process path.
+
+- [x] **Step 4: Make provisioning idempotent and safe.**
+
+Create `tools:e2e-provisioner` as a short-lived Java application using Spring JDBC and the existing generic throwable connection executor. It must generate the Keycloak realm document through typed Jackson nodes, call the Keycloak Admin API through an injected HTTP adapter, and perform idempotent prepared-statement tenant/membership seeding through application-owned interfaces. Passwords must never be logged. The workflow may retain a small readiness loop, but it must not execute dynamic realm or SQL seed shell scripts.
+
+- [x] **Step 5: Run the contract and provisioning-tool checks.**
+
+Run:
+
+```bash
+node deployment/compose/compose.e2e.contract.test.mjs
+./gradlew :tools:e2e-provisioner:test --no-daemon --no-configuration-cache
+docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml -f deployment/compose/compose.environment-e2e.yaml config --quiet
+```
+
+Expected: PASS.
+
+- [ ] **Step 6: Commit.**
+
+```bash
+git add deployment/compose tools settings.gradle.kts
+git commit -m "feat(e2e): add typed service provisioning tool"
+```
+
+### Task 3: Make image creation reproducible through Spring Buildpacks
+
+**Files:**
+- Modify: `applications/emme-platform/build.gradle.kts`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/container/EmmeContainerExtension.kt`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/container/EmmeContainerPlugin.kt`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/container/task/BuildContainerImageTask.kt`
+- Test: `scripts/validate-container-workflow.mjs`
+
+**Interfaces:**
+- `containerBuild` receives `emme.container.imageName`, `emme.container.imageTags`, and `emme.container.dockerfile` lazily.
+- `containerVerify` scans the exact image tag selected by CI.
+- JVM and native builds use Spring Boot's `bootBuildImage`; native builds are
+  enabled only when the application-edge Native Build Tools plugin is opted in.
+
+- [x] **Step 1: Add the image workflow contract test.**
+
+Test that the container workflow exposes immutable JVM/native image paths,
+keeps native execution opt-in, and does not delegate image creation to a shell
+script.
+
+- [x] **Step 2: Run the focused workflow contract test.**
+
+```bash
+./gradlew :build-logic:test --tests '*ContainerImageConfigurationTest' --no-daemon --no-configuration-cache
+```
+
+Expected: PASS once the workflow contract is materialized.
+
+- [x] **Step 3: Implement the minimum lazy configuration.**
+
+Wire the extension’s Dockerfile and image-tags properties into `BuildContainerImageTask`. Keep provider selection lazy and do not instantiate Docker during Gradle configuration.
+
+- [x] **Step 4: Use the Spring Buildpacks runtime contract.**
+
+The JVM and native image variants are built by Spring Boot's OCI buildpack
+integration. Runtime users, base images, and native buildpack behavior remain
+owned by that supported integration rather than duplicated Dockerfiles.
+
+- [ ] **Step 5: Run image and build-logic verification.**
+
+```bash
+./gradlew :build-logic:check :applications:emme-platform:bootJar --no-daemon --no-configuration-cache
+./gradlew :applications:emme-platform:containerBuild -Pemme.container.imageName=emme-service:local-jvm -Pemme.container.dockerfile=deployment/docker/Dockerfile.jvm --no-daemon --no-configuration-cache
+```
+
+Expected: build-logic passes and the local JVM image is created when Docker is available.
+
+- [x] **Step 6: Commit.**
+
+```bash
+git add build-logic applications/emme-platform/build.gradle.kts deployment/docker
+git commit -m "feat(container): add reproducible JVM and native image variants"
+```
+
+### Task 4: Add K3d local and K3s production deployment contracts
+
+**Files:**
+- Rename: `deployment/k3d/cluster.yml` → `deployment/k3d/cluster.yaml`
+- Modify: `mise.toml`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/deployment/KubernetesDeploymentTarget.kt`
+- Modify: `build-logic/src/main/kotlin/com/emme/buildlogic/deployment/provider/KubernetesProvider.kt`
+- Delete: the duplicate `deployment/kubernetes` tree and shell deployment wrappers
+- Modify: `infra/kubernetes/overlays/k3d-jvm/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3d-native/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3s-production-jvm/kustomization.yaml`
+- Modify: `infra/kubernetes/overlays/k3s-production-native/kustomization.yaml`
+- Test: `.github/workflows/ci-backend.yml`
+
+**Interfaces:**
+- Local commands are exposed through `mise run k3d:bootstrap`, `mise run k3d:apply:jvm`, and `mise run k3d:apply:native`.
+- Production receives an immutable `IMAGE_DIGEST` and never uses `latest`.
+
+- [x] **Step 1: Add manifest and command contract checks.**
+
+Assert that each Kustomize overlay resolves the canonical service image, uses an explicit namespace, and contains no `latest` tag in production overlays.
+
+- [x] **Step 2: Implement thin K3d aliases.**
+
+Keep registry creation and cluster bootstrap as thin wrappers. Replace generic `deploy-k3d.sh` with `mise` tasks delegating directly to `k3d` and `kubectl apply -k`. Do not put manifest content in scripts.
+
+- [ ] **Step 3: Normalize production promotion.**
+
+Add an Actions-ready image digest substitution contract. Production applies a Kustomize overlay only after the image has been built, scanned, published, and approved by the protected environment.
+
+- [x] **Step 4: Run infrastructure verification.**
+
+```bash
+kubectl kustomize infra/kubernetes/overlays/k3d-jvm >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3d-native >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3s-production-jvm >/dev/null
+kubectl kustomize infra/kubernetes/overlays/k3s-production-native >/dev/null
+```
+
+Expected: PASS.
+
+- [ ] **Step 5: Commit.**
+
+```bash
+git add deployment/k3d mise.toml infra/kubernetes build-logic scripts
+git commit -m "feat(deployment): add explicit k3d and k3s runtime targets"
+```
+
+### Task 5: Add service image CI and deployment verification
+
+**Files:**
+- Create: `.github/workflows/container-image.yml`
+- Modify: `.github/workflows/ci-backend.yml`
+- Create: `scripts/validate-container-workflow.mjs`
+- Modify: `tasks/todo.md`
+
+**Interfaces:**
+- Pull requests validate image creation and scanning without publishing.
+- `main` and approved manual workflows publish immutable JVM images to GHCR.
+- The web repository builds a local immutable image from the selected service ref
+  for real E2E; published digests are reserved for promotion and deployment.
+
+- [x] **Step 1: Add workflow contract checks.**
+
+The contract is implemented by `scripts/validate-container-workflow.mjs` and
+is executed by the backend quality job.
+
+- [x] **Step 2: Add the JVM and opt-in native image workflow.**
+
+`.github/workflows/container-image.yml` builds the exact `bootBuildImage`
+artifact, scans it with Trivy, and publishes only from `main` or an explicitly
+approved manual dispatch. The same workflow exposes a manual `native=true`
+input that uses GraalVM and `BP_NATIVE_IMAGE=true` without changing the
+default JVM path.
+
+- [ ] **Step 3: Add Native image promotion after JVM evidence.**
+
+Native delivery remains explicitly deferred until the JVM image baseline and
+GraalVM smoke evidence are green.
+
+- [x] **Step 4: Run local workflow validation.**
+
+```bash
+node scripts/validate-container-workflow.mjs
+docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml config --quiet
+```
+
+- [ ] **Step 5: Commit.**
+
+```bash
+git add .github/workflows tasks/todo.md
+git commit -m "ci(container): build and verify immutable service images"
+```
+
+### Task 6: Run the complete service verification
+
+**Files:**
+- Modify: `docs/superpowers/plans/2026-08-03-service-runtime-deployment.md`
+- Modify: `tasks/todo.md`
+
+- [ ] **Step 1: Run service formatting and tests.**
+
+```bash
+./gradlew spotlessCheck test :build-logic:check --no-daemon --no-configuration-cache
+```
+
+- [ ] **Step 2: Run documentation, deployment, tooling, and manifest checks.**
+
+```bash
+node scripts/validate-markdown.mjs
+node scripts/validate-container-workflow.mjs
+bash -n database/docker/run-migrations.sh scripts/doctor.sh
+./gradlew :tools:e2e-provisioner:check --no-daemon --no-configuration-cache
+docker compose -f deployment/compose/compose.yaml -f deployment/compose/compose.runtime-jvm.yaml config --quiet
+```
+
+- [ ] **Step 3: Record evidence and push.**
+
+Update this plan and `tasks/todo.md` with exact command results, commit each logical slice, push `feat/enterprise-module-template-conformance`, and verify the remote head.

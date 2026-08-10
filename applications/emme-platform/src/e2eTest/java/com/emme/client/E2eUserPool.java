@@ -31,7 +31,7 @@ public final class E2eUserPool {
         "e2e-tenant-" + idx,
         "E2E User " + idx,
         "e2e-" + idx + "@emme-e2e.test",
-        List.of("platform_admin", "tenant_owner"));
+        List.of("admin", "tenant_owner"));
   }
 
   public synchronized TestUser acquire() {
@@ -51,6 +51,35 @@ public final class E2eUserPool {
     System.out.printf(
         "[E2eUserPool] Acquired: %s (%d/%d in use)%n", user.userId(), inUse.size(), POOL_SIZE);
     return user;
+  }
+
+  /** Acquires a user whose provisioned roles include {@code role}. */
+  public synchronized TestUser acquire(String role) {
+    return acquire(role, "");
+  }
+
+  /** Acquires a user whose provisioned roles include {@code role} and tenant matches when set. */
+  public synchronized TestUser acquire(String role, String tenantId) {
+    if (role == null || role.isBlank()) {
+      return acquire();
+    }
+    var selected =
+        available.stream()
+            .filter(user -> user.roles().contains(role))
+            .filter(
+                user -> tenantId == null || tenantId.isBlank() || user.tenantId().equals(tenantId))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        "No E2E user matching role "
+                            + role
+                            + (tenantId == null || tenantId.isBlank()
+                                ? ""
+                                : " and tenant " + tenantId)));
+    available.remove(selected);
+    inUse.add(selected.userId());
+    return selected;
   }
 
   public synchronized void release(String userId) {

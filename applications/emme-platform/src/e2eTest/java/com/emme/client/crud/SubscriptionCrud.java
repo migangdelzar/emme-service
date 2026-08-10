@@ -12,7 +12,7 @@ public class SubscriptionCrud {
 
   public String create(String tenantId, String plan) {
     return session.post(
-        "/api/v1/subscriptions",
+        "/api/subscriptions",
         Template.load("subscription-create.json")
             .set("tenantId", tenantId)
             .set("plan", plan)
@@ -20,11 +20,10 @@ public class SubscriptionCrud {
   }
 
   public String get(String tenantId) {
-    return session.get("/api/v1/subscriptions/" + tenantId);
+    return session.get("/api/subscriptions/" + tenantId);
   }
 
   public String changePlan(String tenantId, String plan) {
-    return session.put(
-        "/api/v1/subscriptions/" + tenantId + "/plan", "{\"plan\":\"" + plan + "\"}");
+    return session.put("/api/subscriptions/" + tenantId + "/plan", "{\"plan\":\"" + plan + "\"}");
   }
 }

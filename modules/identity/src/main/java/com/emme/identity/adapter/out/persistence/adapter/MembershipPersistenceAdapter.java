@@ -1,0 +1,68 @@
+package com.emme.identity.adapter.out.persistence.adapter;
+
+import com.emme.identity.adapter.out.persistence.entity.MembershipEntity;
+import com.emme.identity.adapter.out.persistence.entity.RoleEntity;
+import com.emme.identity.adapter.out.persistence.mapper.MembershipPersistenceMapper;
+import com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository;
+import com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository;
+import com.emme.identity.application.port.out.MembershipRepository;
+import com.emme.identity.domain.model.Membership;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.stereotype.Component;
+
+/** Implements the Membership repository port with Spring Data JPA. */
+@Component
+public class MembershipPersistenceAdapter implements MembershipRepository {
+
+  private final SpringDataMembershipRepository repository;
+  private final SpringDataRoleRepository roleRepository;
+  private final MembershipPersistenceMapper mapper;
+
+  public MembershipPersistenceAdapter(
+      SpringDataMembershipRepository repository,
+      SpringDataRoleRepository roleRepository,
+      MembershipPersistenceMapper mapper) {
+    this.repository = repository;
+    this.roleRepository = roleRepository;
+    this.mapper = mapper;
+  }
+
+  @Override
+  public Membership save(Membership membership) {
+    RoleEntity role =
+        roleRepository
+            .findById(membership.roleId())
+            .orElseThrow(
+                () -> new IllegalArgumentException("Role not found: " + membership.roleId()));
+    MembershipEntity entity =
+        membership.id() == null
+            ? mapper.toEntity(membership, role)
+            : repository
+                .findByIdAndTenantId(membership.id(), membership.tenantId())
+                .map(existing -> update(existing, membership))
+                .orElseGet(() -> mapper.toEntity(membership, role));
+    return mapper.toDomain(repository.save(entity));
+  }
+
+  @Override
+  public Optional<Membership> findByIdInTenant(UUID membershipId, UUID tenantId) {
+    return repository.findByIdAndTenantId(membershipId, tenantId).map(mapper::toDomain);
+  }
+
+  @Override
+  public List<Membership> findActiveByUserReference(String userReference) {
+    return repository
+        .findByUserReferenceAndStatus(
+            userReference, com.emme.identity.domain.model.MembershipStatus.ACTIVE)
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  private MembershipEntity update(MembershipEntity entity, Membership membership) {
+    entity.setStatus(membership.status());
+    return entity;
+  }
+}

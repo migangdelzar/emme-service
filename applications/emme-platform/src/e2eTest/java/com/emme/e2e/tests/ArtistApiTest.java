@@ -36,7 +36,7 @@ class ArtistApiTest {
   void shouldReturnNotFoundForUnknownId() {
     withSession(
         s -> {
-          var result = s.get("/api/v1/artists/00000000-0000-0000-0000-000000000000", 404);
+          var result = s.get("/api/artists/00000000-0000-0000-0000-000000000000", 404);
           assertThat(result).isNotNull();
         });
   }

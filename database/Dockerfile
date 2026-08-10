@@ -15,8 +15,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-COPY src/main/resources/db /liquibase/changelog/db
-COPY docker/run-migrations.sh /liquibase/run-migrations.sh
+COPY database/src/main/resources/db /liquibase/changelog/db
+COPY database/docker/run-migrations.sh /liquibase/run-migrations.sh
 COPY --from=jdbc-driver /postgresql.jar /liquibase/lib/postgresql.jar
 RUN chmod 0644 /liquibase/lib/postgresql.jar \
     && sed -i 's/\r$//' /liquibase/run-migrations.sh \

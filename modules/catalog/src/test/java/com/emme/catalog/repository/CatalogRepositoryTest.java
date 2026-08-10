@@ -2,6 +2,7 @@ package com.emme.catalog.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.catalog.adapter.out.persistence.entity.CatalogItemEntity;
 import com.emme.catalog.adapter.out.persistence.repository.SpringDataCatalogItemRepository;
 import com.emme.catalog.domain.model.CatalogItem;
 import com.emme.catalog.domain.model.CatalogItemStatus;
@@ -35,11 +36,12 @@ class CatalogRepositoryTest extends BaseRepositoryTest {
             30,
             "gel, acetone");
 
-    CatalogItem saved = itemRepo.save(item);
+    CatalogItemEntity savedEntity = itemRepo.save(CatalogItemEntity.from(item));
+    CatalogItem saved = savedEntity.toDomain();
     assertThat(saved.getId()).isNotNull();
     assertThat(saved.getStatus()).isEqualTo(CatalogItemStatus.ACTIVE);
 
-    CatalogItem found = itemRepo.findById(saved.getId()).orElseThrow();
+    CatalogItem found = itemRepo.findById(saved.getId()).orElseThrow().toDomain();
     assertThat(found.getName()).isEqualTo("Repository Item");
     assertThat(found.getPrice()).isEqualByComparingTo(new BigDecimal("19.99"));
   }
@@ -57,9 +59,10 @@ class CatalogRepositoryTest extends BaseRepositoryTest {
             null,
             15,
             null);
-    CatalogItem saved = itemRepo.save(item);
+    itemRepo.save(CatalogItemEntity.from(item));
 
-    List<CatalogItem> items = itemRepo.findByTenantId(TENANT_ID);
+    List<CatalogItem> items =
+        itemRepo.findByTenantId(TENANT_ID).stream().map(CatalogItemEntity::toDomain).toList();
     assertThat(items).isNotEmpty();
     assertThat(items.get(0).getStatus()).isEqualTo(CatalogItemStatus.ACTIVE);
   }

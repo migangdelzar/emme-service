@@ -21,7 +21,7 @@ presentation and interaction.
 
 ```mermaid
 flowchart LR
-    WEB[emme-web<br/>React + Vite] -->|HTTP /api/v1 contracts| API[Spring Boot API]
+    WEB[emme-web<br/>React + Vite] -->|HTTP /api contracts| API[Spring Boot API]
     API --> MODULES[DDD business modules]
     MODULES --> PORTS[Application outbound ports]
     PORTS --> DB[(PostgreSQL)]
@@ -50,7 +50,7 @@ cd emme-service
 
 ./gradlew :applications:emme-platform:build
 ./gradlew :applications:emme-platform:test
-./gradlew :applications:emme-platform:archTest
+./gradlew :applications:emme-platform:test --tests '*ModularityTest'
 ```
 
 For a local runtime, use the deployment assets documented in
@@ -60,6 +60,22 @@ The default health endpoint is:
 ```bash
 curl http://localhost:8081/actuator/health
 ```
+
+Select exactly one backend runtime image when starting Compose:
+
+```bash
+# JVM baseline / rollback artifact
+docker compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml up -d
+
+# Explicit GraalVM Native Image path
+docker compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-native.yaml up -d
+```
+
+For K3d/K3s, render or deploy `infra/kubernetes/overlays/k3d-jvm` or
+`k3s-production-jvm` for JVM, and `k3d-native` or
+`k3s-production-native` for native. Never combine the two runtime overlays.
 
 ## Repository structure
 
@@ -103,7 +119,7 @@ extensions, tasks, providers, and technology adapters. See
 ```bash
 ./gradlew check --no-configuration-cache
 ./gradlew :build-logic:test
-./gradlew :applications:emme-platform:archTest
+./gradlew :applications:emme-platform:test --tests '*ModularityTest'
 ```
 
 The CI workflows run compilation, tests, module-boundary verification, and the
@@ -118,6 +134,8 @@ the environment or deployment secret manager; never commit them to this repo.
 | Backend modules | [`docs/architecture/01-backend/`](docs/architecture/01-backend/) |
 | Frontend/backend contracts | [`docs/architecture/03-integration/`](docs/architecture/03-integration/) |
 | Delivery and release | [`docs/architecture/04-delivery/`](docs/architecture/04-delivery/) |
+| Operations and production evidence | [`docs/architecture/05-operations/`](docs/architecture/05-operations/) |
+| Engineering policies | [`docs/principles.md`](docs/principles.md), [`docs/security.md`](docs/security.md), [`docs/testing.md`](docs/testing.md) |
 | ADRs | [`docs/adr/`](docs/adr/) |
 
 ## License

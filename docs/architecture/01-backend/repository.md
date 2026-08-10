@@ -1,5 +1,7 @@
 # Repositories
 
+> **Naming contract:** Follow the [canonical architecture naming catalog](../00-project/naming-conventions.md) for package names, filenames, Java/Kotlin types, methods, and tests. Local examples on this page must not introduce a conflicting convention.
+
 ## Purpose
 
 A repository is a persistence port for an aggregate or domain query. It hides storage mechanics from application and domain code.

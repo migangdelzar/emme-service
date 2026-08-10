@@ -9,9 +9,10 @@ CREATE TABLE IF NOT EXISTS document (
     source_type VARCHAR(30) NOT NULL,
     status VARCHAR(30) NOT NULL DEFAULT 'UPLOADED'
         CHECK (status IN ('UPLOADED','PROCESSING','READY','FAILED','RETIRED')),
-    version INTEGER NOT NULL DEFAULT 1 CHECK (version >= 1),
+    document_version INTEGER NOT NULL DEFAULT 1 CHECK (document_version >= 1),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS document_chunk (
@@ -23,6 +24,7 @@ CREATE TABLE IF NOT EXISTS document_chunk (
     content_fingerprint VARCHAR(128) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (document_id, chunk_index)
 );
 

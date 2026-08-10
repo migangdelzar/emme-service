@@ -2,6 +2,9 @@ package com.emme.testing;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
+import com.emme.tenancy.api.command.CreateTenantCommand;
+import com.emme.tenancy.api.result.TenantDetails;
+import com.emme.tenancy.api.usecase.CreateTenantUseCase;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,12 +31,17 @@ import org.springframework.test.web.servlet.MockMvc;
 public abstract class BaseWebTest {
 
   @Autowired protected MockMvc mockMvc;
+  @Autowired protected CreateTenantUseCase createTenantUseCase;
 
   protected UUID tenantId;
 
+  protected TenantDetails createTenant(String slug, String name) {
+    return createTenantUseCase.create(new CreateTenantCommand(slug, name));
+  }
+
   /**
-   * Build a JWT RequestPostProcessor with platform_admin role and random tenant. Override in
-   * subclass to customize roles or tenant.
+   * Build a JWT RequestPostProcessor with admin role and random tenant. Override in subclass to
+   * customize roles or tenant.
    */
   protected JwtRequestPostProcessor auth() {
     if (tenantId == null) tenantId = UUID.randomUUID();
@@ -42,8 +50,8 @@ public abstract class BaseWebTest {
             j ->
                 j.subject("test-user")
                     .claim("tenant_id", tenantId.toString())
-                    .claim("realm_access", Map.of("roles", List.of("platform_admin"))))
-        .authorities(new SimpleGrantedAuthority("platform_admin"));
+                    .claim("realm_access", Map.of("roles", List.of("admin"))))
+        .authorities(new SimpleGrantedAuthority("admin"));
   }
 
   /** Build JWT with specific tenant and roles. */

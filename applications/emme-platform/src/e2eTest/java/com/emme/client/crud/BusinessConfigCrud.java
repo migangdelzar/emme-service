@@ -10,10 +10,10 @@ public class BusinessConfigCrud {
   }
 
   public String profile() {
-    return session.get("/api/v1/business-config/profile");
+    return session.get("/api/business-config/profile");
   }
 
   public String hours() {
-    return session.get("/api/v1/business-config/hours");
+    return session.get("/api/business-config/hours");
   }
 }

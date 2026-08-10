@@ -22,15 +22,15 @@ class EmmeUser(HttpUser):
 
     @task(5)
     def list_services(self):
-        self.client.get("/api/v1/services", headers=self.headers)
+        self.client.get("/api/services", headers=self.headers)
 
     @task(5)
     def list_appointments(self):
-        self.client.get("/api/v1/appointments", headers=self.headers)
+        self.client.get("/api/appointments", headers=self.headers)
 
     @task(3)
     def list_customers(self):
-        self.client.get("/api/v1/customers", headers=self.headers)
+        self.client.get("/api/customers", headers=self.headers)
 
     @task(2)
     def create_appointment(self):
@@ -41,19 +41,19 @@ class EmmeUser(HttpUser):
             "startsAt": "2026-07-05T10:00:00Z",
             "endsAt": "2026-07-05T11:00:00Z"
         }
-        self.client.post("/api/v1/appointments", json=payload, headers=self.headers)
+        self.client.post("/api/appointments", json=payload, headers=self.headers)
 
     @task(2)
     def search_slots(self):
         self.client.get(
-            f"/api/v1/appointments/slots?serviceId={uuid.uuid4()}&date=2026-07-05",
+            f"/api/appointments/slots?serviceId={uuid.uuid4()}&date=2026-07-05",
             headers=self.headers
         )
 
     @task(1)
     def chat_ai(self):
         payload = {"userMessage": "What services do you offer?", "conversationContext": ""}
-        self.client.post("/api/v1/ai/chat", json=payload, headers=self.headers)
+        self.client.post("/api/ai/chat", json=payload, headers=self.headers)
 
     @task(1)
     def get_metrics(self):

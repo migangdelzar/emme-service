@@ -3,14 +3,18 @@
 # context (every module component-scanned) and needs the same cross-module bootstrap config
 # as application-test.yml / application-repository.yml; see those files' headers.
 spring:
+  task:
+    scheduling:
+      enabled: false
   jpa:
     entity-scan:
       packages: com.emme
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     open-in-view: false
     properties:
       hibernate:
+        multi_tenancy: NONE
         dialect: org.hibernate.dialect.H2Dialect
         hbm2ddl:
           create_namespaces: true
@@ -24,8 +28,11 @@ spring:
       mode: never
   modulith:
     events:
-      jdbc-schema-initialization:
-        enabled: true
+      externalization:
+        enabled: false
+      jdbc:
+        schema-initialization:
+          enabled: true
   liquibase:
     enabled: false
   autoconfigure:
@@ -43,11 +50,14 @@ spring:
         enabled: false
 
 app:
+  tenant:
+    provisioning:
+      enabled: false
   ai:
     provider: mock
   calendar:
     google:
-      service-account: ""
+      service-account-json-base64: ""
     calendar-id: test-calendar
 
 emme:

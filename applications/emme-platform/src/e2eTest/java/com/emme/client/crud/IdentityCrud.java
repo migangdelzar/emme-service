@@ -14,6 +14,6 @@ public class IdentityCrud {
   }
 
   public String identityMe() {
-    return session.get("/api/v1/identity/me");
+    return session.get("/api/identity/me");
   }
 }

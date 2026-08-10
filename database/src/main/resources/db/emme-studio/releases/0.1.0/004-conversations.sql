@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS conversation (
         CHECK (status IN ('ACTIVE', 'CLOSED', 'EXPIRED')),
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS conversation_event (
@@ -24,6 +25,7 @@ CREATE TABLE IF NOT EXISTS conversation_event (
     occurred_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (conversation_id, sequence_number)
 );
 
@@ -37,8 +39,10 @@ CREATE TABLE IF NOT EXISTS pending_action (
         CHECK (status IN ('PENDING', 'CONFIRMED', 'REJECTED', 'EXPIRED', 'EXECUTED')),
     details JSONB,
     expires_at TIMESTAMPTZ NOT NULL,
+    created_at_override TIMESTAMPTZ NOT NULL DEFAULT now(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 ALTER TABLE conversation ENABLE ROW LEVEL SECURITY;

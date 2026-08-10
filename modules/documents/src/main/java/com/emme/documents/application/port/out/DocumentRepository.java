@@ -1,0 +1,23 @@
+package com.emme.documents.application.port.out;
+
+import com.emme.documents.domain.model.Document;
+import com.emme.documents.domain.model.DocumentChunk;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/** Persistence capability required by document use cases. */
+public interface DocumentRepository {
+
+  Optional<Document> findByTenantIdAndId(UUID tenantId, UUID documentId);
+
+  List<Document> findByTenantId(UUID tenantId);
+
+  Document save(Document document);
+
+  List<DocumentChunk> findChunks(UUID tenantId, UUID documentId);
+
+  List<DocumentChunk> findChunksByTenantIdAndIds(UUID tenantId, List<UUID> chunkIds);
+
+  void replaceChunks(UUID tenantId, UUID documentId, List<DocumentChunk> chunks);
+}

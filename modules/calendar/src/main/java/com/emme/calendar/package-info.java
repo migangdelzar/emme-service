@@ -1,11 +1,12 @@
 @org.springframework.modulith.ApplicationModule(
     displayName = "Calendar",
     allowedDependencies = {
-      "shared",
+      "shared :: persistence",
+      "shared :: web-security",
       "tenancy",
-      "identity",
-      "studio",
-      "studio :: studio-api",
-      "studio :: studio-events"
+      "identity :: identity-security",
+      "appointments :: appointments-api",
+      "appointments :: appointments-events",
+      "clients :: clients-api"
     })
 package com.emme.calendar;

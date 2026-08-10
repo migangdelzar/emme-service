@@ -1,0 +1,14 @@
+/api/auth/login
+/api/auth/customer-login
+/api/me
+/api/tenants
+/api/customers
+/api/services
+/api/artists
+/api/appointments
+/api/catalog/items
+/api/notifications
+/api/payments
+/api/documents
+/api/subscriptions
+/api/conversations

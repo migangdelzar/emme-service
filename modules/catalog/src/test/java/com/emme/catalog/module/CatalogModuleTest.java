@@ -23,7 +23,7 @@ class CatalogModuleTest extends BaseSpringModuleTest {
   void shouldCreateCatalogItem() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/catalog/items")
+            post("/api/catalog/items")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -47,7 +47,7 @@ class CatalogModuleTest extends BaseSpringModuleTest {
   void shouldListCatalogItems() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/catalog/items")
+            post("/api/catalog/items")
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -65,7 +65,7 @@ class CatalogModuleTest extends BaseSpringModuleTest {
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/v1/catalog/items").with(tenantJwt()))
+        .perform(get("/api/catalog/items").with(tenantJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").isNotEmpty());
   }
@@ -75,7 +75,7 @@ class CatalogModuleTest extends BaseSpringModuleTest {
     var result =
         mockMvc
             .perform(
-                post("/api/v1/catalog/items")
+                post("/api/catalog/items")
                     .with(tenantJwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -97,7 +97,7 @@ class CatalogModuleTest extends BaseSpringModuleTest {
     String itemId = location.substring(location.lastIndexOf("/") + 1);
 
     mockMvc
-        .perform(delete("/api/v1/catalog/items/{id}", itemId).with(tenantJwt()))
+        .perform(delete("/api/catalog/items/{id}", itemId).with(tenantJwt()))
         .andExpect(status().isNoContent());
   }
 
@@ -105,7 +105,7 @@ class CatalogModuleTest extends BaseSpringModuleTest {
   void shouldRejectWithoutJwt() throws Exception {
     mockMvc
         .perform(
-            post("/api/v1/catalog/items")
+            post("/api/catalog/items")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """

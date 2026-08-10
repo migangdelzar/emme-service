@@ -1,14 +1,11 @@
-import com.emme.buildlogic.dependency.EmmeDependencies
+import com.emme.buildlogic.core.dependency.Dependencies
 import org.gradle.api.artifacts.VersionCatalogsExtension
 
 val libs = extensions.getByType(VersionCatalogsExtension::class).named("libs")
-val e = EmmeDependencies(libs)
-
-plugins {
-    id("emme.spring-module")
-}
+val e = Dependencies(libs)
 
 dependencies {
-    implementation(e.springKafka)
-    testImplementation(e.testcontainersKafka)
+  add("implementation", e.springKafka)
+  add("implementation", e.springModulithEventsKafka)
+  add("testImplementation", e.testcontainersKafka)
 }

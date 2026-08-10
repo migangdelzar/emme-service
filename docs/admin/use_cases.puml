@@ -1,0 +1,26 @@
+@startuml Admin App — Use Cases Overview
+left to right direction
+
+actor "Platform Administrator" as platformAdmin
+actor "System Operator" as operator
+
+rectangle "EMME Admin" {
+    usecase "UC-001\nAccess Tenant Workspace" as UC001
+    usecase "UC-002\nManage Tenant Lifecycle" as UC002
+    usecase "UC-017\nAudit Business Activity" as UC017
+    usecase "UC-018\nMaintain Search Projections" as UC018
+    usecase "UC-019\nManage Feature Flags" as UC019
+    usecase "UC-020\nManage Platform Memberships" as UC020
+}
+
+platformAdmin --> UC001
+platformAdmin --> UC002
+platformAdmin --> UC017
+platformAdmin --> UC019
+platformAdmin --> UC020
+operator --> UC017
+operator --> UC018
+
+UC018 ..> UC017 : <<extend>>
+
+@enduml

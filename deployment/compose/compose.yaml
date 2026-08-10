@@ -1,0 +1,65 @@
+# Shared Compose base. Combine this file with exactly one runtime overlay:
+# compose.runtime-jvm.yaml or compose.runtime-native.yaml.
+services:
+  emme-platform:
+    # The base remains runnable for existing local commands. Runtime-specific
+    # image selection is owned by the explicit JVM/native overlay.
+    image: ${EMME_SERVICE_IMAGE:-ghcr.io/migangdelzar/emme-service:${TAG:-latest}}
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${PROFILE:-local}
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
+    # Runtime overlays own healthchecks because JVM and native images have
+    # different executable surfaces. The JVM overlay uses the shell-free Java
+    # probe; the native overlay relies on the orchestrator HTTP probe.
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+        reservations:
+          memory: 256M
+          cpus: "0.5"
+    networks:
+      - emme-net
+
+  postgres:
+    # pgvector is part of the authoritative PostgreSQL runtime contract.
+    # Keep the image overridable for CI/production mirrors without silently
+    # falling back to a database image that cannot apply search migrations.
+    image: ${POSTGRES_IMAGE:-pgvector/pgvector:pg17}
+    environment:
+      POSTGRES_DB: emme
+      POSTGRES_USER: emme
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-emme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U emme"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - emme-net
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - emme-net
+
+networks:
+  emme-net:
+    driver: bridge
+
+volumes:
+  pgdata:

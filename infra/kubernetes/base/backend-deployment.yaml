@@ -32,7 +32,7 @@ spec:
             - name: APP_GOOGLE_OAUTH_CLIENT_SECRET
               value: ""
             - name: APP_GOOGLE_OAUTH_REDIRECT_URI
-              value: "https://dev.emme.lat/api/v1/google/oauth/callback"
+              value: "https://dev.emme.lat/api/google/oauth/callback"
             - name: APP_GOOGLE_OAUTH_ENCRYPTION_KEY
               value: "replace-with-32-char-secure-key!!"
           resources:

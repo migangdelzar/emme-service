@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS google_oauth_token (
     provider_email VARCHAR(255),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (tenant_id, user_id, persona_type)
 );
 
@@ -35,7 +36,8 @@ CREATE TABLE IF NOT EXISTS google_spreadsheet_link (
     export_type VARCHAR(20) NOT NULL CHECK (export_type IN ('APPOINTMENTS', 'CLIENTS', 'FULL')),
     last_exported_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 ALTER TABLE google_spreadsheet_link ENABLE ROW LEVEL SECURITY;

@@ -12,7 +12,7 @@ public class CustomerCrud {
 
   public String create(String name, String email, String phone) {
     return session.post(
-        "/api/v1/customers",
+        "/api/customers",
         Template.load("customer-create.json")
             .set("name", name)
             .set("email", email)
@@ -21,14 +21,14 @@ public class CustomerCrud {
   }
 
   public String list() {
-    return session.get("/api/v1/customers");
+    return session.get("/api/customers");
   }
 
   public String getById(String id) {
-    return session.get("/api/v1/customers/" + id);
+    return session.get("/api/customers/" + id);
   }
 
   public String search(String query) {
-    return session.get("/api/v1/customers/search?q=" + query);
+    return session.get("/api/customers/search?q=" + query);
   }
 }

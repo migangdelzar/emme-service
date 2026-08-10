@@ -1,4 +1,4 @@
 @org.springframework.modulith.ApplicationModule(
     displayName = "Payment",
-    allowedDependencies = {"shared", "tenancy"})
+    allowedDependencies = {"shared :: persistence", "tenancy"})
 package com.emme.payment;

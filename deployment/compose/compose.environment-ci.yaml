@@ -1,0 +1,10 @@
+# CI test — depends on healthy dependencies
+services:
+  emme-platform:
+    environment:
+      SPRING_PROFILES_ACTIVE: test
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy

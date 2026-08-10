@@ -9,8 +9,8 @@ import com.emme.catalog.adapter.in.web.request.MatchCatalogItemsRequest;
 import com.emme.catalog.adapter.in.web.response.CatalogItemImageResponse;
 import com.emme.catalog.adapter.in.web.response.CatalogItemResponse;
 import com.emme.catalog.adapter.in.web.response.CatalogMatchResponse;
-import com.emme.catalog.api.result.CatalogItemImageInfo;
-import com.emme.catalog.api.result.CatalogItemInfo;
+import com.emme.catalog.api.result.CatalogItemDetails;
+import com.emme.catalog.api.result.CatalogItemImageDetails;
 import com.emme.catalog.api.usecase.AddCatalogItemImageUseCase;
 import com.emme.catalog.api.usecase.CreateCatalogItemUseCase;
 import com.emme.catalog.api.usecase.DeleteCatalogItemUseCase;
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/catalog")
+@RequestMapping(path = "/api/catalog", version = "1.0")
 @Tag(name = "Catalog")
 public class CatalogController {
 
@@ -61,9 +61,9 @@ public class CatalogController {
       @Valid @RequestBody CreateCatalogItemRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          CatalogItemInfo info =
+          CatalogItemDetails info =
               createCatalogItemUseCase.create(CatalogWebMapper.toCommand(tenantId, request));
-          return ResponseEntity.created(URI.create("/api/v1/catalog/items/" + info.id()))
+          return ResponseEntity.created(URI.create("/api/catalog/items/" + info.id()))
               .body(CatalogWebMapper.toResponse(info));
         });
   }
@@ -94,10 +94,11 @@ public class CatalogController {
       @PathVariable UUID id, @Valid @RequestBody AddCatalogItemImageRequest request) {
     return withCurrentTenant(
         tenantId -> {
-          CatalogItemImageInfo info =
-              addCatalogItemImageUseCase.addImage(CatalogWebMapper.toCommand(tenantId, id, request));
+          CatalogItemImageDetails info =
+              addCatalogItemImageUseCase.addImage(
+                  CatalogWebMapper.toCommand(tenantId, id, request));
           return ResponseEntity.created(
-                  URI.create("/api/v1/catalog/items/" + id + "/images/" + info.id()))
+                  URI.create("/api/catalog/items/" + id + "/images/" + info.id()))
               .body(CatalogWebMapper.toResponse(info));
         });
   }

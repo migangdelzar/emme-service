@@ -1,9 +1,0 @@
-# application-integrationtest.yml - integration tests with real Testcontainers infrastructure
-# Auto-applied via BaseIntegrationTest (@ActiveProfiles includes "integrationtest")
-testcontainers:
-  reuse:
-    enable: true
-spring:
-  liquibase:
-    enabled: true
-    contexts: dev

@@ -2,5 +2,5 @@ package com.emme.functional.throwing;
 
 @FunctionalInterface
 public interface ThrowingBiFunction<T, U, R, E extends Throwable> {
-    R apply(T t, U u) throws E;
+  R apply(T t, U u) throws E;
 }

@@ -11,7 +11,7 @@ class BusinessConfigApiTest {
   void shouldGetProfile() {
     withSession(
         s -> {
-          var result = s.get("/api/v1/business-config/profile", 404);
+          var result = s.get("/api/business-config/profile", 404);
           assertThat(result).isNotNull();
         });
   }
@@ -29,7 +29,7 @@ class BusinessConfigApiTest {
   void shouldGetPolicy() {
     withSession(
         s -> {
-          var result = s.get("/api/v1/business-config/policy", 404);
+          var result = s.get("/api/business-config/policy", 404);
           assertThat(result).isNotNull();
         });
   }

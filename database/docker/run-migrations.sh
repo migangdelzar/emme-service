@@ -7,6 +7,7 @@ POSTGRES_ADMIN_DB="${POSTGRES_ADMIN_DB:-postgres}"
 POSTGRES_USER="${POSTGRES_USER:-emme}"
 POSTGRES_PASSWORD="${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
 DATABASE_NAME="${DATABASE_NAME:-emme}"
+DEFAULT_DATABASE_JDBC_URL="${DEFAULT_DATABASE_JDBC_URL:-jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${DATABASE_NAME}}"
 LIQUIBASE_CONTEXTS="${LIQUIBASE_CONTEXTS:-prod}"
 TENANT_SEED_SLUGS="${TENANT_SEED_SLUGS:-}"
 SCHEMA_VERSION="${SCHEMA_VERSION:-0.1.0}"
@@ -26,6 +27,9 @@ summarize_error() {
   raw_summary="$(printf '%s' "$1" | tr '\r\n' ' ' | tr -s ' ')"
   raw_summary="${raw_summary#"${raw_summary%%[![:space:]]*}"}"
   raw_summary="${raw_summary%"${raw_summary##*[![:space:]]}"}"
+  if (( ${#raw_summary} > 240 )); then
+    raw_summary="${raw_summary: -240}"
+  fi
   printf '%.240s' "${raw_summary}"
 }
 
@@ -53,6 +57,15 @@ liquibase \
   --liquibase-schema-name=emme_core \
   update \
   --context-filter="${LIQUIBASE_CONTEXTS}"
+
+echo "Configuring default database connection: ${DEFAULT_DATABASE_JDBC_URL}"
+default_database_jdbc_url_sql="${DEFAULT_DATABASE_JDBC_URL//\'/\'\'}"
+"${psql_base[@]}" \
+  -d "${DATABASE_NAME}" \
+  -c "
+    UPDATE emme_core.database_registry
+    SET jdbc_url = '${default_database_jdbc_url_sql}'
+    WHERE database_id = '00000000-0000-0000-0000-000000000000';"
 
 if [[ -n "${TENANT_SEED_SLUGS}" ]]; then
   IFS=',' read -r -a seed_slugs <<< "${TENANT_SEED_SLUGS}"
@@ -88,13 +101,22 @@ for schema in "${tenant_schemas[@]}"; do
     exit 10
   fi
 
+  tenant_state="$(${psql_base[@]} -d "${DATABASE_NAME}" -tAc "
+    SELECT status || '|' || COALESCE(schema_version, '')
+    FROM emme_core.tenant_registry
+    WHERE schema_name = '${schema}';" | tr -d '[:space:]')"
+  if [[ "${tenant_state}" == "ACTIVE|${SCHEMA_VERSION}" ]]; then
+    echo "Tenant schema ${schema} is already active at version ${SCHEMA_VERSION}; skipping"
+    continue
+  fi
+
   echo "Migrating tenant schema ${schema}"
   "${psql_base[@]}" -d "${DATABASE_NAME}" -c "CREATE SCHEMA IF NOT EXISTS \"${schema}\";"
   if ! liquibase_output="$(
     liquibase \
       --search-path=/liquibase/changelog/db \
       --changelog-file=emme-studio/changelog.yaml \
-      --url="jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${DATABASE_NAME}" \
+      --url="jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${DATABASE_NAME}?currentSchema=${schema},emme_core,public" \
       --username="${POSTGRES_USER}" \
       --password="${POSTGRES_PASSWORD}" \
       --default-schema-name="${schema}" \
@@ -105,12 +127,14 @@ for schema in "${tenant_schemas[@]}"; do
     error_summary="$(summarize_error "${liquibase_output}")"
     "${psql_base[@]}" \
       -d "${DATABASE_NAME}" \
-      -c "
-        UPDATE emme_core.tenant_registry
-        SET status = 'FAILED',
-            migration_error = '${error_summary}',
-            updated_at = now()
-        WHERE schema_name = '${schema}';"
+      -v "migration_error=${error_summary}" \
+      -v "tenant_schema=${schema}" <<'SQL'
+UPDATE emme_core.tenant_registry
+SET status = 'FAILED',
+    migration_error = :'migration_error',
+    updated_at = now()
+WHERE schema_name = :'tenant_schema';
+SQL
     printf 'Tenant migration failed for %s: %s\n' "${schema}" "${error_summary}" >&2
     exit 1
   fi

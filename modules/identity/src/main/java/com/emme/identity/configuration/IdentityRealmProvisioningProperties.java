@@ -23,7 +23,7 @@ public record IdentityRealmProvisioningProperties(
     @Min(0) long retryDelayMillis) {
 
   public IdentityRealmProvisioningProperties(
-      @DefaultValue("emme-salon-app") String clientId,
+      @DefaultValue("salon-app") String clientId,
       @DefaultValue({"http://localhost:8080/*", "http://localhost:3000/*"})
           List<String> redirectUris,
       @DefaultValue("admin") String initialAdminUsername,
@@ -45,7 +45,7 @@ public record IdentityRealmProvisioningProperties(
 
   public static IdentityRealmProvisioningProperties defaults() {
     return new IdentityRealmProvisioningProperties(
-        "emme-salon-app",
+        "salon-app",
         List.of("http://localhost:8080/*", "http://localhost:3000/*"),
         "admin",
         "",

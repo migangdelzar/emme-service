@@ -27,7 +27,6 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
   private final OkHttpClient httpClient;
   private final ObjectMapper objectMapper;
   private final String baseUrl;
-  private final String clientId;
   private final IdentityKeycloakProperties properties;
 
   public KeycloakUserAuthenticationAdapter(
@@ -39,7 +38,6 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
     this.httpClient = httpClient;
     this.objectMapper = objectMapper;
     this.baseUrl = properties.issuerUri().substring(0, realmIndex);
-    this.clientId = properties.clientId();
     this.properties = properties;
   }
 
@@ -48,7 +46,7 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
     String tokenUrl = baseUrl + "/realms/" + realm + "/protocol/openid-connect/token";
     RequestBody body =
         new FormBody.Builder()
-            .add("client_id", clientId)
+            .add("client_id", clientIdForRealm(realm))
             .add("grant_type", "password")
             .add("username", username)
             .add("password", password)
@@ -74,6 +72,12 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
       throw new IdentityProviderUnavailableException(
           "Authentication provider request failed", exception);
     }
+  }
+
+  private String clientIdForRealm(String realm) {
+    return properties.defaultRealm().equals(realm)
+        ? properties.platformClientId()
+        : properties.clientId();
   }
 
   @Override

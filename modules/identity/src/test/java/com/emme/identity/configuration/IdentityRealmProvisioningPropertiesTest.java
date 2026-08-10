@@ -11,7 +11,7 @@ class IdentityRealmProvisioningPropertiesTest {
   void providesSafeProvisioningDefaultsWithoutAProvisioningPassword() {
     IdentityRealmProvisioningProperties properties = IdentityRealmProvisioningProperties.defaults();
 
-    assertThat(properties.clientId()).isEqualTo("emme-salon-app");
+    assertThat(properties.clientId()).isEqualTo("salon-app");
     assertThat(properties.redirectUris())
         .containsExactly("http://localhost:8080/*", "http://localhost:3000/*");
     assertThat(properties.initialAdminUsername()).isEqualTo("admin");
@@ -27,7 +27,7 @@ class IdentityRealmProvisioningPropertiesTest {
   void copiesConfiguredRedirectUris() {
     IdentityRealmProvisioningProperties properties =
         new IdentityRealmProvisioningProperties(
-            "emme-salon-app",
+            "salon-app",
             List.of("https://studio.example/*"),
             "admin",
             "",

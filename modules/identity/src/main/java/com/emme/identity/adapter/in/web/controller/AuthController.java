@@ -103,10 +103,10 @@ public class AuthController {
                       jwt.getClaimAsString("name"),
                       parseTenantId(jwt.getClaim("tenant_id")))));
 
-      // Return token + user in response
-      // Return ID token (has sub claim) instead of access token for Bearer auth
-      var bearerToken = tokens.idToken() != null ? tokens.idToken() : tokens.accessToken();
-      return ResponseEntity.ok(new TokenLoginResponse(bearerToken, tokens.refreshToken(), user));
+      // The resource server validates access-token audience and scopes. The ID token is only an
+      // identity assertion for the client and must never be used as the API bearer credential.
+      return ResponseEntity.ok(
+          new TokenLoginResponse(tokens.accessToken(), tokens.refreshToken(), user));
 
     } catch (IdentityAuthenticationException e) {
       return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));

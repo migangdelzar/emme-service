@@ -37,7 +37,11 @@ class TenantRealmProvisioningListenerTest {
 
     TenantRealmProvisioningListener listener =
         new TenantRealmProvisioningListener(
-            administrationPort, tenantIdentityRealmPort, configuration, eventPublisher, ensureMembership);
+            administrationPort,
+            tenantIdentityRealmPort,
+            configuration,
+            eventPublisher,
+            ensureMembership);
 
     listener.onTenantSchemaReady(event);
 
@@ -47,8 +51,12 @@ class TenantRealmProvisioningListenerTest {
     verify(administrationPort).createRealmRole("emme-test-slug", "business_owner");
     verify(administrationPort).createRealmRole("emme-test-slug", "nail_artist");
     verify(administrationPort)
-        .createUser("emme-test-slug", settings.initialAdminUsername(),
-            "admin@test-slug.local", settings.initialAdminPassword(), settings.initialAdminRole());
+        .createUser(
+            "emme-test-slug",
+            settings.initialAdminUsername(),
+            "admin@test-slug.local",
+            settings.initialAdminPassword(),
+            settings.initialAdminRole());
     verify(ensureMembership).ensure(tenantId, null, settings.initialAdminRole());
     verify(tenantIdentityRealmPort).updateRealm(tenantId, "emme-test-slug");
 
@@ -59,7 +67,13 @@ class TenantRealmProvisioningListenerTest {
 
   private static IdentityRealmProvisioningSettings provisioningSettings() {
     return new IdentityRealmProvisioningSettings(
-        "emme-salon-app", List.of("http://localhost:8080/*"), "admin", "test-password",
-        "business_owner", List.of("business_owner", "nail_artist"), 3, 2000);
+        "salon-app",
+        List.of("http://localhost:8080/*"),
+        "admin",
+        "test-password",
+        "business_owner",
+        List.of("business_owner", "nail_artist"),
+        3,
+        2000);
   }
 }

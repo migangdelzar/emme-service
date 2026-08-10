@@ -19,13 +19,15 @@ public final class IdentityJwtTrustPolicy {
   private final String customerIssuer;
   private final String tenantIssuerPrefix;
   private final String platformAudience;
+  private final String tenantAudience;
   private final String customerAudience;
 
   public IdentityJwtTrustPolicy(IdentityKeycloakProperties properties) {
     this.platformIssuer = normalizeIssuer(properties.issuerUri());
     this.customerIssuer = normalizeIssuer(properties.customerIssuerUri());
     this.tenantIssuerPrefix = tenantIssuerPrefix(platformIssuer);
-    this.platformAudience = properties.clientId();
+    this.platformAudience = properties.platformClientId();
+    this.tenantAudience = properties.clientId();
     this.customerAudience = properties.customerClientId();
   }
 
@@ -43,10 +45,21 @@ public final class IdentityJwtTrustPolicy {
       throw new IllegalArgumentException("JWT issuer is not trusted");
     }
     String normalizedIssuer = normalizeIssuer(issuer);
-    String audience = customerIssuer.equals(normalizedIssuer) ? customerAudience : platformAudience;
+    String audience =
+        customerIssuer.equals(normalizedIssuer)
+            ? customerAudience
+            : isTenantIssuer(normalizedIssuer) ? tenantAudience : platformAudience;
     return new DelegatingOAuth2TokenValidator<>(
         JwtValidators.createDefaultWithIssuer(normalizedIssuer),
         new JwtAudienceValidator(audience));
+  }
+
+  private boolean isTenantIssuer(String issuer) {
+    return !platformIssuer.equals(issuer)
+        && !customerIssuer.equals(issuer)
+        && issuer.startsWith(tenantIssuerPrefix)
+        && issuer.length() > tenantIssuerPrefix.length()
+        && !issuer.substring(tenantIssuerPrefix.length()).contains("/");
   }
 
   private static String normalizeIssuer(String issuer) {

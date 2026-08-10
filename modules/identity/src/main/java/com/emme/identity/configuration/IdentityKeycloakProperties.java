@@ -13,6 +13,7 @@ public record IdentityKeycloakProperties(
     @NotBlank String issuerUri,
     String jwkSetBaseUrl,
     @NotBlank String clientId,
+    @NotBlank String platformClientId,
     @NotBlank String adminRealm,
     @NotBlank String adminUsername,
     String adminPassword,
@@ -22,19 +23,21 @@ public record IdentityKeycloakProperties(
 
   public IdentityKeycloakProperties(
       @DefaultValue("http://localhost:18080") String baseUrl,
-      @DefaultValue("http://localhost:18080/realms/emme") String issuerUri,
+      @DefaultValue("http://localhost:18080/realms/emme-core") String issuerUri,
       @DefaultValue("") String jwkSetBaseUrl,
-      @DefaultValue("emme-salon-app") String clientId,
+      @DefaultValue("salon-app") String clientId,
+      @DefaultValue("admin-app") String platformClientId,
       @DefaultValue("master") String adminRealm,
       @DefaultValue("admin") String adminUsername,
       @DefaultValue("") String adminPassword,
-      @DefaultValue("emme") String defaultRealm,
+      @DefaultValue("emme-core") String defaultRealm,
       @DefaultValue("http://localhost:18080/realms/emme-customers") String customerIssuerUri,
       @DefaultValue("emme-customer-app") String customerClientId) {
     this.baseUrl = baseUrl;
     this.issuerUri = issuerUri;
     this.jwkSetBaseUrl = jwkSetBaseUrl;
     this.clientId = clientId;
+    this.platformClientId = platformClientId;
     this.adminRealm = adminRealm;
     this.adminUsername = adminUsername;
     this.adminPassword = adminPassword;
@@ -46,13 +49,14 @@ public record IdentityKeycloakProperties(
   public static IdentityKeycloakProperties defaults() {
     return new IdentityKeycloakProperties(
         "http://localhost:18080",
-        "http://localhost:18080/realms/emme",
+        "http://localhost:18080/realms/emme-core",
         "",
-        "emme-salon-app",
+        "salon-app",
+        "admin-app",
         "master",
         "admin",
         "",
-        "emme",
+        "emme-core",
         "http://localhost:18080/realms/emme-customers",
         "emme-customer-app");
   }

@@ -64,7 +64,7 @@ assert.equal(
 );
 assert.equal(
   services['emme-platform'].environment.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_ID,
-  'emme-salon-app',
+  'salon-app',
 );
 assert.equal(
   services['emme-platform'].environment.SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI,

@@ -7,6 +7,7 @@ POSTGRES_ADMIN_DB="${POSTGRES_ADMIN_DB:-postgres}"
 POSTGRES_USER="${POSTGRES_USER:-emme}"
 POSTGRES_PASSWORD="${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
 DATABASE_NAME="${DATABASE_NAME:-emme}"
+DEFAULT_DATABASE_JDBC_URL="${DEFAULT_DATABASE_JDBC_URL:-jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${DATABASE_NAME}}"
 LIQUIBASE_CONTEXTS="${LIQUIBASE_CONTEXTS:-prod}"
 TENANT_SEED_SLUGS="${TENANT_SEED_SLUGS:-}"
 SCHEMA_VERSION="${SCHEMA_VERSION:-0.1.0}"
@@ -57,6 +58,15 @@ liquibase \
   update \
   --context-filter="${LIQUIBASE_CONTEXTS}"
 
+echo "Configuring default database connection: ${DEFAULT_DATABASE_JDBC_URL}"
+default_database_jdbc_url_sql="${DEFAULT_DATABASE_JDBC_URL//\'/\'\'}"
+"${psql_base[@]}" \
+  -d "${DATABASE_NAME}" \
+  -c "
+    UPDATE emme_core.database_registry
+    SET jdbc_url = '${default_database_jdbc_url_sql}'
+    WHERE database_id = '00000000-0000-0000-0000-000000000000';"
+
 if [[ -n "${TENANT_SEED_SLUGS}" ]]; then
   IFS=',' read -r -a seed_slugs <<< "${TENANT_SEED_SLUGS}"
   for slug in "${seed_slugs[@]}"; do
@@ -89,6 +99,15 @@ for schema in "${tenant_schemas[@]}"; do
   if [[ ! "${schema}" =~ ^[a-z][a-z0-9_]{0,62}$ ]] || [[ "${schema}" == "public" ]] || [[ "${schema}" == "emme_core" ]] || [[ "${schema}" == pg_* ]]; then
     echo "Unsafe tenant schema name: ${schema}" >&2
     exit 10
+  fi
+
+  tenant_state="$(${psql_base[@]} -d "${DATABASE_NAME}" -tAc "
+    SELECT status || '|' || COALESCE(schema_version, '')
+    FROM emme_core.tenant_registry
+    WHERE schema_name = '${schema}';" | tr -d '[:space:]')"
+  if [[ "${tenant_state}" == "ACTIVE|${SCHEMA_VERSION}" ]]; then
+    echo "Tenant schema ${schema} is already active at version ${SCHEMA_VERSION}; skipping"
+    continue
   fi
 
   echo "Migrating tenant schema ${schema}"

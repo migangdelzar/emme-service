@@ -16,7 +16,7 @@ class IdentityJwtTrustPolicyTest {
 
   @Test
   void acceptsTheConfiguredPlatformIssuer() {
-    assertThat(policy.acceptsIssuer("https://identity.example/realms/emme")).isTrue();
+    assertThat(policy.acceptsIssuer("https://identity.example/realms/emme-core")).isTrue();
   }
 
   @Test
@@ -39,7 +39,7 @@ class IdentityJwtTrustPolicyTest {
 
   @Test
   void requiresTheConfiguredAudience() {
-    Jwt validJwt = jwt(List.of("emme-salon-app"));
+    Jwt validJwt = jwt(List.of("admin-app"));
     Jwt invalidJwt = jwt(List.of("another-client"));
 
     assertThat(policy.validatorFor(validJwt.getIssuer().toString()).validate(validJwt).hasErrors())
@@ -47,6 +47,14 @@ class IdentityJwtTrustPolicyTest {
     assertThat(
             policy.validatorFor(invalidJwt.getIssuer().toString()).validate(invalidJwt).hasErrors())
         .isTrue();
+  }
+
+  @Test
+  void keepsTheCoreRealmOnThePlatformAudienceWhenItsNameUsesTheTenantPrefix() {
+    Jwt coreJwt = jwt("https://identity.example/realms/emme-core", List.of("admin-app"));
+
+    assertThat(policy.validatorFor(coreJwt.getIssuer().toString()).validate(coreJwt).hasErrors())
+        .isFalse();
   }
 
   @Test
@@ -62,22 +70,31 @@ class IdentityJwtTrustPolicyTest {
         .isFalse();
   }
 
+  @Test
+  void usesTheSalonAudienceForTenantRealms() {
+    Jwt salonJwt = jwt("https://identity.example/realms/emme-demo-salon", List.of("salon-app"));
+
+    assertThat(policy.validatorFor(salonJwt.getIssuer().toString()).validate(salonJwt).hasErrors())
+        .isFalse();
+  }
+
   private static IdentityKeycloakProperties configuredProperties() {
     return new IdentityKeycloakProperties(
         "https://identity.example",
-        "https://identity.example/realms/emme",
+        "https://identity.example/realms/emme-core",
         "",
-        "emme-salon-app",
+        "salon-app",
+        "admin-app",
         "master",
         "admin",
         "",
-        "emme",
+        "emme-core",
         "https://identity.example/realms/emme-customers",
         "emme-customer-app");
   }
 
   private static Jwt jwt(List<String> audiences) {
-    return jwt("https://identity.example/realms/emme", audiences);
+    return jwt("https://identity.example/realms/emme-core", audiences);
   }
 
   private static Jwt jwt(String issuer, List<String> audiences) {

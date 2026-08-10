@@ -13,7 +13,8 @@ class IdentityKeycloakPropertiesTest {
             "http://localhost:18080",
             "http://localhost:18080/realms/emme",
             "http://keycloak:8080",
-            "emme-salon-app",
+            "salon-app",
+            "admin-app",
             "master",
             "admin",
             "secret",
@@ -24,7 +25,8 @@ class IdentityKeycloakPropertiesTest {
     assertThat(properties.baseUrl()).isEqualTo("http://localhost:18080");
     assertThat(properties.issuerUri()).isEqualTo("http://localhost:18080/realms/emme");
     assertThat(properties.jwkSetBaseUrl()).isEqualTo("http://keycloak:8080");
-    assertThat(properties.clientId()).isEqualTo("emme-salon-app");
+    assertThat(properties.clientId()).isEqualTo("salon-app");
+    assertThat(properties.platformClientId()).isEqualTo("admin-app");
     assertThat(properties.adminRealm()).isEqualTo("master");
     assertThat(properties.adminUsername()).isEqualTo("admin");
     assertThat(properties.adminPassword()).isEqualTo("secret");

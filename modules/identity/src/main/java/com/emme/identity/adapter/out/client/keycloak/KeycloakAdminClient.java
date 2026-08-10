@@ -83,14 +83,7 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
   public void createClient(String realm, String clientId, List<String> redirectUris)
       throws IOException {
     var token = getAdminToken();
-    var body =
-        Map.of(
-            "clientId", clientId,
-            "redirectUris", redirectUris,
-            "directAccessGrantsEnabled", true,
-            "publicClient", true,
-            "standardFlowEnabled", true,
-            "serviceAccountsEnabled", false);
+    var body = clientRepresentation(clientId, redirectUris);
     var req =
         new Request.Builder()
             .url(baseUrl + "/admin/realms/" + realm + "/clients")
@@ -104,6 +97,30 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
       if (resp.code() == 409) return;
       if (resp.code() != 201) throw new IOException("Client create failed: HTTP " + resp.code());
     }
+  }
+
+  static Map<String, Object> clientRepresentation(String clientId, List<String> redirectUris) {
+    return Map.of(
+        "clientId", clientId,
+        "redirectUris", redirectUris,
+        "directAccessGrantsEnabled", true,
+        "publicClient", true,
+        "standardFlowEnabled", true,
+        "serviceAccountsEnabled", false,
+        "protocolMappers",
+            List.of(
+                Map.of(
+                    "name",
+                    clientId + "-audience",
+                    "protocol",
+                    "openid-connect",
+                    "protocolMapper",
+                    "oidc-audience-mapper",
+                    "config",
+                    Map.of(
+                        "included.client.audience", clientId,
+                        "id.token.claim", "false",
+                        "access.token.claim", "true"))));
   }
 
   /** Create a realm-level role. */

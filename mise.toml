@@ -91,7 +91,19 @@ run = """
 docker-compose -f deployment/compose/compose.yaml \
   -f deployment/compose/compose.runtime-jvm.yaml \
   -f deployment/compose/compose.environment-e2e.yaml \
-  up -d --wait
+  up -d --build --wait
+"""
+
+[tasks."platform:up:local"]
+description = "Build and start the complete E2E platform stack from the local image"
+run = """
+mise run platform:build && \
+docker tag emme-platform:0.1.0 emme-service:local-e2e && \
+EMME_SERVICE_IMAGE=emme-service:local-e2e docker-compose \
+  -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.environment-e2e.yaml \
+  up -d --build --wait
 """
 
 [tasks."platform:down"]
@@ -109,15 +121,7 @@ run = "./gradlew :applications:emme-platform:bootBuildImage --no-configuration-c
 
 [tasks."platform:restart"]
 description = "Rebuild and restart the platform"
-run = """
-mise run platform:build && \
-docker tag emme-platform:0.1.0 emme-service:local-e2e && \
-EMME_SERVICE_IMAGE=emme-service:local-e2e docker-compose \
-  -f deployment/compose/compose.yaml \
-  -f deployment/compose/compose.runtime-jvm.yaml \
-  -f deployment/compose/compose.environment-e2e.yaml \
-  up -d --force-recreate emme-platform
-"""
+run = "mise run platform:up:local"
 
 [tasks."ci:test"]
 description = "Run backend unit tests"
@@ -131,6 +135,14 @@ run = "./gradlew build --no-configuration-cache"
 [tasks."e2e:provision"]
 description = "Provision E2E tenants via platform API"
 run = "./gradlew :tools:e2e-provisioner:e2eProvision --no-configuration-cache"
+
+[tasks."e2e:bootstrap"]
+description = "Build, start, and provision the complete local E2E platform"
+run = """
+mise run platform:down || true
+mise run platform:up:local && \
+mise run e2e:provision
+"""
 
 [tasks."e2e:clean"]
 description = "Remove E2E tenant data from DB and Keycloak"

@@ -93,7 +93,7 @@ class TenantIsolationModuleTest extends BaseSpringModuleTest {
     mockMvc
         .perform(
             get("/api/tenants/" + specificTenantId)
-                .with(tenantJwt(specificTenantId, TEST_USER_SUB, "platform_admin", "tenant_owner")))
+                .with(tenantJwt(specificTenantId, TEST_USER_SUB, "admin", "tenant_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(specificTenantId.toString()));
 

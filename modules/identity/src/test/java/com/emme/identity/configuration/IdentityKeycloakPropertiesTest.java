@@ -20,7 +20,7 @@ class IdentityKeycloakPropertiesTest {
             "secret",
             "emme",
             "http://localhost:18080/realms/emme-customers",
-            "emme-customer-app");
+            "client-app");
 
     assertThat(properties.baseUrl()).isEqualTo("http://localhost:18080");
     assertThat(properties.issuerUri()).isEqualTo("http://localhost:18080/realms/emme");
@@ -33,6 +33,6 @@ class IdentityKeycloakPropertiesTest {
     assertThat(properties.defaultRealm()).isEqualTo("emme");
     assertThat(properties.customerIssuerUri())
         .isEqualTo("http://localhost:18080/realms/emme-customers");
-    assertThat(properties.customerClientId()).isEqualTo("emme-customer-app");
+    assertThat(properties.customerClientId()).isEqualTo("client-app");
   }
 }

@@ -9,6 +9,13 @@ import org.junit.jupiter.api.Test;
 class KeycloakAdminClientTest {
 
   @Test
+  void createsTenantRealmsWithAStableE2eSessionLifetime() {
+    var representation = KeycloakAdminClient.realmRepresentation("emme-demo", "Demo");
+
+    assertThat(representation).containsEntry("accessTokenLifespan", 3_600);
+  }
+
+  @Test
   void createsAClientWithItsOwnAccessTokenAudience() throws Exception {
     var representation =
         KeycloakAdminClient.clientRepresentation("salon-app", List.of("http://localhost:3000/*"));

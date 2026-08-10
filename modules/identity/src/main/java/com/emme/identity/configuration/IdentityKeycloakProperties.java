@@ -32,7 +32,7 @@ public record IdentityKeycloakProperties(
       @DefaultValue("") String adminPassword,
       @DefaultValue("emme-core") String defaultRealm,
       @DefaultValue("http://localhost:18080/realms/emme-customers") String customerIssuerUri,
-      @DefaultValue("emme-customer-app") String customerClientId) {
+      @DefaultValue("client-app") String customerClientId) {
     this.baseUrl = baseUrl;
     this.issuerUri = issuerUri;
     this.jwkSetBaseUrl = jwkSetBaseUrl;
@@ -58,6 +58,6 @@ public record IdentityKeycloakProperties(
         "",
         "emme-core",
         "http://localhost:18080/realms/emme-customers",
-        "emme-customer-app");
+        "client-app");
   }
 }

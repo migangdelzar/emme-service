@@ -84,7 +84,7 @@ public class AppointmentController {
 
   @GetMapping
   @Operation(summary = "List appointments for current tenant, optionally filtered by date")
-  @PreAuthorize("hasRole('platform_admin')")
+  @PreAuthorize("hasAnyRole('admin', 'tenant_owner')")
   public ResponseEntity<List<AppointmentResponse>> list(
       @RequestParam(required = false) LocalDate date) {
     return withCurrentTenant(

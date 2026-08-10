@@ -40,8 +40,8 @@ public abstract class BaseWebTest {
   }
 
   /**
-   * Build a JWT RequestPostProcessor with platform_admin role and random tenant. Override in
-   * subclass to customize roles or tenant.
+   * Build a JWT RequestPostProcessor with admin role and random tenant. Override in subclass to
+   * customize roles or tenant.
    */
   protected JwtRequestPostProcessor auth() {
     if (tenantId == null) tenantId = UUID.randomUUID();
@@ -50,8 +50,8 @@ public abstract class BaseWebTest {
             j ->
                 j.subject("test-user")
                     .claim("tenant_id", tenantId.toString())
-                    .claim("realm_access", Map.of("roles", List.of("platform_admin"))))
-        .authorities(new SimpleGrantedAuthority("platform_admin"));
+                    .claim("realm_access", Map.of("roles", List.of("admin"))))
+        .authorities(new SimpleGrantedAuthority("admin"));
   }
 
   /** Build JWT with specific tenant and roles. */

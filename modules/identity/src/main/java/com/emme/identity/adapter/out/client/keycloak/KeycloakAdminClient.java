@@ -58,11 +58,7 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
   @Override
   public void createRealm(String realmName, String displayName) throws IOException {
     var token = getAdminToken();
-    var body =
-        Map.of(
-            "realm", realmName,
-            "enabled", true,
-            "displayName", displayName);
+    var body = realmRepresentation(realmName, displayName);
     var req =
         new Request.Builder()
             .url(baseUrl + "/admin/realms")
@@ -76,6 +72,14 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
       if (resp.code() == 409) return; // realm already exists
       if (resp.code() != 201) throw new IOException("Realm create failed: HTTP " + resp.code());
     }
+  }
+
+  static Map<String, Object> realmRepresentation(String realmName, String displayName) {
+    return Map.of(
+        "realm", realmName,
+        "enabled", true,
+        "displayName", displayName,
+        "accessTokenLifespan", 3_600);
   }
 
   /** Create an OAuth2 client in the given realm. */

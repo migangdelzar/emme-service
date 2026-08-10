@@ -90,7 +90,7 @@ class UserContextHolderTest {
         .setAuthentication(
             new JwtAuthenticationToken(
                 jwt(Map.of("sub", "admin")),
-                java.util.List.of(new SimpleGrantedAuthority("ROLE_platform_admin"))));
+                java.util.List.of(new SimpleGrantedAuthority("ROLE_admin"))));
 
     UserContextHolder.requireTenantAccess(UUID.randomUUID());
   }

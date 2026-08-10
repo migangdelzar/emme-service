@@ -27,12 +27,7 @@
   ],
   "roles": {
     "realm": [
-      { "name": "platform_admin" },
-      { "name": "business_owner" },
-      { "name": "business_manager" },
-      { "name": "front_desk" },
-      { "name": "nail_artist" },
-      { "name": "read_only" }
+      { "name": "admin" }
     ]
   },
   "clientScopes": [
@@ -104,8 +99,8 @@
   ],
   "users": [
     {
-      "username": "platform-admin@emme-core.local",
-      "email": "platform-admin@emme-core.local",
+      "username": "admin@emme-core.local",
+      "email": "admin@emme-core.local",
       "emailVerified": true,
       "enabled": true,
       "firstName": "Platform",
@@ -117,7 +112,7 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["platform_admin"]
+      "realmRoles": ["admin"]
     }
   ]
 }

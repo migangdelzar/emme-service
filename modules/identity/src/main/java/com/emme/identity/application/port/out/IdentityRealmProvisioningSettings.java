@@ -9,6 +9,9 @@ public record IdentityRealmProvisioningSettings(
     String initialAdminUsername,
     String initialAdminPassword,
     String initialAdminRole,
+    String initialOwnerUsername,
+    String initialOwnerPassword,
+    String initialOwnerRole,
     List<String> defaultRoles,
     int maxAttempts,
     long retryDelayMillis) {

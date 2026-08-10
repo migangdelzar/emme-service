@@ -32,7 +32,7 @@ class AssignMembershipServiceTest {
             Optional.of(
                 Role.rehydrate(
                     roleId,
-                    "platform_admin",
+                    "admin",
                     "Platform admin",
                     RoleScope.PLATFORM,
                     true,

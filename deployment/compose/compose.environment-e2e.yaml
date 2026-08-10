@@ -43,10 +43,14 @@ services:
       APP_KEYCLOAK_DEFAULT_REALM: emme-core
       APP_KEYCLOAK_CLIENT_ID: salon-app
       APP_KEYCLOAK_PLATFORM_CLIENT_ID: admin-app
+      APP_KEYCLOAK_CUSTOMER_ISSUER_URI: http://keycloak:8080/realms/emme-customers
+      APP_KEYCLOAK_CUSTOMER_CLIENT_ID: client-app
       APP_KEYCLOAK_ADMIN_PASSWORD: ${EMME_E2E_KEYCLOAK_ADMIN_PASSWORD:-e2e-admin-password}
       APP_KEYCLOAK_PROVISIONING_ENABLED: "true"
       APP_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_PASSWORD: "E2e-Tenant-Owner-2026!"
-      APP_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_USERNAME: "owner"
+      APP_KEYCLOAK_PROVISIONING_INITIAL_OWNER_PASSWORD: "E2e-Tenant-Owner-2026!"
+      APP_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_USERNAME: "admin"
+      APP_KEYCLOAK_PROVISIONING_INITIAL_OWNER_USERNAME: "owner"
       APP_TENANT_PROVISIONING_ENABLED: "true"
       APP_IDENTITY_LOGIN_RATE_LIMIT_MAX_ATTEMPTS: "20"
       GOOGLE_TOKEN_ENCRYPTION_KEY: e2e-token-encryption-32-byte-key
@@ -76,6 +80,7 @@ services:
       - "18080:8080"
     volumes:
       - ../../tools/e2e-provisioner/src/main/resources/templates/keycloak/realm.json:/opt/keycloak/data/import/emme-core-realm.json:ro
+      - ../../tools/e2e-provisioner/src/main/resources/templates/keycloak/customers-realm.json:/opt/keycloak/data/import/emme-customers-realm.json:ro
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /realms/emme-core/.well-known/openid-configuration HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q issuer || exit 1"]
       interval: 10s

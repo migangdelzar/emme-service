@@ -139,11 +139,12 @@ app:
     platform-client-id: admin-app
     default-realm: emme-core
     customer-issuer-uri: http://localhost:8080/realms/emme-customers
-    customer-client-id: emme-customer-app
+    customer-client-id: client-app
     admin-password: ${EMME_KEYCLOAK_ADMIN_PASSWORD:}
     provisioning:
       enabled: ${EMME_KEYCLOAK_PROVISIONING_ENABLED:true}
       initial-admin-password: ${EMME_KEYCLOAK_PROVISIONING_INITIAL_ADMIN_PASSWORD:}
+      initial-owner-password: ${EMME_KEYCLOAK_PROVISIONING_INITIAL_OWNER_PASSWORD:}
   ai:
     provider: mock
     # provider: ollama  # switch to Ollama (needs ollama running)

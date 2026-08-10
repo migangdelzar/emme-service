@@ -19,6 +19,9 @@ public class IdentityProvisioningConfiguration {
             properties.initialAdminUsername(),
             properties.initialAdminPassword(),
             properties.initialAdminRole(),
+            properties.initialOwnerUsername(),
+            properties.initialOwnerPassword(),
+            properties.initialOwnerRole(),
             properties.defaultRoles(),
             properties.maxAttempts(),
             properties.retryDelayMillis());

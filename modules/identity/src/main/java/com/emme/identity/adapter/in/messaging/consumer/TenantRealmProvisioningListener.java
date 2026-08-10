@@ -64,12 +64,26 @@ public class TenantRealmProvisioningListener {
 
       String adminUsername = settings.initialAdminUsername();
       String adminEmail = adminUsername + "@" + event.slug() + ".local";
-      String userReference =
+      String adminReference =
           administrationPort.createUser(
-              realm, adminUsername, adminEmail,
-              settings.initialAdminPassword(), settings.initialAdminRole());
+              realm,
+              adminUsername,
+              adminEmail,
+              settings.initialAdminPassword(),
+              settings.initialAdminRole());
 
-      ensureMembership.ensure(event.tenantId(), userReference, settings.initialAdminRole());
+      String ownerUsername = settings.initialOwnerUsername();
+      String ownerEmail = ownerUsername + "@" + event.slug() + ".local";
+      String ownerReference =
+          administrationPort.createUser(
+              realm,
+              ownerUsername,
+              ownerEmail,
+              settings.initialOwnerPassword(),
+              settings.initialOwnerRole());
+
+      ensureMembership.ensure(event.tenantId(), adminReference, settings.initialAdminRole());
+      ensureMembership.ensure(event.tenantId(), ownerReference, settings.initialOwnerRole());
 
       tenantIdentityRealmPort.updateRealm(event.tenantId(), realm);
       log.info("Keycloak realm {} provisioned for tenant {}", realm, event.tenantId());

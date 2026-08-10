@@ -1,6 +1,7 @@
 package com.emme.identity.adapter.in.messaging.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
@@ -48,8 +49,8 @@ class TenantRealmProvisioningListenerTest {
     verify(administrationPort).createRealm("emme-test-slug", "test-slug");
     verify(administrationPort)
         .createClient("emme-test-slug", settings.clientId(), settings.redirectUris());
-    verify(administrationPort).createRealmRole("emme-test-slug", "business_owner");
-    verify(administrationPort).createRealmRole("emme-test-slug", "nail_artist");
+    verify(administrationPort).createRealmRole("emme-test-slug", "tenant_owner");
+    verify(administrationPort).createRealmRole("emme-test-slug", "tenant_staff");
     verify(administrationPort)
         .createUser(
             "emme-test-slug",
@@ -57,7 +58,14 @@ class TenantRealmProvisioningListenerTest {
             "admin@test-slug.local",
             settings.initialAdminPassword(),
             settings.initialAdminRole());
-    verify(ensureMembership).ensure(tenantId, null, settings.initialAdminRole());
+    verify(administrationPort)
+        .createUser(
+            "emme-test-slug",
+            settings.initialOwnerUsername(),
+            "owner@test-slug.local",
+            settings.initialOwnerPassword(),
+            settings.initialOwnerRole());
+    verify(ensureMembership, times(2)).ensure(tenantId, null, settings.initialAdminRole());
     verify(tenantIdentityRealmPort).updateRealm(tenantId, "emme-test-slug");
 
     ArgumentCaptor<TenantRealmReady> captor = ArgumentCaptor.forClass(TenantRealmReady.class);
@@ -71,8 +79,11 @@ class TenantRealmProvisioningListenerTest {
         List.of("http://localhost:8080/*"),
         "admin",
         "test-password",
-        "business_owner",
-        List.of("business_owner", "nail_artist"),
+        "tenant_owner",
+        "owner",
+        "owner-password",
+        "tenant_owner",
+        List.of("tenant_owner", "tenant_staff"),
         3,
         2000);
   }

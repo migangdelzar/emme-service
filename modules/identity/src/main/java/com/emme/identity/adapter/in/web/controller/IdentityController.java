@@ -74,7 +74,7 @@ public class IdentityController {
   }
 
   @PostMapping("/memberships")
-  @PreAuthorize("hasAnyRole('platform_admin', 'tenant_owner')")
+  @PreAuthorize("hasAnyRole('admin', 'tenant_owner')")
   @Operation(
       summary = "Assign a membership to a user",
       tags = {"Identity"})
@@ -95,7 +95,7 @@ public class IdentityController {
   }
 
   @DeleteMapping("/memberships/{id}")
-  @PreAuthorize("hasAnyRole('platform_admin', 'tenant_owner')")
+  @PreAuthorize("hasAnyRole('admin', 'tenant_owner')")
   @Operation(
       summary = "Revoke a membership",
       tags = {"Identity"})

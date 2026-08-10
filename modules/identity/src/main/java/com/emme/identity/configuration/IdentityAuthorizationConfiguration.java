@@ -19,10 +19,8 @@ public class IdentityAuthorizationConfiguration {
   public RoleHierarchy roleHierarchy() {
     return RoleHierarchyImpl.fromHierarchy(
         """
-        ROLE_platform_admin > ROLE_tenant_owner
-        ROLE_tenant_owner > ROLE_business_owner
-        ROLE_business_owner > ROLE_manager
-        ROLE_manager > ROLE_staff
+        ROLE_admin > ROLE_tenant_owner
+        ROLE_tenant_owner > ROLE_tenant_staff
     """);
   }
 

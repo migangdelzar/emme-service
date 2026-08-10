@@ -14,11 +14,11 @@ class IdentityRoleAuthorityMapperTest {
   void mapsStringRealmRolesToPrefixedAuthorities() {
     var authorities =
         mapper.fromClaims(
-            Map.of("realm_access", Map.of("roles", List.of("platform_admin", "staff"))));
+            Map.of("realm_access", Map.of("roles", List.of("admin", "staff"))));
 
     assertThat(authorities)
         .extracting(authority -> authority.getAuthority())
-        .containsExactlyInAnyOrder("ROLE_platform_admin", "ROLE_staff");
+        .containsExactlyInAnyOrder("ROLE_admin", "ROLE_staff");
   }
 
   @Test

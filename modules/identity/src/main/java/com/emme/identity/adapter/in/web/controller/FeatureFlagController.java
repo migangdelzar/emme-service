@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/admin/feature-flags", version = "1.0")
 @Tag(name = "Platform Feature Flags")
-@PreAuthorize("hasRole('platform_admin')")
+@PreAuthorize("hasRole('admin')")
 public class FeatureFlagController {
 
   private final SetPlatformFeatureFlagUseCase setPlatformFeatureFlag;

@@ -18,6 +18,9 @@ public record IdentityRealmProvisioningProperties(
     @NotBlank String initialAdminUsername,
     String initialAdminPassword,
     @NotBlank String initialAdminRole,
+    @NotBlank String initialOwnerUsername,
+    String initialOwnerPassword,
+    @NotBlank String initialOwnerRole,
     @NotEmpty List<@NotBlank String> defaultRoles,
     @Min(1) int maxAttempts,
     @Min(0) long retryDelayMillis) {
@@ -28,8 +31,11 @@ public record IdentityRealmProvisioningProperties(
           List<String> redirectUris,
       @DefaultValue("admin") String initialAdminUsername,
       @DefaultValue("") String initialAdminPassword,
-      @DefaultValue("business_owner") String initialAdminRole,
-      @DefaultValue({"business_owner", "nail_artist", "front_desk", "read_only"})
+      @DefaultValue("tenant_owner") String initialAdminRole,
+      @DefaultValue("owner") String initialOwnerUsername,
+      @DefaultValue("") String initialOwnerPassword,
+      @DefaultValue("tenant_owner") String initialOwnerRole,
+      @DefaultValue({"tenant_owner", "tenant_staff"})
           List<String> defaultRoles,
       @DefaultValue("3") int maxAttempts,
       @DefaultValue("2000") long retryDelayMillis) {
@@ -38,6 +44,9 @@ public record IdentityRealmProvisioningProperties(
     this.initialAdminUsername = initialAdminUsername;
     this.initialAdminPassword = initialAdminPassword;
     this.initialAdminRole = initialAdminRole;
+    this.initialOwnerUsername = initialOwnerUsername;
+    this.initialOwnerPassword = initialOwnerPassword;
+    this.initialOwnerRole = initialOwnerRole;
     this.defaultRoles = List.copyOf(Objects.requireNonNull(defaultRoles, "defaultRoles"));
     this.maxAttempts = maxAttempts;
     this.retryDelayMillis = retryDelayMillis;
@@ -49,8 +58,11 @@ public record IdentityRealmProvisioningProperties(
         List.of("http://localhost:8080/*", "http://localhost:3000/*"),
         "admin",
         "",
-        "business_owner",
-        List.of("business_owner", "nail_artist", "front_desk", "read_only"),
+        "tenant_owner",
+        "owner",
+        "",
+        "tenant_owner",
+        List.of("tenant_owner", "tenant_staff"),
         3,
         2_000L);
   }

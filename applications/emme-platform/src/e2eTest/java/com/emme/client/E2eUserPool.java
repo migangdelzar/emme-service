@@ -31,7 +31,7 @@ public final class E2eUserPool {
         "e2e-tenant-" + idx,
         "E2E User " + idx,
         "e2e-" + idx + "@emme-e2e.test",
-        List.of("platform_admin", "tenant_owner"));
+        List.of("admin", "tenant_owner"));
   }
 
   public synchronized TestUser acquire() {

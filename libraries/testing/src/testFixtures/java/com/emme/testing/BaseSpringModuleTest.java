@@ -40,7 +40,11 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
     classes = com.emme.TestApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-@Import({TestSecurityConfig.class, MockKeycloakAdminClientConfig.class})
+@Import({
+  TestSecurityConfig.class,
+  TestBootstrapJdbcConfig.class,
+  MockKeycloakAdminClientConfig.class
+})
 @ActiveProfiles("test")
 public abstract class BaseSpringModuleTest {
 
@@ -100,9 +104,9 @@ public abstract class BaseSpringModuleTest {
     return getTenantUseCase.get(new GetTenantQuery(tenantId)).orElseThrow();
   }
 
-  /** JWT with platform_admin + tenant_owner roles. */
+  /** JWT with admin + tenant_owner roles. */
   protected RequestPostProcessor tenantJwt() {
-    return tenantJwt(tenantId, TEST_USER_SUB, "platform_admin", "tenant_owner");
+    return tenantJwt(tenantId, TEST_USER_SUB, "admin", "tenant_owner");
   }
 
   protected RequestPostProcessor tenantJwt(UUID tid, String sub, String... roles) {

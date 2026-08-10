@@ -43,7 +43,7 @@ public final class UserContextHolder {
             "No authenticated user context");
     boolean platformAdmin =
         authentication.getAuthorities().stream()
-            .anyMatch(authority -> "ROLE_platform_admin".equals(authority.getAuthority()));
+            .anyMatch(authority -> "ROLE_admin".equals(authority.getAuthority()));
     if (platformAdmin) {
       return;
     }

@@ -60,7 +60,7 @@ class IdentityJwtTrustPolicyTest {
   @Test
   void usesTheCustomerAudienceForTheDedicatedCustomerRealm() {
     Jwt customerJwt =
-        jwt("https://identity.example/realms/emme-customers", List.of("emme-customer-app"));
+        jwt("https://identity.example/realms/emme-customers", List.of("client-app"));
 
     assertThat(
             policy
@@ -90,7 +90,7 @@ class IdentityJwtTrustPolicyTest {
         "",
         "emme-core",
         "https://identity.example/realms/emme-customers",
-        "emme-customer-app");
+        "client-app");
   }
 
   private static Jwt jwt(List<String> audiences) {

@@ -52,7 +52,8 @@ jobs. Only configure a provider's values when that provider is enabled.
 | Email | `SMTP_PASSWORD`, `SENDGRID_API_KEY`, `AWS_SECRET_ACCESS_KEY` |
 | Push notifications | `TWILIO_AUTH_TOKEN`, `MESSAGEBIRD_API_KEY`, `VONAGE_API_SECRET`, `FCM_SERVICE_ACCOUNT_BASE64`, `APNS_PRIVATE_KEY_BASE64` |
 | Google integration | `GOOGLE_SA_JSON_BASE64`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_TOKEN_ENCRYPTION_KEY` |
-| Google customer login | `GOOGLE_SOCIAL_CLIENT_ID`, `GOOGLE_SOCIAL_CLIENT_SECRET` supplied only to `mise run keycloak:configure-google` or the deployment secret manager |
+| Google customer login | `GOOGLE_SOCIAL_CLIENT_ID`, `GOOGLE_SOCIAL_CLIENT_SECRET` supplied only to the Gradle `configureCustomerOidc` task or the deployment secret manager |
+| Google tenant Workspace OAuth | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REDIRECT_URI` supplied to the Gradle `configureTenantOAuth` preflight and application runtime |
 | Payments | `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `CONEKTA_PRIVATE_KEY`, `CONEKTA_WEBHOOK_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
 | Infrastructure | `GRAFANA_PASSWORD`, `HCLOUD_TOKEN` when Terraform is used |
 | Kafka | `KAFKA_SASL_JAAS_CONFIG` when production uses `SASL_SSL` |
@@ -100,19 +101,32 @@ http://localhost:18080/realms/emme-customers/broker/google/endpoint
 https://<public-keycloak-host>/realms/emme-customers/broker/google/endpoint
 ```
 
-The Google consent configuration only needs the OpenID Connect identity scopes
-`openid`, `profile`, and `email` for the current login-only flow. Configure the
-provider in the shared realm without putting the secret in the repository:
+For salon/studio Google Workspace OAuth2, authorize the backend callback in
+the tenant client instead:
 
-```bash
-GOOGLE_SOCIAL_CLIENT_ID='...' \
-GOOGLE_SOCIAL_CLIENT_SECRET='...' \
-KEYCLOAK_ADMIN_PASSWORD='...' \
-mise run keycloak:configure-google
+```text
+http://localhost:8080/api/google/oauth/callback
+https://emme-studio.com/api/google/oauth/callback
 ```
 
-The command creates or updates the `google` provider in `emme-customers` and
-does not print the client secret. Use separate Google OAuth clients for local,
+The Google consent configuration only needs the OpenID Connect identity scopes
+`openid`, `profile`, and `email` for the current login-only flow. Configure the
+provider in the shared realm without putting the secret in the repository. The
+repository provides one Gradle task per Google integration:
+
+```bash
+./gradlew configureCustomerOidc \
+  -PgoogleCustomerOAuthJson="$HOME/Downloads/client_secret_customer.json"
+
+./gradlew configureTenantOAuth \
+  -PgoogleTenantOAuthJson="$HOME/Downloads/client_secret_tenant.json"
+```
+
+`configureCustomerOidc` creates or updates the `google` provider in
+`emme-customers`. `configureTenantOAuth` validates the salon/studio Google
+OAuth2 client and the backend callback expected by `modules/calendar`; it does
+not persist secrets. The runtime must receive that same client through its
+deployment secret provider. Use separate Google OAuth clients for local,
 staging, and production so redirect URIs and consent configuration remain
 isolated.
 

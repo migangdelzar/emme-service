@@ -2182,3 +2182,33 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - [ ] Replace remaining functional-wrapper test bodies with direct extension
       parameter injection in a separate cleanup slice; the single `e2eTest`
       task and runtime flow are already canonical.
+## Google identity configuration tasks — 2026-08-10
+
+- [x] Confirm the customer OAuth JSON and the separate tenant OAuth contract
+- [x] Add a Gradle task for customer Google OIDC broker configuration
+- [x] Add a Gradle task for tenant salon/studio Google OAuth preflight/configuration
+- [x] Keep credential JSON and secret values outside the repository and logs
+- [x] Add task documentation and safe usage examples
+- [x] Run Gradle task discovery, focused tests, and formatting checks
+
+### Working notes
+
+- Customer login uses the Google Web OAuth client in `emme-customers` through
+  Keycloak identity brokering and OIDC.
+- Salon/studio Google OAuth is the backend Calendar/Workspace integration. Its
+  client is injected as `GOOGLE_OAUTH_CLIENT_ID` and
+  `GOOGLE_OAUTH_CLIENT_SECRET`; it is not a Keycloak customer identity
+  provider.
+- The downloaded customer file is available at
+  `/Users/miguelangeldelgadillozarate/Downloads/client_secret_412839253574-a3s0vlp1fubvrtsh1s5bgbr64ro3vh9l.apps.googleusercontent.com.json`.
+- The tenant file is available at
+  `/Users/miguelangeldelgadillozarate/Downloads/client_secret_2_412839253574-0dq3rh025vl0mheecj6gb04bqjkntoq3.apps.googleusercontent.com.json`.
+- The tenant file currently contains `https://emme-studio.com`, but the
+  service callback is `http://localhost:8080/api/google/oauth/callback`; Google
+  Cloud must authorize the exact callback before `configureTenantOAuth` can
+  pass.
+- Verification: `configureCustomerOidc`, build-logic tests, task discovery, and
+  build-logic formatting pass. The repository-wide `spotlessCheck` remains
+  blocked by the pre-existing `modules/subscriptions/.../SubscriptionProvisioningListener.java`
+  violation; it was not changed.
+- Preserve the pre-existing unstaged `TenantRegistryEntity.java` change.

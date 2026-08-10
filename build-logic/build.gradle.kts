@@ -113,6 +113,10 @@ gradlePlugin {
       id = "com.emme.secrets"
       implementationClass = "com.emme.buildlogic.secrets.SecretsPlugin"
     }
+    register("emmeGoogleIdentity") {
+      id = "emme.google-identity"
+      implementationClass = "com.emme.buildlogic.google.GoogleIdentityTasksPlugin"
+    }
     register("emmeSecurityBinary") {
       id = "com.emme.security-binary"
       implementationClass = "com.emme.buildlogic.security.SecurityPlugin"

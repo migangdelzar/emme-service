@@ -2,6 +2,7 @@ plugins {
     base
     id("com.emme.root")
     id("emme.secrets")
+    id("emme.google-identity")
     alias(libs.plugins.spotless)
     alias(libs.plugins.owasp.dependency.check)
 }

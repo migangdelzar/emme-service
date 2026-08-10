@@ -95,8 +95,16 @@ docker-compose -f deployment/compose/compose.yaml \
 """
 
 [tasks."keycloak:configure-google"]
-description = "Configure Google as the customer login provider in emme-customers"
-run = "./scripts/configure-keycloak-google.sh"
+description = "Configure Google OIDC customer login in emme-customers through Gradle"
+run = "./gradlew configureCustomerOidc --no-configuration-cache"
+
+[tasks."google:configure-customer-oidc"]
+description = "Configure Google OIDC customer login in emme-customers"
+run = "./gradlew configureCustomerOidc --no-configuration-cache"
+
+[tasks."google:configure-tenant-oauth"]
+description = "Validate the salon/studio Google OAuth2 client and backend callback"
+run = "./gradlew configureTenantOAuth --no-configuration-cache"
 
 [tasks."platform:up:local"]
 description = "Build and start the complete E2E platform stack from the local image"

@@ -94,6 +94,10 @@ docker-compose -f deployment/compose/compose.yaml \
   up -d --build --wait
 """
 
+[tasks."keycloak:configure-google"]
+description = "Configure Google as the customer login provider in emme-customers"
+run = "./scripts/configure-keycloak-google.sh"
+
 [tasks."platform:up:local"]
 description = "Build and start the complete E2E platform stack from the local image"
 run = """

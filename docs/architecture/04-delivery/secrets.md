@@ -51,7 +51,8 @@ jobs. Only configure a provider's values when that provider is enabled.
 | WhatsApp | `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_ACCESS_TOKEN` |
 | Email | `SMTP_PASSWORD`, `SENDGRID_API_KEY`, `AWS_SECRET_ACCESS_KEY` |
 | Push notifications | `TWILIO_AUTH_TOKEN`, `MESSAGEBIRD_API_KEY`, `VONAGE_API_SECRET`, `FCM_SERVICE_ACCOUNT_BASE64`, `APNS_PRIVATE_KEY_BASE64` |
-| Google integration | `GOOGLE_SA_JSON_BASE64`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_TOKEN_ENCRYPTION_KEY` |
+| Google integration | `GOOGLE_SA_JSON_BASE64`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_TOKEN_ENCRYPTION_KEY` |
+| Google customer login | `GOOGLE_SOCIAL_CLIENT_ID`, `GOOGLE_SOCIAL_CLIENT_SECRET` supplied only to `mise run keycloak:configure-google` or the deployment secret manager |
 | Payments | `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `CONEKTA_PRIVATE_KEY`, `CONEKTA_WEBHOOK_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
 | Infrastructure | `GRAFANA_PASSWORD`, `HCLOUD_TOKEN` when Terraform is used |
 | Kafka | `KAFKA_SASL_JAAS_CONFIG` when production uses `SASL_SSL` |
@@ -88,6 +89,32 @@ gh secret set SMOKE_TOKEN --repo migangdelzar/emme-service --env production
 Values are entered interactively or piped from a secret manager; never place
 them in shell history, Markdown, workflow files, or command arguments copied
 into tickets.
+
+## Google customer login setup
+
+Create a Google Cloud OAuth client of type **Web application** and add the
+exact Keycloak broker callback for every environment:
+
+```text
+http://localhost:18080/realms/emme-customers/broker/google/endpoint
+https://<public-keycloak-host>/realms/emme-customers/broker/google/endpoint
+```
+
+The Google consent configuration only needs the OpenID Connect identity scopes
+`openid`, `profile`, and `email` for the current login-only flow. Configure the
+provider in the shared realm without putting the secret in the repository:
+
+```bash
+GOOGLE_SOCIAL_CLIENT_ID='...' \
+GOOGLE_SOCIAL_CLIENT_SECRET='...' \
+KEYCLOAK_ADMIN_PASSWORD='...' \
+mise run keycloak:configure-google
+```
+
+The command creates or updates the `google` provider in `emme-customers` and
+does not print the client secret. Use separate Google OAuth clients for local,
+staging, and production so redirect URIs and consent configuration remain
+isolated.
 
 ## Verification checklist
 

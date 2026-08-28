@@ -10,7 +10,9 @@
       top-1/top-2 margin gating, and authorized candidate filtering.
 - [x] Add tenant-scoped pgvector intent/tool references and principal-scoped
       expiring semantic cache schema with RLS and HNSW indexes.
-- [ ] Add typed semantic search/cache ports and tenant-filtered JDBC adapters.
+- [x] Add typed semantic search/cache ports and tenant-filtered JDBC adapters.
+- [ ] Add semantic-cache writes and durable hit accounting after the write
+      idempotency contract is defined.
 - [ ] Verify Spring AI 2.x and LangGraph4j dependency compatibility before
       adding framework integrations.
 - [ ] Add persisted workflow, structured extraction, deterministic quote, and

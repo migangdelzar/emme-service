@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Phases 0, 2, and the initial Phase 4 schema slice complete; Phases 1 and 3–4 implementation in progress |
+| Status | Phases 0, 2, and the initial Phase 4 semantic slice complete; Phases 1 and 3–4 implementation in progress |
 | Technical specification | [TSPEC](technical-specification.md) |
 | Requirements | [Requirements](requirements.md) |
 | Verification | [Evaluation specification](evaluation-specification.md) |
@@ -86,8 +86,9 @@ and provider backpressure limits are implemented.
 The assistant now has a framework-free semantic reference matcher with
 immutable embedding vectors, exact model-version and dimension checks, cosine
 ranking, top-1/top-2 margin gating, and backend-authorized candidate filtering.
-It is the shared deterministic core for the future intent, tool, and semantic
-cache adapters; it does not yet persist references or responses.
+It is reused by typed intent, tool-selection, and semantic-cache application
+services. The services abstain rather than invoke an LLM when their policies do
+not accept a candidate.
 
 ### Phase 4 progress
 
@@ -96,8 +97,11 @@ reference tables plus a principal-scoped expiring semantic cache. All three
 tables use the existing explicit RLS convention, 1024-dimensional pgvector
 columns, HNSW cosine indexes, and supporting tenant/active/expiry indexes. A
 database-module migration contract test protects the changelog inclusion and
-isolation invariants. JDBC retrieval and cache policy adapters remain the next
-slice.
+isolation invariants. JDBC retrieval and cache adapters now bind tenant and
+principal from the authenticated AI execution context, apply model/prompt/
+context filters, and constrain semantic tool search to backend-authorized
+keys. Cache writes, hit accounting, and PostgreSQL integration tests remain a
+follow-up slice.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

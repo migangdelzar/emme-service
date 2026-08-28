@@ -117,8 +117,11 @@ database-module migration contract test protects the changelog inclusion and
 isolation invariants. JDBC retrieval and cache adapters now bind tenant and
 principal from the authenticated AI execution context, apply model/prompt/
 context filters, and constrain semantic tool search to backend-authorized
-keys. Cache writes, hit accounting, and PostgreSQL integration tests remain a
-follow-up slice.
+keys. Cache writes now use a tenant/principal-scoped idempotency key, and cache
+hits are atomically accounted for in PostgreSQL. The resolver abstains when the
+durable hit update cannot confirm that the entry is still active and unexpired.
+Real pgvector PostgreSQL integration coverage remains a follow-up because the
+current repository test image does not yet include the pgvector extension.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

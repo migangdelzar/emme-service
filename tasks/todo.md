@@ -11,8 +11,8 @@
 - [x] Add tenant-scoped pgvector intent/tool references and principal-scoped
       expiring semantic cache schema with RLS and HNSW indexes.
 - [x] Add typed semantic search/cache ports and tenant-filtered JDBC adapters.
-- [ ] Add semantic-cache writes and durable hit accounting after the write
-      idempotency contract is defined.
+- [x] Add semantic-cache writes and durable hit accounting with a durable
+      idempotency contract and expiry-safe hit confirmation.
 - [x] Verify Spring AI 2.x and LangGraph4j dependency compatibility before
       adding framework integrations.
 - [x] Add the first Spring AI infrastructure adapter behind a provider-neutral
@@ -44,6 +44,10 @@ specialized model registry.
 The application layer now has an ordered provider chain. It preserves the
 primary provider result, falls back only on `EmbeddingProviderUnavailableException`,
 and propagates invalid-vector/application failures without masking them.
+
+Semantic-cache writes now use a tenant/principal-scoped idempotency key. Cache
+hits are atomically accounted for in PostgreSQL and a response is returned only
+when the durable hit update confirms the entry is still active and unexpired.
 
 ## Remaining execution gates — 2026-08-05
 

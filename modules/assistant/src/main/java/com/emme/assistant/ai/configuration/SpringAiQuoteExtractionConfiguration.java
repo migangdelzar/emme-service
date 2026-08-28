@@ -3,6 +3,8 @@ package com.emme.assistant.ai.configuration;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiNailDesignExtractor;
 import com.emme.assistant.ai.application.port.out.DesignImageReader;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.Optional;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
@@ -40,13 +42,23 @@ public class SpringAiQuoteExtractionConfiguration {
   NailDesignExtractor nailDesignExtractor(
       ChatClient aiQuoteExtractionChatClient,
       SpringAiExtractionProperties properties,
-      ObjectProvider<DesignImageReader> imageReaders) {
+      ObjectProvider<DesignImageReader> imageReaders,
+      AiTraceRecorder traceRecorder) {
     DesignImageReader imageReader = imageReaders.getIfAvailable(() -> key -> Optional.empty());
     return new SpringAiNailDesignExtractor(
         aiQuoteExtractionChatClient,
         properties.modelVersion(),
         properties.promptVersion(),
         properties.schemaVersion(),
-        imageReader);
+        imageReader,
+        traceRecorder);
+  }
+
+  NailDesignExtractor nailDesignExtractor(
+      ChatClient aiQuoteExtractionChatClient,
+      SpringAiExtractionProperties properties,
+      ObjectProvider<DesignImageReader> imageReaders) {
+    return nailDesignExtractor(
+        aiQuoteExtractionChatClient, properties, imageReaders, NoopAiTraceRecorder.INSTANCE);
   }
 }

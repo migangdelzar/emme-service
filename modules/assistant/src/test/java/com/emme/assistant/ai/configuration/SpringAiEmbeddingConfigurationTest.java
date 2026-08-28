@@ -8,8 +8,13 @@ import static org.mockito.Mockito.when;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
@@ -79,6 +84,29 @@ class SpringAiEmbeddingConfigurationTest {
   }
 
   @Test
+  void wiresTheTraceRecorderIntoTheConfiguredEmbeddingProviderChain() {
+    EmbeddingModel local = mock(EmbeddingModel.class);
+    when(local.embed("faq")).thenReturn(new float[] {0.2f, 0.8f});
+    SpringAiEmbeddingProperties properties =
+        new SpringAiEmbeddingProperties(
+            true,
+            List.of(
+                new SpringAiEmbeddingProperties.Provider(
+                    "ollamaEmbeddingModel", "local", "ollama-bge-m3")));
+    AiTraceRecorder recorder = mock(AiTraceRecorder.class);
+    SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
+    SpringAiEmbeddingProviderRegistry registry =
+        configuration.providerRegistry(
+            Map.of("ollamaEmbeddingModel", local), properties, aiProperties(2), recorder);
+
+    AiExecutionContext context = context();
+    AiExecutionContextScope.call(
+        context, () -> configuration.embeddingModel(registry).embed("faq"));
+
+    org.mockito.Mockito.verify(recorder).recordModelExecution(org.mockito.ArgumentMatchers.any());
+  }
+
+  @Test
   void createsTheLocalOllamaModelFromTheExistingProviderConfiguration() {
     SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
 
@@ -92,5 +120,11 @@ class SpringAiEmbeddingConfigurationTest {
         null,
         new AiProperties.EmbeddingConfig("bge-m3", "http://localhost:11434", null, dimension),
         true);
+  }
+
+  private static AiExecutionContext context() {
+    UUID id = UUID.randomUUID();
+    return new AiExecutionContext(
+        UUID.randomUUID(), UUID.randomUUID(), Set.of("ROLE_CLIENT"), id, id, "trace-1", "idem-1");
   }
 }

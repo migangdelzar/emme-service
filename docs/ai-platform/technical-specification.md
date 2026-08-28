@@ -120,7 +120,7 @@ platform currently registers `getSalonServices` as a read-only catalog tool;
 booking and other mutations are not eligible for proactive execution.
 
 Durable execution traces use the application-level `AiTraceRecorder` contract.
-`TracingChatCompletionPort` records each named-provider attempt, including
+`TracingChatCompletionPort` records each named chat-provider attempt, including
 failed local attempts before a configured fallback succeeds. The authorized
 tool gateway records successful, rejected, and failed tool calls after applying
 the same backend authorization gates used for execution. The JDBC adapter
@@ -130,6 +130,9 @@ Request, response, argument, and error payloads are redacted before storage.
 Token counts and estimated cost are nullable because provider usage metadata is
 not guaranteed. Trace writes are best effort and PostgreSQL is authoritative
 for the durable records; a no-op recorder is used where JDBC is unavailable.
+`TracingEmbeddingModelPort` records embedding attempts without storing vector
+values, and `SpringAiNailDesignExtractor` records structured extraction
+metadata without storing image bytes.
 
 ## 4. Provider adapters
 

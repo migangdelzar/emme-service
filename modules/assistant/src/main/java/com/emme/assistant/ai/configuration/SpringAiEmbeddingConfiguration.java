@@ -2,6 +2,8 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.Map;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
@@ -30,9 +32,21 @@ public class SpringAiEmbeddingConfiguration {
   SpringAiEmbeddingProviderRegistry providerRegistry(
       Map<String, EmbeddingModel> embeddingModels,
       SpringAiEmbeddingProperties properties,
+      AiProperties aiProperties,
+      AiTraceRecorder traceRecorder) {
+    return new SpringAiEmbeddingProviderRegistry(
+        embeddingModels, properties, aiProperties.embeddingDimension(), traceRecorder);
+  }
+
+  SpringAiEmbeddingProviderRegistry providerRegistry(
+      Map<String, EmbeddingModel> embeddingModels,
+      SpringAiEmbeddingProperties properties,
       AiProperties aiProperties) {
     return new SpringAiEmbeddingProviderRegistry(
-        embeddingModels, properties, aiProperties.embeddingDimension());
+        embeddingModels,
+        properties,
+        aiProperties.embeddingDimension(),
+        NoopAiTraceRecorder.INSTANCE);
   }
 
   @Bean(name = "aiSemanticEmbeddingModel")

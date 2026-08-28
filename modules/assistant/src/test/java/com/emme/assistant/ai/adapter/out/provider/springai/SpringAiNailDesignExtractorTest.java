@@ -11,12 +11,19 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.NailDesignExtractionRejectedException;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
+import com.emme.assistant.ai.application.trace.AiExecutionStatus;
+import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.domain.quote.NailDesignFeatures;
 import com.emme.assistant.ai.domain.quote.NailLength;
 import com.emme.assistant.ai.domain.quote.NailShape;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.ai.chat.client.ChatClient;
 
 class SpringAiNailDesignExtractorTest {
@@ -118,5 +125,56 @@ class SpringAiNailDesignExtractorTest {
                     new NailDesignExtractor.ExtractionRequest("almond pink nails", null)))
         .isInstanceOf(NailDesignExtractionRejectedException.class)
         .hasMessage("Spring AI returned no nail-design features");
+  }
+
+  @Test
+  void recordsStructuredExtractionMetadataWithoutStoringTheImageBytes() {
+    ChatClient client = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    when(client
+            .prompt()
+            .system(anyString())
+            .user(anyString())
+            .call()
+            .entity(eq(NailDesignFeatures.class), any()))
+        .thenReturn(FEATURES);
+    AiTraceRecorder recorder = mock(AiTraceRecorder.class);
+    SpringAiNailDesignExtractor extractor =
+        new SpringAiNailDesignExtractor(
+            client,
+            "vision-v1",
+            "quote-prompt-v1",
+            "nail-features-v1",
+            key -> {
+              throw new UnsupportedOperationException("image not configured");
+            },
+            recorder);
+
+    AiExecutionContext context = context();
+    AiExecutionContextScope.call(
+        context,
+        () -> extractor.extract(new NailDesignExtractor.ExtractionRequest("pink design", null)));
+
+    ArgumentCaptor<AiModelExecutionTrace> trace =
+        ArgumentCaptor.forClass(AiModelExecutionTrace.class);
+    org.mockito.Mockito.verify(recorder).recordModelExecution(trace.capture());
+    assertThat(trace.getValue().status()).isEqualTo(AiExecutionStatus.SUCCEEDED);
+    assertThat(trace.getValue().operation()).isEqualTo("DESIGN_EXTRACTION");
+    assertThat(trace.getValue().modelVersion()).isEqualTo("vision-v1");
+    assertThat(trace.getValue().promptVersion()).isEqualTo("quote-prompt-v1");
+    assertThat(trace.getValue().responsePayload()).isEqualTo("structured-features");
+    assertThat(trace.getValue().requestPayload()).contains("imagePresent=false");
+    assertThat(trace.getValue().requestPayload()).doesNotContain("image-bytes");
+  }
+
+  private static AiExecutionContext context() {
+    UUID id = UUID.randomUUID();
+    return new AiExecutionContext(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        java.util.Set.of("ROLE_CLIENT"),
+        id,
+        id,
+        "trace-1",
+        "idem-1");
   }
 }

@@ -2,6 +2,9 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiEmbeddingAdapter;
 import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
+import com.emme.assistant.ai.application.provider.TracingEmbeddingModelPort;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +21,17 @@ public final class SpringAiEmbeddingProviderRegistry {
       Map<String, EmbeddingModel> embeddingModels,
       SpringAiEmbeddingProperties properties,
       int dimension) {
+    this(embeddingModels, properties, dimension, NoopAiTraceRecorder.INSTANCE);
+  }
+
+  public SpringAiEmbeddingProviderRegistry(
+      Map<String, EmbeddingModel> embeddingModels,
+      SpringAiEmbeddingProperties properties,
+      int dimension,
+      AiTraceRecorder traceRecorder) {
     Objects.requireNonNull(embeddingModels, "embeddingModels must not be null");
     Objects.requireNonNull(properties, "properties must not be null");
+    Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
 
     Set<String> providerKeys = new HashSet<>();
     this.providers =
@@ -39,7 +51,12 @@ public final class SpringAiEmbeddingProviderRegistry {
                   }
                   return new EmbeddingProviderChain.Provider(
                       configured.key(),
-                      new SpringAiEmbeddingAdapter(model, configured.modelVersion(), dimension));
+                      new TracingEmbeddingModelPort(
+                          new SpringAiEmbeddingAdapter(model, configured.modelVersion(), dimension),
+                          configured.key(),
+                          configured.modelVersion(),
+                          "embedding-v1",
+                          traceRecorder));
                 })
             .toList();
     if (providers.isEmpty()) {

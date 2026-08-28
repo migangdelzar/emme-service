@@ -173,7 +173,8 @@ tenant only from `AiExecutionContext`. Mutation tools remain confirmation and
 approval gated.
 
 Durable execution observability is now wired through `AiTraceRecorder`. Each
-configured Spring AI provider attempt and each controlled tool attempt records
+configured Spring AI chat/embedding provider attempt, structured design
+extraction attempt, and controlled tool attempt records
 backend tenant/principal/conversation/workflow correlation, provider/model or
 tool metadata, outcome, latency, and nullable token/cost usage. The JDBC
 adapter applies deterministic PII redaction before storing request, response,

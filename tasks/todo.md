@@ -48,6 +48,8 @@
   application use case (`getSalonServices`).
 - [x] Add durable, tenant-scoped model/tool execution traces with redaction,
   provider-attempt outcomes, token/cost fields, and safe JDBC/no-op wiring.
+- [x] Trace Spring AI embedding-provider attempts and structured design
+  extraction without persisting vector values or image bytes.
 
 ### Working notes
 
@@ -129,6 +131,12 @@ outcomes in PostgreSQL. Trace identity and correlation are taken from the
 backend AI execution context; payloads are redacted at the JDBC boundary,
 token/cost fields remain nullable when providers do not report usage, and
 telemetry failures cannot change model or tool behavior.
+
+Embedding provider attempts and Spring AI structured design extraction now use
+the same recorder. Embedding traces persist only input metadata and vector
+dimension; extraction traces persist structured-operation metadata and never
+include image bytes. Failover remains provider-level and tracing remains best
+effort.
 
 ## Remaining execution gates — 2026-08-05
 

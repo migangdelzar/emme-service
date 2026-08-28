@@ -9,6 +9,15 @@
 - Prevention rule: run the module formatter immediately after adding or editing
   Javadocs and before the final verification command.
 
+## 2026-08-28 — Count record constructor arguments after schema changes
+
+- Failure mode: adding nullable usage fields to a trace record left extra
+  positional arguments in new model-call adapters.
+- Detection signal: Java reported constructor arity/type errors at the adapter
+  call sites.
+- Prevention rule: after changing a record schema, count every updated call
+  site against the declaration before running the full suite.
+
 ## 2026-08-27 — Java regex escaping is a test implementation concern
 
 - Failure mode: a migration contract test used regex parentheses with a single

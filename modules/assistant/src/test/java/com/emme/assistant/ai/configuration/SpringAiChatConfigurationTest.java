@@ -7,6 +7,7 @@ import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersion
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatProviderChain;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,8 @@ class SpringAiChatConfigurationTest {
                     mock(ChatClient.class)),
                 properties,
                 new TenantSecurityAdvisor(),
-                new PromptVersionAdvisor("chat-v1")));
+                new PromptVersionAdvisor("chat-v1"),
+                mock(AiTraceRecorder.class)));
 
     assertThat(port).isInstanceOf(ChatProviderChain.class);
   }

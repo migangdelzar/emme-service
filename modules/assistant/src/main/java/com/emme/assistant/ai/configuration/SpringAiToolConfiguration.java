@@ -3,6 +3,8 @@ package com.emme.assistant.ai.configuration;
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
 import com.emme.assistant.ai.application.tool.AiToolGateway;
 import com.emme.assistant.ai.application.tool.AuthorizedAiToolGateway;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +16,11 @@ public class SpringAiToolConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(AiToolGateway.class)
+  AiToolGateway aiToolGateway(List<AiToolDefinition> definitions, AiTraceRecorder traceRecorder) {
+    return new AuthorizedAiToolGateway(definitions, traceRecorder);
+  }
+
   AiToolGateway aiToolGateway(List<AiToolDefinition> definitions) {
-    return new AuthorizedAiToolGateway(definitions);
+    return new AuthorizedAiToolGateway(definitions, NoopAiTraceRecorder.INSTANCE);
   }
 }

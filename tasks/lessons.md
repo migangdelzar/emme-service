@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-08-28 — Run formatter after documentation comments
+
+- Failure mode: a long Javadoc line and a constructor delegation were accepted
+  by compilation but failed the repository's Spotless check.
+- Detection signal: `spotlessJavaCheck` reported only formatting violations in
+  newly added trace classes.
+- Prevention rule: run the module formatter immediately after adding or editing
+  Javadocs and before the final verification command.
+
 ## 2026-08-27 — Java regex escaping is a test implementation concern
 
 - Failure mode: a migration contract test used regex parentheses with a single

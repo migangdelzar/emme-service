@@ -4,6 +4,8 @@ import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersion
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatProviderChain;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.List;
 import java.util.Map;
 import org.springframework.ai.chat.client.ChatClient;
@@ -43,9 +45,25 @@ public class SpringAiChatConfiguration {
       Map<String, ChatClient> chatClients,
       SpringAiChatProperties properties,
       TenantSecurityAdvisor tenantSecurityAdvisor,
+      PromptVersionAdvisor promptVersionAdvisor,
+      AiTraceRecorder traceRecorder) {
+    return new SpringAiChatProviderRegistry(
+        chatClients,
+        properties,
+        List.of(tenantSecurityAdvisor, promptVersionAdvisor),
+        traceRecorder);
+  }
+
+  SpringAiChatProviderRegistry chatProviderRegistry(
+      Map<String, ChatClient> chatClients,
+      SpringAiChatProperties properties,
+      TenantSecurityAdvisor tenantSecurityAdvisor,
       PromptVersionAdvisor promptVersionAdvisor) {
     return new SpringAiChatProviderRegistry(
-        chatClients, properties, List.of(tenantSecurityAdvisor, promptVersionAdvisor));
+        chatClients,
+        properties,
+        List.of(tenantSecurityAdvisor, promptVersionAdvisor),
+        NoopAiTraceRecorder.INSTANCE);
   }
 
   @Bean(name = "aiChatCompletion")

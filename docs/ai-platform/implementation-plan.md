@@ -29,7 +29,7 @@
 | 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors and read-only controlled gateway complete; mutation tools pending |
 | 7 | Design extraction, deterministic quote, HITL | Quote, optimistic-lock, endpoint, and resume tests | In progress — durable quote workflow, secured staff review endpoint, and LangGraph resume adapter complete |
 | 8 | Online enrichment and evaluation | Candidate/promotion safety tests | Not started |
-| 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events and workflow metrics foundation complete |
+| 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events, workflow metrics, and durable model/tool traces complete |
 
 ## 3. Phase 0 — Java 25
 
@@ -171,6 +171,16 @@ handlers. The platform registers `getSalonServices` as a read-only example;
 the handler delegates to the Services application use case and derives the
 tenant only from `AiExecutionContext`. Mutation tools remain confirmation and
 approval gated.
+
+Durable execution observability is now wired through `AiTraceRecorder`. Each
+configured Spring AI provider attempt and each controlled tool attempt records
+backend tenant/principal/conversation/workflow correlation, provider/model or
+tool metadata, outcome, latency, and nullable token/cost usage. The JDBC
+adapter applies deterministic PII redaction before storing request, response,
+argument, or error payloads in `ai_model_execution` and `ai_tool_call`.
+Persistence is best effort at the execution boundary, so an observability
+outage does not change customer-facing model/tool semantics. The no-op recorder
+is selected when JDBC is unavailable.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

@@ -2,6 +2,9 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiChatClientAdapter;
 import com.emme.assistant.ai.application.provider.ChatProviderChain;
+import com.emme.assistant.ai.application.provider.TracingChatCompletionPort;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +27,17 @@ public final class SpringAiChatProviderRegistry {
       Map<String, ChatClient> clients,
       SpringAiChatProperties properties,
       List<? extends Advisor> advisors) {
+    this(clients, properties, advisors, NoopAiTraceRecorder.INSTANCE);
+  }
+
+  public SpringAiChatProviderRegistry(
+      Map<String, ChatClient> clients,
+      SpringAiChatProperties properties,
+      List<? extends Advisor> advisors,
+      AiTraceRecorder traceRecorder) {
     Objects.requireNonNull(clients, "clients must not be null");
     Objects.requireNonNull(properties, "properties must not be null");
+    Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
     Set<String> providerKeys = new HashSet<>();
     providers =
         properties.providers().stream()
@@ -44,7 +56,12 @@ public final class SpringAiChatProviderRegistry {
                   }
                   return new ChatProviderChain.Provider(
                       configured.key(),
-                      new SpringAiChatClientAdapter(client, configured.key(), advisors));
+                      new TracingChatCompletionPort(
+                          new SpringAiChatClientAdapter(client, configured.key(), advisors),
+                          configured.key(),
+                          configured.modelVersion(),
+                          "chat-v1",
+                          traceRecorder));
                 })
             .toList();
     if (providers.isEmpty()) {

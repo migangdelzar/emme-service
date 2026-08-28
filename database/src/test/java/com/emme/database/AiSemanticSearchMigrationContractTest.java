@@ -15,6 +15,8 @@ class AiSemanticSearchMigrationContractTest {
       "db/emme-studio/releases/0.1.0/014-ai-semantic-search.sql";
   private static final String IDEMPOTENCY_MIGRATION =
       "db/emme-studio/releases/0.1.0/015-ai-semantic-cache-idempotency.sql";
+  private static final String TRACE_MIGRATION =
+      "db/emme-studio/releases/0.1.0/018-ai-execution-traces.sql";
 
   @Test
   void definesTenantScopedIntentAndToolReferenceTables() throws IOException {
@@ -75,6 +77,38 @@ class AiSemanticSearchMigrationContractTest {
     assertThat(sql).contains("ADD COLUMN IF NOT EXISTS write_idempotency_key VARCHAR(160)");
     assertThat(sql).contains("ALTER COLUMN write_idempotency_key SET NOT NULL");
     assertThat(sql).contains("idx_ai_cache_write_idempotency");
+  }
+
+  @Test
+  void definesTenantScopedModelAndToolExecutionTraces() throws IOException {
+    String sql = resource(TRACE_MIGRATION);
+
+    assertThat(sql).contains("CREATE TABLE IF NOT EXISTS ai_model_execution");
+    assertThat(sql).contains("CREATE TABLE IF NOT EXISTS ai_tool_call");
+    assertThat(sql).contains("tenant_id UUID NOT NULL");
+    assertThat(sql).contains("principal_id UUID NOT NULL");
+    assertThat(sql).contains("conversation_id UUID NOT NULL");
+    assertThat(sql).contains("workflow_id UUID NOT NULL");
+    assertThat(sql).contains("trace_id VARCHAR(128) NOT NULL");
+    assertThat(sql).contains("request_payload JSONB NOT NULL");
+    assertThat(sql).contains("input_tokens INTEGER");
+    assertThat(sql).contains("output_tokens INTEGER");
+    assertThat(sql).contains("estimated_cost DECIMAL(18,8)");
+    assertThat(sql).contains("arguments_payload JSONB NOT NULL");
+    assertThat(sql).contains("CREATE INDEX IF NOT EXISTS idx_ai_model_execution_scope");
+    assertThat(sql).contains("CREATE INDEX IF NOT EXISTS idx_ai_tool_call_scope");
+  }
+
+  @Test
+  void appliesRlsAndIncludesTheTraceMigrationInTheStudioChangelog() throws IOException {
+    String sql = resource(TRACE_MIGRATION);
+    String changelog = resource("db/emme-studio/changelog.yaml");
+
+    assertThat(sql).contains("ALTER TABLE ai_model_execution ENABLE ROW LEVEL SECURITY");
+    assertThat(sql).contains("ALTER TABLE ai_tool_call ENABLE ROW LEVEL SECURITY");
+    assertThat(sql).contains("CREATE POLICY tenant_isolation ON ai_model_execution");
+    assertThat(sql).contains("CREATE POLICY tenant_isolation ON ai_tool_call");
+    assertThat(changelog).contains("releases/0.1.0/018-ai-execution-traces.sql");
   }
 
   private static String migration() throws IOException {

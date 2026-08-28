@@ -119,6 +119,18 @@ backend-created execution context and delegate to application use cases. The
 platform currently registers `getSalonServices` as a read-only catalog tool;
 booking and other mutations are not eligible for proactive execution.
 
+Durable execution traces use the application-level `AiTraceRecorder` contract.
+`TracingChatCompletionPort` records each named-provider attempt, including
+failed local attempts before a configured fallback succeeds. The authorized
+tool gateway records successful, rejected, and failed tool calls after applying
+the same backend authorization gates used for execution. The JDBC adapter
+derives tenant, principal, conversation, workflow, and trace identifiers from
+`AiExecutionContext`; it never accepts those values from model arguments.
+Request, response, argument, and error payloads are redacted before storage.
+Token counts and estimated cost are nullable because provider usage metadata is
+not guaranteed. Trace writes are best effort and PostgreSQL is authoritative
+for the durable records; a no-op recorder is used where JDBC is unavailable.
+
 ## 4. Provider adapters
 
 ```text

@@ -6,12 +6,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.assistant.ai.application.trace.AiToolCallStatus;
+import com.emme.assistant.ai.application.trace.AiToolCallTrace;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class AuthorizedAiToolGatewayTest {
 
@@ -141,6 +145,94 @@ class AuthorizedAiToolGatewayTest {
             context(Set.of("client")), gateway::proactivelyEligibleToolKeys);
 
     assertThat(keys).containsExactly("getSalonServices");
+  }
+
+  @Test
+  void recordsSuccessfulToolCallsWithTheAuthorizationOutcome() {
+    AiTraceRecorder recorder = org.mockito.Mockito.mock(AiTraceRecorder.class);
+    AuthorizedAiToolGateway gateway =
+        new AuthorizedAiToolGateway(
+            Set.of(
+                new AiToolDefinition(
+                    "getSalonServices",
+                    "List active salon services",
+                    Set.of("client"),
+                    AiToolRisk.READ_ONLY,
+                    false,
+                    false,
+                    (context, arguments) -> "services")),
+            recorder);
+
+    AiExecutionContextScope.call(
+        context(Set.of("client")),
+        () -> gateway.execute(new AiToolInvocation("getSalonServices", Map.of(), false, false)));
+
+    ArgumentCaptor<AiToolCallTrace> trace = ArgumentCaptor.forClass(AiToolCallTrace.class);
+    org.mockito.Mockito.verify(recorder).recordToolCall(trace.capture());
+    assertThat(trace.getValue().status()).isEqualTo(AiToolCallStatus.SUCCEEDED);
+    assertThat(trace.getValue().authorized()).isTrue();
+    assertThat(trace.getValue().riskLevel()).isEqualTo("READ_ONLY");
+  }
+
+  @Test
+  void recordsRejectedToolCallsWithoutInvokingTheHandler() {
+    AiTraceRecorder recorder = org.mockito.Mockito.mock(AiTraceRecorder.class);
+    AiToolHandler handler = org.mockito.Mockito.mock(AiToolHandler.class);
+    AuthorizedAiToolGateway gateway =
+        new AuthorizedAiToolGateway(
+            Set.of(
+                new AiToolDefinition(
+                    "createAppointment",
+                    "Create an appointment",
+                    Set.of("tenant_staff"),
+                    AiToolRisk.MUTATION,
+                    true,
+                    false,
+                    handler)),
+            recorder);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context(Set.of("client")),
+                    () ->
+                        gateway.execute(
+                            new AiToolInvocation("createAppointment", Map.of(), false, false))))
+        .isInstanceOf(AiToolExecutionRejectedException.class);
+
+    ArgumentCaptor<AiToolCallTrace> trace = ArgumentCaptor.forClass(AiToolCallTrace.class);
+    org.mockito.Mockito.verify(recorder).recordToolCall(trace.capture());
+    assertThat(trace.getValue().status()).isEqualTo(AiToolCallStatus.REJECTED);
+    assertThat(trace.getValue().authorized()).isFalse();
+    org.mockito.Mockito.verifyNoInteractions(handler);
+  }
+
+  @Test
+  void doesNotMakeToolExecutionFailWhenTracePersistenceFails() {
+    AiTraceRecorder recorder = org.mockito.Mockito.mock(AiTraceRecorder.class);
+    org.mockito.Mockito.doThrow(new IllegalStateException("database down"))
+        .when(recorder)
+        .recordToolCall(org.mockito.ArgumentMatchers.any());
+    AuthorizedAiToolGateway gateway =
+        new AuthorizedAiToolGateway(
+            Set.of(
+                new AiToolDefinition(
+                    "getSalonServices",
+                    "List active salon services",
+                    Set.of("client"),
+                    AiToolRisk.READ_ONLY,
+                    false,
+                    false,
+                    (context, arguments) -> "services")),
+            recorder);
+
+    assertThat(
+            AiExecutionContextScope.call(
+                context(Set.of("client")),
+                () ->
+                    gateway.execute(
+                        new AiToolInvocation("getSalonServices", Map.of(), false, false))))
+        .isEqualTo(new AiToolResult("getSalonServices", "services", true));
   }
 
   private static AiExecutionContext context(Set<String> roles) {

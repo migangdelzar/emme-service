@@ -45,7 +45,9 @@
 - [x] Add a typed, role/risk/confirmation-aware tool gateway and semantic
       proactive execution for read-only tools.
 - [x] Register the first platform tool through the authoritative Services
-      application use case (`getSalonServices`).
+  application use case (`getSalonServices`).
+- [x] Add durable, tenant-scoped model/tool execution traces with redaction,
+  provider-attempt outcomes, token/cost fields, and safe JDBC/no-op wiring.
 
 ### Working notes
 
@@ -121,6 +123,12 @@ read-only/no-confirmation definitions to semantic proactive routing. The first
 platform registration delegates `getSalonServices` to the Services module and
 uses the authenticated tenant from `AiToolExecutionContext`; model arguments
 cannot override tenant scope.
+
+Durable AI execution traces now persist provider attempts and controlled tool
+outcomes in PostgreSQL. Trace identity and correlation are taken from the
+backend AI execution context; payloads are redacted at the JDBC boundary,
+token/cost fields remain nullable when providers do not report usage, and
+telemetry failures cannot change model or tool behavior.
 
 ## Remaining execution gates — 2026-08-05
 

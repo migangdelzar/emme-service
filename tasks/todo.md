@@ -13,7 +13,7 @@
 - [x] Add typed semantic search/cache ports and tenant-filtered JDBC adapters.
 - [ ] Add semantic-cache writes and durable hit accounting after the write
       idempotency contract is defined.
-- [ ] Verify Spring AI 2.x and LangGraph4j dependency compatibility before
+- [x] Verify Spring AI 2.x and LangGraph4j dependency compatibility before
       adding framework integrations.
 - [ ] Add persisted workflow, structured extraction, deterministic quote, and
       HITL slices.

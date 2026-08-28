@@ -15,6 +15,10 @@ dependencies {
     // Spring Modulith BOM - manages spring-modulith-* versions
     api(platform(libs.spring.modulith.bom))
 
+    // AI BOMs are centrally pinned; modules opt into concrete integrations.
+    api(platform(libs.spring.ai.bom))
+    api(platform(libs.langgraph4j.bom))
+
     // Testcontainers BOM - manages testcontainers-* versions
     api(platform(libs.testcontainers.bom))
 

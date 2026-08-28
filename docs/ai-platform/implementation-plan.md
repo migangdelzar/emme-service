@@ -90,6 +90,13 @@ It is reused by typed intent, tool-selection, and semantic-cache application
 services. The services abstain rather than invoke an LLM when their policies do
 not accept a candidate.
 
+The shared Gradle platform now pins Spring AI `2.0.1` and LangGraph4j `1.8.25`.
+Spring AI `2.0.x` is compatible with the repository’s Spring Boot `4.1.x`
+baseline. The stable LangGraph4j `1.8.x` line is selected instead of the
+available `1.9.0-beta3` pre-release. Concrete framework integrations are still
+deferred until the provider contract and checkpoint schema are implemented and
+tested.
+
 ### Phase 4 progress
 
 The studio tenant-schema changelog now provisions tenant-scoped intent and tool

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Repository | `emme-service` |
-| Status | Draft for review |
+| Status | Implementation in progress |
 | Runtime | Java 25, Spring Boot/Spring Modulith |
 | Deployable boundary | One backend application |
 | Durable store | PostgreSQL and pgvector |
@@ -27,6 +27,7 @@ service.
 | Evaluation | [Evaluation specification](evaluation-specification.md) | Datasets, metrics, gates, and promotion |
 | Operations | [Operational runbook](operational-runbook.md) | Deployment, monitoring, failures, and rollback |
 | Execution | [Implementation plan](implementation-plan.md) | Ordered implementation tasks and verification |
+| Dependencies | [Compatibility baseline](dependency-compatibility.md) | Pinned Spring AI and LangGraph4j versions |
 | Decisions | [ADR index](adr/README.md) | Architecture decisions and trade-offs |
 | Changes | [FCR index](fcr/README.md) | Feature Change Requests |
 
@@ -36,11 +37,14 @@ service.
 libraries/kernel/
   execution context and low-level context bridges
 
-modules/ai-foundation/
+modules/assistant/ai/
   provider-neutral AI contracts
   embedding and vector ports
   semantic decisions and tool policies
-  concurrency ports
+  Spring AI/provider adapters (incremental)
+
+modules/assistant/adapter/out/persistence/
+  tenant/principal-scoped pgvector adapters
 
 modules/assistant/
   conversation orchestration
@@ -79,6 +83,6 @@ Java 25 baseline
   → channels and operational hardening
 ```
 
-All documents in this directory are drafts until the user approves the complete
-specification set. No production AI behavior is claimed as implemented by these
-documents.
+The specification set is approved for incremental implementation. Production
+capabilities are claimed only when their code and focused verification are
+present; remaining phases are tracked in the implementation plan.

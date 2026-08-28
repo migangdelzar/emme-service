@@ -6,7 +6,7 @@
 | Repository | `emme-service` |
 | Date | 2026-08-28 |
 | Status | Draft for user review |
-| Scope | AI naming, tenant context, Java 25 concurrency, Spring AI, LangGraph4j, pgvector RAG, optional Neo4j GraphRAG, observability, and governed self-improvement |
+| Scope | AI naming, tenant context, Java 25 concurrency, Spring AI, LangGraph4j, pgvector RAG, optional Apache AGE GraphRAG, observability, and governed self-improvement |
 | Deployment | One Spring Boot/Spring Modulith deployable; no separate `emme-ai` service in this phase |
 
 ## 1. Executive decision
@@ -20,8 +20,8 @@ catalog's generic image and embedding contracts out of assistant.
 PostgreSQL remains authoritative for tenants, memberships, services, prices,
 appointments, conversations, workflows, quotes, approvals, traces, audits, and
 outbox events. PostgreSQL/pgvector is the primary durable vector store. Redis is
-temporary operational infrastructure. Neo4j is an optional asynchronous derived
-read model for relationship recommendations.
+temporary operational infrastructure. Apache AGE is an optional asynchronous
+derived graph read model for relationship recommendations, hosted in PostgreSQL.
 
 Java 25 preview APIs are isolated behind stable Emme interfaces:
 
@@ -30,7 +30,7 @@ Stable Emme ports
     -> Java 25 StructuredTaskScope/Joiner adapter
     -> Spring AI model/retrieval/tool adapters
     -> LangGraph4j workflow adapter
-    -> PostgreSQL, Redis, and optional Neo4j adapters
+    -> PostgreSQL/pgvector, Apache AGE, and Redis adapters
 ```
 
 This document is a design proposal. It does not authorize implementation until
@@ -86,7 +86,7 @@ modules/assistant
 | Advisors | Tenant/prompt advisors exist; memory, retrieval, budget, validation, and complete trace composition are incomplete | Use specialized client configurations |
 | Workflow | LangGraph4j is centered on the quote graph | Add a durable bounded conversation workflow |
 | Quote | Production `QuoteTemplateRepository` wiring is incomplete | Complete tenant-scoped adapter before enabling production quote flow |
-| Graph | No Neo4j driver, graph projection, schema, or curated traversal exists | Add disabled-by-default optional GraphRAG after pgvector RAG |
+| Graph | No Apache AGE extension bootstrap, graph projection, schema, or curated traversal exists | Add disabled-by-default optional GraphRAG after pgvector RAG |
 | Redis | Operational adapters exist but are not uniformly integrated into chat lifecycle | Use only for defined temporary responsibilities |
 | Learning | Trace foundation exists; governed candidate promotion is incomplete | Add redaction, evaluation, shadow, canary, and rollback |
 
@@ -108,7 +108,7 @@ catalog
 ```
 
 This removes the current catalog-to-assistant dependency without creating a
-network boundary. Spring AI, LangGraph4j, and Neo4j remain infrastructure
+network boundary. Spring AI, LangGraph4j, and Apache AGE remain infrastructure
 details. The cost is a controlled contract-extraction migration.
 
 ### Option B — Keep all AI inside assistant
@@ -302,7 +302,7 @@ flowchart TD
 
     LG --> KR[KnowledgeRetrieverPort]
     KR --> PV[PostgreSQL pgvector]
-    KR -. optional .-> NG[Neo4j derived graph]
+    KR -. optional .-> AG[Apache AGE derived graph]
     KR --> RA[KnowledgeAnswerChatClient + RAG advisor]
 
     LG --> CP[PostgreSQL checkpoint]
@@ -348,7 +348,7 @@ flowchart TD
 | Spring Modulith | Internal events and outbox publication | AI reasoning |
 | PostgreSQL | Transactions, history, workflow, approvals, traces, pgvector | Ephemeral locks/live fan-out |
 | Redis | Temporary state, locks, exact cache, rate limits, live events | Durable business records |
-| Neo4j | Optional derived relationships/recommendations | Transactional authority |
+| Apache AGE | Optional derived relationships/recommendations inside PostgreSQL | Transactional authority; vector similarity |
 | Java agent | Telemetry and diagnostics | Executor replacement or authorization |
 
 ## 8. Structured concurrency and Joiners
@@ -509,23 +509,40 @@ version, embeddingModel, embeddingVersion, visibility
 Chunk size, overlap, embedding model, and retrieval thresholds are evaluated
 parameters, not permanent assumptions.
 
-## 12. Optional Neo4j GraphRAG
+## 12. Optional Apache AGE GraphRAG
 
-Neo4j is a derived read model populated asynchronously from approved PostgreSQL
-outbox events. It is disabled by default and is not required for ordinary
-tenant operation.
+Apache AGE is the selected graph option for this phase. It is a PostgreSQL
+extension that provides openCypher-style graph queries while retaining the
+same database and transaction boundary as the relational system. AGE is a
+derived read model populated asynchronously from approved PostgreSQL outbox
+events; it is disabled by default until the extension/image compatibility
+spike passes.
+
+The current runtime is PostgreSQL 17 with the `pgvector/pgvector:pg17` image.
+The stable baseline for this design is Apache AGE 1.6.0 for PostgreSQL 17.
+AGE is not included in the current pgvector image, so implementation requires
+a pinned custom image and database bootstrap that installs/enables `age`; it
+must not be added as an unpinned production-side package step.
+
+Use one backend-maintained AGE graph namespace per tenant, registered in the
+authoritative PostgreSQL control tables. The authenticated backend tenant ID
+resolves that graph name; neither the frontend nor the model may supply a
+graph name. Every vertex and edge also carries `tenant_id` as defense in
+depth. The stable AGE baseline must not rely on newer release-only graph RLS
+behavior; isolation is enforced through graph selection, fixed tenant
+predicates, database roles, and negative tests.
 
 ```mermaid
 flowchart TD
     PG[PostgreSQL transaction] --> O[Transactional outbox]
     O --> Q[Idempotent graph projection queue]
-    Q --> X[Neo4j tenant-scoped projector]
+    Q --> X[AGE tenant-scoped projector]
     X --> G[Curated graph nodes/relationships]
 
     R[Query/image attributes] --> V[pgvector similarity]
     V --> I[Candidate IDs]
     I --> G
-    G --> C[Allowlisted Cypher traversal]
+    G --> C[Allowlisted parameterized AGE traversal]
     C --> CTX[Bounded recommendation context]
     CTX --> L[LLM explanation]
     L --> D[Deterministic validation]
@@ -546,13 +563,22 @@ Initial relationships:
 
 Graph rules:
 
-- Every node and relationship is tenant-scoped or proven globally safe.
-- Graph writes are idempotent, replayable, versioned, and asynchronous.
-- Cypher is parameterized and selected from predefined queries.
-- The LLM cannot choose a database or generate unrestricted Cypher.
+- `GraphRetrieverPort` is the stable application boundary; its first adapter
+  uses PostgreSQL JDBC and Apache AGE rather than a separate graph server.
+- Every node and relationship is tenant-scoped or proven globally safe, and
+  graph names come only from the trusted backend tenant registry.
+- Graph writes are idempotent, replayable, versioned, and asynchronous through
+  the transactional outbox; PostgreSQL relational records remain authoritative.
+- AGE queries are parameterized and selected from predefined query templates.
+  The exact JDBC/agtype mapping and extension bootstrap are integration-spike
+  items, not reasons to expose raw SQL or Cypher to the model.
+- The LLM cannot choose a database, graph namespace, tenant, or generate
+  unrestricted Cypher.
 - Graph output may recommend; it cannot price, book, cancel, authorize, or grant
   permissions.
-- Graph staleness/outage falls back to pgvector or abstains safely.
+- Graph staleness/outage falls back to pgvector or abstains safely. AGE graph
+  projection is eventually consistent and must expose projection version/time
+  in retrieval traces.
 
 ## 13. Persistence, observability, and learning
 
@@ -622,7 +648,7 @@ appointment rules.
 10. Use transactional outbox for notifications and graph projections.
 11. Treat documents, graph text, external content, and messages as untrusted
     prompt-injection inputs.
-12. Redis/Neo4j failures may remove acceleration or recommendations, never
+12. Redis/AGE failures may remove acceleration or recommendations, never
     authorization or transactional safety.
 
 ## 15. Incremental rollout
@@ -663,11 +689,12 @@ appointment rules.
 - Add clarification, confirmation, approval, failure, checkpoint, and resume
   states while preserving one model tool loop.
 
-### Phase 6 — Optional Neo4j GraphRAG
+### Phase 6 — Optional Apache AGE GraphRAG
 
 - Add disabled-by-default local/production configuration.
-- Add schema/index bootstrap, driver adapter, outbox projector, replay, curated
-  traversal, tenant isolation, and pgvector fallback.
+- Add the pinned PostgreSQL image/AGE extension bootstrap, graph registry,
+  JDBC/AGE adapter, outbox projector, replay, curated traversal, tenant
+  isolation, and pgvector fallback.
 
 ### Phase 7 — Operations and learning
 
@@ -693,7 +720,7 @@ appointment rules.
 - Spring AI structured output and retrieval advisor with test doubles.
 - Redis locks, TTL state, idempotency, and live events.
 - LangGraph4j checkpoint restart/resume.
-- Optional Neo4j projection, curated traversal, tenant filtering, replay, and
+- Optional AGE projection, curated traversal, tenant filtering, replay, and
   outage fallback.
 - Transactional outbox and idempotent consumers.
 
@@ -710,7 +737,7 @@ duplicate mutation
 LLM timeout/provider fallback
 tool/MCP failure
 workflow resume after restart
-Neo4j unavailable with pgvector fallback
+AGE unavailable with pgvector fallback
 ```
 
 Paid model APIs are not used in normal tests. Local Ollama tests are opt-in;
@@ -766,8 +793,9 @@ global executor behavior outside the AI/concurrency boundary.
 - [Java 25 `ScopedValue`](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/ScopedValue.html)
 - [Spring AI RAG](https://docs.spring.io/spring-ai/reference/api/retrieval-augmented-generation.html)
 - [Spring AI structured-output validation](https://docs.spring.io/spring-ai/reference/api/structured-output/validation.html)
-- [Spring AI Neo4j](https://docs.spring.io/spring-ai/reference/api/vectordbs/neo4j.html)
-- [Neo4j Java driver transactions](https://neo4j.com/docs/java-manual/current/transactions/)
+- [Apache AGE downloads and supported releases](https://age.apache.org/download/)
+- [Apache AGE overview](https://age.apache.org/overview/)
+- [Apache AGE releases](https://github.com/apache/age/releases)
 
 ## 20. Approval gate
 

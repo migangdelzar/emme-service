@@ -68,6 +68,7 @@ dependencies {
   implementation(project(":modules:notification"))
   implementation(project(":modules:payment"))
   implementation(project(":modules:assistant"))
+  implementation(project(":modules:ai-platform"))
   implementation(project(":modules:audit"))
 
   // Infrastructure

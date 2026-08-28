@@ -7,7 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.emme.assistant.ai.application.port.out.ModelProvider;
+import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.documents.api.result.DocumentChunkDetails;
 import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
@@ -20,7 +20,7 @@ class RagQueryServiceTest {
   @Test
   void embedsSearchesAndAnswersUsingRankedDocumentContext() {
     UUID tenantId = UUID.randomUUID();
-    ModelProvider model = mock(ModelProvider.class);
+    AiModelProvider model = mock(AiModelProvider.class);
     SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
     RagQueryService service = new RagQueryService(realProperties(), model, search);
     DocumentChunkDetails chunk =
@@ -43,7 +43,7 @@ class RagQueryServiceTest {
   @Test
   void usesKeywordOnlySearchWhenEmbeddingIsUnavailable() {
     UUID tenantId = UUID.randomUUID();
-    ModelProvider model = mock(ModelProvider.class);
+    AiModelProvider model = mock(AiModelProvider.class);
     SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
     RagQueryService service = new RagQueryService(realProperties(), model, search);
 
@@ -59,7 +59,7 @@ class RagQueryServiceTest {
 
   @Test
   void keepsTheCannedResponseInMockMode() {
-    ModelProvider model = mock(ModelProvider.class);
+    AiModelProvider model = mock(AiModelProvider.class);
     SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
     RagQueryService service =
         new RagQueryService(new AiProperties("mock", null, null, true), model, search);

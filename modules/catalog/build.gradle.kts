@@ -10,7 +10,7 @@ dependencies {
   implementation(project(":libraries:kernel"))
   implementation(project(":modules:tenancy"))
   implementation(project(":libraries:kernel"))
-  implementation(project(":modules:assistant"))
+  implementation(project(":libraries:ai-contracts"))
   implementation(project(":libraries:kernel"))
 
   implementation(libs.spring.boot.starter.web)
@@ -18,6 +18,7 @@ dependencies {
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
   implementation(libs.jackson.databind)
   testImplementation(testFixtures(project(":libraries:testing")))
+  testRuntimeOnly(project(":modules:ai-platform"))
   testImplementation(libs.spring.boot.webmvc.test)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))

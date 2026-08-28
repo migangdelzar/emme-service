@@ -4,7 +4,6 @@
       "shared :: persistence",
       "shared :: identity",
       "shared :: search",
-      "tenancy",
-      "assistant :: assistant-ai-api"
+      "tenancy"
     })
 package com.emme.catalog;

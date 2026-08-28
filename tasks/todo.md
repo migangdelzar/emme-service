@@ -50,6 +50,10 @@
   provider-attempt outcomes, token/cost fields, and safe JDBC/no-op wiring.
 - [x] Trace Spring AI embedding-provider attempts and structured design
   extraction without persisting vector values or image bytes.
+- [x] Extract provider-neutral model, image, and embedding contracts into
+  `libraries:ai-contracts`; move legacy providers and reusable capability
+  adapters into `modules:ai-platform` without an `ai-platform` → `assistant`
+  dependency.
 
 ### Working notes
 
@@ -67,6 +71,13 @@
 
 The initial pgvector schema slice is implemented and covered by
 `database/src/test/java/com/emme/database/AiSemanticSearchMigrationContractTest.java`.
+
+The provider boundary slice now keeps `modules:assistant` dependent only on
+the framework-free `AiModelProvider` contract. Mock, Ollama, and Groq provider
+construction, typed provider configuration, and provider-owned HTTP transport
+live in `modules:ai-platform`. Reusable image-caption and text-embedding
+contracts also live in `libraries:ai-contracts`, with platform adapters used by
+catalog; catalog no longer depends on assistant for those capabilities.
 
 The first concrete Spring AI boundary is implemented in
 `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/`.

@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.application.service;
 
+import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
-import com.emme.assistant.ai.application.port.out.ModelProvider;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.documents.api.query.SearchDocumentChunksQuery;
 import com.emme.documents.api.result.DocumentChunkDetails;
@@ -14,12 +14,12 @@ import org.springframework.stereotype.Service;
 public class RagQueryService implements RagQueryUseCase {
 
   private final AiProperties properties;
-  private final ModelProvider modelProvider;
+  private final AiModelProvider modelProvider;
   private final SearchDocumentChunksUseCase searchDocuments;
 
   public RagQueryService(
       AiProperties properties,
-      ModelProvider modelProvider,
+      AiModelProvider modelProvider,
       SearchDocumentChunksUseCase searchDocuments) {
     this.properties = properties;
     this.modelProvider = modelProvider;

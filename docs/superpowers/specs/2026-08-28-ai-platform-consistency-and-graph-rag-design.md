@@ -145,6 +145,39 @@ Spring AI, LangGraph4j, provider routing, retrieval, and operational adapters.
 Assistant-specific graph definitions and business nodes remain in `assistant`.
 The cost is a controlled contract-extraction migration.
 
+### 3.1 Implementation checkpoint — provider inversion
+
+The first extraction slice is now materialized in the repository:
+
+```text
+libraries:ai-contracts
+  -> AiModelProvider
+  -> CaptionImageUseCase
+  -> EmbedTextUseCase
+
+modules:ai-platform
+  -> MockModelProvider
+  -> OllamaModelProvider
+  -> GroqModelProvider
+  -> provider-owned HTTP/configuration adapters
+  -> image-caption and embedding capability adapters
+
+modules:assistant
+  -> consumes contracts from ai-contracts
+  -> retains Emme-specific chat, semantic, quote, workflow, and HITL behavior
+
+modules:catalog
+  -> consumes image/embedding contracts from ai-contracts
+```
+
+The platform module has no dependency on `assistant`, and contracts contain no
+Spring, HTTP, provider SDK, or LangGraph4j types. The existing assistant
+`AiProperties` remains temporarily for assistant-owned Spring AI adapters;
+`AiProviderProperties` is the platform-owned binding for the extracted legacy
+providers. Unifying those configuration surfaces belongs to the later Spring
+AI provider/advisor migration and must not reintroduce a platform-to-assistant
+dependency.
+
 ### Option B — Keep all AI inside assistant
 
 This minimizes immediate file movement, but leaves catalog coupled to a

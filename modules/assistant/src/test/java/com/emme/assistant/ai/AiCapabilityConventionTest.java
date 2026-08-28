@@ -9,25 +9,74 @@ import org.junit.jupiter.api.Test;
 
 class AiCapabilityConventionTest {
   @Test
-  void keepsProviderImplementationsBehindApplicationPorts() {
-    Path root = sourcePath("modules/assistant/src/main/java/com/emme/assistant/ai");
-    assertThat(read(root.resolve("package-info.java"))).doesNotContain("@NamedInterface");
-    assertThat(Files.exists(root.resolve("application/port/out/ModelProvider.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("adapter/out/provider/mock/MockModelProvider.java")))
+  void keepsProviderImplementationsBehindApplicationPorts() throws Exception {
+    Path assistantRoot = sourcePath("modules/assistant/src/main/java/com/emme/assistant/ai");
+    Path repositoryRoot = sourcePath(".git").getParent();
+    Path platformRoot =
+        repositoryRoot.resolve("modules/ai-platform/src/main/java/com/emme/ai/platform");
+    Path contractsRoot =
+        repositoryRoot.resolve("libraries/ai-contracts/src/main/java/com/emme/ai/contracts");
+    Path platformBuild = repositoryRoot.resolve("modules/ai-platform/build.gradle.kts");
+
+    assertThat(read(assistantRoot.resolve("package-info.java"))).doesNotContain("@NamedInterface");
+    assertThat(read(platformBuild)).doesNotContain(":modules:assistant");
+    try (Stream<Path> platformSources = Files.walk(platformRoot)) {
+      for (Path source :
+          platformSources
+              .filter(path -> path.getFileName().toString().endsWith(".java"))
+              .toList()) {
+        assertThat(read(source))
+            .as("provider platform source must not depend on assistant internals: %s", source)
+            .doesNotContain("com.emme.assistant");
+      }
+    }
+    assertThat(Files.exists(assistantRoot.resolve("application/port/out/ModelProvider.java")))
+        .isFalse();
+    assertThat(
+            Files.exists(assistantRoot.resolve("adapter/out/provider/mock/MockModelProvider.java")))
+        .isFalse();
+    assertThat(
+            Files.exists(assistantRoot.resolve("adapter/out/provider/groq/GroqModelProvider.java")))
+        .isFalse();
+    assertThat(
+            Files.exists(
+                assistantRoot.resolve("adapter/out/provider/ollama/OllamaModelProvider.java")))
+        .isFalse();
+    assertThat(Files.exists(contractsRoot.resolve("model/AiModelProvider.java"))).isTrue();
+    assertThat(
+            Files.exists(platformRoot.resolve("adapter/out/provider/mock/MockModelProvider.java")))
         .isTrue();
-    assertThat(Files.exists(root.resolve("adapter/out/provider/groq/GroqModelProvider.java")))
+    assertThat(
+            Files.exists(platformRoot.resolve("adapter/out/provider/groq/GroqModelProvider.java")))
         .isTrue();
-    assertThat(Files.exists(root.resolve("adapter/out/provider/ollama/OllamaModelProvider.java")))
+    assertThat(
+            Files.exists(
+                platformRoot.resolve("adapter/out/provider/ollama/OllamaModelProvider.java")))
         .isTrue();
-    assertThat(Files.exists(root.resolve("adapter/in/web/request/ChatRequest.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("adapter/in/web/request/IntentRequest.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("adapter/in/web/request/RagRequest.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("application/service/DetectIntentService.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("api/usecase/DetectIntentUseCase.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("api/usecase/CaptionImageUseCase.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("api/usecase/EmbedTextUseCase.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("application/service/CaptionImageService.java"))).isTrue();
-    assertThat(Files.exists(root.resolve("application/service/EmbedTextService.java"))).isTrue();
+    assertThat(Files.exists(assistantRoot.resolve("api/usecase/CaptionImageUseCase.java")))
+        .isFalse();
+    assertThat(Files.exists(assistantRoot.resolve("api/usecase/EmbedTextUseCase.java"))).isFalse();
+    assertThat(Files.exists(assistantRoot.resolve("application/service/CaptionImageService.java")))
+        .isFalse();
+    assertThat(Files.exists(assistantRoot.resolve("application/service/EmbedTextService.java")))
+        .isFalse();
+    assertThat(Files.exists(contractsRoot.resolve("image/CaptionImageUseCase.java"))).isTrue();
+    assertThat(Files.exists(contractsRoot.resolve("embedding/EmbedTextUseCase.java"))).isTrue();
+    assertThat(
+            Files.exists(platformRoot.resolve("adapter/out/capability/AiCaptionImageAdapter.java")))
+        .isTrue();
+    assertThat(Files.exists(platformRoot.resolve("adapter/out/capability/AiEmbeddingAdapter.java")))
+        .isTrue();
+    assertThat(Files.exists(assistantRoot.resolve("adapter/in/web/request/ChatRequest.java")))
+        .isTrue();
+    assertThat(Files.exists(assistantRoot.resolve("adapter/in/web/request/IntentRequest.java")))
+        .isTrue();
+    assertThat(Files.exists(assistantRoot.resolve("adapter/in/web/request/RagRequest.java")))
+        .isTrue();
+    assertThat(Files.exists(assistantRoot.resolve("application/service/DetectIntentService.java")))
+        .isTrue();
+    assertThat(Files.exists(assistantRoot.resolve("api/usecase/DetectIntentUseCase.java")))
+        .isTrue();
   }
 
   @Test

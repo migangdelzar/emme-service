@@ -1,6 +1,6 @@
 package com.emme.catalog.application.service;
 
-import com.emme.assistant.ai.api.usecase.CaptionImageUseCase;
+import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.catalog.api.command.AddCatalogItemImageCommand;
 import com.emme.catalog.api.exception.CatalogItemNotFoundException;
 import com.emme.catalog.api.result.CatalogItemImageDetails;

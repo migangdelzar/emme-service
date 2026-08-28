@@ -5,9 +5,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
-import com.emme.assistant.ai.application.port.out.ModelProvider;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ class ChatServiceProviderFallbackTest {
 
   @Test
   void usesTheSpringAiChatChainBeforeTheLegacyProvider() {
-    ModelProvider legacy = mock(ModelProvider.class);
+    AiModelProvider legacy = mock(AiModelProvider.class);
     ChatCompletionPort chain = mock(ChatCompletionPort.class);
     when(chain.complete("", "hello")).thenReturn("Spring AI response");
     ChatService service = new ChatService(legacy, Optional.empty(), Optional.of(chain));
@@ -25,7 +25,7 @@ class ChatServiceProviderFallbackTest {
 
   @Test
   void usesTheLegacyProviderWhenTheSpringAiChainIsUnavailable() {
-    ModelProvider legacy = mock(ModelProvider.class);
+    AiModelProvider legacy = mock(AiModelProvider.class);
     ChatCompletionPort chain = mock(ChatCompletionPort.class);
     when(chain.complete("", "hello"))
         .thenThrow(new ChatProviderUnavailableException("providers unavailable"));

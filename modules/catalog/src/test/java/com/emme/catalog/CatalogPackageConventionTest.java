@@ -52,25 +52,24 @@ class CatalogPackageConventionTest {
   }
 
   @Test
-  void assistantDependencyUsesTheExactPublishedAiNamedInterface() throws IOException {
+  void catalogDoesNotDependOnAssistantForReusableAiCapabilities() throws IOException {
     String moduleMetadata = Files.readString(SOURCE_ROOT.resolve("package-info.java"));
 
-    assertThat(moduleMetadata).contains("assistant :: assistant-ai-api");
-    assertThat(moduleMetadata).doesNotContain("assistant :: ai-api");
+    assertThat(moduleMetadata).doesNotContain("assistant");
   }
 
   @Test
-  void catalogUsesAssistantPublicAiUseCasesInsteadOfProviderInternals() throws IOException {
+  void catalogUsesFrameworkIndependentAiContractsInsteadOfProviderInternals() throws IOException {
     String imageService =
         Files.readString(
             SOURCE_ROOT.resolve("application/service/AddCatalogItemImageService.java"));
     String matchService =
         Files.readString(SOURCE_ROOT.resolve("application/service/MatchCatalogItemsService.java"));
 
-    assertThat(imageService).contains("com.emme.assistant.ai.api.usecase.CaptionImageUseCase");
+    assertThat(imageService).contains("com.emme.ai.contracts.image.CaptionImageUseCase");
     assertThat(imageService).doesNotContain("com.emme.assistant.ai.application");
-    assertThat(matchService).contains("com.emme.assistant.ai.api.usecase.CaptionImageUseCase");
-    assertThat(matchService).contains("com.emme.assistant.ai.api.usecase.EmbedTextUseCase");
+    assertThat(matchService).contains("com.emme.ai.contracts.image.CaptionImageUseCase");
+    assertThat(matchService).contains("com.emme.ai.contracts.embedding.EmbedTextUseCase");
     assertThat(matchService).doesNotContain("com.emme.assistant.ai.application");
   }
 

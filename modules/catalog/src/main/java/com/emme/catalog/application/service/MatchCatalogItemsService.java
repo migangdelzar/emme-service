@@ -1,7 +1,7 @@
 package com.emme.catalog.application.service;
 
-import com.emme.assistant.ai.api.usecase.CaptionImageUseCase;
-import com.emme.assistant.ai.api.usecase.EmbedTextUseCase;
+import com.emme.ai.contracts.embedding.EmbedTextUseCase;
+import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.catalog.api.query.MatchCatalogItemsQuery;
 import com.emme.catalog.api.result.CatalogMatchDetails;
 import com.emme.catalog.api.result.CatalogMatchList;

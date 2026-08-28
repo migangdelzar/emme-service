@@ -51,11 +51,15 @@ include(":modules:payment")
 include(":modules:assistant")
 include(":modules:audit")
 
+// AI provider contracts and infrastructure adapters
+include(":modules:ai-platform")
+
 // ── Libraries ──
 include(":libraries:functional")
 include(":libraries:kernel")
 include(":libraries:testing")
 include(":libraries:test-containers")
+include(":libraries:ai-contracts")
 
 // ── Database ──
 include(":database")

@@ -1,10 +1,10 @@
 package com.emme.assistant.ai.application.service;
 
+import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
-import com.emme.assistant.ai.application.port.out.ModelProvider;
 import com.emme.assistant.ai.application.port.out.ProactiveToolRouter;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
 import com.emme.assistant.ai.application.tool.AiToolResult;
@@ -16,17 +16,17 @@ import org.springframework.stereotype.Service;
 /** Executes the chat capability through the configured model-provider boundary. */
 @Service
 public class ChatService implements ChatUseCase {
-  private final ModelProvider provider;
+  private final AiModelProvider provider;
   private final Optional<SemanticResponseCache> semanticCache;
   private final Optional<ChatCompletionPort> chatCompletion;
   private final Optional<ProactiveToolRouter> proactiveToolRouter;
 
-  public ChatService(ModelProvider provider, Optional<SemanticResponseCache> semanticCache) {
+  public ChatService(AiModelProvider provider, Optional<SemanticResponseCache> semanticCache) {
     this(provider, semanticCache, Optional.empty(), Optional.empty());
   }
 
   public ChatService(
-      ModelProvider provider,
+      AiModelProvider provider,
       Optional<SemanticResponseCache> semanticCache,
       Optional<ChatCompletionPort> chatCompletion) {
     this(provider, semanticCache, chatCompletion, Optional.empty());
@@ -34,7 +34,7 @@ public class ChatService implements ChatUseCase {
 
   @Autowired
   public ChatService(
-      ModelProvider provider,
+      AiModelProvider provider,
       Optional<SemanticResponseCache> semanticCache,
       Optional<ChatCompletionPort> chatCompletion,
       Optional<ProactiveToolRouter> proactiveToolRouter) {

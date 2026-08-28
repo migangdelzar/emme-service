@@ -12,6 +12,7 @@ import com.emme.assistant.ai.api.result.IntentResult;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.ai.api.usecase.DetectIntentUseCase;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
+import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.tracing.CorrelationId;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,11 +52,17 @@ public class AiController {
   @PostMapping("/chat")
   @Operation(summary = "Chat endpoint for testing AI responses")
   @PreAuthorize("@featureFlagService.isEnabled('ai_chat')")
-  public ResponseEntity<ChatResponse> chat(@RequestBody ChatRequest request) {
+  public ResponseEntity<ChatResponse> chat(
+      @RequestBody ChatRequest request,
+      @AuthenticationPrincipal Jwt jwt,
+      Authentication authentication) {
     String response =
-        chatUseCase.chat(
-            request.conversationContext() != null ? request.conversationContext() : "",
-            request.userMessage());
+        AiExecutionContextScope.call(
+            readOnlyContext(jwt, authentication),
+            () ->
+                chatUseCase.chat(
+                    request.conversationContext() != null ? request.conversationContext() : "",
+                    request.userMessage()));
     return ResponseEntity.ok(new ChatResponse(response));
   }
 
@@ -66,22 +73,9 @@ public class AiController {
       @RequestBody IntentRequest request,
       @AuthenticationPrincipal Jwt jwt,
       Authentication authentication) {
-    String traceId = CorrelationId.get();
-    if (traceId == null || traceId.isBlank()) {
-      throw new IllegalStateException("Correlation ID is required for AI intent detection");
-    }
-    Jwt authenticatedJwt = Objects.requireNonNull(jwt, "Authenticated JWT is required");
-    Authentication authenticatedPrincipal =
-        Objects.requireNonNull(authentication, "Authenticated principal is required");
-    var context =
-        contextFactory.forReadOnly(
-            traceId,
-            Objects.requireNonNull(authenticatedJwt.getIssuer(), "JWT issuer is required")
-                .toString(),
-            authenticatedJwt.getSubject(),
-            authenticatedPrincipal.getAuthorities());
     IntentResult result =
-        AiExecutionContextScope.call(context, () -> detectIntent.detect(request.message()));
+        AiExecutionContextScope.call(
+            readOnlyContext(jwt, authentication), () -> detectIntent.detect(request.message()));
     return ResponseEntity.ok(result);
   }
 
@@ -94,5 +88,20 @@ public class AiController {
           String answer = ragQuery.query(tenantId, request.question());
           return ResponseEntity.ok(new RagResponse(answer));
         });
+  }
+
+  private AiExecutionContext readOnlyContext(Jwt jwt, Authentication authentication) {
+    String traceId = CorrelationId.get();
+    if (traceId == null || traceId.isBlank()) {
+      throw new IllegalStateException("Correlation ID is required for AI request");
+    }
+    Jwt authenticatedJwt = Objects.requireNonNull(jwt, "Authenticated JWT is required");
+    Authentication authenticatedPrincipal =
+        Objects.requireNonNull(authentication, "Authenticated principal is required");
+    return contextFactory.forReadOnly(
+        traceId,
+        Objects.requireNonNull(authenticatedJwt.getIssuer(), "JWT issuer is required").toString(),
+        authenticatedJwt.getSubject(),
+        authenticatedPrincipal.getAuthorities());
   }
 }

@@ -23,10 +23,10 @@
 | 0 | Java 25 repository/runtime baseline | Toolchain, CI/config validation | Complete |
 | 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | Complete |
 | 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Complete |
-| 3 | AI foundation and Spring AI providers | Provider/embedding contract tests | In progress |
-| 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress |
+| 3 | AI foundation and Spring AI providers | Provider/embedding/chat contract tests | In progress — embedding and ordered chat provider boundaries complete |
+| 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress — semantic intent/tool routing and safe chat cache complete; real pgvector runtime test pending |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Complete |
-| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | Not started |
+| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors complete; controlled tool gateway pending |
 | 7 | Design extraction, deterministic quote, HITL | Quote, optimistic-lock, endpoint, and resume tests | In progress — durable quote workflow, secured staff review endpoint, and LangGraph resume adapter complete |
 | 8 | Online enrichment and evaluation | Candidate/promotion safety tests | Not started |
 | 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events and workflow metrics foundation complete |
@@ -155,6 +155,15 @@ only for temporary operational state; PostgreSQL remains authoritative for all
 business and workflow records. Micrometer workflow counters and duration
 histograms are emitted without tenant, principal, conversation, or workflow ID
 labels to avoid high-cardinality metric series.
+
+Semantic intent routing now runs before the existing model classifier when the
+feature flag and embedding provider are enabled. The semantic chat cache is
+restricted to context-free informational questions and uses durable JSONB
+payloads, principal/tenant filtering, expiry, and hit confirmation. Spring AI
+chat integration provides an ordered named-client chain with explicit provider
+unavailability fallback to the existing provider boundary. Every configured
+named client is composed with tenant-security and prompt-version advisors at
+request execution time.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

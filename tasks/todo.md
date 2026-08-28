@@ -36,6 +36,12 @@
       workflow-correlation rebinding, and concrete LangGraph resume adapter.
 - [x] Add Redis operational-state, compare-and-delete conversation locks, and
       safe live workflow status events behind application ports.
+- [x] Integrate semantic intent routing ahead of model fallback and expose the
+      feature-gated semantic tool selector.
+- [x] Add principal-scoped informational semantic chat caching with durable
+      PostgreSQL payloads and safe transactional-message bypass.
+- [x] Add provider-neutral Spring AI chat clients, ordered provider failover,
+      and tenant/prompt-version advisors.
 
 ### Working notes
 
@@ -95,6 +101,15 @@ owner token, and live events use a tenant/conversation Redis Stream. No Redis
 adapter stores complete conversations, quote decisions, appointments, or
 audit records. The composition root is opt-in through
 `EMME_AI_REDIS_ENABLED=false` by default.
+
+Semantic routing is opt-in through `EMME_AI_SEMANTIC_ROUTING_ENABLED=false` and
+uses the existing tenant-filtered pgvector reference adapter before the legacy
+model classifier. Semantic cache is separately opt-in and only handles
+informational, context-free chat; transactional messages abstain. Spring AI
+chat provider clients are configured by named beans and ordered failover keys;
+the legacy provider remains the final compatibility fallback. Tenant-security
+and prompt-version advisors are attached to every configured named Spring AI
+client at request execution time.
 
 ## Remaining execution gates — 2026-08-05
 

@@ -122,6 +122,15 @@ Provider selection is task-aware and tenant-policy-aware. Embeddings are
 versioned independently from chat models. All active vector queries reject
 model/version/dimension mismatches.
 
+The Spring AI chat boundary uses named `ChatClient` beans in explicit order.
+`ChatProviderChain` catches only `ChatProviderUnavailableException`; the
+application falls back to the existing provider-neutral model port after all
+configured Spring AI clients are unavailable. The local Ollama client is
+feature-gated, and additional provider modules may contribute named clients
+without changing application logic. Every configured client receives the
+tenant-security and prompt-version advisors at request execution time. No
+advisor may derive or override tenant identity from model output.
+
 ## 5. LangGraph4j integration
 
 LangGraph4j owns the workflow graph and checkpoint lifecycle. Graph nodes call
@@ -172,6 +181,13 @@ status is TTL-bound, lock release uses a compare-and-delete Lua script, and
 live events contain only bounded status fields suitable for SSE/WebSocket
 delivery. Redis is not used for durable history, quote artifacts, workflow
 decisions, appointments, or audit logs.
+
+Semantic intent routing is feature-gated and executes before model fallback.
+Its vector decision requires the configured top-1 score and top-1/top-2 margin;
+abstention invokes the existing model route. Semantic response caching is
+principal-scoped, expiry-bound, and limited to context-free informational chat.
+Transactional terms such as booking, availability, price, cancellation,
+payment, and account changes bypass the cache deterministically.
 
 ## 6. Concurrency
 

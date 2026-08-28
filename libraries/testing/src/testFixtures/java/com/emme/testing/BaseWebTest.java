@@ -49,6 +49,7 @@ public abstract class BaseWebTest {
         .jwt(
             j ->
                 j.subject("test-user")
+                    .issuer("https://issuer.example/emme-test")
                     .claim("tenant_id", tenantId.toString())
                     .claim("realm_access", Map.of("roles", List.of("admin"))))
         .authorities(new SimpleGrantedAuthority("admin"));
@@ -60,6 +61,7 @@ public abstract class BaseWebTest {
         .jwt(
             j ->
                 j.subject("test-user")
+                    .issuer("https://issuer.example/emme-test")
                     .claim("tenant_id", tenant.toString())
                     .claim("realm_access", Map.of("roles", List.of(roles))))
         .authorities(

@@ -171,6 +171,14 @@ app:
       minimum-similarity: ${EMME_AI_SEMANTIC_CACHE_MIN_SIMILARITY:0.95}
       ttl: ${EMME_AI_SEMANTIC_CACHE_TTL:5m}
       prompt-version: ${EMME_AI_SEMANTIC_CACHE_PROMPT_VERSION:chat-v1}
+    spring-chat:
+      enabled: ${EMME_SPRING_AI_CHAT_ENABLED:false}
+      # Additional named ChatClient beans can be added by provider modules and
+      # listed here in failover order.
+      providers:
+        - bean-name: ollamaChatClient
+          key: local-ollama
+          model-version: ollama-chat
     spring-embedding:
       enabled: ${EMME_SPRING_AI_EMBEDDING_ENABLED:false}
       # Provider order is explicit. Add another named EmbeddingModel bean for cloud fallback.

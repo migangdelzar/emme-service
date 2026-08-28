@@ -1,5 +1,13 @@
 # Engineering lessons
 
+## 2026-08-27 — Java regex escaping is a test implementation concern
+
+- Failure mode: a migration contract test used regex parentheses with a single
+  backslash, so Java rejected the test source before the intended red state.
+- Detection signal: `illegal escape character` during `compileTestJava`.
+- Prevention rule: keep regex escaping valid in the Java source first, then run
+  the contract test to observe the expected missing-resource failure.
+
 ## 2026-08-27 — Worker-thread tests must evaluate thread state inside the task
 
 - Failure mode: a method reference created from `Thread.currentThread()` observed

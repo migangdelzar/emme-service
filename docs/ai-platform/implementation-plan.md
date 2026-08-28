@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Phases 0 and 2 complete; Phases 1 and 3 implementation in progress |
+| Status | Phases 0, 2, and the initial Phase 4 schema slice complete; Phases 1 and 3–4 implementation in progress |
 | Technical specification | [TSPEC](technical-specification.md) |
 | Requirements | [Requirements](requirements.md) |
 | Verification | [Evaluation specification](evaluation-specification.md) |
@@ -24,7 +24,7 @@
 | 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | In progress |
 | 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Complete |
 | 3 | AI foundation and Spring AI providers | Provider/embedding contract tests | In progress |
-| 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | Not started |
+| 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Not started |
 | 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | Not started |
 | 7 | Design extraction, deterministic quote, HITL | Quote and optimistic-lock tests | Not started |
@@ -88,6 +88,16 @@ immutable embedding vectors, exact model-version and dimension checks, cosine
 ranking, top-1/top-2 margin gating, and backend-authorized candidate filtering.
 It is the shared deterministic core for the future intent, tool, and semantic
 cache adapters; it does not yet persist references or responses.
+
+### Phase 4 progress
+
+The studio tenant-schema changelog now provisions tenant-scoped intent and tool
+reference tables plus a principal-scoped expiring semantic cache. All three
+tables use the existing explicit RLS convention, 1024-dimensional pgvector
+columns, HNSW cosine indexes, and supporting tenant/active/expiry indexes. A
+database-module migration contract test protects the changelog inclusion and
+isolation invariants. JDBC retrieval and cache policy adapters remain the next
+slice.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

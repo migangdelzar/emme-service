@@ -1,5 +1,34 @@
 # Service architecture migration checklist
 
+## Emme AI platform — 2026-08-27
+
+- [x] Establish Java 25 runtime validation and preview compilation lanes.
+- [x] Add immutable ScopedValue AI context and legacy tenant/MDC bridge.
+- [x] Add named virtual/platform executors and StructuredTaskScope Joiner
+      adapter without replacing the global ForkJoinPool.
+- [x] Add deterministic semantic vector matching with model/dimension checks,
+      top-1/top-2 margin gating, and authorized candidate filtering.
+- [x] Add tenant-scoped pgvector intent/tool references and principal-scoped
+      expiring semantic cache schema with RLS and HNSW indexes.
+- [ ] Add typed semantic search/cache ports and tenant-filtered JDBC adapters.
+- [ ] Verify Spring AI 2.x and LangGraph4j dependency compatibility before
+      adding framework integrations.
+- [ ] Add persisted workflow, structured extraction, deterministic quote, and
+      HITL slices.
+
+### Working notes
+
+- Keep the existing unrelated tenancy entity change unstaged.
+- PostgreSQL is authoritative for semantic references and cache entries;
+  Redis remains temporary state/cache/lock/event infrastructure.
+- Cache entries are principal-scoped by design; tenant-only cache reuse is not
+  safe for personalized client or staff responses.
+
+### Results
+
+The initial pgvector schema slice is implemented and covered by
+`database/src/test/java/com/emme/database/AiSemanticSearchMigrationContractTest.java`.
+
 ## Remaining execution gates — 2026-08-05
 
 ### Immediate (code fixes — COMMITTED)

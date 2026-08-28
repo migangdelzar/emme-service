@@ -16,6 +16,7 @@ dependencies {
   implementation(libs.spring.boot.starter.validation)
   implementation(libs.spring.boot.starter.security)
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
+  implementation(libs.spring.ai.model)
   implementation(libs.okhttp)
   implementation(libs.jackson.databind)
   testImplementation(testFixtures(project(":libraries:testing")))

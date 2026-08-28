@@ -15,6 +15,8 @@
       idempotency contract is defined.
 - [x] Verify Spring AI 2.x and LangGraph4j dependency compatibility before
       adding framework integrations.
+- [x] Add the first Spring AI infrastructure adapter behind a provider-neutral
+      embedding port with configured model-version and dimension validation.
 - [ ] Add persisted workflow, structured extraction, deterministic quote, and
       HITL slices.
 
@@ -30,6 +32,11 @@
 
 The initial pgvector schema slice is implemented and covered by
 `database/src/test/java/com/emme/database/AiSemanticSearchMigrationContractTest.java`.
+
+The first concrete Spring AI boundary is implemented in
+`modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/`.
+It is intentionally not wired as a global provider bean yet; provider selection
+and fallback policy will be introduced with the specialized model registry.
 
 ## Remaining execution gates — 2026-08-05
 

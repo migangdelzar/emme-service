@@ -34,6 +34,12 @@ public record AiExecutionContext(
     roles = Set.copyOf(roles);
   }
 
+  /** Returns a context with backend-resolved resource correlation identifiers. */
+  public AiExecutionContext withWorkflow(UUID conversationId, UUID workflowId) {
+    return new AiExecutionContext(
+        tenantId, principalId, roles, conversationId, workflowId, traceId, idempotencyKey);
+  }
+
   private static String requireText(String value, String fieldName) {
     Objects.requireNonNull(value, fieldName + " must not be null");
     if (value.isBlank()) {

@@ -102,6 +102,38 @@ class ReviewQuoteServiceTest {
         .isInstanceOf(com.emme.assistant.ai.domain.workflow.StaleQuoteReviewVersionException.class);
   }
 
+  @Test
+  void resolvesTheWorkflowCorrelationBeforePersistingAReviewFromAnInboundRequest() {
+    ReviewQuoteService service =
+        new ReviewQuoteService(
+            new RecordingReviews(
+                QuoteReviewTask.waiting(
+                    REVIEW_TASK_ID, TENANT_ID, WORKFLOW_ID, java.util.List.of("uncertain"))),
+            new RecordingWorkflows(waitingWorkflow()),
+            new RecordingResumer());
+    UUID inboundCorrelation = UUID.randomUUID();
+    AiExecutionContext inboundContext =
+        new AiExecutionContext(
+            TENANT_ID,
+            STAFF_ID,
+            Set.of("tenant_staff"),
+            inboundCorrelation,
+            inboundCorrelation,
+            "trace-inbound",
+            "review-inbound");
+
+    ReviewQuoteResult result =
+        AiExecutionContextScope.call(
+            inboundContext,
+            () ->
+                service.review(
+                    new ReviewQuoteCommand(
+                        REVIEW_TASK_ID, 0, QuoteReviewDecisionType.APPROVED, null)));
+
+    assertThat(result.workflow().id()).isEqualTo(WORKFLOW_ID);
+    assertThat(result.workflow().state()).isEqualTo(QuoteWorkflowState.STAFF_APPROVED);
+  }
+
   private static QuoteWorkflow waitingWorkflow() {
     return new QuoteWorkflow(
         WORKFLOW_ID,

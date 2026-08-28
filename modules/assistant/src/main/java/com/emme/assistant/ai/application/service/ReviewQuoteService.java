@@ -25,7 +25,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReviewQuoteService implements ReviewQuoteUseCase {
 
   private static final Set<String> STAFF_ROLES =
-      Set.of("tenant_staff", "tenant_owner", "ROLE_STAFF", "ROLE_OWNER", "ROLE_ADMIN", "admin");
+      Set.of(
+          "tenant_staff",
+          "tenant_owner",
+          "ROLE_tenant_staff",
+          "ROLE_tenant_owner",
+          "ROLE_STAFF",
+          "ROLE_OWNER",
+          "ROLE_ADMIN",
+          "ROLE_admin",
+          "admin");
 
   private final QuoteReviewRepository reviews;
   private final QuoteWorkflowRepository workflows;
@@ -52,12 +61,21 @@ public class ReviewQuoteService implements ReviewQuoteUseCase {
         reviews
             .findById(command.reviewTaskId())
             .orElseThrow(() -> new IllegalArgumentException("Quote review task not found"));
-    requireContext(task, context);
+    requireTenant(task, context);
     QuoteWorkflow workflow =
         workflows
             .findById(task.workflowId())
             .orElseThrow(() -> new IllegalArgumentException("Quote workflow not found"));
-    requireContext(workflow, context);
+    requireTenant(workflow, context);
+
+    AiExecutionContext workflowContext =
+        context.withWorkflow(workflow.conversationId(), workflow.id());
+    return AiExecutionContextScope.call(workflowContext, () -> resolve(command, task, workflow));
+  }
+
+  private ReviewQuoteResult resolve(
+      ReviewQuoteCommand command, QuoteReviewTask task, QuoteWorkflow workflow) {
+    AiExecutionContext context = AiExecutionContextScope.requireCurrent();
 
     QuoteReviewTask resolved =
         task.resolve(
@@ -79,21 +97,15 @@ public class ReviewQuoteService implements ReviewQuoteUseCase {
     };
   }
 
-  private static void requireContext(QuoteReviewTask task, AiExecutionContext context) {
+  private static void requireTenant(QuoteReviewTask task, AiExecutionContext context) {
     if (!context.tenantId().equals(task.tenantId())) {
       throw new IllegalArgumentException("tenantId does not match AI execution context");
     }
-    if (!context.workflowId().equals(task.workflowId())) {
-      throw new IllegalArgumentException("workflowId does not match AI execution context");
-    }
   }
 
-  private static void requireContext(QuoteWorkflow workflow, AiExecutionContext context) {
+  private static void requireTenant(QuoteWorkflow workflow, AiExecutionContext context) {
     if (!context.tenantId().equals(workflow.tenantId())) {
       throw new IllegalArgumentException("tenantId does not match AI execution context");
-    }
-    if (!context.workflowId().equals(workflow.id())) {
-      throw new IllegalArgumentException("workflowId does not match AI execution context");
     }
   }
 }

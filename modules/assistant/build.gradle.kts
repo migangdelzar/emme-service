@@ -17,6 +17,7 @@ dependencies {
   implementation(libs.spring.boot.starter.data.redis)
   implementation(libs.spring.boot.starter.validation)
   implementation(libs.spring.boot.starter.security)
+  implementation(libs.spring.boot.starter.oauth2.resource.server)
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
   implementation(libs.spring.ai.model)
   implementation(libs.spring.ai.client.chat)

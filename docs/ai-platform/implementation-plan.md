@@ -27,7 +27,7 @@
 | 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Complete |
 | 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | Not started |
-| 7 | Design extraction, deterministic quote, HITL | Quote and optimistic-lock tests | In progress — persistence and application review contract complete; HTTP/resume adapter pending |
+| 7 | Design extraction, deterministic quote, HITL | Quote, optimistic-lock, endpoint, and resume tests | In progress — durable quote workflow, secured staff review endpoint, and LangGraph resume adapter complete |
 | 8 | Online enrichment and evaluation | Candidate/promotion safety tests | Not started |
 | 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events and workflow metrics foundation complete |
 
@@ -144,9 +144,10 @@ update. `JdbcLangGraphCheckpointSaver` persists tenant/workflow-scoped
 checkpoints in PostgreSQL and `TenantAwareCheckpointSaver` rejects missing or
 mismatched workflow context. JDBC quote workflow, extraction, draft, and
 review adapters plus the optimistic-lock review application service are now
-implemented. The inbound staff endpoint and concrete resume adapter remain
-follow-up work because the current HTTP boundary does not yet carry a trusted
-workflow correlation for review lookup.
+implemented. The secured inbound staff endpoint derives identity from the
+validated JWT and tenant from backend context, then the service resolves
+workflow correlation before saving and resuming the graph. The resume adapter
+is wired only when the quote and LangGraph feature flags are enabled.
 
 Redis status, locking, and live-event adapters are now available behind
 application ports and are disabled by default. The implementation uses Redis

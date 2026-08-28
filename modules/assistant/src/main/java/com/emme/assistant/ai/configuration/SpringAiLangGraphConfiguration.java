@@ -1,10 +1,14 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.adapter.out.workflow.JdbcLangGraphCheckpointSaver;
+import com.emme.assistant.ai.adapter.out.workflow.LangGraphQuoteWorkflowResumeAdapter;
 import com.emme.assistant.ai.adapter.out.workflow.QuoteWorkflowGraph;
 import com.emme.assistant.ai.adapter.out.workflow.TenantAwareCheckpointSaver;
+import com.emme.assistant.ai.application.port.out.QuoteWorkflowResumePort;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.checkpoint.BaseCheckpointSaver;
+import org.bsc.langgraph4j.state.AgentState;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,5 +38,18 @@ public class SpringAiLangGraphConfiguration {
   @ConditionalOnMissingBean
   QuoteWorkflowGraph quoteWorkflowGraph(BaseCheckpointSaver checkpointSaver) {
     return new QuoteWorkflowGraph(checkpointSaver);
+  }
+
+  @Bean(name = "aiQuoteWorkflowCompiledGraph")
+  @ConditionalOnMissingBean(name = "aiQuoteWorkflowCompiledGraph")
+  CompiledGraph<AgentState> quoteWorkflowCompiledGraph(QuoteWorkflowGraph graph) throws Exception {
+    return graph.compile();
+  }
+
+  @Bean
+  @ConditionalOnProperty(prefix = "app.ai.quote", name = "enabled", havingValue = "true")
+  @ConditionalOnMissingBean
+  QuoteWorkflowResumePort quoteWorkflowResumePort(CompiledGraph<AgentState> graph) {
+    return new LangGraphQuoteWorkflowResumeAdapter(graph);
   }
 }

@@ -29,11 +29,11 @@
       validation, provider-native structured output, and secure image-reader
       boundary.
 - [x] Add durable quote artifact adapters and the staff review application
-      contract with optimistic locking; the HTTP adapter and graph resume bean
-      remain a follow-up because inbound workflow context is not yet exposed
-      by the current API boundary.
+      contract with optimistic locking.
 - [x] Add tenant-aware LangGraph4j orchestration and PostgreSQL checkpoint
       adapter with pause/resume coverage.
+- [x] Add the secured staff review HTTP adapter, trusted JWT identity mapping,
+      workflow-correlation rebinding, and concrete LangGraph resume adapter.
 - [x] Add Redis operational-state, compare-and-delete conversation locks, and
       safe live workflow status events behind application ports.
 
@@ -83,10 +83,11 @@ draft lines, and review tasks through tenant-filtered JDBC adapters. Staff
 review is an application use case with role checks, reviewer identity from the
 backend AI context, and optimistic versioning. Workflow persistence correctly
 distinguishes the authenticated actor from the client principal who owns the
-workflow, which is required for staff review. The remaining inbound HTTP work
-must establish a trusted context from the existing security boundary, load the
-workflow before binding its correlation IDs, and then invoke the resume port;
-the client must not supply a tenant or workflow owner.
+workflow, which is required for staff review. The secured inbound HTTP adapter
+derives a PII-free reviewer identity from trusted JWT issuer/subject claims,
+uses the backend tenant context, loads the workflow before rebinding resource
+correlation, and invokes the LangGraph resume port. The client supplies neither
+tenant nor workflow-owner identity.
 
 Redis operational support is now explicitly temporary: workflow status is
 TTL-bound, conversation locks are tenant-scoped and released only by their

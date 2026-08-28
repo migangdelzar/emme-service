@@ -156,9 +156,13 @@ reviewer and the expected task version, then append the decision in the same
 transaction. The workflow owner (`principal_id`) is deliberately distinct from
 the authenticated actor in `AiExecutionContext`: a staff member is authorized
 by the application use case to resolve a client-owned workflow. The inbound
-HTTP review adapter and concrete resume bean remain pending until the existing
-security boundary can establish a trusted workflow correlation before calling
-the application service.
+HTTP review adapter derives a stable PII-free reviewer UUID from the trusted
+JWT issuer/subject, obtains tenant identity from the backend tenant context,
+and requires a correlation ID plus idempotency key. The application service
+loads the review and workflow under tenant predicates before rebinding the
+workflow correlation. The concrete LangGraph resume adapter updates the
+approval gate and invokes the persisted graph thread; rejected reviews remain
+terminal without resuming the graph.
 
 Redis operational state is exposed through `AiOperationalStatePort` and
 `AiLiveEventPublisher`. The implementation is disabled unless

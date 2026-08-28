@@ -81,6 +81,23 @@ class AiExecutionContextTest {
         .hasMessage("No AI execution context");
   }
 
+  @Test
+  void rebindsResourceCorrelationWithoutChangingTheAuthenticatedActor() {
+    AiExecutionContext context = context(Set.of("tenant_staff"));
+    UUID resolvedConversation = UUID.randomUUID();
+    UUID resolvedWorkflow = UUID.randomUUID();
+
+    AiExecutionContext rebound = context.withWorkflow(resolvedConversation, resolvedWorkflow);
+
+    assertThat(rebound.tenantId()).isEqualTo(context.tenantId());
+    assertThat(rebound.principalId()).isEqualTo(context.principalId());
+    assertThat(rebound.roles()).isEqualTo(context.roles());
+    assertThat(rebound.conversationId()).isEqualTo(resolvedConversation);
+    assertThat(rebound.workflowId()).isEqualTo(resolvedWorkflow);
+    assertThat(rebound.traceId()).isEqualTo(context.traceId());
+    assertThat(rebound.idempotencyKey()).isEqualTo(context.idempotencyKey());
+  }
+
   private static final UUID PRINCIPAL_ID = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
   private static final UUID CONVERSATION_ID =
       UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");

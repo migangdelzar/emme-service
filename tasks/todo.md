@@ -34,6 +34,8 @@
       by the current API boundary.
 - [x] Add tenant-aware LangGraph4j orchestration and PostgreSQL checkpoint
       adapter with pause/resume coverage.
+- [x] Add Redis operational-state, compare-and-delete conversation locks, and
+      safe live workflow status events behind application ports.
 
 ### Working notes
 
@@ -85,6 +87,13 @@ workflow, which is required for staff review. The remaining inbound HTTP work
 must establish a trusted context from the existing security boundary, load the
 workflow before binding its correlation IDs, and then invoke the resume port;
 the client must not supply a tenant or workflow owner.
+
+Redis operational support is now explicitly temporary: workflow status is
+TTL-bound, conversation locks are tenant-scoped and released only by their
+owner token, and live events use a tenant/conversation Redis Stream. No Redis
+adapter stores complete conversations, quote decisions, appointments, or
+audit records. The composition root is opt-in through
+`EMME_AI_REDIS_ENABLED=false` by default.
 
 ## Remaining execution gates — 2026-08-05
 

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.assistant.ai.api.command.ProcessDesignQuoteCommand;
 import com.emme.assistant.ai.api.result.QuoteWorkflowResult;
+import com.emme.assistant.ai.application.port.out.AiWorkflowObserver;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractionRejectedException;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
 import com.emme.assistant.ai.application.port.out.QuoteArtifactRepository;
@@ -108,6 +109,24 @@ class ProcessDesignQuoteServiceTest {
     assertThat(workflows.saved.state()).isEqualTo(QuoteWorkflowState.FAILED);
   }
 
+  @Test
+  void recordsAWorkflowOutcomeWithoutAddingTenantOrPrincipalMetricLabels() {
+    RecordingObserver observer = new RecordingObserver();
+    ProcessDesignQuoteService service =
+        service(
+            new RecordingWorkflowRepository(),
+            new RecordingExtractor(features(false, List.of())),
+            new RecordingArtifacts(),
+            observer);
+
+    run(service, new ProcessDesignQuoteCommand("base", "quote", "images/design-1"));
+
+    assertThat(observer.startedType).isEqualTo("DESIGN_QUOTE");
+    assertThat(observer.finishedType).isEqualTo("DESIGN_QUOTE");
+    assertThat(observer.outcome).isEqualTo(QuoteWorkflowState.QUOTE_READY.name());
+    assertThat(observer.duration.isNegative()).isFalse();
+  }
+
   private static ProcessDesignQuoteService service(
       NailDesignExtractor extractor, RecordingArtifacts artifacts) {
     return service(new RecordingWorkflowRepository(), extractor, artifacts);
@@ -117,13 +136,22 @@ class ProcessDesignQuoteServiceTest {
       RecordingWorkflowRepository workflows,
       NailDesignExtractor extractor,
       RecordingArtifacts artifacts) {
+    return service(workflows, extractor, artifacts, new RecordingObserver());
+  }
+
+  private static ProcessDesignQuoteService service(
+      RecordingWorkflowRepository workflows,
+      NailDesignExtractor extractor,
+      RecordingArtifacts artifacts,
+      AiWorkflowObserver observer) {
     return new ProcessDesignQuoteService(
         workflows,
         extractor,
         key -> Optional.of(template()),
         artifacts,
         new DeterministicQuoteCalculator(0.80),
-        () -> UUID.randomUUID());
+        () -> UUID.randomUUID(),
+        observer);
   }
 
   private static QuoteWorkflowResult run(
@@ -246,6 +274,25 @@ class ProcessDesignQuoteServiceTest {
 
     private QuoteReviewTask reviewTask() {
       return reviewTask;
+    }
+  }
+
+  private static final class RecordingObserver implements AiWorkflowObserver {
+    private String startedType;
+    private String finishedType;
+    private String outcome;
+    private java.time.Duration duration;
+
+    @Override
+    public void workflowStarted(String workflowType) {
+      startedType = workflowType;
+    }
+
+    @Override
+    public void workflowFinished(String workflowType, String outcome, java.time.Duration duration) {
+      finishedType = workflowType;
+      this.outcome = outcome;
+      this.duration = duration;
     }
   }
 }

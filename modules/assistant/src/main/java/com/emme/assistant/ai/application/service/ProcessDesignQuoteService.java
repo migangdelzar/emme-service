@@ -2,6 +2,7 @@ package com.emme.assistant.ai.application.service;
 
 import com.emme.assistant.ai.api.command.ProcessDesignQuoteCommand;
 import com.emme.assistant.ai.api.result.QuoteWorkflowResult;
+import com.emme.assistant.ai.application.port.out.AiWorkflowObserver;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractionRejectedException;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
 import com.emme.assistant.ai.application.port.out.QuoteArtifactRepository;
@@ -15,6 +16,8 @@ import com.emme.assistant.ai.domain.workflow.QuoteWorkflow;
 import com.emme.assistant.ai.domain.workflow.QuoteWorkflowState;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,6 +37,7 @@ public class ProcessDesignQuoteService
   private final QuoteArtifactRepository artifacts;
   private final DeterministicQuoteCalculator calculator;
   private final Supplier<UUID> idGenerator;
+  private final AiWorkflowObserver observer;
 
   public ProcessDesignQuoteService(
       QuoteWorkflowRepository workflows,
@@ -41,18 +45,35 @@ public class ProcessDesignQuoteService
       QuoteTemplateRepository templates,
       QuoteArtifactRepository artifacts,
       DeterministicQuoteCalculator calculator,
-      Supplier<UUID> idGenerator) {
+      Supplier<UUID> idGenerator,
+      AiWorkflowObserver observer) {
     this.workflows = Objects.requireNonNull(workflows, "workflows must not be null");
     this.extractor = Objects.requireNonNull(extractor, "extractor must not be null");
     this.templates = Objects.requireNonNull(templates, "templates must not be null");
     this.artifacts = Objects.requireNonNull(artifacts, "artifacts must not be null");
     this.calculator = Objects.requireNonNull(calculator, "calculator must not be null");
     this.idGenerator = Objects.requireNonNull(idGenerator, "idGenerator must not be null");
+    this.observer = Objects.requireNonNull(observer, "observer must not be null");
   }
 
   @Override
   public QuoteWorkflowResult process(ProcessDesignQuoteCommand command) {
     Objects.requireNonNull(command, "command must not be null");
+    Instant startedAt = Instant.now();
+    observer.workflowStarted("DESIGN_QUOTE");
+    try {
+      QuoteWorkflowResult result = processInternal(command);
+      observer.workflowFinished(
+          "DESIGN_QUOTE", result.state().name(), Duration.between(startedAt, Instant.now()));
+      return result;
+    } catch (RuntimeException | Error exception) {
+      observer.workflowFinished(
+          "DESIGN_QUOTE", "FAILED", Duration.between(startedAt, Instant.now()));
+      throw exception;
+    }
+  }
+
+  private QuoteWorkflowResult processInternal(ProcessDesignQuoteCommand command) {
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
     Optional<QuoteWorkflow> existing = workflows.findByIdempotencyKey(context.idempotencyKey());
     if (existing.isPresent()) {

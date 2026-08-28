@@ -13,6 +13,7 @@ import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -128,6 +129,7 @@ class JdbcSemanticAdapterTest {
     verify(statement).param("tenantId", TENANT_ID);
     verify(statement).param("principalId", PRINCIPAL_ID);
     verify(statement).param("writeIdempotencyKey", "cache-write-1");
+    verify(statement).param("expiresAt", Timestamp.from(write.expiresAt()));
   }
 
   @Test

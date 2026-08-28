@@ -2,6 +2,7 @@ package com.emme.assistant.ai.adapter.out.persistence;
 
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -118,7 +119,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .param("embeddingModelVersion", write.query().modelVersion())
         .param("promptVersion", write.promptVersion())
         .param("responsePayload", write.responsePayload())
-        .param("expiresAt", write.expiresAt())
+        .param("expiresAt", Timestamp.from(write.expiresAt()))
         .param("writeIdempotencyKey", write.writeIdempotencyKey())
         .query((resultSet, rowNumber) -> resultSet.getObject("id", UUID.class))
         .single();

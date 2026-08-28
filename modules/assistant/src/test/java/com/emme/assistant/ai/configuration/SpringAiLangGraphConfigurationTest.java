@@ -13,6 +13,7 @@ import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.checkpoint.BaseCheckpointSaver;
 import org.bsc.langgraph4j.state.AgentState;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 class SpringAiLangGraphConfigurationTest {
@@ -39,5 +40,15 @@ class SpringAiLangGraphConfigurationTest {
   @Test
   void providesStableGraphVersionDefaults() {
     assertThat(new LangGraphProperties(false, "").graphVersion()).isEqualTo("quote-v1");
+  }
+
+  @Test
+  void selectsTheTenantAwareCheckpointSaverWhenMultipleSaversAreRegistered() throws Exception {
+    var method =
+        SpringAiLangGraphConfiguration.class.getDeclaredMethod(
+            "quoteWorkflowGraph", BaseCheckpointSaver.class);
+
+    assertThat(method.getParameters()[0].getAnnotation(Qualifier.class).value())
+        .isEqualTo("aiLangGraphCheckpointSaver");
   }
 }

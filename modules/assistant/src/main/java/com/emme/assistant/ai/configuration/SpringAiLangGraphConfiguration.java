@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.checkpoint.BaseCheckpointSaver;
 import org.bsc.langgraph4j.state.AgentState;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -36,7 +37,8 @@ public class SpringAiLangGraphConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  QuoteWorkflowGraph quoteWorkflowGraph(BaseCheckpointSaver checkpointSaver) {
+  QuoteWorkflowGraph quoteWorkflowGraph(
+      @Qualifier("aiLangGraphCheckpointSaver") BaseCheckpointSaver checkpointSaver) {
     return new QuoteWorkflowGraph(checkpointSaver);
   }
 

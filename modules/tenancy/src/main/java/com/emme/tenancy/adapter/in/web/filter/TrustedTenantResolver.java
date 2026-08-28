@@ -1,6 +1,7 @@
 package com.emme.tenancy.adapter.in.web.filter;
 
 import com.emme.tenancy.application.port.out.TenantRepository;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -24,6 +25,53 @@ public final class TrustedTenantResolver {
       return UUID.fromString(tenantClaim);
     } catch (IllegalArgumentException e) {
       return null;
+    }
+  }
+
+  /**
+   * Resolves an authenticated request's tenant and records whether request-supplied selectors must
+   * be ignored. Tenant Keycloak realms are server-controlled tenant boundaries, so a valid token
+   * from one of those realms must never be redirected by an HTTP header, query parameter, or host.
+   */
+  public static AuthenticationTenantResolution fromAuthentication(
+      Authentication authentication, TenantRepository tenantRepository) {
+    if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
+      return AuthenticationTenantResolution.unresolved();
+    }
+
+    String identityRealm =
+        identityRealmFromIssuer(jwt.getIssuer() == null ? null : jwt.getIssuer().toString());
+    if (isTenantRealm(identityRealm)) {
+      Optional<UUID> tenantId =
+          tenantRepository.findByIdentityRealm(identityRealm).map(tenant -> tenant.id());
+      return new AuthenticationTenantResolution(tenantId.orElse(null), true);
+    }
+
+    UUID tenantId = fromAuthentication(authentication);
+    return new AuthenticationTenantResolution(tenantId, tenantId != null);
+  }
+
+  static String identityRealmFromIssuer(String issuer) {
+    if (issuer == null || issuer.isBlank()) return null;
+
+    int realmsIndex = issuer.indexOf("/realms/");
+    if (realmsIndex < 0) return null;
+
+    String realm = issuer.substring(realmsIndex + "/realms/".length());
+    return realm.isBlank() || realm.contains("/") ? null : realm;
+  }
+
+  private static boolean isTenantRealm(String identityRealm) {
+    return identityRealm != null
+        && identityRealm.startsWith("emme-")
+        && !identityRealm.equals("emme-core")
+        && !identityRealm.equals("emme-customers");
+  }
+
+  public record AuthenticationTenantResolution(UUID tenantId, boolean tenantBound) {
+
+    static AuthenticationTenantResolution unresolved() {
+      return new AuthenticationTenantResolution(null, false);
     }
   }
 

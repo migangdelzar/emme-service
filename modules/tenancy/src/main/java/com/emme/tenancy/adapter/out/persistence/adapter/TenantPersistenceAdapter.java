@@ -52,6 +52,11 @@ public final class TenantPersistenceAdapter implements TenantRepository {
   }
 
   @Override
+  public Optional<Tenant> findByIdentityRealm(String identityRealm) {
+    return repository.findByKeycloakRealm(identityRealm).map(mapper::toDomain);
+  }
+
+  @Override
   public List<Tenant> findAll() {
     return repository.findAll().stream().map(mapper::toDomain).toList();
   }

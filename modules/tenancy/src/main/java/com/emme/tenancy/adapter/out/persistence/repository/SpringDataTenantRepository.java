@@ -15,6 +15,8 @@ public interface SpringDataTenantRepository extends JpaRepository<TenantEntity, 
 
   Optional<TenantEntity> findBySlug(String slug);
 
+  Optional<TenantEntity> findByKeycloakRealm(String keycloakRealm);
+
   boolean existsBySlug(String slug);
 
   List<TenantEntity> findByStatus(TenantStatus status);

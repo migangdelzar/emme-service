@@ -17,6 +17,8 @@ public interface TenantRepository {
 
   Optional<Tenant> findBySlug(String slug);
 
+  Optional<Tenant> findByIdentityRealm(String identityRealm);
+
   List<Tenant> findAll();
 
   List<Tenant> findByStatus(TenantStatus status);

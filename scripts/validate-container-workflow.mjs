@@ -31,6 +31,8 @@ const nativeFragments = [
   'BP_NATIVE_IMAGE:',
   'sha-${{ github.sha }}-native',
   "skip-java-setup: 'true'",
+  'node scripts/verify-java25-runtime.mjs',
+  'node scripts/verify-native-image-runtime.mjs',
 ];
 
 for (const fragment of nativeFragments) {

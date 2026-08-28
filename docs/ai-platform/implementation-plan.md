@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft |
+| Status | Phase 0 complete; implementation in progress |
 | Technical specification | [TSPEC](technical-specification.md) |
 | Requirements | [Requirements](requirements.md) |
 | Verification | [Evaluation specification](evaluation-specification.md) |
@@ -20,7 +20,7 @@
 
 | Phase | Scope | Primary tests | Status |
 |---|---|---|---|
-| 0 | Java 25 repository/runtime baseline | Toolchain, CI/config validation | Not started |
+| 0 | Java 25 repository/runtime baseline | Toolchain, CI/config validation | Complete |
 | 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | Not started |
 | 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Not started |
 | 3 | AI foundation and Spring AI providers | Provider/embedding contract tests | Not started |
@@ -38,6 +38,15 @@
 - Add a fail-fast runtime validator.
 - Verify preview compilation and execution.
 - Verify JVM and native-image lanes separately.
+
+### Phase 0 result
+
+The repository now has a dependency-free `scripts/verify-java25-runtime.mjs`
+preflight with unit coverage, explicit `mise run toolchain:jvm` and
+`mise run toolchain:native` lanes, and a Java 25 preflight in backend CI. The
+JVM lane was verified locally with Java 25.0.2 and Gradle 9.4.1. The native
+lane remains an explicit build command because it requires a GraalVM Native
+Image toolchain and is not part of the default JVM checks.
 
 ## 4. Phase 1–2 — Concurrency
 

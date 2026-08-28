@@ -47,6 +47,8 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: '20'
+      - name: Validate Java 25 runtime
+        run: node scripts/verify-java25-runtime.mjs
       - name: Validate documentation
         run: node scripts/validate-markdown.mjs
       - name: Validate container workflow contract

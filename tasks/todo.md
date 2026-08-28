@@ -2228,8 +2228,8 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - [x] Create draft PRD, requirements, NFRs, functional specification, TSPEC,
       data model, evaluation specification, runbook, ADRs, FCRs, and phased
       implementation plan.
-- [ ] Review and approve the complete documentation set.
-- [ ] Implement Phase 0 Java 25 baseline using TDD.
+- [x] Review and approve the complete documentation set.
+- [x] Implement Phase 0 Java 25 baseline using TDD.
 - [ ] Implement Phase 1–2 concurrency foundation using TDD.
 - [ ] Implement the AI foundation, semantic capabilities, workflow, HITL,
       evaluation, and operational phases incrementally.
@@ -2238,8 +2238,12 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 
 - The current worktree contains an unrelated unstaged tenancy edit; it must not
   be staged with AI documentation or implementation changes.
-- Java 25 is declared in the repository, but the local shell previously ran
-  Java 17; runtime validation remains a Phase 0 task.
+- Java 25 is declared in the repository and `mise run toolchain:jvm` now
+  validates the selected runtime. A shell with Java 17 still fails fast with an
+  actionable message when the validator is invoked directly.
+- The explicit native lane correctly stops before Gradle when the selected JDK
+  does not provide `native-image`; GraalVM Native Image 25 remains a host/CI
+  prerequisite for that lane.
 - `StructuredTaskScope` and `Joiner` are Java 25 preview APIs and must remain
   behind a stable Emme abstraction.
 - The current Redis deployment is plain `redis:7-alpine`; PostgreSQL/pgvector

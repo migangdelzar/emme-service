@@ -8,6 +8,7 @@ const requiredFragments = [
   'coverageCheck',
   'boundaries:',
   'e2eTest',
+  'node scripts/verify-java25-runtime.mjs',
   'needs: [quality, test, integration, build-logic, infrastructure, boundaries]',
   'if: always()',
 ];

@@ -23,3 +23,11 @@ documentation and release checks
 - Compile/test/JavaExec preview flags are consistent.
 - JVM and native-image tracks are explicitly distinguished.
 - Legacy active Java 17/21 configuration is removed or marked historical.
+
+## Current implementation evidence
+
+- `scripts/verify-java25-runtime.mjs` fails fast for a runtime below Java 25.
+- `mise run toolchain:jvm` validates the local JVM and Gradle runtime lane.
+- `mise run toolchain:native` exposes the explicit native-image lane without
+  changing the default JVM build.
+- Backend CI runs the same runtime validator after installing Temurin Java 25.

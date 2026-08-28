@@ -7,14 +7,17 @@
 
 ## 1. Startup checks
 
-1. Verify Java 25 with `java --version` and `./gradlew --version`.
-2. Verify preview flags for JVM processes using `StructuredTaskScope`.
-3. Verify PostgreSQL and pgvector migrations.
-4. Verify Redis health and keyspace policy.
-5. Verify configured local providers and cloud opt-in policy.
-6. Verify OpenTelemetry agent on JVM deployments.
-7. Verify active embedding model/version matches vector indexes.
-8. Verify workflow checkpoint schema and outbox publication.
+1. Run `mise run toolchain:jvm`; it verifies the selected Java executable and
+   reports the Gradle launcher and daemon JVM versions.
+2. Use `mise run toolchain:native` only on a host with the approved GraalVM
+   Native Image toolchain.
+3. Verify preview flags for JVM processes using `StructuredTaskScope`.
+4. Verify PostgreSQL and pgvector migrations.
+5. Verify Redis health and keyspace policy.
+6. Verify configured local providers and cloud opt-in policy.
+7. Verify OpenTelemetry agent on JVM deployments.
+8. Verify active embedding model/version matches vector indexes.
+9. Verify workflow checkpoint schema and outbox publication.
 
 ## 2. Dashboards
 

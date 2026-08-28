@@ -5,6 +5,14 @@ python = "3.13"
 [env]
 _.source = "scripts/mise/env.sh"
 
+[tasks."toolchain:jvm"]
+description = "Verify the Java 25 JVM and Gradle runtime lane"
+run = "node scripts/verify-java25-runtime.mjs && ./gradlew --version --no-daemon --no-configuration-cache"
+
+[tasks."toolchain:native"]
+description = "Verify the Java 25 native-image build lane"
+run = "node scripts/verify-java25-runtime.mjs && node scripts/verify-native-image-runtime.mjs && ./gradlew :applications:emme-platform:nativeCompile -Pemme.native-image=true --no-daemon --no-configuration-cache"
+
 [tasks.compile]
 description = "Compile the backend"
 run = "./gradlew compileJava --no-configuration-cache"

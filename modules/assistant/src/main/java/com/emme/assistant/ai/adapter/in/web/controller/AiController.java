@@ -7,14 +7,21 @@ import com.emme.assistant.ai.adapter.in.web.request.IntentRequest;
 import com.emme.assistant.ai.adapter.in.web.request.RagRequest;
 import com.emme.assistant.ai.adapter.in.web.response.ChatResponse;
 import com.emme.assistant.ai.adapter.in.web.response.RagResponse;
+import com.emme.assistant.ai.adapter.in.web.security.AiWebExecutionContextFactory;
 import com.emme.assistant.ai.api.result.IntentResult;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.ai.api.usecase.DetectIntentUseCase;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
+import com.emme.kernel.context.AiExecutionContextScope;
+import com.emme.kernel.tracing.CorrelationId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,12 +35,17 @@ public class AiController {
   private final ChatUseCase chatUseCase;
   private final DetectIntentUseCase detectIntent;
   private final RagQueryUseCase ragQuery;
+  private final AiWebExecutionContextFactory contextFactory;
 
   public AiController(
-      ChatUseCase chatUseCase, DetectIntentUseCase detectIntent, RagQueryUseCase ragQuery) {
+      ChatUseCase chatUseCase,
+      DetectIntentUseCase detectIntent,
+      RagQueryUseCase ragQuery,
+      AiWebExecutionContextFactory contextFactory) {
     this.chatUseCase = chatUseCase;
     this.detectIntent = detectIntent;
     this.ragQuery = ragQuery;
+    this.contextFactory = contextFactory;
   }
 
   @PostMapping("/chat")
@@ -50,8 +62,26 @@ public class AiController {
   @PostMapping("/intent")
   @Operation(summary = "Detect intent from user message")
   @PreAuthorize("@featureFlagService.isEnabled('ai_chat')")
-  public ResponseEntity<IntentResult> detectIntent(@RequestBody IntentRequest request) {
-    IntentResult result = detectIntent.detect(request.message());
+  public ResponseEntity<IntentResult> detectIntent(
+      @RequestBody IntentRequest request,
+      @AuthenticationPrincipal Jwt jwt,
+      Authentication authentication) {
+    String traceId = CorrelationId.get();
+    if (traceId == null || traceId.isBlank()) {
+      throw new IllegalStateException("Correlation ID is required for AI intent detection");
+    }
+    Jwt authenticatedJwt = Objects.requireNonNull(jwt, "Authenticated JWT is required");
+    Authentication authenticatedPrincipal =
+        Objects.requireNonNull(authentication, "Authenticated principal is required");
+    var context =
+        contextFactory.forReadOnly(
+            traceId,
+            Objects.requireNonNull(authenticatedJwt.getIssuer(), "JWT issuer is required")
+                .toString(),
+            authenticatedJwt.getSubject(),
+            authenticatedPrincipal.getAuthorities());
+    IntentResult result =
+        AiExecutionContextScope.call(context, () -> detectIntent.detect(request.message()));
     return ResponseEntity.ok(result);
   }
 

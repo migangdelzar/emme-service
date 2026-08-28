@@ -59,4 +59,33 @@ class AiWebExecutionContextFactoryTest {
 
     assertThat(context.tenantId()).isEqualTo(trustedTenant);
   }
+
+  @Test
+  void createsAStableEphemeralReadOnlyCorrelationFromTheBackendTrace() {
+    AiWebExecutionContextFactory factory = new AiWebExecutionContextFactory();
+    UUID tenantId = UUID.randomUUID();
+
+    AiExecutionContext first =
+        TenantContextHolder.withTenantOverride(
+            tenantId,
+            () ->
+                factory.forReadOnly(
+                    "trace-read-1",
+                    "https://issuer",
+                    "auth0|client-1",
+                    List.of(new SimpleGrantedAuthority("ROLE_tenant_client"))));
+    AiExecutionContext second =
+        TenantContextHolder.withTenantOverride(
+            tenantId,
+            () ->
+                factory.forReadOnly(
+                    "trace-read-1",
+                    "https://issuer",
+                    "auth0|client-1",
+                    List.of(new SimpleGrantedAuthority("ROLE_tenant_client"))));
+
+    assertThat(first.conversationId()).isEqualTo(second.conversationId());
+    assertThat(first.workflowId()).isEqualTo(first.conversationId());
+    assertThat(first.idempotencyKey()).isEqualTo("trace-read-1");
+  }
 }

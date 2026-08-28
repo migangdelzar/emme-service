@@ -21,8 +21,12 @@
       explicit provider-unavailable failure.
 - [x] Add opt-in Spring AI Ollama configuration and an ordered named-provider
       registry backed by the application embedding port.
-- [ ] Add persisted workflow, structured extraction, deterministic quote, and
-      HITL slices.
+- [x] Add the persisted quote-workflow schema, strict extraction contract,
+      deterministic quote calculator, and optimistic-lock HITL domain slice.
+- [x] Add the provider-neutral design-quote application use case with
+      idempotency and a durable artifact port.
+- [ ] Add the real Spring AI structured extraction adapter and durable artifact
+      adapters.
 
 ### Working notes
 
@@ -53,6 +57,14 @@ and propagates invalid-vector/application failures without masking them.
 Semantic-cache writes now use a tenant/principal-scoped idempotency key. Cache
 hits are atomically accounted for in PostgreSQL and a response is returned only
 when the durable hit update confirms the entry is still active and unexpired.
+
+The quote vertical slice now persists the workflow lifecycle contract in the
+studio schema, validates closed-world nail-design attributes, calculates ranges
+only from a versioned tenant template, and creates a first-class review task
+when uncertainty remains. The application use case requires the backend AI
+execution context and returns an existing workflow for a repeated idempotency
+key. Spring AI extraction and PostgreSQL artifact adapters are intentionally
+the next slice.
 
 ## Remaining execution gates — 2026-08-05
 

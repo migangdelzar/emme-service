@@ -27,7 +27,7 @@
 | 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Not started |
 | 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | Not started |
-| 7 | Design extraction, deterministic quote, HITL | Quote and optimistic-lock tests | Not started |
+| 7 | Design extraction, deterministic quote, HITL | Quote and optimistic-lock tests | In progress |
 | 8 | Online enrichment and evaluation | Candidate/promotion safety tests | Not started |
 | 9 | Channels, operations, and hardening | E2E, failure, and observability tests | Not started |
 
@@ -125,6 +125,19 @@ hits are atomically accounted for in PostgreSQL. The resolver abstains when the
 durable hit update cannot confirm that the entry is still active and unexpired.
 Real pgvector PostgreSQL integration coverage remains a follow-up because the
 current repository test image does not yet include the pgvector extension.
+
+### Quote vertical-slice progress
+
+The assistant now contains a framework-independent `NailDesignFeatures`
+extraction contract with closed enums, bounded confidence, and ambiguity
+reasons. `DeterministicQuoteCalculator` evaluates only immutable, versioned
+tenant template lines and emits a candidate range plus review reasons; model
+output cannot supply a price. `ProcessDesignQuoteService` binds these rules to
+the backend `AiExecutionContext`, uses the durable idempotency lookup, persists
+extraction/draft/review artifacts through ports, and pauses at
+`WAITING_FOR_STAFF` when the calculation is not safe to send. A Spring AI
+structured-output adapter and concrete artifact/checkpoint persistence remain
+unimplemented.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

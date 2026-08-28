@@ -9,6 +9,17 @@
 - Prevention rule: use a lambda that calls `Thread.currentThread()` inside the
   submitted task whenever a test asserts worker identity, name, or kind.
 
+## 2026-08-27 — Verify preview API generic return types before adapter coding
+
+- Failure mode: the initial StructuredTaskScope adapter assumed `awaitAll()`
+  returned subtasks, while Java 25 returns `Void`; it also modeled record
+  accessors as `Optional` values with incompatible component return types.
+- Detection signal: the Java compiler reported generic-bound and invalid-record-
+  accessor errors before any runtime test was attempted.
+- Prevention rule: inspect the selected JDK’s generic signatures and keep record
+  component accessors raw; expose optional views through differently named methods
+  when needed.
+
 ## 2026-08-05 — Confirm the owning repository before deployment changes
 
 - Failure mode: deployment design work was started in `emme-modulith` even

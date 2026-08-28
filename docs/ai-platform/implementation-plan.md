@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Phase 0 complete; implementation in progress |
+| Status | Phases 0 and 2 complete; Phase 1 implementation in progress |
 | Technical specification | [TSPEC](technical-specification.md) |
 | Requirements | [Requirements](requirements.md) |
 | Verification | [Evaluation specification](evaluation-specification.md) |
@@ -21,8 +21,8 @@
 | Phase | Scope | Primary tests | Status |
 |---|---|---|---|
 | 0 | Java 25 repository/runtime baseline | Toolchain, CI/config validation | Complete |
-| 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | Not started |
-| 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Not started |
+| 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | In progress |
+| 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Complete |
 | 3 | AI foundation and Spring AI providers | Provider/embedding contract tests | Not started |
 | 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | Not started |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Not started |
@@ -57,6 +57,16 @@ Image toolchain and is not part of the default JVM checks.
 - Add `ParallelTaskRunner` and StructuredTaskScope implementation.
 - Add Joiner policies for required, optional, and first-success operations.
 - Test cancellation, deadline, exception propagation, and context integrity.
+
+### Concurrency progress
+
+The kernel now contains the stable `ParallelTaskRunner` port, deadline and
+outcome types, and a Java 25 `StructuredTaskScope` adapter using
+`allSuccessfulOrThrow`, `awaitAll`, and `anySuccessfulResultOrThrow`. Its tests
+cover ordered required work, optional failures, first-success cancellation,
+deadline cancellation, fatal-error propagation, and ScopedValue inheritance.
+Phase 1 remains in progress until the compatibility bridge and tenant/provider
+backpressure limits are implemented.
 
 ## 5. Phase 3–4 — AI and vector foundation
 

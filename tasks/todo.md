@@ -2232,6 +2232,8 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - [x] Implement Phase 0 Java 25 baseline using TDD.
 - [x] Add named AI executors: virtual-thread I/O, bounded platform pools, and
       scheduled maintenance with validated configuration.
+- [x] Add the stable `ParallelTaskRunner` port and Java 25 structured runner
+      with required, optional, and first-success Joiner policies.
 - [ ] Implement Phase 1–2 concurrency foundation using TDD.
 - [ ] Implement the AI foundation, semantic capabilities, workflow, HITL,
       evaluation, and operational phases incrementally.

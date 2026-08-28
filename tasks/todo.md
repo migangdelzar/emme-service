@@ -2230,6 +2230,8 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
       implementation plan.
 - [x] Review and approve the complete documentation set.
 - [x] Implement Phase 0 Java 25 baseline using TDD.
+- [x] Add named AI executors: virtual-thread I/O, bounded platform pools, and
+      scheduled maintenance with validated configuration.
 - [ ] Implement Phase 1–2 concurrency foundation using TDD.
 - [ ] Implement the AI foundation, semantic capabilities, workflow, HITL,
       evaluation, and operational phases incrementally.

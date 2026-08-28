@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-08-27 — Worker-thread tests must evaluate thread state inside the task
+
+- Failure mode: a method reference created from `Thread.currentThread()` observed
+  the submitting test thread instead of the executor worker thread.
+- Detection signal: executor tests reported `Test worker` and platform-thread
+  state even though the configured factories were correct.
+- Prevention rule: use a lambda that calls `Thread.currentThread()` inside the
+  submitted task whenever a test asserts worker identity, name, or kind.
+
 ## 2026-08-05 — Confirm the owning repository before deployment changes
 
 - Failure mode: deployment design work was started in `emme-modulith` even

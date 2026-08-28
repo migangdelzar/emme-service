@@ -178,6 +178,8 @@ app:
       graph-version: ${EMME_AI_LANGGRAPH_GRAPH_VERSION:quote-v1}
     quote:
       enabled: ${EMME_AI_QUOTE_ENABLED:false}
+    redis:
+      enabled: ${EMME_AI_REDIS_ENABLED:false}
   whatsapp:
     verify-token: ${WHATSAPP_VERIFY_TOKEN:}
     app-secret: ${WHATSAPP_APP_SECRET:}

@@ -160,6 +160,15 @@ HTTP review adapter and concrete resume bean remain pending until the existing
 security boundary can establish a trusted workflow correlation before calling
 the application service.
 
+Redis operational state is exposed through `AiOperationalStatePort` and
+`AiLiveEventPublisher`. The implementation is disabled unless
+`app.ai.redis.enabled=true` and a `StringRedisTemplate` exists. Keys include
+the backend-resolved tenant and workflow/conversation identity. Workflow
+status is TTL-bound, lock release uses a compare-and-delete Lua script, and
+live events contain only bounded status fields suitable for SSE/WebSocket
+delivery. Redis is not used for durable history, quote artifacts, workflow
+decisions, appointments, or audit logs.
+
 ## 6. Concurrency
 
 ```text

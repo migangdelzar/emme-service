@@ -29,7 +29,7 @@
 | 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | Not started |
 | 7 | Design extraction, deterministic quote, HITL | Quote and optimistic-lock tests | In progress — persistence and application review contract complete; HTTP/resume adapter pending |
 | 8 | Online enrichment and evaluation | Candidate/promotion safety tests | Not started |
-| 9 | Channels, operations, and hardening | E2E, failure, and observability tests | Not started |
+| 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events and workflow metrics foundation complete |
 
 ## 3. Phase 0 — Java 25
 
@@ -147,6 +147,13 @@ review adapters plus the optimistic-lock review application service are now
 implemented. The inbound staff endpoint and concrete resume adapter remain
 follow-up work because the current HTTP boundary does not yet carry a trusted
 workflow correlation for review lookup.
+
+Redis status, locking, and live-event adapters are now available behind
+application ports and are disabled by default. The implementation uses Redis
+only for temporary operational state; PostgreSQL remains authoritative for all
+business and workflow records. Micrometer workflow counters and duration
+histograms are emitted without tenant, principal, conversation, or workflow ID
+labels to avoid high-cardinality metric series.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

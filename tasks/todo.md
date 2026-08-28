@@ -28,7 +28,10 @@
 - [x] Add the Spring AI structured extraction adapter with typed schema
       validation, provider-native structured output, and secure image-reader
       boundary.
-- [ ] Add durable artifact adapters and staff review endpoints.
+- [x] Add durable quote artifact adapters and the staff review application
+      contract with optimistic locking; the HTTP adapter and graph resume bean
+      remain a follow-up because inbound workflow context is not yet exposed
+      by the current API boundary.
 - [x] Add tenant-aware LangGraph4j orchestration and PostgreSQL checkpoint
       adapter with pause/resume coverage.
 
@@ -72,6 +75,16 @@ implemented behind typed ports. The LangGraph4j graph now has explicit quote
 states, conditional approval routing, interrupt/resume behavior, and a
 tenant-aware PostgreSQL checkpoint adapter. Checkpoint reads and writes require
 the backend workflow context and persist the next node needed for resume.
+
+The durable quote slice now also persists extraction metadata, deterministic
+draft lines, and review tasks through tenant-filtered JDBC adapters. Staff
+review is an application use case with role checks, reviewer identity from the
+backend AI context, and optimistic versioning. Workflow persistence correctly
+distinguishes the authenticated actor from the client principal who owns the
+workflow, which is required for staff review. The remaining inbound HTTP work
+must establish a trusted context from the existing security boundary, load the
+workflow before binding its correlation IDs, and then invoke the resume port;
+the client must not supply a tenant or workflow owner.
 
 ## Remaining execution gates — 2026-08-05
 

@@ -149,6 +149,17 @@ LangGraph thread ID must equal its workflow ID. The stock LangGraph4j
 PostgreSQL saver is not the source of truth because its documented in-memory
 cache can return stale state across instances; PostgreSQL remains authoritative.
 
+The quote persistence slice includes JDBC adapters for workflow runs,
+extraction results, quote drafts, and review tasks. All queries include the
+authenticated tenant predicate. Review writes require the authenticated
+reviewer and the expected task version, then append the decision in the same
+transaction. The workflow owner (`principal_id`) is deliberately distinct from
+the authenticated actor in `AiExecutionContext`: a staff member is authorized
+by the application use case to resolve a client-owned workflow. The inbound
+HTTP review adapter and concrete resume bean remain pending until the existing
+security boundary can establish a trusted workflow correlation before calling
+the application service.
+
 ## 6. Concurrency
 
 ```text

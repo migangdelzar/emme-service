@@ -211,6 +211,11 @@ class ProcessDesignQuoteServiceTest {
     }
 
     @Override
+    public Optional<QuoteWorkflow> findById(UUID workflowId) {
+      return saved != null && saved.id().equals(workflowId) ? Optional.of(saved) : Optional.empty();
+    }
+
+    @Override
     public QuoteWorkflow save(QuoteWorkflow workflow) {
       saved = workflow;
       return workflow;

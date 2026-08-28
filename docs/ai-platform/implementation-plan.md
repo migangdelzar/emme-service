@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Phases 0, 2, and the initial Phase 4 semantic slice complete; Phases 1 and 3–4 implementation in progress |
+| Status | Phases 0, 1, 2, and 5 plus the initial Phase 4 semantic and Phase 7 quote slices complete; remaining platform phases are in progress |
 | Technical specification | [TSPEC](technical-specification.md) |
 | Requirements | [Requirements](requirements.md) |
 | Verification | [Evaluation specification](evaluation-specification.md) |
@@ -21,13 +21,13 @@
 | Phase | Scope | Primary tests | Status |
 |---|---|---|---|
 | 0 | Java 25 repository/runtime baseline | Toolchain, CI/config validation | Complete |
-| 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | In progress |
+| 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | Complete |
 | 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Complete |
 | 3 | AI foundation and Spring AI providers | Provider/embedding contract tests | In progress |
 | 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress |
-| 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Not started |
+| 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Complete |
 | 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | Not started |
-| 7 | Design extraction, deterministic quote, HITL | Quote and optimistic-lock tests | In progress |
+| 7 | Design extraction, deterministic quote, HITL | Quote and optimistic-lock tests | In progress — persistence and application review contract complete; HTTP/resume adapter pending |
 | 8 | Online enrichment and evaluation | Candidate/promotion safety tests | Not started |
 | 9 | Channels, operations, and hardening | E2E, failure, and observability tests | Not started |
 
@@ -142,8 +142,11 @@ now models the quote route as explicit conditional nodes, interrupts after
 `wait_for_staff`, and resumes through the approval gate after a staff state
 update. `JdbcLangGraphCheckpointSaver` persists tenant/workflow-scoped
 checkpoints in PostgreSQL and `TenantAwareCheckpointSaver` rejects missing or
-mismatched workflow context. Durable quote artifact adapters and the staff
-resume endpoint remain follow-up work.
+mismatched workflow context. JDBC quote workflow, extraction, draft, and
+review adapters plus the optimistic-lock review application service are now
+implemented. The inbound staff endpoint and concrete resume adapter remain
+follow-up work because the current HTTP boundary does not yet carry a trusted
+workflow correlation for review lookup.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

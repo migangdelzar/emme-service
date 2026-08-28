@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /** Opt-in version metadata for the Spring AI structured extraction client. */
 @ConfigurationProperties("app.ai.spring-extraction")
 public record SpringAiExtractionProperties(
-  boolean enabled, String modelVersion, String promptVersion, String schemaVersion) {
+    boolean enabled, String modelVersion, String promptVersion, String schemaVersion) {
 
   public SpringAiExtractionProperties {
     modelVersion = modelVersion == null ? "ollama-gemma3-vision" : modelVersion;

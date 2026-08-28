@@ -138,6 +138,15 @@ dimension; extraction traces persist structured-operation metadata and never
 include image bytes. Failover remains provider-level and tracing remains best
 effort.
 
+Verification on 2026-08-28: `:modules:assistant:spotlessCheck :modules:assistant:test`,
+`:database:spotlessCheck :database:test`, and
+`:applications:emme-platform:compileJava` pass. The full
+`:applications:emme-platform:test` suite reports three pre-existing unrelated
+failures: `GetCurrentUserService` lacks the repository's transaction-policy
+annotation, one subscriptions consumer package lacks `package-info.java`, and
+Modulith reports existing tenancy→shared and subscriptions→tenancy violations.
+The unrelated tenancy entity edit remains unstaged.
+
 ## Remaining execution gates — 2026-08-05
 
 ### Immediate (code fixes — COMMITTED)

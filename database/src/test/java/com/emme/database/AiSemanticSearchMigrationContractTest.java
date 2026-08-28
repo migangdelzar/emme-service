@@ -13,6 +13,8 @@ class AiSemanticSearchMigrationContractTest {
 
   private static final String MIGRATION =
       "db/emme-studio/releases/0.1.0/014-ai-semantic-search.sql";
+  private static final String IDEMPOTENCY_MIGRATION =
+      "db/emme-studio/releases/0.1.0/015-ai-semantic-cache-idempotency.sql";
 
   @Test
   void definesTenantScopedIntentAndToolReferenceTables() throws IOException {
@@ -63,6 +65,16 @@ class AiSemanticSearchMigrationContractTest {
     String changelog = resource("db/emme-studio/changelog.yaml");
 
     assertThat(changelog).contains("releases/0.1.0/014-ai-semantic-search.sql");
+    assertThat(changelog).contains("releases/0.1.0/015-ai-semantic-cache-idempotency.sql");
+  }
+
+  @Test
+  void addsAnIdempotencyKeyForDurableCacheWrites() throws IOException {
+    String sql = resource(IDEMPOTENCY_MIGRATION);
+
+    assertThat(sql).contains("ADD COLUMN IF NOT EXISTS write_idempotency_key VARCHAR(160)");
+    assertThat(sql).contains("ALTER COLUMN write_idempotency_key SET NOT NULL");
+    assertThat(sql).contains("idx_ai_cache_write_idempotency");
   }
 
   private static String migration() throws IOException {

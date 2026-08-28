@@ -41,3 +41,6 @@ databaseChangeLog:
   - include:
       file: releases/0.1.0/014-ai-semantic-search.sql
       relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/015-ai-semantic-cache-idempotency.sql
+      relativeToChangelogFile: true

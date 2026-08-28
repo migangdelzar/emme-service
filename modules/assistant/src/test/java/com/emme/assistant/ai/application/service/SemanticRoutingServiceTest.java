@@ -67,6 +67,7 @@ class SemanticRoutingServiceTest {
     assertThat(hit.orElseThrow().responsePayload()).isEqualTo("cached answer");
     assertThat(cache.lookup)
         .isEqualTo(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY));
+    assertThat(cache.hitId()).isEqualTo(hit.orElseThrow().id());
   }
 
   @Test
@@ -74,6 +75,20 @@ class SemanticRoutingServiceTest {
     RecordingCache cache =
         new RecordingCache(
             List.of(new SemanticCachePort.Candidate(UUID.randomUUID(), "stale answer", 0.94)));
+    SemanticCacheResolver resolver =
+        new SemanticCacheResolver(cache, new SemanticCachePolicy(0.95));
+
+    assertThat(
+            resolver.lookup(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY)))
+        .isEmpty();
+  }
+
+  @Test
+  void cacheAbstainsWhenTheDurableHitUpdateCannotConfirmTheEntryIsStillValid() {
+    RecordingCache cache =
+        new RecordingCache(
+            List.of(new SemanticCachePort.Candidate(UUID.randomUUID(), "expired answer", 0.99)));
+    cache.recordHitResult = false;
     SemanticCacheResolver resolver =
         new SemanticCacheResolver(cache, new SemanticCachePolicy(0.95));
 
@@ -108,6 +123,8 @@ class SemanticRoutingServiceTest {
   private static final class RecordingCache implements SemanticCachePort {
     private final List<Candidate> candidates;
     private Lookup lookup;
+    private UUID hitId;
+    private boolean recordHitResult = true;
 
     private RecordingCache(List<Candidate> candidates) {
       this.candidates = candidates;
@@ -117,6 +134,21 @@ class SemanticRoutingServiceTest {
     public List<Candidate> find(Lookup lookup, int limit) {
       this.lookup = lookup;
       return candidates;
+    }
+
+    @Override
+    public UUID put(Put write) {
+      return UUID.randomUUID();
+    }
+
+    @Override
+    public boolean recordHit(UUID candidateId) {
+      hitId = candidateId;
+      return recordHitResult;
+    }
+
+    private UUID hitId() {
+      return hitId;
     }
   }
 }

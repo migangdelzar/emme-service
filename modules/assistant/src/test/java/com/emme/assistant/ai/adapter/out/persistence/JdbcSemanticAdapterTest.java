@@ -12,6 +12,7 @@ import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.service.EmbeddingVector;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -94,6 +95,66 @@ class JdbcSemanticAdapterTest {
         .contains("expires_at > CURRENT_TIMESTAMP");
     verify(statement).param("tenantId", TENANT_ID);
     verify(statement).param("principalId", PRINCIPAL_ID);
+  }
+
+  @Test
+  void cacheWriteUsesAuthenticatedScopeAndAnIdempotencyKey() throws Exception {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    JdbcClient.MappedQuerySpec<UUID> result = mock(JdbcClient.MappedQuerySpec.class);
+    stubQuery(jdbc, statement, result);
+    when(result.single()).thenReturn(UUID.randomUUID());
+    JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc);
+
+    SemanticCachePort.Put write =
+        new SemanticCachePort.Put(
+            "FAQ",
+            "What are your hours?",
+            "catalog-v4",
+            "prompt-v2",
+            "{\"answer\":\"We are open\"}",
+            Instant.parse("2030-01-01T00:00:00Z"),
+            QUERY,
+            "cache-write-1");
+
+    AiExecutionContextScope.call(context(), () -> adapter.put(write));
+
+    ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+    verify(jdbc).sql(sql.capture());
+    assertThat(sql.getValue())
+        .contains("INSERT INTO ai_semantic_cache")
+        .contains("write_idempotency_key")
+        .contains("ON CONFLICT (tenant_id, principal_id, write_idempotency_key)")
+        .contains("RETURNING id");
+    verify(statement).param("tenantId", TENANT_ID);
+    verify(statement).param("principalId", PRINCIPAL_ID);
+    verify(statement).param("writeIdempotencyKey", "cache-write-1");
+  }
+
+  @Test
+  void cacheHitUpdateIsTenantAndPrincipalScoped() throws Exception {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    when(jdbc.sql(anyString())).thenReturn(statement);
+    when(statement.param(anyString(), any())).thenReturn(statement);
+    when(statement.update()).thenReturn(1);
+    JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc);
+    UUID cacheId = UUID.randomUUID();
+
+    boolean updated = AiExecutionContextScope.call(context(), () -> adapter.recordHit(cacheId));
+
+    assertThat(updated).isTrue();
+    ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+    verify(jdbc).sql(sql.capture());
+    assertThat(sql.getValue())
+        .contains("UPDATE ai_semantic_cache")
+        .contains("tenant_id = :tenantId")
+        .contains("principal_id = :principalId")
+        .contains("hit_count = hit_count + 1")
+        .contains("expires_at > CURRENT_TIMESTAMP");
+    verify(statement).param("tenantId", TENANT_ID);
+    verify(statement).param("principalId", PRINCIPAL_ID);
+    verify(statement).param("cacheId", cacheId);
   }
 
   @Test

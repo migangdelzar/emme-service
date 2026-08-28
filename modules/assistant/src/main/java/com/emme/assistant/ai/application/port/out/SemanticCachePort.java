@@ -1,7 +1,9 @@
 package com.emme.assistant.ai.application.port.out;
 
 import com.emme.assistant.ai.application.service.EmbeddingVector;
+import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /** Durable, principal-scoped semantic-cache boundary. Implementations own tenant resolution. */
@@ -9,6 +11,12 @@ public interface SemanticCachePort {
 
   /** Finds active, unexpired candidates for one cache context. */
   List<Candidate> find(Lookup lookup, int limit);
+
+  /** Persists a cache response and returns the durable row id for the idempotency key. */
+  UUID put(Put write);
+
+  /** Atomically increments the durable hit counter for an active, unexpired cache row. */
+  boolean recordHit(UUID cacheId);
 
   record Lookup(
       String cacheKind, String contextFingerprint, String promptVersion, EmbeddingVector query) {
@@ -33,6 +41,28 @@ public interface SemanticCachePort {
       if (!Double.isFinite(similarity) || similarity < -1.0 || similarity > 1.0) {
         throw new IllegalArgumentException("similarity must be between -1 and 1");
       }
+    }
+  }
+
+  record Put(
+      String cacheKind,
+      String queryText,
+      String contextFingerprint,
+      String promptVersion,
+      String responsePayload,
+      Instant expiresAt,
+      EmbeddingVector query,
+      String writeIdempotencyKey) {
+
+    public Put {
+      requireText(cacheKind, "cacheKind");
+      requireText(queryText, "queryText");
+      requireText(contextFingerprint, "contextFingerprint");
+      requireText(promptVersion, "promptVersion");
+      requireText(responsePayload, "responsePayload");
+      Objects.requireNonNull(expiresAt, "expiresAt must not be null");
+      Objects.requireNonNull(query, "query must not be null");
+      requireText(writeIdempotencyKey, "writeIdempotencyKey");
     }
   }
 

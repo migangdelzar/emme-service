@@ -19,6 +19,8 @@ public final class SemanticCacheResolver {
 
   public Optional<SemanticCachePort.Candidate> lookup(SemanticCachePort.Lookup lookup) {
     Objects.requireNonNull(lookup, "lookup must not be null");
-    return policy.select(cache.find(lookup, CANDIDATE_LIMIT));
+    return policy
+        .select(cache.find(lookup, CANDIDATE_LIMIT))
+        .filter(candidate -> cache.recordHit(candidate.id()));
   }
 }

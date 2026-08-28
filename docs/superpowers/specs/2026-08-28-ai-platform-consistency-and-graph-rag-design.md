@@ -12,10 +12,12 @@
 ## 1. Executive decision
 
 Keep the AI platform inside `emme-service` as modular capabilities. Introduce a
-small neutral `ai-foundation` module for provider-neutral AI contracts, while
-the existing `assistant` module owns conversations, tools, quotes, HITL, and
-channel workflows. Keep document ownership and ingestion in `documents`. Move
-catalog's generic image and embedding contracts out of assistant.
+small framework-neutral `libraries:ai-contracts` library for provider-neutral AI
+contracts and a `modules:ai-platform` module for the shared AI runtime. The
+existing `assistant` module owns conversations, Emme-specific workflow
+definitions, tools, quotes, HITL, and channel workflows. Keep document
+ownership and ingestion in `documents`. Move catalog's generic image and
+embedding contracts out of assistant.
 
 PostgreSQL remains authoritative for tenants, memberships, services, prices,
 appointments, conversations, workflows, quotes, approvals, traces, audits, and
@@ -57,6 +59,12 @@ libraries/kernel
 modules/assistant
   -> conversation use cases and channel adapters
   -> semantic routing, tools, quote/HITL, Spring AI, LangGraph4j, Redis, traces
+
+libraries/ai-contracts
+  -> framework-neutral AI ports and value types
+
+modules/ai-platform
+  -> Spring AI, LangGraph4j runtime, providers, retrieval, graph, cache, traces
 ```
 
 ### 2.2 Existing implementation
@@ -79,7 +87,7 @@ modules/assistant
 |---|---|---|
 | Documentation | Existing AI design/plan status is stale compared with current code | Maintain one capability matrix and update ADRs |
 | Naming | `ModelProvider`, `ChatCompletionPort`, `RagQueryService`, and semantic names coexist | Apply one capability-first vocabulary |
-| Module boundary | `catalog` depends on assistant for generic AI contracts | Extract contracts to `ai-foundation` |
+| Module boundary | `catalog` depends on assistant for generic AI contracts | Extract contracts to `libraries:ai-contracts` and move shared runtime to `modules:ai-platform` |
 | Conversation | Direct chat creates synthetic IDs and may not persist a conversation row | Load/create durable conversation before AI execution |
 | Traces | Model trace persistence can fail when its conversation FK is absent | Make conversation lifecycle a prerequisite |
 | RAG | `RagQueryService` directly combines legacy embedding/search/model calls | Use Spring AI VectorStore and retrieval advisors behind ports |
@@ -92,24 +100,28 @@ modules/assistant
 
 ## 3. Structural alternatives
 
-### Option A — Neutral foundation plus staged capabilities (recommended)
+### Option A — AI contracts library plus AI platform module (recommended)
 
 ```text
 kernel
   -> context and concurrency primitives
-ai-foundation
+ai-contracts
   -> provider-neutral AI types and ports
+ai-platform
+  -> Spring AI, LangGraph4j runtime, providers, retrieval, graph, cache, traces
 assistant
-  -> conversations, workflows, tools, quotes, HITL, channels
+  -> conversations, workflow definitions, tools, quotes, HITL, channels
 documents
   -> knowledge documents, chunks, ingestion, source lifecycle
 catalog
-  -> ai-foundation contracts only
+  -> ai-contracts contracts only
 ```
 
 This removes the current catalog-to-assistant dependency without creating a
-network boundary. Spring AI, LangGraph4j, and Apache AGE remain infrastructure
-details. The cost is a controlled contract-extraction migration.
+network boundary. `ai-contracts` stays framework-neutral; `ai-platform` owns
+Spring AI, LangGraph4j, provider routing, retrieval, and operational adapters.
+Assistant-specific graph definitions and business nodes remain in `assistant`.
+The cost is a controlled contract-extraction migration.
 
 ### Option B — Keep all AI inside assistant
 
@@ -287,27 +299,31 @@ flowchart TD
     C[Web / GraphQL / WhatsApp / internal event] --> IA[Assistant inbound adapter]
     IA --> PC[ProcessConversationUseCase]
     PC --> CTX[Trusted TenantExecutionContext + AiExecutionContext]
-    CTX --> LG[LangGraph4j workflow]
-
-    LG --> DR[Deterministic intent rules]
+    CTX --> AP[AI Platform runtime]
+    AP --> DR[Deterministic and semantic routing]
     DR --> SI[SemanticIntentClassifier]
     SI --> CG{Confidence gate}
-    CG -->|confident| ST[SemanticToolSelectionService]
+    CG -->|direct| DIRECT[Spring AI direct execution]
+    CG -->|workflow| LG[LangGraph4j workflow runtime]
     CG -->|abstain| EX[Structured Spring AI extraction/fallback]
+    EX --> LG
+
+    LG --> WF[Assistant workflow definition and bounded nodes]
+    WF --> ST[SemanticToolSelectionService]
     ST --> TG[AuthorizedToolGateway]
-    EX --> UC[Application use case]
     TG --> UC
     UC --> DOM[Framework-free domain rules]
     DOM --> PG[PostgreSQL transaction + outbox]
 
-    LG --> KR[KnowledgeRetrieverPort]
+    DIRECT --> KR[KnowledgeRetrieverPort]
+    WF --> KR
     KR --> PV[PostgreSQL pgvector]
     KR -. optional .-> AG[Apache AGE derived graph]
     KR --> RA[KnowledgeAnswerChatClient + RAG advisor]
 
     LG --> CP[PostgreSQL checkpoint]
-    LG -. temporary .-> RD[Redis locks/status/cache/events]
-    LG --> OT[OpenTelemetry/Micrometer/durable AI trace]
+    AP -. temporary .-> RD[Redis locks/status/cache/events]
+    AP --> OT[OpenTelemetry/Micrometer/durable AI trace]
     OT --> EV[Async evaluation and learning]
 ```
 
@@ -343,6 +359,8 @@ flowchart TD
 | Technology | Owns | Does not own |
 |---|---|---|
 | Java 25 | Context and structured concurrency adapter | Business authorization |
+| `libraries:ai-contracts` | Stable AI ports, workflow contracts, and immutable value types | Framework configuration or business rules |
+| `modules:ai-platform` | Shared AI runtime, provider routing, Spring AI clients/advisors, LangGraph4j adapter, retrieval, cache, graph, and AI operations | Salon prices, appointment rules, tenant authority, workflow meaning |
 | Spring AI | Models, embeddings, structured output, VectorStore, advisors, tool callbacks, MCP clients | Prices, availability, tenant authority |
 | LangGraph4j | Workflow state, branches, retries, checkpoints, pause/resume | Repositories and domain rules |
 | Spring Modulith | Internal events and outbox publication | AI reasoning |
@@ -382,20 +400,47 @@ No AI code may mutate `ForkJoinPool.commonPool()` or call
 
 ```mermaid
 flowchart LR
-    R[Inbound request] --> G[LangGraph4j outer workflow]
-    G --> S[Deterministic/semantic routing]
-    S -->|fallback only| C[Specialized Spring AI ChatClient]
+    R[Inbound request] --> P[AI Platform runtime]
+    P --> S[Deterministic/semantic routing]
+    S --> E{Execution mode}
+    E -->|simple| D[Direct Spring AI client]
+    E -->|complex| G[LangGraph4j workflow runtime]
+    D --> C[Specialized Spring AI ChatClient]
+    S -->|structured fallback| C
     C --> A[Advisor chain]
     A --> M[Selected ChatModel/EmbeddingModel]
     C --> T[Authorized tools]
     T --> U[Application use case]
-    G --> P[PostgreSQL checkpoint]
+    G --> CP[PostgreSQL checkpoint]
 ```
 
-Spring AI owns model-facing execution. LangGraph4j owns durable orchestration.
+`modules:ai-platform` owns the runtime boundary. Spring AI owns model-facing
+execution. LangGraph4j owns durable orchestration. `modules:assistant` supplies
+Emme-specific workflow definitions and business node handlers through
+`libraries:ai-contracts`; it does not expose raw LangGraph4j state to other
+modules.
+
 There is one model-driven tool loop: the fallback agent may use one
 `ToolCallingAdvisor`; LangGraph4j remains the outer workflow. Direct semantic
-tool matches bypass that loop.
+tool matches bypass that loop. Workflow transitions are predefined and bounded;
+the model cannot create arbitrary nodes or edges.
+
+```mermaid
+flowchart TD
+    D[Assistant workflow definition] --> R[AI Platform WorkflowRuntime]
+    R --> L[LangGraph4j adapter]
+    L --> N[Bounded nodes and conditional edges]
+    N --> M[Spring AI model node]
+    N --> U[Assistant/business application use case]
+    N --> H[Persisted HITL interrupt]
+    H --> Q[PostgreSQL checkpoint and approval]
+    Q --> R
+```
+
+Each workflow declares maximum steps, model calls, tool calls, retries, wall
+clock duration, and token budget. The platform rejects an execution that
+exceeds any bound. Workflow state is durable in PostgreSQL; Redis only carries
+locks, temporary status, and live events.
 
 Specialized clients:
 
@@ -660,8 +705,10 @@ appointment rules.
 
 ### Phase 1 — Foundation extraction
 
-- Create `modules/ai-foundation`.
-- Move generic image/embedding/provider contracts from assistant.
+- Create `libraries:ai-contracts` for framework-neutral ports and value types.
+- Create `modules:ai-platform` for the shared Spring AI and LangGraph4j runtime.
+- Move generic image/embedding/provider contracts from assistant into
+  `ai-contracts`.
 - Update catalog consumers and Modulith metadata without behavior changes.
 
 ### Phase 2 — Context and lifecycle closure
@@ -746,11 +793,19 @@ deterministic fakes and contract tests are the default.
 ## 17. Files and boundaries
 
 ```text
-modules/ai-foundation/
-  src/main/java/com/emme/ai/
+libraries/ai-contracts/
+  src/main/java/com/emme/ai/contracts/
     api/
-    application/port/
-    domain/
+
+modules/ai-platform/
+  src/main/java/com/emme/ai/platform/
+    application/
+    adapter/out/provider/springai/
+    adapter/out/workflow/langgraph/
+    adapter/out/knowledge/pgvector/
+    adapter/out/graph/age/
+    adapter/out/redis/
+    configuration/
 
 modules/assistant/
   src/main/java/com/emme/assistant/

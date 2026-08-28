@@ -26,7 +26,7 @@
 | 3 | AI foundation and Spring AI providers | Provider/embedding/chat contract tests | In progress — embedding and ordered chat provider boundaries complete |
 | 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress — semantic intent/tool routing and safe chat cache complete; real pgvector runtime test pending |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Complete |
-| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors complete; controlled tool gateway pending |
+| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors and read-only controlled gateway complete; mutation tools pending |
 | 7 | Design extraction, deterministic quote, HITL | Quote, optimistic-lock, endpoint, and resume tests | In progress — durable quote workflow, secured staff review endpoint, and LangGraph resume adapter complete |
 | 8 | Online enrichment and evaluation | Candidate/promotion safety tests | Not started |
 | 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events and workflow metrics foundation complete |
@@ -164,6 +164,13 @@ chat integration provides an ordered named-client chain with explicit provider
 unavailability fallback to the existing provider boundary. Every configured
 named client is composed with tenant-security and prompt-version advisors at
 request execution time.
+
+The controlled tool boundary now snapshots backend-authorized eligible tools,
+uses pgvector semantic matching before execution, and invokes only typed tool
+handlers. The platform registers `getSalonServices` as a read-only example;
+the handler delegates to the Services application use case and derives the
+tenant only from `AiExecutionContext`. Mutation tools remain confirmation and
+approval gated.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

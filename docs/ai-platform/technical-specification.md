@@ -109,6 +109,16 @@ FallbackAgentChatClient
 The fallback client receives only the tools allowed for the current context.
 Direct semantic tool routes do not need the fallback agent.
 
+The in-process tool boundary is represented by `AiToolDefinition`,
+`AiToolInvocation`, `AiToolExecutionContext`, `AiToolResult`, and
+`AiToolGateway`. `AuthorizedAiToolGateway` filters definitions by backend
+roles, risk, user confirmation, and staff approval. `SemanticProactiveToolRouter`
+passes only read-only, no-confirmation tools to the existing tenant-filtered
+semantic selector; low-confidence routes abstain. Tool handlers receive a
+backend-created execution context and delegate to application use cases. The
+platform currently registers `getSalonServices` as a read-only catalog tool;
+booking and other mutations are not eligible for proactive execution.
+
 ## 4. Provider adapters
 
 ```text

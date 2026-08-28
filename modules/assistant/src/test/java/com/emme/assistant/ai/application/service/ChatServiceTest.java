@@ -7,7 +7,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.ModelProvider;
+import com.emme.assistant.ai.application.port.out.ProactiveToolRouter;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
+import com.emme.assistant.ai.application.tool.AiToolResult;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -46,5 +48,20 @@ class ChatServiceTest {
 
     assertThat(service.chat("context", "hello")).isEqualTo("response");
     verify(model).chat("context", "hello");
+  }
+
+  @Test
+  void returnsAProactiveToolResultBeforeCacheOrModelExecution() {
+    ModelProvider model = mock(ModelProvider.class);
+    SemanticResponseCache cache = mock(SemanticResponseCache.class);
+    ProactiveToolRouter router = mock(ProactiveToolRouter.class);
+    when(router.route("what services do you have?"))
+        .thenReturn(Optional.of(new AiToolResult("getSalonServices", "services", true)));
+    ChatService service =
+        new ChatService(model, Optional.of(cache), Optional.empty(), Optional.of(router));
+
+    assertThat(service.chat("", "what services do you have?")).isEqualTo("services");
+
+    verifyNoInteractions(model, cache);
   }
 }

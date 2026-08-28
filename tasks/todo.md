@@ -42,6 +42,10 @@
       PostgreSQL payloads and safe transactional-message bypass.
 - [x] Add provider-neutral Spring AI chat clients, ordered provider failover,
       and tenant/prompt-version advisors.
+- [x] Add a typed, role/risk/confirmation-aware tool gateway and semantic
+      proactive execution for read-only tools.
+- [x] Register the first platform tool through the authoritative Services
+      application use case (`getSalonServices`).
 
 ### Working notes
 
@@ -110,6 +114,13 @@ chat provider clients are configured by named beans and ordered failover keys;
 the legacy provider remains the final compatibility fallback. Tenant-security
 and prompt-version advisors are attached to every configured named Spring AI
 client at request execution time.
+
+The controlled tool gateway now snapshots eligible backend-authorized tools,
+rejects unauthorized or confirmation-missing invocations, and exposes only
+read-only/no-confirmation definitions to semantic proactive routing. The first
+platform registration delegates `getSalonServices` to the Services module and
+uses the authenticated tenant from `AiToolExecutionContext`; model arguments
+cannot override tenant scope.
 
 ## Remaining execution gates — 2026-08-05
 

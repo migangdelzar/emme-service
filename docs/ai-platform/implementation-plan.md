@@ -1,0 +1,93 @@
+# Implementation Plan: Emme AI Platform
+
+| Field | Value |
+|---|---|
+| Status | Draft |
+| Technical specification | [TSPEC](technical-specification.md) |
+| Requirements | [Requirements](requirements.md) |
+| Verification | [Evaluation specification](evaluation-specification.md) |
+
+## 1. Execution rules
+
+- Implement one phase at a time.
+- Write the failing test before production code for each behavior.
+- Preserve unrelated worktree changes.
+- Keep each phase reversible and feature-gated where appropriate.
+- Run formatting, compilation, static analysis, unit tests, integration tests,
+  and applicable end-to-end tests after each phase.
+
+## 2. Phases
+
+| Phase | Scope | Primary tests | Status |
+|---|---|---|---|
+| 0 | Java 25 repository/runtime baseline | Toolchain, CI/config validation | Not started |
+| 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | Not started |
+| 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Not started |
+| 3 | AI foundation and Spring AI providers | Provider/embedding contract tests | Not started |
+| 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | Not started |
+| 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Not started |
+| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | Not started |
+| 7 | Design extraction, deterministic quote, HITL | Quote and optimistic-lock tests | Not started |
+| 8 | Online enrichment and evaluation | Candidate/promotion safety tests | Not started |
+| 9 | Channels, operations, and hardening | E2E, failure, and observability tests | Not started |
+
+## 3. Phase 0 — Java 25
+
+- Verify Gradle runtime selection.
+- Verify `mise`, CI, Docker, Kubernetes, Buildpacks, and Testcontainers.
+- Add a fail-fast runtime validator.
+- Verify preview compilation and execution.
+- Verify JVM and native-image lanes separately.
+
+## 4. Phase 1–2 — Concurrency
+
+- Add immutable `AiExecutionContext`.
+- Add ScopedValue binding at HTTP and worker boundaries.
+- Add context bridge for existing ThreadLocal/MDC compatibility.
+- Add named executor beans and tenant/provider limits.
+- Add `ParallelTaskRunner` and StructuredTaskScope implementation.
+- Add Joiner policies for required, optional, and first-success operations.
+- Test cancellation, deadline, exception propagation, and context integrity.
+
+## 5. Phase 3–4 — AI and vector foundation
+
+- Upgrade and pin Spring AI.
+- Resolve compatible LangGraph4j versions before use.
+- Add neutral AI foundation module.
+- Refactor existing ModelProvider behind focused ports.
+- Add model/provider routing.
+- Add intent, tool, and cache schemas and indexes.
+- Reuse existing documents/catalog pgvector patterns.
+- Add embedding model/version validation.
+
+## 6. Phase 5–7 — Workflow and quote vertical slice
+
+- Add LangGraph4j workflow state and PostgreSQL checkpoints.
+- Add deterministic route and semantic gateway nodes.
+- Add specialized Spring AI clients and advisors.
+- Add filtered application tool gateway.
+- Add design extraction schema validation.
+- Integrate deterministic quote calculation.
+- Add HITL review persistence, endpoint, notification, resume, and optimistic
+  locking.
+
+## 7. Phase 8–9 — Learning and production hardening
+
+- Add trace redaction and candidate records.
+- Add asynchronous embedding and evaluation worker.
+- Add shadow/canary index promotion.
+- Add Ragas evaluation scaffold.
+- Add Java agent configuration for JVM observability.
+- Add dashboards and alerts.
+- Add WhatsApp/web streaming recovery and asynchronous job behavior.
+- Run full regression, security, and architecture checks.
+
+## 8. Definition of done
+
+- Requirements and acceptance criteria are verified.
+- Tests were written before implementation for new behaviors.
+- No existing tests regress.
+- Tenant and user isolation tests pass.
+- Java 25 verification passes on the actual supported runtime.
+- No uncommitted generated implementation artifacts remain.
+- Documentation, ADRs, FCRs, runbook, and rollback evidence are updated.

@@ -29,6 +29,10 @@ to the decision it supersedes.
 - [ADR-0005: Spring Modulith event streaming through Kafka](0005-spring-modulith-kafka-event-streaming.md)
 - [ADR-0006: Low-cost MVP runtime boundary](0006-mvp-low-cost-runtime-boundary.md)
 - [ADR-0007: Selective architecture metadata and mapping generation](0007-selective-architecture-metadata-and-mapping.md)
+- [ADR-0009: Java 25 and structured concurrency](0009-ai-java25-structured-concurrency.md)
+- [ADR-0010: Spring AI and LangGraph4j boundary](0010-ai-spring-ai-langgraph-boundary.md)
+- [ADR-0011: PostgreSQL/pgvector semantic store](0011-ai-vector-store-strategy.md)
+- [ADR-0012: Governed online enrichment](0012-ai-governed-online-enrichment.md)
 
 ## Index
 
@@ -41,6 +45,10 @@ to the decision it supersedes.
 | [0005](0005-spring-modulith-kafka-event-streaming.md) | Spring Modulith event streaming through Kafka | Accepted | 2026-08-02 |
 | [0006](0006-mvp-low-cost-runtime-boundary.md) | Low-cost MVP runtime boundary | Accepted with release gates open | 2026-08-03 |
 | [0007](0007-selective-architecture-metadata-and-mapping.md) | Selective architecture metadata and mapping generation | Accepted | 2026-08-04 |
+| [0009](0009-ai-java25-structured-concurrency.md) | Java 25 and structured concurrency | Proposed | 2026-08-27 |
+| [0010](0010-ai-spring-ai-langgraph-boundary.md) | Spring AI and LangGraph4j boundary | Proposed | 2026-08-27 |
+| [0011](0011-ai-vector-store-strategy.md) | PostgreSQL/pgvector semantic store | Proposed | 2026-08-27 |
+| [0012](0012-ai-governed-online-enrichment.md) | Governed online enrichment | Proposed | 2026-08-27 |
 
 Create a new ADR when a decision changes. Do not rewrite an accepted ADR to
 hide its historical rationale.

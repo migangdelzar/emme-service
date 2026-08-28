@@ -2212,3 +2212,37 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
   blocked by the pre-existing `modules/subscriptions/.../SubscriptionProvisioningListener.java`
   violation; it was not changed.
 - Preserve the pre-existing unstaged `TenantRegistryEntity.java` change.
+
+## AI platform architecture and implementation — 2026-08-27
+
+- [x] Inspect the existing Java, Spring Modulith, AI, tenancy, vector, Redis,
+      messaging, and observability architecture.
+- [x] Decide to keep the AI platform inside the `emme-service` deployable
+      boundary.
+- [x] Define semantic classification, semantic tool selection, and semantic
+      caching as separate vector capabilities.
+- [x] Define Java 25, ScopedValue, StructuredTaskScope, Joiner, executor, and
+      Java-agent boundaries.
+- [x] Define Spring AI and LangGraph4j responsibility boundaries.
+- [x] Create the draft AI platform documentation index and master design.
+- [x] Create draft PRD, requirements, NFRs, functional specification, TSPEC,
+      data model, evaluation specification, runbook, ADRs, FCRs, and phased
+      implementation plan.
+- [ ] Review and approve the complete documentation set.
+- [ ] Implement Phase 0 Java 25 baseline using TDD.
+- [ ] Implement Phase 1–2 concurrency foundation using TDD.
+- [ ] Implement the AI foundation, semantic capabilities, workflow, HITL,
+      evaluation, and operational phases incrementally.
+
+### Working notes
+
+- The current worktree contains an unrelated unstaged tenancy edit; it must not
+  be staged with AI documentation or implementation changes.
+- Java 25 is declared in the repository, but the local shell previously ran
+  Java 17; runtime validation remains a Phase 0 task.
+- `StructuredTaskScope` and `Joiner` are Java 25 preview APIs and must remain
+  behind a stable Emme abstraction.
+- The current Redis deployment is plain `redis:7-alpine`; PostgreSQL/pgvector
+  is the initial semantic store.
+- Java agents are intended for JVM observability and diagnostics, not global
+  ForkJoinPool replacement.

@@ -74,6 +74,7 @@ spring-ai-rag = { module = "org.springframework.ai:spring-ai-rag" }
 spring-ai-vector-store = { module = "org.springframework.ai:spring-ai-vector-store" }
 spring-ai-vector-store-advisor = { module = "org.springframework.ai:spring-ai-vector-store-advisor" }
 spring-ai-starter-model-ollama = { module = "org.springframework.ai:spring-ai-starter-model-ollama" }
+spring-ai-ollama = { module = "org.springframework.ai:spring-ai-ollama" }
 spring-ai-starter-model-openai = { module = "org.springframework.ai:spring-ai-starter-model-openai" }
 spring-ai-starter-model-anthropic = { module = "org.springframework.ai:spring-ai-starter-model-anthropic" }
 spring-ai-starter-model-google-genai = { module = "org.springframework.ai:spring-ai-starter-model-google-genai" }

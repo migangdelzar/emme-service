@@ -21,6 +21,10 @@ Spring AI supports multiple model implementations in one application. Emme
 will expose provider-neutral application ports and create specialized Spring AI
 clients per capability. Provider selection and fallback remain configuration
 and policy decisions; no domain service will depend on one provider starter.
+The assistant currently uses the direct `spring-ai-ollama` module and explicit
+`OllamaEmbeddingModel` construction so the local provider is opt-in and named
+provider beans can be composed without globally enabling a starter. Resolution
+continues to select the repository’s Spring Boot `4.1.0` constraint.
 
 The initial production direction is:
 
@@ -48,6 +52,8 @@ Authoritative references checked on 2026-08-27:
 ## Constraints
 
 - Do not import `spring-ai-starter-model-*` into domain packages.
+- Keep provider construction in infrastructure configuration; do not make the
+  local Ollama model a required application dependency.
 - Do not let Spring AI `ChatMemory` replace PostgreSQL conversation history or
   audit records.
 - Do not configure both LangGraph4j and Spring AI as competing workflow/tool

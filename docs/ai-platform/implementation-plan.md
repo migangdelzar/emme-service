@@ -98,8 +98,11 @@ being added incrementally. The first Spring AI integration is a provider-neutral
 embedding port plus an infrastructure adapter. It converts Spring AI’s
 `EmbeddingModel` output into the application vector type and rejects configured
 dimension drift before semantic search or persistence. It is not globally
-auto-wired yet; provider-bean registration and tenant-specific fallback
-configuration are the next provider slice.
+auto-wired by a starter: conditional configuration constructs the local Ollama
+model from the application’s embedding settings, registers explicitly named
+providers in order, and exposes the application-level failover chain. This
+integration is disabled by default. Tenant-specific cloud-escalation policy is
+the next provider-policy slice.
 
 The provider boundary now also includes an ordered application-level embedding
 failover chain. It only falls back for an explicit provider-unavailable error;

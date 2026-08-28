@@ -19,6 +19,8 @@
       embedding port with configured model-version and dimension validation.
 - [x] Add ordered embedding-provider failover that only falls back on an
       explicit provider-unavailable failure.
+- [x] Add opt-in Spring AI Ollama configuration and an ordered named-provider
+      registry backed by the application embedding port.
 - [ ] Add persisted workflow, structured extraction, deterministic quote, and
       HITL slices.
 
@@ -37,9 +39,12 @@ The initial pgvector schema slice is implemented and covered by
 
 The first concrete Spring AI boundary is implemented in
 `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/`.
-It is intentionally not wired as a global provider bean yet; provider selection
-and tenant-specific fallback configuration will be introduced with the
-specialized model registry.
+The boundary is conditionally wired by
+`SpringAiEmbeddingConfiguration`: it constructs the local Ollama model only
+when explicitly enabled, registers named providers in configured order, and
+exposes the application-level failover chain. Tenant-specific cloud escalation
+policy remains a follow-up; the default application configuration keeps this
+integration disabled.
 
 The application layer now has an ordered provider chain. It preserves the
 primary provider result, falls back only on `EmbeddingProviderUnavailableException`,

@@ -161,6 +161,13 @@ app:
       base-url: http://localhost:11434
       dimension: 1024
       # model: nomic-embed-text   # alternative Ollama embedding model (768 — change dimension too)
+    spring-embedding:
+      enabled: ${EMME_SPRING_AI_EMBEDDING_ENABLED:false}
+      # Provider order is explicit. Add another named EmbeddingModel bean for cloud fallback.
+      providers:
+        - bean-name: ollamaEmbeddingModel
+          key: local-ollama
+          model-version: ollama-bge-m3
   whatsapp:
     verify-token: ${WHATSAPP_VERIFY_TOKEN:}
     app-secret: ${WHATSAPP_APP_SECRET:}

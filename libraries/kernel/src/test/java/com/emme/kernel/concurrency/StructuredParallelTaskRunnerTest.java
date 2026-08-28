@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import com.emme.kernel.context.TenantContextHolder;
+import com.emme.kernel.tracing.CorrelationContextHolder;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +35,23 @@ class StructuredParallelTaskRunnerTest {
 
     assertThat(started.getCount()).isZero();
     assertThat(result).containsExactly("first", "second");
+  }
+
+  @Test
+  void installsLegacyTenantAndCorrelationContextForStructuredSubtasks() {
+    AiExecutionContext context = context();
+
+    List<String> result =
+        AiExecutionContextScope.call(
+            context,
+            () ->
+                runner.runRequired(
+                    List.of(
+                        () -> TenantContextHolder.requireCurrentTenantId().toString(),
+                        CorrelationContextHolder::requireCorrelationId),
+                    Deadline.after(Duration.ofSeconds(1))));
+
+    assertThat(result).containsExactly(context.tenantId().toString(), context.traceId());
   }
 
   @Test

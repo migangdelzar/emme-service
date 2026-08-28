@@ -65,8 +65,10 @@ outcome types, and a Java 25 `StructuredTaskScope` adapter using
 `allSuccessfulOrThrow`, `awaitAll`, and `anySuccessfulResultOrThrow`. Its tests
 cover ordered required work, optional failures, first-success cancellation,
 deadline cancellation, fatal-error propagation, and ScopedValue inheritance.
-Phase 1 remains in progress until the compatibility bridge and tenant/provider
-backpressure limits are implemented.
+The runner also installs the bridge for structured subtasks when an AI context
+is bound, so existing tenant-routed application services do not lose their
+ThreadLocal/MDC compatibility state. Phase 1 remains in progress until tenant
+and provider backpressure limits are implemented.
 
 ## 5. Phase 3–4 — AI and vector foundation
 

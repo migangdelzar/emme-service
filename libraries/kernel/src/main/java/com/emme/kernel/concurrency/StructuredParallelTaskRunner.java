@@ -1,5 +1,7 @@
 package com.emme.kernel.concurrency;
 
+import com.emme.kernel.context.AiExecutionContextBridge;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +105,11 @@ public final class StructuredParallelTaskRunner implements ParallelTaskRunner {
       StructuredTaskScope<T, ?> scope, List<Callable<T>> tasks) {
     List<StructuredTaskScope.Subtask<T>> subtasks = new ArrayList<>(tasks.size());
     for (Callable<T> task : tasks) {
-      subtasks.add(scope.fork(task));
+      Callable<T> contextualTask =
+          AiExecutionContextScope.current().isPresent()
+              ? AiExecutionContextBridge.captureCurrent(task)
+              : task;
+      subtasks.add(scope.fork(contextualTask));
     }
     return subtasks;
   }

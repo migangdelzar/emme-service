@@ -2234,6 +2234,8 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
       scheduled maintenance with validated configuration.
 - [x] Add the stable `ParallelTaskRunner` port and Java 25 structured runner
       with required, optional, and first-success Joiner policies.
+- [x] Add the ScopedValue-to-ThreadLocal/MDC compatibility bridge and install
+      it automatically for structured AI subtasks.
 - [ ] Implement Phase 1–2 concurrency foundation using TDD.
 - [ ] Implement the AI foundation, semantic capabilities, workflow, HITL,
       evaluation, and operational phases incrementally.

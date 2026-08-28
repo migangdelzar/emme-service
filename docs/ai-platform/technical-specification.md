@@ -141,8 +141,13 @@ Application use cases
   → authoritative tool execution
 ```
 
-The PostgreSQL saver or a tenant-aware Emme wrapper must prevent checkpoint
-loads across tenant boundaries.
+The service uses a tenant-aware Emme `BaseCheckpointSaver` boundary around a
+JDBC adapter. The adapter persists LangGraph checkpoint state in
+`ai_workflow_checkpoint`, including the next node required for resume. Both
+the wrapper and JDBC adapter require the backend `AiExecutionContext`; the
+LangGraph thread ID must equal its workflow ID. The stock LangGraph4j
+PostgreSQL saver is not the source of truth because its documented in-memory
+cache can return stale state across instances; PostgreSQL remains authoritative.
 
 ## 6. Concurrency
 

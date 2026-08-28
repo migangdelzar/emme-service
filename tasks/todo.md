@@ -28,7 +28,9 @@
 - [x] Add the Spring AI structured extraction adapter with typed schema
       validation, provider-native structured output, and secure image-reader
       boundary.
-- [ ] Add durable artifact/checkpoint adapters and staff review endpoints.
+- [ ] Add durable artifact adapters and staff review endpoints.
+- [x] Add tenant-aware LangGraph4j orchestration and PostgreSQL checkpoint
+      adapter with pause/resume coverage.
 
 ### Working notes
 
@@ -66,8 +68,10 @@ only from a versioned tenant template, and creates a first-class review task
 when uncertainty remains. The application use case requires the backend AI
 execution context and returns an existing workflow for a repeated idempotency
 key. Spring AI extraction and PostgreSQL artifact adapters are intentionally
-implemented behind typed ports; PostgreSQL artifact/checkpoint adapters remain
-the next slice.
+implemented behind typed ports. The LangGraph4j graph now has explicit quote
+states, conditional approval routing, interrupt/resume behavior, and a
+tenant-aware PostgreSQL checkpoint adapter. Checkpoint reads and writes require
+the backend workflow context and persist the next node needed for resume.
 
 ## Remaining execution gates — 2026-08-05
 

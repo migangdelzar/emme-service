@@ -85,7 +85,6 @@ spring-ai-starter-tool-search-advisor = { module = "org.springframework.ai:sprin
 # --- LangGraph4j (version managed by langgraph4j-bom) ---
 langgraph4j-core = { module = "org.bsc.langgraph4j:langgraph4j-core" }
 langgraph4j-spring-ai = { module = "org.bsc.langgraph4j:langgraph4j-spring-ai" }
-langgraph4j-postgres-saver = { module = "org.bsc.langgraph4j:langgraph4j-postgres-saver" }
 
 # --- Spring Security (versions managed by spring-boot-dependencies BOM) ---
 spring-security-core = { module = "org.springframework.security:spring-security-core" }

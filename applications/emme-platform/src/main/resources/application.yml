@@ -173,6 +173,11 @@ app:
       model-version: ${EMME_SPRING_AI_EXTRACTION_MODEL_VERSION:ollama-gemma3-vision}
       prompt-version: ${EMME_SPRING_AI_EXTRACTION_PROMPT_VERSION:nail-design-v1}
       schema-version: ${EMME_SPRING_AI_EXTRACTION_SCHEMA_VERSION:nail-features-v1}
+    langgraph:
+      enabled: ${EMME_AI_LANGGRAPH_ENABLED:false}
+      graph-version: ${EMME_AI_LANGGRAPH_GRAPH_VERSION:quote-v1}
+    quote:
+      enabled: ${EMME_AI_QUOTE_ENABLED:false}
   whatsapp:
     verify-token: ${WHATSAPP_VERIFY_TOKEN:}
     app-secret: ${WHATSAPP_APP_SECRET:}

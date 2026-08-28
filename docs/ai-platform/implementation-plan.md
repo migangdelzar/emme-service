@@ -137,9 +137,13 @@ the backend `AiExecutionContext`, uses the durable idempotency lookup, persists
 extraction/draft/review artifacts through ports, and pauses at
 `WAITING_FOR_STAFF` when the calculation is not safe to send. A Spring AI
 structured-output adapter now maps the model response to this contract with
-schema validation and provider-native structured output. The concrete
-PostgreSQL artifact/checkpoint adapters and staff resume endpoint remain
-unimplemented.
+schema validation and provider-native structured output. The LangGraph4j graph
+now models the quote route as explicit conditional nodes, interrupts after
+`wait_for_staff`, and resumes through the approval gate after a staff state
+update. `JdbcLangGraphCheckpointSaver` persists tenant/workflow-scoped
+checkpoints in PostgreSQL and `TenantAwareCheckpointSaver` rejects missing or
+mismatched workflow context. Durable quote artifact adapters and the staff
+resume endpoint remain follow-up work.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

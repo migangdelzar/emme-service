@@ -19,10 +19,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /** Coordinates extraction, deterministic calculation, and the persisted HITL pause. */
 @org.springframework.stereotype.Service
 @org.springframework.transaction.annotation.Transactional
+@ConditionalOnProperty(prefix = "app.ai.quote", name = "enabled", havingValue = "true")
 public class ProcessDesignQuoteService
     implements com.emme.assistant.ai.api.usecase.ProcessDesignQuoteUseCase {
 

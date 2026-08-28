@@ -7,9 +7,11 @@
 
 The service pins Spring AI `2.0.1` and LangGraph4j `1.8.25` through the shared
 Gradle platform. Spring AI is used for model, embedding, advisor, vector-store,
-and MCP integration. LangGraph4j is used only for durable workflow
-orchestration and checkpoint/resume behavior. Domain and application business
-rules remain independent of both libraries.
+and MCP integration. LangGraph4j core is used only for durable workflow
+orchestration and checkpoint/resume behavior. Emme provides its own JDBC
+`BaseCheckpointSaver` adapter rather than using the optional stock PostgreSQL
+saver as the authoritative store. Domain and application business rules remain
+independent of both libraries.
 
 The LangGraph4j `1.9.0-beta3` line is not selected for the production baseline
 because it is a pre-release. It may be evaluated in an isolated compatibility
@@ -48,6 +50,7 @@ Authoritative references checked on 2026-08-27:
 - [Spring AI MCP client](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-client-boot-starter-docs.html)
 - [LangGraph4j README and stable installation guidance](https://github.com/langgraph4j/langgraph4j#installation)
 - [LangGraph4j releases](https://github.com/langgraph4j/langgraph4j/releases)
+- [LangGraph4j discussion on PostgreSQL saver cache behavior](https://github.com/langgraph4j/langgraph4j/discussions/356)
 
 ## Constraints
 
@@ -58,5 +61,8 @@ Authoritative references checked on 2026-08-27:
   audit records.
 - Do not configure both LangGraph4j and Spring AI as competing workflow/tool
   loop owners.
+- Keep LangGraph checkpoint access behind the backend AI execution context; the
+  LangGraph thread ID is an internal workflow ID, never a client-selected tenant
+  selector.
 - Re-run dependency resolution after every Spring Boot, Spring AI, or
   LangGraph4j version change.

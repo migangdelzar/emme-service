@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 class AiQuoteWorkflowMigrationContractTest {
 
   private static final String MIGRATION = "db/emme-studio/releases/0.1.0/016-ai-quote-workflow.sql";
+  private static final String CHECKPOINT_MIGRATION =
+      "db/emme-studio/releases/0.1.0/017-ai-workflow-checkpoint-next-node.sql";
 
   @Test
   void definesDurableWorkflowAndQuoteArtifacts() throws IOException {
@@ -67,6 +69,15 @@ class AiQuoteWorkflowMigrationContractTest {
     String changelog = resource("db/emme-studio/changelog.yaml");
 
     assertThat(changelog).contains("releases/0.1.0/016-ai-quote-workflow.sql");
+    assertThat(changelog).contains("releases/0.1.0/017-ai-workflow-checkpoint-next-node.sql");
+  }
+
+  @Test
+  void storesTheNextNodeRequiredForDurableLangGraphResume() throws IOException {
+    String sql = resource(CHECKPOINT_MIGRATION);
+
+    assertThat(sql).contains("ALTER TABLE ai_workflow_checkpoint");
+    assertThat(sql).contains("ADD COLUMN IF NOT EXISTS next_node_name VARCHAR(120)");
   }
 
   private static String migration() throws IOException {

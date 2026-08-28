@@ -54,6 +54,16 @@ class SpringAiQuoteExtractionConfigurationTest {
         .hasMessage("promptVersion must not be blank");
   }
 
+  @Test
+  void suppliesSafeVersionDefaultsWhenTheOptionalIntegrationIsDisabled() {
+    SpringAiExtractionProperties properties =
+        new SpringAiExtractionProperties(false, null, null, null);
+
+    assertThat(properties.modelVersion()).isEqualTo("ollama-gemma3-vision");
+    assertThat(properties.promptVersion()).isEqualTo("nail-design-v1");
+    assertThat(properties.schemaVersion()).isEqualTo("nail-features-v1");
+  }
+
   private static AiProperties aiProperties() {
     return new AiProperties(
         "mock",

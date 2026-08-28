@@ -19,6 +19,7 @@ dependencies {
   implementation(libs.spring.ai.model)
   implementation(libs.spring.ai.client.chat)
   implementation(libs.spring.ai.ollama)
+  implementation(libs.langgraph4j.core)
   implementation(libs.okhttp)
   implementation(libs.jackson.databind)
   testImplementation(testFixtures(project(":libraries:testing")))

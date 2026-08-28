@@ -2406,3 +2406,41 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
   is the initial semantic store.
 - Java agents are intended for JVM observability and diagnostics, not global
   ForkJoinPool replacement.
+
+## AI contracts and platform implementation plan — 2026-08-28
+
+- [x] Validate the implementation plan against the approved AI architecture.
+- [x] Save the detailed plan under `docs/superpowers/plans/`.
+- [ ] Reconcile the existing AI documentation and legacy `ai-foundation` naming.
+- [ ] Add and test the `ai-contracts` and `ai-platform` Gradle boundaries.
+- [ ] Define framework-neutral AI contracts and migrate catalog consumers.
+- [ ] Standardize Java 25 tenant and AI context propagation with ScopedValue,
+      bridges, StructuredTaskScope, and Joiners.
+- [ ] Persist durable conversations, workflow runs, checkpoints, approvals,
+      quotes, tool calls, traces, and audit events in PostgreSQL.
+- [ ] Move Spring AI providers, specialized clients, advisors, semantic routing,
+      semantic tool selection, and semantic caching into `ai-platform`.
+- [ ] Add the generic LangGraph4j runtime with PostgreSQL checkpoints and
+      idempotent pause/resume.
+- [ ] Implement quote-by-image, deterministic pricing, HITL review, and
+      appointment workflows in `assistant`.
+- [ ] Add tenant-safe pgvector RAG, Redis operations, channels, and async jobs.
+- [ ] Add optional Apache AGE projection and curated tenant-scoped traversals.
+- [ ] Add redacted observability traces, offline Ragas evaluation, E2E tests,
+      operational documentation, and final verification.
+
+### Working notes
+
+- The detailed plan keeps Spring AI as the model/tool execution layer and
+  LangGraph4j as the single durable workflow orchestration layer.
+- The first implementation slice is the module boundary and contracts; no
+  production code should be moved before architecture tests protect the
+  dependency direction.
+- Existing unstaged tenancy changes remain outside this work and must not be
+  included in AI commits.
+
+### Results
+
+- Detailed task ordering, exact file areas, TDD checkpoints, dependencies,
+  verification commands, risks, and definition of done are recorded in
+  `docs/superpowers/plans/2026-08-28-ai-platform-implementation-plan.md`.

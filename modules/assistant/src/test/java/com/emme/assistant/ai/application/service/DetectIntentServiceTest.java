@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.emme.assistant.ai.api.result.IntentResult;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.ModelProvider;
+import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

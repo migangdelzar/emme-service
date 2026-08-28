@@ -1,4 +1,4 @@
-package com.emme.assistant.ai.application.service;
+package com.emme.assistant.ai.application.semantic;
 
 import java.util.List;
 import java.util.Objects;

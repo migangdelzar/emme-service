@@ -1,6 +1,6 @@
 package com.emme.assistant.ai.application.port.out;
 
-import com.emme.assistant.ai.application.service.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;

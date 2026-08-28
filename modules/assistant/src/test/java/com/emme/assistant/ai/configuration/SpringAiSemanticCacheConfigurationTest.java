@@ -7,8 +7,8 @@ import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
-import com.emme.assistant.ai.application.service.SemanticCachePolicy;
-import com.emme.assistant.ai.application.service.SemanticCacheResolver;
+import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
+import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import java.time.Clock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class SpringAiSemanticCacheConfigurationTest {
             properties);
 
     assertThat(cache)
-        .isInstanceOf(com.emme.assistant.ai.application.service.SemanticChatCache.class);
+        .isInstanceOf(com.emme.assistant.ai.application.semantic.SemanticChatCache.class);
   }
 
   @Test

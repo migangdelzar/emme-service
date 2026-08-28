@@ -9,7 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
-import com.emme.assistant.ai.application.service.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Instant;
@@ -35,8 +36,7 @@ class JdbcSemanticAdapterTest {
   void referenceSearchUsesAuthenticatedTenantAndEmbeddingVersion() throws Exception {
     JdbcClient jdbc = mock(JdbcClient.class);
     JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
-    JdbcClient.MappedQuerySpec<com.emme.assistant.ai.application.service.SemanticMatch> result =
-        mock(JdbcClient.MappedQuerySpec.class);
+    JdbcClient.MappedQuerySpec<SemanticMatch> result = mock(JdbcClient.MappedQuerySpec.class);
     stubQuery(jdbc, statement, result);
     when(result.list()).thenReturn(List.of());
     JdbcSemanticReferenceSearchAdapter adapter = new JdbcSemanticReferenceSearchAdapter(jdbc);
@@ -58,8 +58,7 @@ class JdbcSemanticAdapterTest {
   void toolSearchBindsOnlyTheBackendAuthorizedToolKeys() throws Exception {
     JdbcClient jdbc = mock(JdbcClient.class);
     JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
-    JdbcClient.MappedQuerySpec<com.emme.assistant.ai.application.service.SemanticMatch> result =
-        mock(JdbcClient.MappedQuerySpec.class);
+    JdbcClient.MappedQuerySpec<SemanticMatch> result = mock(JdbcClient.MappedQuerySpec.class);
     stubQuery(jdbc, statement, result);
     when(result.list()).thenReturn(List.of());
     JdbcSemanticReferenceSearchAdapter adapter = new JdbcSemanticReferenceSearchAdapter(jdbc);

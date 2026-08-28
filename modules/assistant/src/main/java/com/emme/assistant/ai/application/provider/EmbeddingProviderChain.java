@@ -1,7 +1,8 @@
-package com.emme.assistant.ai.application.service;
+package com.emme.assistant.ai.application.provider;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;

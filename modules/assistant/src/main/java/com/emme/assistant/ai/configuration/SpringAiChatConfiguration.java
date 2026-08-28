@@ -3,7 +3,7 @@ package com.emme.assistant.ai.configuration;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
-import com.emme.assistant.ai.application.service.ChatProviderChain;
+import com.emme.assistant.ai.application.provider.ChatProviderChain;
 import java.util.List;
 import java.util.Map;
 import org.springframework.ai.chat.client.ChatClient;

@@ -4,6 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.data.Offset.offset;
 
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticDecision;
+import com.emme.assistant.ai.application.semantic.SemanticMatch;
+import com.emme.assistant.ai.application.semantic.SemanticMatchPolicy;
+import com.emme.assistant.ai.application.semantic.SemanticReference;
+import com.emme.assistant.ai.application.semantic.SemanticReferenceMatcher;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

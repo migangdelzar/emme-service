@@ -8,6 +8,11 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticIntentClassifier;
+import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
+import com.emme.assistant.ai.application.semantic.SemanticMatch;
+import com.emme.assistant.ai.application.semantic.SemanticMatchPolicy;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

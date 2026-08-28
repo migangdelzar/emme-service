@@ -5,9 +5,9 @@ import static org.mockito.Mockito.mock;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
-import com.emme.assistant.ai.application.service.SemanticIntentClassifier;
-import com.emme.assistant.ai.application.service.SemanticIntentRouter;
-import com.emme.assistant.ai.application.service.SemanticMatchPolicy;
+import com.emme.assistant.ai.application.semantic.SemanticIntentClassifier;
+import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
+import com.emme.assistant.ai.application.semantic.SemanticMatchPolicy;
 import org.junit.jupiter.api.Test;
 
 class SpringAiSemanticConfigurationTest {

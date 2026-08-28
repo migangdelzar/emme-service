@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
+import com.emme.assistant.ai.application.provider.ChatProviderChain;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

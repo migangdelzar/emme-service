@@ -1,8 +1,8 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
-import com.emme.assistant.ai.application.service.EmbeddingVector;
-import com.emme.assistant.ai.application.service.SemanticMatch;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Objects;

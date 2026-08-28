@@ -1,4 +1,4 @@
-package com.emme.assistant.ai.application.service;
+package com.emme.assistant.ai.application.provider;
 
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;

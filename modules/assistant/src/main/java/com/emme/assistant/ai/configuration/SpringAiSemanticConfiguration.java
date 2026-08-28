@@ -2,10 +2,12 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
-import com.emme.assistant.ai.application.service.SemanticIntentClassifier;
-import com.emme.assistant.ai.application.service.SemanticIntentRouter;
-import com.emme.assistant.ai.application.service.SemanticMatchPolicy;
-import com.emme.assistant.ai.application.service.SemanticToolSelector;
+import com.emme.assistant.ai.application.semantic.SemanticIntentClassifier;
+import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
+import com.emme.assistant.ai.application.semantic.SemanticMatchPolicy;
+import com.emme.assistant.ai.application.semantic.SemanticToolSelector;
+import com.emme.assistant.ai.application.tool.AiToolGateway;
+import com.emme.assistant.ai.application.tool.SemanticProactiveToolRouter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -36,6 +38,16 @@ public class SpringAiSemanticConfiguration {
   SemanticToolSelector semanticToolSelector(
       SemanticReferenceSearchPort search, SemanticMatchPolicy policy) {
     return new SemanticToolSelector(search, policy);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  SemanticProactiveToolRouter semanticProactiveToolRouter(
+      EmbeddingModelPort embeddings,
+      SemanticToolSelector selector,
+      AiToolGateway gateway,
+      SemanticRoutingProperties properties) {
+    return new SemanticProactiveToolRouter(embeddings, selector, gateway, properties.locale());
   }
 
   @Bean

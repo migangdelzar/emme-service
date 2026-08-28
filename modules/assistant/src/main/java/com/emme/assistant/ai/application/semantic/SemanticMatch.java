@@ -1,4 +1,4 @@
-package com.emme.assistant.ai.application.service;
+package com.emme.assistant.ai.application.semantic;
 
 /** A ranked semantic reference and its cosine similarity. */
 public record SemanticMatch(String key, double similarity) {

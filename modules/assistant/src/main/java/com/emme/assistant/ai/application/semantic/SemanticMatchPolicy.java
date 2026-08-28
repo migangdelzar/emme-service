@@ -1,4 +1,4 @@
-package com.emme.assistant.ai.application.service;
+package com.emme.assistant.ai.application.semantic;
 
 import java.util.Comparator;
 import java.util.List;

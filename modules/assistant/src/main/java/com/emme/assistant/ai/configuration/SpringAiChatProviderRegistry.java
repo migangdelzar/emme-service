@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiChatClientAdapter;
-import com.emme.assistant.ai.application.service.ChatProviderChain;
+import com.emme.assistant.ai.application.provider.ChatProviderChain;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

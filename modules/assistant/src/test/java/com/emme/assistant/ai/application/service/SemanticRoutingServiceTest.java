@@ -4,6 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
+import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
+import com.emme.assistant.ai.application.semantic.SemanticDecision;
+import com.emme.assistant.ai.application.semantic.SemanticIntentClassifier;
+import com.emme.assistant.ai.application.semantic.SemanticMatch;
+import com.emme.assistant.ai.application.semantic.SemanticMatchPolicy;
+import com.emme.assistant.ai.application.semantic.SemanticToolSelector;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

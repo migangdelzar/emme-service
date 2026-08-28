@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiEmbeddingAdapter;
-import com.emme.assistant.ai.application.service.EmbeddingProviderChain;
+import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

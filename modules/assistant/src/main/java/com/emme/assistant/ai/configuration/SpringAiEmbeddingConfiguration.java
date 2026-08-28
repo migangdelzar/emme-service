@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
-import com.emme.assistant.ai.application.service.EmbeddingProviderChain;
+import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
 import java.util.Map;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;

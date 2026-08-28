@@ -1,4 +1,4 @@
-package com.emme.assistant.ai.application.service;
+package com.emme.assistant.ai.application.semantic;
 
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import java.util.Objects;

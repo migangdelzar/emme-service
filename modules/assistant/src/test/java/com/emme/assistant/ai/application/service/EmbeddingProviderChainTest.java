@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
+import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

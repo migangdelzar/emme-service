@@ -2,7 +2,7 @@ package com.emme.assistant.ai.adapter.out.provider.springai;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
-import com.emme.assistant.ai.application.service.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import org.springframework.ai.embedding.EmbeddingModel;

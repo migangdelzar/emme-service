@@ -1,6 +1,6 @@
 package com.emme.assistant.ai.application.port.out;
 
-import com.emme.assistant.ai.application.service.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 
 /** Provider-neutral port for creating embeddings used by semantic application services. */
 public interface EmbeddingModelPort {

@@ -6,7 +6,7 @@
 
 **Architecture:** `libraries:ai-contracts` contains framework-neutral ports and value contracts. `modules:ai-platform` contains reusable AI infrastructure and orchestration adapters. `modules:assistant` owns Emme-specific use cases, workflow definitions, and business-facing composition. Domain and application rules remain authoritative for prices, availability, appointments, authorization, and tenant isolation.
 
-**Tech Stack:** Java 25, Spring Boot 4.1.0, Spring Modulith 2.1.0, Spring AI 2.0.1, LangGraph4j 1.8.25, PostgreSQL 17 with pgvector and Apache AGE 1.6.0, Redis, Gradle 9.4.1, JUnit 5, Testcontainers, OpenTelemetry/Micrometer.
+**Tech Stack:** Java 25, Spring Boot 4.1.0, Spring Modulith 2.1.0, Spring AI 2.0.1, LangGraph4j 1.8.25, Ollama `qwen3-embedding:0.6b` for the initial local text embedding, PostgreSQL 17 with pgvector and Apache AGE 1.6.0, Redis Stack/Redis Query Engine with a pinned image digest, Gradle 9.4.1, JUnit 5, Testcontainers, OpenTelemetry/Micrometer.
 
 ## Global Constraints
 
@@ -14,11 +14,12 @@
 - Use TDD for every behavior: write a focused failing test, implement the smallest passing change, then refactor and rerun the relevant suite.
 - Do not use an LLM as authority for tenant, user, role, price, availability, policy, payment, appointment, or approval decisions.
 - Resolve tenant and principal context from the authenticated backend request context. Reject client- or model-supplied tenant identifiers when they disagree with trusted context.
-- PostgreSQL is authoritative for durable conversations, workflows, checkpoints, quotes, approvals, tool calls, traces, and audit events. Redis is operational state only.
+- PostgreSQL is authoritative for durable conversations, workflows, checkpoints, quotes, approvals, tool calls, traces, audit events, and canonical vector references. Redis Stack is rebuildable operational/hot-index state only.
 - Keep AI contracts framework-neutral. Spring AI and LangGraph4j types must not leak into domain packages or `ai-contracts`.
 - Keep one workflow orchestration boundary: Spring AI performs model/tool operations; LangGraph4j coordinates durable, branching, resumable workflows.
 - Every write operation must enforce authorization, validation, audit logging, and idempotency.
 - Every tenant-scoped relational, vector, cache, graph, and event operation must carry trusted tenant context.
+- Every vector index must pin the embedding model/version, dimensions, normalization, distance metric, and query-instruction version; different embedding spaces never share an index.
 - Do not replace existing functionality or stage unrelated files.
 
 ## 1. Repository Baseline and Target Boundary
@@ -320,7 +321,7 @@ flowchart TD
 
 **Test first:** Add tests for provider selection, ordered fallback on retryable provider failure, no fallback on validation/security failure, model and prompt version recording, structured extraction schema failure, and response-client prohibition on price recalculation.
 
-**Implementation:** Use Spring AI `ChatClient`, model-specific adapters, typed structured output, and configured provider chains for Ollama, MLX-compatible local execution, and optional Ox Alpha cloud escalation. Inject providers through ports; do not hard-code a provider in domain logic. Configure cloud escalation per tenant and default private image processing to local execution.
+**Implementation:** Use Spring AI `ChatClient`, model-specific adapters, typed structured output, and configured provider chains for Ollama, MLX-compatible local execution, and optional Ox Alpha cloud escalation. Configure Ollama `qwen3-embedding:0.6b` as the initial text embedding model for intent, tool, cache, RAG, and normalized design descriptions. Inject providers through ports; do not hard-code a provider in domain logic. Configure cloud escalation per tenant and default private image processing to local execution. A different embedding provider must use a separate versioned index and must not be used to query the local vector space.
 
 **Refactor and verify:** Run platform configuration and adapter tests with test doubles; run assistant tests to confirm composition still starts. Expected result: multiple providers are available without duplicate provider logic.
 
@@ -342,15 +343,16 @@ flowchart TD
 
 **Files:** add platform routing/cache implementations and ports listed in the package map; add/update migrations `019-ai-platform-contracts.sql` and vector indexes; add unit and PostgreSQL integration tests.
 
-**Test first:** Cover deterministic explicit-command routing, pgvector top-1/top-2 score and margin calculation, required-slot and authorization gates, abstention below calibrated thresholds, tool selection constrained by role/risk, exact embedding-model/version matching for cache hits, tenant isolation, cache expiry, and fallback to Spring AI when semantic confidence is insufficient.
+**Test first:** Cover deterministic explicit-command routing, Redis Stack top-1/top-2 score and margin calculation, pgvector fallback/rebuild behavior, required-slot and authorization gates, abstention below calibrated thresholds, tool selection constrained by role/risk, exact embedding-model/version/dimension/instruction matching for cache hits, tenant isolation, cache expiry, and fallback to Spring AI when semantic confidence is insufficient.
 
 **Implementation:**
 
 1. Route explicit UI actions and deterministic rules first.
-2. Query tenant-safe pgvector intent examples and calculate top-1, top-2, margin, required-field completeness, and authorization eligibility.
-3. Run semantic tool selection only for tools allowed by current intent, role, tenant, and risk policy.
-4. Query semantic cache using the same embedding model/version used for writes, namespace by tenant and policy/model versions, and require a distance threshold plus response validity.
-5. Fall back to structured Spring AI extraction or the bounded fallback agent; abstain or ask for clarification when confidence is inadequate.
+2. Query Redis Stack FLAT indexes for the small hot intent/tool catalogs and calculate top-1, top-2, margin, required-field completeness, and authorization eligibility.
+3. Rebuild or fall back to PostgreSQL/pgvector when Redis is unavailable; PostgreSQL stores the canonical references and index metadata.
+4. Run semantic tool selection only for tools allowed by current intent, role, tenant, and risk policy.
+5. Query the Redis Stack semantic response cache using the same embedding model/version, dimension, normalization, distance metric, and instruction version used for writes; namespace by tenant, audience scope, policy/model versions, and cache schema.
+6. Fall back to structured Spring AI extraction or the bounded fallback agent; abstain or ask for clarification when confidence is inadequate.
 
 Do not execute a mutating tool from similarity alone; require the use-case confirmation and idempotency policy. Store successful and corrected traces for offline candidate enrichment, never mutate the production index inline.
 
@@ -400,11 +402,11 @@ Do not execute a mutating tool from similarity alone; require the use-case confi
 
 ### Task 13 — Implement tenant-safe pgvector RAG
 
-**Files:** add migration `021-ai-platform-rag.sql`; add `PgVectorKnowledgeRetriever`, ingestion/chunking ports, tenant metadata filters, and Spring AI `VectorStore` configuration; add ingestion and retrieval tests.
+**Files:** add migration `021-ai-platform-rag.sql`; add `PgVectorKnowledgeRetriever`, hybrid `tsvector`/pgvector retrieval, ingestion/chunking ports, tenant metadata filters, and Spring AI `VectorStore` configuration; add ingestion and retrieval tests.
 
 **Test first:** Verify section-aware chunking, configurable size/overlap, required metadata, tenant/locale/visibility/effective-version filtering, prompt-injection marking, no price authority in RAG, and deterministic retrieval results using a fake and pgvector Testcontainer.
 
-**Implementation:** Store unstructured FAQs, aftercare, service descriptions, approved design descriptions, manuals, and brand guidance in pgvector. Keep services/prices/hours/availability/policies used transactionally in relational application use cases. Use a `KnowledgeRetriever` port and retrieval advisor only for answerable knowledge intents.
+**Implementation:** Store unstructured FAQs, aftercare, service descriptions, approved design descriptions, manuals, and brand guidance in pgvector. Combine dense pgvector search with PostgreSQL `tsvector` search through deterministic reciprocal-rank fusion; keep services/prices/hours/availability/policies used transactionally in relational application use cases. Use a `KnowledgeRetriever` port and retrieval advisor only for answerable knowledge intents. The initial embedding is Ollama `qwen3-embedding:0.6b`; embedding changes create a new index version and require reindexing.
 
 **Refactor and verify:** Run vector integration tests and retrieval benchmarks for configured chunk sizes. Expected result: cross-tenant documents are not retrievable, and transactional answers never originate from RAG chunks.
 
@@ -416,7 +418,7 @@ Do not execute a mutating tool from similarity alone; require the use-case confi
 
 **Test first:** Verify Redis key namespaces, TTLs, lock ownership, idempotency keys, rate limits, live event replay/reconnection, SSE status events, WhatsApp acknowledgment/final-response ordering, retry/backoff, dead-letter handling, tenant fairness, and per-worker concurrency limits.
 
-**Implementation:** Use Redis for `session`, `ai:thread`, `ai:lock`, quote cache, rate, review, stream, and job status keys with tenant/user scoping. Use PostgreSQL transactional outbox for durable events. Use Redis Streams for the initial 20–30-salon target and define a Kafka-compatible event envelope for future scale. Never publish hidden reasoning or every model token.
+**Implementation:** Use a pinned Redis Stack deployment for `session`, `ai:thread`, `ai:lock`, hot semantic intent/tool indexes, short-lived semantic response cache, quote cache, rate, review, stream, and job status keys with tenant/user scoping. Use Spring AI's Redis `VectorStore` for vector operations and Spring Data Redis/Lettuce for locks, streams, TTLs, and native index administration. Use PostgreSQL transactional outbox for durable events. Use Redis Streams for the initial 20–30-salon target and define a Kafka-compatible event envelope for future scale. Never publish hidden reasoning or every model token.
 
 **Refactor and verify:** Run Redis Testcontainers tests and channel contract tests. Expected result: web requests stream safe status/delta events with recovery, while WhatsApp receives acknowledgment then a persisted final response.
 
@@ -527,6 +529,7 @@ The current worktree has unrelated tenancy modifications and a known local Java/
 | Spring AI version/API drift | Use the version catalog and official API signatures in one platform adapter; avoid Spring types in contracts |
 | Semantic false positives cause unsafe actions | Require score, margin, slot, authorization, risk, confirmation, and idempotency gates; abstain on uncertainty |
 | Redis loss causes data loss | Persist durable records and outbox events in PostgreSQL; Redis is reconstructable operational state |
+| Redis Stack memory pressure or index loss | Keep hot indexes bounded and TTL-controlled, use FLAT for small catalogs, alert on memory/eviction, and rebuild all semantic indexes from PostgreSQL |
 | AGE packaging does not match pgvector image | Use a pinned custom PG17 image/profile and make graph retrieval optional; preserve relational/vector behavior without AGE |
 | PII reaches logs/evaluation or cloud provider | Redact before logs/evaluation, default private image processing local, and make cloud fallback tenant-configurable |
 | Online self-enrichment degrades routing | Persist candidates separately, run regression/canary evaluation, and promote versioned embeddings only after safety gates |
@@ -539,6 +542,7 @@ The current worktree has unrelated tenancy modifications and a known local Java/
 - [ ] Java 25 context propagation uses ScopedValue as the canonical mechanism, with explicit legacy bridges and structured concurrency tests.
 - [ ] Tenant isolation is enforced for relational, vector, Redis, graph, tool, workflow, trace, and channel operations.
 - [ ] Semantic classifier, proactive tool selector, and semantic cache have calibrated gates and LLM fallback/abstention behavior.
+- [ ] Redis Stack hot indexes use the pinned embedding model/version and can be rebuilt from PostgreSQL without data loss.
 - [ ] Spring AI specialized clients and advisors are configured without competing tool-calling paths.
 - [ ] LangGraph4j workflows checkpoint to PostgreSQL and support idempotent pause/resume.
 - [ ] Quote prices and appointments are produced only by deterministic application/domain use cases.
@@ -553,8 +557,9 @@ The current worktree has unrelated tenancy modifications and a known local Java/
 
 ## 9. Open Technical Spikes Before Implementation
 
-1. Confirm the exact Spring AI 2.0.1 structured-output and advisor APIs exposed by the repository's dependency graph before writing adapters.
+1. Confirm the exact Spring AI 2.0.1 structured-output, Redis VectorStore, semantic-cache, and advisor APIs exposed by the repository's dependency graph before writing adapters.
 2. Confirm the LangGraph4j 1.8.25 checkpoint/interrupt API and isolate any preview or unstable API behind the platform adapter.
 3. Validate the Java 25 `ScopedValue` and `StructuredTaskScope` compilation flags used by the repository's current Gradle toolchain.
-4. Build and smoke-test a PostgreSQL 17 image containing pgvector and Apache AGE 1.6.0 before enabling the graph profile.
-5. Establish labeled intent/extraction fixtures and baseline score distributions before setting production thresholds.
+4. Pin and smoke-test the Redis Stack image/digest with Spring AI Redis VectorStore and native KNN/filter queries before enabling hot semantic indexes.
+5. Build and smoke-test a PostgreSQL 17 image containing pgvector and Apache AGE 1.6.0 before enabling the graph profile.
+6. Establish labeled intent/extraction fixtures and baseline score distributions before setting production thresholds.

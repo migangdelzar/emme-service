@@ -5,7 +5,7 @@
 | Product | Emme Nails |
 | Repository | `emme-service` |
 | Date | 2026-08-28 |
-| Status | Draft for user review |
+| Status | Approved for implementation with Redis Stack/Qwen3 embedding decision |
 | Scope | AI naming, tenant context, Java 25 concurrency, Spring AI, LangGraph4j, pgvector RAG, optional Apache AGE GraphRAG, observability, and governed self-improvement |
 | Deployment | One Spring Boot/Spring Modulith deployable; no separate `emme-ai` service in this phase |
 
@@ -21,9 +21,19 @@ embedding contracts out of assistant.
 
 PostgreSQL remains authoritative for tenants, memberships, services, prices,
 appointments, conversations, workflows, quotes, approvals, traces, audits, and
-outbox events. PostgreSQL/pgvector is the primary durable vector store. Redis is
-temporary operational infrastructure. Apache AGE is an optional asynchronous
-derived graph read model for relationship recommendations, hosted in PostgreSQL.
+outbox events. PostgreSQL/pgvector is the primary durable vector store. Redis
+Stack is the low-latency hot vector/cache layer for small, versioned semantic
+indexes and short-lived semantic responses; it is rebuildable and never
+authoritative. Apache AGE is an optional asynchronous derived graph read model
+for relationship recommendations, hosted in PostgreSQL.
+
+The initial text embedding is Ollama's `qwen3-embedding:0.6b`. It is a
+multilingual, instruction-aware 1024-dimensional model suitable for Spanish
+messages and local Apple Silicon inference. The same model version, dimension,
+normalization, distance metric, and query-instruction version must be used for
+every index and query namespace. `bge-m3` is the first regression candidate;
+Qwen3 4B is a quality candidate when local latency and memory measurements
+justify it. A different provider/model never shares an existing vector index.
 
 Java 25 preview APIs are isolated behind stable Emme interfaces:
 
@@ -35,9 +45,9 @@ Stable Emme ports
     -> PostgreSQL/pgvector, Apache AGE, and Redis adapters
 ```
 
-This document is a design proposal. It does not authorize implementation until
-the user approves the complete design. Implementation must be delivered as
-small TDD slices.
+This document is the approved design baseline for implementation. Implementation
+must still be delivered in small TDD slices and must not expand into an
+unrelated rewrite.
 
 ## 2. Repository baseline and gaps
 
@@ -365,7 +375,7 @@ flowchart TD
 | LangGraph4j | Workflow state, branches, retries, checkpoints, pause/resume | Repositories and domain rules |
 | Spring Modulith | Internal events and outbox publication | AI reasoning |
 | PostgreSQL | Transactions, history, workflow, approvals, traces, pgvector | Ephemeral locks/live fan-out |
-| Redis | Temporary state, locks, exact cache, rate limits, live events | Durable business records |
+| Redis Stack | Rebuildable hot semantic indexes, temporary state, locks, short-lived cache, rate limits, live events | Durable business records or authorization |
 | Apache AGE | Optional derived relationships/recommendations inside PostgreSQL | Transactional authority; vector similarity |
 | Java agent | Telemetry and diagnostics | Executor replacement or authorization |
 
@@ -461,22 +471,99 @@ ResponseChatClient
 Native structured output is an optimization; application validation remains
 mandatory, particularly for local models without provider-native guarantees.
 
+## 9.1 Six-stage production lifecycle
+
+The lifecycle is implemented as ordered platform gates around direct Spring AI
+calls and LangGraph4j workflows. It is not six deployable services.
+
+```mermaid
+flowchart TD
+    I[1 Ingestion and ingress guardrails] --> R[2 Query transformation and hybrid retrieval]
+    R --> G[3 LangGraph4j state graph execution]
+    G --> O[4 Output validation and egress guardrails]
+    O --> P[Persist durable result and outbox]
+    P --> E[5 Async evaluation]
+    P --> T[6 OpenTelemetry traces and metrics]
+```
+
+Stage 1 resolves trusted authentication, normalizes input, redacts PII before
+external model calls, and applies deterministic safety checks. A local safety
+classifier such as Llama Guard may be enabled behind a port; NeMo Guardrails is
+an optional policy adapter, not a second workflow engine. Stage 2 performs
+deterministic slot/query transformation, Redis hot semantic lookup, and
+tenant-filtered dense/sparse retrieval. Stage 3 executes bounded graph nodes
+and governed tools. Stage 4 validates typed output, reconciles factual fields
+against application results, checks data leakage, and rejects raw model output.
+Stage 5 reads anonymized traces asynchronously for Ragas and regression
+evaluation. Stage 6 instruments every stage without exposing raw prompts,
+secrets, hidden reasoning, or unredacted PII.
+
 ## 10. Semantic classification, tool selection, and caching
 
 ```text
 EmbeddingModelPort
-  ├── intent reference index
-  ├── approved tool reference index
-  ├── semantic response cache index
-  └── knowledge/design index
+  ├── Redis Stack hot intent reference index
+  ├── Redis Stack hot approved-tool reference index
+  ├── Redis Stack short-lived semantic response cache
+  └── PostgreSQL/pgvector durable knowledge/design index
 ```
+
+### 10.1 Embedding model and vector-store policy
+
+`qwen3-embedding:0.6b` is the initial local text embedding model. Ollama
+publishes this model as a 0.6B, 32K-context embedding model, and the Qwen model
+card specifies 100+ language support, a maximum 1024-dimensional output, and
+instruction-aware queries. This is a good cost/latency baseline for Spanish
+and English on the Apple Silicon Mac mini. The production configuration pins
+the exact Ollama model tag and records its digest or resolved model version.
+
+RedisVL is not an embedding model. It is a Python client/library for Redis
+vector search. The Java service uses Spring AI's Redis `VectorStore` integration
+and Spring Data Redis/Lettuce where native Redis commands are needed. Redis
+vector search requires Redis Stack/Redis Query Engine, so the current plain
+`redis:7-alpine` image must be replaced or supplemented by a pinned
+Redis-Stack profile before Redis KNN is enabled.
+
+Use separate versioned indexes:
+
+| Index | Store | Initial algorithm | Contents | Authority |
+|---|---|---|---|---|
+| `ai:intent:{embeddingVersion}` | Redis Stack | `FLAT` | Small intent examples and route metadata | PostgreSQL catalog/examples |
+| `ai:tool:{embeddingVersion}` | Redis Stack | `FLAT` | Approved tool descriptions and candidate metadata | PostgreSQL tool registry/policies |
+| `ai:response:{embeddingVersion}` | Redis Stack | `FLAT`, then measured HNSW | Eligible read-only cached responses | PostgreSQL traces and source results |
+| `ai:knowledge:{embeddingVersion}` | PostgreSQL/pgvector | HNSW/appropriate pgvector index | Durable FAQs, policies, aftercare, and design descriptions | PostgreSQL documents |
+| `ai:design:{embeddingVersion}` | PostgreSQL/pgvector | HNSW/appropriate pgvector index | Normalized design descriptions and future image embeddings | PostgreSQL design artifacts |
+
+For the initial 20–30-salon target, `FLAT` is preferred for the small Redis
+intent/tool indexes because exact nearest-neighbor search is more deterministic
+and avoids unnecessary HNSW approximation. HNSW becomes an evaluated option
+for larger response or design working sets. Every vector record stores tenant
+scope where applicable, model/version, instruction version, dimension,
+normalization, metric, index version, and source version.
+
+The semantic cache is split into two concepts:
+
+1. `ToolSelectionCache` stores candidate tool IDs, scores, and catalog version.
+   It never stores authorization decisions. Authorization, role, risk, slot,
+   confirmation, and idempotency checks run again before execution.
+2. `SemanticResponseCache` stores only validated read-only responses with
+   provenance, policy/model versions, scope, and TTL. Booking, cancellation,
+   payment, personalized customer data, and staff decisions are ineligible by
+   default.
+
+Redis is the first lookup and is allowed to fail closed to a normal workflow.
+PostgreSQL/pgvector is the durable fallback for reference and knowledge data,
+not the first semantic response-cache implementation. A cold semantic cache in
+pgvector is a later optimization only if hit rate, Redis memory, and freshness
+metrics justify it.
 
 ### Classification
 
 ```text
 explicit UI action
   -> deterministic rule
-  -> pgvector similarity
+  -> Redis Stack hot similarity
+  -> PostgreSQL/pgvector fallback or rebuild source
   -> top1/top2 margin + required-slot + authorization gate
   -> structured extraction if needed
   -> fallback agent only after abstention
@@ -487,6 +574,8 @@ explicit UI action
 ```text
 message
   -> approved tool-reference vector search
+  -> Redis Stack hot index
+  -> PostgreSQL registry fallback
   -> backend role/tenant/risk filtering
   -> score and margin gate
   -> typed argument validation
@@ -501,14 +590,16 @@ Mutations require workflow confirmation, authorization, idempotency, and audit.
 ```text
 message
   -> deterministic eligibility policy
-  -> tenant/principal/version scoped pgvector lookup
-  -> durable expiry/hit confirmation
+  -> tenant/principal/version scoped Redis Stack lookup
+  -> TTL/freshness/provenance validation
   -> cached answer or normal workflow
 ```
 
 Transactional and personalized requests bypass the cache unless an explicit
-policy proves safe reuse. Redis may accelerate exact hot reads; PostgreSQL owns
-durable cache state and hit accounting.
+policy proves safe reuse. Redis owns the short-lived hot response cache and
+selection cache; PostgreSQL owns durable source data, traces, cache eligibility
+evidence, and rebuild metadata. Cache hits and misses are recorded in the
+durable trace without persisting hidden reasoning.
 
 ## 11. Spring AI RAG
 
@@ -530,13 +621,28 @@ sequenceDiagram
     W->>E: Embed normalized question
     E-->>W: Versioned vector
     W->>V: Search with backend tenant and visibility filter
-    V->>P: pgvector similarity query
-    P-->>V: Tenant-scoped chunks
+    V->>P: Dense pgvector + sparse PostgreSQL tsvector search
+    P-->>V: Tenant-scoped candidates
+    V->>V: Fuse rankings and optional measured rerank
     V-->>A: Untrusted knowledge context
     A->>M: Augmented prompt
     M-->>W: Grounded answer/citations
     W->>W: Validate response policy and persist trace
 ```
+
+Query transformation is deterministic first: normalize locale, extract known
+slots, and construct tenant/visibility/effective-date filters in the backend.
+An LLM rewrite or multi-query expansion is allowed only for a configured
+knowledge intent after the original query has been preserved and bounded. The
+dense and sparse searches may run in one Java 25 structured scope and join with
+an optional-result policy; a failed optional retriever must not bypass tenant
+filters or cause an ungrounded answer.
+
+The initial sparse implementation is PostgreSQL `tsvector`/full-text search,
+not a second search product. Candidate fusion is deterministic reciprocal-rank
+fusion. Cross-encoder reranking is disabled initially and becomes a measured
+feature-flagged phase using a local model where possible. It must not be used to
+override application results or authorization.
 
 The VectorStore adapter creates the tenant filter from
 `AiExecutionContextScope`, rejects model-supplied tenant filters, enforces
@@ -651,11 +757,23 @@ Redis keys remain temporary:
 session:{userId}
 ai:thread:{tenantId}:{conversationId}
 ai:lock:{tenantId}:{conversationId}
+ai:vector:intent:{embeddingVersion}:{indexVersion}:{referenceId}
+ai:vector:tool:{embeddingVersion}:{indexVersion}:{referenceId}
+ai:vector:response:{tenantId}:{embeddingVersion}:{cacheId}
+ai:semantic:selection:{tenantId}:{embeddingVersion}:{inputHash}
 quote:cache:{tenantId}:{inputHash}:{templateVersion}
 rate:{tenantId}:{userId}
 review:{tenantId}:{reviewTaskId}
 stream:{tenantId}:{conversationId}:events
 ```
+
+Redis vector indexes are created with explicit prefixes and metadata filters;
+the tenant filter is mandatory for tenant-owned records. The index name is
+versioned by embedding and schema/index version so model changes create a new
+namespace rather than silently mixing vector spaces. Redis TTL, eviction, and
+memory alarms are operational controls. Rebuilding the hot indexes reads from
+PostgreSQL and does not require conversation history or business records to be
+recovered from Redis.
 
 Capture model latency, tokens, cost, fallbacks, queue depth, consumer lag,
 HITL wait time, confidence, correction rate, tool failures, tenant errors,
@@ -847,6 +965,13 @@ global executor behavior outside the AI/concurrency boundary.
 - [Java 25 `Joiner`](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/concurrent/StructuredTaskScope.Joiner.html)
 - [Java 25 `ScopedValue`](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/ScopedValue.html)
 - [Spring AI RAG](https://docs.spring.io/spring-ai/reference/api/retrieval-augmented-generation.html)
+- [Spring AI Redis VectorStore and semantic cache](https://docs.spring.io/spring-ai/reference/2.0/api/vectordbs/redis.html)
+- [Spring AI Ollama embeddings](https://docs.spring.io/spring-ai/reference/api/embeddings/ollama-embeddings.html)
+- [Redis vector search](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/)
+- [RedisVL](https://redis.io/docs/latest/develop/ai/redisvl/)
+- [Qwen3-Embedding model card](https://huggingface.co/Qwen/Qwen3-Embedding-4B)
+- [Ollama Qwen3 embedding models](https://ollama.com/library/qwen3-embedding)
+- [BAAI BGE-M3 model card](https://huggingface.co/BAAI/bge-m3)
 - [Spring AI structured-output validation](https://docs.spring.io/spring-ai/reference/api/structured-output/validation.html)
 - [Apache AGE downloads and supported releases](https://age.apache.org/download/)
 - [Apache AGE overview](https://age.apache.org/overview/)

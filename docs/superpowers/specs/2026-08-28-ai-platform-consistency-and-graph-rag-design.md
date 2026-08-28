@@ -5,7 +5,7 @@
 | Product | Emme Nails |
 | Repository | `emme-service` |
 | Date | 2026-08-28 |
-| Status | Approved for implementation with Redis Stack/Qwen3 embedding decision |
+| Status | Approved for implementation with Redis Stack/EmbeddingGemma and hardware-independent regression |
 | Scope | AI naming, tenant context, Java 25 concurrency, Spring AI, LangGraph4j, pgvector RAG, optional Apache AGE GraphRAG, observability, and governed self-improvement |
 | Deployment | One Spring Boot/Spring Modulith deployable; no separate `emme-ai` service in this phase |
 
@@ -27,13 +27,25 @@ indexes and short-lived semantic responses; it is rebuildable and never
 authoritative. Apache AGE is an optional asynchronous derived graph read model
 for relationship recommendations, hosted in PostgreSQL.
 
-The initial text embedding is Ollama's `qwen3-embedding:0.6b`. It is a
-multilingual, instruction-aware 1024-dimensional model suitable for Spanish
-messages and local Apple Silicon inference. The same model version, dimension,
-normalization, distance metric, and query-instruction version must be used for
-every index and query namespace. `bge-m3` is the first regression candidate;
-Qwen3 4B is a quality candidate when local latency and memory measurements
-justify it. A different provider/model never shares an existing vector index.
+The local model host uses Gemma 4 MLX variants for chat, vision, structured
+extraction, and reasoning. It uses Ollama's `embeddinggemma` for text
+embeddings used by semantic classification, semantic tool selection, semantic
+caching, RAG, and normalized design descriptions. Gemma 4 and EmbeddingGemma
+are separate capabilities; Gemma 4 is not used as a text embedding model. The
+same embedding model version, dimension, normalization, distance metric, and
+query-instruction version must be used for every index and query namespace. A
+different provider/model never shares an existing vector index.
+
+The Mac Studio is an optional model-inference host, not a CI dependency or a
+durable data store. One Ollama service may serve multiple logical conversations
+through bounded request scheduling. The service does not start one model
+process per chat and does not rely on GPU auto-detection for admission. The
+Mac Studio M5 Max baseline uses `gemma4:e4b-mlx` as the default generation/vision
+profile; `gemma4:e2b-mlx` remains the compatibility profile for lower-memory
+developer machines. The initial local profile is conservative: one concurrent
+generation/vision call, small bounded embedding concurrency, a global in-flight
+limit, and explicit per-tenant/per-user queue limits. These values are
+benchmarked and configured, not inferred from the number of conversations.
 
 Java 25 preview APIs are isolated behind stable Emme interfaces:
 
@@ -331,6 +343,11 @@ flowchart TD
     KR -. optional .-> AG[Apache AGE derived graph]
     KR --> RA[KnowledgeAnswerChatClient + RAG advisor]
 
+    AP --> MS[Bounded ModelExecutionScheduler]
+    MS --> OH[Ollama model host]
+    OH --> GM[Gemma4 MLX chat/vision]
+    OH --> EM[EmbeddingGemma]
+
     LG --> CP[PostgreSQL checkpoint]
     AP -. temporary .-> RD[Redis locks/status/cache/events]
     AP --> OT[OpenTelemetry/Micrometer/durable AI trace]
@@ -498,6 +515,110 @@ Stage 5 reads anonymized traces asynchronously for Ragas and regression
 evaluation. Stage 6 instruments every stage without exposing raw prompts,
 secrets, hidden reasoning, or unredacted PII.
 
+## 9.2 Local model host, logical chats, and backpressure
+
+The Mac Studio is a bounded inference appliance. It is not a collection of
+independent GPU-backed chat processes. A single Ollama service keeps a selected
+model loaded when possible and multiplexes requests from many logical
+conversations. Conversation identity, history, memory scope, tenant scope, and
+workflow state remain application concerns persisted by Emme; they are not
+stored as GPU-local chat sessions.
+
+```mermaid
+flowchart TD
+    R[Inbound conversation request] --> A[Model admission controller]
+    A -->|capacity available| L[Per-model semaphore/lease]
+    A -->|queue allowed| Q[Bounded fair queue]
+    A -->|deadline or queue full| O[Overload policy]
+    Q --> L
+    L --> OLL[One Ollama service on Mac Studio]
+    OLL --> G[Gemma4 MLX chat/vision model]
+    OLL --> E[EmbeddingGemma embedding model]
+    G --> X[Release lease and persist result]
+    E --> X
+    O -->|interactive| B[429/AI_BUSY with Retry-After]
+    O -->|async workflow| D[Durable queued workflow or safe fallback]
+```
+
+The first implementation uses explicit capacity profiles rather than guessing
+from GPU utilization:
+
+```text
+ModelCapacityProfile
+  providerKey
+  modelKey
+  maxInFlight
+  maxQueueDepth
+  maxWait
+  requestTimeout
+  maximumInputTokens
+  maximumOutputTokens
+  maximumImageBytes
+  priorityClass
+```
+
+The initial Mac profile starts conservatively with one concurrent Gemma 4
+generation/vision request and a small, independently configurable embedding
+limit. A global inference limit remains above both model limits so embedding
+work cannot starve interactive generation. The exact values are benchmarked on
+the purchased configuration and changed through configuration, not code.
+
+Admission and scheduling rules:
+
+1. Every model call passes through `ModelExecutionScheduler`; no direct
+   controller, LangGraph node, advisor, or tool calls Ollama directly.
+2. The scheduler enforces global, provider/model, tenant, and authenticated-user
+   in-flight limits. The tenant and user identifiers come from the trusted
+   `AiExecutionContext`, never from model arguments.
+3. Queues are bounded. There is no unbounded `BlockingQueue`, common-pool
+   submission, or fire-and-forget model task.
+4. Interactive requests use a deadline-aware weighted fair queue. A tenant with
+   a large backlog cannot monopolize the Mac, and a low-volume tenant cannot be
+   permanently starved by background ingestion or evaluation.
+5. Background embedding, reindexing, Ragas, and learning jobs use a lower
+   priority lane with a separate budget. They yield to interactive requests and
+   are paused when the host is unhealthy or the queue crosses the high-water
+   mark.
+6. A request that cannot be admitted before its deadline is rejected or routed
+   to an explicitly allowed provider fallback. It is never silently dropped.
+7. Cancellation, timeout, client disconnect, provider failure, and workflow
+   interruption release the model lease in `finally` and emit a trace event.
+8. Async work is accepted only after its durable workflow/outbox record exists;
+   Redis Streams may transport the work, but PostgreSQL remains the recovery
+   source after Redis or the Mac restarts.
+
+The scheduler exposes a stable platform port, for example:
+
+```java
+interface ModelExecutionScheduler {
+  CompletionStage<ModelExecutionResult> submit(
+      ModelExecutionRequest request, AiExecutionContext context);
+}
+```
+
+The request contains model capability, priority, deadline, idempotency key, and
+estimated resource bounds. It does not contain an authority override. The
+implementation may use virtual threads to wait for bounded permits, but the
+capacity policy is independent of thread count. `StructuredTaskScope` and
+Joiners coordinate independent read-only work around a model call; they are not
+a replacement for the model admission controller.
+
+Overload behavior is channel-specific:
+
+| Channel | Queue full or model busy | Required behavior |
+|---|---|---|
+| Web/SSE | Immediate admission failure | Return a safe busy response with retry metadata; do not hold an unbounded HTTP request |
+| WhatsApp | Accepted async work | Send acknowledgment only after durable acceptance; send one final response after completion |
+| Staff UI | Bounded wait | Show queued status and allow cancellation or refresh from durable workflow state |
+| Background job | Defer/retry | Exponential backoff, tenant fairness, and dead-letter after bounded attempts |
+
+The local host has no special relationship with a conversation. Ten users can
+have ten conversations while sharing the same loaded model, subject to the
+capacity policy. This is the safe equivalent of “multiple chats”; it is not one
+GPU allocation per chat. Chat memory is keyed by
+`tenantId/conversationId/principalScope`, while model capacity is keyed by
+`providerKey/modelKey`.
+
 ## 10. Semantic classification, tool selection, and caching
 
 ```text
@@ -510,12 +631,24 @@ EmbeddingModelPort
 
 ### 10.1 Embedding model and vector-store policy
 
-`qwen3-embedding:0.6b` is the initial local text embedding model. Ollama
-publishes this model as a 0.6B, 32K-context embedding model, and the Qwen model
-card specifies 100+ language support, a maximum 1024-dimensional output, and
-instruction-aware queries. This is a good cost/latency baseline for Spanish
-and English on the Apple Silicon Mac mini. The production configuration pins
-the exact Ollama model tag and records its digest or resolved model version.
+`embeddinggemma` is the initial local text embedding model. EmbeddingGemma is a
+small multilingual text embedding model intended for retrieval, semantic
+similarity, classification, and clustering on everyday devices. It supports
+flexible output dimensions; Emme starts at 768 dimensions and keeps the output
+L2-normalized for cosine similarity. The production configuration pins the
+exact Ollama model tag and records its resolved model version or digest.
+
+`gemma4:e4b-mlx` is the default local generation/vision profile for the Mac
+Studio M5 Max baseline. `gemma4:e2b-mlx` is the lower-memory compatibility
+profile. The first local integration uses Ollama to serve these MLX variants; a
+direct MLX runtime is not introduced unless measurements demonstrate a material
+benefit over the single Ollama boundary.
+
+EmbeddingGemma is not the same model as Gemma 4 and must be versioned separately
+from the generation model. When the embedding model, dimension, normalization,
+distance metric, or instruction template changes, Emme creates a new index
+namespace, regenerates reference vectors, runs the semantic regression suite,
+and promotes the new namespace only after evaluation.
 
 RedisVL is not an embedding model. It is a Python client/library for Redis
 vector search. The Java service uses Spring AI's Redis `VectorStore` integration
@@ -808,10 +941,12 @@ appointment rules.
 8. Use optimistic locking for review and checkpoint resume.
 9. Retry only safe/idempotent operations; bound all model, database, vector,
    graph, and MCP calls with timeouts/circuit breakers.
-10. Use transactional outbox for notifications and graph projections.
-11. Treat documents, graph text, external content, and messages as untrusted
+10. Route every model call through bounded global/model/tenant/user admission
+    limits; never use an unbounded queue or fire-and-forget model task.
+11. Use transactional outbox for notifications and graph projections.
+12. Treat documents, graph text, external content, and messages as untrusted
     prompt-injection inputs.
-12. Redis/AGE failures may remove acceleration or recommendations, never
+13. Redis/AGE failures may remove acceleration or recommendations, never
     authorization or transactional safety.
 
 ## 15. Incremental rollout
@@ -868,12 +1003,82 @@ appointment rules.
 
 ## 16. Test strategy
 
+Regression is deliberately split from live-model evaluation. A powered Mac
+Studio is never required for a pull request, restart test, tenant-isolation
+test, or business-rule regression.
+
+```mermaid
+flowchart LR
+    PR[Pull request] --> U[Java unit and architecture tests]
+    PR --> I[Testcontainers integration tests]
+    PR --> S[Semantic regression with pinned fixture vectors]
+    U --> G[Required CI gate]
+    I --> G
+    S --> G
+
+    M[Mac Studio online] -. optional .-> C[Live model contract tests]
+    H[Optional hosted model runner] -. optional .-> C
+    C --> B[Scheduled model-quality benchmark]
+    B --> P[Promotion report]
+```
+
+### Required hardware-independent regression
+
+- Unit tests use deterministic embedding vectors and model fakes. They verify
+  top-1/top-2 margins, threshold abstention, tool authorization, cache
+  eligibility, tenant scoping, idempotency, workflow transitions, and
+  backpressure without starting Ollama.
+- Integration tests use Testcontainers for PostgreSQL/pgvector and Redis Stack.
+  They verify real metadata filters, vector index contracts, Redis TTLs/locks,
+  durable workflow recovery, and outbox behavior.
+- The semantic regression corpus stores anonymized input, expected intent,
+  required slots, allowed tool, risk policy, tenant outcome, and versioned
+  fixture vectors. The fixture manifest records embedding model/version,
+  dimension, normalization, distance, and index version.
+- Tests assert ranking, expected labels, and bounded numeric tolerances. They
+  do not require exact floating-point equality across quantization or runtime
+  changes.
+- Fixture generation is an explicit reviewed command. CI never writes to a
+  production index or silently regenerates fixtures.
+
+### Optional live-model evaluation
+
+- A model contract job runs `Gemma4` and `EmbeddingGemma` against a small
+  anonymized corpus when the Mac Studio is online or an approved hosted runner
+  is available.
+- The job verifies model availability, resolved model identity, embedding
+  dimensions, normalization, latency, structured-output compatibility, and
+  representative ranking quality.
+- Nightly/weekly evaluation measures intent accuracy, abstention and false-route
+  rate, slot accuracy, retrieval metrics, extraction quality, model latency,
+  token usage, and cost. Ragas remains asynchronous/offline and never replaces
+  deterministic business tests.
+- A model or embedding change creates a new manifest/index namespace. No single
+  successful interaction automatically changes production routing.
+
+### Backpressure and local-host tests
+
+- No request starts after the global or model-specific in-flight limit is full.
+- Queue depth never exceeds configured global or tenant limits.
+- Weighted fairness prevents one tenant from monopolizing the local model and
+  prevents background ingestion from starving interactive requests.
+- Deadline expiry returns the configured overload result and does not leak a
+  permit.
+- Cancellation, timeout, provider failure, and client disconnect release the
+  permit exactly once.
+- Async acceptance persists the workflow/outbox record before transport to
+  Redis Streams; restart recovery does not duplicate a mutation.
+- Model-host unavailability routes only through explicit tenant-approved
+  fallback policy or a safe unavailable response.
+
 ### Unit
 
 - Context immutability, lexical binding, nesting, bridge cleanup, and reused
   executor behavior.
 - Joiner behavior for required, optional, first-success, timeout, interruption,
   cancellation, and failure mapping.
+- Model admission limits, tenant fairness, bounded queues, deadlines,
+  cancellation, lease release, and overload policy.
 - Semantic scores/margins, cache eligibility/expiry, tool authorization, and
   idempotency.
 - RAG filter construction, graph query allowlist, and prompt-injection defense.
@@ -958,6 +1163,9 @@ global executor behavior outside the AI/concurrency boundary.
 | Context leakage | Thread reuse, async dispatch, worker, and cross-tenant tests |
 | Trace FK failure | Durable conversation prerequisite test |
 | Provider cost | Sequential failover default and budget tests |
+| Mac model overload | Bounded model scheduler, tenant fairness, deadline and permit-release tests |
+| Mac powered off during CI | Required regression uses fakes/fixture vectors; live model tests are optional scheduled jobs |
+| Embedding model drift | Pinned model manifest, versioned index namespace, ranking regression, and explicit promotion |
 
 ## 19. References
 
@@ -969,9 +1177,12 @@ global executor behavior outside the AI/concurrency boundary.
 - [Spring AI Ollama embeddings](https://docs.spring.io/spring-ai/reference/api/embeddings/ollama-embeddings.html)
 - [Redis vector search](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/)
 - [RedisVL](https://redis.io/docs/latest/develop/ai/redisvl/)
-- [Qwen3-Embedding model card](https://huggingface.co/Qwen/Qwen3-Embedding-4B)
-- [Ollama Qwen3 embedding models](https://ollama.com/library/qwen3-embedding)
-- [BAAI BGE-M3 model card](https://huggingface.co/BAAI/bge-m3)
+- [Google EmbeddingGemma](https://ai.google.dev/gemma/docs/embeddinggemma)
+- [Ollama EmbeddingGemma](https://ollama.com/library/embeddinggemma)
+- [Ollama embeddings API](https://docs.ollama.com/capabilities/embeddings)
+- [Ollama Gemma 4](https://ollama.com/library/gemma4)
+- [Ollama MLX performance on Apple Silicon](https://ollama.com/blog/mlx-performance)
+- [Apple Mac Studio technical specifications](https://images.apple.com/mac-studio/specs/)
 - [Spring AI structured-output validation](https://docs.spring.io/spring-ai/reference/api/structured-output/validation.html)
 - [Apache AGE downloads and supported releases](https://age.apache.org/download/)
 - [Apache AGE overview](https://age.apache.org/overview/)

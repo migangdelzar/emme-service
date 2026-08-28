@@ -6,7 +6,7 @@
 
 **Architecture:** `libraries:ai-contracts` contains framework-neutral ports and value contracts. `modules:ai-platform` contains reusable AI infrastructure and orchestration adapters. `modules:assistant` owns Emme-specific use cases, workflow definitions, and business-facing composition. Domain and application rules remain authoritative for prices, availability, appointments, authorization, and tenant isolation.
 
-**Tech Stack:** Java 25, Spring Boot 4.1.0, Spring Modulith 2.1.0, Spring AI 2.0.1, LangGraph4j 1.8.25, Ollama `qwen3-embedding:0.6b` for the initial local text embedding, PostgreSQL 17 with pgvector and Apache AGE 1.6.0, Redis Stack/Redis Query Engine with a pinned image digest, Gradle 9.4.1, JUnit 5, Testcontainers, OpenTelemetry/Micrometer.
+**Tech Stack:** Java 25, Spring Boot 4.1.0, Spring Modulith 2.1.0, Spring AI 2.0.1, LangGraph4j 1.8.25, Ollama `embeddinggemma` for the initial local text embedding, Gemma 4 MLX variants for local chat/vision, PostgreSQL 17 with pgvector and Apache AGE 1.6.0, Redis Stack/Redis Query Engine with a pinned image digest, Gradle 9.4.1, JUnit 5, Testcontainers, OpenTelemetry/Micrometer.
 
 ## Global Constraints
 
@@ -20,6 +20,8 @@
 - Every write operation must enforce authorization, validation, audit logging, and idempotency.
 - Every tenant-scoped relational, vector, cache, graph, and event operation must carry trusted tenant context.
 - Every vector index must pin the embedding model/version, dimensions, normalization, distance metric, and query-instruction version; different embedding spaces never share an index.
+- The Mac Studio is an optional model-inference host, never a required CI or regression dependency. Required regression uses deterministic fakes, pinned fixture vectors, and Testcontainers; live model evaluation is scheduled or manually dispatched.
+- All local model calls pass through a bounded model scheduler with global, provider/model, tenant, and authenticated-user limits. Queues are bounded and deadline-aware; no direct unbounded submission to Ollama, the common pool, or a fire-and-forget executor is allowed.
 - Do not replace existing functionality or stage unrelated files.
 
 ## 1. Repository Baseline and Target Boundary
@@ -41,6 +43,7 @@ flowchart LR
     platform --> redis[(Redis operational state)]
     platform --> age[(Apache AGE derived graph)]
     platform --> providers[Ollama / MLX / cloud providers]
+    platform --> scheduler[Bounded model scheduler]
     assistant --> contracts
     domain --> postgres[(PostgreSQL authoritative data)]
 ```
@@ -98,6 +101,10 @@ modules/ai-platform/
     model/OllamaProviderAdapter.java
     model/MlxProviderAdapter.java
     model/OxAlphaProviderAdapter.java
+    model/ModelExecutionScheduler.java
+    model/ModelCapacityProfile.java
+    model/BoundedModelExecutionScheduler.java
+    model/TenantFairModelQueue.java
     prompt/PromptVersionRegistry.java
     routing/DeterministicIntentRouter.java
     routing/PgVectorIntentClassifier.java
@@ -321,11 +328,43 @@ flowchart TD
 
 **Test first:** Add tests for provider selection, ordered fallback on retryable provider failure, no fallback on validation/security failure, model and prompt version recording, structured extraction schema failure, and response-client prohibition on price recalculation.
 
-**Implementation:** Use Spring AI `ChatClient`, model-specific adapters, typed structured output, and configured provider chains for Ollama, MLX-compatible local execution, and optional Ox Alpha cloud escalation. Configure Ollama `qwen3-embedding:0.6b` as the initial text embedding model for intent, tool, cache, RAG, and normalized design descriptions. Inject providers through ports; do not hard-code a provider in domain logic. Configure cloud escalation per tenant and default private image processing to local execution. A different embedding provider must use a separate versioned index and must not be used to query the local vector space.
+**Implementation:** Use Spring AI `ChatClient`, model-specific adapters, typed structured output, and configured provider chains for Ollama-served Gemma 4 MLX variants and optional Ox Alpha cloud escalation. Configure Ollama `embeddinggemma` as the initial text embedding model for intent, tool, cache, RAG, and normalized design descriptions, starting with a verified 768-dimensional cosine index. Use `gemma4:e4b-mlx` for the Mac Studio M5 Max baseline and retain `gemma4:e2b-mlx` as a lower-memory compatibility profile. Inject providers through ports; do not hard-code a provider in domain logic. The first local integration uses Ollama as the single model boundary; a direct MLX sidecar is added only if benchmark results justify it. Configure cloud escalation per tenant and default private image processing to local execution. A different embedding provider must use a separate versioned index and must not be used to query the local vector space.
 
 **Refactor and verify:** Run platform configuration and adapter tests with test doubles; run assistant tests to confirm composition still starts. Expected result: multiple providers are available without duplicate provider logic.
 
 **Commit:** `feat(ai-platform): add provider chain and specialized Spring AI clients`.
+
+### Task 7A — Add bounded local model execution and backpressure
+
+**Files:** add model admission contracts and scheduler classes under
+`modules/ai-platform/.../model/`; add capacity properties and metrics; update
+provider adapters to submit through the scheduler; add unit and integration
+tests for queues, fairness, deadlines, cancellation, and overload behavior.
+
+**Test first:** Verify that global, model, tenant, and authenticated-user
+in-flight limits are enforced; queue depth is bounded; weighted fairness keeps
+one tenant from monopolizing the host; interactive work takes precedence over
+background embedding; deadlines and cancellation release leases exactly once;
+and provider unavailability follows the configured fallback policy. Verify that
+logical conversations share a loaded model without sharing memory or tenant
+context.
+
+**Implementation:** Add a `ModelExecutionScheduler` port with a bounded,
+deadline-aware fair queue. Configure separate capacity profiles for Gemma 4
+generation/vision and EmbeddingGemma, plus a global limit. Start with one
+concurrent generation/vision request and a small embedding limit, then tune
+from benchmark evidence. Use virtual threads only to await bounded admission;
+do not use unbounded queues, the common pool, or one model process per chat.
+Persist accepted asynchronous workflow/outbox records before Redis Streams
+transport. Return a safe busy result for interactive overload and defer
+background work with bounded retry/backoff.
+
+**Refactor and verify:** Run scheduler unit tests, provider contract tests, and
+restart/cancellation integration tests. Expected result: the Mac model host
+remains responsive under tenant bursts and a powered-off host does not block
+hardware-independent regression.
+
+**Commit:** `feat(ai-platform): add bounded model execution scheduler`.
 
 ### Task 8 — Add security, prompt, trace, budget, memory, and retrieval advisors
 
@@ -406,7 +445,7 @@ Do not execute a mutating tool from similarity alone; require the use-case confi
 
 **Test first:** Verify section-aware chunking, configurable size/overlap, required metadata, tenant/locale/visibility/effective-version filtering, prompt-injection marking, no price authority in RAG, and deterministic retrieval results using a fake and pgvector Testcontainer.
 
-**Implementation:** Store unstructured FAQs, aftercare, service descriptions, approved design descriptions, manuals, and brand guidance in pgvector. Combine dense pgvector search with PostgreSQL `tsvector` search through deterministic reciprocal-rank fusion; keep services/prices/hours/availability/policies used transactionally in relational application use cases. Use a `KnowledgeRetriever` port and retrieval advisor only for answerable knowledge intents. The initial embedding is Ollama `qwen3-embedding:0.6b`; embedding changes create a new index version and require reindexing.
+**Implementation:** Store unstructured FAQs, aftercare, service descriptions, approved design descriptions, manuals, and brand guidance in pgvector. Combine dense pgvector search with PostgreSQL `tsvector` search through deterministic reciprocal-rank fusion; keep services/prices/hours/availability/policies used transactionally in relational application use cases. Use a `KnowledgeRetriever` port and retrieval advisor only for answerable knowledge intents. The initial embedding is Ollama `embeddinggemma` with a verified 768-dimensional cosine index; embedding changes create a new index version and require reindexing.
 
 **Refactor and verify:** Run vector integration tests and retrieval benchmarks for configured chunk sizes. Expected result: cross-tenant documents are not retrievable, and transactional answers never originate from RAG chunks.
 
@@ -450,6 +489,36 @@ Do not execute a mutating tool from similarity alone; require the use-case confi
 
 **Commit:** `feat(ai-platform): add AI observability and evaluation pipeline`.
 
+### Task 16A — Add hardware-independent semantic regression and live-model evaluation
+
+**Files:** add anonymized semantic regression fixtures and an embedding model
+manifest under `modules/ai-platform/src/test/resources/`; add fixture-vector
+providers, model contract tests, and scheduled evaluation workflow/configuration;
+update CI documentation and the AI operational runbook.
+
+**Test first:** Verify routing, tool selection, semantic-cache policy, tenant
+isolation, schema validation, workflow outcomes, and deterministic business
+invariants using pinned fixture vectors and model fakes. Add a separate live
+contract suite that verifies the resolved Gemma 4/EmbeddingGemma model identity,
+vector dimension, normalization, structured extraction compatibility, and
+ranking quality when an approved model host is available.
+
+**Implementation:** Keep the required pull-request and integration lanes on
+hardware-independent Ubuntu runners. Use Testcontainers for PostgreSQL/pgvector
+and Redis Stack, and never call Ollama from normal regression. Run live model
+quality evaluation nightly or manually on the Mac Studio when online, or on an
+approved hosted runner. A missing Mac must make only the optional model-quality
+job unavailable; it must not make deterministic regression inconclusive. Store
+model/version/dimension/normalization/index metadata with fixtures and require
+an explicit reviewed regeneration plus evaluation before promotion.
+
+**Refactor and verify:** Run the required CI matrix with the model host powered
+off, then run the optional contract/evaluation lane with the host available.
+Expected result: application regression is repeatable without special hardware,
+while real-model drift remains observable and promotion-gated.
+
+**Commit:** `test(ai-platform): add hardware-independent semantic regression`.
+
 ### Task 17 — Complete API security, end-to-end coverage, and operational documentation
 
 **Files:** add/update conversation, human approval, workflow status controllers/resolvers; security tests; full E2E tests; `docs/ai-platform/README.md`, `docs/ai-platform/operational-runbook.md`, `docs/ai-platform/examples.md`.
@@ -473,8 +542,10 @@ flowchart TD
     T5 --> T6[6 Durable lifecycle]
     T4 --> T7[7 Spring AI providers]
     T6 --> T7
+    T7 --> T7A[7A Bounded model scheduler]
     T5 --> T8[8 Advisors]
     T7 --> T8
+    T7A --> T8
     T3 --> T9[9 Semantic routing/tool/cache]
     T7 --> T9
     T6 --> T10[10 LangGraph runtime]
@@ -493,14 +564,18 @@ flowchart TD
     T13 --> T15
     T6 --> T16[16 Observability/evaluation]
     T7 --> T16
+    T9 --> T16A[16A Hardware-independent regression]
+    T14 --> T16A
+    T16 --> T16A
     T11 --> T17[17 APIs/E2E/docs]
     T12 --> T17
     T14 --> T17
     T15 --> T17
     T16 --> T17
+    T16A --> T17
 ```
 
-Parallel work is permitted only where dependencies are complete and files do not overlap. Tasks 3–5 can begin after the build boundary. Tasks 9, 13, and 15 must not bypass tenant context or durable persistence. Appointment mutations and approval resume must not be implemented before the durable lifecycle and workflow runtime are tested.
+Parallel work is permitted only where dependencies are complete and files do not overlap. Tasks 3–5 can begin after the build boundary. Tasks 9, 13, and 15 must not bypass tenant context or durable persistence. The model scheduler must be in place before provider calls are enabled in shared workflows. Appointment mutations and approval resume must not be implemented before the durable lifecycle and workflow runtime are tested. Task 16A may run its required fixture-based suite without a model host; its live contract lane is optional.
 
 ## 6. Verification Matrix
 
@@ -534,6 +609,8 @@ The current worktree has unrelated tenancy modifications and a known local Java/
 | PII reaches logs/evaluation or cloud provider | Redact before logs/evaluation, default private image processing local, and make cloud fallback tenant-configurable |
 | Online self-enrichment degrades routing | Persist candidates separately, run regression/canary evaluation, and promote versioned embeddings only after safety gates |
 | Multiple orchestrators create unclear ownership | LangGraph4j owns durable workflow state; Spring AI owns model/tool invocation; Redis Streams owns job transport only |
+| Local model host is overwhelmed by concurrent chats | Admit through bounded global/model/tenant/user limits, use weighted fair queues and deadlines, prioritize interactive work, and measure capacity before tuning |
+| Model host is powered off during development or CI | Keep required regression on fakes, fixture vectors, and containers; run live Gemma/EmbeddingGemma contract tests only in optional scheduled/manual lanes |
 
 ## 8. Definition of Done
 
@@ -551,6 +628,8 @@ The current worktree has unrelated tenancy modifications and a known local Java/
 - [ ] AGE is optional, derived, curated, tenant-scoped, and never transactional authority.
 - [ ] Redis is operational only; durable records remain in PostgreSQL.
 - [ ] Async jobs have idempotency, retries, backoff, dead letters, fairness, limits, and observability.
+- [ ] Local model execution has bounded admission, per-model limits, tenant/user fairness, deadline-aware overload behavior, and permit-release coverage.
+- [ ] Required regression passes with Ollama and the Mac Studio powered off; live model evaluation is separately scheduled and promotion-gated.
 - [ ] Evaluation traces are redacted and Ragas runs asynchronously/offline.
 - [ ] Unit, integration, E2E, architecture, security, and manual smoke checks pass or are explicitly profile-gated.
 - [ ] Every implementation task has a logical conventional commit pushed to `feat/ai-platform-foundation`.
@@ -563,3 +642,6 @@ The current worktree has unrelated tenancy modifications and a known local Java/
 4. Pin and smoke-test the Redis Stack image/digest with Spring AI Redis VectorStore and native KNN/filter queries before enabling hot semantic indexes.
 5. Build and smoke-test a PostgreSQL 17 image containing pgvector and Apache AGE 1.6.0 before enabling the graph profile.
 6. Establish labeled intent/extraction fixtures and baseline score distributions before setting production thresholds.
+7. Benchmark the purchased Mac Studio profile to set initial global, generation,
+   embedding, tenant, and user concurrency limits; do not infer capacity from
+   the number of logical conversations.

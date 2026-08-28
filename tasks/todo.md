@@ -58,6 +58,10 @@
   Redis remains temporary state/cache/lock/event infrastructure.
 - Cache entries are principal-scoped by design; tenant-only cache reuse is not
   safe for personalized client or staff responses.
+- The Mac Studio is an optional Ollama model host for Gemma 4 MLX and
+  EmbeddingGemma; required regression must work with it powered off.
+- All local model calls require bounded global/model/tenant/user admission,
+  deadline-aware fairness, and explicit overload behavior.
 
 ### Results
 

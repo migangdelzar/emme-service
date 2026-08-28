@@ -17,6 +17,7 @@ dependencies {
   implementation(libs.spring.boot.starter.security)
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
   implementation(libs.spring.ai.model)
+  implementation(libs.spring.ai.client.chat)
   implementation(libs.spring.ai.ollama)
   implementation(libs.okhttp)
   implementation(libs.jackson.databind)

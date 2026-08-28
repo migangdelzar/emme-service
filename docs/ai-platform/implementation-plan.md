@@ -136,7 +136,9 @@ output cannot supply a price. `ProcessDesignQuoteService` binds these rules to
 the backend `AiExecutionContext`, uses the durable idempotency lookup, persists
 extraction/draft/review artifacts through ports, and pauses at
 `WAITING_FOR_STAFF` when the calculation is not safe to send. A Spring AI
-structured-output adapter and concrete artifact/checkpoint persistence remain
+structured-output adapter now maps the model response to this contract with
+schema validation and provider-native structured output. The concrete
+PostgreSQL artifact/checkpoint adapters and staff resume endpoint remain
 unimplemented.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice

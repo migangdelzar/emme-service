@@ -10,10 +10,16 @@ public interface NailDesignExtractor {
 
   record ExtractionRequest(String inputText, String imageStorageKey) {
     public ExtractionRequest {
+      inputText = normalize(inputText);
+      imageStorageKey = normalize(imageStorageKey);
       if ((inputText == null || inputText.isBlank())
           && (imageStorageKey == null || imageStorageKey.isBlank())) {
         throw new IllegalArgumentException("inputText or imageStorageKey must be provided");
       }
+    }
+
+    private static String normalize(String value) {
+      return value == null || value.isBlank() ? null : value;
     }
   }
 

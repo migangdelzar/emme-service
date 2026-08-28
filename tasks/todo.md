@@ -25,8 +25,10 @@
       deterministic quote calculator, and optimistic-lock HITL domain slice.
 - [x] Add the provider-neutral design-quote application use case with
       idempotency and a durable artifact port.
-- [ ] Add the real Spring AI structured extraction adapter and durable artifact
-      adapters.
+- [x] Add the Spring AI structured extraction adapter with typed schema
+      validation, provider-native structured output, and secure image-reader
+      boundary.
+- [ ] Add durable artifact/checkpoint adapters and staff review endpoints.
 
 ### Working notes
 
@@ -64,6 +66,7 @@ only from a versioned tenant template, and creates a first-class review task
 when uncertainty remains. The application use case requires the backend AI
 execution context and returns an existing workflow for a repeated idempotency
 key. Spring AI extraction and PostgreSQL artifact adapters are intentionally
+implemented behind typed ports; PostgreSQL artifact/checkpoint adapters remain
 the next slice.
 
 ## Remaining execution gates — 2026-08-05

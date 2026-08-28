@@ -17,6 +17,8 @@
       adding framework integrations.
 - [x] Add the first Spring AI infrastructure adapter behind a provider-neutral
       embedding port with configured model-version and dimension validation.
+- [x] Add ordered embedding-provider failover that only falls back on an
+      explicit provider-unavailable failure.
 - [ ] Add persisted workflow, structured extraction, deterministic quote, and
       HITL slices.
 
@@ -36,7 +38,12 @@ The initial pgvector schema slice is implemented and covered by
 The first concrete Spring AI boundary is implemented in
 `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/`.
 It is intentionally not wired as a global provider bean yet; provider selection
-and fallback policy will be introduced with the specialized model registry.
+and tenant-specific fallback configuration will be introduced with the
+specialized model registry.
+
+The application layer now has an ordered provider chain. It preserves the
+primary provider result, falls back only on `EmbeddingProviderUnavailableException`,
+and propagates invalid-vector/application failures without masking them.
 
 ## Remaining execution gates — 2026-08-05
 

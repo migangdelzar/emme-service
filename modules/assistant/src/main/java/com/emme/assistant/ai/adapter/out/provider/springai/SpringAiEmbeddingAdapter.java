@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.service.EmbeddingVector;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -37,7 +38,13 @@ public final class SpringAiEmbeddingAdapter implements EmbeddingModelPort {
       throw new IllegalArgumentException("Embedding text must not be blank");
     }
 
-    float[] values = model.embed(text);
+    float[] values;
+    try {
+      values = model.embed(text);
+    } catch (RuntimeException failure) {
+      throw new EmbeddingProviderUnavailableException(
+          "Spring AI embedding provider failed: " + failure.getMessage(), failure);
+    }
     int actualDimension = values == null ? 0 : values.length;
     if (actualDimension != dimension) {
       throw new IllegalStateException(

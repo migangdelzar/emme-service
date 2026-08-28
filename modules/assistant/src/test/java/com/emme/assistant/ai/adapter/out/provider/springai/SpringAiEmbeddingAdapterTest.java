@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.service.EmbeddingVector;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -43,5 +44,16 @@ class SpringAiEmbeddingAdapterTest {
     assertThatThrownBy(() -> adapter.embed(" "))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Embedding text must not be blank");
+  }
+
+  @Test
+  void translatesSpringAiProviderFailuresIntoAnExplicitlyRetryableFailure() {
+    EmbeddingModel model = mock(EmbeddingModel.class);
+    when(model.embed("faq")).thenThrow(new RuntimeException("connection refused"));
+    EmbeddingModelPort adapter = new SpringAiEmbeddingAdapter(model, "ollama-bge-m3", 2);
+
+    assertThatThrownBy(() -> adapter.embed("faq"))
+        .isInstanceOf(EmbeddingProviderUnavailableException.class)
+        .hasMessage("Spring AI embedding provider failed: connection refused");
   }
 }

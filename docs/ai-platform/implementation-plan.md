@@ -98,8 +98,14 @@ being added incrementally. The first Spring AI integration is a provider-neutral
 embedding port plus an infrastructure adapter. It converts Spring AI’s
 `EmbeddingModel` output into the application vector type and rejects configured
 dimension drift before semantic search or persistence. It is not globally
-auto-wired yet; the multi-provider registry and explicit fallback policy are
-the next provider slice.
+auto-wired yet; provider-bean registration and tenant-specific fallback
+configuration are the next provider slice.
+
+The provider boundary now also includes an ordered application-level embedding
+failover chain. It only falls back for an explicit provider-unavailable error;
+dimension, model-version, and other application failures remain terminal. The
+ordered providers are supplied by the composition root, so tenant-specific
+cloud-escalation policy can be added without changing the semantic matcher.
 
 ### Phase 4 progress
 

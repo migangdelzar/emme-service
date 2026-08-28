@@ -2236,6 +2236,9 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
       with required, optional, and first-success Joiner policies.
 - [x] Add the ScopedValue-to-ThreadLocal/MDC compatibility bridge and install
       it automatically for structured AI subtasks.
+- [x] Add the framework-free semantic embedding/ranking core with model and
+      dimension validation, confidence/margin abstention, and authorized-key
+      filtering for future classifier/tool/cache adapters.
 - [ ] Implement Phase 1–2 concurrency foundation using TDD.
 - [ ] Implement the AI foundation, semantic capabilities, workflow, HITL,
       evaluation, and operational phases incrementally.

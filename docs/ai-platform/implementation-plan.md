@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Phases 0 and 2 complete; Phase 1 implementation in progress |
+| Status | Phases 0 and 2 complete; Phases 1 and 3 implementation in progress |
 | Technical specification | [TSPEC](technical-specification.md) |
 | Requirements | [Requirements](requirements.md) |
 | Verification | [Evaluation specification](evaluation-specification.md) |
@@ -23,7 +23,7 @@
 | 0 | Java 25 repository/runtime baseline | Toolchain, CI/config validation | Complete |
 | 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | In progress |
 | 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Complete |
-| 3 | AI foundation and Spring AI providers | Provider/embedding contract tests | Not started |
+| 3 | AI foundation and Spring AI providers | Provider/embedding contract tests | In progress |
 | 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | Not started |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Not started |
 | 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | Not started |
@@ -80,6 +80,14 @@ and provider backpressure limits are implemented.
 - Add intent, tool, and cache schemas and indexes.
 - Reuse existing documents/catalog pgvector patterns.
 - Add embedding model/version validation.
+
+### Phase 3 progress
+
+The assistant now has a framework-free semantic reference matcher with
+immutable embedding vectors, exact model-version and dimension checks, cosine
+ranking, top-1/top-2 margin gating, and backend-authorized candidate filtering.
+It is the shared deterministic core for the future intent, tool, and semantic
+cache adapters; it does not yet persist references or responses.
 
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 

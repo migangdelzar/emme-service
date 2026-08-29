@@ -5,11 +5,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.documents.api.result.DocumentChunkDetails;
@@ -137,6 +139,31 @@ class RagQueryServiceTest {
     verify(chat).complete("The premium is monthly.", "What is the premium?");
     verify(legacyModel, never()).embed(any());
     verify(legacyModel, never()).chat(any(), any());
+  }
+
+  @Test
+  void prefersTheConfiguredSpringRagAnswerPortWhenAvailable() {
+    UUID tenantId = UUID.randomUUID();
+    AiModelProvider legacyModel = mock(AiModelProvider.class);
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    RagAnswerPort ragAnswer = mock(RagAnswerPort.class);
+    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    RagQueryService service =
+        new RagQueryService(
+            realProperties(),
+            legacyModel,
+            search,
+            java.util.Optional.of(embeddings),
+            java.util.Optional.of(chat),
+            java.util.Optional.of(ragAnswer));
+    when(ragAnswer.answer("Which cancellation rules apply?"))
+        .thenReturn("The salon requires 24 hours.");
+
+    assertThat(inContext(tenantId, () -> service.query("Which cancellation rules apply?")))
+        .isEqualTo("The salon requires 24 hours.");
+    verify(ragAnswer).answer("Which cancellation rules apply?");
+    verifyNoInteractions(embeddings, chat, search, legacyModel);
   }
 
   private static <T> T inContext(UUID tenantId, java.util.function.Supplier<T> action) {

@@ -186,6 +186,10 @@ app:
         - bean-name: ollamaEmbeddingModel
           key: local-ollama
           model-version: ollama-bge-m3
+    spring-rag:
+      # Requires the named Spring AI chat and embedding integrations above.
+      enabled: ${EMME_SPRING_AI_RAG_ENABLED:false}
+      retrieval-limit: ${EMME_SPRING_AI_RAG_RETRIEVAL_LIMIT:5}
     spring-extraction:
       enabled: ${EMME_SPRING_AI_EXTRACTION_ENABLED:false}
       model-version: ${EMME_SPRING_AI_EXTRACTION_MODEL_VERSION:ollama-gemma3-vision}

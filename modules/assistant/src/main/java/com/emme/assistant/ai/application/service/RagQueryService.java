@@ -7,6 +7,7 @@ import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.configuration.AiExecutorProperties;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.documents.api.query.SearchDocumentChunksQuery;
@@ -28,6 +29,7 @@ public class RagQueryService implements RagQueryUseCase {
   private final SearchDocumentChunksUseCase searchDocuments;
   private final Optional<EmbeddingModelPort> embeddingModel;
   private final Optional<ChatCompletionPort> chatCompletion;
+  private final Optional<RagAnswerPort> ragAnswer;
   private final Optional<ModelExecutionScheduler> modelExecutionScheduler;
   private final Duration admissionTimeout;
 
@@ -42,6 +44,7 @@ public class RagQueryService implements RagQueryUseCase {
         Optional.empty(),
         Optional.empty(),
         Optional.empty(),
+        Optional.empty(),
         Duration.ofSeconds(5));
   }
 
@@ -52,6 +55,7 @@ public class RagQueryService implements RagQueryUseCase {
       SearchDocumentChunksUseCase searchDocuments,
       Optional<EmbeddingModelPort> embeddingModel,
       Optional<ChatCompletionPort> chatCompletion,
+      Optional<RagAnswerPort> ragAnswer,
       Optional<ModelExecutionScheduler> modelExecutionScheduler,
       AiExecutorProperties executorProperties) {
     this(
@@ -60,6 +64,7 @@ public class RagQueryService implements RagQueryUseCase {
         searchDocuments,
         embeddingModel,
         chatCompletion,
+        ragAnswer,
         modelExecutionScheduler,
         executorProperties.modelAdmissionTimeout());
   }
@@ -77,6 +82,25 @@ public class RagQueryService implements RagQueryUseCase {
         embeddingModel,
         chatCompletion,
         Optional.empty(),
+        Optional.empty(),
+        Duration.ofSeconds(5));
+  }
+
+  public RagQueryService(
+      AiProperties properties,
+      AiModelProvider modelProvider,
+      SearchDocumentChunksUseCase searchDocuments,
+      Optional<EmbeddingModelPort> embeddingModel,
+      Optional<ChatCompletionPort> chatCompletion,
+      Optional<RagAnswerPort> ragAnswer) {
+    this(
+        properties,
+        modelProvider,
+        searchDocuments,
+        embeddingModel,
+        chatCompletion,
+        ragAnswer,
+        Optional.empty(),
         Duration.ofSeconds(5));
   }
 
@@ -86,6 +110,7 @@ public class RagQueryService implements RagQueryUseCase {
       SearchDocumentChunksUseCase searchDocuments,
       Optional<EmbeddingModelPort> embeddingModel,
       Optional<ChatCompletionPort> chatCompletion,
+      Optional<RagAnswerPort> ragAnswer,
       Optional<ModelExecutionScheduler> modelExecutionScheduler,
       Duration admissionTimeout) {
     this.properties = properties;
@@ -93,6 +118,7 @@ public class RagQueryService implements RagQueryUseCase {
     this.searchDocuments = searchDocuments;
     this.embeddingModel = embeddingModel;
     this.chatCompletion = chatCompletion;
+    this.ragAnswer = ragAnswer;
     this.modelExecutionScheduler = modelExecutionScheduler;
     this.admissionTimeout = admissionTimeout;
   }
@@ -106,6 +132,13 @@ public class RagQueryService implements RagQueryUseCase {
       return "MOCK RAG: Based on your documents, the answer to your question about '"
           + question
           + "' is that you should contact the salon for specific details.";
+    }
+    try {
+      if (ragAnswer.isPresent()) {
+        return ragAnswer.orElseThrow().answer(question);
+      }
+    } catch (ChatProviderUnavailableException unavailable) {
+      // Preserve the existing provider-neutral retrieval path as the compatibility fallback.
     }
     var queryVector = embed(question);
     var chunks =

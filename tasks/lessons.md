@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-08-29 — Reuse the bound context in asynchronous assertions
+
+- Failure mode: an executor propagation test compared the observed tenant to a newly generated
+  random context instead of the context submitted to the executor.
+- Detection signal: the task completed successfully, but the assertion showed two different valid
+  UUIDs.
+- Prevention rule: assign the context fixture once, bind that exact instance, and assert against its
+  fields after the asynchronous task completes.
+
 ## 2026-08-28 — Explicitly bind records with compatibility constructors
 
 - Failure mode: Adding a convenience constructor to a `@ConfigurationProperties` record made

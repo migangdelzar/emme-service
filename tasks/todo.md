@@ -67,9 +67,14 @@
 - [x] Expose the backend-approved read-only tool catalog through Spring AI's
   native tool-calling callback boundary.
 - [x] Extract provider-neutral model, image, and embedding contracts into
-  `libraries:ai-contracts`; move legacy providers and reusable capability
-  adapters into `modules:ai-platform` without an `ai-platform` → `assistant`
-  dependency.
+      `libraries:ai-contracts`; move legacy providers and reusable capability
+      adapters into `modules:ai-platform` without an `ai-platform` → `assistant`
+      dependency.
+- [x] Add a tenant-scoped Spring AI `DocumentRetriever` that delegates to the
+      existing embedding port and tenant-filtered Documents use case.
+- [x] Add optional Spring AI RAG composition using the existing virtual-thread
+      AI I/O executor, context capture, named provider registry, and completion
+      fallback chain.
 
 ### Working notes
 
@@ -168,6 +173,15 @@ the same recorder. Embedding traces persist only input metadata and vector
 dimension; extraction traces persist structured-operation metadata and never
 include image bytes. Failover remains provider-level and tracing remains best
 effort.
+
+The optional Spring AI RAG path now adapts the existing tenant-filtered hybrid
+document search into Spring AI's `DocumentRetriever`. Retrieval runs on the
+existing AI I/O executor with explicit `ScopedValue` capture, never accepts a
+model- or request-selected tenant, and returns source/chunk metadata. Named
+Spring AI chat providers are reused through the existing ordered fallback and
+trace wrappers; enabling RAG does not introduce a second model pool or vector
+store. It is gated by `app.ai.spring-rag.enabled` and requires the existing
+Spring chat and embedding integrations.
 
 Verification on 2026-08-28: `:modules:assistant:spotlessCheck :modules:assistant:test`,
 `:database:spotlessCheck :database:test`, and

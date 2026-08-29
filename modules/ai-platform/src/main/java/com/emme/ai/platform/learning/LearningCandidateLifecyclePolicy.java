@@ -53,6 +53,13 @@ public final class LearningCandidateLifecyclePolicy {
       return LearningCandidateLifecycleDecision.rejected(
           currentStatus, "candidate is not approved");
     }
+    if (!evaluation.datasetComplete()
+        || !evaluation.safetyPassed()
+        || !evaluation.regressionPassed()
+        || !evaluation.shadowComparisonPassed()) {
+      return LearningCandidateLifecycleDecision.rejected(
+          LearningCandidateStatus.APPROVED, "evaluation gates are incomplete");
+    }
     if (!evaluation.canaryPassed()) {
       return LearningCandidateLifecycleDecision.rejected(
           LearningCandidateStatus.APPROVED, "canary evaluation failed");

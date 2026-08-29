@@ -2566,6 +2566,13 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
       context after the broad assistant check exposed the regression.
 - [x] Re-run `ChatServiceProviderFallbackTest` successfully.
 
+### Lifecycle gate hardening
+
+- [x] Add regression coverage for incomplete promotion evaluation results.
+- [x] Recheck dataset, safety, regression, shadow, and canary gates before
+      promotion.
+- [x] Re-run the lifecycle policy tests successfully.
+
 ### Results
 
 - Detailed task ordering, exact file areas, TDD checkpoints, dependencies,

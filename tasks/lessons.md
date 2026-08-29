@@ -972,3 +972,14 @@
 - **Prevention rule:** When a service enforces backend context, all direct unit
   fixtures must bind a minimal valid context with `AiExecutionContextScope`;
   never relax the production guard to accommodate a test.
+
+## 2026-08-29 — Promotion must recheck all evaluation gates
+
+- **Failure mode:** The first promotion policy checked only the canary flag,
+  allowing a newly supplied evaluation result to claim canary success while
+  earlier safety and regression gates were false.
+- **Detection signal:** A regression test promoted an `APPROVED` candidate with
+  an incomplete evaluation object.
+- **Prevention rule:** Promotion requests must be self-contained and revalidate
+  every prerequisite gate plus the canary result; do not rely only on the
+  candidate's current status.

@@ -60,6 +60,17 @@ class LearningCandidateLifecyclePolicyTest {
   }
 
   @Test
+  void doesNotPromoteWhenThePromotionEvaluationLacksEarlierGates() {
+    LearningCandidateEvaluation evaluation =
+        new LearningCandidateEvaluation("eval-1", false, false, false, false, true);
+
+    assertThat(policy.promote(LearningCandidateStatus.APPROVED, evaluation))
+        .isEqualTo(
+            LearningCandidateLifecycleDecision.rejected(
+                LearningCandidateStatus.APPROVED, "evaluation gates are incomplete"));
+  }
+
+  @Test
   void rollsBackOnlyPromotedCandidates() {
     assertThat(policy.rollback(LearningCandidateStatus.PROMOTED))
         .isEqualTo(

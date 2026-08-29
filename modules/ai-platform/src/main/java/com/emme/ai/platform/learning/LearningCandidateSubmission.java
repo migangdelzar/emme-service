@@ -21,7 +21,9 @@ public record LearningCandidateSubmission(
 
   public static LearningCandidateSubmission persisted(UUID candidateId) {
     return new LearningCandidateSubmission(
-        true, Optional.of(Objects.requireNonNull(candidateId, "candidateId must not be null")), "pending_evaluation");
+        true,
+        Optional.of(Objects.requireNonNull(candidateId, "candidateId must not be null")),
+        "pending_evaluation");
   }
 
   public static LearningCandidateSubmission rejected(String reason) {

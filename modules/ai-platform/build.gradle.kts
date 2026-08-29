@@ -7,6 +7,7 @@ group = "com.emme"
 dependencies {
   api(project(":libraries:ai-contracts"))
   implementation(libs.spring.boot.starter)
+  implementation(libs.spring.jdbc)
   implementation(libs.jackson.databind)
   implementation(libs.okhttp)
 

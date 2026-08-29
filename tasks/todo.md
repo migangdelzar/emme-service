@@ -83,6 +83,8 @@
       with durable lifecycle states, idempotency, RLS, and contract coverage.
 - [x] Add an application-facing candidate submission service that persists only
       evidence-gated candidates and requires the backend AI execution context.
+- [x] Wire candidate persistence through the existing tenant-aware
+      `aiTenantJdbcClient`; keep application startup conditional on that bean.
 
 ### Working notes
 
@@ -210,6 +212,13 @@ indexes. The migration does not itself promote or embed candidates.
 an injected durable store. It fails closed without `AiExecutionContext`, does
 not call the store for rejected evidence, and returns a pending-evaluation
 submission rather than changing runtime routing.
+
+The JDBC candidate adapter is now composed from the existing
+`aiTenantJdbcClient` in assistant configuration. It verifies the supplied
+context equals the bound context, persists JSON evidence and a SHA-256 text
+fingerprint, and returns the existing row on a duplicate candidate. The
+candidate feature remains unavailable when the tenant-aware JDBC boundary is
+not present.
 
 Verification on 2026-08-28: `:modules:assistant:spotlessCheck :modules:assistant:test`,
 `:database:spotlessCheck :database:test`, and

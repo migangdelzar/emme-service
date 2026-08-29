@@ -13,6 +13,7 @@ dependencies {
   implementation(project(":modules:documents"))
   implementation(project(":modules:services"))
   implementation(project(":modules:appointments"))
+  implementation(project(":modules:ai-platform"))
   // Module Spring context tests need the production provider bean, without coupling assistant
   // production code to infrastructure adapters.
   testRuntimeOnly(project(":modules:ai-platform"))

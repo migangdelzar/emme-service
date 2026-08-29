@@ -5,8 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * AI configuration — binds to app.ai.* in application.yml.
  *
- * <p>Example: app: ai: provider: ollama chat: model: gemma3:4b base-url: http://localhost:11434
- * embedding: model: bge-m3 base-url: http://localhost:11434 dimension: 1024
+ * <p>Example: app: ai: provider: ollama chat: model: gemma4:e4b-mlx base-url:
+ * http://localhost:11434 embedding: model: embeddinggemma:300m base-url: http://localhost:11434
+ * dimension: 768
  */
 @ConfigurationProperties("app.ai")
 public record AiProperties(
@@ -21,9 +22,9 @@ public record AiProperties(
 
   public AiProperties {
     if (provider == null || provider.isBlank()) provider = "mock";
-    if (chat == null) chat = new ProviderConfig("gemma3:4b", "http://localhost:11434", null);
+    if (chat == null) chat = new ProviderConfig("gemma4:e4b-mlx", "http://localhost:11434", null);
     if (embedding == null)
-      embedding = new EmbeddingConfig("bge-m3", "http://localhost:11434", null, 1024);
+      embedding = new EmbeddingConfig("embeddinggemma:300m", "http://localhost:11434", null, 768);
   }
 
   /** Single source of truth for the vector dimension used across schema, mock, and doctor. */

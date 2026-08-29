@@ -118,7 +118,7 @@ class SpringAiQuoteExtractionConfigurationTest {
     SpringAiExtractionProperties properties =
         new SpringAiExtractionProperties(false, null, null, null);
 
-    assertThat(properties.modelVersion()).isEqualTo("ollama-gemma3-vision");
+    assertThat(properties.modelVersion()).isEqualTo("ollama-gemma4:e4b-mlx");
     assertThat(properties.promptVersion()).isEqualTo("nail-design-v1");
     assertThat(properties.schemaVersion()).isEqualTo("nail-features-v1");
   }
@@ -126,8 +126,9 @@ class SpringAiQuoteExtractionConfigurationTest {
   private static AiProperties aiProperties() {
     return new AiProperties(
         "mock",
-        new AiProperties.ProviderConfig("gemma3:4b", "http://localhost:11434", null),
-        new AiProperties.EmbeddingConfig("bge-m3", "http://localhost:11434", null, 1024),
+        new AiProperties.ProviderConfig("gemma4:e4b-mlx", "http://localhost:11434", null),
+        new AiProperties.EmbeddingConfig(
+            "embeddinggemma:300m", "http://localhost:11434", null, 768),
         true);
   }
 

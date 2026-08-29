@@ -8,7 +8,7 @@ public record SpringAiExtractionProperties(
     boolean enabled, String modelVersion, String promptVersion, String schemaVersion) {
 
   public SpringAiExtractionProperties {
-    modelVersion = modelVersion == null ? "ollama-gemma3-vision" : modelVersion;
+    modelVersion = modelVersion == null ? "ollama-gemma4:e4b-mlx" : modelVersion;
     promptVersion = promptVersion == null ? "nail-design-v1" : promptVersion;
     schemaVersion = schemaVersion == null ? "nail-features-v1" : schemaVersion;
     modelVersion = requireText(modelVersion, "modelVersion");

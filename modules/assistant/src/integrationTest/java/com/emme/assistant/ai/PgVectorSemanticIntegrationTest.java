@@ -2,13 +2,16 @@ package com.emme.assistant.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.assistant.ai.adapter.out.persistence.JdbcAiToolIdempotencyStore;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticCacheAdapter;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticReferenceSearchAdapter;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.tool.AiToolResult;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
@@ -49,6 +52,7 @@ class PgVectorSemanticIntegrationTest {
   private JdbcTemplate jdbc;
   private JdbcSemanticReferenceSearchAdapter semanticReferences;
   private JdbcSemanticCacheAdapter semanticCache;
+  private JdbcAiToolIdempotencyStore toolIdempotency;
 
   @BeforeAll
   void connectToContainer() {
@@ -74,6 +78,8 @@ class PgVectorSemanticIntegrationTest {
                 new AiProperties.EmbeddingConfig(
                     MODEL_VERSION, "http://localhost:11434", null, 768),
                 true));
+    toolIdempotency =
+        new JdbcAiToolIdempotencyStore(JdbcClient.create(dataSource), new ObjectMapper());
   }
 
   @BeforeEach
@@ -117,6 +123,23 @@ class PgVectorSemanticIntegrationTest {
         )
         """);
     jdbc.update("DELETE FROM ai_semantic_cache");
+    jdbc.execute(
+        """
+        CREATE TABLE IF NOT EXISTS ai_tool_idempotency (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            tenant_id UUID NOT NULL,
+            principal_id UUID NOT NULL,
+            operation_key VARCHAR(320) NOT NULL,
+            tool_key VARCHAR(120) NOT NULL,
+            status VARCHAR(20) NOT NULL,
+            result_payload JSONB,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            version BIGINT NOT NULL DEFAULT 0,
+            UNIQUE (tenant_id, principal_id, operation_key)
+        )
+        """);
+    jdbc.update("DELETE FROM ai_tool_idempotency");
     jdbc.update(
         """
         INSERT INTO ai_intent_reference
@@ -206,6 +229,46 @@ class PgVectorSemanticIntegrationTest {
             jdbc.queryForObject(
                 "SELECT hit_count FROM ai_semantic_cache WHERE id = ?", Long.class, cacheId))
         .isEqualTo(1L);
+  }
+
+  @Test
+  @DisplayName("persists mutation results and scopes replay by tenant")
+  void persistsMutationResultAndPreventsReplayExecution() {
+    AiExecutionContext context =
+        new AiExecutionContext(
+            TENANT_ID,
+            PRINCIPAL_ID,
+            Set.of("ROLE_CLIENT"),
+            CONVERSATION_ID,
+            WORKFLOW_ID,
+            "trace-idempotency",
+            "idempotency-tool");
+    String operationKey = "createAppointment:" + PRINCIPAL_ID + ":idempotency-tool";
+    AiToolResult stored = new AiToolResult("createAppointment", "appointment-created", true);
+
+    assertThat(
+            AiExecutionContextScope.call(
+                context, () -> toolIdempotency.claim(operationKey, stored.toolKey())))
+        .isTrue();
+    AiExecutionContextScope.run(context, () -> toolIdempotency.complete(operationKey, stored));
+    assertThat(AiExecutionContextScope.call(context, () -> toolIdempotency.find(operationKey)))
+        .contains(stored);
+    assertThat(
+            AiExecutionContextScope.call(
+                context, () -> toolIdempotency.claim(operationKey, stored.toolKey())))
+        .isFalse();
+
+    AiExecutionContext otherTenant =
+        new AiExecutionContext(
+            OTHER_TENANT_ID,
+            PRINCIPAL_ID,
+            Set.of("ROLE_CLIENT"),
+            CONVERSATION_ID,
+            WORKFLOW_ID,
+            "trace-other-tenant",
+            "idempotency-tool");
+    assertThat(AiExecutionContextScope.call(otherTenant, () -> toolIdempotency.find(operationKey)))
+        .isEmpty();
   }
 
   private static String vectorPadding() {

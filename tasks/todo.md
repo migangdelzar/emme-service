@@ -2646,3 +2646,24 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - Verification: `:modules:assistant:integrationTest --tests
   com.emme.assistant.ai.PgVectorSemanticIntegrationTest` passed locally with
   Testcontainers.
+
+## Authorized mutation idempotency — 2026-08-29
+
+- [x] Add a typed idempotency port and gateway replay/concurrency behavior.
+- [x] Release failed mutation claims while preserving the original failure if
+      cleanup also fails.
+- [x] Persist claims and authoritative results in tenant-scoped PostgreSQL
+      with RLS and changelog coverage.
+- [x] Select JDBC persistence when the tenant-aware JDBC boundary exists and a
+      no-op implementation only for infrastructure-free compositions.
+- [x] Run focused gateway, JDBC adapter, configuration, database contract, and
+      formatting checks.
+
+### Results
+
+Authorized mutation tools now derive an operation key from the backend tool key,
+authenticated principal, and `AiExecutionContext` idempotency key. Completed replays return the durable
+result without running the handler again; concurrent claims are rejected;
+handler failures release claims for retry. Existing appointment commands still
+need an application-level idempotency-aware mutation contract before concrete
+appointment mutation tools are registered.

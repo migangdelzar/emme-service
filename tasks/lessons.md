@@ -1,5 +1,26 @@
 # Engineering lessons
 
+## 2026-08-29 — Idempotency must be scoped to the authenticated principal
+
+- Failure mode: A tenant-only mutation key could let a user replay another
+  user's completed command when the request key was guessed or reused.
+- Detection signal: Reviewing the gateway key derivation showed that the
+  PostgreSQL predicate had tenant scope but no principal scope.
+- Prevention rule: Derive mutation operation identity from tool, authenticated
+  principal, and request key, then repeat both tenant and principal predicates
+  in the durable store and its uniqueness constraint.
+
+## 2026-08-29 — Custom integration source sets need explicit runtime dependencies
+
+- Failure mode: The pgvector integration test could not compile an existing
+  Jackson type because this repository's custom `integrationTest` configuration
+  does not inherit every main-source dependency.
+- Detection signal: `compileIntegrationTestJava` failed with a missing
+  `com.fasterxml.jackson.databind` package while main compilation passed.
+- Prevention rule: When an integration test uses a main adapter's transitive
+  dependency directly, declare the existing artifact on the integration test
+  configuration and compile the source set before running the container test.
+
 ## 2026-08-29 — Pin transitive Ragas compatibility explicitly
 
 - Failure mode: the latest Ragas release resolved a newer `langchain-community`

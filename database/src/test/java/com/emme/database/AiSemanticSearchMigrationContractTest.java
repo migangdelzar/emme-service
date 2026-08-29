@@ -19,6 +19,8 @@ class AiSemanticSearchMigrationContractTest {
       "db/emme-studio/releases/0.1.0/018-ai-execution-traces.sql";
   private static final String DIMENSION_MIGRATION =
       "db/emme-studio/releases/0.1.0/021-ai-embeddinggemma-dimension.sql";
+  private static final String TOOL_IDEMPOTENCY_MIGRATION =
+      "db/emme-studio/releases/0.1.0/022-ai-tool-idempotency.sql";
 
   @Test
   void definesTenantScopedIntentAndToolReferenceTables() throws IOException {
@@ -126,6 +128,28 @@ class AiSemanticSearchMigrationContractTest {
         .contains("vector(768)")
         .contains("RAISE EXCEPTION")
         .contains("existing embeddings must be reindexed");
+  }
+
+  @Test
+  void definesTenantScopedMutationToolIdempotencyWithRls() throws IOException {
+    String sql = resource(TOOL_IDEMPOTENCY_MIGRATION);
+
+    assertThat(sql)
+        .contains("CREATE TABLE IF NOT EXISTS ai_tool_idempotency")
+        .contains("tenant_id UUID NOT NULL")
+        .contains("principal_id UUID NOT NULL")
+        .contains("operation_key VARCHAR(320) NOT NULL")
+        .contains("status VARCHAR(20) NOT NULL")
+        .contains("UNIQUE (tenant_id, principal_id, operation_key)")
+        .contains("ALTER TABLE ai_tool_idempotency ENABLE ROW LEVEL SECURITY")
+        .contains("CREATE POLICY tenant_isolation ON ai_tool_idempotency")
+        .contains("current_tenant_id()");
+  }
+
+  @Test
+  void includesMutationToolIdempotencyInTheStudioChangelog() throws IOException {
+    assertThat(resource("db/emme-studio/changelog.yaml"))
+        .contains("releases/0.1.0/022-ai-tool-idempotency.sql");
   }
 
   private static String migration() throws IOException {

@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.application.tool;
 
+import com.emme.assistant.ai.application.port.out.AiToolIdempotencyStore;
 import com.emme.assistant.ai.application.trace.AiToolCallStatus;
 import com.emme.assistant.ai.application.trace.AiToolCallTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
@@ -10,6 +11,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,15 +20,25 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
 
   private final Map<String, AiToolDefinition> definitions;
   private final AiTraceRecorder traceRecorder;
+  private final AiToolIdempotencyStore idempotencyStore;
 
   public AuthorizedAiToolGateway(Collection<AiToolDefinition> definitions) {
-    this(definitions, NoopAiTraceRecorder.INSTANCE);
+    this(definitions, NoopAiTraceRecorder.INSTANCE, NoopAiToolIdempotencyStore.INSTANCE);
   }
 
   public AuthorizedAiToolGateway(
       Collection<AiToolDefinition> definitions, AiTraceRecorder traceRecorder) {
+    this(definitions, traceRecorder, NoopAiToolIdempotencyStore.INSTANCE);
+  }
+
+  public AuthorizedAiToolGateway(
+      Collection<AiToolDefinition> definitions,
+      AiTraceRecorder traceRecorder,
+      AiToolIdempotencyStore idempotencyStore) {
     Objects.requireNonNull(definitions, "definitions must not be null");
     this.traceRecorder = Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
+    this.idempotencyStore =
+        Objects.requireNonNull(idempotencyStore, "idempotencyStore must not be null");
     Map<String, AiToolDefinition> byKey = new LinkedHashMap<>();
     definitions.forEach(
         definition -> {
@@ -66,6 +78,9 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
     AiToolDefinition definition = definitions.get(invocation.toolKey());
     long startedAt = System.nanoTime();
     boolean authorized = definition != null && definition.isAuthorized(context.roles());
+    String claimedOperationKey = null;
+    boolean claimed = false;
+    boolean mutationHandlerExecuted = false;
     try {
       if (definition == null) {
         throw new AiToolExecutionRejectedException("Unknown AI tool: " + invocation.toolKey());
@@ -103,8 +118,29 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
       if (unknownArgument != null) {
         throw new AiToolExecutionRejectedException("Unknown AI tool argument: " + unknownArgument);
       }
+      claimedOperationKey = mutationOperationKey(definition, context);
+      if (claimedOperationKey != null) {
+        Optional<AiToolResult> completed = idempotencyStore.find(claimedOperationKey);
+        if (completed.isPresent()) {
+          return completed.get();
+        }
+        if (!idempotencyStore.claim(claimedOperationKey, definition.key())) {
+          completed = idempotencyStore.find(claimedOperationKey);
+          if (completed.isPresent()) {
+            return completed.get();
+          }
+          throw new AiToolExecutionRejectedException(
+              "AI tool mutation is already in progress: " + definition.key());
+        }
+        claimed = true;
+      }
       String content =
           definition.handler().execute(toExecutionContext(context), invocation.arguments());
+      mutationHandlerExecuted = true;
+      AiToolResult result = new AiToolResult(invocation.toolKey(), content, true);
+      if (claimed) {
+        idempotencyStore.complete(claimedOperationKey, result);
+      }
       record(
           new AiToolCallTrace(
               java.util.UUID.randomUUID(),
@@ -119,7 +155,7 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
               content,
               null,
               null));
-      return new AiToolResult(invocation.toolKey(), content, true);
+      return result;
     } catch (AiToolExecutionRejectedException rejected) {
       record(
           new AiToolCallTrace(
@@ -137,6 +173,13 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
               rejected.getMessage()));
       throw rejected;
     } catch (RuntimeException failure) {
+      if (claimed && !mutationHandlerExecuted) {
+        try {
+          idempotencyStore.release(claimedOperationKey);
+        } catch (RuntimeException cleanupFailure) {
+          failure.addSuppressed(cleanupFailure);
+        }
+      }
       record(
           new AiToolCallTrace(
               java.util.UUID.randomUUID(),
@@ -165,6 +208,14 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
 
   private static long elapsedMillis(long startedAt) {
     return Math.max(0, (System.nanoTime() - startedAt) / 1_000_000);
+  }
+
+  private static String mutationOperationKey(
+      AiToolDefinition definition, AiExecutionContext context) {
+    if (definition.risk() != AiToolRisk.MUTATION) {
+      return null;
+    }
+    return definition.key() + ":" + context.principalId() + ":" + context.idempotencyKey();
   }
 
   private static AiToolExecutionContext toExecutionContext(AiExecutionContext context) {

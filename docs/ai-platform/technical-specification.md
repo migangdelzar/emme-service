@@ -134,6 +134,19 @@ backend-created execution context and delegate to application use cases. The
 platform currently registers `getSalonServices` as a read-only catalog tool;
 booking and other mutations are not eligible for proactive execution.
 
+Mutation invocations additionally use `AiToolIdempotencyStore`. The gateway
+derives `toolKey:principalId:context.idempotencyKey` from trusted backend state, checks for
+a completed tenant-scoped result, atomically claims the operation when absent,
+and persists the authoritative result after the handler succeeds. A completed
+replay never invokes the handler again, a concurrent claim is rejected, and a
+handler failure releases its claim for retry. PostgreSQL migration
+`022-ai-tool-idempotency.sql` is the production adapter and stores only
+`IN_PROGRESS` or `SUCCEEDED` records under tenant RLS. The no-op adapter is
+available only for compositions without the tenant JDBC boundary; production
+composition selects the JDBC implementation. Appointment mutation handlers
+remain outside this slice until the existing application commands expose an
+idempotency-aware contract.
+
 Durable execution traces use the application-level `AiTraceRecorder` contract.
 `TracingChatCompletionPort` records each named chat-provider attempt, including
 failed local attempts before a configured fallback succeeds. The authorized

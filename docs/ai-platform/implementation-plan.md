@@ -26,7 +26,7 @@
 | 3 | `ai-contracts`, `ai-platform`, and Spring AI providers | Provider/embedding/chat contract tests | In progress — contracts, provider adapters, embedding, and ordered chat boundaries complete |
 | 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress — semantic intent/tool routing and safe chat cache complete; Redis hot projection and tool-search index are opt-in; real pgvector JDBC/runtime coverage now passes |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Complete |
-| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors, read-only controlled gateway, and opt-in Redis progressive tool search complete; mutation tools pending |
+| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors, read-only controlled gateway, opt-in Redis progressive tool search, and durable mutation idempotency complete; concrete appointment mutation handlers pending |
 | 7 | Design extraction, deterministic quote, HITL | Quote, optimistic-lock, endpoint, and resume tests | In progress — durable quote workflow, secured staff review endpoint, and LangGraph resume adapter complete |
 | 8 | Online enrichment and evaluation | Candidate/promotion safety tests | In progress — durable candidate capture, redaction boundary, and offline promotion gates complete; evaluator/index promotion pending |
 | 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events, workflow metrics, and durable model/tool traces complete |
@@ -190,6 +190,22 @@ handlers. The platform registers `getSalonServices` as a read-only example;
 the handler delegates to the Services application use case and derives the
 tenant only from `AiExecutionContext`. Mutation tools remain confirmation and
 approval gated.
+
+Mutation execution now also passes through `AiToolIdempotencyStore`. For a
+mutation, the gateway derives an operation key from the backend tool key,
+authenticated principal, and context idempotency key, atomically claims it in PostgreSQL,
+and stores the authoritative `AiToolResult` before returning. Completed
+replays return the stored result without invoking the handler again; concurrent
+claims are rejected; failed handlers release their claim for retry. Claim
+cleanup failures are suppressed onto the original handler error, and a
+completion-write failure remains in progress so the command fails closed.
+`ai_tool_idempotency` is tenant-scoped with RLS and is included in migration
+`022-ai-tool-idempotency.sql`. A no-op implementation is used only when the
+tenant-aware JDBC boundary is unavailable in an isolated/infrastructure-free
+composition. This closes the gateway replay gap but does not create concrete
+appointment mutation handlers; those remain application-use-case work because
+the existing appointment commands do not yet expose a compatible idempotency
+contract.
 
 Durable execution observability is now wired through `AiTraceRecorder`. Each
 configured Spring AI chat/embedding provider attempt, structured design

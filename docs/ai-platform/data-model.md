@@ -19,6 +19,7 @@
 | `quote_review_task` | tenant + review task | Staff approval state |
 | `quote_review_decision` | tenant + review + version | Reviewer, timestamp, edits, outcome |
 | `ai_tool_call` | tenant + workflow + call | Tool request, policy, result, audit |
+| `ai_tool_idempotency` | tenant + operation key | Mutation claim and authoritative replay result |
 | `ai_model_execution` | tenant + workflow + execution | Provider, model, tokens, latency, cost |
 | `ai_trace` | tenant + workflow + trace | Evaluation and learning evidence |
 | `intent_reference` | global/tenant + version | Labeled classifier examples |
@@ -98,6 +99,11 @@ callbacks and are disabled by default.
 - Approval decisions use optimistic versioning.
 - Workflow updates are idempotent by workflow and node execution identity.
 - Tool mutations require an idempotency key.
+- Mutation tool claims are unique per tenant, authenticated principal, and
+  operation key; completed
+  replays return the durable result without executing the handler again.
+- A failed mutation releases only its in-progress claim; a failed completion
+  write remains fail-closed until operational recovery resolves it.
 - Cache entries require dependency-version fields and expiry.
 - Candidate promotion changes an index pointer, not individual active rows.
 - Audit records retain actor identity and outcome.

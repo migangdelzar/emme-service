@@ -2527,6 +2527,21 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - Existing unstaged tenancy changes remain outside this work and must not be
   included in AI commits.
 
+## AI learning-candidate safety boundary — 2026-08-29
+
+- [x] Reject common email, phone, and Bearer-token patterns from candidate
+      reference text at the framework-free contract boundary.
+- [x] Enforce candidate text lengths against the durable PostgreSQL schema.
+- [x] Add focused regression tests for PII and length validation.
+- [x] Run the focused `ai-contracts` test suite.
+
+### Results
+
+- `LearningCandidate` now fails closed before policy admission when reference
+  text is not redacted or exceeds the persisted column limit.
+- Verification: `:libraries:ai-contracts:test --tests
+  com.emme.ai.contracts.learning.LearningCandidateTest` passed.
+
 ### Results
 
 - Detailed task ordering, exact file areas, TDD checkpoints, dependencies,

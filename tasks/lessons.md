@@ -951,3 +951,13 @@
 - **Prevention rule:** Inventory and reuse existing framework capabilities and
   adapters first. Add a new abstraction only when a documented gap remains,
   and keep it as a thin boundary around the existing implementation.
+
+## 2026-08-29 — Keep contract tests independent of formatting and record accessors
+
+- **Failure mode:** A multiline SQL assertion expected a single-line fragment,
+  and a record factory named `admitted()` collided with the generated boolean
+  accessor of the same name.
+- **Detection signal:** The focused Gradle suite failed during assertion and
+  compilation before any unrelated module was changed.
+- **Prevention rule:** Assert SQL structure with whitespace-tolerant patterns,
+  and avoid static record factories that reuse component accessor names.

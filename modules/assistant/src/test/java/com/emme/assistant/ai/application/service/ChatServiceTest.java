@@ -42,8 +42,7 @@ class ChatServiceTest {
     when(cache.lookup("", "What are your hours?")).thenReturn(Optional.of("Open today."));
     ChatService service = new ChatService(model, Optional.of(cache));
 
-    assertThat(inContext(() -> service.chat("", "What are your hours?")))
-        .isEqualTo("Open today.");
+    assertThat(inContext(() -> service.chat("", "What are your hours?"))).isEqualTo("Open today.");
 
     verifyNoInteractions(model);
   }
@@ -56,8 +55,7 @@ class ChatServiceTest {
     when(model.chat("", "What are your hours?")).thenReturn("Open today.");
     ChatService service = new ChatService(model, Optional.of(cache));
 
-    assertThat(inContext(() -> service.chat("", "What are your hours?")))
-        .isEqualTo("Open today.");
+    assertThat(inContext(() -> service.chat("", "What are your hours?"))).isEqualTo("Open today.");
 
     verify(cache).store("", "What are your hours?", "Open today.");
   }

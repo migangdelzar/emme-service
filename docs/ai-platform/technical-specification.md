@@ -153,6 +153,14 @@ event contains only trusted candidate/context identifiers and correlation
 metadata; the candidate text and evidence remain in tenant-filtered PostgreSQL
 and are loaded by the offline evaluator. Rejected candidates do not dispatch
 evaluation work.
+
+The repository also contains an offline Python 3.13 Ragas scaffold at
+`tools/ai-evaluation`. It accepts anonymized JSONL samples, redacts common PII
+before constructing a Ragas `EvaluationDataset`, and emits advisory metric and
+gate results. It deliberately does not call the Java lifecycle service or
+promote an embedding index. The Java lifecycle remains the authority for
+candidate status; explicit shadow and canary evidence must be supplied by
+separate controlled stages.
 Token counts and estimated cost are nullable because provider usage metadata is
 not guaranteed. Trace writes are best effort and PostgreSQL is authoritative
 for the durable records; a no-op recorder is used where JDBC is unavailable.

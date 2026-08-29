@@ -210,6 +210,10 @@ is selected when JDBC is unavailable.
   durable publication registry. The envelope contains only trusted IDs and
   correlation metadata; candidate content remains in PostgreSQL and the
   evaluator remains asynchronous/offline.
+- The offline `tools/ai-evaluation` package now provides a Python 3.13 Ragas
+  scaffold. It redacts PII before evaluation, keeps tenant/principal metadata
+  out of Ragas inputs, emits advisory regression/shadow metrics, and never
+  promotes candidates or changes production indexes.
 - Add asynchronous embedding and evaluation worker.
 - Add shadow/canary index promotion.
 - Add Ragas evaluation scaffold.

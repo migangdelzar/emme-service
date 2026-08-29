@@ -88,6 +88,8 @@
 - [x] Dispatch admitted candidates through a stable, tenant-partitionable
       Spring Modulith evaluation event; keep evaluation asynchronous and
       external to the customer request.
+- [x] Add an offline Python 3.13 Ragas evaluation scaffold with PII
+      redaction, explicit regression/shadow gates, and no promotion side effect.
 
 ### Working notes
 
@@ -232,6 +234,13 @@ trusted tenant/principal/resource correlation and idempotency metadata; it
 does not carry candidate text, embeddings, model output, or PII. Spring
 Modulith's existing durable publication registry is therefore the dispatch
 boundary for an offline evaluator, while rejected candidates publish nothing.
+
+The offline evaluation scaffold lives under `tools/ai-evaluation`. It uses
+Python 3.13, Ragas 0.4.x, and a tested compatible `langchain-community`
+range. It accepts only redacted evaluation fields, omits tenant and principal
+identifiers from Ragas inputs, fails the dataset gate when no samples exist,
+and emits advisory metrics. It does not update Java lifecycle state or routing
+indexes; shadow/canary promotion remains a separately authorized operation.
 
 Verification on 2026-08-28: `:modules:assistant:spotlessCheck :modules:assistant:test`,
 `:database:spotlessCheck :database:test`, and

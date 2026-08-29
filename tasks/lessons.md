@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-08-29 — Pin transitive Ragas compatibility explicitly
+
+- Failure mode: the latest Ragas release resolved a newer `langchain-community`
+  package that no longer contained the optional Vertex AI module imported by
+  Ragas at startup.
+- Detection signal: importing `ragas` failed before an evaluation could run,
+  even though the Ragas dependency itself was installed.
+- Prevention rule: lock the tested Ragas major/minor range and explicitly pin
+  compatible transitive integrations; verify the real interpreter can import
+  the evaluator before committing the offline worker.
+
 ## 2026-08-29 — Reuse the bound context in asynchronous assertions
 
 - Failure mode: an executor propagation test compared the observed tenant to a newly generated

@@ -16,7 +16,7 @@ public record AiProperties(
 
   public record EmbeddingConfig(String model, String baseUrl, String apiKey, Integer dimension) {
     public EmbeddingConfig {
-      if (dimension == null || dimension <= 0) dimension = 1024;
+      if (dimension == null || dimension <= 0) dimension = 768;
     }
   }
 

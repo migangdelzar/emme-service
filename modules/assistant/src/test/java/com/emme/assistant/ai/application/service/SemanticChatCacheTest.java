@@ -2,12 +2,14 @@ package com.emme.assistant.ai.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
@@ -101,5 +103,61 @@ class SemanticChatCacheTest {
     verify(cache).put(write.capture());
     assertThat(write.getValue().expiresAt()).isEqualTo(Instant.parse("2026-08-28T12:05:00Z"));
     assertThat(write.getValue().writeIdempotencyKey()).startsWith("chat-v1:");
+  }
+
+  @Test
+  void confirmsAHotHitAgainstTheDurableCacheBeforeReturningIt() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort durableCache = mock(SemanticCachePort.class);
+    SemanticCacheHotStore hotStore = mock(SemanticCacheHotStore.class);
+    SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
+    UUID cacheId = UUID.randomUUID();
+    when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
+    when(hotStore.find(any(), any(), anyInt()))
+        .thenReturn(List.of(new SemanticCachePort.Candidate(cacheId, "payload", 0.99)));
+    when(durableCache.recordHit(cacheId)).thenReturn(true);
+    when(codec.decodeText("payload")).thenReturn(Optional.of("We are open from 9 to 6."));
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            new SemanticCacheResolver(durableCache, new SemanticCachePolicy(0.95)),
+            durableCache,
+            codec,
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5),
+            Optional.of(hotStore));
+
+    assertThat(semanticCache.lookup("", "What are your hours?"))
+        .contains("We are open from 9 to 6.");
+
+    org.mockito.Mockito.verify(durableCache).recordHit(cacheId);
+    org.mockito.Mockito.verify(durableCache, org.mockito.Mockito.never()).find(any(), anyInt());
+  }
+
+  @Test
+  void writesTheDurableEntryBeforeProjectingToTheHotStore() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort durableCache = mock(SemanticCachePort.class);
+    SemanticCacheHotStore hotStore = mock(SemanticCacheHotStore.class);
+    SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
+    UUID cacheId = UUID.randomUUID();
+    when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
+    when(codec.encodeText("We are open.")).thenReturn("{\"text\":\"We are open.\"}");
+    when(durableCache.put(any())).thenReturn(cacheId);
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            mock(SemanticCacheResolver.class),
+            durableCache,
+            codec,
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5),
+            Optional.of(hotStore));
+
+    assertThat(semanticCache.store("", "What are your hours?", "We are open.")).contains(cacheId);
+
+    org.mockito.Mockito.verify(hotStore).put(org.mockito.Mockito.eq(cacheId), any());
   }
 }

@@ -110,10 +110,19 @@ FallbackAgentChatClient
   BudgetAdvisor
   TraceAdvisor
   one ToolCallingAdvisor
+    → ToolSearchToolCallingAdvisor when the Redis tool index is enabled
 ```
 
 The fallback client receives only the tools allowed for the current context.
 Direct semantic tool routes do not need the fallback agent.
+When progressive tool search is enabled, Spring AI's tool-search advisor is the
+single tool advisor for the client. It indexes only the callbacks returned by
+the backend-authorized `SpringAiToolCallbackProvider`; the advisor's session
+key is a composite of tenant, principal, conversation, and role fingerprint.
+This prevents a persisted Redis tool index from being reused across tenants or
+users and avoids Spring AI's multiple-tool-advisor failure. The tool index is
+separate from the response-cache index and uses the same configured embedding
+model and dimension.
 
 The in-process tool boundary is represented by `AiToolDefinition`,
 `AiToolInvocation`, `AiToolExecutionContext`, `AiToolResult`, and
@@ -248,12 +257,26 @@ live events contain only bounded status fields suitable for SSE/WebSocket
 delivery. Redis is not used for durable history, quote artifacts, workflow
 decisions, appointments, or audit logs.
 
+The optional Spring AI Redis VectorStore projection is separately feature
+gated by `app.ai.redis-semantic.enabled`. It projects durable PostgreSQL cache
+rows into a Redis 8 vector index for low-latency semantic reads; a hot hit is
+always re-confirmed with the tenant/principal-filtered PostgreSQL row before
+being returned. `app.ai.redis-semantic.tool-search-enabled` creates a separate
+Redis vector index for Spring AI's progressive tool search. Redis failures,
+stale entries, and embedding mismatch disable only the acceleration path and
+fall back to PostgreSQL or the normal model route. The default configuration
+keeps both features disabled.
+
 Semantic intent routing is feature-gated and executes before model fallback.
 Its vector decision requires the configured top-1 score and top-1/top-2 margin;
 abstention invokes the existing model route. Semantic response caching is
 principal-scoped, expiry-bound, and limited to context-free informational chat.
 Transactional terms such as booking, availability, price, cancellation,
 payment, and account changes bypass the cache deterministically.
+
+The active semantic embedding profile is EmbeddingGemma `768` dimensions. The
+database migration that changes the initial schema from `1024` to `768` fails
+closed when existing vectors are present, requiring an explicit reindex.
 
 ## 6. Concurrency
 
@@ -299,8 +322,8 @@ Java 25 preview API. No code globally overrides `ForkJoinPool.commonPool()`.
 
 - Unit: score/margin policy, slot validation, cache eligibility, tool policy,
   Joiner aggregation, context propagation, idempotency, and HITL transitions.
-- Integration: PostgreSQL/pgvector, checkpoint persistence, Redis locks,
-  Spring AI test doubles, MCP callbacks, and outbox events.
+- Integration: PostgreSQL/pgvector, checkpoint persistence, Redis locks and
+  vector projections, Spring AI test doubles, MCP callbacks, and outbox events.
 - End-to-end: FAQ, availability, booking, quote, ambiguous quote, multi-intent,
   wrong tenant, duplicate booking, provider timeout, MCP failure, and restart
   resume.

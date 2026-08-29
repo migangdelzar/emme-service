@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.application.semantic;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
@@ -11,6 +12,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +34,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
   private final Clock clock;
   private final String promptVersion;
   private final Duration ttl;
+  private final Optional<SemanticCacheHotStore> hotStore;
 
   public SemanticChatCache(
       EmbeddingModelPort embeddings,
@@ -41,6 +44,18 @@ public final class SemanticChatCache implements SemanticResponseCache {
       Clock clock,
       String promptVersion,
       Duration ttl) {
+    this(embeddings, resolver, cache, codec, clock, promptVersion, ttl, Optional.empty());
+  }
+
+  public SemanticChatCache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort cache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore) {
     this.embeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.resolver = Objects.requireNonNull(resolver, "resolver must not be null");
     this.cache = Objects.requireNonNull(cache, "cache must not be null");
@@ -49,6 +64,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
     requireText(promptVersion, "promptVersion");
     this.promptVersion = promptVersion;
     this.ttl = requirePositive(ttl, "ttl");
+    this.hotStore = Objects.requireNonNull(hotStore, "hotStore must not be null");
   }
 
   @Override
@@ -60,8 +76,12 @@ public final class SemanticChatCache implements SemanticResponseCache {
     SemanticCachePort.Lookup lookup =
         new SemanticCachePort.Lookup(
             CACHE_KIND, contextFingerprint(conversationContext), promptVersion, query);
-    return resolver
-        .lookup(lookup)
+    Optional<SemanticCachePort.Candidate> hotHit =
+        hotStore
+            .flatMap(store -> safeHotLookup(store, lookup, userMessage))
+            .flatMap(resolver::confirm);
+    return hotHit
+        .or(() -> resolver.lookup(lookup))
         .flatMap(candidate -> codec.decodeText(candidate.responsePayload()));
   }
 
@@ -83,7 +103,27 @@ public final class SemanticChatCache implements SemanticResponseCache {
             Instant.now(clock).plus(ttl),
             query,
             writeIdempotencyKey(contextFingerprint, userMessage));
-    return Optional.of(cache.put(write));
+    UUID cacheId = cache.put(write);
+    hotStore.ifPresent(store -> safeHotPut(store, cacheId, write));
+    return Optional.of(cacheId);
+  }
+
+  private static Optional<List<SemanticCachePort.Candidate>> safeHotLookup(
+      SemanticCacheHotStore store, SemanticCachePort.Lookup lookup, String queryText) {
+    try {
+      return Optional.of(store.find(lookup, queryText, 2));
+    } catch (RuntimeException ignored) {
+      return Optional.empty();
+    }
+  }
+
+  private static void safeHotPut(
+      SemanticCacheHotStore store, UUID cacheId, SemanticCachePort.Put write) {
+    try {
+      store.put(cacheId, write);
+    } catch (RuntimeException ignored) {
+      // Redis is an optimization; durable PostgreSQL persistence has already succeeded.
+    }
   }
 
   private static boolean isEligible(String conversationContext, String userMessage) {

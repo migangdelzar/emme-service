@@ -2,11 +2,19 @@ package com.emme.assistant.ai.adapter.out.provider.springai;
 
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.client.advisor.toolsearch.ToolSearchToolCallingAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.tool.ToolCallbackProvider;
 
 /** Adapts a named Spring AI ChatClient to the application chat boundary. */
@@ -70,7 +78,7 @@ public final class SpringAiChatClientAdapter implements ChatCompletionPort {
     try {
       ChatClient.ChatClientRequestSpec request = client.prompt();
       if (!advisors.isEmpty()) {
-        request = request.advisors(advisors);
+        request = applyAdvisors(request);
       }
       if (toolCallbackProvider.isPresent()) {
         request = request.tools(toolCallbackProvider.orElseThrow());
@@ -86,6 +94,44 @@ public final class SpringAiChatClientAdapter implements ChatCompletionPort {
     } catch (RuntimeException exception) {
       throw new ChatProviderUnavailableException(
           "Chat provider '" + providerKey + "' is unavailable", exception);
+    }
+  }
+
+  private ChatClient.ChatClientRequestSpec applyAdvisors(ChatClient.ChatClientRequestSpec request) {
+    if (!containsToolSearchAdvisor()) {
+      return request.advisors(advisors);
+    }
+    AiExecutionContext context = AiExecutionContextScope.requireCurrent();
+    return request.advisors(
+        specification ->
+            specification
+                .advisors(advisors)
+                .param(ChatMemory.CONVERSATION_ID, toolSearchSessionId(context)));
+  }
+
+  private boolean containsToolSearchAdvisor() {
+    return advisors.stream().anyMatch(ToolSearchToolCallingAdvisor.class::isInstance);
+  }
+
+  private static String toolSearchSessionId(AiExecutionContext context) {
+    return context.tenantId()
+        + ":"
+        + context.principalId()
+        + ":"
+        + context.conversationId()
+        + ":"
+        + roleFingerprint(context);
+  }
+
+  private static String roleFingerprint(AiExecutionContext context) {
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      context.roles().stream()
+          .sorted()
+          .forEach(role -> digest.update(role.getBytes(StandardCharsets.UTF_8)));
+      return HexFormat.of().formatHex(digest.digest());
+    } catch (NoSuchAlgorithmException exception) {
+      throw new IllegalStateException("SHA-256 is not available", exception);
     }
   }
 }

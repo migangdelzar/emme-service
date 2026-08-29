@@ -24,9 +24,9 @@
 | 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | Complete |
 | 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Complete |
 | 3 | `ai-contracts`, `ai-platform`, and Spring AI providers | Provider/embedding/chat contract tests | In progress — contracts, provider adapters, embedding, and ordered chat boundaries complete |
-| 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress — semantic intent/tool routing and safe chat cache complete; real pgvector runtime test pending |
+| 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress — semantic intent/tool routing and safe chat cache complete; Redis hot projection and tool-search index are opt-in; real pgvector runtime test pending |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Complete |
-| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors and read-only controlled gateway complete; mutation tools pending |
+| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors, read-only controlled gateway, and opt-in Redis progressive tool search complete; mutation tools pending |
 | 7 | Design extraction, deterministic quote, HITL | Quote, optimistic-lock, endpoint, and resume tests | In progress — durable quote workflow, secured staff review endpoint, and LangGraph resume adapter complete |
 | 8 | Online enrichment and evaluation | Candidate/promotion safety tests | In progress — durable candidate capture, redaction boundary, and offline promotion gates complete; evaluator/index promotion pending |
 | 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events, workflow metrics, and durable model/tool traces complete |
@@ -115,9 +115,11 @@ cloud-escalation policy can be added without changing the semantic matcher.
 ### Phase 4 progress
 
 The studio tenant-schema changelog now provisions tenant-scoped intent and tool
-reference tables plus a principal-scoped expiring semantic cache. All three
-tables use the existing explicit RLS convention, 1024-dimensional pgvector
-columns, HNSW cosine indexes, and supporting tenant/active/expiry indexes. A
+reference tables plus a principal-scoped expiring semantic cache. The active
+schema is 768-dimensional after migration `021-ai-embeddinggemma-dimension.sql`
+converts the initial 1024-dimensional definition and fails closed when vectors
+must be reindexed. The tables use the existing explicit RLS convention, HNSW
+cosine indexes, and supporting tenant/active/expiry indexes. A
 database-module migration contract test protects the changelog inclusion and
 isolation invariants. JDBC retrieval and cache adapters now bind tenant and
 principal from the authenticated AI execution context, apply model/prompt/
@@ -166,6 +168,16 @@ chat integration provides an ordered named-client chain with explicit provider
 unavailability fallback to the existing provider boundary. Every configured
 named client is composed with tenant-security and prompt-version advisors at
 request execution time.
+
+The optional Redis Stack projection now uses the official Spring AI
+`RedisVectorStore` for two separate indexes: a principal-scoped response-cache
+projection and a backend-authorized progressive tool-search index. PostgreSQL
+remains canonical. A Redis cache hit is re-confirmed through the durable cache
+resolver before decoding the response. The tool-search advisor is added only
+when the tool callback provider is present and is the sole Spring AI tool
+advisor; its session key includes tenant, principal, conversation, and role
+scope. The local Kubernetes manifest uses a Redis 8 ARM64-compatible image, but
+the application flags remain disabled by default.
 
 The controlled tool boundary now snapshots backend-authorized eligible tools,
 uses pgvector semantic matching before execution, and invokes only typed tool

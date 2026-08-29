@@ -15,7 +15,9 @@ spec:
     spec:
       containers:
         - name: redis
-          image: redis:7-alpine
+          # Redis 8 includes the vector-search modules used by the optional
+          # Spring AI hot semantic-cache projection and supports linux/arm64.
+          image: redis:8.10.1-alpine3.23
           ports:
             - containerPort: 6379
 ---

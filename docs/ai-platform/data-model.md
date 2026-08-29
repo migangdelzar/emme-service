@@ -76,6 +76,22 @@ ai:singleflight:{tenantId}:{cacheFingerprint}
 
 Redis keys are temporary and never replace durable PostgreSQL records.
 
+The optional Redis vector projections use separate index namespaces:
+
+```text
+index: emme-ai-semantic-cache
+prefix: emme:ai:semantic-cache:
+
+index: emme-ai-semantic-cache-tools
+prefix: emme:ai:semantic-cache:tools:
+```
+
+The cache index stores tenant, principal, cache kind, context fingerprint,
+prompt version, embedding model version, response payload, and expiry metadata.
+The tool index stores only Spring AI tool references scoped by the composite
+backend session key. Both indexes are rebuildable from PostgreSQL/application
+callbacks and are disabled by default.
+
 ## 5. Integrity rules
 
 - Tenant-scoped foreign keys and indexes are required.

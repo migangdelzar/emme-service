@@ -2610,3 +2610,22 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - Detailed task ordering, exact file areas, TDD checkpoints, dependencies,
   verification commands, risks, and definition of done are recorded in
   `docs/superpowers/plans/2026-08-28-ai-platform-implementation-plan.md`.
+
+## Redis semantic acceleration — 2026-08-29
+
+- [x] Add the official Spring AI Redis VectorStore as an opt-in hot projection
+      for durable semantic-cache reads, with PostgreSQL hit confirmation.
+- [x] Add the official Spring AI progressive tool-search advisor over a separate
+      Redis vector index with composite tenant/principal/role session scoping.
+- [x] Align partial embedding configuration defaults with the active
+      EmbeddingGemma 768-dimensional schema contract.
+
+### Results
+
+- Redis acceleration is disabled by default and remains rebuildable. Durable
+  PostgreSQL writes happen first; Redis failures are treated as optimization
+  failures only.
+- Spring AI's tool-search advisor replaces the default tool advisor only when
+  the opt-in Redis index and backend-approved callback provider are present.
+- Verification: focused Redis, tool-search, semantic-cache, chat-configuration,
+  and embedding-property tests passed; Spotless passed.

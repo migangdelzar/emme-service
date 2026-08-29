@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.application.semantic;
 
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -19,8 +20,13 @@ public final class SemanticCacheResolver {
 
   public Optional<SemanticCachePort.Candidate> lookup(SemanticCachePort.Lookup lookup) {
     Objects.requireNonNull(lookup, "lookup must not be null");
-    return policy
-        .select(cache.find(lookup, CANDIDATE_LIMIT))
-        .filter(candidate -> cache.recordHit(candidate.id()));
+    return confirm(cache.find(lookup, CANDIDATE_LIMIT));
+  }
+
+  /** Confirms a hot projection hit against the durable cache before it is returned. */
+  public Optional<SemanticCachePort.Candidate> confirm(
+      List<SemanticCachePort.Candidate> candidates) {
+    Objects.requireNonNull(candidates, "candidates must not be null");
+    return policy.select(candidates).filter(candidate -> cache.recordHit(candidate.id()));
   }
 }

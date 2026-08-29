@@ -992,5 +992,24 @@
 - **Detection signal:** A regression test promoted an `APPROVED` candidate with
   an incomplete evaluation object.
 - **Prevention rule:** Promotion requests must be self-contained and revalidate
-  every prerequisite gate plus the canary result; do not rely only on the
-  candidate's current status.
+      every prerequisite gate plus the canary result; do not rely only on the
+      candidate's current status.
+
+## 2026-08-29 — Verify dependency metadata after adding Spring AI modules
+
+- **Failure mode:** Gradle dependency verification blocked the new Redis
+  VectorStore and tool-search artifacts before compilation could run.
+- **Detection signal:** The compile task reported missing SHA-256 verification
+  metadata for newly resolved transitive artifacts.
+- **Prevention rule:** After adding a dependency, run the repository's approved
+  verification-metadata writer once, review the XML diff, then rerun compilation
+  and tests with verification enabled.
+
+## 2026-08-29 — Keep Redis semantic acceleration rebuildable
+
+- **Failure mode:** Treating a Redis vector result as authoritative would allow
+  stale or role-inappropriate data to bypass PostgreSQL policy checks.
+- **Detection signal:** The Redis projection has no durable transaction or
+  complete role history and can survive independently of application state.
+- **Prevention rule:** Write PostgreSQL first, project to Redis best effort, and
+  re-confirm every cache hit through the durable tenant/principal resolver.

@@ -11,6 +11,7 @@ import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class SpringAiSemanticCacheConfigurationTest {
@@ -31,7 +32,8 @@ class SpringAiSemanticCacheConfigurationTest {
             mock(SemanticCachePort.class),
             mock(SemanticCachePayloadCodec.class),
             Clock.systemUTC(),
-            properties);
+            properties,
+            Optional.empty());
 
     assertThat(cache)
         .isInstanceOf(com.emme.assistant.ai.application.semantic.SemanticChatCache.class);

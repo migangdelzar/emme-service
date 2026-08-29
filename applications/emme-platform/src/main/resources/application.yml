@@ -199,6 +199,18 @@ app:
       enabled: ${EMME_AI_QUOTE_ENABLED:false}
     redis:
       enabled: ${EMME_AI_REDIS_ENABLED:false}
+    redis-semantic:
+      # Requires Redis 8+ (vector search modules) and a configured Spring AI EmbeddingModel.
+      enabled: ${EMME_AI_REDIS_SEMANTIC_ENABLED:false}
+      tool-search-enabled: ${EMME_AI_REDIS_TOOL_SEARCH_ENABLED:false}
+      tool-search-max-results: ${EMME_AI_REDIS_TOOL_SEARCH_MAX_RESULTS:5}
+      host: ${EMME_AI_REDIS_SEMANTIC_HOST:${SPRING_DATA_REDIS_HOST:localhost}}
+      port: ${EMME_AI_REDIS_SEMANTIC_PORT:${SPRING_DATA_REDIS_PORT:6379}}
+      index-name: ${EMME_AI_REDIS_SEMANTIC_INDEX:emme-ai-semantic-cache}
+      prefix: ${EMME_AI_REDIS_SEMANTIC_PREFIX:emme:ai:semantic-cache:}
+      embedding-model-version: ${EMME_AI_REDIS_SEMANTIC_EMBEDDING_MODEL_VERSION:ollama-embeddinggemma:300m}
+      embedding-dimension: ${EMME_AI_REDIS_SEMANTIC_EMBEDDING_DIMENSION:768}
+      initialize-schema: ${EMME_AI_REDIS_SEMANTIC_INITIALIZE_SCHEMA:false}
   whatsapp:
     verify-token: ${WHATSAPP_VERIFY_TOKEN:}
     app-secret: ${WHATSAPP_APP_SECRET:}

@@ -79,6 +79,8 @@ spring-ai-starter-model-openai = { module = "org.springframework.ai:spring-ai-st
 spring-ai-starter-model-anthropic = { module = "org.springframework.ai:spring-ai-starter-model-anthropic" }
 spring-ai-starter-model-google-genai = { module = "org.springframework.ai:spring-ai-starter-model-google-genai" }
 spring-ai-starter-vector-store-pgvector = { module = "org.springframework.ai:spring-ai-starter-vector-store-pgvector" }
+spring-ai-redis-store = { module = "org.springframework.ai:spring-ai-redis-store", version.ref = "spring-ai" }
+spring-ai-tool-search-advisor = { module = "org.springframework.ai:spring-ai-tool-search-advisor", version.ref = "spring-ai" }
 spring-ai-starter-mcp-client = { module = "org.springframework.ai:spring-ai-starter-mcp-client" }
 spring-ai-starter-tool-search-advisor = { module = "org.springframework.ai:spring-ai-starter-tool-search-advisor" }
 

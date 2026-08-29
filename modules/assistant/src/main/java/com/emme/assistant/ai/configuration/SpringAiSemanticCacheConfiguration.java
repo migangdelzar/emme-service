@@ -2,6 +2,7 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.adapter.out.persistence.JacksonSemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
@@ -10,6 +11,7 @@ import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -58,8 +60,16 @@ public class SpringAiSemanticCacheConfiguration {
       SemanticCachePort cache,
       SemanticCachePayloadCodec codec,
       @Qualifier("aiCacheClock") Clock clock,
-      SemanticCacheProperties properties) {
+      SemanticCacheProperties properties,
+      Optional<SemanticCacheHotStore> hotStore) {
     return new SemanticChatCache(
-        embeddings, resolver, cache, codec, clock, properties.promptVersion(), properties.ttl());
+        embeddings,
+        resolver,
+        cache,
+        codec,
+        clock,
+        properties.promptVersion(),
+        properties.ttl(),
+        hotStore);
   }
 }

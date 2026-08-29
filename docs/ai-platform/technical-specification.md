@@ -11,12 +11,14 @@
 ```text
 applications/emme-platform
   → modules/assistant
-  → modules/ai-foundation
+  → modules/ai-platform
+  → libraries/ai-contracts
   → module APIs
   → infrastructure adapters
 
 modules/assistant
-  → ai-foundation
+  → libraries/ai-contracts
+  → modules/ai-platform
   → catalog-api
   → documents-api
   → appointments-api
@@ -24,14 +26,18 @@ modules/assistant
   → audit-api
 
 modules/catalog
-  → ai-foundation embedding/vision ports
+  → libraries/ai-contracts embedding/vision ports
 
-ai-foundation
+modules/ai-platform
+  → libraries/ai-contracts
   → kernel/shared only
 ```
 
-The neutral AI foundation removes the current `catalog → assistant AI`
-coupling and prevents an assistant/catalog cycle.
+The framework-neutral `ai-contracts` library removes the current
+`catalog → assistant AI` coupling and prevents an assistant/catalog cycle.
+`ai-platform` owns reusable provider and capability adapters without depending
+on assistant application code. Assistant remains the composition boundary for
+Emme-specific use cases and Spring AI/LangGraph4j workflow definitions.
 
 ## 2. Stable application ports
 

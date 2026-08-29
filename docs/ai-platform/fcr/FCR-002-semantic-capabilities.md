@@ -8,7 +8,7 @@ semantic caching with deterministic fallback behavior.
 ## Affected areas
 
 ```text
-ai-foundation ports
+`libraries:ai-contracts` ports and `modules:ai-platform` adapters
 assistant semantic gateway
 PostgreSQL/pgvector migrations
 Spring AI EmbeddingModel/VectorStore adapters

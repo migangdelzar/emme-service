@@ -23,7 +23,7 @@
 | 0 | Java 25 repository/runtime baseline | Toolchain, CI/config validation | Complete |
 | 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | Complete |
 | 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Complete |
-| 3 | AI foundation and Spring AI providers | Provider/embedding/chat contract tests | In progress — embedding and ordered chat provider boundaries complete |
+| 3 | `ai-contracts`, `ai-platform`, and Spring AI providers | Provider/embedding/chat contract tests | In progress — contracts, provider adapters, embedding, and ordered chat boundaries complete |
 | 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress — semantic intent/tool routing and safe chat cache complete; real pgvector runtime test pending |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Complete |
 | 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors and read-only controlled gateway complete; mutation tools pending |
@@ -70,11 +70,13 @@ is bound, so existing tenant-routed application services do not lose their
 ThreadLocal/MDC compatibility state. Phase 1 remains in progress until tenant
 and provider backpressure limits are implemented.
 
-## 5. Phase 3–4 — AI and vector foundation
+## 5. Phase 3–4 — AI contracts, provider, and vector foundation
 
 - Upgrade and pin Spring AI.
 - Resolve compatible LangGraph4j versions before use.
-- Add neutral AI foundation module.
+- Keep framework-neutral contracts in `libraries:ai-contracts`.
+- Keep reusable model providers and capability adapters in `modules:ai-platform`;
+  assistant owns Emme-specific composition and use cases.
 - Refactor existing ModelProvider behind focused ports.
 - Add model/provider routing.
 - Add intent, tool, and cache schemas and indexes.

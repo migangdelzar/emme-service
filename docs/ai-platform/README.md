@@ -37,19 +37,22 @@ service.
 libraries/kernel/
   execution context and low-level context bridges
 
-modules/assistant/ai/
-  provider-neutral AI contracts
-  embedding and vector ports
-  semantic decisions and tool policies
-  Spring AI/provider adapters (incremental)
+libraries/ai-contracts/
+  framework-neutral model, embedding, extraction, routing, tool, RAG,
+  semantic-cache, and workflow contracts
+
+modules/ai-platform/
+  reusable model providers and capability adapters
+  bounded model admission and provider configuration
+  no dependency on Emme assistant use cases
 
 modules/assistant/adapter/out/persistence/
   tenant/principal-scoped pgvector adapters
 
 modules/assistant/
   conversation orchestration
-  LangGraph4j workflow
-  Spring AI clients and advisors
+  LangGraph4j workflow definitions
+  Spring AI clients, advisors, and Emme-specific composition
   quote/HITL workflow
   semantic gateway
 
@@ -74,7 +77,7 @@ applications/emme-platform/
 ```text
 Java 25 baseline
   → execution context and concurrency
-  → AI foundation and provider adapters
+  → ai-contracts and ai-platform provider adapters
   → pgvector semantic indexes
   → LangGraph4j workflow/checkpoints
   → Spring AI clients/advisors/tools

@@ -75,6 +75,8 @@
 - [x] Add optional Spring AI RAG composition using the existing virtual-thread
       AI I/O executor, context capture, named provider registry, and completion
       fallback chain.
+- [x] Reconcile active AI documentation with the canonical `ai-contracts` and
+      `ai-platform` module names and add a regression consistency test.
 
 ### Working notes
 
@@ -182,6 +184,10 @@ Spring AI chat providers are reused through the existing ordered fallback and
 trace wrappers; enabling RAG does not introduce a second model pool or vector
 store. It is gated by `app.ai.spring-rag.enabled` and requires the existing
 Spring chat and embedding integrations.
+
+Active AI architecture documents now describe the actual `libraries:ai-contracts`
+and `modules:ai-platform` boundaries. A focused documentation consistency test
+prevents the retired `ai-foundation` name from returning to the boundary docs.
 
 Verification on 2026-08-28: `:modules:assistant:spotlessCheck :modules:assistant:test`,
 `:database:spotlessCheck :database:test`, and

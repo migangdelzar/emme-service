@@ -686,9 +686,9 @@ and promotes the new namespace only after evaluation.
 RedisVL is not an embedding model. It is a Python client/library for Redis
 vector search. The Java service uses Spring AI's Redis `VectorStore` integration
 and Spring Data Redis/Lettuce where native Redis commands are needed. Redis
-vector search requires Redis Stack/Redis Query Engine, so the current plain
-`redis:7-alpine` image must be replaced or supplemented by a pinned
-Redis-Stack profile before Redis KNN is enabled.
+vector search requires Redis Stack/Redis Query Engine. The shared runtime and
+integration-test Redis image is pinned to `redis:8.10.1-alpine3.23` before Redis
+KNN is enabled. The application-level semantic Redis feature remains opt-in.
 
 Use separate versioned indexes:
 

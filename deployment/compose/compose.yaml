@@ -46,7 +46,10 @@ services:
       - emme-net
 
   redis:
-    image: redis:7-alpine
+    # Redis 8 includes the Redis Query Engine required by Spring AI's
+    # RedisVectorStore and Tool Search adapter. Keep the image pinned and
+    # ARM64-compatible for local Apple Silicon development.
+    image: ${REDIS_IMAGE:-redis:8.10.1-alpine3.23}
     ports:
       - "6379:6379"
     healthcheck:

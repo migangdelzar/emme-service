@@ -2537,8 +2537,9 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
   prerequisite for that lane.
 - `StructuredTaskScope` and `Joiner` are Java 25 preview APIs and must remain
   behind a stable Emme abstraction.
-- The current Redis deployment is plain `redis:7-alpine`; PostgreSQL/pgvector
-  is the initial semantic store.
+- Shared Compose and Testcontainers Redis use the pinned ARM64-compatible
+  `redis:8.10.1-alpine3.23` image required by the opt-in Redis vector adapter;
+  PostgreSQL/pgvector remains the durable semantic store.
 - Java agents are intended for JVM observability and diagnostics, not global
   ForkJoinPool replacement.
 
@@ -2650,6 +2651,23 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
   the opt-in Redis index and backend-approved callback provider are present.
 - Verification: focused Redis, tool-search, semantic-cache, chat-configuration,
   and embedding-property tests passed; Spotless passed.
+
+## Redis vector runtime alignment — 2026-08-29
+
+- [x] Pin the shared Compose Redis runtime to the Redis Query Engine image
+      required by the opt-in Spring AI Redis vector adapters.
+- [x] Align the Redis Testcontainers fixture with the local runtime.
+- [x] Repair stale E2E Compose contract expectations exposed by validation.
+- [x] Validate E2E/Kafka Compose contracts and merged Compose configuration.
+
+### Results
+
+- Compose and Testcontainers now use `redis:8.10.1-alpine3.23`, pinned for the
+  Apple Silicon development path and Redis vector-search support.
+- Semantic Redis remains disabled by default; PostgreSQL/pgvector remains the
+  durable fallback and source of truth.
+- Verification: E2E and Kafka Compose contracts passed; merged regression
+  Compose configuration passed `config --quiet`.
 
 ## pgvector runtime integration — 2026-08-29
 

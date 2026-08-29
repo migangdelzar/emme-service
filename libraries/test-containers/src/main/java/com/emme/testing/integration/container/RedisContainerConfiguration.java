@@ -17,7 +17,7 @@ import org.testcontainers.utility.DockerImageName;
 @ConditionalOnProperty(name = "emme.testing.redis.enabled", havingValue = "true")
 public class RedisContainerConfiguration {
 
-  private static final String IMAGE = "redis:7-alpine";
+  private static final String IMAGE = "redis:8.10.1-alpine3.23";
   private static final int REDIS_PORT = 6379;
 
   @Bean

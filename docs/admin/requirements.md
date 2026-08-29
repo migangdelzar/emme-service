@@ -92,7 +92,7 @@
 | C-A005 | Durable database | PostgreSQL 17 with pgvector must be the durable source of truth. | Technical | High | Implemented |
 | C-A006 | Tenant storage | v1 tenant-owned tables must use shared-schema `tenant_id` isolation enforced by PostgreSQL RLS. | Technical | High | Implemented |
 | C-A007 | Database migrations | Liquibase SQL-formatted changelogs with a YAML master must own all application schema changes. | Technical | High | Implemented |
-| C-A008 | Cache boundary | Redis 7.4 must store only expiring cache, lock, rate-limit, idempotency, OAuth-state, and conversation-summary data. | Technical | High | Implemented |
+| C-A008 | Cache boundary | Redis 8 must store only expiring cache, lock, rate-limit, idempotency, OAuth-state, and conversation-summary data; durable semantic records remain in PostgreSQL. | Technical | High | Implemented |
 | C-A009 | Identity provider | Keycloak 26 must issue tokens; the backend must operate as an OAuth2 resource server and must not implement password authentication. | Technical | High | Implemented |
 | C-A010 | Internal communication | v1 modules must communicate through Java APIs and Modulith events, not internal REST, gRPC, or protobuf. | Technical | High | Implemented |
 | C-A011 | Event durability | Cross-module event publication must use the Spring Modulith JDBC event registry and retain incomplete publications for retry and recovery. | Technical | High | Implemented |

@@ -17,6 +17,16 @@
 - Prevention rule: every AI application use case must require the backend execution scope before
   any cache, semantic router, provider, or tool operation; adapters still bind the scope at ingress.
 
+## 2026-08-29 — Update direct-call fixtures when enforcing context
+
+- Failure mode: adding the fail-closed context guard correctly broke older unit tests that invoked
+  the use case directly without the production ingress wrapper.
+- Detection signal: existing tests failed only after the guard was enabled, while HTTP paths already
+  bound context.
+- Prevention rule: when an application boundary gains a security precondition, update direct-call
+  fixtures to bind the same trusted scope used in production and retain a dedicated missing-context
+  regression test.
+
 ## 2026-08-28 — Explicitly bind records with compatibility constructors
 
 - Failure mode: Adding a convenience constructor to a `@ConfigurationProperties` record made

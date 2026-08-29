@@ -5,6 +5,7 @@ import com.emme.assistant.ai.api.result.IntentResult;
 import com.emme.assistant.ai.api.usecase.DetectIntentUseCase;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ public class DetectIntentService implements DetectIntentUseCase {
 
   @Override
   public IntentResult detect(String message) {
+    AiExecutionContextScope.requireCurrent();
     try {
       Optional<IntentResult> semanticResult =
           semanticRouter.flatMap(router -> router.route(message));

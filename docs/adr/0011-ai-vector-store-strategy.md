@@ -26,6 +26,9 @@ the application level.
 - Use the pinned Redis 8 runtime for the opt-in Redis vector adapter and keep
   PostgreSQL authoritative for durable semantic records.
 - Use the same embedding model/version/dimension for indexing and querying.
+- Encode Redis tag metadata at the projection boundary and use Spring AI's
+  typed filter-expression builder; Redis tag syntax must not receive raw model
+  versions or context fingerprints.
 
 ## Consequences
 

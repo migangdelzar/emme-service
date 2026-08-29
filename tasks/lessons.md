@@ -1,5 +1,25 @@
 # Engineering lessons
 
+## 2026-08-29 — Configure Spring AI Redis return metadata explicitly
+
+- Failure mode: A Redis vector search found the projected document, but the
+  adapter discarded it because the durable id and response payload were not
+  configured as returned metadata fields.
+- Detection signal: A live Redis `FT.SEARCH *` returned one document while the
+  adapter returned zero candidates.
+- Prevention rule: For every Spring AI Redis projection, configure every field
+  required by candidate mapping as a metadata field and cover the complete
+  mapping with a real Redis integration test.
+
+## 2026-08-29 — Encode arbitrary values before Redis tag filtering
+
+- Failure mode: Raw context fingerprints and model versions containing `:`
+  produced Redis Query Engine syntax errors or empty matches.
+- Detection signal: The same vector and scope matched with simple values but
+  failed for `context-v1:...` and `ollama-embeddinggemma:300m`.
+- Prevention rule: Use Spring AI's typed filter builder and a reversible URL-safe
+  encoding for projection tag values; keep original values in PostgreSQL.
+
 ## 2026-08-29 — Validate Liquibase include indentation immediately
 
 - Failure mode: A new migration include was initially nested under the prior

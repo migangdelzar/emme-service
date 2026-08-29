@@ -11,9 +11,11 @@ import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,8 +105,8 @@ class RedisSemanticCacheHotStoreTest {
     Document document = documentReference.get();
     assertThat(document.getText()).isEqualTo(write.queryText());
     assertThat(document.getMetadata())
-        .containsEntry("tenantId", TENANT_ID.toString())
-        .containsEntry("principalId", PRINCIPAL_ID.toString())
+        .containsEntry("tenantId", encodeTagValue(TENANT_ID.toString()))
+        .containsEntry("principalId", encodeTagValue(PRINCIPAL_ID.toString()))
         .containsEntry("durableCacheId", durableId.toString());
   }
 
@@ -158,5 +160,11 @@ class RedisSemanticCacheHotStoreTest {
         WORKFLOW_ID,
         "trace-hot-cache",
         "idempotency-hot-cache");
+  }
+
+  private static String encodeTagValue(String value) {
+    return Base64.getUrlEncoder()
+        .withoutPadding()
+        .encodeToString(value.getBytes(StandardCharsets.UTF_8));
   }
 }

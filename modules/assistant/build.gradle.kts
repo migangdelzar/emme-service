@@ -41,5 +41,7 @@ dependencies {
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
   add("integrationTestImplementation", project(":libraries:kernel"))
   add("integrationTestImplementation", libs.spring.jdbc)
+  add("integrationTestImplementation", libs.spring.ai.model)
+  add("integrationTestImplementation", libs.spring.ai.redis.store)
   add("integrationTestImplementation", libs.jackson.databind)
 }

@@ -5,9 +5,11 @@ import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,6 +17,7 @@ import java.util.UUID;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import redis.clients.jedis.RedisClient;
 
 /**
@@ -77,21 +80,22 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
     validateEmbedding(lookup.query());
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
 
-    String filter =
-        "tenantId == '"
-            + context.tenantId()
-            + "' && principalId == '"
-            + context.principalId()
-            + "' && cacheKind == '"
-            + escapeFilterValue(lookup.cacheKind())
-            + "' && contextFingerprint == '"
-            + escapeFilterValue(lookup.contextFingerprint())
-            + "' && promptVersion == '"
-            + escapeFilterValue(lookup.promptVersion())
-            + "' && embeddingModelVersion == '"
-            + escapeFilterValue(lookup.query().modelVersion())
-            + "' && expiresAt > "
-            + Instant.now(clock).getEpochSecond();
+    FilterExpressionBuilder filters = new FilterExpressionBuilder();
+    var tenantAndPrincipal =
+        filters.and(
+            filters.eq("tenantId", encodeTagValue(context.tenantId().toString())),
+            filters.eq("principalId", encodeTagValue(context.principalId().toString())));
+    var kindAndContext =
+        filters.and(
+            filters.eq("cacheKind", encodeTagValue(lookup.cacheKind())),
+            filters.eq("contextFingerprint", encodeTagValue(lookup.contextFingerprint())));
+    var versions =
+        filters.and(
+            filters.eq("promptVersion", encodeTagValue(lookup.promptVersion())),
+            filters.eq("embeddingModelVersion", encodeTagValue(lookup.query().modelVersion())));
+    var identity = filters.and(filters.and(tenantAndPrincipal, kindAndContext), versions);
+    var filter =
+        filters.and(identity, filters.gt("expiresAt", Instant.now(clock).getEpochSecond())).build();
 
     return vectorStore
         .similaritySearch(
@@ -120,13 +124,13 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
 
     Map<String, Object> metadata =
         Map.of(
-            "tenantId", context.tenantId().toString(),
-            "principalId", context.principalId().toString(),
+            "tenantId", encodeTagValue(context.tenantId().toString()),
+            "principalId", encodeTagValue(context.principalId().toString()),
             "durableCacheId", durableCacheId.toString(),
-            "cacheKind", write.cacheKind(),
-            "contextFingerprint", write.contextFingerprint(),
-            "promptVersion", write.promptVersion(),
-            "embeddingModelVersion", write.query().modelVersion(),
+            "cacheKind", encodeTagValue(write.cacheKind()),
+            "contextFingerprint", encodeTagValue(write.contextFingerprint()),
+            "promptVersion", encodeTagValue(write.promptVersion()),
+            "embeddingModelVersion", encodeTagValue(write.query().modelVersion()),
             "responsePayload", write.responsePayload(),
             "expiresAt", write.expiresAt().getEpochSecond());
     vectorStore.add(
@@ -170,8 +174,10 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
     }
   }
 
-  private static String escapeFilterValue(String value) {
-    return value.replace("\\", "\\\\").replace("'", "\\'");
+  private static String encodeTagValue(String value) {
+    return Base64.getUrlEncoder()
+        .withoutPadding()
+        .encodeToString(value.getBytes(StandardCharsets.UTF_8));
   }
 
   private static void requireText(String value, String field) {

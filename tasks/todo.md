@@ -115,6 +115,8 @@ pgvector/PostgreSQL tests pass.
       idempotent PostgreSQL evaluation table.
 - [x] Apply evaluation reports through a context-bound worker with safe
       re-delivery handling and durable lifecycle transitions.
+- [x] Pin the Redis 8 ARM64 runtime and test the Spring AI Redis vector
+      projection's read/write, TTL, returned metadata, and tenant isolation.
 
 ### Working notes
 
@@ -132,6 +134,14 @@ pgvector/PostgreSQL tests pass.
 
 The initial pgvector schema slice is implemented and covered by
 `database/src/test/java/com/emme/database/AiSemanticSearchMigrationContractTest.java`.
+
+The Redis semantic projection now uses the pinned Redis 8 ARM64-compatible
+runtime. Spring AI Redis tag metadata is URL-safe encoded at the projection
+boundary and searched through the typed filter-expression builder, while the
+durable cache id and response payload are configured as returned metadata. A
+Testcontainers integration test verifies a real write/read, Redis TTL, and
+authenticated tenant isolation using a model version and context fingerprint
+that contain reserved Redis query characters.
 
 The provider boundary slice now keeps `modules:assistant` dependent only on
 the framework-free `AiModelProvider` contract. Mock, Ollama, and Groq provider

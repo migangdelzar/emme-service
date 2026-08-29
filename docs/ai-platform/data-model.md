@@ -88,10 +88,14 @@ prefix: emme:ai:semantic-cache:tools:
 ```
 
 The cache index stores tenant, principal, cache kind, context fingerprint,
-prompt version, embedding model version, response payload, and expiry metadata.
-The tool index stores only Spring AI tool references scoped by the composite
-backend session key. Both indexes are rebuildable from PostgreSQL/application
-callbacks and are disabled by default.
+prompt version, embedding model version, durable cache id, response payload,
+and expiry metadata. The six tag values are stored as URL-safe, reversible
+encodings because Redis tag syntax has reserved characters; the original
+values remain authoritative in PostgreSQL. The durable id and response
+payload are indexed metadata fields because Spring AI returns only configured
+metadata fields from a vector search. The tool index stores only Spring AI
+tool references scoped by the composite backend session key. Both indexes are
+rebuildable from PostgreSQL/application callbacks and are disabled by default.
 
 ## 5. Integrity rules
 

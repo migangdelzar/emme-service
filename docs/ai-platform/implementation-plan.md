@@ -184,7 +184,12 @@ advisor; its session key includes tenant, principal, conversation, and role
 scope. The local Kubernetes manifest uses a Redis 8 ARM64-compatible image, but
 the application flags remain disabled by default. Cache projection keys now also
 receive the durable expiry as a Redis TTL, while the metadata expiry filter and
-PostgreSQL confirmation remain the correctness boundaries.
+PostgreSQL confirmation remain the correctness boundaries. Redis tag metadata
+is encoded at the projection boundary and queried through Spring AI's typed
+filter-expression builder, so model versions and context fingerprints may
+contain reserved characters safely. The projection configures the durable id
+and response payload as returned metadata, and a Testcontainers gate verifies
+the pinned Redis 8 image, vector read/write, TTL, and tenant isolation.
 
 The controlled tool boundary now snapshots backend-authorized eligible tools,
 uses pgvector semantic matching before execution, and invokes only typed tool

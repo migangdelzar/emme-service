@@ -41,10 +41,12 @@ public class SpringAiRedisSemanticConfiguration {
         .metadataFields(
             RedisVectorStore.MetadataField.tag("tenantId"),
             RedisVectorStore.MetadataField.tag("principalId"),
+            RedisVectorStore.MetadataField.tag("durableCacheId"),
             RedisVectorStore.MetadataField.tag("cacheKind"),
             RedisVectorStore.MetadataField.tag("contextFingerprint"),
             RedisVectorStore.MetadataField.tag("promptVersion"),
             RedisVectorStore.MetadataField.tag("embeddingModelVersion"),
+            RedisVectorStore.MetadataField.text("responsePayload"),
             RedisVectorStore.MetadataField.numeric("expiresAt"))
         .build();
   }

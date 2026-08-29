@@ -1,16 +1,25 @@
 package com.emme.assistant.ai.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.ai.contracts.model.ModelCapability;
+import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.ProactiveToolRouter;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
 import com.emme.assistant.ai.application.tool.AiToolResult;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
+import java.time.Duration;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class ChatServiceTest {
@@ -63,5 +72,41 @@ class ChatServiceTest {
     assertThat(service.chat("", "what services do you have?")).isEqualTo("services");
 
     verifyNoInteractions(model, cache);
+  }
+
+  @Test
+  void admitsLegacyProviderExecutionThroughTheSharedModelScheduler() {
+    AiModelProvider model = mock(AiModelProvider.class);
+    ModelExecutionScheduler scheduler = mock(ModelExecutionScheduler.class);
+    when(model.chat("", "hello")).thenReturn("response");
+    when(scheduler.execute(any(), any(), any(), any()))
+        .thenAnswer(
+            invocation -> invocation.getArgument(3, java.util.concurrent.Callable.class).call());
+    AiExecutionContext context = context();
+    ChatService service =
+        new ChatService(
+            model,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.of(scheduler),
+            Duration.ofSeconds(2));
+
+    assertThat(AiExecutionContextScope.call(context, () -> service.chat("", "hello")))
+        .isEqualTo("response");
+
+    verify(scheduler)
+        .execute(eq(ModelCapability.GENERATION), eq(context), eq(Duration.ofSeconds(2)), any());
+  }
+
+  private static AiExecutionContext context() {
+    return new AiExecutionContext(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        Set.of("ROLE_CLIENT"),
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        "trace",
+        "idempotency");
   }
 }

@@ -1,5 +1,13 @@
 # Engineering lessons
 
+## 2026-08-28 — Preserve restored security context while extending AI runtime
+
+- Failure mode: An intermediate change removed a newly restored tenant execution-context slice
+  while trying to simplify the AI runtime.
+- Detection signal: The user explicitly required that the tenant scope and bridge remain present.
+- Prevention rule: Before simplifying AI infrastructure, verify the canonical tenant/auth context
+  files and keep them as the security boundary; extend existing integrations around them.
+
 ## 2026-08-28 — Do not overlap Gradle test/report writers during scheduler debugging
 
 - Failure mode: a second AI-platform test was started while a previous Gradle

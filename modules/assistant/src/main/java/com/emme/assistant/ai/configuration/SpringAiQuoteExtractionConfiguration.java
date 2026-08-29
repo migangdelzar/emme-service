@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiNailDesignExtractor;
 import com.emme.assistant.ai.application.port.out.DesignImageReader;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
@@ -39,6 +40,34 @@ public class SpringAiQuoteExtractionConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(NailDesignExtractor.class)
+  NailDesignExtractor nailDesignExtractor(
+      ChatClient aiQuoteExtractionChatClient,
+      SpringAiExtractionProperties properties,
+      ObjectProvider<DesignImageReader> imageReaders,
+      AiTraceRecorder traceRecorder,
+      Optional<ModelExecutionScheduler> modelExecutionScheduler,
+      AiExecutorProperties executorProperties) {
+    DesignImageReader imageReader = imageReaders.getIfAvailable(() -> key -> Optional.empty());
+    if (modelExecutionScheduler.isPresent()) {
+      return new SpringAiNailDesignExtractor(
+          aiQuoteExtractionChatClient,
+          properties.modelVersion(),
+          properties.promptVersion(),
+          properties.schemaVersion(),
+          imageReader,
+          traceRecorder,
+          modelExecutionScheduler.orElseThrow(),
+          executorProperties.modelAdmissionTimeout());
+    }
+    return new SpringAiNailDesignExtractor(
+        aiQuoteExtractionChatClient,
+        properties.modelVersion(),
+        properties.promptVersion(),
+        properties.schemaVersion(),
+        imageReader,
+        traceRecorder);
+  }
+
   NailDesignExtractor nailDesignExtractor(
       ChatClient aiQuoteExtractionChatClient,
       SpringAiExtractionProperties properties,

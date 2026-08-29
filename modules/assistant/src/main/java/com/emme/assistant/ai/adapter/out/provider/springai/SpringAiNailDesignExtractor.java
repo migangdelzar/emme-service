@@ -1,5 +1,7 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
+import com.emme.ai.contracts.model.ModelCapability;
+import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.DesignImageReader;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractionRejectedException;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
@@ -9,7 +11,9 @@ import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.assistant.ai.domain.quote.NailDesignFeatures;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.time.Duration;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.content.Media;
@@ -30,6 +34,8 @@ public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
   private final String schemaVersion;
   private final DesignImageReader imageReader;
   private final AiTraceRecorder traceRecorder;
+  private final Optional<ModelExecutionScheduler> modelExecutionScheduler;
+  private final Duration admissionTimeout;
 
   public SpringAiNailDesignExtractor(
       ChatClient chatClient,
@@ -43,7 +49,9 @@ public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
         promptVersion,
         schemaVersion,
         imageReader,
-        NoopAiTraceRecorder.INSTANCE);
+        NoopAiTraceRecorder.INSTANCE,
+        Optional.empty(),
+        Duration.ofSeconds(5));
   }
 
   public SpringAiNailDesignExtractor(
@@ -53,12 +61,78 @@ public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
       String schemaVersion,
       DesignImageReader imageReader,
       AiTraceRecorder traceRecorder) {
+    this(
+        chatClient,
+        modelVersion,
+        promptVersion,
+        schemaVersion,
+        imageReader,
+        traceRecorder,
+        Optional.empty(),
+        Duration.ofSeconds(5));
+  }
+
+  public SpringAiNailDesignExtractor(
+      ChatClient chatClient,
+      String modelVersion,
+      String promptVersion,
+      String schemaVersion,
+      DesignImageReader imageReader,
+      ModelExecutionScheduler modelExecutionScheduler,
+      Duration admissionTimeout) {
+    this(
+        chatClient,
+        modelVersion,
+        promptVersion,
+        schemaVersion,
+        imageReader,
+        NoopAiTraceRecorder.INSTANCE,
+        Optional.of(modelExecutionScheduler),
+        admissionTimeout);
+  }
+
+  public SpringAiNailDesignExtractor(
+      ChatClient chatClient,
+      String modelVersion,
+      String promptVersion,
+      String schemaVersion,
+      DesignImageReader imageReader,
+      AiTraceRecorder traceRecorder,
+      ModelExecutionScheduler modelExecutionScheduler,
+      Duration admissionTimeout) {
+    this(
+        chatClient,
+        modelVersion,
+        promptVersion,
+        schemaVersion,
+        imageReader,
+        traceRecorder,
+        Optional.of(modelExecutionScheduler),
+        admissionTimeout);
+  }
+
+  private SpringAiNailDesignExtractor(
+      ChatClient chatClient,
+      String modelVersion,
+      String promptVersion,
+      String schemaVersion,
+      DesignImageReader imageReader,
+      AiTraceRecorder traceRecorder,
+      Optional<ModelExecutionScheduler> modelExecutionScheduler,
+      Duration admissionTimeout) {
     this.chatClient = Objects.requireNonNull(chatClient, "chatClient must not be null");
     this.modelVersion = requireText(modelVersion, "modelVersion");
     this.promptVersion = requireText(promptVersion, "promptVersion");
     this.schemaVersion = requireText(schemaVersion, "schemaVersion");
     this.imageReader = Objects.requireNonNull(imageReader, "imageReader must not be null");
     this.traceRecorder = Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
+    this.modelExecutionScheduler =
+        Objects.requireNonNull(modelExecutionScheduler, "modelExecutionScheduler must not be null");
+    this.admissionTimeout =
+        Objects.requireNonNull(admissionTimeout, "admissionTimeout must not be null");
+    if (admissionTimeout.isZero() || admissionTimeout.isNegative()) {
+      throw new IllegalArgumentException("admissionTimeout must be positive");
+    }
   }
 
   @Override
@@ -148,8 +222,10 @@ public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
   }
 
   private NailDesignFeatures extractText(ExtractionRequest request) {
-    return structuredEntity(
-        chatClient.prompt().system(SYSTEM_PROMPT).user(request.inputText()).call());
+    return withAdmission(
+        () ->
+            structuredEntity(
+                chatClient.prompt().system(SYSTEM_PROMPT).user(request.inputText()).call()));
   }
 
   private NailDesignFeatures extractImage(ExtractionRequest request) {
@@ -164,19 +240,39 @@ public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
         request.inputText() == null
             ? "Analyze the attached nail-design image."
             : request.inputText();
-    return structuredEntity(
-        chatClient
-            .prompt()
-            .system(SYSTEM_PROMPT)
-            .user(
-                user ->
-                    user.text(userText)
-                        .media(
-                            Media.builder()
-                                .mimeType(MimeTypeUtils.parseMimeType(image.mediaType()))
-                                .data(image.bytes())
-                                .build()))
-            .call());
+    return withAdmission(
+        () ->
+            structuredEntity(
+                chatClient
+                    .prompt()
+                    .system(SYSTEM_PROMPT)
+                    .user(
+                        user ->
+                            user.text(userText)
+                                .media(
+                                    Media.builder()
+                                        .mimeType(MimeTypeUtils.parseMimeType(image.mediaType()))
+                                        .data(image.bytes())
+                                        .build()))
+                    .call()));
+  }
+
+  private NailDesignFeatures withAdmission(
+      java.util.concurrent.Callable<NailDesignFeatures> operation) {
+    if (modelExecutionScheduler.isEmpty()) {
+      try {
+        return operation.call();
+      } catch (Exception exception) {
+        throw new RuntimeException(exception);
+      }
+    }
+    return modelExecutionScheduler
+        .orElseThrow()
+        .execute(
+            ModelCapability.VISION,
+            AiExecutionContextScope.requireCurrent(),
+            admissionTimeout,
+            operation);
   }
 
   private NailDesignFeatures structuredEntity(ChatClient.CallResponseSpec response) {

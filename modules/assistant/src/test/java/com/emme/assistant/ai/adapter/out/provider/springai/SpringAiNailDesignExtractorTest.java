@@ -9,6 +9,8 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.model.ModelCapability;
+import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractionRejectedException;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
@@ -19,6 +21,7 @@ import com.emme.assistant.ai.domain.quote.NailLength;
 import com.emme.assistant.ai.domain.quote.NailShape;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -164,6 +167,64 @@ class SpringAiNailDesignExtractorTest {
     assertThat(trace.getValue().responsePayload()).isEqualTo("structured-features");
     assertThat(trace.getValue().requestPayload()).contains("imagePresent=false");
     assertThat(trace.getValue().requestPayload()).doesNotContain("image-bytes");
+  }
+
+  @Test
+  void admitsVisionExtractionThroughTheSharedModelScheduler() {
+    ChatClient client = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    when(client
+            .prompt()
+            .system(anyString())
+            .user(anyString())
+            .call()
+            .entity(eq(NailDesignFeatures.class), any()))
+        .thenReturn(FEATURES);
+    RecordingScheduler scheduler = new RecordingScheduler();
+    SpringAiNailDesignExtractor extractor =
+        new SpringAiNailDesignExtractor(
+            client,
+            "vision-v1",
+            "quote-prompt-v1",
+            "nail-features-v1",
+            key -> {
+              throw new UnsupportedOperationException("image not configured");
+            },
+            scheduler,
+            Duration.ofSeconds(3));
+
+    AiExecutionContext expectedContext = context();
+    AiExecutionContextScope.call(
+        expectedContext,
+        () -> extractor.extract(new NailDesignExtractor.ExtractionRequest("pink design", null)));
+
+    assertThat(scheduler.capability).isEqualTo(ModelCapability.VISION);
+    assertThat(scheduler.timeout).isEqualTo(Duration.ofSeconds(3));
+    assertThat(scheduler.context).isEqualTo(expectedContext);
+    assertThat(scheduler.invocations).isEqualTo(1);
+  }
+
+  private static final class RecordingScheduler implements ModelExecutionScheduler {
+    private ModelCapability capability;
+    private AiExecutionContext context;
+    private Duration timeout;
+    private int invocations;
+
+    @Override
+    public <T> T execute(
+        ModelCapability capability,
+        AiExecutionContext context,
+        Duration admissionTimeout,
+        java.util.concurrent.Callable<T> operation) {
+      this.capability = capability;
+      this.context = context;
+      this.timeout = admissionTimeout;
+      invocations++;
+      try {
+        return operation.call();
+      } catch (Exception exception) {
+        throw new RuntimeException(exception);
+      }
+    }
   }
 
   private static AiExecutionContext context() {

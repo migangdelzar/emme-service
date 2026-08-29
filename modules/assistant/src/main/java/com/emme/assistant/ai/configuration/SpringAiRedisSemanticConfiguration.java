@@ -53,9 +53,15 @@ public class SpringAiRedisSemanticConfiguration {
   @ConditionalOnMissingBean(SemanticCacheHotStore.class)
   SemanticCacheHotStore semanticCacheHotStore(
       @Qualifier("aiRedisSemanticVectorStore") RedisVectorStore vectorStore,
+      @Qualifier("aiRedisSemanticClient") RedisClient redisClient,
       RedisSemanticProperties properties) {
     return new RedisSemanticCacheHotStore(
-        vectorStore, properties.embeddingModelVersion(), properties.embeddingDimension());
+        vectorStore,
+        properties.embeddingModelVersion(),
+        properties.embeddingDimension(),
+        java.time.Clock.systemUTC(),
+        redisClient,
+        properties.prefix());
   }
 
   @Bean(name = "aiRedisToolVectorStore")

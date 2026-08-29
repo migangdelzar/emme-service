@@ -11,7 +11,9 @@ import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import redis.clients.jedis.RedisClient;
 
 class RedisSemanticCacheHotStoreTest {
 
@@ -103,6 +106,32 @@ class RedisSemanticCacheHotStoreTest {
         .containsEntry("tenantId", TENANT_ID.toString())
         .containsEntry("principalId", PRINCIPAL_ID.toString())
         .containsEntry("durableCacheId", durableId.toString());
+  }
+
+  @Test
+  void appliesTheDurableExpiryToTheRedisProjectionKey() {
+    VectorStore vectorStore = mock(VectorStore.class);
+    RedisClient redisClient = mock(RedisClient.class);
+    Clock clock = Clock.fixed(Instant.parse("2026-08-29T12:00:00Z"), ZoneOffset.UTC);
+    UUID durableId = UUID.randomUUID();
+    RedisSemanticCacheHotStore hotStore =
+        new RedisSemanticCacheHotStore(
+            vectorStore, "embeddinggemma-v1", 2, clock, redisClient, "emme:ai:semantic-cache:");
+    SemanticCachePort.Put write =
+        new SemanticCachePort.Put(
+            "CHAT_INFORMATIONAL",
+            "What are your hours?",
+            "ctx",
+            "chat-v1",
+            "{\"text\":\"We are open.\"}",
+            Instant.parse("2026-08-29T12:01:30Z"),
+            QUERY,
+            "write-key");
+
+    AiExecutionContextScope.run(context(), () -> hotStore.put(durableId, write));
+
+    org.mockito.Mockito.verify(redisClient)
+        .expire("emme:ai:semantic-cache:cache-" + durableId, 90L);
   }
 
   @Test

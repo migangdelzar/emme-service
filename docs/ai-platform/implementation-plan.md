@@ -182,7 +182,9 @@ resolver before decoding the response. The tool-search advisor is added only
 when the tool callback provider is present and is the sole Spring AI tool
 advisor; its session key includes tenant, principal, conversation, and role
 scope. The local Kubernetes manifest uses a Redis 8 ARM64-compatible image, but
-the application flags remain disabled by default.
+the application flags remain disabled by default. Cache projection keys now also
+receive the durable expiry as a Redis TTL, while the metadata expiry filter and
+PostgreSQL confirmation remain the correctness boundaries.
 
 The controlled tool boundary now snapshots backend-authorized eligible tools,
 uses pgvector semantic matching before execution, and invokes only typed tool

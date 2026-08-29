@@ -2669,6 +2669,21 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - Verification: E2E and Kafka Compose contracts passed; merged regression
   Compose configuration passed `config --quiet`.
 
+## Redis projection expiry — 2026-08-29
+
+- [x] Apply the durable semantic-cache expiry to the Redis JSON projection key.
+- [x] Keep the metadata expiry filter and PostgreSQL hit confirmation as
+      correctness safeguards.
+- [x] Verify TTL projection and Redis semantic configuration tests.
+
+### Results
+
+- Redis hot-cache entries now receive a key TTL derived from the authoritative
+  PostgreSQL cache expiry; the existing constructor remains available for
+  infrastructure-free unit compositions.
+- Verification: focused Redis hot-store/configuration tests and assistant
+  Spotless checks passed under Java 25.
+
 ## pgvector runtime integration — 2026-08-29
 
 - [x] Add a pinned pgvector Testcontainers integration harness.

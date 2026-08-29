@@ -6,6 +6,7 @@ import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.UUID;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import redis.clients.jedis.RedisClient;
 
 /**
  * Spring AI Redis vector-store projection for the durable semantic cache.
@@ -29,6 +31,8 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
   private final String embeddingModelVersion;
   private final int embeddingDimensions;
   private final Clock clock;
+  private final RedisClient redisClient;
+  private final String redisKeyPrefix;
 
   public RedisSemanticCacheHotStore(
       VectorStore vectorStore, String embeddingModelVersion, int embeddingDimensions) {
@@ -37,6 +41,16 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
 
   public RedisSemanticCacheHotStore(
       VectorStore vectorStore, String embeddingModelVersion, int embeddingDimensions, Clock clock) {
+    this(vectorStore, embeddingModelVersion, embeddingDimensions, clock, null, "");
+  }
+
+  public RedisSemanticCacheHotStore(
+      VectorStore vectorStore,
+      String embeddingModelVersion,
+      int embeddingDimensions,
+      Clock clock,
+      RedisClient redisClient,
+      String redisKeyPrefix) {
     this.vectorStore = Objects.requireNonNull(vectorStore, "vectorStore must not be null");
     if (embeddingModelVersion == null || embeddingModelVersion.isBlank()) {
       throw new IllegalArgumentException("embeddingModelVersion must not be blank");
@@ -47,6 +61,11 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
     this.embeddingModelVersion = embeddingModelVersion;
     this.embeddingDimensions = embeddingDimensions;
     this.clock = Objects.requireNonNull(clock, "clock must not be null");
+    this.redisClient = redisClient;
+    if (redisKeyPrefix == null) {
+      throw new NullPointerException("redisKeyPrefix must not be null");
+    }
+    this.redisKeyPrefix = redisKeyPrefix;
   }
 
   @Override
@@ -117,6 +136,15 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
                 .text(write.queryText())
                 .metadata(metadata)
                 .build()));
+    expireProjection(durableCacheId, write.expiresAt());
+  }
+
+  private void expireProjection(UUID durableCacheId, Instant expiresAt) {
+    if (redisClient == null) {
+      return;
+    }
+    long ttlSeconds = Math.max(1L, Duration.between(Instant.now(clock), expiresAt).getSeconds());
+    redisClient.expire(redisKeyPrefix + DOCUMENT_ID_PREFIX + durableCacheId, ttlSeconds);
   }
 
   private void validateEmbedding(EmbeddingVector embedding) {

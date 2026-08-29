@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
+import com.emme.assistant.api.event.WhatsAppMessageReceived;
 import com.emme.assistant.api.result.ConversationDetails;
 import com.emme.assistant.api.type.ConversationStatus;
 import com.emme.assistant.api.usecase.AddConversationEventUseCase;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 
 class ProcessWhatsAppMessageServiceTest {
 
@@ -32,6 +34,7 @@ class ProcessWhatsAppMessageServiceTest {
   private final ChannelParticipantRepository participantRepository = org.mockito.Mockito.mock();
   private final WhatsAppWebhookEventRepository webhookEvents = org.mockito.Mockito.mock();
   private final WhatsAppReplyPort replyPort = org.mockito.Mockito.mock();
+  private final ApplicationEventPublisher eventPublisher = org.mockito.Mockito.mock();
   private final ProcessWhatsAppMessageService service =
       new ProcessWhatsAppMessageService(
           startConversation,
@@ -40,7 +43,8 @@ class ProcessWhatsAppMessageServiceTest {
           chatUseCase,
           participantRepository,
           webhookEvents,
-          replyPort);
+          replyPort,
+          eventPublisher);
 
   private UUID tenantId;
   private UUID participantId;
@@ -95,6 +99,19 @@ class ProcessWhatsAppMessageServiceTest {
 
     verify(participantRepository, never())
         .findByTenantIdAndChannelAndProviderReference(any(), any(), any());
+    verify(chatUseCase, never()).chat(any(), any());
+    verify(replyPort, never()).send(any(), any());
+  }
+
+  @Test
+  void enqueuesAValidatedMessageWithoutRunningTheModelInline() {
+    ProcessWhatsAppMessageCommand command =
+        new ProcessWhatsAppMessageCommand(tenantId, "event-2", "phone", "hello");
+
+    service.enqueue(command);
+
+    verify(eventPublisher).publishEvent(new WhatsAppMessageReceived(command));
+    verify(webhookEvents, never()).claim(any(), any(), any());
     verify(chatUseCase, never()).chat(any(), any());
     verify(replyPort, never()).send(any(), any());
   }

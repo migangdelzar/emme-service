@@ -72,7 +72,7 @@ public class WhatsAppWebhookController {
           .filter(message -> !message.statusUpdate())
           .ifPresent(
               message ->
-                  processMessage.process(
+                  processMessage.enqueue(
                       new ProcessWhatsAppMessageCommand(
                           message.tenantId(), message.eventId(), message.from(), message.text())));
       return ResponseEntity.ok("received");

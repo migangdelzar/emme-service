@@ -1,5 +1,15 @@
 # Engineering lessons
 
+## 2026-08-28 — Do not overlap Gradle test/report writers during scheduler debugging
+
+- Failure mode: a second AI-platform test was started while a previous Gradle
+  check was still running, which made the fairness test appear to hang and
+  obscured its actual result.
+- Detection signal: multiple Gradle test workers were writing the same module's
+  test outputs at once, and the first session stopped producing output.
+- Prevention rule: serialize Gradle commands that write test reports in this
+  checkout; wait for or terminate the prior session before starting another.
+
 ## 2026-08-28 — Run formatter after documentation comments
 
 - Failure mode: a long Javadoc line and a constructor delegation were accepted

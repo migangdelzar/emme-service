@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
@@ -112,6 +113,26 @@ class SpringAiEmbeddingConfigurationTest {
 
     assertThat(configuration.ollamaEmbeddingModel(aiProperties(1024)))
         .isInstanceOf(OllamaEmbeddingModel.class);
+  }
+
+  @Test
+  void wiresTheExistingModelSchedulerIntoTheEmbeddingChain() {
+    EmbeddingModel local = mock(EmbeddingModel.class);
+    SpringAiEmbeddingProperties properties =
+        new SpringAiEmbeddingProperties(
+            true,
+            List.of(
+                new SpringAiEmbeddingProperties.Provider(
+                    "ollamaEmbeddingModel", "local", "ollama-bge-m3")));
+    SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
+    SpringAiEmbeddingProviderRegistry registry =
+        configuration.providerRegistry(
+            Map.of("ollamaEmbeddingModel", local), properties, aiProperties(2));
+
+    assertThat(
+            configuration.embeddingModel(
+                registry, mock(ModelExecutionScheduler.class), new AiExecutorProperties(2, 1, 1)))
+        .isInstanceOf(com.emme.assistant.ai.application.provider.EmbeddingProviderChain.class);
   }
 
   private static AiProperties aiProperties(int dimension) {

@@ -1,10 +1,12 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.ai.ollama.api.OllamaApi;
@@ -51,6 +53,23 @@ public class SpringAiEmbeddingConfiguration {
 
   @Bean(name = "aiSemanticEmbeddingModel")
   @ConditionalOnMissingBean(name = "aiSemanticEmbeddingModel")
+  EmbeddingModelPort embeddingModel(
+      SpringAiEmbeddingProviderRegistry registry,
+      Optional<ModelExecutionScheduler> scheduler,
+      AiExecutorProperties executionProperties) {
+    return scheduler
+        .map(admission -> embeddingModel(registry, admission, executionProperties))
+        .orElseGet(() -> new EmbeddingProviderChain(registry.providers()));
+  }
+
+  EmbeddingModelPort embeddingModel(
+      SpringAiEmbeddingProviderRegistry registry,
+      ModelExecutionScheduler scheduler,
+      AiExecutorProperties executionProperties) {
+    return new EmbeddingProviderChain(
+        registry.providers(), scheduler, executionProperties.modelAdmissionTimeout());
+  }
+
   EmbeddingModelPort embeddingModel(SpringAiEmbeddingProviderRegistry registry) {
     return new EmbeddingProviderChain(registry.providers());
   }

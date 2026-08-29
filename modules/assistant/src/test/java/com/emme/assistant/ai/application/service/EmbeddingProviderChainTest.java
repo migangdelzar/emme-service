@@ -6,11 +6,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.model.ModelCapability;
+import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
+import java.time.Duration;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Callable;
 import org.junit.jupiter.api.Test;
 
 class EmbeddingProviderChainTest {
@@ -100,5 +108,51 @@ class EmbeddingProviderChainTest {
     assertThatThrownBy(() -> chain.embed("faq"))
         .isInstanceOf(EmbeddingProviderUnavailableException.class)
         .hasMessage("All configured embedding providers are unavailable: local, cloud");
+  }
+
+  @Test
+  void admitsEachProviderAttemptThroughTheExistingModelScheduler() {
+    EmbeddingModelPort primary = mock(EmbeddingModelPort.class);
+    when(primary.embed("faq")).thenReturn(LOCAL_VECTOR);
+    var scheduler = new RecordingScheduler();
+    EmbeddingProviderChain chain =
+        new EmbeddingProviderChain(
+            List.of(new EmbeddingProviderChain.Provider("local", primary)),
+            scheduler,
+            Duration.ofSeconds(1));
+
+    EmbeddingVector result = AiExecutionContextScope.call(context(), () -> chain.embed("faq"));
+
+    assertThat(result).isEqualTo(LOCAL_VECTOR);
+    assertThat(scheduler.capabilities).containsExactly(ModelCapability.EMBEDDING);
+  }
+
+  private static AiExecutionContext context() {
+    return new AiExecutionContext(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        Set.of("CLIENT"),
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        "trace-embedding",
+        "idempotency-embedding");
+  }
+
+  private static final class RecordingScheduler implements ModelExecutionScheduler {
+    private final List<ModelCapability> capabilities = new java.util.ArrayList<>();
+
+    @Override
+    public <T> T execute(
+        ModelCapability capability,
+        AiExecutionContext context,
+        Duration timeout,
+        Callable<T> operation) {
+      capabilities.add(capability);
+      try {
+        return operation.call();
+      } catch (Exception exception) {
+        throw new RuntimeException(exception);
+      }
+    }
   }
 }

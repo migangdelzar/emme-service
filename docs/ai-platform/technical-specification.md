@@ -145,6 +145,14 @@ separate canary result before promotion. `JdbcLearningCandidateStateStore`
 updates status with tenant and expected-version predicates, so concurrent
 workers cannot overwrite one another. The asynchronous evaluator and versioned
 embedding-index promotion worker remain a subsequent phase.
+Admitted candidates are dispatched through the framework-neutral
+`LearningCandidateEvaluationRequester` port. The assistant adapter publishes a
+stable `LearningCandidateEvaluationRequested` Spring Modulith event using the
+existing durable publication registry, partitioned by the backend tenant. The
+event contains only trusted candidate/context identifiers and correlation
+metadata; the candidate text and evidence remain in tenant-filtered PostgreSQL
+and are loaded by the offline evaluator. Rejected candidates do not dispatch
+evaluation work.
 Token counts and estimated cost are nullable because provider usage metadata is
 not guaranteed. Trace writes are best effort and PostgreSQL is authoritative
 for the durable records; a no-op recorder is used where JDBC is unavailable.

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.emme.appointments.api.event.AppointmentCancelled;
 import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.appointments.api.event.AppointmentRescheduled;
+import com.emme.assistant.api.event.LearningCandidateEvaluationRequested;
 import com.emme.calendar.api.event.CalendarSyncRequested;
 import com.emme.notification.api.event.NotificationDelivered;
 import com.emme.tenancy.api.event.TenantActivated;
@@ -34,6 +35,8 @@ class KafkaEventContractTest {
         .isEqualTo("emme.studio.appointment-cancelled::#{#this.tenantId()}");
     assertThat(externalizedTarget(AppointmentRescheduled.class))
         .isEqualTo("emme.studio.appointment-rescheduled::#{#this.tenantId()}");
+    assertThat(externalizedTarget(LearningCandidateEvaluationRequested.class))
+        .isEqualTo("emme.ai.learning-candidate-evaluation-requested::#{#this.tenantId()}");
   }
 
   @Test
@@ -44,7 +47,8 @@ class KafkaEventContractTest {
                 TenantCreated.class,
                 AppointmentCreated.class,
                 AppointmentCancelled.class,
-                AppointmentRescheduled.class))
+                AppointmentRescheduled.class,
+                LearningCandidateEvaluationRequested.class))
         .allMatch(Class::isRecord);
   }
 
@@ -73,6 +77,7 @@ class KafkaEventContractTest {
             AppointmentCreated.class,
             AppointmentCancelled.class,
             AppointmentRescheduled.class,
+            LearningCandidateEvaluationRequested.class,
             TenantActivated.class,
             TenantCreated.class);
 
@@ -82,6 +87,7 @@ class KafkaEventContractTest {
             AppointmentCreated.class,
             AppointmentCancelled.class,
             AppointmentRescheduled.class,
+            LearningCandidateEvaluationRequested.class,
             TenantCreated.class);
 
     assertThat(List.of(CalendarSyncRequested.class, NotificationDelivered.class))
@@ -96,7 +102,8 @@ class KafkaEventContractTest {
                     TenantCreated.class,
                     AppointmentCreated.class,
                     AppointmentCancelled.class,
-                    AppointmentRescheduled.class)
+                    AppointmentRescheduled.class,
+                    LearningCandidateEvaluationRequested.class)
                 .stream()
                 .flatMap(type -> Stream.of(type.getRecordComponents()))
                 .map(RecordComponent::getType))

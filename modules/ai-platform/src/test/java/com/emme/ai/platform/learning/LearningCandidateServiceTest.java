@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.learning.LearningCandidate;
+import com.emme.ai.contracts.learning.LearningCandidateEvaluationRequest;
 import com.emme.ai.contracts.learning.LearningCandidateEvidence;
 import com.emme.ai.contracts.learning.LearningCandidateKind;
 import com.emme.kernel.context.AiExecutionContext;
@@ -15,6 +16,7 @@ import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class LearningCandidateServiceTest {
 
@@ -30,9 +32,11 @@ class LearningCandidateServiceTest {
   void persistsAnAdmittedCandidateWithTheAuthenticatedExecutionContext() {
     LearningCandidate candidate = candidate(true, true, true, true, false, false, true);
     LearningCandidateStore store = mock(LearningCandidateStore.class);
+    LearningCandidateEvaluationRequester requester =
+        mock(LearningCandidateEvaluationRequester.class);
     UUID candidateId = UUID.randomUUID();
     when(store.save(candidate, context())).thenReturn(candidateId);
-    LearningCandidateService service = new LearningCandidateService(policy, store);
+    LearningCandidateService service = new LearningCandidateService(policy, store, requester);
 
     LearningCandidateSubmission submission =
         AiExecutionContextScope.call(context(), () -> service.submit(candidate));
@@ -40,13 +44,23 @@ class LearningCandidateServiceTest {
     assertThat(submission.accepted()).isTrue();
     assertThat(submission.candidateId()).contains(candidateId);
     verify(store).save(candidate, context());
+    ArgumentCaptor<LearningCandidateEvaluationRequest> request =
+        ArgumentCaptor.forClass(LearningCandidateEvaluationRequest.class);
+    verify(requester).request(request.capture());
+    assertThat(request.getValue().candidateId()).isEqualTo(candidateId);
+    assertThat(request.getValue().tenantId()).isEqualTo(TENANT_ID);
+    assertThat(request.getValue().principalId()).isEqualTo(PRINCIPAL_ID);
+    assertThat(request.getValue().conversationId()).isEqualTo(CONVERSATION_ID);
+    assertThat(request.getValue().workflowId()).isEqualTo(WORKFLOW_ID);
   }
 
   @Test
   void rejectsACandidateBeforePersistenceWhenTheEvidenceGateFails() {
     LearningCandidate candidate = candidate(true, true, true, false, false, false, true);
     LearningCandidateStore store = mock(LearningCandidateStore.class);
-    LearningCandidateService service = new LearningCandidateService(policy, store);
+    LearningCandidateEvaluationRequester requester =
+        mock(LearningCandidateEvaluationRequester.class);
+    LearningCandidateService service = new LearningCandidateService(policy, store, requester);
 
     LearningCandidateSubmission submission =
         AiExecutionContextScope.call(context(), () -> service.submit(candidate));
@@ -55,6 +69,7 @@ class LearningCandidateServiceTest {
     assertThat(submission.candidateId()).isEmpty();
     assertThat(submission.reason()).isEqualTo("accepted outcome evidence is required");
     verifyNoInteractions(store);
+    verifyNoInteractions(requester);
   }
 
   @Test

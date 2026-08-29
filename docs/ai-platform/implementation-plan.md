@@ -205,6 +205,11 @@ is selected when JDBC is unavailable.
   offline dataset/safety/regression/shadow gates, and a separate canary gate
   before `PROMOTED`. Optimistic PostgreSQL state updates prevent concurrent
   workers from overwriting a candidate.
+- Admitted candidates now dispatch a stable, tenant-partitionable
+  `LearningCandidateEvaluationRequested` event through Spring Modulith's
+  durable publication registry. The envelope contains only trusted IDs and
+  correlation metadata; candidate content remains in PostgreSQL and the
+  evaluator remains asynchronous/offline.
 - Add asynchronous embedding and evaluation worker.
 - Add shadow/canary index promotion.
 - Add Ragas evaluation scaffold.

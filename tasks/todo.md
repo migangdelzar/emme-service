@@ -85,6 +85,9 @@
       evidence-gated candidates and requires the backend AI execution context.
 - [x] Wire candidate persistence through the existing tenant-aware
       `aiTenantJdbcClient`; keep application startup conditional on that bean.
+- [x] Dispatch admitted candidates through a stable, tenant-partitionable
+      Spring Modulith evaluation event; keep evaluation asynchronous and
+      external to the customer request.
 
 ### Working notes
 
@@ -219,6 +222,16 @@ context equals the bound context, persists JSON evidence and a SHA-256 text
 fingerprint, and returns the existing row on a duplicate candidate. The
 candidate feature remains unavailable when the tenant-aware JDBC boundary is
 not present.
+
+Admitted candidates now publish a framework-neutral
+`LearningCandidateEvaluationRequest` through the injected
+`LearningCandidateEvaluationRequester` port. The assistant composition root
+adapts that port to a Spring Modulith application event with a stable
+candidate-derived event ID and tenant partition key. The event contains only
+trusted tenant/principal/resource correlation and idempotency metadata; it
+does not carry candidate text, embeddings, model output, or PII. Spring
+Modulith's existing durable publication registry is therefore the dispatch
+boundary for an offline evaluator, while rejected candidates publish nothing.
 
 Verification on 2026-08-28: `:modules:assistant:spotlessCheck :modules:assistant:test`,
 `:database:spotlessCheck :database:test`, and

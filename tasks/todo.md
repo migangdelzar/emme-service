@@ -77,6 +77,8 @@
       fallback chain.
 - [x] Reconcile active AI documentation with the canonical `ai-contracts` and
       `ai-platform` module names and add a regression consistency test.
+- [x] Add a deterministic, fail-closed learning-candidate evidence gate; keep
+      candidate admission separate from evaluation and production promotion.
 
 ### Working notes
 
@@ -188,6 +190,12 @@ Spring chat and embedding integrations.
 Active AI architecture documents now describe the actual `libraries:ai-contracts`
 and `modules:ai-platform` boundaries. A focused documentation consistency test
 prevents the retired `ai-foundation` name from returning to the boundary docs.
+
+The first self-improvement runtime slice is now a framework-neutral candidate
+contract plus an `ai-platform` admission policy. It requires PII-redaction,
+accepted routing, successful execution, validated outcomes, and no staff
+correction or policy violation. Admission produces only an eligible candidate
+decision; it does not write production vector indexes or change routing.
 
 Verification on 2026-08-28: `:modules:assistant:spotlessCheck :modules:assistant:test`,
 `:database:spotlessCheck :database:test`, and

@@ -58,6 +58,8 @@
   asynchronous WhatsApp acceptance and processing retries.
 - [x] Rebind the trusted WhatsApp tenant, database routing, correlation, and
   AI execution context on the asynchronous worker path.
+- [x] Register `getSalonServices` as a real read-only AI tool backed by the
+  Services application use case and backend tenant context.
 - [x] Extract provider-neutral model, image, and embedding contracts into
   `libraries:ai-contracts`; move legacy providers and reusable capability
   adapters into `modules:ai-platform` without an `ai-platform` → `assistant`

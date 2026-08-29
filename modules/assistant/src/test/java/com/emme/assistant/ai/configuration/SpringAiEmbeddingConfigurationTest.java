@@ -33,7 +33,7 @@ class SpringAiEmbeddingConfigurationTest {
             true,
             List.of(
                 new SpringAiEmbeddingProperties.Provider(
-                    "ollamaEmbeddingModel", "local", "ollama-bge-m3"),
+                    "ollamaEmbeddingModel", "local", "ollama-embeddinggemma:300m"),
                 new SpringAiEmbeddingProperties.Provider(
                     "openAiEmbeddingModel", "cloud", "openai-text-embedding")));
 
@@ -56,7 +56,7 @@ class SpringAiEmbeddingConfigurationTest {
             true,
             List.of(
                 new SpringAiEmbeddingProperties.Provider(
-                    "ollamaEmbeddingModel", "local", "ollama-bge-m3")));
+                    "ollamaEmbeddingModel", "local", "ollama-embeddinggemma:300m")));
     SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
 
     assertThatThrownBy(() -> configuration.providerRegistry(Map.of(), properties, aiProperties(2)))
@@ -73,7 +73,7 @@ class SpringAiEmbeddingConfigurationTest {
             true,
             List.of(
                 new SpringAiEmbeddingProperties.Provider(
-                    "ollamaEmbeddingModel", "local", "ollama-bge-m3")));
+                    "ollamaEmbeddingModel", "local", "ollama-embeddinggemma:300m")));
     SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
     EmbeddingModelPort embeddingModel =
         configuration.embeddingModel(
@@ -93,7 +93,7 @@ class SpringAiEmbeddingConfigurationTest {
             true,
             List.of(
                 new SpringAiEmbeddingProperties.Provider(
-                    "ollamaEmbeddingModel", "local", "ollama-bge-m3")));
+                    "ollamaEmbeddingModel", "local", "ollama-embeddinggemma:300m")));
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
     SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
     SpringAiEmbeddingProviderRegistry registry =
@@ -123,7 +123,7 @@ class SpringAiEmbeddingConfigurationTest {
             true,
             List.of(
                 new SpringAiEmbeddingProperties.Provider(
-                    "ollamaEmbeddingModel", "local", "ollama-bge-m3")));
+                    "ollamaEmbeddingModel", "local", "ollama-embeddinggemma:300m")));
     SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
     SpringAiEmbeddingProviderRegistry registry =
         configuration.providerRegistry(
@@ -139,7 +139,8 @@ class SpringAiEmbeddingConfigurationTest {
     return new AiProperties(
         "mock",
         null,
-        new AiProperties.EmbeddingConfig("bge-m3", "http://localhost:11434", null, dimension),
+        new AiProperties.EmbeddingConfig(
+            "embeddinggemma:300m", "http://localhost:11434", null, dimension),
         true);
   }
 

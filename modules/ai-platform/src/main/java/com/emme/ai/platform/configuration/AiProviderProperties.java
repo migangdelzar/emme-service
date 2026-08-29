@@ -17,9 +17,9 @@ public record AiProviderProperties(
 
   public AiProviderProperties {
     if (provider == null || provider.isBlank()) provider = "mock";
-    if (chat == null) chat = new ProviderConfig("gemma3:4b", "http://localhost:11434", null);
+    if (chat == null) chat = new ProviderConfig("gemma4:e4b-mlx", "http://localhost:11434", null);
     if (embedding == null)
-      embedding = new EmbeddingConfig("bge-m3", "http://localhost:11434", null, 1024);
+      embedding = new EmbeddingConfig("embeddinggemma:300m", "http://localhost:11434", null, 768);
   }
 
   public int embeddingDimension() {

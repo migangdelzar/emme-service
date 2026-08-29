@@ -24,9 +24,9 @@ spec:
             - -c
             - |
               echo "Pulling chat model..."
-              ollama pull gemma3:4b
+              ollama pull gemma4:e4b-mlx
               echo "Pulling embedding model..."
-              ollama pull nomic-embed-text
+              ollama pull embeddinggemma:300m
               echo "Models pulled successfully"
           env:
             - name: OLLAMA_HOST

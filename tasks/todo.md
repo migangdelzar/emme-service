@@ -2550,9 +2550,9 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - The approved storage decision uses Redis Stack for bounded hot semantic
   intent/tool indexes and short-lived safe response caching, with PostgreSQL
   and pgvector as the durable canonical/fallback vector store.
-- The initial local text embedding is Ollama `qwen3-embedding:0.6b`; BGE-M3
-  and Qwen3 4B remain measured regression/quality candidates, and vector
-  indexes are never mixed across model versions.
+- The initial local text embedding is Ollama `embeddinggemma:300m` at the
+  verified 768-dimensional profile; vector indexes are never mixed across
+  model versions. Gemma 4 `e4b-mlx` is the default local chat/vision profile.
 - The first implementation slice is the module boundary and contracts; no
   production code should be moved before architecture tests protect the
   dependency direction.

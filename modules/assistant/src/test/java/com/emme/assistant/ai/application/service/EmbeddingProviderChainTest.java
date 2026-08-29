@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 class EmbeddingProviderChainTest {
 
   private static final EmbeddingVector LOCAL_VECTOR =
-      new EmbeddingVector("local-bge-m3", List.of(0.1f, 0.9f));
+      new EmbeddingVector("local-embeddinggemma:300m", List.of(0.1f, 0.9f));
   private static final EmbeddingVector CLOUD_VECTOR =
       new EmbeddingVector("cloud-text-embedding", List.of(0.2f, 0.8f));
 

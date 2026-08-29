@@ -26,10 +26,10 @@ import org.springframework.stereotype.Component;
  *
  * <p>Ollama REST API: POST /api/chat — chat completion POST /api/embeddings — embedding generation
  *
- * <p>Model: gemma3:4b (chat), bge-m3 (embeddings)
+ * <p>Model: gemma4:e4b-mlx (chat), embeddinggemma:300m (embeddings)
  *
- * <p>Configure via application.yml: app.ai.provider: ollama app.ai.chat.model: gemma3:4b
- * app.ai.chat.base-url: http://localhost:11434 app.ai.embedding.model: bge-m3
+ * <p>Configure via application.yml: app.ai.provider: ollama app.ai.chat.model: gemma4:e4b-mlx
+ * app.ai.chat.base-url: http://localhost:11434 app.ai.embedding.model: embeddinggemma:300m
  * app.ai.embedding.base-url: http://localhost:11434
  */
 @Component
@@ -38,8 +38,8 @@ public class OllamaModelProvider implements AiModelProvider {
 
   private static final Logger log = LoggerFactory.getLogger(OllamaModelProvider.class);
 
-  private static final String DEFAULT_CHAT_MODEL = "gemma3:4b";
-  private static final String DEFAULT_EMBED_MODEL = "bge-m3";
+  private static final String DEFAULT_CHAT_MODEL = "gemma4:e4b-mlx";
+  private static final String DEFAULT_EMBED_MODEL = "embeddinggemma:300m";
   private static final String DEFAULT_BASE_URL = "http://localhost:11434";
   private static final String SYSTEM_PROMPT =
       "You are EMME, a helpful salon assistant. Be concise and friendly. "

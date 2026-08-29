@@ -150,17 +150,14 @@ app:
     # provider: ollama  # switch to Ollama (needs ollama running)
     # provider: groq   # switch to Groq
     chat:
-      model: llama-3.3-70b-versatile
-      base-url: https://api.groq.com/openai/v1
-      api-key: ${GROQ_API_KEY:}
-      temperature: 0.7
-      # model: gemma3:4b          # Ollama chat model
-      # base-url: http://localhost:11434  # Ollama base URL
-    embedding:
-      model: bge-m3
+      model: gemma4:e4b-mlx
       base-url: http://localhost:11434
-      dimension: 1024
-      # model: nomic-embed-text   # alternative Ollama embedding model (768 — change dimension too)
+      api-key: ${GROQ_API_KEY:}
+      temperature: 1.0
+    embedding:
+      model: embeddinggemma:300m
+      base-url: http://localhost:11434
+      dimension: 768
     semantic-routing:
       enabled: ${EMME_AI_SEMANTIC_ROUTING_ENABLED:false}
       locale: ${EMME_AI_SEMANTIC_ROUTING_LOCALE:es-MX}
@@ -185,14 +182,14 @@ app:
       providers:
         - bean-name: ollamaEmbeddingModel
           key: local-ollama
-          model-version: ollama-bge-m3
+          model-version: ollama-embeddinggemma:300m
     spring-rag:
       # Requires the named Spring AI chat and embedding integrations above.
       enabled: ${EMME_SPRING_AI_RAG_ENABLED:false}
       retrieval-limit: ${EMME_SPRING_AI_RAG_RETRIEVAL_LIMIT:5}
     spring-extraction:
       enabled: ${EMME_SPRING_AI_EXTRACTION_ENABLED:false}
-      model-version: ${EMME_SPRING_AI_EXTRACTION_MODEL_VERSION:ollama-gemma3-vision}
+      model-version: ${EMME_SPRING_AI_EXTRACTION_MODEL_VERSION:ollama-gemma4:e4b-mlx}
       prompt-version: ${EMME_SPRING_AI_EXTRACTION_PROMPT_VERSION:nail-design-v1}
       schema-version: ${EMME_SPRING_AI_EXTRACTION_SCHEMA_VERSION:nail-features-v1}
     langgraph:

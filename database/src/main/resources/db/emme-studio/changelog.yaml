@@ -53,3 +53,6 @@ databaseChangeLog:
   - include:
       file: releases/0.1.0/018-ai-execution-traces.sql
       relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/019-ai-learning-candidates.sql
+      relativeToChangelogFile: true

@@ -19,7 +19,7 @@
 | `quote_review_task` | tenant + review task | Staff approval state |
 | `quote_review_decision` | tenant + review + version | Reviewer, timestamp, edits, outcome |
 | `ai_tool_call` | tenant + workflow + call | Tool request, policy, result, audit |
-| `ai_tool_idempotency` | tenant + operation key | Mutation claim and authoritative replay result |
+| `ai_tool_idempotency` | tenant + principal + operation key | Mutation claim, lease, and authoritative replay result |
 | `ai_model_execution` | tenant + workflow + execution | Provider, model, tokens, latency, cost |
 | `ai_trace` | tenant + workflow + trace | Evaluation and learning evidence |
 | `intent_reference` | global/tenant + version | Labeled classifier examples |
@@ -103,7 +103,10 @@ callbacks and are disabled by default.
   operation key; completed
   replays return the durable result without executing the handler again.
 - A failed mutation releases only its in-progress claim; a failed completion
-  write remains fail-closed until operational recovery resolves it.
+  write remains fail-closed until the claim lease expires. The next authorized
+  request may then reclaim the stale `IN_PROGRESS` row. A lease is crash
+  recovery, not proof that an external side effect did not complete, so
+  application mutation commands must remain idempotent.
 - Cache entries require dependency-version fields and expiry.
 - Candidate promotion changes an index pointer, not individual active rows.
 - Audit records retain actor identity and outcome.

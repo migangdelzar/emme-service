@@ -18,6 +18,9 @@
 7. Verify OpenTelemetry agent on JVM deployments.
 8. Verify active embedding model/version matches vector indexes.
 9. Verify workflow checkpoint schema and outbox publication.
+10. Verify `app.ai.tool-idempotency.claim-lease` is long enough for the
+    slowest authorized mutation and no longer than 24 hours. This lease is
+    crash recovery, not proof that an external side effect was rolled back.
 
 ## 2. Dashboards
 
@@ -77,6 +80,15 @@ Required panels:
 2. Confirm reviewer authorization and optimistic version.
 3. Resume through the approval endpoint; never edit checkpoints manually in
    production without an approved recovery procedure.
+
+### Mutation claim stuck in progress
+
+1. Inspect `ai_tool_idempotency` using tenant and principal scope.
+2. Confirm the claim is still `IN_PROGRESS` and its lease has expired.
+3. Retry the original authorized command with the same idempotency key; the
+   JDBC adapter reclaims only the expired claim.
+4. If the external integration may have completed before the crash, reconcile
+   the business record first. Do not shorten the lease or delete rows manually.
 
 ## 5. Rollback
 

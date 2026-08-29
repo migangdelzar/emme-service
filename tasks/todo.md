@@ -1,5 +1,26 @@
 # Service architecture migration checklist
 
+## Durable mutation claim recovery — 2026-08-29
+
+- [x] Add a configurable lease to durable AI mutation idempotency claims.
+- [x] Reclaim only expired in-progress claims; never overwrite succeeded results.
+- [x] Clear the lease when a mutation completes and preserve fail-closed errors.
+- [x] Add migration, unit, live PostgreSQL, documentation, and full verification.
+
+### Working notes
+
+- PostgreSQL remains authoritative; Redis is not used to recover mutation claims.
+- A lease bounds crash recovery but cannot prove that a timed-out external side
+  effect did not complete. Mutation use cases must still be idempotent.
+
+### Results
+
+`JdbcAiToolIdempotencyStore` writes a configured lease, reclaims only expired
+in-progress claims, clears the lease after completion, and preserves the
+existing fail-closed completion behavior. Migration 023 adds the column,
+invariant, and expiry index. Unit, migration-contract, and live
+pgvector/PostgreSQL tests pass.
+
 ## Emme AI platform — 2026-08-27
 
 - [x] Establish Java 25 runtime validation and preview compilation lanes.

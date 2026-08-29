@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-08-29 — Validate Liquibase include indentation immediately
+
+- Failure mode: A new migration include was initially nested under the prior
+  include's `relativeToChangelogFile` field during a patch.
+- Detection signal: The diff showed `- include` indented below a scalar YAML
+  property rather than at the changelog list level.
+- Prevention rule: After every changelog edit, inspect the surrounding YAML
+  list and run the database migration contract before committing.
+
 ## 2026-08-29 — Idempotency must be scoped to the authenticated principal
 
 - Failure mode: A tenant-only mutation key could let a user replay another

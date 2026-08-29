@@ -139,8 +139,11 @@ derives `toolKey:principalId:context.idempotencyKey` from trusted backend state,
 a completed tenant-scoped result, atomically claims the operation when absent,
 and persists the authoritative result after the handler succeeds. A completed
 replay never invokes the handler again, a concurrent claim is rejected, and a
-handler failure releases its claim for retry. PostgreSQL migration
-`022-ai-tool-idempotency.sql` is the production adapter and stores only
+handler failure releases its claim for retry. PostgreSQL migrations
+`022-ai-tool-idempotency.sql` and `023-ai-tool-idempotency-lease.sql` define
+the production schema. Claims have a configurable lease bounded to 24 hours;
+only expired `IN_PROGRESS` claims can be reclaimed, `SUCCEEDED` rows cannot be
+overwritten, and completion clears the lease. The adapter stores only
 `IN_PROGRESS` or `SUCCEEDED` records under tenant RLS. The no-op adapter is
 available only for compositions without the tenant JDBC boundary; production
 composition selects the JDBC implementation. Appointment mutation handlers

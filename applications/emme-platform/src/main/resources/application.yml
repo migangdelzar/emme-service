@@ -199,6 +199,8 @@ app:
       enabled: ${EMME_AI_QUOTE_ENABLED:false}
     redis:
       enabled: ${EMME_AI_REDIS_ENABLED:false}
+    tool-idempotency:
+      claim-lease: ${EMME_AI_TOOL_IDEMPOTENCY_CLAIM_LEASE:15m}
     redis-semantic:
       # Requires Redis 8+ (vector search modules) and a configured Spring AI EmbeddingModel.
       enabled: ${EMME_AI_REDIS_SEMANTIC_ENABLED:false}

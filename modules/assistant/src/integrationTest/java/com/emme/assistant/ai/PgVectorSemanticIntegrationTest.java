@@ -133,6 +133,7 @@ class PgVectorSemanticIntegrationTest {
             tool_key VARCHAR(120) NOT NULL,
             status VARCHAR(20) NOT NULL,
             result_payload JSONB,
+            lease_expires_at TIMESTAMPTZ,
             created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
             version BIGINT NOT NULL DEFAULT 0,
@@ -269,6 +270,44 @@ class PgVectorSemanticIntegrationTest {
             "idempotency-tool");
     assertThat(AiExecutionContextScope.call(otherTenant, () -> toolIdempotency.find(operationKey)))
         .isEmpty();
+  }
+
+  @Test
+  @DisplayName("reclaims an expired in-progress mutation claim")
+  void reclaimsExpiredMutationClaim() {
+    AiExecutionContext context =
+        new AiExecutionContext(
+            TENANT_ID,
+            PRINCIPAL_ID,
+            Set.of("ROLE_CLIENT"),
+            CONVERSATION_ID,
+            WORKFLOW_ID,
+            "trace-expired-claim",
+            "idempotency-expired");
+    String operationKey = "createAppointment:" + PRINCIPAL_ID + ":idempotency-expired";
+    jdbc.update(
+        """
+        INSERT INTO ai_tool_idempotency
+            (tenant_id, principal_id, operation_key, tool_key, status, lease_expires_at)
+        VALUES (?, ?, ?, ?, 'IN_PROGRESS', CURRENT_TIMESTAMP - INTERVAL '1 minute')
+        """,
+        TENANT_ID,
+        PRINCIPAL_ID,
+        operationKey,
+        "createAppointment");
+
+    assertThat(
+            AiExecutionContextScope.call(
+                context, () -> toolIdempotency.claim(operationKey, "createAppointment")))
+        .isTrue();
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT lease_expires_at > CURRENT_TIMESTAMP FROM ai_tool_idempotency WHERE tenant_id = ? AND principal_id = ? AND operation_key = ?",
+                Boolean.class,
+                TENANT_ID,
+                PRINCIPAL_ID,
+                operationKey))
+        .isTrue();
   }
 
   private static String vectorPadding() {

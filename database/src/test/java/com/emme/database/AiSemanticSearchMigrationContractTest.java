@@ -21,6 +21,8 @@ class AiSemanticSearchMigrationContractTest {
       "db/emme-studio/releases/0.1.0/021-ai-embeddinggemma-dimension.sql";
   private static final String TOOL_IDEMPOTENCY_MIGRATION =
       "db/emme-studio/releases/0.1.0/022-ai-tool-idempotency.sql";
+  private static final String TOOL_IDEMPOTENCY_LEASE_MIGRATION =
+      "db/emme-studio/releases/0.1.0/023-ai-tool-idempotency-lease.sql";
 
   @Test
   void definesTenantScopedIntentAndToolReferenceTables() throws IOException {
@@ -149,7 +151,19 @@ class AiSemanticSearchMigrationContractTest {
   @Test
   void includesMutationToolIdempotencyInTheStudioChangelog() throws IOException {
     assertThat(resource("db/emme-studio/changelog.yaml"))
-        .contains("releases/0.1.0/022-ai-tool-idempotency.sql");
+        .contains("releases/0.1.0/022-ai-tool-idempotency.sql")
+        .contains("releases/0.1.0/023-ai-tool-idempotency-lease.sql");
+  }
+
+  @Test
+  void definesBoundedRecoveryForStaleMutationClaims() throws IOException {
+    String sql = resource(TOOL_IDEMPOTENCY_LEASE_MIGRATION);
+
+    assertThat(sql)
+        .contains("ADD COLUMN IF NOT EXISTS lease_expires_at TIMESTAMPTZ")
+        .contains("ai_tool_idempotency_in_progress_lease")
+        .contains("idx_ai_tool_idempotency_expired_claims")
+        .contains("status = 'IN_PROGRESS'");
   }
 
   private static String migration() throws IOException {

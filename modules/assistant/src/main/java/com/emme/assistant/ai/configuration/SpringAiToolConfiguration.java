@@ -42,10 +42,17 @@ public class SpringAiToolConfiguration {
   @Bean
   @ConditionalOnMissingBean(AiToolIdempotencyStore.class)
   AiToolIdempotencyStore aiToolIdempotencyStore(
-      @Qualifier("aiTenantJdbcClient") Optional<JdbcClient> jdbc, ObjectMapper objectMapper) {
+      @Qualifier("aiTenantJdbcClient") Optional<JdbcClient> jdbc,
+      ObjectMapper objectMapper,
+      AiToolIdempotencyProperties properties) {
     return jdbc.<AiToolIdempotencyStore>map(
-            client -> new JdbcAiToolIdempotencyStore(client, objectMapper))
+            client -> new JdbcAiToolIdempotencyStore(client, objectMapper, properties.claimLease()))
         .orElse(NoopAiToolIdempotencyStore.INSTANCE);
+  }
+
+  AiToolIdempotencyStore aiToolIdempotencyStore(
+      Optional<JdbcClient> jdbc, ObjectMapper objectMapper) {
+    return aiToolIdempotencyStore(jdbc, objectMapper, new AiToolIdempotencyProperties(null));
   }
 
   @Bean

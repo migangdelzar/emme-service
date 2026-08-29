@@ -12,6 +12,7 @@ import com.emme.assistant.ai.application.tool.AiToolResult;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -56,6 +57,36 @@ class JdbcAiToolIdempotencyStoreTest {
     verify(statement).param("principalId", PRINCIPAL_ID);
     verify(statement).param("operationKey", "createAppointment:" + PRINCIPAL_ID + ":request-1");
     verify(statement).param("toolKey", "createAppointment");
+  }
+
+  @Test
+  void reclaimsOnlyAnExpiredInProgressClaim() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    when(jdbc.sql(anyString())).thenReturn(statement);
+    when(statement.param(anyString(), any())).thenReturn(statement);
+    when(statement.update()).thenReturn(1);
+    JdbcAiToolIdempotencyStore store =
+        new JdbcAiToolIdempotencyStore(jdbc, new ObjectMapper(), Duration.ofMinutes(10));
+
+    boolean claimed =
+        AiExecutionContextScope.call(
+            context(),
+            () ->
+                store.claim(
+                    "createAppointment:" + PRINCIPAL_ID + ":request-1", "createAppointment"));
+
+    assertThat(claimed).isTrue();
+    ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+    verify(jdbc).sql(sql.capture());
+    assertThat(sql.getValue())
+        .contains("lease_expires_at")
+        .contains("CURRENT_TIMESTAMP")
+        .contains("status = 'IN_PROGRESS'")
+        .contains("lease_expires_at <= CURRENT_TIMESTAMP")
+        .contains("DO UPDATE SET")
+        .contains("WHERE ai_tool_idempotency.status = 'IN_PROGRESS'");
+    verify(statement).param("claimLeaseSeconds", 600L);
   }
 
   @Test
@@ -109,6 +140,7 @@ class JdbcAiToolIdempotencyStoreTest {
     assertThat(sql.getAllValues().get(0))
         .contains("UPDATE ai_tool_idempotency")
         .contains("status = 'IN_PROGRESS'")
+        .contains("lease_expires_at = NULL")
         .contains("result_payload = CAST(:resultPayload AS jsonb)")
         .contains("tenant_id = :tenantId")
         .contains("principal_id = :principalId");

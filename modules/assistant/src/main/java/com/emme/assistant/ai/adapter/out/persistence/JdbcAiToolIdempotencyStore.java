@@ -6,6 +6,7 @@ import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -15,10 +16,17 @@ public final class JdbcAiToolIdempotencyStore implements AiToolIdempotencyStore 
 
   private final JdbcClient jdbc;
   private final ObjectMapper objectMapper;
+  private final Duration claimLease;
 
   public JdbcAiToolIdempotencyStore(JdbcClient jdbc, ObjectMapper objectMapper) {
+    this(jdbc, objectMapper, Duration.ofMinutes(15));
+  }
+
+  public JdbcAiToolIdempotencyStore(
+      JdbcClient jdbc, ObjectMapper objectMapper, Duration claimLease) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
     this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper must not be null");
+    this.claimLease = requireClaimLease(claimLease);
   }
 
   @Override
@@ -52,17 +60,28 @@ public final class JdbcAiToolIdempotencyStore implements AiToolIdempotencyStore 
     return jdbc.sql(
                 """
                 INSERT INTO ai_tool_idempotency (
-                    tenant_id, principal_id, operation_key, tool_key, status, result_payload
+                    tenant_id, principal_id, operation_key, tool_key, status, result_payload,
+                    lease_expires_at
                 )
                 VALUES (
-                    :tenantId, :principalId, :operationKey, :toolKey, 'IN_PROGRESS', NULL
+                    :tenantId, :principalId, :operationKey, :toolKey, 'IN_PROGRESS', NULL,
+                    CURRENT_TIMESTAMP + (:claimLeaseSeconds * INTERVAL '1 second')
                 )
-                ON CONFLICT (tenant_id, principal_id, operation_key) DO NOTHING
+                ON CONFLICT (tenant_id, principal_id, operation_key) DO UPDATE SET
+                    tool_key = EXCLUDED.tool_key,
+                    status = 'IN_PROGRESS',
+                    result_payload = NULL,
+                    lease_expires_at = EXCLUDED.lease_expires_at,
+                    updated_at = CURRENT_TIMESTAMP,
+                    version = ai_tool_idempotency.version + 1
+                WHERE ai_tool_idempotency.status = 'IN_PROGRESS'
+                  AND ai_tool_idempotency.lease_expires_at <= CURRENT_TIMESTAMP
                 """)
             .param("tenantId", context.tenantId())
             .param("principalId", context.principalId())
             .param("operationKey", operationKey)
             .param("toolKey", toolKey)
+            .param("claimLeaseSeconds", claimLease.toSeconds())
             .update()
         > 0;
   }
@@ -78,6 +97,7 @@ public final class JdbcAiToolIdempotencyStore implements AiToolIdempotencyStore 
                 UPDATE ai_tool_idempotency
                 SET status = 'SUCCEEDED',
                     result_payload = CAST(:resultPayload AS jsonb),
+                    lease_expires_at = NULL,
                     updated_at = CURRENT_TIMESTAMP,
                     version = version + 1
                 WHERE tenant_id = :tenantId
@@ -138,5 +158,16 @@ public final class JdbcAiToolIdempotencyStore implements AiToolIdempotencyStore 
     if (value == null || value.isBlank()) {
       throw new IllegalArgumentException(fieldName + " must not be blank");
     }
+  }
+
+  private static Duration requireClaimLease(Duration claimLease) {
+    Objects.requireNonNull(claimLease, "claimLease must not be null");
+    if (claimLease.isZero() || claimLease.isNegative()) {
+      throw new IllegalArgumentException("claimLease must be positive");
+    }
+    if (claimLease.compareTo(Duration.ofDays(1)) > 0) {
+      throw new IllegalArgumentException("claimLease must not exceed one day");
+    }
+    return claimLease;
   }
 }

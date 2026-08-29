@@ -5,6 +5,8 @@ import static org.mockito.Mockito.mock;
 
 import com.emme.ai.platform.learning.JdbcLearningCandidateStore;
 import com.emme.ai.platform.learning.LearningCandidateEvaluationRequester;
+import com.emme.ai.platform.learning.LearningCandidateEvaluationStore;
+import com.emme.ai.platform.learning.LearningCandidateEvaluationWorker;
 import com.emme.ai.platform.learning.LearningCandidateLifecyclePolicy;
 import com.emme.ai.platform.learning.LearningCandidateLifecycleService;
 import com.emme.ai.platform.learning.LearningCandidateStateStore;
@@ -41,5 +43,16 @@ class SpringAiLearningConfigurationTest {
             configuration.learningCandidateEvaluationRequester(
                 mock(ApplicationEventPublisher.class)))
         .isInstanceOf(LearningCandidateEvaluationRequester.class);
+  }
+
+  @Test
+  void wiresTheEvaluationWorkerAgainstTheDurableLifecycle() {
+    SpringAiLearningConfiguration configuration = new SpringAiLearningConfiguration();
+    LearningCandidateLifecycleService lifecycle = mock(LearningCandidateLifecycleService.class);
+
+    assertThat(
+            configuration.learningCandidateEvaluationWorker(
+                lifecycle, mock(LearningCandidateEvaluationStore.class)))
+        .isInstanceOf(LearningCandidateEvaluationWorker.class);
   }
 }

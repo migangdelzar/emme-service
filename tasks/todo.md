@@ -90,6 +90,10 @@
       external to the customer request.
 - [x] Add an offline Python 3.13 Ragas evaluation scaffold with PII
       redaction, explicit regression/shadow gates, and no promotion side effect.
+- [x] Persist evaluator metrics and gate evidence in a tenant-scoped,
+      idempotent PostgreSQL evaluation table.
+- [x] Apply evaluation reports through a context-bound worker with safe
+      re-delivery handling and durable lifecycle transitions.
 
 ### Working notes
 
@@ -241,6 +245,12 @@ range. It accepts only redacted evaluation fields, omits tenant and principal
 identifiers from Ragas inputs, fails the dataset gate when no samples exist,
 and emits advisory metrics. It does not update Java lifecycle state or routing
 indexes; shadow/canary promotion remains a separately authorized operation.
+
+Evaluation reports now have a durable `ai_learning_candidate_evaluation` table
+with tenant RLS and versioned idempotency. `LearningCandidateEvaluationWorker`
+requires the backend AI execution context, persists the report before applying
+the lifecycle gates, and treats redelivery after a terminal state as a safe
+no-op.
 
 Verification on 2026-08-28: `:modules:assistant:spotlessCheck :modules:assistant:test`,
 `:database:spotlessCheck :database:test`, and

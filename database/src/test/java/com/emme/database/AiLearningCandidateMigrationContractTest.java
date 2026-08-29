@@ -13,6 +13,8 @@ class AiLearningCandidateMigrationContractTest {
 
   private static final String MIGRATION =
       "db/emme-studio/releases/0.1.0/019-ai-learning-candidates.sql";
+  private static final String EVALUATION_MIGRATION =
+      "db/emme-studio/releases/0.1.0/020-ai-learning-evaluations.sql";
 
   @Test
   void definesTenantAndPrincipalScopedCandidates() throws IOException {
@@ -60,6 +62,23 @@ class AiLearningCandidateMigrationContractTest {
     String changelog = resource("db/emme-studio/changelog.yaml");
 
     assertThat(changelog).contains("releases/0.1.0/019-ai-learning-candidates.sql");
+    assertThat(changelog).contains("releases/0.1.0/020-ai-learning-evaluations.sql");
+  }
+
+  @Test
+  void definesTenantScopedEvaluationEvidenceWithIdempotentVersions() throws IOException {
+    String sql = resource(EVALUATION_MIGRATION);
+
+    assertThat(sql).contains("CREATE TABLE IF NOT EXISTS ai_learning_candidate_evaluation");
+    assertThat(sql).contains("tenant_id UUID NOT NULL");
+    assertThat(sql).contains("candidate_id UUID NOT NULL REFERENCES ai_learning_candidate(id)");
+    assertThat(sql).contains("evaluation_version VARCHAR(150) NOT NULL");
+    assertThat(sql).contains("metrics JSONB NOT NULL");
+    assertThat(sql)
+        .contains("UNIQUE (tenant_id, candidate_id, evaluation_version)")
+        .contains("ALTER TABLE ai_learning_candidate_evaluation ENABLE ROW LEVEL SECURITY")
+        .contains("tenant_id = current_tenant_id()")
+        .contains("idx_ai_learning_candidate_evaluation_scope");
   }
 
   private static String migration() throws IOException {

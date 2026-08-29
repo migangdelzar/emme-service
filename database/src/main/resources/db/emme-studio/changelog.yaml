@@ -56,3 +56,6 @@ databaseChangeLog:
   - include:
       file: releases/0.1.0/019-ai-learning-candidates.sql
       relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/020-ai-learning-evaluations.sql
+      relativeToChangelogFile: true

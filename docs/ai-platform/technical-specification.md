@@ -161,6 +161,13 @@ gate results. It deliberately does not call the Java lifecycle service or
 promote an embedding index. The Java lifecycle remains the authority for
 candidate status; explicit shadow and canary evidence must be supplied by
 separate controlled stages.
+The evaluator result contract is `LearningCandidateEvaluationReport`; the
+`JdbcLearningCandidateEvaluationStore` persists versioned metrics and gate
+evidence, and `LearningCandidateEvaluationWorker` applies it only under the
+backend-bound AI execution context. A duplicate delivery after a terminal
+candidate state is a safe no-op. The transport that supplies reports remains an
+internal authenticated asynchronous boundary; no customer-facing endpoint
+accepts lifecycle gates.
 Token counts and estimated cost are nullable because provider usage metadata is
 not guaranteed. Trace writes are best effort and PostgreSQL is authoritative
 for the durable records; a no-op recorder is used where JDBC is unavailable.

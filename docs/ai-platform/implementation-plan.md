@@ -214,7 +214,11 @@ is selected when JDBC is unavailable.
   scaffold. It redacts PII before evaluation, keeps tenant/principal metadata
   out of Ragas inputs, emits advisory regression/shadow metrics, and never
   promotes candidates or changes production indexes.
-- Add asynchronous embedding and evaluation worker.
+- Evaluation reports now persist metrics and gate evidence in a tenant-scoped,
+  idempotent PostgreSQL table. A context-bound Java worker applies each report
+  to the candidate lifecycle and safely ignores terminal-state redelivery.
+- Add external evaluator transport and asynchronous embedding/index promotion
+  worker.
 - Add shadow/canary index promotion.
 - Add Ragas evaluation scaffold.
 - Add Java agent configuration for JVM observability.

@@ -1,7 +1,10 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.platform.learning.JdbcLearningCandidateEvaluationStore;
 import com.emme.ai.platform.learning.JdbcLearningCandidateStore;
 import com.emme.ai.platform.learning.LearningCandidateEvaluationRequester;
+import com.emme.ai.platform.learning.LearningCandidateEvaluationStore;
+import com.emme.ai.platform.learning.LearningCandidateEvaluationWorker;
 import com.emme.ai.platform.learning.LearningCandidateLifecyclePolicy;
 import com.emme.ai.platform.learning.LearningCandidateLifecycleService;
 import com.emme.ai.platform.learning.LearningCandidatePolicy;
@@ -44,12 +47,26 @@ public class SpringAiLearningConfiguration {
   }
 
   @Bean
+  @ConditionalOnMissingBean(LearningCandidateEvaluationStore.class)
+  LearningCandidateEvaluationStore learningCandidateEvaluationStore(
+      @Qualifier("aiTenantJdbcClient") JdbcClient jdbc, ObjectMapper objectMapper) {
+    return new JdbcLearningCandidateEvaluationStore(jdbc, objectMapper);
+  }
+
+  @Bean
   @ConditionalOnMissingBean
   LearningCandidateService learningCandidateService(
       LearningCandidatePolicy policy,
       LearningCandidateStore store,
       LearningCandidateEvaluationRequester evaluationRequester) {
     return new LearningCandidateService(policy, store, evaluationRequester);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  LearningCandidateEvaluationWorker learningCandidateEvaluationWorker(
+      LearningCandidateLifecycleService lifecycle, LearningCandidateEvaluationStore evaluations) {
+    return new LearningCandidateEvaluationWorker(lifecycle, evaluations);
   }
 
   @Bean

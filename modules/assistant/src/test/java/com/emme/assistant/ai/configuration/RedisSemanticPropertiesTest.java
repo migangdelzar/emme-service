@@ -9,7 +9,7 @@ class RedisSemanticPropertiesTest {
   @Test
   void providesSafeDefaultsForTheOptionalRedisSemanticProjection() {
     RedisSemanticProperties properties =
-        new RedisSemanticProperties(true, null, null, null, null, null, null, false);
+        new RedisSemanticProperties(true, null, null, null, null, null, null, false, null);
 
     assertThat(properties.host()).isEqualTo("localhost");
     assertThat(properties.port()).isEqualTo(6379);
@@ -25,14 +25,14 @@ class RedisSemanticPropertiesTest {
     org.assertj.core.api.Assertions.assertThatThrownBy(
             () ->
                 new RedisSemanticProperties(
-                    true, "localhost", 0, "index", "prefix", "model", 768, false))
+                    true, "localhost", 0, "index", "prefix", "model", 768, false, null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("port must be between 1 and 65535");
 
     org.assertj.core.api.Assertions.assertThatThrownBy(
             () ->
                 new RedisSemanticProperties(
-                    true, "localhost", 6379, "index", "prefix", "model", 0, false))
+                    true, "localhost", 6379, "index", "prefix", "model", 0, false, null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("embeddingDimension must be positive");
   }

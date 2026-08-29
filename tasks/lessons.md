@@ -1013,3 +1013,14 @@
   complete role history and can survive independently of application state.
 - **Prevention rule:** Write PostgreSQL first, project to Redis best effort, and
   re-confirm every cache hit through the durable tenant/principal resolver.
+
+## 2026-08-29 — Preserve the canonical constructor for bound record properties
+
+- **Failure mode:** Adding an overloaded constructor to a record annotated with
+  `@ConfigurationProperties` made Spring Boot fail to bind the bean because it
+  could no longer select the canonical constructor.
+- **Detection signal:** Full application-context tests failed with `No default
+  constructor found` before any controller assertions ran.
+- **Prevention rule:** Keep configuration records to one bindable canonical
+  constructor; update direct test fixtures to pass all fields instead of adding
+  convenience constructors.

@@ -15,27 +15,6 @@ public record RedisSemanticProperties(
     boolean initializeSchema,
     Integer toolSearchMaxResults) {
 
-  public RedisSemanticProperties(
-      boolean enabled,
-      String host,
-      Integer port,
-      String indexName,
-      String prefix,
-      String embeddingModelVersion,
-      Integer embeddingDimension,
-      boolean initializeSchema) {
-    this(
-        enabled,
-        host,
-        port,
-        indexName,
-        prefix,
-        embeddingModelVersion,
-        embeddingDimension,
-        initializeSchema,
-        5);
-  }
-
   public RedisSemanticProperties {
     host = host == null ? "localhost" : host;
     port = port == null ? 6379 : port;

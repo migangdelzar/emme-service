@@ -20,7 +20,7 @@ class SpringAiRedisSemanticConfigurationTest {
             mock(RedisClient.class),
             mock(EmbeddingModel.class),
             new RedisSemanticProperties(
-                true, "localhost", 6379, "index", "prefix", "model", 768, false));
+                true, "localhost", 6379, "index", "prefix", "model", 768, false, null));
 
     assertThat(vectorStore).isNotNull();
   }
@@ -33,14 +33,14 @@ class SpringAiRedisSemanticConfigurationTest {
             mock(RedisClient.class),
             mock(EmbeddingModel.class),
             new RedisSemanticProperties(
-                true, "localhost", 6379, "index", "prefix", "model", 768, false));
+                true, "localhost", 6379, "index", "prefix", "model", 768, false, null));
     ToolIndex toolIndex = configuration.redisToolIndex(vectorStore);
 
     ToolSearchToolCallingAdvisor advisor =
         configuration.toolSearchToolCallingAdvisor(
             toolIndex,
             new RedisSemanticProperties(
-                true, "localhost", 6379, "index", "prefix", "model", 768, false));
+                true, "localhost", 6379, "index", "prefix", "model", 768, false, null));
 
     assertThat(advisor).isNotNull();
     assertThat(advisor.getName()).isEqualTo("ToolSearchToolCallingAdvisor");

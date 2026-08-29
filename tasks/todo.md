@@ -2542,6 +2542,30 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
 - Verification: `:libraries:ai-contracts:test --tests
   com.emme.ai.contracts.learning.LearningCandidateTest` passed.
 
+## AI learning-candidate lifecycle — 2026-08-29
+
+- [x] Add typed candidate statuses and offline evaluation gates.
+- [x] Add deterministic promotion/rollback lifecycle policy.
+- [x] Add tenant-filtered, optimistic-lock state persistence.
+- [x] Add lifecycle service and assistant configuration wiring.
+- [x] Update AI implementation plan and technical specification.
+- [x] Run focused lifecycle, JDBC, configuration, formatting, and contract
+      checks.
+
+### Results
+
+- Candidate state transitions are now durable and concurrency-safe. Failed
+  evaluation gates move candidates to `REJECTED`; canary failure leaves an
+  approved candidate unchanged; promotion is an explicit later operation.
+- Verification: lifecycle tests, JDBC state-store tests, assistant wiring test,
+  and module `spotlessCheck` passed.
+
+### Verification follow-up
+
+- [x] Repair two provider-fallback fixtures to bind the required backend AI
+      context after the broad assistant check exposed the regression.
+- [x] Re-run `ChatServiceProviderFallbackTest` successfully.
+
 ### Results
 
 - Detailed task ordering, exact file areas, TDD checkpoints, dependencies,

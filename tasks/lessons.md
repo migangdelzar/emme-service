@@ -961,3 +961,14 @@
   compilation before any unrelated module was changed.
 - **Prevention rule:** Assert SQL structure with whitespace-tolerant patterns,
   and avoid static record factories that reuse component accessor names.
+
+## 2026-08-29 — Context-required services need context-aware unit fixtures
+
+- **Failure mode:** The broad assistant check failed in two provider-fallback
+  tests because `ChatService` correctly rejected calls without a bound backend
+  `AiExecutionContext`.
+- **Detection signal:** `IllegalStateException: No AI execution context` in
+  `ChatServiceProviderFallbackTest`.
+- **Prevention rule:** When a service enforces backend context, all direct unit
+  fixtures must bind a minimal valid context with `AiExecutionContextScope`;
+  never relax the production guard to accommodate a test.

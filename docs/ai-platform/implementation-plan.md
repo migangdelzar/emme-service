@@ -28,7 +28,7 @@
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Complete |
 | 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors and read-only controlled gateway complete; mutation tools pending |
 | 7 | Design extraction, deterministic quote, HITL | Quote, optimistic-lock, endpoint, and resume tests | In progress — durable quote workflow, secured staff review endpoint, and LangGraph resume adapter complete |
-| 8 | Online enrichment and evaluation | Candidate/promotion safety tests | Not started |
+| 8 | Online enrichment and evaluation | Candidate/promotion safety tests | In progress — durable candidate capture, redaction boundary, and offline promotion gates complete; evaluator/index promotion pending |
 | 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events, workflow metrics, and durable model/tool traces complete |
 
 ## 3. Phase 0 — Java 25
@@ -198,7 +198,13 @@ is selected when JDBC is unavailable.
 
 ## 7. Phase 8–9 — Learning and production hardening
 
-- Add trace redaction and candidate records.
+- Trace redaction and durable candidate records are implemented. Candidate
+  admission requires redacted bounded text and strong outcome evidence; records
+  start in `PENDING_EVALUATION`.
+- Deterministic lifecycle transitions now require `EVALUATING`, complete
+  offline dataset/safety/regression/shadow gates, and a separate canary gate
+  before `PROMOTED`. Optimistic PostgreSQL state updates prevent concurrent
+  workers from overwriting a candidate.
 - Add asynchronous embedding and evaluation worker.
 - Add shadow/canary index promotion.
 - Add Ragas evaluation scaffold.

@@ -1,8 +1,11 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.platform.learning.JdbcLearningCandidateStore;
+import com.emme.ai.platform.learning.LearningCandidateLifecyclePolicy;
+import com.emme.ai.platform.learning.LearningCandidateLifecycleService;
 import com.emme.ai.platform.learning.LearningCandidatePolicy;
 import com.emme.ai.platform.learning.LearningCandidateService;
+import com.emme.ai.platform.learning.LearningCandidateStateStore;
 import com.emme.ai.platform.learning.LearningCandidateStore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,5 +38,18 @@ public class SpringAiLearningConfiguration {
   LearningCandidateService learningCandidateService(
       LearningCandidatePolicy policy, LearningCandidateStore store) {
     return new LearningCandidateService(policy, store);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  LearningCandidateLifecyclePolicy learningCandidateLifecyclePolicy() {
+    return new LearningCandidateLifecyclePolicy();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  LearningCandidateLifecycleService learningCandidateLifecycleService(
+      LearningCandidateLifecyclePolicy policy, LearningCandidateStateStore stateStore) {
+    return new LearningCandidateLifecycleService(policy, stateStore);
   }
 }

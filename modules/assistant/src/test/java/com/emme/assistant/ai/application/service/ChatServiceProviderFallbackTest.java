@@ -8,7 +8,11 @@ import static org.mockito.Mockito.when;
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class ChatServiceProviderFallbackTest {
@@ -20,7 +24,8 @@ class ChatServiceProviderFallbackTest {
     when(chain.complete("", "hello")).thenReturn("Spring AI response");
     ChatService service = new ChatService(legacy, Optional.empty(), Optional.of(chain));
 
-    assertThat(service.chat("", "hello")).isEqualTo("Spring AI response");
+    assertThat(AiExecutionContextScope.call(context(), () -> service.chat("", "hello")))
+        .isEqualTo("Spring AI response");
   }
 
   @Test
@@ -32,7 +37,19 @@ class ChatServiceProviderFallbackTest {
     when(legacy.chat("", "hello")).thenReturn("legacy response");
     ChatService service = new ChatService(legacy, Optional.empty(), Optional.of(chain));
 
-    assertThat(service.chat("", "hello")).isEqualTo("legacy response");
+    assertThat(AiExecutionContextScope.call(context(), () -> service.chat("", "hello")))
+        .isEqualTo("legacy response");
     verify(legacy).chat("", "hello");
+  }
+
+  private static AiExecutionContext context() {
+    return new AiExecutionContext(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        Set.of("ROLE_client"),
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        "trace-chat-fallback",
+        "idem-chat-fallback");
   }
 }

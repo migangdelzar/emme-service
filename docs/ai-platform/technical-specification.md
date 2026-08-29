@@ -133,6 +133,18 @@ the same backend authorization gates used for execution. The JDBC adapter
 derives tenant, principal, conversation, workflow, and trace identifiers from
 `AiExecutionContext`; it never accepts those values from model arguments.
 Request, response, argument, and error payloads are redacted before storage.
+Governed self-improvement uses `LearningCandidate` records from
+`libraries:ai-contracts`. Candidate text is bounded and rejected when it still
+contains common email, phone, or bearer-token patterns. The platform policy
+admits only redacted candidates backed by accepted, validated, successful
+outcomes without staff correction or policy violations. Candidates are stored
+in PostgreSQL as `PENDING_EVALUATION`; they are never promoted during a
+customer request. `LearningCandidateLifecyclePolicy` requires complete offline
+datasets, deterministic safety checks, regression and shadow approval, and a
+separate canary result before promotion. `JdbcLearningCandidateStateStore`
+updates status with tenant and expected-version predicates, so concurrent
+workers cannot overwrite one another. The asynchronous evaluator and versioned
+embedding-index promotion worker remain a subsequent phase.
 Token counts and estimated cost are nullable because provider usage metadata is
 not guaranteed. Trace writes are best effort and PostgreSQL is authoritative
 for the durable records; a no-op recorder is used where JDBC is unavailable.

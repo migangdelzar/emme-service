@@ -3,6 +3,7 @@ package com.emme.assistant.ai.configuration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
  * application does not replace the common ForkJoinPool.
  */
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(AiExecutorProperties.class)
 public class AiExecutorConfiguration {
 
   @Bean(name = "aiIoExecutor", destroyMethod = "close")

@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-08-28 — Explicitly bind records with compatibility constructors
+
+- Failure mode: Adding a convenience constructor to a `@ConfigurationProperties` record made
+  Spring Boot choose no bind constructor and broke every context that injected the record.
+- Detection signal: Context startup reported `NoSuchMethodException` for the record's no-argument
+  constructor.
+- Prevention rule: When a configuration-properties record has more than one constructor, mark the
+  canonical binding constructor explicitly with `@ConstructorBinding` and run a context test.
+
 ## 2026-08-28 — Preserve restored security context while extending AI runtime
 
 - Failure mode: An intermediate change removed a newly restored tenant execution-context slice

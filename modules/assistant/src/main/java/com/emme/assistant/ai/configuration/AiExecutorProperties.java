@@ -3,6 +3,7 @@ package com.emme.assistant.ai.configuration;
 import java.time.Duration;
 import java.util.Objects;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /** Tunable limits for the executor pools used by AI infrastructure. */
@@ -18,6 +19,7 @@ public record AiExecutorProperties(
     this(backgroundParallelism, cpuParallelism, schedulerPoolSize, Duration.ofSeconds(5));
   }
 
+  @ConstructorBinding
   public AiExecutorProperties {
     requirePositive(backgroundParallelism, "backgroundParallelism");
     requirePositive(cpuParallelism, "cpuParallelism");

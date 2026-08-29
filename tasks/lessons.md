@@ -895,3 +895,15 @@
   `git status --ignored --short` and require it to be absent of source files;
   when ignored build output exists, move tracked files explicitly and verify
   `modules/<new-name>/build.gradle.kts` plus `src/` are at the module root.
+
+## 2026-08-28 — Preserve existing infrastructure before adding AI primitives
+
+- **Failure mode:** A new tenant context abstraction was started before fully
+  reconciling it with the existing Spring filter, AI execution scope, Redis,
+  and provider infrastructure.
+- **Detection signal:** The user explicitly required reuse of existing
+  artifacts and asked for the attempted slice to be restored rather than
+  replaced or discarded.
+- **Prevention rule:** Inventory and reuse existing framework capabilities and
+  adapters first. Add a new abstraction only when a documented gap remains,
+  and keep it as a thin boundary around the existing implementation.

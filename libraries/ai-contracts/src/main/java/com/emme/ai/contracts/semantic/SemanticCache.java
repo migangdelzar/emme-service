@@ -1,6 +1,6 @@
 package com.emme.ai.contracts.semantic;
 
-import com.emme.ai.contracts.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContext;
 import java.util.Optional;
 
 /** Port for tenant- and audience-scoped semantic response caching. */

@@ -3,10 +3,9 @@ package com.emme.ai.platform.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.emme.ai.contracts.context.AiExecutionContext;
-import com.emme.ai.contracts.context.Channel;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.kernel.context.AiExecutionContext;
 import java.time.Duration;
 import java.util.List;
 import java.util.Set;
@@ -208,8 +207,7 @@ class BoundedModelExecutionSchedulerTest {
         UUID.randomUUID(),
         UUID.randomUUID(),
         "trace-" + UUID.randomUUID(),
-        "idem-" + UUID.randomUUID(),
-        Channel.WEB);
+        "idem-" + UUID.randomUUID());
   }
 
   private static void awaitQueued(BoundedModelExecutionScheduler scheduler, int expected)

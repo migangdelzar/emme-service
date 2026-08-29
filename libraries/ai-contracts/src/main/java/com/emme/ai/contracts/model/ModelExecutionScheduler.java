@@ -1,6 +1,6 @@
 package com.emme.ai.contracts.model;
 
-import com.emme.ai.contracts.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContext;
 import java.time.Duration;
 import java.util.concurrent.Callable;
 

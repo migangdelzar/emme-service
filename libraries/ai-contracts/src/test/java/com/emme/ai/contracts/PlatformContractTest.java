@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
-import com.emme.ai.contracts.context.AiExecutionContext;
-import com.emme.ai.contracts.context.Channel;
 import com.emme.ai.contracts.extraction.ArtComplexity;
 import com.emme.ai.contracts.extraction.NailDesignFeatures;
+import com.emme.ai.contracts.model.ModelCapability;
+import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.routing.IntentDefinition;
 import com.emme.ai.contracts.routing.IntentMatch;
 import com.emme.ai.contracts.routing.IntentRoute;
@@ -19,11 +19,13 @@ import com.emme.ai.contracts.tool.ToolExecutionContext;
 import com.emme.ai.contracts.tool.ToolExecutionRequest;
 import com.emme.ai.contracts.tool.ToolRisk;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
+import com.emme.kernel.context.AiExecutionContext;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import org.junit.jupiter.api.Test;
 
 class PlatformContractTest {
@@ -44,8 +46,7 @@ class PlatformContractTest {
             conversationId,
             workflowId,
             "trace-1",
-            "idempotency-1",
-            Channel.WEB);
+            "idempotency-1");
 
     mutableRoles.add("ADMIN");
 
@@ -60,8 +61,36 @@ class PlatformContractTest {
                     conversationId,
                     workflowId,
                     "trace-1",
-                    "idempotency-1",
-                    Channel.WEB));
+                    "idempotency-1"));
+  }
+
+  @Test
+  void modelAdmissionUsesTheCanonicalKernelExecutionContext() {
+    var context = kernelExecutionContext();
+    ModelExecutionScheduler scheduler =
+        new ModelExecutionScheduler() {
+          @Override
+          public <T> T execute(
+              ModelCapability capability,
+              AiExecutionContext executionContext,
+              java.time.Duration timeout,
+              Callable<T> operation) {
+            assertThat(executionContext).isSameAs(context);
+            try {
+              return operation.call();
+            } catch (Exception exception) {
+              throw new RuntimeException(exception);
+            }
+          }
+        };
+
+    assertThat(
+            scheduler.execute(
+                ModelCapability.EMBEDDING,
+                context,
+                java.time.Duration.ofSeconds(1),
+                () -> "admitted"))
+        .isEqualTo("admitted");
   }
 
   @Test
@@ -229,5 +258,16 @@ class PlatformContractTest {
     assertThat(WorkflowStatus.WAITING_FOR_APPROVAL.isTerminal()).isFalse();
     assertThat(WorkflowStatus.RUNNING.isTerminal()).isFalse();
     assertThat(WorkflowStatus.FAILED.isTerminal()).isTrue();
+  }
+
+  private static AiExecutionContext kernelExecutionContext() {
+    return new AiExecutionContext(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        Set.of("CLIENT"),
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        "trace-kernel",
+        "idempotency-kernel");
   }
 }

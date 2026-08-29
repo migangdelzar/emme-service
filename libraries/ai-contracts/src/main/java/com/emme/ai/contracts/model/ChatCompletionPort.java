@@ -1,6 +1,6 @@
 package com.emme.ai.contracts.model;
 
-import com.emme.ai.contracts.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContext;
 
 /** Provider-neutral chat completion port. */
 public interface ChatCompletionPort {

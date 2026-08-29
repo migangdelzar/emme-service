@@ -1,6 +1,6 @@
 package com.emme.ai.contracts.routing;
 
-import com.emme.ai.contracts.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContext;
 
 /** Port for deterministic, semantic, and abstaining intent routing. */
 public interface IntentRouter {

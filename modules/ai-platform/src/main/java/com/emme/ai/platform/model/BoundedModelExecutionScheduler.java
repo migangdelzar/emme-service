@@ -1,8 +1,8 @@
 package com.emme.ai.platform.model;
 
-import com.emme.ai.contracts.context.AiExecutionContext;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.kernel.context.AiExecutionContext;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Deque;

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.emme.kernel.context.TenantContext;
+import com.emme.kernel.context.TenantExecutionContextScope;
 import com.emme.tenancy.application.port.out.TenantRepository;
 import com.emme.tenancy.domain.model.Tenant;
 import com.emme.tenancy.domain.model.TenantStatus;
@@ -72,12 +73,19 @@ class TenantContextFilterTest {
     var response = new MockHttpServletResponse();
     var chain =
         (jakarta.servlet.FilterChain)
-            (ignoredRequest, ignoredResponse) ->
-                assertThat(TenantContext.getCurrentTenantId()).isEqualTo(tenantId);
+            (ignoredRequest, ignoredResponse) -> {
+              assertThat(TenantContext.getCurrentTenantId()).isEqualTo(tenantId);
+              assertThat(TenantExecutionContextScope.requireCurrent().tenantId())
+                  .isEqualTo(tenantId);
+              assertThat(TenantExecutionContextScope.requireCurrent().databaseId()).isNull();
+              assertThat(TenantExecutionContextScope.requireCurrent().correlationId())
+                  .isEqualTo(response.getHeader(TenantContextFilter.CORRELATION_ID_HEADER));
+            };
 
     filter.doFilter(request, response, chain);
 
     assertThat(TenantContext.getCurrentTenantId()).isNull();
+    assertThat(TenantExecutionContextScope.current()).isEmpty();
   }
 
   @Test

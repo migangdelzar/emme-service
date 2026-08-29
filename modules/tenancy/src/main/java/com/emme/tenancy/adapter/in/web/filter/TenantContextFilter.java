@@ -1,6 +1,9 @@
 package com.emme.tenancy.adapter.in.web.filter;
 
 import com.emme.kernel.context.TenantContext;
+import com.emme.kernel.context.TenantContextBridge;
+import com.emme.kernel.context.TenantExecutionContext;
+import com.emme.kernel.context.TenantExecutionContextScope;
 import com.emme.kernel.tracing.CorrelationId;
 import com.emme.tenancy.application.port.out.TenantRepository;
 import jakarta.servlet.FilterChain;
@@ -84,7 +87,19 @@ public class TenantContextFilter extends OncePerRequestFilter {
       }
       TenantContext.setCurrentDatabaseId(databaseId);
 
-      filterChain.doFilter(request, response);
+      if (tenantId == null) {
+        filterChain.doFilter(request, response);
+      } else {
+        TenantExecutionContext context =
+            new TenantExecutionContext(tenantId, databaseId, correlationId);
+        try {
+          TenantExecutionContextScope.run(
+              context,
+              () -> TenantContextBridge.runCurrent(() -> filterChain.doFilter(request, response)));
+        } catch (RuntimeException exception) {
+          rethrowFilterException(exception);
+        }
+      }
     } finally {
       TenantContext.clear();
       CorrelationId.clear();
@@ -98,5 +113,20 @@ public class TenantContextFilter extends OncePerRequestFilter {
     return path.startsWith("/actuator")
         || path.startsWith("/api-docs")
         || path.startsWith("/swagger-ui");
+  }
+
+  private static void rethrowFilterException(RuntimeException exception)
+      throws IOException, ServletException {
+    Throwable cause = exception;
+    while (cause instanceof RuntimeException && cause.getCause() != null) {
+      cause = cause.getCause();
+    }
+    if (cause instanceof IOException ioException) {
+      throw ioException;
+    }
+    if (cause instanceof ServletException servletException) {
+      throw servletException;
+    }
+    throw exception;
   }
 }

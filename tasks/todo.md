@@ -81,6 +81,8 @@
       candidate admission separate from evaluation and production promotion.
 - [x] Add a tenant/principal-scoped PostgreSQL learning-candidate migration
       with durable lifecycle states, idempotency, RLS, and contract coverage.
+- [x] Add an application-facing candidate submission service that persists only
+      evidence-gated candidates and requires the backend AI execution context.
 
 ### Working notes
 
@@ -203,6 +205,11 @@ Accepted candidates now have a durable PostgreSQL home in
 `ai_learning_candidate`, including correlation, evidence, lifecycle status,
 fingerprint-based idempotency, optimistic versioning, tenant RLS, and review
 indexes. The migration does not itself promote or embed candidates.
+
+`LearningCandidateService` now combines the deterministic admission policy with
+an injected durable store. It fails closed without `AiExecutionContext`, does
+not call the store for rejected evidence, and returns a pending-evaluation
+submission rather than changing runtime routing.
 
 Verification on 2026-08-28: `:modules:assistant:spotlessCheck :modules:assistant:test`,
 `:database:spotlessCheck :database:test`, and

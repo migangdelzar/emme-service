@@ -17,8 +17,15 @@ import com.emme.assistant.application.port.out.WhatsAppReplyPort;
 import com.emme.assistant.application.port.out.WhatsAppWebhookEventRepository;
 import com.emme.assistant.domain.model.ChannelParticipant;
 import com.emme.assistant.domain.model.ConsentStatus;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
+import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.type.ChannelType;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.ApplicationEventPublisher;
@@ -83,12 +90,35 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
   @Override
   public void enqueue(ProcessWhatsAppMessageCommand command) {
     validate(command);
+    UUID currentTenant = TenantContextHolder.requireCurrentTenantId();
+    if (!currentTenant.equals(command.tenantId())) {
+      throw new SecurityException("WhatsApp tenant does not match the backend context");
+    }
     eventPublisher.publishEvent(new WhatsAppMessageReceived(command));
   }
 
   @Override
   public void process(ProcessWhatsAppMessageCommand command) {
     validate(command);
+    UUID currentTenant = TenantContextHolder.currentTenantOptional().orElse(null);
+    AiExecutionContext currentContext = AiExecutionContextScope.current().orElse(null);
+    if (currentTenant != null && !currentTenant.equals(command.tenantId())) {
+      throw new SecurityException("WhatsApp tenant does not match the backend context");
+    }
+    if (currentContext != null && !currentContext.tenantId().equals(command.tenantId())) {
+      throw new SecurityException("WhatsApp tenant does not match the AI context");
+    }
+    if (currentTenant == null || currentContext == null) {
+      bindSystemContext(
+          command,
+          TenantContextHolder.currentDatabaseOptional().orElse(null),
+          () -> processInCurrentContext(command));
+      return;
+    }
+    processInCurrentContext(command);
+  }
+
+  private void processInCurrentContext(ProcessWhatsAppMessageCommand command) {
     if (!webhookEvents.claim(command.tenantId(), "whatsapp", command.eventId())) {
       return;
     }
@@ -108,7 +138,31 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
 
   @ApplicationModuleListener(id = "assistant.whatsapp-message-received")
   void processReceivedMessage(WhatsAppMessageReceived event) {
-    process(event.command());
+    Objects.requireNonNull(event, "event must not be null");
+    bindSystemContext(event.command(), event.databaseId(), () -> process(event.command()));
+  }
+
+  private void bindSystemContext(
+      ProcessWhatsAppMessageCommand command, UUID databaseId, Runnable action) {
+    String traceId = "whatsapp:" + command.eventId();
+    UUID resourceId =
+        UUID.nameUUIDFromBytes(
+            ("emme-whatsapp:" + command.eventId()).getBytes(StandardCharsets.UTF_8));
+    AiExecutionContext context =
+        new AiExecutionContext(
+            command.tenantId(),
+            UUID.nameUUIDFromBytes(
+                ("emme-whatsapp-system:" + command.tenantId()).getBytes(StandardCharsets.UTF_8)),
+            Set.of("ROLE_system_whatsapp"),
+            resourceId,
+            resourceId,
+            traceId,
+            command.eventId());
+    TenantContextHolder.withTenantAndCorrelation(
+        command.tenantId(),
+        databaseId,
+        traceId,
+        () -> AiExecutionContextScope.run(context, action::run));
   }
 
   private static void validate(ProcessWhatsAppMessageCommand command) {

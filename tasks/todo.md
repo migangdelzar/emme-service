@@ -56,6 +56,8 @@
   configured, retaining bounded legacy-provider compatibility fallback.
 - [x] Reuse Spring Modulith's durable JDBC event publication registry for
   asynchronous WhatsApp acceptance and processing retries.
+- [x] Rebind the trusted WhatsApp tenant, database routing, correlation, and
+  AI execution context on the asynchronous worker path.
 - [x] Extract provider-neutral model, image, and embedding contracts into
   `libraries:ai-contracts`; move legacy providers and reusable capability
   adapters into `modules:ai-platform` without an `ai-platform` → `assistant`

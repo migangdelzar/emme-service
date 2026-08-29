@@ -17,6 +17,7 @@ import com.emme.assistant.application.port.out.ChannelParticipantRepository;
 import com.emme.assistant.application.port.out.WhatsAppReplyPort;
 import com.emme.assistant.application.port.out.WhatsAppWebhookEventRepository;
 import com.emme.assistant.domain.model.ChannelParticipant;
+import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.type.ChannelType;
 import java.util.List;
 import java.util.Optional;
@@ -108,11 +109,47 @@ class ProcessWhatsAppMessageServiceTest {
     ProcessWhatsAppMessageCommand command =
         new ProcessWhatsAppMessageCommand(tenantId, "event-2", "phone", "hello");
 
-    service.enqueue(command);
+    com.emme.kernel.context.TenantContextHolder.withTenantOverride(
+        tenantId, () -> service.enqueue(command));
 
     verify(eventPublisher).publishEvent(new WhatsAppMessageReceived(command));
     verify(webhookEvents, never()).claim(any(), any(), any());
     verify(chatUseCase, never()).chat(any(), any());
     verify(replyPort, never()).send(any(), any());
+  }
+
+  @Test
+  void rebindsTheTrustedTenantAndAiContextOnTheAsynchronousWorkerPath() {
+    ProcessWhatsAppMessageCommand command =
+        new ProcessWhatsAppMessageCommand(tenantId, "event-3", "phone", "hello");
+    ChannelParticipant participant =
+        new ChannelParticipant(
+            participantId,
+            tenantId,
+            ChannelType.WHATSAPP,
+            "phone",
+            null,
+            com.emme.assistant.domain.model.ConsentStatus.UNKNOWN);
+    when(webhookEvents.claim(tenantId, "whatsapp", "event-3")).thenReturn(true);
+    when(participantRepository.findByTenantIdAndChannelAndProviderReference(
+            tenantId, ChannelType.WHATSAPP, "phone"))
+        .thenReturn(Optional.of(participant));
+    when(listConversations.list(any())).thenReturn(List.of(conversation));
+    when(chatUseCase.chat("", "hello"))
+        .thenAnswer(
+            invocation -> {
+              org.assertj.core.api.Assertions.assertThat(
+                      AiExecutionContextScope.requireCurrent().tenantId())
+                  .isEqualTo(tenantId);
+              org.assertj.core.api.Assertions.assertThat(
+                      com.emme.kernel.context.TenantContextHolder.requireCurrentTenantId())
+                  .isEqualTo(tenantId);
+              return "reply";
+            });
+
+    service.processReceivedMessage(new WhatsAppMessageReceived(command, null));
+
+    verify(replyPort).send("phone", "reply");
+    org.assertj.core.api.Assertions.assertThat(AiExecutionContextScope.current()).isEmpty();
   }
 }

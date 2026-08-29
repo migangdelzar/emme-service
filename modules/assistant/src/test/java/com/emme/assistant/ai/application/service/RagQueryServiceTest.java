@@ -8,6 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
+import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.documents.api.result.DocumentChunkDetails;
 import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
@@ -102,6 +105,38 @@ class RagQueryServiceTest {
             com.emme.documents.api.query.SearchDocumentChunksQuery.class);
     verify(search).search(query.capture());
     assertThat(query.getValue().tenantId()).isEqualTo(tenantId);
+  }
+
+  @Test
+  void prefersProviderNeutralEmbeddingAndChatPortsWhenConfigured() {
+    UUID tenantId = UUID.randomUUID();
+    AiModelProvider legacyModel = mock(AiModelProvider.class);
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    RagQueryService service =
+        new RagQueryService(
+            realProperties(),
+            legacyModel,
+            search,
+            java.util.Optional.of(embeddings),
+            java.util.Optional.of(chat));
+    DocumentChunkDetails chunk =
+        new DocumentChunkDetails(
+            UUID.randomUUID(), UUID.randomUUID(), 0, "The premium is monthly.", "fingerprint");
+
+    when(embeddings.embed("What is the premium?"))
+        .thenReturn(new EmbeddingVector("embedding-v1", List.of(0.1f, 0.2f)));
+    when(search.search(any())).thenReturn(List.of(chunk));
+    when(chat.complete("The premium is monthly.", "What is the premium?"))
+        .thenReturn("It is monthly.");
+
+    assertThat(inContext(tenantId, () -> service.query("What is the premium?")))
+        .isEqualTo("It is monthly.");
+    verify(embeddings).embed("What is the premium?");
+    verify(chat).complete("The premium is monthly.", "What is the premium?");
+    verify(legacyModel, never()).embed(any());
+    verify(legacyModel, never()).chat(any(), any());
   }
 
   private static <T> T inContext(UUID tenantId, java.util.function.Supplier<T> action) {

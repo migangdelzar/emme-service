@@ -52,6 +52,8 @@
   extraction without persisting vector values or image bytes.
 - [x] Bind the RAG endpoint and use case to the authenticated AI execution
   context so document retrieval cannot receive a caller-selected tenant.
+- [x] Route RAG model work through provider-neutral embedding/chat ports when
+  configured, retaining bounded legacy-provider compatibility fallback.
 - [x] Extract provider-neutral model, image, and embedding contracts into
   `libraries:ai-contracts`; move legacy providers and reusable capability
   adapters into `modules:ai-platform` without an `ai-platform` → `assistant`

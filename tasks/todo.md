@@ -60,6 +60,8 @@
   AI execution context on the asynchronous worker path.
 - [x] Register `getSalonServices` as a real read-only AI tool backed by the
   Services application use case and backend tenant context.
+- [x] Add declared AI-tool argument schemas and deterministic tenant-scoped
+  `findAvailability` delegation through the Appointments use case.
 - [x] Extract provider-neutral model, image, and embedding contracts into
   `libraries:ai-contracts`; move legacy providers and reusable capability
   adapters into `modules:ai-platform` without an `ai-platform` → `assistant`

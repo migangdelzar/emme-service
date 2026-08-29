@@ -11,7 +11,29 @@ public record AiToolDefinition(
     AiToolRisk risk,
     boolean userConfirmationRequired,
     boolean staffApprovalRequired,
-    AiToolHandler handler) {
+    AiToolHandler handler,
+    Set<String> requiredArgumentNames,
+    Set<String> allowedArgumentNames) {
+
+  public AiToolDefinition(
+      String key,
+      String description,
+      Set<String> allowedRoles,
+      AiToolRisk risk,
+      boolean userConfirmationRequired,
+      boolean staffApprovalRequired,
+      AiToolHandler handler) {
+    this(
+        key,
+        description,
+        allowedRoles,
+        risk,
+        userConfirmationRequired,
+        staffApprovalRequired,
+        handler,
+        Set.of(),
+        Set.of());
+  }
 
   public AiToolDefinition {
     requireText(key, "key");
@@ -26,6 +48,14 @@ public record AiToolDefinition(
             .collect(java.util.stream.Collectors.toUnmodifiableSet());
     Objects.requireNonNull(risk, "risk must not be null");
     Objects.requireNonNull(handler, "handler must not be null");
+    Objects.requireNonNull(requiredArgumentNames, "requiredArgumentNames must not be null");
+    Objects.requireNonNull(allowedArgumentNames, "allowedArgumentNames must not be null");
+    requiredArgumentNames = normalizeArgumentNames(requiredArgumentNames, "required argument");
+    allowedArgumentNames = normalizeArgumentNames(allowedArgumentNames, "allowed argument");
+    if (!allowedArgumentNames.isEmpty()
+        && !allowedArgumentNames.containsAll(requiredArgumentNames)) {
+      throw new IllegalArgumentException("required arguments must be allowed arguments");
+    }
   }
 
   public boolean isAuthorized(Set<String> roles) {
@@ -34,7 +64,16 @@ public record AiToolDefinition(
   }
 
   public boolean canRunProactively() {
-    return risk == AiToolRisk.READ_ONLY && !userConfirmationRequired && !staffApprovalRequired;
+    return risk == AiToolRisk.READ_ONLY
+        && !userConfirmationRequired
+        && !staffApprovalRequired
+        && requiredArgumentNames.isEmpty();
+  }
+
+  private static Set<String> normalizeArgumentNames(Set<String> names, String field) {
+    return names.stream()
+        .map(name -> requireText(name, field))
+        .collect(java.util.stream.Collectors.toUnmodifiableSet());
   }
 
   private static String canonicalRole(String role) {

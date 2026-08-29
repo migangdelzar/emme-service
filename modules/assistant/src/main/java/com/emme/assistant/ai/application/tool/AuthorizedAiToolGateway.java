@@ -71,6 +71,27 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
         throw new AiToolExecutionRejectedException(
             "Staff approval is required for AI tool: " + invocation.toolKey());
       }
+      String missingArgument =
+          definition.requiredArgumentNames().stream()
+              .sorted()
+              .filter(argument -> !invocation.arguments().containsKey(argument))
+              .findFirst()
+              .orElse(null);
+      if (missingArgument != null) {
+        throw new AiToolExecutionRejectedException(
+            "Missing required AI tool argument: " + missingArgument);
+      }
+      String unknownArgument =
+          definition.allowedArgumentNames().isEmpty()
+              ? null
+              : invocation.arguments().keySet().stream()
+                  .sorted()
+                  .filter(argument -> !definition.allowedArgumentNames().contains(argument))
+                  .findFirst()
+                  .orElse(null);
+      if (unknownArgument != null) {
+        throw new AiToolExecutionRejectedException("Unknown AI tool argument: " + unknownArgument);
+      }
       String content =
           definition.handler().execute(toExecutionContext(context), invocation.arguments());
       record(

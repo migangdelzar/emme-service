@@ -235,6 +235,54 @@ class AuthorizedAiToolGatewayTest {
         .isEqualTo(new AiToolResult("getSalonServices", "services", true));
   }
 
+  @Test
+  void rejectsToolArgumentsOutsideTheBackendDeclaredSchema() {
+    AiToolGateway gateway =
+        new AuthorizedAiToolGateway(
+            Set.of(
+                new AiToolDefinition(
+                    "findAvailability",
+                    "Find available appointment slots",
+                    Set.of("client"),
+                    AiToolRisk.READ_ONLY,
+                    false,
+                    false,
+                    (context, arguments) -> "slots",
+                    Set.of("serviceId", "date"),
+                    Set.of("serviceId", "date"))));
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context(Set.of("client")),
+                    () ->
+                        gateway.execute(
+                            new AiToolInvocation(
+                                "findAvailability", Map.of("serviceId", "service"), false, false))))
+        .isInstanceOf(AiToolExecutionRejectedException.class)
+        .hasMessage("Missing required AI tool argument: date");
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context(Set.of("client")),
+                    () ->
+                        gateway.execute(
+                            new AiToolInvocation(
+                                "findAvailability",
+                                Map.of(
+                                    "serviceId",
+                                    "service",
+                                    "date",
+                                    "2026-08-29",
+                                    "tenantId",
+                                    "other"),
+                                false,
+                                false))))
+        .isInstanceOf(AiToolExecutionRejectedException.class)
+        .hasMessage("Unknown AI tool argument: tenantId");
+  }
+
   private static AiExecutionContext context(Set<String> roles) {
     UUID id = UUID.randomUUID();
     return new AiExecutionContext(

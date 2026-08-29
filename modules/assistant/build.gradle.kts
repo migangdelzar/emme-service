@@ -39,4 +39,6 @@ dependencies {
   testImplementation(project(":modules:identity"))
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
+  add("integrationTestImplementation", project(":libraries:kernel"))
+  add("integrationTestImplementation", libs.spring.jdbc)
 }

@@ -24,7 +24,7 @@
 | 1 | Execution context, ScopedValue, executors | Context and concurrency unit tests | Complete |
 | 2 | StructuredTaskScope and Joiners | Parallel runner and cancellation tests | Complete |
 | 3 | `ai-contracts`, `ai-platform`, and Spring AI providers | Provider/embedding/chat contract tests | In progress — contracts, provider adapters, embedding, and ordered chat boundaries complete |
-| 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress — semantic intent/tool routing and safe chat cache complete; Redis hot projection and tool-search index are opt-in; real pgvector runtime test pending |
+| 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress — semantic intent/tool routing and safe chat cache complete; Redis hot projection and tool-search index are opt-in; real pgvector JDBC/runtime coverage now passes |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Complete |
 | 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors, read-only controlled gateway, and opt-in Redis progressive tool search complete; mutation tools pending |
 | 7 | Design extraction, deterministic quote, HITL | Quote, optimistic-lock, endpoint, and resume tests | In progress — durable quote workflow, secured staff review endpoint, and LangGraph resume adapter complete |
@@ -127,8 +127,13 @@ context filters, and constrain semantic tool search to backend-authorized
 keys. Cache writes now use a tenant/principal-scoped idempotency key, and cache
 hits are atomically accounted for in PostgreSQL. The resolver abstains when the
 durable hit update cannot confirm that the entry is still active and unexpired.
-Real pgvector PostgreSQL integration coverage remains a follow-up because the
-current repository test image does not yet include the pgvector extension.
+Real pgvector coverage now runs as an explicit Testcontainers integration gate
+using the pinned `pgvector/pgvector:0.8.6-pg16-trixie` image. The test uses the
+production JDBC adapters against the live extension and verifies both
+tenant-filtered reference search and durable semantic-cache write/read/hit
+accounting. It is intentionally a narrow JDBC integration harness rather than
+the full application context, because the latter includes the existing tenant
+routing/JPA bootstrap and is unrelated to vector operator verification.
 
 ### Quote vertical-slice progress
 

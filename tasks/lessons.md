@@ -1024,3 +1024,24 @@
 - **Prevention rule:** Keep configuration records to one bindable canonical
   constructor; update direct test fixtures to pass all fields instead of adding
   convenience constructors.
+
+## 2026-08-29 — Keep vector integration tests narrower than the full application
+
+- **Failure mode:** A full `TestApplication` pgvector test re-entered the
+  repository's existing tenant-routing/JPA datasource-initialization cycle.
+- **Detection signal:** Spring context startup failed before the vector adapter
+  was exercised, with `BeanCurrentlyInCreationException` for the datasource
+  initializer.
+- **Prevention rule:** For infrastructure operators, use the smallest real
+  integration harness that still instantiates the production adapter. Keep full
+  application bootstrap tests separate from focused PostgreSQL/vector tests.
+
+## 2026-08-29 — Validate integration fixtures against the production schema
+
+- **Failure mode:** The first cache fixture omitted a production default for
+  generated IDs and required columns, causing false database failures.
+- **Detection signal:** PostgreSQL rejected the test fixture before the adapter
+  query ran (`null value in column ... violates not-null constraint`).
+- **Prevention rule:** When a test creates a minimal table, copy every column
+  default and constraint used by the production SQL, then exercise write/read
+  behavior against the live extension.

@@ -2629,3 +2629,20 @@ between `Info`, `View`, `StatusView`, `State`, or `Kind` on a case-by-case basis
   the opt-in Redis index and backend-approved callback provider are present.
 - Verification: focused Redis, tool-search, semantic-cache, chat-configuration,
   and embedding-property tests passed; Spotless passed.
+
+## pgvector runtime integration — 2026-08-29
+
+- [x] Add a pinned pgvector Testcontainers integration harness.
+- [x] Verify tenant-filtered semantic reference search against the live vector
+      extension.
+- [x] Verify durable semantic-cache write, similarity read, and hit accounting.
+- [x] Keep the test independent of the full tenant/JPA application bootstrap.
+
+### Results
+
+- `PgVectorSemanticIntegrationTest` now runs against
+  `pgvector/pgvector:0.8.6-pg16-trixie` and passes both tenant isolation and
+  cache persistence scenarios.
+- Verification: `:modules:assistant:integrationTest --tests
+  com.emme.assistant.ai.PgVectorSemanticIntegrationTest` passed locally with
+  Testcontainers.

@@ -62,6 +62,8 @@
   Services application use case and backend tenant context.
 - [x] Add declared AI-tool argument schemas and deterministic tenant-scoped
   `findAvailability` delegation through the Appointments use case.
+- [x] Make bounded model admission skip blocked tenant heads while preserving
+  round-robin fairness for tenants that can acquire capacity.
 - [x] Extract provider-neutral model, image, and embedding contracts into
   `libraries:ai-contracts`; move legacy providers and reusable capability
   adapters into `modules:ai-platform` without an `ai-platform` → `assistant`

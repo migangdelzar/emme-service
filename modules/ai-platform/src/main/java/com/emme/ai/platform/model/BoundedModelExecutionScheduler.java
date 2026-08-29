@@ -114,7 +114,7 @@ public final class BoundedModelExecutionScheduler implements ModelExecutionSched
   }
 
   private Permit tryNextPermit(Waiter<?> requestedWaiter) {
-    if (!isHead(requestedWaiter)) {
+    if (!isEligibleForRoundRobin(requestedWaiter)) {
       return null;
     }
     Permit permit = tryAcquire(requestedWaiter);
@@ -125,11 +125,40 @@ public final class BoundedModelExecutionScheduler implements ModelExecutionSched
     return permit;
   }
 
-  private boolean isHead(Waiter<?> waiter) {
+  private boolean isEligibleForRoundRobin(Waiter<?> waiter) {
     Deque<Waiter<?>> queue = tenantQueues.get(waiter.context.tenantId());
-    return queue != null
-        && queue.peekFirst() == waiter
-        && activeTenants.peekFirst().equals(waiter.context.tenantId());
+    if (queue == null || queue.peekFirst() != waiter) {
+      return false;
+    }
+    for (UUID tenantId : activeTenants) {
+      if (tenantId.equals(waiter.context.tenantId())) {
+        return true;
+      }
+      Deque<Waiter<?>> earlierQueue = tenantQueues.get(tenantId);
+      if (earlierQueue != null
+          && !earlierQueue.isEmpty()
+          && hasAvailableCapacity(earlierQueue.peekFirst())) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  private boolean hasAvailableCapacity(Waiter<?> waiter) {
+    return globalPermits.availablePermits() > 0
+        && capabilityPermits.get(waiter.capability).availablePermits() > 0
+        && tenantPermits
+                .computeIfAbsent(
+                    waiter.context.tenantId(),
+                    ignored -> new Semaphore(profile.tenantLimit(), true))
+                .availablePermits()
+            > 0
+        && userPermits
+                .computeIfAbsent(
+                    waiter.context.principalId(),
+                    ignored -> new Semaphore(profile.userLimit(), true))
+                .availablePermits()
+            > 0;
   }
 
   private Permit tryAcquire(Waiter<?> waiter) {

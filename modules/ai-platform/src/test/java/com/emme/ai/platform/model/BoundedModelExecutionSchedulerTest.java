@@ -48,6 +48,7 @@ class BoundedModelExecutionSchedulerTest {
                       context(UUID.randomUUID()),
                       Duration.ofSeconds(5),
                       () -> "queued"));
+      awaitQueued(scheduler, 1);
 
       assertThatThrownBy(
               () ->
@@ -105,6 +106,58 @@ class BoundedModelExecutionSchedulerTest {
     }
 
     assertThat(order).containsExactly("A-0", "A-1", "B-1", "A-2");
+  }
+
+  @Test
+  void skipsAQueuedTenantThatCannotAcquireItsTenantPermit() throws Exception {
+    var scheduler = newScheduler(2, 4, 1, 1);
+    var firstStarted = new CountDownLatch(1);
+    var releaseFirst = new CountDownLatch(1);
+    var tenantBStarted = new CountDownLatch(1);
+    UUID tenantA = UUID.randomUUID();
+    UUID tenantB = UUID.randomUUID();
+
+    try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      try {
+        Future<String> first =
+            executor.submit(
+                () ->
+                    scheduler.execute(
+                        ModelCapability.GENERATION,
+                        context(tenantA),
+                        Duration.ofSeconds(5),
+                        () -> {
+                          firstStarted.countDown();
+                          releaseFirst.await();
+                          return "A-0";
+                        }));
+        assertThat(firstStarted.await(1, TimeUnit.SECONDS)).isTrue();
+
+        Future<String> a1 =
+            submit(executor, scheduler, tenantA, "A-1", new CopyOnWriteArrayList<>());
+        awaitQueued(scheduler, 1);
+        Future<String> b1 =
+            executor.submit(
+                () ->
+                    scheduler.execute(
+                        ModelCapability.GENERATION,
+                        context(tenantB),
+                        Duration.ofSeconds(5),
+                        () -> {
+                          tenantBStarted.countDown();
+                          return "B-1";
+                        }));
+
+        assertThat(tenantBStarted.await(1, TimeUnit.SECONDS)).isTrue();
+        assertThat(b1.get(1, TimeUnit.SECONDS)).isEqualTo("B-1");
+
+        releaseFirst.countDown();
+        assertThat(first.get(2, TimeUnit.SECONDS)).isEqualTo("A-0");
+        assertThat(a1.get(2, TimeUnit.SECONDS)).isEqualTo("A-1");
+      } finally {
+        releaseFirst.countDown();
+      }
+    }
   }
 
   @Test

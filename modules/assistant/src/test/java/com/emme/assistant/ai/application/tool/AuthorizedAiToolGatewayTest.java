@@ -148,6 +148,58 @@ class AuthorizedAiToolGatewayTest {
   }
 
   @Test
+  void exposesOnlyAuthorizedNonMutatingToolsToTheFallbackAgent() {
+    AiToolGateway gateway =
+        new AuthorizedAiToolGateway(
+            Set.of(
+                new AiToolDefinition(
+                    "getSalonServices",
+                    "List active salon services",
+                    Set.of("client"),
+                    AiToolRisk.READ_ONLY,
+                    false,
+                    false,
+                    (context, arguments) -> "services"),
+                new AiToolDefinition(
+                    "findAvailability",
+                    "Find available appointment slots",
+                    Set.of("client"),
+                    AiToolRisk.READ_ONLY,
+                    false,
+                    false,
+                    (context, arguments) -> "slots",
+                    Set.of("serviceId", "date"),
+                    Set.of("serviceId", "date")),
+                new AiToolDefinition(
+                    "createAppointment",
+                    "Create an appointment",
+                    Set.of("client"),
+                    AiToolRisk.MUTATION,
+                    true,
+                    false,
+                    (context, arguments) -> "created"),
+                new AiToolDefinition(
+                    "getOwnerMetrics",
+                    "Get salon metrics",
+                    Set.of("tenant_owner"),
+                    AiToolRisk.READ_ONLY,
+                    false,
+                    false,
+                    (context, arguments) -> "metrics")));
+
+    Set<String> keys =
+        AiExecutionContextScope.call(
+            context(Set.of("client")),
+            () ->
+                gateway.agentEligibleToolDefinitions().stream()
+                    .map(AiToolDefinition::key)
+                    .sorted()
+                    .collect(java.util.stream.Collectors.toUnmodifiableSet()));
+
+    assertThat(keys).containsExactlyInAnyOrder("findAvailability", "getSalonServices");
+  }
+
+  @Test
   void recordsSuccessfulToolCallsWithTheAuthorizationOutcome() {
     AiTraceRecorder recorder = org.mockito.Mockito.mock(AiTraceRecorder.class);
     AuthorizedAiToolGateway gateway =

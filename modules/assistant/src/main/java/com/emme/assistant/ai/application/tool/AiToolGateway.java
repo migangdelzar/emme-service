@@ -7,5 +7,8 @@ public interface AiToolGateway {
 
   Set<String> proactivelyEligibleToolKeys();
 
+  /** Returns only backend-authorized, non-mutating definitions safe for model tool calling. */
+  Set<AiToolDefinition> agentEligibleToolDefinitions();
+
   AiToolResult execute(AiToolInvocation invocation);
 }

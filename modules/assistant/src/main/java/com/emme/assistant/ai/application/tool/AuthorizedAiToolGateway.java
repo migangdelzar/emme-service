@@ -49,6 +49,17 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
   }
 
   @Override
+  public Set<AiToolDefinition> agentEligibleToolDefinitions() {
+    AiExecutionContext context = AiExecutionContextScope.requireCurrent();
+    return definitions.values().stream()
+        .filter(definition -> definition.risk() == AiToolRisk.READ_ONLY)
+        .filter(definition -> !definition.userConfirmationRequired())
+        .filter(definition -> !definition.staffApprovalRequired())
+        .filter(definition -> definition.isAuthorized(context.roles()))
+        .collect(Collectors.toUnmodifiableSet());
+  }
+
+  @Override
   public AiToolResult execute(AiToolInvocation invocation) {
     Objects.requireNonNull(invocation, "invocation must not be null");
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();

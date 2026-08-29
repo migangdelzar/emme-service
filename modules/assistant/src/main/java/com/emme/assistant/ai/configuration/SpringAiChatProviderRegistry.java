@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.tool.ToolCallbackProvider;
 
 /** Builds the ordered provider-neutral chat chain from explicitly named clients. */
 public final class SpringAiChatProviderRegistry {
@@ -35,6 +36,15 @@ public final class SpringAiChatProviderRegistry {
       SpringAiChatProperties properties,
       List<? extends Advisor> advisors,
       AiTraceRecorder traceRecorder) {
+    this(clients, properties, advisors, traceRecorder, null);
+  }
+
+  public SpringAiChatProviderRegistry(
+      Map<String, ChatClient> clients,
+      SpringAiChatProperties properties,
+      List<? extends Advisor> advisors,
+      AiTraceRecorder traceRecorder,
+      ToolCallbackProvider toolCallbackProvider) {
     Objects.requireNonNull(clients, "clients must not be null");
     Objects.requireNonNull(properties, "properties must not be null");
     Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
@@ -54,10 +64,15 @@ public final class SpringAiChatProviderRegistry {
                     throw new IllegalArgumentException(
                         "Duplicate Spring AI chat provider key: " + configured.key());
                   }
+                  SpringAiChatClientAdapter adapter =
+                      toolCallbackProvider == null
+                          ? new SpringAiChatClientAdapter(client, configured.key(), advisors)
+                          : new SpringAiChatClientAdapter(
+                              client, configured.key(), advisors, toolCallbackProvider);
                   return new ChatProviderChain.Provider(
                       configured.key(),
                       new TracingChatCompletionPort(
-                          new SpringAiChatClientAdapter(client, configured.key(), advisors),
+                          adapter,
                           configured.key(),
                           configured.modelVersion(),
                           "chat-v1",

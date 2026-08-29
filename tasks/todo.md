@@ -64,6 +64,8 @@
   `findAvailability` delegation through the Appointments use case.
 - [x] Make bounded model admission skip blocked tenant heads while preserving
   round-robin fairness for tenants that can acquire capacity.
+- [x] Expose the backend-approved read-only tool catalog through Spring AI's
+  native tool-calling callback boundary.
 - [x] Extract provider-neutral model, image, and embedding contracts into
   `libraries:ai-contracts`; move legacy providers and reusable capability
   adapters into `modules:ai-platform` without an `ai-platform` → `assistant`

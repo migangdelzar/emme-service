@@ -13,6 +13,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.tool.ToolCallbackProvider;
 
 class SpringAiChatClientAdapterTest {
 
@@ -60,5 +61,24 @@ class SpringAiChatClientAdapterTest {
 
     assertThat(adapter.complete("", "hello")).isEqualTo("Hola");
     verify(request).advisors(List.of(advisor));
+  }
+
+  @Test
+  void suppliesTheBackendApprovedToolCatalogToSpringAi() {
+    ChatClient client = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    ChatClient.ChatClientRequestSpec request = mock(ChatClient.ChatClientRequestSpec.class);
+    ToolCallbackProvider toolProvider = mock(ToolCallbackProvider.class);
+    ChatClient.CallResponseSpec response = mock(ChatClient.CallResponseSpec.class);
+    when(client.prompt()).thenReturn(request);
+    when(request.tools(toolProvider)).thenReturn(request);
+    when(request.system(org.mockito.ArgumentMatchers.anyString())).thenReturn(request);
+    when(request.user("hello")).thenReturn(request);
+    when(request.call()).thenReturn(response);
+    when(response.content()).thenReturn("Hola");
+    SpringAiChatClientAdapter adapter =
+        new SpringAiChatClientAdapter(client, "cloud", List.of(), toolProvider);
+
+    assertThat(adapter.complete("", "hello")).isEqualTo("Hola");
+    verify(request).tools(toolProvider);
   }
 }

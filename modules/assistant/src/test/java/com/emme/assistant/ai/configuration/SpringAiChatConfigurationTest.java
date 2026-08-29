@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.tool.ToolCallbackProvider;
 
 class SpringAiChatConfigurationTest {
 
@@ -78,5 +79,26 @@ class SpringAiChatConfigurationTest {
             configuration.chatCompletionPort(
                 registry, mock(ModelExecutionScheduler.class), new AiExecutorProperties(2, 1, 1)))
         .isInstanceOf(ChatProviderChain.class);
+  }
+
+  @Test
+  void passesTheBackendApprovedToolProviderToNamedChatClients() {
+    SpringAiChatConfiguration configuration = new SpringAiChatConfiguration();
+    SpringAiChatProperties properties =
+        new SpringAiChatProperties(
+            true,
+            List.of(new SpringAiChatProperties.Provider("localChatClient", "local", "ollama-v1")));
+    ToolCallbackProvider toolProvider = org.mockito.Mockito.mock(ToolCallbackProvider.class);
+
+    SpringAiChatProviderRegistry registry =
+        configuration.chatProviderRegistry(
+            Map.of("localChatClient", mock(ChatClient.class)),
+            properties,
+            new TenantSecurityAdvisor(),
+            new PromptVersionAdvisor("chat-v1"),
+            mock(AiTraceRecorder.class),
+            toolProvider);
+
+    assertThat(registry.providers()).hasSize(1);
   }
 }

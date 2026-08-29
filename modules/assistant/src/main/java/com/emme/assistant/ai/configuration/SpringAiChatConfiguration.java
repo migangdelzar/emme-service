@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiToolCallbackProvider;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
@@ -15,6 +16,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -48,12 +50,26 @@ public class SpringAiChatConfiguration {
       SpringAiChatProperties properties,
       TenantSecurityAdvisor tenantSecurityAdvisor,
       PromptVersionAdvisor promptVersionAdvisor,
-      AiTraceRecorder traceRecorder) {
-    return new SpringAiChatProviderRegistry(
-        chatClients,
-        properties,
-        List.of(tenantSecurityAdvisor, promptVersionAdvisor),
-        traceRecorder);
+      AiTraceRecorder traceRecorder,
+      Optional<SpringAiToolCallbackProvider> toolCallbackProvider) {
+    return toolCallbackProvider
+        .<SpringAiChatProviderRegistry>map(
+            provider ->
+                chatProviderRegistry(
+                    chatClients,
+                    properties,
+                    tenantSecurityAdvisor,
+                    promptVersionAdvisor,
+                    traceRecorder,
+                    provider))
+        .orElseGet(
+            () ->
+                chatProviderRegistry(
+                    chatClients,
+                    properties,
+                    tenantSecurityAdvisor,
+                    promptVersionAdvisor,
+                    traceRecorder));
   }
 
   SpringAiChatProviderRegistry chatProviderRegistry(
@@ -66,6 +82,34 @@ public class SpringAiChatConfiguration {
         properties,
         List.of(tenantSecurityAdvisor, promptVersionAdvisor),
         NoopAiTraceRecorder.INSTANCE);
+  }
+
+  SpringAiChatProviderRegistry chatProviderRegistry(
+      Map<String, ChatClient> chatClients,
+      SpringAiChatProperties properties,
+      TenantSecurityAdvisor tenantSecurityAdvisor,
+      PromptVersionAdvisor promptVersionAdvisor,
+      AiTraceRecorder traceRecorder) {
+    return new SpringAiChatProviderRegistry(
+        chatClients,
+        properties,
+        List.of(tenantSecurityAdvisor, promptVersionAdvisor),
+        traceRecorder);
+  }
+
+  SpringAiChatProviderRegistry chatProviderRegistry(
+      Map<String, ChatClient> chatClients,
+      SpringAiChatProperties properties,
+      TenantSecurityAdvisor tenantSecurityAdvisor,
+      PromptVersionAdvisor promptVersionAdvisor,
+      AiTraceRecorder traceRecorder,
+      ToolCallbackProvider toolCallbackProvider) {
+    return new SpringAiChatProviderRegistry(
+        chatClients,
+        properties,
+        List.of(tenantSecurityAdvisor, promptVersionAdvisor),
+        traceRecorder,
+        toolCallbackProvider);
   }
 
   @Bean(name = "aiChatCompletion")

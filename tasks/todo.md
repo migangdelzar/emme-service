@@ -23,6 +23,14 @@ pgvector/PostgreSQL tests pass.
 
 ## Emme AI platform — 2026-08-27
 
+### Current continuation — optional AGE GraphRAG slice
+
+- [x] Add framework-neutral graph projection and curated traversal contracts.
+- [x] Add tenant-scoped AGE registry migration without making AGE mandatory.
+- [x] Add fixed-query AGE adapter with safe unavailable behavior and tests.
+- [x] Add opt-in AGE+pgvector local runtime profile and verify its extensions.
+- [x] Update architecture/runbook status and run the relevant verification.
+
 - [x] Establish Java 25 runtime validation and preview compilation lanes.
 - [x] Add immutable ScopedValue AI context and legacy tenant/MDC bridge.
 - [x] Add named virtual/platform executors and StructuredTaskScope Joiner
@@ -282,6 +290,22 @@ with tenant RLS and versioned idempotency. `LearningCandidateEvaluationWorker`
 requires the backend AI execution context, persists the report before applying
 the lifecycle gates, and treats redelivery after a terminal state as a safe
 no-op.
+
+The optional Apache AGE graph slice now uses typed allowlisted node and edge
+contracts, a tenant-scoped PostgreSQL registry, and a fixed-query JDBC adapter.
+The adapter derives graph names only from the backend AI execution context and
+degrades safely when AGE is unavailable. A local Compose overlay combines the
+official AGE PG17 runtime with official pgvector 0.8.6 artifacts; the default
+runtime remains pgvector-only. Live AGE tests verify idempotent projection,
+curated design-to-service retrieval, and isolation between two tenant graph
+names. Durable catalog-event projection remains a follow-up because existing
+catalog APIs do not yet publish the required event contract.
+
+Verification on 2026-08-29: graph contract/migration tests, assistant unit and
+AGE Testcontainers integration tests, Spotless, module/application compilation,
+Compose contracts, and the combined AGE+pgvector image smoke test pass. The
+repository Markdown validator still reports the pre-existing unclosed fences
+and vendored virtual-environment link; those unrelated files remain unchanged.
 
 Verification on 2026-08-28: `:modules:assistant:spotlessCheck :modules:assistant:test`,
 `:database:spotlessCheck :database:test`, and

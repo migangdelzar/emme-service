@@ -231,6 +231,7 @@ jobs:
           docker compose -f deployment/compose/compose.yaml \
             -f deployment/compose/compose.runtime-native.yaml config --quiet
           node deployment/compose/compose.kafka.contract.test.mjs
+          node deployment/compose/compose.age.contract.test.mjs
       - name: Validate Terraform
         working-directory: infra/terraform
         run: |

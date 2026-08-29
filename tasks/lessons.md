@@ -1095,3 +1095,30 @@
 - **Prevention rule:** When a test creates a minimal table, copy every column
   default and constraint used by the production SQL, then exercise write/read
   behavior against the live extension.
+
+## 2026-08-29 — Treat Apache AGE as a fixed-query PostgreSQL boundary
+
+- **Failure mode:** The first AGE JDBC call used a bound parameter cast to
+  PostgreSQL `name`, and Spring's named-parameter parser was incompatible with
+  Cypher labels and relationship syntax. AGE rejected the call with `a name
+  constant is expected`.
+- **Detection signal:** The real AGE Testcontainers test failed before graph
+  projection, while the same SQL worked only after using a validated SQL
+  literal for the graph name and a dollar-quoted Cypher string.
+- **Prevention rule:** Keep AGE graph names backend-derived and validate them
+  before safely rendering a SQL literal; use positional JDBC for AGE queries,
+  dollar-quote Cypher, load AGE, and set its search path inside the same
+  transaction. Never accept model-generated Cypher.
+
+## 2026-08-29 — Export reused tenant infrastructure explicitly
+
+- **Failure mode:** The optional AGE configuration reused tenancy’s internal
+  JDBC adapters but added new Modulith violations because the package was not a
+  declared public boundary.
+- **Detection signal:** The architecture test reported the new AGE config as a
+  dependency on unnamed tenancy internals, while the existing tenant JDBC
+  configuration had the same latent issue.
+- **Prevention rule:** When another module must reuse an existing adapter,
+  expose that package as a named interface and list the exact named interface
+  in the consumer’s `allowedDependencies`; do not suppress the architecture
+  test or duplicate the infrastructure.

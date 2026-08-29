@@ -195,6 +195,11 @@ app:
     langgraph:
       enabled: ${EMME_AI_LANGGRAPH_ENABLED:false}
       graph-version: ${EMME_AI_LANGGRAPH_GRAPH_VERSION:quote-v1}
+    age:
+      # Optional derived graph projection. The default pgvector runtime remains unchanged.
+      enabled: ${EMME_AI_AGE_ENABLED:false}
+      graph-prefix: ${EMME_AI_AGE_GRAPH_PREFIX:emme_ai_graph_}
+      retrieval-limit: ${EMME_AI_AGE_RETRIEVAL_LIMIT:5}
     quote:
       enabled: ${EMME_AI_QUOTE_ENABLED:false}
     redis:

@@ -19,6 +19,7 @@ applications/emme-platform
 modules/assistant
   → libraries/ai-contracts
   → modules/ai-platform
+  → tenancy :: tenant-database
   → catalog-api
   → documents-api
   → appointments-api
@@ -294,7 +295,43 @@ The active semantic embedding profile is EmbeddingGemma `768` dimensions. The
 database migration that changes the initial schema from `1024` to `768` fails
 closed when existing vectors are present, requiring an explicit reindex.
 
-## 6. Concurrency
+## 6. Optional Apache AGE graph read model
+
+The graph capability is an optional derived read model inside PostgreSQL. It
+does not replace relational services, prices, appointments, policies, clients,
+quotes, approvals, or pgvector. `libraries:ai-contracts` defines immutable
+allowlisted node/relationship types, projections, and curated traversal
+queries. `modules:assistant` supplies the tenant-bound JDBC adapter:
+
+```mermaid
+flowchart LR
+  EVENT[Approved relational/catalog data] --> PROJ[Typed graph projection port]
+  CTX[Authenticated AiExecutionContext] --> ADAPTER[AgeGraphAdapter]
+  PROJ --> ADAPTER
+  ADAPTER -->|tenant-derived graph name| AGE[(Apache AGE)]
+  AGE --> QUERY[Allowlisted DESIGN_TO_SERVICE traversal]
+  QUERY --> RESULT[Bounded recommendation]
+  PG[(PostgreSQL registry)] --> ADAPTER
+  PGV[(pgvector search)] --> RESULT
+  RESULT --> EXPLAIN[Spring AI explanation only]
+```
+
+The adapter requires the bound backend execution context, derives a graph name
+from its tenant UUID, and filters the traversal by that tenant. It uses fixed
+AGE queries and enum labels; neither the frontend nor an LLM can supply a graph
+name, tenant, Cypher statement, price, availability, or mutation. AGE writes
+load the extension and set the AGE search path in the same JDBC transaction.
+Projection status is persisted in `ai_age_graph_registry`. If AGE is absent or
+stale, retrieval returns no graph recommendation and the authoritative
+PostgreSQL/pgvector path continues.
+
+The combined AGE+pgvector database image is opt-in and local-development
+friendly. The default Compose image remains the official pgvector runtime, and
+the application feature flag defaults to disabled. Event-driven projection of
+all catalog aggregates is a separate follow-up until the existing catalog
+application boundary publishes the required durable projection events.
+
+## 7. Concurrency
 
 ```text
 HTTP/worker boundary
@@ -318,7 +355,7 @@ aiScheduler
 `StructuredTaskScope` is isolated behind `ParallelTaskRunner` because it is a
 Java 25 preview API. No code globally overrides `ForkJoinPool.commonPool()`.
 
-## 7. Error handling
+## 8. Error handling
 
 | Failure | Behavior |
 |---|---|
@@ -334,7 +371,7 @@ Java 25 preview API. No code globally overrides `ForkJoinPool.commonPool()`.
 | Redis outage | Disable temporary acceleration; preserve PostgreSQL authority |
 | Mutating retry | Require idempotency key and application-level duplicate protection |
 
-## 8. Test strategy
+## 9. Test strategy
 
 - Unit: score/margin policy, slot validation, cache eligibility, tool policy,
   Joiner aggregation, context propagation, idempotency, and HITL transitions.

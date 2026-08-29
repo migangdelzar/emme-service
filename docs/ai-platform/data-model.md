@@ -28,6 +28,7 @@
 | `learning_candidate` | global/tenant + candidate | Governed self-improvement candidate |
 | `knowledge_document` | tenant + document | Unstructured source metadata |
 | `knowledge_chunk` | tenant + document + chunk | pgvector retrieval content |
+| `ai_age_graph_registry` | tenant + graph | Derived AGE graph status and projection version |
 
 ## 2. Shared AI metadata
 
@@ -77,6 +78,13 @@ ai:singleflight:{tenantId}:{cacheFingerprint}
 
 Redis keys are temporary and never replace durable PostgreSQL records.
 
+The optional Apache AGE graph is a disposable PostgreSQL read model. Its
+registry is tenant-scoped and records the backend-derived graph name,
+projection version, and last successful projection. Graph nodes duplicate only
+relationship fields needed for curated recommendations and include the tenant
+identifier. Transactional services, prices, appointments, approvals, and
+audit records remain relational and authoritative.
+
 The optional Redis vector projections use separate index namespaces:
 
 ```text
@@ -114,3 +122,7 @@ rebuildable from PostgreSQL/application callbacks and are disabled by default.
 - Cache entries require dependency-version fields and expiry.
 - Candidate promotion changes an index pointer, not individual active rows.
 - Audit records retain actor identity and outcome.
+- AGE graph traversal is limited to allowlisted relationship paths and is
+  tenant-bound by the authenticated AI execution context.
+- AGE unavailability or stale derived data must degrade to PostgreSQL/pgvector
+  or no recommendation; it must not block authoritative transactions.

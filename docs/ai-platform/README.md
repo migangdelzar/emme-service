@@ -8,6 +8,7 @@
 | Deployable boundary | One backend application |
 | Durable store | PostgreSQL and pgvector |
 | Operational store | Redis |
+| Optional relationship read model | Apache AGE in PostgreSQL |
 
 This directory decomposes the Emme AI platform into independently reviewable
 parts. The platform remains inside `emme-service`; it is not a second AI
@@ -55,6 +56,7 @@ modules/assistant/
   Spring AI clients, advisors, and Emme-specific composition
   quote/HITL workflow
   semantic gateway
+  optional Apache AGE projection and curated graph retrieval adapters
 
 modules/catalog/
   catalog and design matching use cases
@@ -89,3 +91,29 @@ Java 25 baseline
 The specification set is approved for incremental implementation. Production
 capabilities are claimed only when their code and focused verification are
 present; remaining phases are tracked in the implementation plan.
+
+## Optional AGE graph runtime
+
+Apache AGE is a derived relationship read model, not a replacement for
+PostgreSQL transactional tables or pgvector. It is disabled by default. The
+adapter derives the graph name from the authenticated tenant context and only
+supports curated traversal queries; callers cannot supply a graph name or
+execute arbitrary Cypher.
+
+To run the optional local database image, build and start the existing JVM
+Compose stack with the AGE overlay:
+
+```shell
+docker compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.age.yaml build postgres
+docker compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.age.yaml up -d
+```
+
+The overlay combines the official Apache AGE PostgreSQL 17 image with the
+official pgvector 0.8.6 extension artifacts. Use `docker-compose` when that is
+the executable installed on the host. The AGE flag can also be enabled with
+`EMME_AI_AGE_ENABLED=true` while retaining the normal pgvector image; the
+application then fails safely closed for graph operations when AGE is absent.

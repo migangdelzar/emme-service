@@ -21,6 +21,30 @@
 10. Verify `app.ai.tool-idempotency.claim-lease` is long enough for the
     slowest authorized mutation and no longer than 24 hours. This lease is
     crash recovery, not proof that an external side effect was rolled back.
+11. If graph recommendations are enabled, verify the AGE+pgvector image and
+    confirm `app.ai.age.enabled=true` only in environments that have run the
+    AGE migration.
+
+### Optional AGE local runtime
+
+The default Compose database remains pgvector-only. Build the derived graph
+runtime explicitly when local graph traversal is needed:
+
+```shell
+docker compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.age.yaml build postgres
+docker compose -f deployment/compose/compose.yaml \
+  -f deployment/compose/compose.runtime-jvm.yaml \
+  -f deployment/compose/compose.age.yaml up -d
+```
+
+The overlay uses the official Apache AGE PostgreSQL 17 image at AGE 1.6.0 and copies the
+official pgvector 0.8.6 extension artifacts built for PostgreSQL 17/trixie.
+The application flag is opt-in and graph operations are safe when the
+extension is unavailable. Do not point production at a hand-built image;
+publish the reviewed image with a digest and retain the Dockerfile source
+versions in the release record.
 
 ## 2. Dashboards
 
@@ -46,6 +70,7 @@ Required panels:
 - Queue lag or dead-letter growth.
 - Checkpoint persistence failure.
 - Embedding model/index mismatch.
+- AGE extension or derived graph projection failure.
 - Redis lock error rate.
 - Tenant AI budget exhaustion.
 
@@ -65,6 +90,18 @@ Required panels:
 2. Continue deterministic commands and safe structured fallback.
 3. Disable candidate ingestion if the index cannot be validated.
 4. Restore or fail over PostgreSQL according to the database runbook.
+
+### AGE graph outage or stale projection
+
+1. Disable `app.ai.age.enabled` or the graph recommendation feature flag.
+2. Continue authoritative service, pricing, appointment, and policy flows
+   through PostgreSQL and pgvector.
+3. Inspect `ai_age_graph_registry` for the tenant projection version and
+   timestamp; do not edit AGE graph objects manually.
+4. Rebuild the derived graph from approved relational/catalog data after the
+   database image and migration are healthy.
+5. Re-enable graph retrieval only after tenant-isolation integration tests and
+   projection freshness checks pass.
 
 ### Suspected poisoned candidate/index
 

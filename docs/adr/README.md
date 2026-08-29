@@ -33,6 +33,7 @@ to the decision it supersedes.
 - [ADR-0010: Spring AI and LangGraph4j boundary](0010-ai-spring-ai-langgraph-boundary.md)
 - [ADR-0011: PostgreSQL/pgvector semantic store](0011-ai-vector-store-strategy.md)
 - [ADR-0012: Governed online enrichment](0012-ai-governed-online-enrichment.md)
+- [ADR-0013: Optional Apache AGE relationship read model](0013-ai-age-graph-read-model.md)
 
 ## Index
 
@@ -49,6 +50,7 @@ to the decision it supersedes.
 | [0010](0010-ai-spring-ai-langgraph-boundary.md) | Spring AI and LangGraph4j boundary | Proposed | 2026-08-27 |
 | [0011](0011-ai-vector-store-strategy.md) | PostgreSQL/pgvector semantic store | Proposed | 2026-08-27 |
 | [0012](0012-ai-governed-online-enrichment.md) | Governed online enrichment | Proposed | 2026-08-27 |
+| [0013](0013-ai-age-graph-read-model.md) | Optional Apache AGE relationship read model | Accepted | 2026-08-29 |
 
 Create a new ADR when a decision changes. Do not rewrite an accepted ADR to
 hide its historical rationale.

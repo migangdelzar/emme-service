@@ -228,6 +228,28 @@ Persistence is best effort at the execution boundary, so an observability
 outage does not change customer-facing model/tool semantics. The no-op recorder
 is selected when JDBC is unavailable.
 
+### Optional Apache AGE graph progress
+
+The graph foundation is now implemented behind provider-neutral contracts in
+`libraries:ai-contracts` and an opt-in JDBC adapter in `modules:assistant`.
+Apache AGE is treated as a disposable relationship read model. Migration 024
+creates a tenant-scoped registry and attempts the AGE extension only when it is
+available, so the standard pgvector image remains compatible. The adapter
+derives one graph name from the authenticated tenant context, projects
+allowlisted node/edge types idempotently, and exposes only the curated
+`DESIGN_TO_SERVICE` traversal. All AGE statements run inside the same JDBC
+transaction that loads AGE and sets its search path; dynamic Cypher and
+LLM-generated graph queries are not accepted.
+
+The optional local Compose overlay builds
+`deployment/postgres/age-pgvector/Dockerfile` from the official AGE PG17 image
+and official pgvector PG17/trixie artifacts. The default runtime and
+application flag remain disabled. Live Testcontainers coverage verifies
+idempotent projection, curated retrieval, derived graph-name isolation for two
+tenants, and the registry version. Event-driven projection of every catalog
+aggregate is intentionally a follow-up because the current catalog APIs do not
+yet expose the required durable projection events.
+
 ## 6. Phase 5–7 — Workflow and quote vertical slice
 
 - Add LangGraph4j workflow state and PostgreSQL checkpoints.

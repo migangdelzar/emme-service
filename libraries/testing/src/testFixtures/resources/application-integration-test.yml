@@ -13,6 +13,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         hbm2ddl:
           create_namespaces: true
+  sql:
+    init:
+      mode: never
   modulith:
     events:
       jdbc:

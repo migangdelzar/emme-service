@@ -17,6 +17,8 @@ class AiSemanticSearchMigrationContractTest {
       "db/emme-studio/releases/0.1.0/015-ai-semantic-cache-idempotency.sql";
   private static final String TRACE_MIGRATION =
       "db/emme-studio/releases/0.1.0/018-ai-execution-traces.sql";
+  private static final String DIMENSION_MIGRATION =
+      "db/emme-studio/releases/0.1.0/021-ai-embeddinggemma-dimension.sql";
 
   @Test
   void definesTenantScopedIntentAndToolReferenceTables() throws IOException {
@@ -68,6 +70,7 @@ class AiSemanticSearchMigrationContractTest {
 
     assertThat(changelog).contains("releases/0.1.0/014-ai-semantic-search.sql");
     assertThat(changelog).contains("releases/0.1.0/015-ai-semantic-cache-idempotency.sql");
+    assertThat(changelog).contains("releases/0.1.0/021-ai-embeddinggemma-dimension.sql");
   }
 
   @Test
@@ -109,6 +112,20 @@ class AiSemanticSearchMigrationContractTest {
     assertThat(sql).contains("CREATE POLICY tenant_isolation ON ai_model_execution");
     assertThat(sql).contains("CREATE POLICY tenant_isolation ON ai_tool_call");
     assertThat(changelog).contains("releases/0.1.0/018-ai-execution-traces.sql");
+  }
+
+  @Test
+  void changesSemanticIndexesToTheEmbeddingGemmaDimensionWithoutTruncatingData()
+      throws IOException {
+    String sql = resource(DIMENSION_MIGRATION);
+
+    assertThat(sql)
+        .contains("ai_intent_reference")
+        .contains("ai_tool_reference")
+        .contains("ai_semantic_cache")
+        .contains("vector(768)")
+        .contains("RAISE EXCEPTION")
+        .contains("existing embeddings must be reindexed");
   }
 
   private static String migration() throws IOException {

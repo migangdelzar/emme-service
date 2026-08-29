@@ -3,6 +3,7 @@ package com.emme.assistant.ai.adapter.out.persistence;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
+import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Objects;
@@ -14,14 +15,16 @@ import org.springframework.stereotype.Component;
 @Component
 public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferenceSearchPort {
 
-  private static final int PGVECTOR_DIMENSIONS = 1024;
   private static final String INTENT_TABLE = "ai_intent_reference";
   private static final String TOOL_TABLE = "ai_tool_reference";
 
   private final JdbcClient jdbc;
+  private final int embeddingDimensions;
 
-  public JdbcSemanticReferenceSearchAdapter(JdbcClient jdbc) {
+  public JdbcSemanticReferenceSearchAdapter(JdbcClient jdbc, AiProperties aiProperties) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
+    this.embeddingDimensions =
+        Objects.requireNonNull(aiProperties, "aiProperties must not be null").embeddingDimension();
   }
 
   @Override
@@ -114,12 +117,12 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
     return new SemanticMatch(key, similarity);
   }
 
-  private static void requireSearchArguments(String locale, EmbeddingVector query, int limit) {
+  private void requireSearchArguments(String locale, EmbeddingVector query, int limit) {
     if (locale == null || locale.isBlank()) {
       throw new IllegalArgumentException("locale must not be blank");
     }
     Objects.requireNonNull(query, "query must not be null");
-    if (query.values().size() != PGVECTOR_DIMENSIONS) {
+    if (query.values().size() != embeddingDimensions) {
       throw new IllegalArgumentException("Embedding dimensions must match pgvector schema");
     }
     if (limit <= 0) {

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
+import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.sql.Timestamp;
@@ -31,7 +32,7 @@ class JdbcSemanticAdapterTest {
   private static final UUID CONVERSATION_ID = UUID.randomUUID();
   private static final UUID WORKFLOW_ID = UUID.randomUUID();
   private static final EmbeddingVector QUERY =
-      new EmbeddingVector("embedding-v1", java.util.Collections.nCopies(1024, 0.0f));
+      new EmbeddingVector("embeddinggemma:300m", java.util.Collections.nCopies(768, 0.0f));
 
   @Test
   void referenceSearchUsesAuthenticatedTenantAndEmbeddingVersion() throws Exception {
@@ -40,7 +41,8 @@ class JdbcSemanticAdapterTest {
     JdbcClient.MappedQuerySpec<SemanticMatch> result = mock(JdbcClient.MappedQuerySpec.class);
     stubQuery(jdbc, statement, result);
     when(result.list()).thenReturn(List.of());
-    JdbcSemanticReferenceSearchAdapter adapter = new JdbcSemanticReferenceSearchAdapter(jdbc);
+    JdbcSemanticReferenceSearchAdapter adapter =
+        new JdbcSemanticReferenceSearchAdapter(jdbc, aiProperties());
 
     AiExecutionContext context = context();
     AiExecutionContextScope.call(context, () -> adapter.searchIntents("es-MX", QUERY, 2));
@@ -52,7 +54,7 @@ class JdbcSemanticAdapterTest {
         .contains("embedding_model_version = :embeddingModelVersion")
         .contains("ORDER BY embedding <=> CAST(:queryEmbedding AS vector)");
     verify(statement).param("tenantId", TENANT_ID);
-    verify(statement).param("embeddingModelVersion", "embedding-v1");
+    verify(statement).param("embeddingModelVersion", "embeddinggemma:300m");
   }
 
   @Test
@@ -62,7 +64,8 @@ class JdbcSemanticAdapterTest {
     JdbcClient.MappedQuerySpec<SemanticMatch> result = mock(JdbcClient.MappedQuerySpec.class);
     stubQuery(jdbc, statement, result);
     when(result.list()).thenReturn(List.of());
-    JdbcSemanticReferenceSearchAdapter adapter = new JdbcSemanticReferenceSearchAdapter(jdbc);
+    JdbcSemanticReferenceSearchAdapter adapter =
+        new JdbcSemanticReferenceSearchAdapter(jdbc, aiProperties());
 
     AiExecutionContextScope.call(
         context(), () -> adapter.searchTools("es-MX", QUERY, Set.of("findAvailability"), 2));
@@ -81,7 +84,7 @@ class JdbcSemanticAdapterTest {
         mock(JdbcClient.MappedQuerySpec.class);
     stubQuery(jdbc, statement, result);
     when(result.list()).thenReturn(List.of());
-    JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc);
+    JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc, aiProperties());
 
     SemanticCachePort.Lookup lookup =
         new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY);
@@ -104,7 +107,7 @@ class JdbcSemanticAdapterTest {
     JdbcClient.MappedQuerySpec<UUID> result = mock(JdbcClient.MappedQuerySpec.class);
     stubQuery(jdbc, statement, result);
     when(result.single()).thenReturn(UUID.randomUUID());
-    JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc);
+    JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc, aiProperties());
 
     SemanticCachePort.Put write =
         new SemanticCachePort.Put(
@@ -139,7 +142,7 @@ class JdbcSemanticAdapterTest {
     when(jdbc.sql(anyString())).thenReturn(statement);
     when(statement.param(anyString(), any())).thenReturn(statement);
     when(statement.update()).thenReturn(1);
-    JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc);
+    JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc, aiProperties());
     UUID cacheId = UUID.randomUUID();
 
     boolean updated = AiExecutionContextScope.call(context(), () -> adapter.recordHit(cacheId));
@@ -161,8 +164,9 @@ class JdbcSemanticAdapterTest {
   @Test
   void adaptersFailClosedWithoutAnAiExecutionContext() {
     JdbcSemanticReferenceSearchAdapter references =
-        new JdbcSemanticReferenceSearchAdapter(mock(JdbcClient.class));
-    JdbcSemanticCacheAdapter cache = new JdbcSemanticCacheAdapter(mock(JdbcClient.class));
+        new JdbcSemanticReferenceSearchAdapter(mock(JdbcClient.class), aiProperties());
+    JdbcSemanticCacheAdapter cache =
+        new JdbcSemanticCacheAdapter(mock(JdbcClient.class), aiProperties());
 
     assertThatThrownBy(() -> references.searchIntents("es-MX", QUERY, 2))
         .isInstanceOf(IllegalStateException.class)
@@ -184,6 +188,15 @@ class JdbcSemanticAdapterTest {
         WORKFLOW_ID,
         "trace-1",
         "idem-1");
+  }
+
+  private static AiProperties aiProperties() {
+    return new AiProperties(
+        "mock",
+        null,
+        new AiProperties.EmbeddingConfig(
+            "embeddinggemma:300m", "http://localhost:11434", null, 768),
+        true);
   }
 
   private static void stubQuery(

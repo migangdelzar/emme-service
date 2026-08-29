@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
+import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -14,18 +15,19 @@ import org.springframework.stereotype.Component;
 @Component
 public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
 
-  private static final int PGVECTOR_DIMENSIONS = 1024;
-
   private final JdbcClient jdbc;
+  private final int embeddingDimensions;
 
-  public JdbcSemanticCacheAdapter(JdbcClient jdbc) {
+  public JdbcSemanticCacheAdapter(JdbcClient jdbc, AiProperties aiProperties) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
+    this.embeddingDimensions =
+        Objects.requireNonNull(aiProperties, "aiProperties must not be null").embeddingDimension();
   }
 
   @Override
   public List<Candidate> find(Lookup lookup, int limit) {
     Objects.requireNonNull(lookup, "lookup must not be null");
-    if (lookup.query().values().size() != PGVECTOR_DIMENSIONS) {
+    if (lookup.query().values().size() != embeddingDimensions) {
       throw new IllegalArgumentException("Embedding dimensions must match pgvector schema");
     }
     if (limit <= 0) {
@@ -70,7 +72,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
   @Override
   public UUID put(Put write) {
     Objects.requireNonNull(write, "write must not be null");
-    if (write.query().values().size() != PGVECTOR_DIMENSIONS) {
+    if (write.query().values().size() != embeddingDimensions) {
       throw new IllegalArgumentException("Embedding dimensions must match pgvector schema");
     }
     if (!write.expiresAt().isAfter(Instant.now())) {

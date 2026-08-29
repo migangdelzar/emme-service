@@ -6,7 +6,7 @@ import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.documents.api.query.SearchDocumentChunksQuery;
 import com.emme.documents.api.result.DocumentChunkDetails;
 import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
-import java.util.UUID;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +27,10 @@ public class RagQueryService implements RagQueryUseCase {
   }
 
   /** RAG query — mock returns canned answer, real embeds + queries pgvector. */
-  public String query(UUID tenantId, String question) {
+  @Override
+  public String query(String question) {
+    var executionContext = AiExecutionContextScope.requireCurrent();
+    var tenantId = executionContext.tenantId();
     if (isMock()) {
       return "MOCK RAG: Based on your documents, the answer to your question about '"
           + question

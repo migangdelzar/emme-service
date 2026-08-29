@@ -1,7 +1,5 @@
 package com.emme.assistant.ai.adapter.in.web.controller;
 
-import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
-
 import com.emme.assistant.ai.adapter.in.web.request.ChatRequest;
 import com.emme.assistant.ai.adapter.in.web.request.IntentRequest;
 import com.emme.assistant.ai.adapter.in.web.request.RagRequest;
@@ -82,12 +80,13 @@ public class AiController {
   @PostMapping("/rag")
   @Operation(summary = "RAG query against tenant documents")
   @PreAuthorize("@featureFlagService.isEnabled('ai_chat')")
-  public ResponseEntity<RagResponse> ragQuery(@RequestBody RagRequest request) {
-    return withCurrentTenant(
-        tenantId -> {
-          String answer = ragQuery.query(tenantId, request.question());
-          return ResponseEntity.ok(new RagResponse(answer));
-        });
+  public ResponseEntity<RagResponse> ragQuery(
+      @RequestBody RagRequest request,
+      @AuthenticationPrincipal Jwt jwt,
+      Authentication authentication) {
+    return AiExecutionContextScope.call(
+        readOnlyContext(jwt, authentication),
+        () -> ResponseEntity.ok(new RagResponse(ragQuery.query(request.question()))));
   }
 
   private AiExecutionContext readOnlyContext(Jwt jwt, Authentication authentication) {

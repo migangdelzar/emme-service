@@ -1,7 +1,6 @@
 package com.emme.assistant.ai.api.usecase;
 
-import java.util.UUID;
-
 public interface RagQueryUseCase {
-  String query(UUID tenantId, String question);
+  /** Queries knowledge using the tenant bound to the authenticated AI execution context. */
+  String query(String question);
 }

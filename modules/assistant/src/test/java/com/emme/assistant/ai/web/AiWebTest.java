@@ -58,4 +58,16 @@ class AiWebTest extends BaseWebTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.response").exists());
   }
+
+  @Test
+  void shouldAcceptRagRequestWithTheAuthenticatedTenantContext() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/ai/rag")
+                .with(auth())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"question\":\"What are your services?\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.answer").exists());
+  }
 }

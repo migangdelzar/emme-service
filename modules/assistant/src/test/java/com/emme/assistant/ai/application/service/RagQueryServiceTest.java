@@ -11,7 +11,10 @@ import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.documents.api.result.DocumentChunkDetails;
 import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +35,7 @@ class RagQueryServiceTest {
     when(model.chat("The premium is monthly.", "What is the premium?"))
         .thenReturn("It is monthly.");
 
-    String answer = service.query(tenantId, "What is the premium?");
+    String answer = inContext(tenantId, () -> service.query("What is the premium?"));
 
     assertThat(answer).isEqualTo("It is monthly.");
     verify(model).embed("What is the premium?");
@@ -50,7 +53,7 @@ class RagQueryServiceTest {
     when(model.embed("Which cancellation rules apply?")).thenReturn(List.of());
     when(search.search(any())).thenReturn(List.of());
 
-    String answer = service.query(tenantId, "Which cancellation rules apply?");
+    String answer = inContext(tenantId, () -> service.query("Which cancellation rules apply?"));
 
     assertThat(answer).isEqualTo("No relevant documents were found.");
     verify(search).search(any());
@@ -64,11 +67,55 @@ class RagQueryServiceTest {
     RagQueryService service =
         new RagQueryService(new AiProperties("mock", null, null, true), model, search);
 
-    String answer = service.query(UUID.randomUUID(), "hello");
+    String answer = inContext(UUID.randomUUID(), () -> service.query("hello"));
 
     assertThat(answer).contains("MOCK RAG").contains("hello");
     verify(model, never()).embed(any());
     verify(search, never()).search(any());
+  }
+
+  @Test
+  void rejectsAQueryWhenTheBackendAiContextIsMissing() {
+    AiModelProvider model = mock(AiModelProvider.class);
+    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    RagQueryService service = new RagQueryService(realProperties(), model, search);
+
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.query("hello"))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("No AI execution context");
+  }
+
+  @Test
+  void usesTheTenantFromTheBackendContextWhenSearchingDocuments() {
+    UUID tenantId = UUID.randomUUID();
+    AiModelProvider model = mock(AiModelProvider.class);
+    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    RagQueryService service = new RagQueryService(realProperties(), model, search);
+
+    when(model.embed("hello")).thenReturn(List.of(0.1f, 0.2f));
+    when(search.search(any())).thenReturn(List.of());
+
+    inContext(tenantId, () -> service.query("hello"));
+
+    org.mockito.ArgumentCaptor<com.emme.documents.api.query.SearchDocumentChunksQuery> query =
+        org.mockito.ArgumentCaptor.forClass(
+            com.emme.documents.api.query.SearchDocumentChunksQuery.class);
+    verify(search).search(query.capture());
+    assertThat(query.getValue().tenantId()).isEqualTo(tenantId);
+  }
+
+  private static <T> T inContext(UUID tenantId, java.util.function.Supplier<T> action) {
+    UUID resourceId = UUID.randomUUID();
+    return AiExecutionContextScope.call(
+        new AiExecutionContext(
+            tenantId,
+            UUID.randomUUID(),
+            Set.of("ROLE_tenant_client"),
+            resourceId,
+            resourceId,
+            "trace-rag",
+            "idempotency-rag"),
+        action::get);
   }
 
   private static AiProperties realProperties() {

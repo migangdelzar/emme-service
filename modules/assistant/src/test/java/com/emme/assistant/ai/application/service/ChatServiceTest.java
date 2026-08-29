@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -25,13 +26,24 @@ import org.junit.jupiter.api.Test;
 class ChatServiceTest {
 
   @Test
+  void rejectsChatWithoutBackendAiExecutionContext() {
+    AiModelProvider model = mock(AiModelProvider.class);
+    ChatService service = new ChatService(model, Optional.empty());
+
+    assertThatThrownBy(() -> service.chat("", "hello"))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("No AI execution context");
+  }
+
+  @Test
   void returnsAHighConfidenceCacheHitWithoutCallingTheModel() {
     AiModelProvider model = mock(AiModelProvider.class);
     SemanticResponseCache cache = mock(SemanticResponseCache.class);
     when(cache.lookup("", "What are your hours?")).thenReturn(Optional.of("Open today."));
     ChatService service = new ChatService(model, Optional.of(cache));
 
-    assertThat(service.chat("", "What are your hours?")).isEqualTo("Open today.");
+    assertThat(inContext(() -> service.chat("", "What are your hours?")))
+        .isEqualTo("Open today.");
 
     verifyNoInteractions(model);
   }
@@ -44,7 +56,8 @@ class ChatServiceTest {
     when(model.chat("", "What are your hours?")).thenReturn("Open today.");
     ChatService service = new ChatService(model, Optional.of(cache));
 
-    assertThat(service.chat("", "What are your hours?")).isEqualTo("Open today.");
+    assertThat(inContext(() -> service.chat("", "What are your hours?")))
+        .isEqualTo("Open today.");
 
     verify(cache).store("", "What are your hours?", "Open today.");
   }
@@ -55,7 +68,7 @@ class ChatServiceTest {
     when(model.chat("context", "hello")).thenReturn("response");
     ChatService service = new ChatService(model, Optional.empty());
 
-    assertThat(service.chat("context", "hello")).isEqualTo("response");
+    assertThat(inContext(() -> service.chat("context", "hello"))).isEqualTo("response");
     verify(model).chat("context", "hello");
   }
 
@@ -69,7 +82,8 @@ class ChatServiceTest {
     ChatService service =
         new ChatService(model, Optional.of(cache), Optional.empty(), Optional.of(router));
 
-    assertThat(service.chat("", "what services do you have?")).isEqualTo("services");
+    assertThat(inContext(() -> service.chat("", "what services do you have?")))
+        .isEqualTo("services");
 
     verifyNoInteractions(model, cache);
   }
@@ -108,5 +122,9 @@ class ChatServiceTest {
         UUID.randomUUID(),
         "trace",
         "idempotency");
+  }
+
+  private static <T> T inContext(java.util.function.Supplier<T> action) {
+    return AiExecutionContextScope.call(context(), action::get);
   }
 }

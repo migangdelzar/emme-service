@@ -9,6 +9,14 @@
 - Prevention rule: assign the context fixture once, bind that exact instance, and assert against its
   fields after the asynchronous task completes.
 
+## 2026-08-29 — Enforce AI context at the application use-case boundary
+
+- Failure mode: the web controller bound AI context, but a direct caller could invoke `ChatService`
+  without a tenant/principal scope and still reach a model provider.
+- Detection signal: a service-level test could call the legacy provider without `AiExecutionContext`.
+- Prevention rule: every AI application use case must require the backend execution scope before
+  any cache, semantic router, provider, or tool operation; adapters still bind the scope at ingress.
+
 ## 2026-08-28 — Explicitly bind records with compatibility constructors
 
 - Failure mode: Adding a convenience constructor to a `@ConfigurationProperties` record made

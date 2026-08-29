@@ -105,6 +105,7 @@ public class ChatService implements ChatUseCase {
 
   @Override
   public String chat(String conversationContext, String userMessage) {
+    AiExecutionContextScope.requireCurrent();
     Optional<AiToolResult> proactiveToolResult;
     try {
       proactiveToolResult = proactiveToolRouter.flatMap(router -> router.route(userMessage));

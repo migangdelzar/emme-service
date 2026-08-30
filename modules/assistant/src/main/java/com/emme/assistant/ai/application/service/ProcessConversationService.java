@@ -39,7 +39,7 @@ public class ProcessConversationService implements ProcessConversationUseCase {
     validate(command, context);
     var completed = idempotency.find(command.conversationId(), command.idempotencyKey());
     if (completed.isPresent()) {
-      return completed.get();
+      return validateCompletedResult(completed.get(), command, context);
     }
     boolean reserved = idempotency.reserve(command.conversationId(), command.idempotencyKey());
     boolean assistantResponsePersisted = false;
@@ -51,10 +51,12 @@ public class ProcessConversationService implements ProcessConversationUseCase {
         return completeRecoveredTurn(command, context, persistedAssistantResponse.get());
       }
       if (!reserved) {
-        return idempotency
-            .find(command.conversationId(), command.idempotencyKey())
-            .orElseThrow(
-                () -> new IllegalStateException("AI conversation turn is already in progress"));
+        ProcessConversationResult replay =
+            idempotency
+                .find(command.conversationId(), command.idempotencyKey())
+                .orElseThrow(
+                    () -> new IllegalStateException("AI conversation turn is already in progress"));
+        return validateCompletedResult(replay, command, context);
       }
       ConversationMemoryPort.ConversationSnapshot snapshot =
           memory.load(command.conversationId(), context);
@@ -69,12 +71,15 @@ public class ProcessConversationService implements ProcessConversationUseCase {
             command.conversationId(), command.message(), command.idempotencyKey(), context);
       }
       String response = chat.chat(conversationContext(snapshot), command.message());
-      requireValidAssistantResponse(response);
+      ProcessConversationResult result =
+          validateCompletedResult(
+              new ProcessConversationResult(
+                  command.conversationId(), context.workflowId(), response),
+              command,
+              context);
       memory.appendAssistantMessage(
           command.conversationId(), response, command.idempotencyKey(), context);
       assistantResponsePersisted = true;
-      ProcessConversationResult result =
-          new ProcessConversationResult(command.conversationId(), context.workflowId(), response);
       idempotency.complete(command.conversationId(), command.idempotencyKey(), result);
       return result;
     } catch (RuntimeException failure) {
@@ -91,12 +96,14 @@ public class ProcessConversationService implements ProcessConversationUseCase {
 
   private ProcessConversationResult completeRecoveredTurn(
       ProcessConversationCommand command, AiExecutionContext context, String response) {
-    requireValidAssistantResponse(response);
     ProcessConversationResult result =
-        new ProcessConversationResult(command.conversationId(), context.workflowId(), response);
+        validateCompletedResult(
+            new ProcessConversationResult(command.conversationId(), context.workflowId(), response),
+            command,
+            context);
     var completed = idempotency.find(command.conversationId(), command.idempotencyKey());
     if (completed.isPresent()) {
-      return completed.get();
+      return validateCompletedResult(completed.get(), command, context);
     }
     idempotency.complete(command.conversationId(), command.idempotencyKey(), result);
     return result;
@@ -141,5 +148,31 @@ public class ProcessConversationService implements ProcessConversationUseCase {
       throw new IllegalStateException(
           "AI conversation response contains invalid control characters");
     }
+  }
+
+  private static ProcessConversationResult validateCompletedResult(
+      ProcessConversationResult result,
+      ProcessConversationCommand command,
+      AiExecutionContext context) {
+    if (result == null) {
+      throw new IllegalStateException("Completed AI conversation result must not be null");
+    }
+    requireValidAssistantResponse(result.response());
+    if (result.conversationId() == null) {
+      throw new IllegalStateException(
+          "Completed AI conversation result must include conversationId");
+    }
+    if (!command.conversationId().equals(result.conversationId())) {
+      throw new IllegalStateException(
+          "Completed AI conversation result does not match the authenticated conversation");
+    }
+    if (result.workflowId() == null) {
+      throw new IllegalStateException("Completed AI conversation result must include workflowId");
+    }
+    if (!context.workflowId().equals(result.workflowId())) {
+      throw new IllegalStateException(
+          "Completed AI conversation result does not match the authenticated workflow");
+    }
+    return result;
   }
 }

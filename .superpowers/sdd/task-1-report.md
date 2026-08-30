@@ -344,3 +344,53 @@ integration-test process. The clean green reruns completed without a test
 failure or that shutdown stack trace. No lifecycle code was changed because it
 is unrelated to the conversation marker behavior; retain it as a CI
 infrastructure observation if it recurs on passing builds.
+
+---
+
+## Completed-replay validation addendum
+
+### Status: DONE
+
+### RED
+
+Added failing `ProcessConversationServiceTest` cases for completed idempotency
+results containing a null, blank, or NUL-corrupt response; a missing
+conversation or workflow identifier; and identifiers that do not match the
+current command and authenticated execution context. The focused Java 25 unit
+run failed as expected because the early completed-result replay returned the
+corrupt value without throwing.
+
+During review of the fix, added the same corrupt-result regression for the
+second completed-result return after an unavailable reservation. It also failed
+as expected until that return path used the shared validator.
+
+The final self-review added the same regression for the completed idempotency
+result observed during durable assistant-marker recovery; it failed until that
+last direct return was validated as well.
+
+### GREEN
+
+- Added one strict `validateCompletedResult` boundary used for normal completed
+  results, durable assistant-marker recovery, and all three idempotency-ledger
+  replay paths.
+- The validator rejects null/blank/NUL responses, requires both identifiers,
+  and verifies the result conversation and workflow IDs against the backend
+  command and `AiExecutionContext`.
+- No tenant or principal data is accepted from a replay payload; the existing
+  tenant/principal-scoped idempotency store remains the authority for locating
+  a completed result.
+
+### Verification
+
+```shell
+mise exec java@25.0.2 -- ./gradlew -q \
+  :modules:assistant:test --tests '*ProcessConversationServiceTest' \
+  :modules:assistant:integrationTest \
+  --tests '*ConversationMemoryTenantIsolationIntegrationTest' \
+  :database:test --tests '*ConversationEventIdempotencyMigrationContractTest' \
+  :modules:assistant:spotlessCheck :database:spotlessCheck --rerun-tasks
+```
+
+Result: **BUILD SUCCESSFUL** (exit code 0). The focused Task 1 unit,
+PostgreSQL integration, migration-contract, and Spotless checks passed with
+Java 25.

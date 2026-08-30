@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -119,6 +120,100 @@ class ProcessConversationServiceTest {
 
     assertThat(replay).isEqualTo(completed);
     org.mockito.Mockito.verifyNoInteractions(memory, chat);
+  }
+
+  @Test
+  void rejectsCompletedReplayWithMissingBlankOrCorruptResponse() {
+    assertInvalidCompletedReplay(
+        new ProcessConversationResult(CONVERSATION_ID, WORKFLOW_ID, null),
+        "AI conversation response must not be blank");
+    assertInvalidCompletedReplay(
+        new ProcessConversationResult(CONVERSATION_ID, WORKFLOW_ID, " "),
+        "AI conversation response must not be blank");
+    assertInvalidCompletedReplay(
+        new ProcessConversationResult(CONVERSATION_ID, WORKFLOW_ID, "answer\u0000"),
+        "AI conversation response contains invalid control characters");
+  }
+
+  @Test
+  void rejectsCompletedReplayWithMissingRequiredIdentifiers() {
+    assertInvalidCompletedReplay(
+        new ProcessConversationResult(null, WORKFLOW_ID, "answer"),
+        "Completed AI conversation result must include conversationId");
+    assertInvalidCompletedReplay(
+        new ProcessConversationResult(CONVERSATION_ID, null, "answer"),
+        "Completed AI conversation result must include workflowId");
+  }
+
+  @Test
+  void rejectsCompletedReplayWithIdentifiersThatDoNotMatchTheCurrentContext() {
+    assertInvalidCompletedReplay(
+        new ProcessConversationResult(UUID.randomUUID(), WORKFLOW_ID, "answer"),
+        "Completed AI conversation result does not match the authenticated conversation");
+    assertInvalidCompletedReplay(
+        new ProcessConversationResult(CONVERSATION_ID, UUID.randomUUID(), "answer"),
+        "Completed AI conversation result does not match the authenticated workflow");
+  }
+
+  @Test
+  void validatesCompletedReplayObservedAfterTheReservationIsUnavailable() {
+    ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
+    ChatUseCase chat = mock(ChatUseCase.class);
+    ConversationTurnIdempotencyPort idempotency = mock(ConversationTurnIdempotencyPort.class);
+    AiExecutionContext context = context();
+    AtomicInteger findCalls = new AtomicInteger();
+    when(idempotency.find(CONVERSATION_ID, IDEMPOTENCY_KEY))
+        .thenAnswer(
+            ignored ->
+                findCalls.getAndIncrement() == 0
+                    ? Optional.empty()
+                    : Optional.of(
+                        new ProcessConversationResult(
+                            CONVERSATION_ID, WORKFLOW_ID, "answer\u0000")));
+    when(idempotency.reserve(CONVERSATION_ID, IDEMPOTENCY_KEY)).thenReturn(false);
+    ProcessConversationService service = new ProcessConversationService(memory, chat, idempotency);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context, () -> service.process(commandFor(CONVERSATION_ID))))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("AI conversation response contains invalid control characters");
+
+    org.mockito.Mockito.verify(memory)
+        .findAssistantResponse(CONVERSATION_ID, IDEMPOTENCY_KEY, context);
+    org.mockito.Mockito.verifyNoMoreInteractions(memory);
+    org.mockito.Mockito.verifyNoInteractions(chat);
+  }
+
+  @Test
+  void validatesCompletedReplayObservedDuringAssistantMarkerRecovery() {
+    ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
+    ChatUseCase chat = mock(ChatUseCase.class);
+    ConversationTurnIdempotencyPort idempotency = mock(ConversationTurnIdempotencyPort.class);
+    AiExecutionContext context = context();
+    AtomicInteger findCalls = new AtomicInteger();
+    when(idempotency.find(CONVERSATION_ID, IDEMPOTENCY_KEY))
+        .thenAnswer(
+            ignored ->
+                findCalls.getAndIncrement() == 0
+                    ? Optional.empty()
+                    : Optional.of(
+                        new ProcessConversationResult(
+                            CONVERSATION_ID, WORKFLOW_ID, "answer\u0000")));
+    when(idempotency.reserve(CONVERSATION_ID, IDEMPOTENCY_KEY)).thenReturn(true);
+    when(memory.findAssistantResponse(CONVERSATION_ID, IDEMPOTENCY_KEY, context))
+        .thenReturn(Optional.of("persisted answer"));
+    ProcessConversationService service = new ProcessConversationService(memory, chat, idempotency);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context, () -> service.process(commandFor(CONVERSATION_ID))))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("AI conversation response contains invalid control characters");
+
+    org.mockito.Mockito.verifyNoInteractions(chat);
   }
 
   @Test
@@ -327,6 +422,21 @@ class ProcessConversationServiceTest {
 
   private static <T> T inContext(java.util.function.Supplier<T> action) {
     return AiExecutionContextScope.call(context(), action::get);
+  }
+
+  private static void assertInvalidCompletedReplay(
+      ProcessConversationResult completed, String expectedMessage) {
+    ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
+    ChatUseCase chat = mock(ChatUseCase.class);
+    Idempotency idempotency = new Idempotency();
+    idempotency.completed.put(key(CONVERSATION_ID, IDEMPOTENCY_KEY), completed);
+    ProcessConversationService service = new ProcessConversationService(memory, chat, idempotency);
+
+    assertThatThrownBy(() -> inContext(() -> service.process(commandFor(CONVERSATION_ID))))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage(expectedMessage);
+
+    org.mockito.Mockito.verifyNoInteractions(memory, chat);
   }
 
   private static final class Idempotency implements ConversationTurnIdempotencyPort {

@@ -6,11 +6,16 @@ import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.ai.api.usecase.ProcessConversationUseCase;
 import com.emme.assistant.ai.application.port.out.ConversationMemoryPort;
 import com.emme.assistant.ai.application.port.out.ConversationTurnIdempotencyPort;
+import com.emme.assistant.ai.application.port.out.ConversationWorkflowPort;
+import com.emme.assistant.ai.domain.workflow.ConversationWorkflowSnapshot;
+import com.emme.assistant.ai.domain.workflow.ConversationWorkflowStatus;
 import com.emme.assistant.api.result.ConversationEventDetails;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,17 +25,39 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 public class ProcessConversationService implements ProcessConversationUseCase {
 
+  private static final ConversationWorkflowPort COMPLETED_WORKFLOW =
+      ProcessConversationService::completed;
+
   private final ConversationMemoryPort memory;
   private final ChatUseCase chat;
   private final ConversationTurnIdempotencyPort idempotency;
+  private final ConversationWorkflowPort workflow;
+
+  @Autowired
+  public ProcessConversationService(
+      ConversationMemoryPort memory,
+      ChatUseCase chat,
+      ConversationTurnIdempotencyPort idempotency,
+      ObjectProvider<ConversationWorkflowPort> workflow) {
+    this(memory, chat, idempotency, workflow.getIfAvailable(() -> COMPLETED_WORKFLOW));
+  }
 
   public ProcessConversationService(
       ConversationMemoryPort memory,
       ChatUseCase chat,
       ConversationTurnIdempotencyPort idempotency) {
+    this(memory, chat, idempotency, COMPLETED_WORKFLOW);
+  }
+
+  public ProcessConversationService(
+      ConversationMemoryPort memory,
+      ChatUseCase chat,
+      ConversationTurnIdempotencyPort idempotency,
+      ConversationWorkflowPort workflow) {
     this.memory = Objects.requireNonNull(memory, "memory must not be null");
     this.chat = Objects.requireNonNull(chat, "chat must not be null");
     this.idempotency = Objects.requireNonNull(idempotency, "idempotency must not be null");
+    this.workflow = Objects.requireNonNull(workflow, "workflow must not be null");
   }
 
   @Override
@@ -58,6 +85,7 @@ public class ProcessConversationService implements ProcessConversationUseCase {
                     () -> new IllegalStateException("AI conversation turn is already in progress"));
         return validateCompletedResult(replay, command, context);
       }
+      validateWorkflow(workflow.startOrResume(command, context), command, context);
       ConversationMemoryPort.ConversationSnapshot snapshot =
           memory.load(command.conversationId(), context);
       if (!command.conversationId().equals(snapshot.conversationId())) {
@@ -174,5 +202,29 @@ public class ProcessConversationService implements ProcessConversationUseCase {
           "Completed AI conversation result does not match the authenticated workflow");
     }
     return result;
+  }
+
+  private static ConversationWorkflowSnapshot completed(
+      ProcessConversationCommand command, AiExecutionContext context) {
+    return new ConversationWorkflowSnapshot(
+        context.workflowId(), command.conversationId(), ConversationWorkflowStatus.SUCCEEDED);
+  }
+
+  private static void validateWorkflow(
+      ConversationWorkflowSnapshot snapshot,
+      ProcessConversationCommand command,
+      AiExecutionContext context) {
+    if (snapshot == null) {
+      throw new IllegalStateException("Conversation workflow must return a snapshot");
+    }
+    if (!context.workflowId().equals(snapshot.workflowId())) {
+      throw new IllegalStateException("Conversation workflow returned an unexpected workflow");
+    }
+    if (!command.conversationId().equals(snapshot.conversationId())) {
+      throw new IllegalStateException("Conversation workflow returned an unexpected conversation");
+    }
+    if (snapshot.status() != ConversationWorkflowStatus.SUCCEEDED) {
+      throw new IllegalStateException("Conversation workflow is not ready to execute the turn");
+    }
   }
 }

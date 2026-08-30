@@ -3,10 +3,13 @@ package com.emme.assistant.ai.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import com.emme.assistant.ai.adapter.out.workflow.ConversationWorkflowGraph;
 import com.emme.assistant.ai.adapter.out.workflow.JdbcLangGraphCheckpointSaver;
+import com.emme.assistant.ai.adapter.out.workflow.LangGraphConversationWorkflowAdapter;
 import com.emme.assistant.ai.adapter.out.workflow.LangGraphQuoteWorkflowResumeAdapter;
 import com.emme.assistant.ai.adapter.out.workflow.QuoteWorkflowGraph;
 import com.emme.assistant.ai.adapter.out.workflow.TenantAwareCheckpointSaver;
+import com.emme.assistant.ai.application.port.out.ConversationWorkflowPort;
 import com.emme.assistant.ai.application.port.out.QuoteWorkflowResumePort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bsc.langgraph4j.CompiledGraph;
@@ -26,12 +29,21 @@ class SpringAiLangGraphConfigurationTest {
 
     BaseCheckpointSaver tenantAwareSaver =
         configuration.tenantAwareCheckpointSaver(checkpointSaver);
+    ConversationWorkflowGraph conversationGraph =
+        configuration.conversationWorkflowGraph(tenantAwareSaver);
+    CompiledGraph<AgentState> compiledConversationGraph =
+        configuration.conversationWorkflowCompiledGraph(conversationGraph);
+    ConversationWorkflowPort conversationWorkflowPort =
+        configuration.conversationWorkflowPort(compiledConversationGraph);
     QuoteWorkflowGraph graph = configuration.quoteWorkflowGraph(tenantAwareSaver);
     CompiledGraph<AgentState> compiledGraph = configuration.quoteWorkflowCompiledGraph(graph);
     QuoteWorkflowResumePort resumePort = configuration.quoteWorkflowResumePort(compiledGraph);
 
     assertThat(checkpointSaver).isNotNull();
     assertThat(tenantAwareSaver).isInstanceOf(TenantAwareCheckpointSaver.class);
+    assertThat(conversationGraph).isNotNull();
+    assertThat(compiledConversationGraph).isNotNull();
+    assertThat(conversationWorkflowPort).isInstanceOf(LangGraphConversationWorkflowAdapter.class);
     assertThat(graph).isNotNull();
     assertThat(compiledGraph).isNotNull();
     assertThat(resumePort).isInstanceOf(LangGraphQuoteWorkflowResumeAdapter.class);
@@ -50,5 +62,20 @@ class SpringAiLangGraphConfigurationTest {
 
     assertThat(method.getParameters()[0].getAnnotation(Qualifier.class).value())
         .isEqualTo("aiLangGraphCheckpointSaver");
+  }
+
+  @Test
+  void selectsTheNamedCompiledGraphForEachWorkflowAdapter() throws Exception {
+    var conversationMethod =
+        SpringAiLangGraphConfiguration.class.getDeclaredMethod(
+            "conversationWorkflowPort", CompiledGraph.class);
+    var quoteMethod =
+        SpringAiLangGraphConfiguration.class.getDeclaredMethod(
+            "quoteWorkflowResumePort", CompiledGraph.class);
+
+    assertThat(conversationMethod.getParameters()[0].getAnnotation(Qualifier.class).value())
+        .isEqualTo("aiConversationWorkflowCompiledGraph");
+    assertThat(quoteMethod.getParameters()[0].getAnnotation(Qualifier.class).value())
+        .isEqualTo("aiQuoteWorkflowCompiledGraph");
   }
 }

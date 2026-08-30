@@ -1,9 +1,12 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.assistant.ai.adapter.out.workflow.ConversationWorkflowGraph;
 import com.emme.assistant.ai.adapter.out.workflow.JdbcLangGraphCheckpointSaver;
+import com.emme.assistant.ai.adapter.out.workflow.LangGraphConversationWorkflowAdapter;
 import com.emme.assistant.ai.adapter.out.workflow.LangGraphQuoteWorkflowResumeAdapter;
 import com.emme.assistant.ai.adapter.out.workflow.QuoteWorkflowGraph;
 import com.emme.assistant.ai.adapter.out.workflow.TenantAwareCheckpointSaver;
+import com.emme.assistant.ai.application.port.out.ConversationWorkflowPort;
 import com.emme.assistant.ai.application.port.out.QuoteWorkflowResumePort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bsc.langgraph4j.CompiledGraph;
@@ -37,6 +40,27 @@ public class SpringAiLangGraphConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
+  ConversationWorkflowGraph conversationWorkflowGraph(
+      @Qualifier("aiLangGraphCheckpointSaver") BaseCheckpointSaver checkpointSaver) {
+    return new ConversationWorkflowGraph(checkpointSaver);
+  }
+
+  @Bean(name = "aiConversationWorkflowCompiledGraph")
+  @ConditionalOnMissingBean(name = "aiConversationWorkflowCompiledGraph")
+  CompiledGraph<AgentState> conversationWorkflowCompiledGraph(ConversationWorkflowGraph graph)
+      throws Exception {
+    return graph.compile();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  ConversationWorkflowPort conversationWorkflowPort(
+      @Qualifier("aiConversationWorkflowCompiledGraph") CompiledGraph<AgentState> graph) {
+    return new LangGraphConversationWorkflowAdapter(graph);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
   QuoteWorkflowGraph quoteWorkflowGraph(
       @Qualifier("aiLangGraphCheckpointSaver") BaseCheckpointSaver checkpointSaver) {
     return new QuoteWorkflowGraph(checkpointSaver);
@@ -51,7 +75,8 @@ public class SpringAiLangGraphConfiguration {
   @Bean
   @ConditionalOnProperty(prefix = "app.ai.quote", name = "enabled", havingValue = "true")
   @ConditionalOnMissingBean
-  QuoteWorkflowResumePort quoteWorkflowResumePort(CompiledGraph<AgentState> graph) {
+  QuoteWorkflowResumePort quoteWorkflowResumePort(
+      @Qualifier("aiQuoteWorkflowCompiledGraph") CompiledGraph<AgentState> graph) {
     return new LangGraphQuoteWorkflowResumeAdapter(graph);
   }
 }

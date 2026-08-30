@@ -10,6 +10,7 @@ import com.emme.assistant.api.usecase.GetConversationHistoryUseCase;
 import com.emme.assistant.api.usecase.GetConversationUseCase;
 import com.emme.kernel.context.AiExecutionContext;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -46,20 +47,38 @@ public class ConversationMemoryPersistenceAdapter implements ConversationMemoryP
 
   @Override
   public void appendUserMessage(UUID conversationId, String message, AiExecutionContext context) {
-    append(conversationId, message, USER_MESSAGE_EVENT, context);
+    append(conversationId, message, USER_MESSAGE_EVENT, null, context);
+  }
+
+  @Override
+  public Optional<String> findAssistantResponse(
+      UUID conversationId, String idempotencyKey, AiExecutionContext context) {
+    requireAccessibleConversation(conversationId, context);
+    return conversationHistory
+        .get(new GetConversationHistoryQuery(context.tenantId(), conversationId))
+        .stream()
+        .filter(event -> ASSISTANT_MESSAGE_EVENT.equals(event.eventType()))
+        .filter(event -> idempotencyKey.equals(event.idempotencyKey()))
+        .map(com.emme.assistant.api.result.ConversationEventDetails::payload)
+        .findFirst();
   }
 
   @Override
   public void appendAssistantMessage(
-      UUID conversationId, String message, AiExecutionContext context) {
-    append(conversationId, message, ASSISTANT_MESSAGE_EVENT, context);
+      UUID conversationId, String message, String idempotencyKey, AiExecutionContext context) {
+    append(conversationId, message, ASSISTANT_MESSAGE_EVENT, idempotencyKey, context);
   }
 
   private void append(
-      UUID conversationId, String message, String eventType, AiExecutionContext context) {
+      UUID conversationId,
+      String message,
+      String eventType,
+      String idempotencyKey,
+      AiExecutionContext context) {
     requireAccessibleConversation(conversationId, context);
     addConversationEvent.add(
-        new AddConversationEventCommand(context.tenantId(), conversationId, eventType, message));
+        new AddConversationEventCommand(
+            context.tenantId(), conversationId, eventType, message, idempotencyKey));
   }
 
   private ConversationDetails requireAccessibleConversation(

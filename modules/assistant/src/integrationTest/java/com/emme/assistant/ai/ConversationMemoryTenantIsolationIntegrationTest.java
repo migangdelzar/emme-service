@@ -59,12 +59,46 @@ class ConversationMemoryTenantIsolationIntegrationTest {
               .isInstanceOf(SecurityException.class)
               .hasMessage("Conversation is not accessible for the authenticated tenant");
           assertThatThrownBy(
-                  () -> memory.appendAssistantMessage(conversation.id(), "answer", tenantAContext))
+                  () ->
+                      memory.appendAssistantMessage(
+                          conversation.id(), "answer", "turn-tenant-isolation", tenantAContext))
               .isInstanceOf(SecurityException.class)
               .hasMessage("Conversation is not accessible for the authenticated tenant");
         });
 
     assertThat(conversationHistory.get(new GetConversationHistoryQuery(tenantB, conversation.id())))
         .isEmpty();
+  }
+
+  @Test
+  @DisplayName("stores and retrieves an assistant finalization marker within the tenant")
+  void persistsAssistantResponseByConversationTurnIdempotencyKey() {
+    UUID tenantId = UUID.randomUUID();
+    ConversationDetails conversation =
+        startConversation.start(
+            new StartConversationCommand(tenantId, UUID.randomUUID(), ChannelType.WEB_CHAT));
+    AiExecutionContext context =
+        new AiExecutionContext(
+            tenantId,
+            UUID.randomUUID(),
+            Set.of("ROLE_CLIENT"),
+            conversation.id(),
+            UUID.randomUUID(),
+            "trace-finalization-marker",
+            "turn-finalization-marker");
+
+    AiExecutionContextScope.run(
+        context,
+        () ->
+            memory.appendAssistantMessage(
+                conversation.id(), "answer", "turn-finalization-marker", context));
+
+    assertThat(
+            AiExecutionContextScope.call(
+                context,
+                () ->
+                    memory.findAssistantResponse(
+                        conversation.id(), "turn-finalization-marker", context)))
+        .contains("answer");
   }
 }

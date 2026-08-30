@@ -41,40 +41,59 @@ public class ProcessConversationService implements ProcessConversationUseCase {
     if (completed.isPresent()) {
       return completed.get();
     }
-    if (!idempotency.reserve(command.conversationId(), command.idempotencyKey())) {
-      return idempotency
-          .find(command.conversationId(), command.idempotencyKey())
-          .orElseThrow(
-              () -> new IllegalStateException("AI conversation turn is already in progress"));
-    }
+    boolean reserved = idempotency.reserve(command.conversationId(), command.idempotencyKey());
+    boolean assistantResponsePersisted = false;
     try {
-      return processReservedTurn(command, context);
+      var persistedAssistantResponse =
+          memory.findAssistantResponse(command.conversationId(), command.idempotencyKey(), context);
+      if (persistedAssistantResponse.isPresent()) {
+        assistantResponsePersisted = true;
+        return completeRecoveredTurn(command, context, persistedAssistantResponse.get());
+      }
+      if (!reserved) {
+        return idempotency
+            .find(command.conversationId(), command.idempotencyKey())
+            .orElseThrow(
+                () -> new IllegalStateException("AI conversation turn is already in progress"));
+      }
+      ConversationMemoryPort.ConversationSnapshot snapshot =
+          memory.load(command.conversationId(), context);
+      if (!command.conversationId().equals(snapshot.conversationId())) {
+        throw new SecurityException("Conversation memory returned an unexpected conversation");
+      }
+
+      memory.appendUserMessage(command.conversationId(), command.message(), context);
+      String response = chat.chat(conversationContext(snapshot), command.message());
+      if (response == null || response.isBlank()) {
+        throw new IllegalStateException("AI conversation response must not be blank");
+      }
+      memory.appendAssistantMessage(
+          command.conversationId(), response, command.idempotencyKey(), context);
+      assistantResponsePersisted = true;
+      ProcessConversationResult result =
+          new ProcessConversationResult(command.conversationId(), context.workflowId(), response);
+      idempotency.complete(command.conversationId(), command.idempotencyKey(), result);
+      return result;
     } catch (RuntimeException failure) {
-      try {
-        idempotency.release(command.conversationId(), command.idempotencyKey());
-      } catch (RuntimeException cleanupFailure) {
-        failure.addSuppressed(cleanupFailure);
+      if (reserved && !assistantResponsePersisted) {
+        try {
+          idempotency.release(command.conversationId(), command.idempotencyKey());
+        } catch (RuntimeException cleanupFailure) {
+          failure.addSuppressed(cleanupFailure);
+        }
       }
       throw failure;
     }
   }
 
-  private ProcessConversationResult processReservedTurn(
-      ProcessConversationCommand command, AiExecutionContext context) {
-    ConversationMemoryPort.ConversationSnapshot snapshot =
-        memory.load(command.conversationId(), context);
-    if (!command.conversationId().equals(snapshot.conversationId())) {
-      throw new SecurityException("Conversation memory returned an unexpected conversation");
-    }
-
-    memory.appendUserMessage(command.conversationId(), command.message(), context);
-    String response = chat.chat(conversationContext(snapshot), command.message());
-    if (response == null || response.isBlank()) {
-      throw new IllegalStateException("AI conversation response must not be blank");
-    }
-    memory.appendAssistantMessage(command.conversationId(), response, context);
+  private ProcessConversationResult completeRecoveredTurn(
+      ProcessConversationCommand command, AiExecutionContext context, String response) {
     ProcessConversationResult result =
         new ProcessConversationResult(command.conversationId(), context.workflowId(), response);
+    var completed = idempotency.find(command.conversationId(), command.idempotencyKey());
+    if (completed.isPresent()) {
+      return completed.get();
+    }
     idempotency.complete(command.conversationId(), command.idempotencyKey(), result);
     return result;
   }

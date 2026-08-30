@@ -8,6 +8,8 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(
@@ -24,11 +26,15 @@ public class ConversationEventEntity extends TenantOwnedEntity {
   @Column(name = "event_type", nullable = false, length = 80)
   private String eventType;
 
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "payload", columnDefinition = "jsonb", nullable = false)
   private String payload;
 
   @Column(name = "occurred_at", nullable = false)
   private Instant occurredAt;
+
+  @Column(name = "idempotency_key", length = 255)
+  private String idempotencyKey;
 
   protected ConversationEventEntity() {}
 
@@ -37,13 +43,24 @@ public class ConversationEventEntity extends TenantOwnedEntity {
       UUID conversationId,
       Integer sequenceNumber,
       String eventType,
-      String payload) {
+      String payload,
+      String idempotencyKey) {
     super(tenantId);
     this.conversationId = Objects.requireNonNull(conversationId, "conversationId must not be null");
     this.sequenceNumber = Objects.requireNonNull(sequenceNumber, "sequenceNumber must not be null");
     this.eventType = Objects.requireNonNull(eventType, "eventType must not be null");
     this.payload = Objects.requireNonNull(payload, "payload must not be null");
+    this.idempotencyKey = idempotencyKey;
     this.occurredAt = Instant.now();
+  }
+
+  public ConversationEventEntity(
+      UUID tenantId,
+      UUID conversationId,
+      Integer sequenceNumber,
+      String eventType,
+      String payload) {
+    this(tenantId, conversationId, sequenceNumber, eventType, payload, null);
   }
 
   public UUID getConversationId() {
@@ -64,6 +81,10 @@ public class ConversationEventEntity extends TenantOwnedEntity {
 
   public Instant getOccurredAt() {
     return occurredAt;
+  }
+
+  public String getIdempotencyKey() {
+    return idempotencyKey;
   }
 
   public void restoreIdentity(UUID id, Instant occurredAt) {

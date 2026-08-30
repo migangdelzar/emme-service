@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.api.command.ProcessConversationCommand;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
@@ -93,7 +95,9 @@ class ProcessConversationServiceTest {
     InOrder calls = inOrder(memory, chat);
     calls.verify(memory).appendUserMessage(CONVERSATION_ID, "question", context);
     calls.verify(chat).chat("", "question");
-    calls.verify(memory).appendAssistantMessage(CONVERSATION_ID, "answer", context);
+    calls
+        .verify(memory)
+        .appendAssistantMessage(CONVERSATION_ID, "answer", IDEMPOTENCY_KEY, context);
     assertThat(idempotency.completed)
         .containsEntry(
             key(CONVERSATION_ID, IDEMPOTENCY_KEY),
@@ -124,11 +128,17 @@ class ProcessConversationServiceTest {
     Idempotency idempotency = new Idempotency();
     idempotency.inProgress.add(key(CONVERSATION_ID, IDEMPOTENCY_KEY));
     ProcessConversationService service = new ProcessConversationService(memory, chat, idempotency);
+    AiExecutionContext context = context();
 
-    assertThatThrownBy(() -> inContext(() -> service.process(commandFor(CONVERSATION_ID))))
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context, () -> service.process(commandFor(CONVERSATION_ID))))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("AI conversation turn is already in progress");
-    org.mockito.Mockito.verifyNoInteractions(memory, chat);
+    org.mockito.Mockito.verify(memory)
+        .findAssistantResponse(CONVERSATION_ID, IDEMPOTENCY_KEY, context);
+    org.mockito.Mockito.verifyNoInteractions(chat);
   }
 
   @Test
@@ -151,6 +161,69 @@ class ProcessConversationServiceTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("model unavailable")
         .hasSuppressedException(cleanupFailure);
+  }
+
+  @Test
+  void reconcilesAnAssistantEventWhenIdempotencyCompletionFailsAfterItWasPersisted() {
+    ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
+    ChatUseCase chat = mock(ChatUseCase.class);
+    Idempotency idempotency = new Idempotency();
+    idempotency.completeFailure = new IllegalStateException("idempotency completion unavailable");
+    AiExecutionContext context = context();
+    AtomicReference<String> persistedAssistantResponse = new AtomicReference<>();
+    when(memory.load(CONVERSATION_ID, context))
+        .thenReturn(new ConversationMemoryPort.ConversationSnapshot(CONVERSATION_ID, List.of()));
+    when(memory.findAssistantResponse(CONVERSATION_ID, IDEMPOTENCY_KEY, context))
+        .thenAnswer(ignored -> Optional.ofNullable(persistedAssistantResponse.get()));
+    org.mockito.Mockito.doAnswer(
+            invocation -> {
+              persistedAssistantResponse.set(invocation.getArgument(1));
+              return null;
+            })
+        .when(memory)
+        .appendAssistantMessage(CONVERSATION_ID, "answer", IDEMPOTENCY_KEY, context);
+    when(chat.chat("", "question")).thenReturn("answer");
+    ProcessConversationService service = new ProcessConversationService(memory, chat, idempotency);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context, () -> service.process(commandFor(CONVERSATION_ID))))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("idempotency completion unavailable");
+    assertThat(idempotency.inProgress).contains(key(CONVERSATION_ID, IDEMPOTENCY_KEY));
+
+    idempotency.completeFailure = null;
+    ProcessConversationResult replay =
+        AiExecutionContextScope.call(context, () -> service.process(commandFor(CONVERSATION_ID)));
+
+    assertThat(replay)
+        .isEqualTo(new ProcessConversationResult(CONVERSATION_ID, WORKFLOW_ID, "answer"));
+    org.mockito.Mockito.verify(chat, times(1)).chat("", "question");
+    org.mockito.Mockito.verify(memory, times(1))
+        .appendUserMessage(CONVERSATION_ID, "question", context);
+    org.mockito.Mockito.verify(memory, times(1))
+        .appendAssistantMessage(CONVERSATION_ID, "answer", IDEMPOTENCY_KEY, context);
+  }
+
+  @Test
+  void releasesTheReservationWhenAssistantFinalizationLookupFails() {
+    ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
+    ChatUseCase chat = mock(ChatUseCase.class);
+    Idempotency idempotency = new Idempotency();
+    AiExecutionContext context = context();
+    when(memory.findAssistantResponse(CONVERSATION_ID, IDEMPOTENCY_KEY, context))
+        .thenThrow(
+            new SecurityException("Conversation is not accessible for the authenticated tenant"));
+    ProcessConversationService service = new ProcessConversationService(memory, chat, idempotency);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context, () -> service.process(commandFor(CONVERSATION_ID))))
+        .isInstanceOf(SecurityException.class)
+        .hasMessage("Conversation is not accessible for the authenticated tenant");
+    assertThat(idempotency.inProgress).isEmpty();
   }
 
   private static ProcessConversationCommand commandFor(UUID conversationId) {
@@ -180,6 +253,7 @@ class ProcessConversationServiceTest {
 
     private final Map<String, ProcessConversationResult> completed = new HashMap<>();
     private final Set<String> inProgress = new java.util.HashSet<>();
+    private RuntimeException completeFailure;
     private RuntimeException releaseFailure;
 
     @Override
@@ -196,6 +270,9 @@ class ProcessConversationServiceTest {
     @Override
     public void complete(
         UUID conversationId, String idempotencyKey, ProcessConversationResult result) {
+      if (completeFailure != null) {
+        throw completeFailure;
+      }
       String key = key(conversationId, idempotencyKey);
       completed.put(key, result);
       inProgress.remove(key);

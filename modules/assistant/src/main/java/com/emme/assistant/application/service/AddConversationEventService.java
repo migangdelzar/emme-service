@@ -41,6 +41,7 @@ public class AddConversationEventService implements AddConversationEventUseCase 
                 nextSequence,
                 command.eventType(),
                 command.payload(),
-                java.time.Instant.now())));
+                java.time.Instant.now(),
+                command.idempotencyKey())));
   }
 }

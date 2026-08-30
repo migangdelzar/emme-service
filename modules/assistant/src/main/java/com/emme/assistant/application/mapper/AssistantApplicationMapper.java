@@ -31,7 +31,8 @@ public final class AssistantApplicationMapper {
         event.sequenceNumber(),
         event.eventType(),
         event.payload(),
-        event.occurredAt());
+        event.occurredAt(),
+        event.idempotencyKey());
   }
 
   public static PendingActionDetails toResult(PendingAction action) {

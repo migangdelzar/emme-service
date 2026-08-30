@@ -1,8 +1,10 @@
 package com.emme.assistant.ai.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,6 +65,39 @@ class ProcessConversationServiceWorkflowTest {
     calls.verify(chat).chat("", "hello");
     verify(idempotency)
         .complete(eq(CONVERSATION_ID), eq("idempotency-2"), org.mockito.ArgumentMatchers.any());
+  }
+
+  @Test
+  void returnsADurableWaitingResponseWithoutCallingTheChatModel() {
+    ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
+    ChatUseCase chat = mock(ChatUseCase.class);
+    ConversationTurnIdempotencyPort idempotency = mock(ConversationTurnIdempotencyPort.class);
+    ConversationWorkflowPort workflow = mock(ConversationWorkflowPort.class);
+    AiExecutionContext context = context();
+    ProcessConversationCommand command =
+        new ProcessConversationCommand(CONVERSATION_ID, "hello", "idempotency-2");
+    when(idempotency.find(CONVERSATION_ID, "idempotency-2")).thenReturn(Optional.empty());
+    when(idempotency.reserve(CONVERSATION_ID, "idempotency-2")).thenReturn(true);
+    when(memory.findAssistantResponse(CONVERSATION_ID, "idempotency-2", context))
+        .thenReturn(Optional.empty());
+    when(workflow.startOrResume(command, context))
+        .thenReturn(
+            new ConversationWorkflowSnapshot(
+                WORKFLOW_ID,
+                CONVERSATION_ID,
+                ConversationWorkflowStatus.WAITING_FOR_APPROVAL,
+                TENANT_ID,
+                PRINCIPAL_ID));
+    ProcessConversationService service =
+        new ProcessConversationService(memory, chat, idempotency, workflow);
+
+    var result = AiExecutionContextScope.call(context, () -> service.process(command));
+
+    assertThat(result.workflowStatus()).isEqualTo(ConversationWorkflowStatus.WAITING_FOR_APPROVAL);
+    assertThat(result.isWaiting()).isTrue();
+    verify(chat, never())
+        .chat(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString());
+    verify(idempotency).complete(eq(CONVERSATION_ID), eq("idempotency-2"), eq(result));
   }
 
   private static AiExecutionContext context() {

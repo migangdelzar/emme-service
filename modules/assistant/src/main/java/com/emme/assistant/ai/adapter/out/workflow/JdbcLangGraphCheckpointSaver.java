@@ -78,6 +78,7 @@ public final class JdbcLangGraphCheckpointSaver implements BaseCheckpointSaver {
     requireText(checkpoint.getNodeId(), "checkpoint node");
 
     var context = AiExecutionContextScope.requireCurrent();
+    ensureWorkflowRun(context);
     jdbc.sql(
             """
             INSERT INTO ai_workflow_checkpoint (
@@ -114,6 +115,60 @@ public final class JdbcLangGraphCheckpointSaver implements BaseCheckpointSaver {
         .single();
 
     return RunnableConfig.builder(validated).checkPointId(checkpoint.getId()).build();
+  }
+
+  private void ensureWorkflowRun(com.emme.kernel.context.AiExecutionContext context) {
+    jdbc.sql(
+            """
+            INSERT INTO ai_workflow_run (
+                id,
+                tenant_id,
+                principal_id,
+                conversation_id,
+                workflow_type,
+                status,
+                graph_version,
+                idempotency_key,
+                state
+            )
+            VALUES (
+                :workflowId,
+                :tenantId,
+                :principalId,
+                :conversationId,
+                'CONVERSATION',
+                'RECEIVED',
+                'conversation-v1',
+                :idempotencyKey,
+                CAST('{}' AS jsonb)
+            )
+            ON CONFLICT (id) DO NOTHING
+            """)
+        .param("workflowId", context.workflowId())
+        .param("tenantId", context.tenantId())
+        .param("principalId", context.principalId())
+        .param("conversationId", context.conversationId())
+        .param("idempotencyKey", context.idempotencyKey())
+        .update();
+    Integer matchingRun =
+        jdbc.sql(
+                """
+                SELECT COUNT(*)
+                FROM ai_workflow_run
+                WHERE id = :workflowId
+                  AND tenant_id = :tenantId
+                  AND principal_id = :principalId
+                  AND conversation_id = :conversationId
+                """)
+            .param("workflowId", context.workflowId())
+            .param("tenantId", context.tenantId())
+            .param("principalId", context.principalId())
+            .param("conversationId", context.conversationId())
+            .query(Integer.class)
+            .single();
+    if (matchingRun == null || matchingRun != 1) {
+      throw new SecurityException("Workflow run is not accessible for the authenticated context");
+    }
   }
 
   @Override

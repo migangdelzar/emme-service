@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,14 +46,17 @@ class JdbcLangGraphCheckpointSaverTest {
 
     assertThat(checkpoints).containsExactly(checkpoint);
     ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
-    verify(jdbc).sql(sql.capture());
-    assertThat(sql.getValue())
-        .contains("FROM ai_workflow_checkpoint")
-        .contains("tenant_id = :tenantId")
-        .contains("workflow_id = :workflowId")
-        .contains("ORDER BY created_at");
-    verify(statement).param("tenantId", TENANT_ID);
-    verify(statement).param("workflowId", WORKFLOW_ID);
+    verify(jdbc, atLeast(1)).sql(sql.capture());
+    assertThat(sql.getAllValues())
+        .anySatisfy(
+            value ->
+                assertThat(value)
+                    .contains("FROM ai_workflow_checkpoint")
+                    .contains("tenant_id = :tenantId")
+                    .contains("workflow_id = :workflowId")
+                    .contains("ORDER BY created_at"));
+    verify(statement, atLeast(1)).param("tenantId", TENANT_ID);
+    verify(statement, atLeast(1)).param("workflowId", WORKFLOW_ID);
   }
 
   @Test
@@ -71,14 +75,17 @@ class JdbcLangGraphCheckpointSaverTest {
     assertThat(returned.threadId()).contains(WORKFLOW_ID.toString());
     assertThat(returned.checkPointId()).contains("checkpoint-1");
     ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
-    verify(jdbc).sql(sql.capture());
-    assertThat(sql.getValue())
-        .contains("INSERT INTO ai_workflow_checkpoint")
-        .contains("next_node_name")
-        .contains("ON CONFLICT (tenant_id, workflow_id, node_name, node_execution_key)")
-        .contains("RETURNING node_execution_key");
-    verify(statement).param("tenantId", TENANT_ID);
-    verify(statement).param("workflowId", WORKFLOW_ID);
+    verify(jdbc, atLeast(3)).sql(sql.capture());
+    assertThat(sql.getAllValues())
+        .anySatisfy(
+            value ->
+                assertThat(value)
+                    .contains("INSERT INTO ai_workflow_checkpoint")
+                    .contains("next_node_name")
+                    .contains("ON CONFLICT (tenant_id, workflow_id, node_name, node_execution_key)")
+                    .contains("RETURNING node_execution_key"));
+    verify(statement, atLeast(1)).param("tenantId", TENANT_ID);
+    verify(statement, atLeast(1)).param("workflowId", WORKFLOW_ID);
     verify(statement).param("nodeExecutionKey", "checkpoint-1");
   }
 
@@ -160,8 +167,11 @@ class JdbcLangGraphCheckpointSaverTest {
 
   private static void stubQuery(
       JdbcClient jdbc, JdbcClient.StatementSpec statement, JdbcClient.MappedQuerySpec<?> result) {
+    JdbcClient.MappedQuerySpec<Integer> count = mock(JdbcClient.MappedQuerySpec.class);
     when(jdbc.sql(anyString())).thenReturn(statement);
     when(statement.param(anyString(), any())).thenReturn(statement);
     when(statement.query(any(RowMapper.class))).thenReturn(result);
+    when(statement.query(Integer.class)).thenReturn(count);
+    when(count.single()).thenReturn(1);
   }
 }

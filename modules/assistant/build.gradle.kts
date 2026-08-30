@@ -45,5 +45,6 @@ dependencies {
   add("integrationTestImplementation", libs.spring.jdbc)
   add("integrationTestImplementation", libs.spring.ai.model)
   add("integrationTestImplementation", libs.spring.ai.redis.store)
+  add("integrationTestImplementation", libs.langgraph4j.core)
   add("integrationTestImplementation", libs.jackson.databind)
 }

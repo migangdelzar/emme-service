@@ -85,7 +85,14 @@ public class ProcessConversationService implements ProcessConversationUseCase {
                     () -> new IllegalStateException("AI conversation turn is already in progress"));
         return validateCompletedResult(replay, command, context);
       }
-      validateWorkflow(workflow.startOrResume(command, context), command, context);
+      ConversationWorkflowSnapshot workflowSnapshot =
+          validateWorkflow(workflow.startOrResume(command, context), command, context);
+      if (workflowSnapshot.status() != ConversationWorkflowStatus.SUCCEEDED) {
+        ProcessConversationResult waiting =
+            waitingResult(command, context, workflowSnapshot.status());
+        idempotency.complete(command.conversationId(), command.idempotencyKey(), waiting);
+        return waiting;
+      }
       ConversationMemoryPort.ConversationSnapshot snapshot =
           memory.load(command.conversationId(), context);
       if (!command.conversationId().equals(snapshot.conversationId())) {
@@ -210,7 +217,7 @@ public class ProcessConversationService implements ProcessConversationUseCase {
         context.workflowId(), command.conversationId(), ConversationWorkflowStatus.SUCCEEDED);
   }
 
-  private static void validateWorkflow(
+  private static ConversationWorkflowSnapshot validateWorkflow(
       ConversationWorkflowSnapshot snapshot,
       ProcessConversationCommand command,
       AiExecutionContext context) {
@@ -223,8 +230,28 @@ public class ProcessConversationService implements ProcessConversationUseCase {
     if (!command.conversationId().equals(snapshot.conversationId())) {
       throw new IllegalStateException("Conversation workflow returned an unexpected conversation");
     }
-    if (snapshot.status() != ConversationWorkflowStatus.SUCCEEDED) {
-      throw new IllegalStateException("Conversation workflow is not ready to execute the turn");
+    if (snapshot.status() == ConversationWorkflowStatus.FAILED
+        || snapshot.status() == ConversationWorkflowStatus.REJECTED) {
+      throw new IllegalStateException("Conversation workflow cannot execute the turn");
     }
+    return snapshot;
+  }
+
+  private static ProcessConversationResult waitingResult(
+      ProcessConversationCommand command,
+      AiExecutionContext context,
+      ConversationWorkflowStatus status) {
+    String response =
+        switch (status) {
+          case WAITING_FOR_APPROVAL -> "Your request is waiting for staff approval.";
+          case WAITING_FOR_CONFIRMATION -> "Please confirm before we continue.";
+          case CLARIFICATION_REQUIRED ->
+              "We need a little more information before we can continue.";
+          default ->
+              throw new IllegalArgumentException(
+                  "Workflow status is not a waiting state: " + status);
+        };
+    return new ProcessConversationResult(
+        command.conversationId(), context.workflowId(), response, status);
   }
 }

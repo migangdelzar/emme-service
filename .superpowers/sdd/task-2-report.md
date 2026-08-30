@@ -97,3 +97,70 @@ its shutdown hook; the integration XML results contain no failures or errors.
   vertical-slice tasks; no LLM or graph node gains repository/domain-rule access.
 - The pre-existing unrelated identity, subscriptions, and tenancy working-tree edits were not
   staged or modified.
+
+---
+
+## Consolidated review fix wave
+
+### RED
+
+Added focused failing coverage for authenticated approval resume, terminal routing, waiting
+responses, execution counters, and PostgreSQL restart-equivalent checkpoints. The initial compile
+failed because `ResumeConversationWorkflowCommand` and `ConversationWorkflowDecision` did not
+exist, proving the resume contract was absent.
+
+### GREEN
+
+- Added explicit `ResumeConversationWorkflowCommand`, `ResumeConversationWorkflowUseCase`, and
+  `ResumeConversationWorkflowService` boundaries.
+- Added authenticated `ConversationWorkflowPort.resume` support backed by LangGraph
+  `updateState(..., approval_gate)` and `GraphInput.resume()`.
+- Persisted and validated tenant, principal, conversation, and workflow identifiers inside graph
+  checkpoint state before every capability execution and snapshot read.
+- Replaced static graph status nodes with typed intent, decomposition, semantic-routing,
+  extraction, retrieval, tool, business-validation, response-composition, and quote capability
+  ports. The graph delegates only through these ports and has no repository/domain-rule access.
+- Added explicit terminal paths for confirmation, clarification, rejection, failure, approval,
+  and success; paused states return durable client responses rather than throwing.
+- Added graph recreation coverage using `JdbcLangGraphCheckpointSaver`, including same-tenant
+  resume and cross-tenant rejection. The saver now creates and verifies the existing durable
+  `ai_workflow_run` parent before it writes a checkpoint, preserving the foreign key and avoiding a
+  parallel workflow store.
+- Added the existing LangGraph4j dependency to the integration-test source set; no new artifact was
+  introduced.
+
+### Regression fixes during GREEN
+
+- Fixed a Java import placement error caught by the first compilation run.
+- Preserved legacy Spring configuration callers with a one-argument workflow graph factory.
+- Marked the derived `ProcessConversationResult.isWaiting()` helper with `@JsonIgnore`, so durable
+  idempotency replay remains backward-compatible with Jackson serialization.
+
+### Verification
+
+Passed with Java 25.0.2:
+
+```shell
+mise exec java@25.0.2 -- ./gradlew --no-configuration-cache --console=plain \
+  :modules:assistant:test \
+  --tests '*ConversationWorkflowGraphTest' \
+  --tests '*LangGraphConversationWorkflowAdapterTest' \
+  --tests '*ProcessConversationServiceWorkflowTest' \
+  --tests '*JdbcLangGraphCheckpointSaverTest' \
+  --tests '*QuoteWorkflowGraphTest'
+```
+
+```shell
+mise exec java@25.0.2 -- ./gradlew --no-configuration-cache --console=plain \
+  :modules:assistant:integrationTest \
+  --tests '*ConversationWorkflowCheckpointIntegrationTest'
+```
+
+```shell
+mise exec java@25.0.2 -- ./gradlew --no-configuration-cache --console=plain \
+  :modules:assistant:test :modules:assistant:integrationTest :modules:assistant:spotlessCheck
+```
+
+All commands completed successfully. The integration compiler continues to emit the pre-existing
+`EnableJpaRepositories.basePackages()` classpath warning and Testcontainers/JVM shutdown logging;
+the XML reports contain no test failures or errors.

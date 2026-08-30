@@ -62,11 +62,14 @@ public class ProcessConversationService implements ProcessConversationUseCase {
         throw new SecurityException("Conversation memory returned an unexpected conversation");
       }
 
-      memory.appendUserMessage(command.conversationId(), command.message(), context);
-      String response = chat.chat(conversationContext(snapshot), command.message());
-      if (response == null || response.isBlank()) {
-        throw new IllegalStateException("AI conversation response must not be blank");
+      if (memory
+          .findUserMessage(command.conversationId(), command.idempotencyKey(), context)
+          .isEmpty()) {
+        memory.appendUserMessage(
+            command.conversationId(), command.message(), command.idempotencyKey(), context);
       }
+      String response = chat.chat(conversationContext(snapshot), command.message());
+      requireValidAssistantResponse(response);
       memory.appendAssistantMessage(
           command.conversationId(), response, command.idempotencyKey(), context);
       assistantResponsePersisted = true;
@@ -88,6 +91,7 @@ public class ProcessConversationService implements ProcessConversationUseCase {
 
   private ProcessConversationResult completeRecoveredTurn(
       ProcessConversationCommand command, AiExecutionContext context, String response) {
+    requireValidAssistantResponse(response);
     ProcessConversationResult result =
         new ProcessConversationResult(command.conversationId(), context.workflowId(), response);
     var completed = idempotency.find(command.conversationId(), command.idempotencyKey());
@@ -126,6 +130,16 @@ public class ProcessConversationService implements ProcessConversationUseCase {
   private static void requireText(String value, String field) {
     if (value == null || value.isBlank()) {
       throw new IllegalArgumentException(field + " must not be blank");
+    }
+  }
+
+  private static void requireValidAssistantResponse(String response) {
+    if (response == null || response.isBlank()) {
+      throw new IllegalStateException("AI conversation response must not be blank");
+    }
+    if (response.indexOf('\u0000') >= 0) {
+      throw new IllegalStateException(
+          "AI conversation response contains invalid control characters");
     }
   }
 }

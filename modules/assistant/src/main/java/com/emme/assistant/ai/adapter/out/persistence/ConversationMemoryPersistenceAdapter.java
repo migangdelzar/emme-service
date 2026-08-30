@@ -51,14 +51,32 @@ public class ConversationMemoryPersistenceAdapter implements ConversationMemoryP
   }
 
   @Override
+  public void appendUserMessage(
+      UUID conversationId, String message, String idempotencyKey, AiExecutionContext context) {
+    append(conversationId, message, USER_MESSAGE_EVENT, idempotencyKey, context);
+  }
+
+  @Override
+  public Optional<String> findUserMessage(
+      UUID conversationId, String idempotencyKey, AiExecutionContext context) {
+    return findMessage(conversationId, USER_MESSAGE_EVENT, idempotencyKey, context);
+  }
+
+  @Override
   public Optional<String> findAssistantResponse(
       UUID conversationId, String idempotencyKey, AiExecutionContext context) {
+    return findMessage(conversationId, ASSISTANT_MESSAGE_EVENT, idempotencyKey, context);
+  }
+
+  private Optional<String> findMessage(
+      UUID conversationId, String eventType, String idempotencyKey, AiExecutionContext context) {
     requireAccessibleConversation(conversationId, context);
     return conversationHistory
         .get(new GetConversationHistoryQuery(context.tenantId(), conversationId))
         .stream()
-        .filter(event -> ASSISTANT_MESSAGE_EVENT.equals(event.eventType()))
+        .filter(event -> eventType.equals(event.eventType()))
         .filter(event -> idempotencyKey.equals(event.idempotencyKey()))
+        .filter(event -> context.principalId().equals(event.idempotencyPrincipalId()))
         .map(com.emme.assistant.api.result.ConversationEventDetails::payload)
         .findFirst();
   }
@@ -78,7 +96,12 @@ public class ConversationMemoryPersistenceAdapter implements ConversationMemoryP
     requireAccessibleConversation(conversationId, context);
     addConversationEvent.add(
         new AddConversationEventCommand(
-            context.tenantId(), conversationId, eventType, message, idempotencyKey));
+            context.tenantId(),
+            conversationId,
+            eventType,
+            message,
+            idempotencyKey,
+            idempotencyKey == null ? null : context.principalId()));
   }
 
   private ConversationDetails requireAccessibleConversation(

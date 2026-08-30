@@ -13,14 +13,20 @@ class ConversationEventIdempotencyMigrationContractTest {
       "db/emme-studio/releases/0.1.0/025-conversation-event-idempotency.sql";
 
   @Test
-  void createsATenantScopedAssistantEventIdempotencyMarkerWithoutChangingRls() throws IOException {
+  void createsAPrincipalScopedConversationEventIdempotencyMarkerWithoutChangingRls()
+      throws IOException {
     String sql = resource(MIGRATION);
 
     assertThat(sql)
         .contains("ALTER TABLE conversation_event")
         .contains("ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(255)")
+        .contains("ADD COLUMN IF NOT EXISTS idempotency_principal_id UUID")
         .contains("CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation_event_idempotency")
-        .contains("tenant_id, conversation_id, idempotency_key")
+        .contains("tenant_id,")
+        .contains("idempotency_principal_id,")
+        .contains("conversation_id,")
+        .contains("event_type,")
+        .contains("idempotency_key\n")
         .contains("WHERE idempotency_key IS NOT NULL");
   }
 

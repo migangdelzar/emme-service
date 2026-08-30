@@ -11,7 +11,29 @@ public record ConversationEventDetails(
     String eventType,
     String payload,
     Instant occurredAt,
-    String idempotencyKey) {
+    String idempotencyKey,
+    UUID idempotencyPrincipalId) {
+
+  public ConversationEventDetails(
+      UUID id,
+      UUID tenantId,
+      UUID conversationId,
+      int sequenceNumber,
+      String eventType,
+      String payload,
+      Instant occurredAt,
+      String idempotencyKey) {
+    this(
+        id,
+        tenantId,
+        conversationId,
+        sequenceNumber,
+        eventType,
+        payload,
+        occurredAt,
+        idempotencyKey,
+        null);
+  }
 
   public ConversationEventDetails(
       UUID id,
@@ -21,6 +43,6 @@ public record ConversationEventDetails(
       String eventType,
       String payload,
       Instant occurredAt) {
-    this(id, tenantId, conversationId, sequenceNumber, eventType, payload, occurredAt, null);
+    this(id, tenantId, conversationId, sequenceNumber, eventType, payload, occurredAt, null, null);
   }
 }

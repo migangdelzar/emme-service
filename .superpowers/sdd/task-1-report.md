@@ -266,3 +266,81 @@ and Spotless checks all passed with Java 25.
 - The migration must be deployed before this reconciliation path is enabled in
   an environment. The partial unique index remains tenant- and
   conversation-scoped and does not change RLS.
+
+---
+
+## Consolidated reviewer-fix wave
+
+### Status: DONE
+
+### RED
+
+Added regression coverage before implementation for three invariants:
+
+- a retry after model failure writes only one user event;
+- a principal in the same tenant cannot recover another principal's assistant
+  finalization response; and
+- blank or NUL-corrupt recovered assistant payloads are rejected before any
+  idempotency completion or replay.
+
+The initial focused run failed as expected:
+
+```shell
+mise exec java@25.0.2 -- ./gradlew \
+  :modules:assistant:test --tests '*ProcessConversationServiceTest' \
+  :modules:assistant:integrationTest \
+  --tests '*ConversationMemoryTenantIsolationIntegrationTest' \
+  :database:test --tests '*ConversationEventIdempotencyMigrationContractTest'
+```
+
+It reported the absent `idempotency_principal_id` migration contract, two user
+message appends after a model failure, and replay of a blank recovered answer.
+The behavioral uniqueness test then failed at test compilation until the
+idempotent user-marker API was added.
+
+### GREEN
+
+- `conversation_event` now stores nullable `idempotency_principal_id` beside
+  its turn key. The partial unique index is tenant-, principal-, conversation-,
+  event-type-, and key-scoped, so one durable user marker and one durable
+  assistant marker can share a turn while duplicate markers of either event
+  type are rejected by PostgreSQL.
+- The persistence adapter derives marker ownership only from
+  `AiExecutionContext.principalId()` and filters both user and assistant marker
+  lookup by that principal. No frontend-provided principal is accepted.
+- `ProcessConversationService` writes the user marker before model execution,
+  releases the active idempotency lease after a pre-response failure, and skips
+  that write on retry when the durable user marker already exists. The original
+  model exception remains the outward failure.
+- Normal and recovered assistant results share one validation function. It
+  rejects blank values and embedded NUL control characters before completing or
+  replaying the turn.
+- The PostgreSQL integration test explicitly executes the packaged migration
+  against the Testcontainers schema, proving its partial unique index rejects a
+  duplicate marker. The assistant integration-test classpath now depends on the
+  existing `:database` project only for that migration resource.
+
+### Verification
+
+```shell
+mise exec java@25.0.2 -- ./gradlew -q \
+  :modules:assistant:test \
+  :modules:assistant:integrationTest \
+  :database:test \
+  :modules:assistant:spotlessCheck \
+  :database:spotlessCheck \
+  --rerun-tasks
+```
+
+Result: **BUILD SUCCESSFUL** (exit code 0) with Java 25. This reran the full
+assistant unit and integration suites, database migration tests, and both
+Spotless checks.
+
+### Testcontainers warning investigation
+
+The earlier `SQLSTATE 08006` shutdown warning was emitted while Spring
+Modulith's event-publication registry was closing after a deliberately failed
+integration-test process. The clean green reruns completed without a test
+failure or that shutdown stack trace. No lifecycle code was changed because it
+is unrelated to the conversation marker behavior; retain it as a CI
+infrastructure observation if it recurs on passing builds.

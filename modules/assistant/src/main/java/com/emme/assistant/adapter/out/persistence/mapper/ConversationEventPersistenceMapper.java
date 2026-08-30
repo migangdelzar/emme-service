@@ -25,7 +25,8 @@ public class ConversationEventPersistenceMapper {
         entity.getEventType(),
         deserializePayload(entity.getPayload()),
         entity.getOccurredAt(),
-        entity.getIdempotencyKey());
+        entity.getIdempotencyKey(),
+        entity.getIdempotencyPrincipalId());
   }
 
   public ConversationEventEntity toEntity(ConversationEvent event) {
@@ -36,7 +37,8 @@ public class ConversationEventPersistenceMapper {
             event.sequenceNumber(),
             event.eventType(),
             serializePayload(event.payload()),
-            event.idempotencyKey());
+            event.idempotencyKey(),
+            event.idempotencyPrincipalId());
     entity.restoreIdentity(event.id(), event.occurredAt());
     return entity;
   }

@@ -93,7 +93,7 @@ class ProcessConversationServiceTest {
     assertThat(result.workflowId()).isEqualTo(WORKFLOW_ID);
     assertThat(result.response()).isEqualTo("answer");
     InOrder calls = inOrder(memory, chat);
-    calls.verify(memory).appendUserMessage(CONVERSATION_ID, "question", context);
+    calls.verify(memory).appendUserMessage(CONVERSATION_ID, "question", IDEMPOTENCY_KEY, context);
     calls.verify(chat).chat("", "question");
     calls
         .verify(memory)
@@ -164,6 +164,86 @@ class ProcessConversationServiceTest {
   }
 
   @Test
+  void doesNotAppendTheUserMessageAgainWhenARetryFollowsAModelFailure() {
+    ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
+    ChatUseCase chat = mock(ChatUseCase.class);
+    Idempotency idempotency = new Idempotency();
+    AiExecutionContext context = context();
+    AtomicReference<String> persistedUserMessage = new AtomicReference<>();
+    when(memory.load(CONVERSATION_ID, context))
+        .thenReturn(new ConversationMemoryPort.ConversationSnapshot(CONVERSATION_ID, List.of()));
+    when(memory.findUserMessage(CONVERSATION_ID, IDEMPOTENCY_KEY, context))
+        .thenAnswer(ignored -> Optional.ofNullable(persistedUserMessage.get()));
+    org.mockito.Mockito.doAnswer(
+            invocation -> {
+              persistedUserMessage.set(invocation.getArgument(1));
+              return null;
+            })
+        .when(memory)
+        .appendUserMessage(CONVERSATION_ID, "question", IDEMPOTENCY_KEY, context);
+    when(chat.chat("", "question"))
+        .thenThrow(new IllegalStateException("model unavailable"))
+        .thenReturn("answer");
+    ProcessConversationService service = new ProcessConversationService(memory, chat, idempotency);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context, () -> service.process(commandFor(CONVERSATION_ID))))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("model unavailable");
+
+    ProcessConversationResult result =
+        AiExecutionContextScope.call(context, () -> service.process(commandFor(CONVERSATION_ID)));
+
+    assertThat(result.response()).isEqualTo("answer");
+    org.mockito.Mockito.verify(memory, times(1))
+        .appendUserMessage(CONVERSATION_ID, "question", IDEMPOTENCY_KEY, context);
+  }
+
+  @Test
+  void rejectsABlankRecoveredAssistantResponseWithoutCompletingTheTurn() {
+    ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
+    ChatUseCase chat = mock(ChatUseCase.class);
+    Idempotency idempotency = new Idempotency();
+    AiExecutionContext context = context();
+    when(memory.findAssistantResponse(CONVERSATION_ID, IDEMPOTENCY_KEY, context))
+        .thenReturn(Optional.of(" "));
+    ProcessConversationService service = new ProcessConversationService(memory, chat, idempotency);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context, () -> service.process(commandFor(CONVERSATION_ID))))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("AI conversation response must not be blank");
+
+    assertThat(idempotency.completed).isEmpty();
+    org.mockito.Mockito.verifyNoInteractions(chat);
+  }
+
+  @Test
+  void rejectsACorruptRecoveredAssistantResponseWithoutCompletingTheTurn() {
+    ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
+    ChatUseCase chat = mock(ChatUseCase.class);
+    Idempotency idempotency = new Idempotency();
+    AiExecutionContext context = context();
+    when(memory.findAssistantResponse(CONVERSATION_ID, IDEMPOTENCY_KEY, context))
+        .thenReturn(Optional.of("answer\u0000"));
+    ProcessConversationService service = new ProcessConversationService(memory, chat, idempotency);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context, () -> service.process(commandFor(CONVERSATION_ID))))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("AI conversation response contains invalid control characters");
+
+    assertThat(idempotency.completed).isEmpty();
+    org.mockito.Mockito.verifyNoInteractions(chat);
+  }
+
+  @Test
   void reconcilesAnAssistantEventWhenIdempotencyCompletionFailsAfterItWasPersisted() {
     ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
     ChatUseCase chat = mock(ChatUseCase.class);
@@ -201,7 +281,7 @@ class ProcessConversationServiceTest {
         .isEqualTo(new ProcessConversationResult(CONVERSATION_ID, WORKFLOW_ID, "answer"));
     org.mockito.Mockito.verify(chat, times(1)).chat("", "question");
     org.mockito.Mockito.verify(memory, times(1))
-        .appendUserMessage(CONVERSATION_ID, "question", context);
+        .appendUserMessage(CONVERSATION_ID, "question", IDEMPOTENCY_KEY, context);
     org.mockito.Mockito.verify(memory, times(1))
         .appendAssistantMessage(CONVERSATION_ID, "answer", IDEMPOTENCY_KEY, context);
   }

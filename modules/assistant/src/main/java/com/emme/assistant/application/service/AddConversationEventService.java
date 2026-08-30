@@ -42,6 +42,7 @@ public class AddConversationEventService implements AddConversationEventUseCase 
                 command.eventType(),
                 command.payload(),
                 java.time.Instant.now(),
-                command.idempotencyKey())));
+                command.idempotencyKey(),
+                command.idempotencyPrincipalId())));
   }
 }

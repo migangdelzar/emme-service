@@ -13,6 +13,12 @@ public interface ConversationMemoryPort {
 
   void appendUserMessage(UUID conversationId, String message, AiExecutionContext context);
 
+  void appendUserMessage(
+      UUID conversationId, String message, String idempotencyKey, AiExecutionContext context);
+
+  Optional<String> findUserMessage(
+      UUID conversationId, String idempotencyKey, AiExecutionContext context);
+
   Optional<String> findAssistantResponse(
       UUID conversationId, String idempotencyKey, AiExecutionContext context);
 

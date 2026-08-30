@@ -36,6 +36,9 @@ public class ConversationEventEntity extends TenantOwnedEntity {
   @Column(name = "idempotency_key", length = 255)
   private String idempotencyKey;
 
+  @Column(name = "idempotency_principal_id")
+  private UUID idempotencyPrincipalId;
+
   protected ConversationEventEntity() {}
 
   public ConversationEventEntity(
@@ -44,14 +47,26 @@ public class ConversationEventEntity extends TenantOwnedEntity {
       Integer sequenceNumber,
       String eventType,
       String payload,
-      String idempotencyKey) {
+      String idempotencyKey,
+      UUID idempotencyPrincipalId) {
     super(tenantId);
     this.conversationId = Objects.requireNonNull(conversationId, "conversationId must not be null");
     this.sequenceNumber = Objects.requireNonNull(sequenceNumber, "sequenceNumber must not be null");
     this.eventType = Objects.requireNonNull(eventType, "eventType must not be null");
     this.payload = Objects.requireNonNull(payload, "payload must not be null");
     this.idempotencyKey = idempotencyKey;
+    this.idempotencyPrincipalId = idempotencyPrincipalId;
     this.occurredAt = Instant.now();
+  }
+
+  public ConversationEventEntity(
+      UUID tenantId,
+      UUID conversationId,
+      Integer sequenceNumber,
+      String eventType,
+      String payload,
+      String idempotencyKey) {
+    this(tenantId, conversationId, sequenceNumber, eventType, payload, idempotencyKey, null);
   }
 
   public ConversationEventEntity(
@@ -85,6 +100,10 @@ public class ConversationEventEntity extends TenantOwnedEntity {
 
   public String getIdempotencyKey() {
     return idempotencyKey;
+  }
+
+  public UUID getIdempotencyPrincipalId() {
+    return idempotencyPrincipalId;
   }
 
   public void restoreIdentity(UUID id, Instant occurredAt) {

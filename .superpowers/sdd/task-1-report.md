@@ -52,6 +52,10 @@ checks passed.
   `AiExecutionContext`, validates conversation/idempotency identity, loads
   tenant-scoped history, appends the user event before chat orchestration, and
   appends the validated assistant response afterward.
+- Declared the conversation orchestration service as
+  `@Transactional(propagation = Propagation.NOT_SUPPORTED)` so long-running
+  model work does not hold a database transaction while the existing
+  persistence application use cases retain their own transaction boundaries.
 - Added conversation-aware context creation using the backend tenant context,
   authenticated JWT identity, correlation ID, and idempotency key.
 - Updated `/api/ai/chat` to accept `conversationId` and `Idempotency-Key`
@@ -79,6 +83,7 @@ checks passed.
 ## Commit
 
 - `441540b9` — `feat(assistant): add durable conversation AI boundary`
+- `edfb5067` — `fix(assistant): declare conversation orchestration transaction policy`
 
 ## Self-review
 
@@ -93,6 +98,9 @@ checks passed.
   non-blank response.
 - The controller does not accept or forward a tenant ID from the request.
 - No identity, subscriptions, or tenancy working-tree changes were staged.
+- The repository-wide architecture hook now reports only the pre-existing
+  transaction-policy failure in `identity/GetCurrentUserService`; the new Task
+  1 service satisfies that check.
 
 ## Concerns / follow-ups
 

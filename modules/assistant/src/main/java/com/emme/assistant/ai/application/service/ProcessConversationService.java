@@ -11,9 +11,12 @@ import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Coordinates durable conversation memory around the existing AI chat execution boundary. */
 @Service
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
 public class ProcessConversationService implements ProcessConversationUseCase {
 
   private final ConversationMemoryPort memory;

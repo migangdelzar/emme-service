@@ -5,6 +5,7 @@ import com.emme.assistant.ai.api.result.ProcessConversationResult;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.ai.api.usecase.ProcessConversationUseCase;
 import com.emme.assistant.ai.application.port.out.ConversationMemoryPort;
+import com.emme.assistant.ai.application.port.out.ConversationTurnIdempotencyPort;
 import com.emme.assistant.api.result.ConversationEventDetails;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -21,16 +22,45 @@ public class ProcessConversationService implements ProcessConversationUseCase {
 
   private final ConversationMemoryPort memory;
   private final ChatUseCase chat;
+  private final ConversationTurnIdempotencyPort idempotency;
 
-  public ProcessConversationService(ConversationMemoryPort memory, ChatUseCase chat) {
+  public ProcessConversationService(
+      ConversationMemoryPort memory,
+      ChatUseCase chat,
+      ConversationTurnIdempotencyPort idempotency) {
     this.memory = Objects.requireNonNull(memory, "memory must not be null");
     this.chat = Objects.requireNonNull(chat, "chat must not be null");
+    this.idempotency = Objects.requireNonNull(idempotency, "idempotency must not be null");
   }
 
   @Override
   public ProcessConversationResult process(ProcessConversationCommand command) {
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
     validate(command, context);
+    var completed = idempotency.find(command.conversationId(), command.idempotencyKey());
+    if (completed.isPresent()) {
+      return completed.get();
+    }
+    if (!idempotency.reserve(command.conversationId(), command.idempotencyKey())) {
+      return idempotency
+          .find(command.conversationId(), command.idempotencyKey())
+          .orElseThrow(
+              () -> new IllegalStateException("AI conversation turn is already in progress"));
+    }
+    try {
+      return processReservedTurn(command, context);
+    } catch (RuntimeException failure) {
+      try {
+        idempotency.release(command.conversationId(), command.idempotencyKey());
+      } catch (RuntimeException cleanupFailure) {
+        failure.addSuppressed(cleanupFailure);
+      }
+      throw failure;
+    }
+  }
+
+  private ProcessConversationResult processReservedTurn(
+      ProcessConversationCommand command, AiExecutionContext context) {
     ConversationMemoryPort.ConversationSnapshot snapshot =
         memory.load(command.conversationId(), context);
     if (!command.conversationId().equals(snapshot.conversationId())) {
@@ -43,7 +73,10 @@ public class ProcessConversationService implements ProcessConversationUseCase {
       throw new IllegalStateException("AI conversation response must not be blank");
     }
     memory.appendAssistantMessage(command.conversationId(), response, context);
-    return new ProcessConversationResult(command.conversationId(), context.workflowId(), response);
+    ProcessConversationResult result =
+        new ProcessConversationResult(command.conversationId(), context.workflowId(), response);
+    idempotency.complete(command.conversationId(), command.idempotencyKey(), result);
+    return result;
   }
 
   private static String conversationContext(ConversationMemoryPort.ConversationSnapshot snapshot) {
@@ -62,7 +95,6 @@ public class ProcessConversationService implements ProcessConversationUseCase {
       throw new IllegalArgumentException("conversationId must not be null");
     }
     requireText(command.message(), "message");
-    requireText(command.channel(), "channel");
     requireText(command.idempotencyKey(), "idempotencyKey");
     if (!context.conversationId().equals(command.conversationId())) {
       throw new SecurityException("Conversation does not match the authenticated AI context");

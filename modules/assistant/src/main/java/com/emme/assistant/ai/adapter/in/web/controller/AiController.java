@@ -100,7 +100,7 @@ public class AiController {
               () ->
                   conversationUseCase.process(
                       new ProcessConversationCommand(
-                          request.conversationId(), request.userMessage(), "WEB", idempotencyKey)));
+                          request.conversationId(), request.userMessage(), idempotencyKey)));
       return ResponseEntity.ok(
           new ChatResponse(result.response(), result.conversationId(), result.workflowId()));
     }

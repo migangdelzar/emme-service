@@ -69,8 +69,7 @@ class AiControllerConversationTest {
         .isEqualTo(new ChatResponse("answer", CONVERSATION_ID, WORKFLOW_ID));
     verify(conversations)
         .process(
-            new ProcessConversationCommand(
-                CONVERSATION_ID, "question", "WEB", "conversation-turn-1"));
+            new ProcessConversationCommand(CONVERSATION_ID, "question", "conversation-turn-1"));
   }
 
   @Test

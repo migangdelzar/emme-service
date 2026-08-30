@@ -259,7 +259,7 @@ and Spotless checks all passed with Java 25.
 
 ### Commit
 
-- Pending commit: `fix(assistant): reconcile persisted conversation turns`
+- `85943c9b` — `fix(assistant): reconcile persisted conversation turns`
 
 ### Concerns
 

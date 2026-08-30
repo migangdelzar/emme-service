@@ -88,4 +88,39 @@ class AiWebExecutionContextFactoryTest {
     assertThat(first.workflowId()).isEqualTo(first.conversationId());
     assertThat(first.idempotencyKey()).isEqualTo("trace-read-1");
   }
+
+  @Test
+  void createsConversationContextFromTheTrustedTenantAndIdempotencyKey() {
+    AiWebExecutionContextFactory factory = new AiWebExecutionContextFactory();
+    UUID tenantId = UUID.randomUUID();
+    UUID conversationId = UUID.randomUUID();
+
+    AiExecutionContext first =
+        TenantContextHolder.withTenantOverride(
+            tenantId,
+            () ->
+                factory.forConversation(
+                    conversationId,
+                    "trace-conversation-1",
+                    "conversation-turn-1",
+                    "https://issuer",
+                    "auth0|client-1",
+                    Set.of()));
+    AiExecutionContext second =
+        TenantContextHolder.withTenantOverride(
+            tenantId,
+            () ->
+                factory.forConversation(
+                    conversationId,
+                    "trace-conversation-1",
+                    "conversation-turn-1",
+                    "https://issuer",
+                    "auth0|client-1",
+                    Set.of()));
+
+    assertThat(first.tenantId()).isEqualTo(tenantId);
+    assertThat(first.conversationId()).isEqualTo(conversationId);
+    assertThat(first.workflowId()).isEqualTo(second.workflowId());
+    assertThat(first.idempotencyKey()).isEqualTo("conversation-turn-1");
+  }
 }

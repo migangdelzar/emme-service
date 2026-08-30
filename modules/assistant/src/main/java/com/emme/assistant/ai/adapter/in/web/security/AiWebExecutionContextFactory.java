@@ -30,6 +30,32 @@ public final class AiWebExecutionContextFactory {
         traceId);
   }
 
+  public AiExecutionContext forConversation(
+      UUID conversationId,
+      String traceId,
+      String idempotencyKey,
+      String issuer,
+      String subject,
+      Collection<? extends GrantedAuthority> authorities) {
+    if (conversationId == null) {
+      throw new NullPointerException("conversationId must not be null");
+    }
+    requireText(traceId, "traceId");
+    requireText(idempotencyKey, "idempotencyKey");
+    UUID workflowId =
+        UUID.nameUUIDFromBytes(
+            ("emme-ai-conversation-workflow-v1:" + conversationId + ":" + idempotencyKey)
+                .getBytes(StandardCharsets.UTF_8));
+    return new AiExecutionContext(
+        TenantContextHolder.requireCurrentTenantId(),
+        AiPrincipalIdentity.fromTrustedClaims(issuer, subject),
+        roles(authorities),
+        conversationId,
+        workflowId,
+        traceId,
+        idempotencyKey);
+  }
+
   public AiExecutionContext forReview(
       UUID reviewTaskId,
       String traceId,

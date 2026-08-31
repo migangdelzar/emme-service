@@ -58,6 +58,20 @@ class AiJobWorkerServiceTest {
     assertThat(worker.lastBackoff()).isPositive();
   }
 
+  @Test
+  void executesAJobAlreadyClaimedByReconciliationWithoutClaimingItAgain() {
+    AiJobStatusStore store = mock(AiJobStatusStore.class);
+    AiJobWorkerService worker =
+        new AiJobWorkerService(store, executingScheduler(), (request, ignored) -> {});
+    AiJobRequest request =
+        new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
+
+    worker.handleClaimed(request);
+
+    verify(store, never()).claim(any(), any());
+    verify(store).complete(request.jobId(), context);
+  }
+
   private static ModelExecutionScheduler executingScheduler() {
     return new ModelExecutionScheduler() {
       @Override

@@ -5,9 +5,13 @@ import com.emme.assistant.ai.adapter.out.event.SpringModulithAiJobPublisher;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
 import com.emme.assistant.ai.application.service.AiJobWorkerService;
 import java.util.concurrent.*;
+import javax.sql.DataSource;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.*;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionOperations;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Configuration(proxyBeanMethods = false)
 @org.springframework.scheduling.annotation.EnableScheduling
@@ -29,6 +33,11 @@ public class AiJobExecutorConfiguration {
           throw new IllegalStateException("AI job handler disabled/deferred: " + request.type());
         },
         properties.maxAttempts());
+  }
+
+  @Bean
+  TransactionOperations aiJobTransactions(DataSource dataSource) {
+    return new TransactionTemplate(new DataSourceTransactionManager(dataSource));
   }
 
   @Bean(name = "aiJobExecutor", destroyMethod = "shutdown")

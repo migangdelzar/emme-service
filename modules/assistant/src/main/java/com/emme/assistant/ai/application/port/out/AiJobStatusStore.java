@@ -13,5 +13,6 @@ public interface AiJobStatusStore {
 
   void fail(UUID jobId, String errorCode, AiExecutionContext context);
 
-  java.util.List<com.emme.ai.contracts.job.AiJobRequest> findAvailable(int limit);
+  /** Atomically claims and returns due jobs for the current backend tenant context. */
+  java.util.List<com.emme.ai.contracts.job.AiJobRequest> claimAvailable(int limit);
 }

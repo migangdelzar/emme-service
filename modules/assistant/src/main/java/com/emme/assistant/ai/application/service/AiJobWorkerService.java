@@ -41,12 +41,22 @@ public final class AiJobWorkerService {
   }
 
   public void handle(AiJobRequest request) {
-    AiExecutionContextScope.run(
-        request.context(), () -> AiExecutionContextBridge.runCurrent(() -> handleBound(request)));
+    handle(request, false);
   }
 
-  private void handleBound(AiJobRequest request) {
-    if (store.claim(request.jobId(), request.context()) != AiJobStatus.CLAIMED) return;
+  public void handleClaimed(AiJobRequest request) {
+    handle(request, true);
+  }
+
+  private void handle(AiJobRequest request, boolean alreadyClaimed) {
+    AiExecutionContextScope.run(
+        request.context(),
+        () -> AiExecutionContextBridge.runCurrent(() -> handleBound(request, alreadyClaimed)));
+  }
+
+  private void handleBound(AiJobRequest request, boolean alreadyClaimed) {
+    if (!alreadyClaimed && store.claim(request.jobId(), request.context()) != AiJobStatus.CLAIMED)
+      return;
     try {
       scheduler.execute(
           ModelCapability.GENERATION,

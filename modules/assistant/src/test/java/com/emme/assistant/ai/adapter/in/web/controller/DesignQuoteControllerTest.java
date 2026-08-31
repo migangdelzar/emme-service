@@ -5,12 +5,50 @@ import static org.mockito.Mockito.*;
 
 import com.emme.ai.contracts.image.TenantImageWriter;
 import com.emme.assistant.ai.adapter.in.web.security.AiWebExecutionContextFactory;
+import com.emme.assistant.ai.api.result.QuoteWorkflowResult;
 import com.emme.assistant.ai.api.usecase.ProcessDesignQuoteUseCase;
 import com.emme.assistant.ai.application.port.out.DesignImageMetadataRepository;
+import com.emme.assistant.ai.domain.workflow.QuoteWorkflowState;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 
 class DesignQuoteControllerTest {
+  @Test
+  void initializesWorkflowBeforePersistingImageMetadataAndProcessingQuote() throws Exception {
+    var storage = mock(TenantImageWriter.class);
+    when(storage.store(any(), any())).thenReturn("tenant/image.img");
+    var metadata = mock(DesignImageMetadataRepository.class);
+    var quote = mock(ProcessDesignQuoteUseCase.class);
+    var workflowId = java.util.UUID.randomUUID();
+    when(quote.process(any()))
+        .thenReturn(
+            new QuoteWorkflowResult(
+                workflowId,
+                QuoteWorkflowState.QUOTE_READY,
+                java.util.Optional.empty(),
+                java.util.Optional.empty()));
+    var controller =
+        new DesignQuoteController(storage, quote, new AiWebExecutionContextFactory(), metadata);
+    var image = new MockMultipartFile("image", "design.jpg", "image/jpeg", new byte[] {1});
+    var tenant = java.util.UUID.randomUUID();
+    var conversation = java.util.UUID.randomUUID();
+    var jwt = mock(org.springframework.security.oauth2.jwt.Jwt.class);
+    when(jwt.getIssuer()).thenReturn(new java.net.URL("https://issuer"));
+    when(jwt.getSubject()).thenReturn("subject");
+    var authentication = mock(org.springframework.security.core.Authentication.class);
+    when(authentication.getAuthorities()).thenReturn(java.util.List.of());
+
+    com.emme.kernel.context.TenantContextHolder.withTenantAndCorrelation(
+        tenant,
+        "trace",
+        () -> controller.submit(image, conversation, "base", null, "idem", jwt, authentication));
+
+    var order = inOrder(quote, metadata);
+    order.verify(quote).initialize(any());
+    order.verify(metadata).save(any(), any(), any(), any(), anyLong());
+    order.verify(quote).process(any());
+  }
+
   @Test
   void removesMetadataAndStorageWhenQuoteProcessingFails() throws Exception {
     var storage = mock(TenantImageWriter.class);

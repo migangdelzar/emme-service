@@ -74,21 +74,42 @@ public class ProcessDesignQuoteService
     }
   }
 
+  @Override
+  public void initialize(AiExecutionContext context) {
+    Objects.requireNonNull(context, "context must not be null");
+    AiExecutionContextScope.call(
+        context,
+        () -> {
+          if (workflows.findByIdempotencyKey(context.idempotencyKey()).isEmpty()) {
+            workflows.save(
+                QuoteWorkflow.received(
+                    context.workflowId(),
+                    context.tenantId(),
+                    context.principalId(),
+                    context.conversationId(),
+                    context.idempotencyKey()));
+          }
+          return null;
+        });
+  }
+
   private QuoteWorkflowResult processInternal(ProcessDesignQuoteCommand command) {
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
     Optional<QuoteWorkflow> existing = workflows.findByIdempotencyKey(context.idempotencyKey());
-    if (existing.isPresent()) {
+    if (existing.isPresent() && existing.orElseThrow().state() != QuoteWorkflowState.RECEIVED) {
       return result(existing.orElseThrow(), Optional.empty(), Optional.empty());
     }
 
     QuoteWorkflow workflow =
-        QuoteWorkflow.received(
-            context.workflowId(),
-            context.tenantId(),
-            context.principalId(),
-            context.conversationId(),
-            context.idempotencyKey());
-    workflow = workflows.save(workflow);
+        existing.orElseGet(
+            () ->
+                workflows.save(
+                    QuoteWorkflow.received(
+                        context.workflowId(),
+                        context.tenantId(),
+                        context.principalId(),
+                        context.conversationId(),
+                        context.idempotencyKey())));
 
     workflow = transitionAndSave(workflow, QuoteWorkflowState.EXTRACTING);
     NailDesignExtractor.ExtractionResult extraction;

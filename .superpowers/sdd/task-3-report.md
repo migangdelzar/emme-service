@@ -16,6 +16,7 @@ COMPLETE_WITH_LIMITATION. Task 3 reviewer findings have been addressed within th
 - Added compensating storage deletion when metadata persistence or quote processing fails.
 - Compensating cleanup also covers late multipart read failures after storage succeeds.
 - Metadata deletion is part of compensating cleanup; metadata and object deletion are attempted independently so retries can proceed even if one cleanup operation fails.
+- The production submission path initializes the workflow row through the quote use-case boundary before inserting image metadata, preserving the `ai_design_image.workflow_id` foreign key.
 - Removed the silent ImageStorage read default; local storage returns SHA-256 metadata.
 - Added durable `ai_design_image` metadata migration with RLS and changelog registration.
 

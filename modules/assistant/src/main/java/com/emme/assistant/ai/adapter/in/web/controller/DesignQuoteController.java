@@ -79,6 +79,7 @@ public class DesignQuoteController {
             key = storage.store(context.tenantId(), bytes);
             // Re-read through the multipart boundary so a late I/O failure is compensatable.
             readBytes(image);
+            quote.initialize(context);
             metadata.save(
                 context.tenantId(),
                 context.workflowId(),

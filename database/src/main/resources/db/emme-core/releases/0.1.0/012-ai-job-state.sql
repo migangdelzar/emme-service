@@ -1,3 +1,15 @@
+-- liquibase formatted sql
+-- changeset emme:012-ai-job-state splitStatements:false
+-- comment: Create the single durable, tenant-isolated AI job state table in the core schema.
+
+CREATE OR REPLACE FUNCTION emme_core.current_tenant_id()
+RETURNS UUID
+LANGUAGE sql
+STABLE
+PARALLEL SAFE
+RETURNS NULL ON NULL INPUT
+AS 'SELECT nullif(current_setting(''app.current_tenant_id'', true), '''')::UUID';
+
 CREATE TABLE IF NOT EXISTS emme_core.ai_job_state (
   job_id UUID PRIMARY KEY, tenant_id UUID NOT NULL, principal_id UUID NOT NULL,
   roles TEXT NOT NULL, conversation_id UUID NOT NULL, workflow_id UUID NOT NULL,
@@ -19,4 +31,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_job_state_claimed ON emme_core.ai_job_state (s
 ALTER TABLE emme_core.ai_job_state ENABLE ROW LEVEL SECURITY;
 ALTER TABLE emme_core.ai_job_state FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS ai_job_tenant_isolation ON emme_core.ai_job_state;
-CREATE POLICY ai_job_tenant_isolation ON emme_core.ai_job_state FOR ALL USING (tenant_id = current_tenant_id()) WITH CHECK (tenant_id = current_tenant_id());
+CREATE POLICY ai_job_tenant_isolation ON emme_core.ai_job_state FOR ALL USING (tenant_id = emme_core.current_tenant_id()) WITH CHECK (tenant_id = emme_core.current_tenant_id());
+
+-- rollback: DROP TABLE IF EXISTS emme_core.ai_job_state;
+-- rollback: DROP FUNCTION IF EXISTS emme_core.current_tenant_id();

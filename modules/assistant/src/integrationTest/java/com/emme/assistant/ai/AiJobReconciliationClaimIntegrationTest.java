@@ -72,7 +72,7 @@ class AiJobReconciliationClaimIntegrationTest {
         """);
     String migration =
         new String(
-            new ClassPathResource("db/emme-studio/releases/0.1.0/028-ai-job-state.sql")
+            new ClassPathResource("db/emme-core/releases/0.1.0/012-ai-job-state.sql")
                 .getInputStream()
                 .readAllBytes(),
             StandardCharsets.UTF_8);

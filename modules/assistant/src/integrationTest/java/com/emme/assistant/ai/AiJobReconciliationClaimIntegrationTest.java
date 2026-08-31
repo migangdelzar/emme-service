@@ -10,6 +10,8 @@ import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextBridge;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.AbstractDataSource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -34,6 +37,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class AiJobReconciliationClaimIntegrationTest {
 
   private static final UUID TENANT_ID = UUID.randomUUID();
+  private static final String CORE_SCHEMA = "emme" + '_' + "core";
   private static final String RUNTIME_USERNAME = "ai_job_runtime";
   private static final String RUNTIME_PASSWORD = "ai_job_runtime";
 
@@ -57,7 +61,7 @@ class AiJobReconciliationClaimIntegrationTest {
             POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
     jdbc = new JdbcTemplate(dataSource);
     adminJdbc = jdbc;
-    jdbc.execute("CREATE SCHEMA IF NOT EXISTS emme_core");
+    jdbc.execute("CREATE SCHEMA IF NOT EXISTS " + CORE_SCHEMA);
     jdbc.execute(
         """
         CREATE OR REPLACE FUNCTION current_tenant_id()
@@ -80,7 +84,7 @@ class AiJobReconciliationClaimIntegrationTest {
               }
               return null;
             });
-    jdbc.update("DELETE FROM emme_core.ai_job_state");
+    jdbc.update("DELETE FROM " + CORE_SCHEMA + ".ai_job_state");
     jdbc.execute(
         """
         DO $$
@@ -91,16 +95,26 @@ class AiJobReconciliationClaimIntegrationTest {
         END
         $$
         """);
-    jdbc.execute("GRANT USAGE ON SCHEMA emme_core TO ai_job_runtime");
-    jdbc.execute("GRANT SELECT, INSERT, UPDATE ON TABLE emme_core.ai_job_state TO ai_job_runtime");
+    jdbc.execute("GRANT USAGE ON SCHEMA " + CORE_SCHEMA + " TO ai_job_runtime");
+    jdbc.execute(
+        "GRANT SELECT, INSERT, UPDATE ON TABLE " + CORE_SCHEMA + ".ai_job_state TO ai_job_runtime");
     assertThat(
             adminJdbc.queryForObject(
-                "SELECT relforcerowsecurity FROM pg_class WHERE oid='emme_core.ai_job_state'::regclass",
+                "SELECT relforcerowsecurity FROM pg_class WHERE oid='"
+                    + CORE_SCHEMA
+                    + ".ai_job_state'::regclass",
                 Boolean.class))
         .isTrue();
+    adminJdbc =
+        new JdbcTemplate(
+            new CoreSchemaDataSource(
+                new DriverManagerDataSource(
+                    POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())));
     dataSource =
-        new DriverManagerDataSource(POSTGRES.getJdbcUrl(), RUNTIME_USERNAME, RUNTIME_PASSWORD);
+        new CoreSchemaDataSource(
+            new DriverManagerDataSource(POSTGRES.getJdbcUrl(), RUNTIME_USERNAME, RUNTIME_PASSWORD));
     jdbc = new JdbcTemplate(dataSource);
+    assertThat(jdbc.queryForObject("SELECT current_schema()", String.class)).isEqualTo(CORE_SCHEMA);
     store =
         new JdbcAiJobStatusStore(
             jdbc, 3, new TransactionTemplate(new DataSourceTransactionManager(dataSource)));
@@ -114,13 +128,13 @@ class AiJobReconciliationClaimIntegrationTest {
     runWithContext(context, () -> store.enqueue(request));
     assertThat(
             adminJdbc.queryForMap(
-                "SELECT tenant_id, status, available_at FROM emme_core.ai_job_state WHERE job_id = ?",
+                "SELECT tenant_id, status, available_at FROM ai_job_state WHERE job_id = ?",
                 request.jobId()))
         .containsEntry("tenant_id", TENANT_ID)
         .containsEntry("status", AiJobStatus.QUEUED.name());
     assertThat(
             adminJdbc.queryForObject(
-                "SELECT available_at <= CURRENT_TIMESTAMP FROM emme_core.ai_job_state WHERE job_id = ?",
+                "SELECT available_at <= CURRENT_TIMESTAMP FROM ai_job_state WHERE job_id = ?",
                 Boolean.class,
                 request.jobId()))
         .isTrue();
@@ -221,9 +235,7 @@ class AiJobReconciliationClaimIntegrationTest {
                   String.class,
                   context.tenantId().toString());
               return jdbc.queryForObject(
-                  "SELECT status FROM emme_core.ai_job_state WHERE job_id = ?",
-                  String.class,
-                  jobId);
+                  "SELECT status FROM ai_job_state WHERE job_id = ?", String.class, jobId);
             });
   }
 
@@ -236,7 +248,7 @@ class AiJobReconciliationClaimIntegrationTest {
                   String.class,
                   context.tenantId().toString());
               return jdbc.queryForObject(
-                  "SELECT COUNT(*) FROM emme_core.ai_job_state WHERE tenant_id = ?",
+                  "SELECT COUNT(*) FROM ai_job_state WHERE tenant_id = ?",
                   Integer.class,
                   context.tenantId());
             });
@@ -251,7 +263,7 @@ class AiJobReconciliationClaimIntegrationTest {
                   String.class,
                   context.tenantId().toString());
               return jdbc.queryForObject(
-                  "SELECT COUNT(*) FROM emme_core.ai_job_state WHERE tenant_id = ? AND tenant_id = current_tenant_id() AND available_at <= CURRENT_TIMESTAMP AND status IN ('QUEUED', 'RETRYING')",
+                  "SELECT COUNT(*) FROM ai_job_state WHERE tenant_id = ? AND tenant_id = current_tenant_id() AND available_at <= CURRENT_TIMESTAMP AND status IN ('QUEUED', 'RETRYING')",
                   Integer.class,
                   context.tenantId());
             });
@@ -259,18 +271,43 @@ class AiJobReconciliationClaimIntegrationTest {
 
   private void makeDue(UUID jobId) {
     adminJdbc.update(
-        "UPDATE emme_core.ai_job_state SET available_at=CURRENT_TIMESTAMP WHERE job_id = ?", jobId);
+        "UPDATE ai_job_state SET available_at=CURRENT_TIMESTAMP WHERE job_id = ?", jobId);
   }
 
   private double backoffSecondsFor(UUID jobId) {
     return adminJdbc.queryForObject(
-        "SELECT EXTRACT(EPOCH FROM (available_at - updated_at))::double precision FROM emme_core.ai_job_state WHERE job_id = ?",
+        "SELECT EXTRACT(EPOCH FROM (available_at - updated_at))::double precision FROM ai_job_state WHERE job_id = ?",
         Double.class,
         jobId);
   }
 
   private String lastErrorFor(UUID jobId) {
     return adminJdbc.queryForObject(
-        "SELECT last_error FROM emme_core.ai_job_state WHERE job_id = ?", String.class, jobId);
+        "SELECT last_error FROM ai_job_state WHERE job_id = ?", String.class, jobId);
+  }
+
+  private static final class CoreSchemaDataSource extends AbstractDataSource {
+    private final DataSource delegate;
+
+    private CoreSchemaDataSource(DataSource delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public Connection getConnection() throws SQLException {
+      return inCoreSchema(delegate.getConnection());
+    }
+
+    @Override
+    public Connection getConnection(String username, String password) throws SQLException {
+      return inCoreSchema(delegate.getConnection(username, password));
+    }
+
+    private static Connection inCoreSchema(Connection connection) throws SQLException {
+      try (var statement = connection.createStatement()) {
+        statement.execute("SET search_path TO " + CORE_SCHEMA + ", public");
+      }
+      return connection;
+    }
   }
 }

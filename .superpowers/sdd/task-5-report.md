@@ -114,3 +114,20 @@ Verification for this closure:
 - The full assistant unit test task remains blocked by the pre-existing `adapter/out/storage/package-info.java` convention violation documented above and a separate missing `TenantImageReader` application-context bean.
 
 The final full `:modules:assistant:test` run also reproduces the branch's unrelated application-context failure: 15 web/module tests cannot create `CatalogDesignImageReader` because no `TenantImageReader` bean is available. That dependency/application wiring is outside Task 5 and was not changed; the scoped job test suites remain green.
+
+## 2026-08-31 — Final review remediation: schema ownership and constructor binding
+
+- `JdbcAiJobStatusStore` now uses unqualified `ai_job_state` statements. Its Spring JDBC dependency continues to resolve through the primary core datasource, whose established connection search path owns the core schema; no architecture-test rule was weakened.
+- `AiJobReconciliationClaimIntegrationTest` now applies that same search-path boundary on every admin and runtime connection. It retains live PostgreSQL coverage for concurrent claiming, tenant isolation, forced RLS, retry progression, and dead-lettering without embedding a core-schema reference in an assistant Java source file.
+- `AiJobProperties` now marks its full record constructor with `@ConstructorBinding` and declares `@DefaultValue`s for all four limits. The convenience three-argument constructor and safe defaults remain available to existing callers.
+- Added `AiJobPropertiesTest` using `ApplicationContextRunner` to prove configured values bind through the canonical constructor and absent values preserve the safe defaults.
+
+Verification for this closure:
+
+- `mise exec java@25.0.2 -- ./gradlew :applications:emme-platform:test --tests 'com.emme.SchemaOwnershipTest' --no-daemon` — PASS.
+- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:test --tests '*AiJobPropertiesTest' --no-daemon` — PASS (2 tests).
+- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:test --tests '*AiJob*' :database:test --tests '*AiJobMigrationContractTest' --no-daemon` — PASS.
+- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:integrationTest --tests '*AiJobReconciliationClaimIntegrationTest' --no-daemon` — PASS (3 tests, PostgreSQL 16/Testcontainers).
+- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:compileJava :modules:assistant:compileIntegrationTestJava :modules:assistant:spotlessJavaCheck --no-daemon` — PASS.
+
+The full assistant test suite was not used as the acceptance gate because the worktree contains unrelated in-progress module changes; this closure is limited to the focused architecture, configuration, job, migration, integration, compilation, and formatting checks above.

@@ -2795,3 +2795,16 @@ appointment mutation tools are registered.
 - Full assistant tests remain blocked by the pre-existing storage package
   metadata violation and missing `TenantImageReader` application-context bean;
   neither unrelated issue was changed.
+
+## Task 5 final review final closure — 2026-08-31
+
+- [x] Remove unauthorized core-schema references from the assistant JDBC adapter and reconciliation integration test through the established core search-path boundary.
+- [x] Add explicit Spring Boot constructor binding and binding regression coverage for `AiJobProperties`.
+- [x] Run focused Java 25 architecture, configuration, job, migration, PostgreSQL/Testcontainers, compilation, and Spotless checks.
+- [x] Update `.superpowers/sdd/task-5-report.md` with the final-review evidence.
+
+### Results
+
+- `SchemaOwnershipTest`, `AiJobPropertiesTest`, focused job/migration tests, and the three-test live reconciliation suite pass.
+- Assistant production and integration-test compilation plus assistant Spotless pass.
+- Unrelated existing worktree changes were not staged or modified.

@@ -1134,3 +1134,8 @@
 - **Prevention rule:** When a PostgreSQL `UPDATE` is executed through a JDBC
   read API, include an explicit `RETURNING` projection and cover the returned
   state in a live database test.
+# Task 5 final-review verification lesson — 2026-08-31
+
+- Failure mode: concurrent Gradle invocations corrupted the local incremental build outputs/cache and produced misleading missing-class failures.
+- Detection signal: one build attempted to delete `modules/assistant/build/classes` while another was compiling, followed by an incomplete cached `compileJava` result.
+- Prevention rule: run Gradle verification commands serially; if build outputs are incomplete, force a clean/`--rerun-tasks` Java 25 compilation before diagnosing source failures.

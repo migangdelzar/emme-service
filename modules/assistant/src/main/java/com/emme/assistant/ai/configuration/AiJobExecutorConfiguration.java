@@ -9,10 +9,12 @@ import com.emme.assistant.ai.application.service.AiJobWorkerService;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.concurrent.*;
 import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.*;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -44,8 +46,13 @@ public class AiJobExecutorConfiguration {
         properties.maxAttempts());
   }
 
+  @Bean(name = "coreJdbcTemplate")
+  JdbcTemplate coreJdbcTemplate(@Qualifier("coreDataSource") DataSource dataSource) {
+    return new JdbcTemplate(dataSource);
+  }
+
   @Bean
-  TransactionOperations aiJobTransactions(DataSource dataSource) {
+  TransactionOperations aiJobTransactions(@Qualifier("coreDataSource") DataSource dataSource) {
     return new TransactionTemplate(new DataSourceTransactionManager(dataSource));
   }
 

@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionOperations;
@@ -26,7 +27,7 @@ public final class JdbcAiJobStatusStore implements AiJobStatusStore {
 
   @Autowired
   public JdbcAiJobStatusStore(
-      JdbcTemplate jdbc,
+      @Qualifier("coreJdbcTemplate") JdbcTemplate jdbc,
       com.emme.assistant.ai.configuration.AiJobProperties properties,
       TransactionOperations transactions,
       AiJobMetrics metrics) {

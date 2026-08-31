@@ -12,6 +12,7 @@ import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +54,7 @@ class AiJobReconciliationClaimIntegrationTest {
   private DataSource dataSource;
 
   private JdbcAiJobStatusStore store;
+  private RecordingAiJobMetrics metrics;
 
   @BeforeEach
   void setUpDurableJobState() throws Exception {
@@ -114,10 +116,14 @@ class AiJobReconciliationClaimIntegrationTest {
         new CoreSchemaDataSource(
             new DriverManagerDataSource(POSTGRES.getJdbcUrl(), RUNTIME_USERNAME, RUNTIME_PASSWORD));
     jdbc = new JdbcTemplate(dataSource);
+    metrics = new RecordingAiJobMetrics();
     assertThat(jdbc.queryForObject("SELECT current_schema()", String.class)).isEqualTo(CORE_SCHEMA);
     store =
         new JdbcAiJobStatusStore(
-            jdbc, 3, new TransactionTemplate(new DataSourceTransactionManager(dataSource)));
+            jdbc,
+            3,
+            new TransactionTemplate(new DataSourceTransactionManager(dataSource)),
+            metrics);
   }
 
   @Test
@@ -153,6 +159,9 @@ class AiJobReconciliationClaimIntegrationTest {
       combinedClaims.addAll(secondClaim);
       assertThat(combinedClaims).extracting(AiJobRequest::jobId).containsExactly(request.jobId());
     }
+
+    assertThat(metrics.queueLags).hasSize(1);
+    assertThat(metrics.claimDurations).hasSize(2);
 
     assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.CLAIMED.name());
   }
@@ -203,6 +212,21 @@ class AiJobReconciliationClaimIntegrationTest {
 
     assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.DEAD_LETTER.name());
     assertThat(lastErrorFor(request.jobId())).isEqualTo("THIRD_FAILURE");
+  }
+
+  @Test
+  void releasesARejectedClaimImmediatelyWithDurableNextAvailability() {
+    AiExecutionContext context = context(TENANT_ID, "rejected-claim");
+    AiJobRequest request =
+        new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
+    runWithContext(context, () -> store.enqueue(request));
+    assertThat(withContext(context, () -> store.claimAvailable(1))).hasSize(1);
+
+    runWithContext(context, () -> store.defer(request.jobId(), context, Duration.ofSeconds(1)));
+
+    assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
+    assertThat(backoffSecondsFor(request.jobId())).isBetween(0.9, 1.1);
+    assertThat(eligibleCountFor(context)).isZero();
   }
 
   private static AiExecutionContext context(UUID tenantId, String key) {
@@ -309,5 +333,39 @@ class AiJobReconciliationClaimIntegrationTest {
       }
       return connection;
     }
+  }
+
+  private static final class RecordingAiJobMetrics
+      implements com.emme.assistant.ai.application.port.out.AiJobMetrics {
+    private final List<Duration> queueLags = new ArrayList<>();
+    private final List<Duration> claimDurations = new ArrayList<>();
+
+    @Override
+    public void recordQueueDepth(int depth) {}
+
+    @Override
+    public void recordQueueLag(Duration lag) {
+      queueLags.add(lag);
+    }
+
+    @Override
+    public void recordClaimDuration(Duration duration) {
+      claimDurations.add(duration);
+    }
+
+    @Override
+    public void recordClaim(String outcome) {}
+
+    @Override
+    public void recordFailure() {}
+
+    @Override
+    public void recordRetry() {}
+
+    @Override
+    public void recordDeadLetter() {}
+
+    @Override
+    public void recordTenantFairness() {}
   }
 }

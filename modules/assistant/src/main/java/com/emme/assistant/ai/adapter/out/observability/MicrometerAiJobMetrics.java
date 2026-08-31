@@ -3,6 +3,8 @@ package com.emme.assistant.ai.adapter.out.observability;
 import com.emme.assistant.ai.application.port.out.AiJobMetrics;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,6 +21,22 @@ public final class MicrometerAiJobMetrics implements AiJobMetrics {
   @Override
   public void recordQueueDepth(int depth) {
     queueDepth.set(Math.max(depth, 0));
+  }
+
+  @Override
+  public void recordQueueLag(Duration lag) {
+    Timer.builder("emme.ai.jobs.queue.lag")
+        .description("Time durable AI jobs waited before being claimed")
+        .register(registry)
+        .record(requirePositive(lag, "lag"));
+  }
+
+  @Override
+  public void recordClaimDuration(Duration duration) {
+    Timer.builder("emme.ai.jobs.claim.duration")
+        .description("Time spent claiming durable AI jobs")
+        .register(registry)
+        .record(requirePositive(duration, "duration"));
   }
 
   @Override
@@ -61,5 +79,13 @@ public final class MicrometerAiJobMetrics implements AiJobMetrics {
       throw new IllegalArgumentException(field + " must be a bounded metric label");
     }
     return value;
+  }
+
+  private static Duration requirePositive(Duration duration, String field) {
+    Objects.requireNonNull(duration, field + " must not be null");
+    if (duration.isNegative()) {
+      throw new IllegalArgumentException(field + " must not be negative");
+    }
+    return duration;
   }
 }

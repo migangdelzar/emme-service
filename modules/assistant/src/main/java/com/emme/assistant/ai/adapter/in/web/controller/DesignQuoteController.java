@@ -91,10 +91,23 @@ public class DesignQuoteController {
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(new DesignQuoteResponse(result.workflowId(), result.state()));
           } catch (RuntimeException | Error failure) {
-            if (key != null) storage.delete(context.tenantId(), key);
+            if (key != null) cleanup(context.tenantId(), context.workflowId(), key, failure);
             throw failure;
           }
         });
+  }
+
+  private void cleanup(UUID tenantId, UUID workflowId, String key, Throwable failure) {
+    try {
+      metadata.delete(tenantId, workflowId, key);
+    } catch (RuntimeException cleanupFailure) {
+      failure.addSuppressed(cleanupFailure);
+    }
+    try {
+      storage.delete(tenantId, key);
+    } catch (RuntimeException cleanupFailure) {
+      failure.addSuppressed(cleanupFailure);
+    }
   }
 
   private static byte[] readBytes(MultipartFile image) {

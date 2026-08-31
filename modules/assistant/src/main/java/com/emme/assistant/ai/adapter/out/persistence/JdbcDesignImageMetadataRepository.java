@@ -29,4 +29,14 @@ public final class JdbcDesignImageMetadataRepository implements DesignImageMetad
         .param("sizeBytes", sizeBytes)
         .update();
   }
+
+  @Override
+  public void delete(UUID tenantId, UUID workflowId, String storageKey) {
+    jdbc.sql(
+            "DELETE FROM ai_design_image WHERE tenant_id = :tenantId AND workflow_id = :workflowId AND storage_key = :storageKey")
+        .param("tenantId", tenantId)
+        .param("workflowId", workflowId)
+        .param("storageKey", storageKey)
+        .update();
+  }
 }

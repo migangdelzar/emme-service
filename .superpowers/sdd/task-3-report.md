@@ -15,6 +15,7 @@ COMPLETE_WITH_LIMITATION. Task 3 reviewer findings have been addressed within th
 - Reader is consumed by the existing Spring AI vision extraction path.
 - Added compensating storage deletion when metadata persistence or quote processing fails.
 - Compensating cleanup also covers late multipart read failures after storage succeeds.
+- Metadata deletion is part of compensating cleanup; metadata and object deletion are attempted independently so retries can proceed even if one cleanup operation fails.
 - Removed the silent ImageStorage read default; local storage returns SHA-256 metadata.
 - Added durable `ai_design_image` metadata migration with RLS and changelog registration.
 

@@ -20,7 +20,7 @@ class AiJobCoreJdbcConfigurationTest {
           .withUserConfiguration(AiJobExecutorConfiguration.class, CoreJdbcDependencies.class);
 
   @Test
-  void resolvesTheJobStoreToTheCoreJdbcTemplateWhenBootstrapJdbcAlsoExists() {
+  void resolvesTheJobStoreToTheCoreJdbcTemplateWhenAnotherJdbcTemplateAlsoExists() {
     contextRunner.run(
         context -> {
           assertThat(context).hasNotFailed();
@@ -44,8 +44,8 @@ class AiJobCoreJdbcConfigurationTest {
       return new DriverManagerDataSource("jdbc:h2:mem:ai-job-bootstrap", "sa", "");
     }
 
-    @Bean(name = "bootstrapJdbcTemplate")
-    JdbcTemplate bootstrapJdbcTemplate(DataSource bootstrapDataSource) {
+    @Bean(name = "competingJdbcTemplate")
+    JdbcTemplate competingJdbcTemplate(DataSource bootstrapDataSource) {
       return new JdbcTemplate(bootstrapDataSource);
     }
 

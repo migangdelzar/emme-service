@@ -3,6 +3,8 @@ package com.emme.appointments.application.service;
 import com.emme.appointments.api.event.AppointmentCancelled;
 import com.emme.appointments.api.result.AppointmentDetails;
 import com.emme.appointments.api.usecase.CancelAppointmentUseCase;
+import com.emme.appointments.api.usecase.CancelAuthorizedAppointmentUseCase;
+import com.emme.appointments.api.command.CancelAppointmentCommand;
 import com.emme.appointments.application.port.out.AppointmentCollisionPort;
 import com.emme.appointments.application.port.out.AppointmentEventPublisher;
 import com.emme.appointments.application.port.out.AppointmentRepository;
@@ -18,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 /** Application service for appointment cancellation. */
 @Service
 @Transactional
-public class CancelAppointmentService implements CancelAppointmentUseCase {
+public class CancelAppointmentService implements CancelAppointmentUseCase, CancelAuthorizedAppointmentUseCase {
 
   private final AppointmentRepository repository;
   private final AppointmentEventPublisher eventPublisher;
@@ -36,6 +38,14 @@ public class CancelAppointmentService implements CancelAppointmentUseCase {
     this.support =
         new AppointmentApplicationSupport(
             repository, collisionPort, customerRepository, serviceRepository, artistRepository);
+  }
+
+  @Override
+  public AppointmentDetails cancel(CancelAppointmentCommand command) {
+    if (!command.confirmed()) throw new SecurityException("User confirmation is required");
+    Appointment appointment = support.authorize(command.actor(), command.appointmentId());
+    support.ensureMutable(appointment);
+    return cancel(appointment.getId());
   }
 
   @Override

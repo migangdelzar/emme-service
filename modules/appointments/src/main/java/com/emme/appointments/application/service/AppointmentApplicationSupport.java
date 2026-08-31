@@ -1,6 +1,7 @@
 package com.emme.appointments.application.service;
 
 import com.emme.appointments.api.result.AppointmentDetails;
+import com.emme.appointments.api.command.AppointmentActor;
 import com.emme.appointments.application.mapper.AppointmentApplicationMapper;
 import com.emme.appointments.application.port.out.AppointmentCollisionPort;
 import com.emme.appointments.application.port.out.AppointmentRepository;
@@ -10,6 +11,7 @@ import com.emme.clients.domain.model.Customer;
 import com.emme.services.application.port.out.ArtistRepository;
 import com.emme.services.application.port.out.ServiceRepository;
 import com.emme.services.domain.model.Artist;
+import com.emme.appointments.domain.model.AppointmentStatus;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -39,6 +41,26 @@ final class AppointmentApplicationSupport {
     return appointmentRepository
         .findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Appointment not found: " + id));
+  }
+
+  Appointment authorize(AppointmentActor actor, UUID id) {
+    Appointment appointment = find(id);
+    if (!actor.tenantId().equals(appointment.getTenantId())) throw new SecurityException("Appointment is outside actor tenant");
+    if (!actor.isStaff() && (!actor.hasRole("client") || !actor.principalId().equals(appointment.getCustomerId())))
+      throw new SecurityException("Actor is not authorized for appointment");
+    return appointment;
+  }
+
+  void ensureActorCanBook(AppointmentActor actor, UUID customerId, boolean confirmed) {
+    if (!confirmed) throw new SecurityException("User confirmation is required");
+    if (!actor.isStaff() && (!actor.hasRole("client") || !actor.principalId().equals(customerId)))
+      throw new SecurityException("Actor is not authorized to book for customer");
+    if (customerRepository.findByTenantId(actor.tenantId()).stream().noneMatch(c -> c.getId().equals(customerId)))
+      throw new SecurityException("Customer is outside actor tenant");
+  }
+
+  void ensureMutable(Appointment appointment) {
+    if (appointment.getStatus() != AppointmentStatus.CONFIRMED) throw new IllegalStateException("Only confirmed appointments can be mutated");
   }
 
   void ensureReferences(UUID customerId, UUID serviceId, UUID artistId) {

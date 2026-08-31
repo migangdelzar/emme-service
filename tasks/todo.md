@@ -2808,3 +2808,23 @@ appointment mutation tools are registered.
 - `SchemaOwnershipTest`, `AiJobPropertiesTest`, focused job/migration tests, and the three-test live reconciliation suite pass.
 - Assistant production and integration-test compilation plus assistant Spotless pass.
 - Unrelated existing worktree changes were not staged or modified.
+
+## Task 5 final review remediation — 2026-08-31
+
+- [x] Move `ai_job_state` to the core Liquibase changeset/run path with valid formatted SQL metadata and no studio duplication.
+- [x] Make AI scheduling honor `spring.task.scheduling.enabled` through the central conditional configuration and profile/context coverage.
+- [x] Atomically defer rejected reconciliation claims with durable next availability and verify tenant alternation/rejection behavior.
+- [x] Add queue-lag and claim-duration metrics without tenant-cardinality labels.
+- [x] Qualify job JDBC/transaction wiring to the core datasource and add a competing-bean context test.
+- [x] Run focused Java 25 tests, integration tests, Spotless, update the Task 5 report, commit, and push.
+
+### Working Notes
+
+- The existing worktree has unrelated edits; only files required by this remediation will be staged.
+- Existing canonical reload, RLS, retry/DLQ, Redis/live-event deferral, and deferred handler behavior are out of scope for redesign.
+
+### Results
+
+- Core-owned migration, conditional scheduling, rejected-claim deferral, queue/claim timers, and qualified core JDBC wiring are implemented and covered by focused tests.
+- Java 25 focused unit, architecture, migration, context/DI, compilation, Spotless, and PostgreSQL/Testcontainers checks pass.
+- Existing unrelated worktree edits remain unstaged and unchanged.

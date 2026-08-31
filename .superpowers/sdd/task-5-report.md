@@ -131,3 +131,18 @@ Verification for this closure:
 - `mise exec java@25.0.2 -- ./gradlew :modules:assistant:compileJava :modules:assistant:compileIntegrationTestJava :modules:assistant:spotlessJavaCheck --no-daemon` — PASS.
 
 The full assistant test suite was not used as the acceptance gate because the worktree contains unrelated in-progress module changes; this closure is limited to the focused architecture, configuration, job, migration, integration, compilation, and formatting checks above.
+
+## 2026-08-31 — Final review remediation: ownership, scheduling, rejection fairness, metrics, and JDBC DI
+
+- Moved the single `emme_core.ai_job_state` Liquibase formatted SQL changeset to the core changelog/run path. The studio changelog and old studio changeset no longer duplicate the shared table.
+- Removed AI-local scheduling enablement and retained the central `spring.task.scheduling.enabled` conditional. Added disabled/enabled application context coverage with the AI configuration loaded.
+- Rejected already-claimed executor submissions now atomically transition the durable row to `RETRYING` with a positive database-clock-based `available_at`. Reconciliation tests verify tenant alternation and immediate defer ordering, while the live PostgreSQL test verifies the durable retry state and backoff.
+- Added tenant-free queue-lag and claim-duration timers to the injected metrics boundary. Claim SQL records durable lag from `created_at`; every claim operation records elapsed duration.
+- Added an explicitly qualified `coreJdbcTemplate` backed by `coreDataSource`, qualified the store injection, and added a competing-datasource context test proving the store resolves the core template.
+
+Verification:
+
+- `mise exec java@25.0.2 -- ./gradlew :database:test --tests '*AiJobMigrationContractTest' :applications:emme-platform:test --tests 'com.emme.configuration.SchedulingConfigurationTest' --tests 'com.emme.SchemaOwnershipTest' :modules:assistant:test --tests '*AiJob*' :modules:assistant:spotlessJavaCheck :applications:emme-platform:spotlessJavaCheck :database:spotlessJavaCheck :modules:assistant:compileJava :modules:assistant:compileIntegrationTestJava --no-daemon` — PASS.
+- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:integrationTest --tests '*AiJobReconciliationClaimIntegrationTest' --no-daemon` — PASS against PostgreSQL 16/Testcontainers.
+
+Canonical durable reload, RLS, retry/DLQ, Redis/live-event deferral, and intentionally deferred concrete handlers remain preserved. Unrelated pre-existing worktree edits and known full-suite convention/application-context blockers were not staged or changed.

@@ -9,4 +9,9 @@ public interface AppointmentCollisionPort {
   boolean hasCollision(UUID artistId, Instant startsAt, Instant endsAt);
 
   boolean hasCollision(UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId);
+
+  default boolean hasCollision(
+      UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId) {
+    return hasCollision(artistId, startsAt, endsAt, excludedAppointmentId);
+  }
 }

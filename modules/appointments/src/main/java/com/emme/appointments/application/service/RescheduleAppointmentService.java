@@ -57,7 +57,12 @@ public class RescheduleAppointmentService
 
   private AppointmentDetails rescheduleAuthorized(
       Appointment appointment, Instant newStartsAt, Instant newEndsAt) {
-    support.ensureAvailable(appointment.getArtistId(), newStartsAt, newEndsAt, appointment.getId());
+    support.ensureAvailable(
+        appointment.getTenantId(),
+        appointment.getArtistId(),
+        newStartsAt,
+        newEndsAt,
+        appointment.getId());
     Instant oldStartsAt = appointment.getStartsAt();
     Instant oldEndsAt = appointment.getEndsAt();
     appointment.reschedule(newStartsAt, newEndsAt);

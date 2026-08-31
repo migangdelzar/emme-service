@@ -34,4 +34,17 @@ public class AppointmentCollisionAdapter implements AppointmentCollisionPort {
                     && (appointment.getStatus() == AppointmentStatus.CONFIRMED
                         || appointment.getStatus() == AppointmentStatus.IN_PROGRESS));
   }
+
+  @Override
+  public boolean hasCollision(
+      UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId) {
+    return appointmentRepository
+        .findByTenantIdAndArtistIdAndOverlappingInterval(tenantId, artistId, startsAt, endsAt)
+        .stream()
+        .anyMatch(
+            appointment ->
+                !appointment.getId().equals(excludedAppointmentId)
+                    && (appointment.getStatus() == AppointmentStatus.CONFIRMED
+                        || appointment.getStatus() == AppointmentStatus.IN_PROGRESS));
+  }
 }

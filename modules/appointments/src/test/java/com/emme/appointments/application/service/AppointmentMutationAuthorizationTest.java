@@ -85,7 +85,7 @@ class AppointmentMutationAuthorizationTest {
     Appointment appointment =
         appointment(appointmentId, TENANT, PRINCIPAL, AppointmentStatus.CONFIRMED);
     when(appointments.findById(appointmentId)).thenReturn(Optional.of(appointment));
-    when(collisions.hasCollision(appointment.getArtistId(), START, END, appointmentId))
+    when(collisions.hasCollision(TENANT, appointment.getArtistId(), START, END, appointmentId))
         .thenReturn(false);
     when(appointments.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     when(customers.findById(any())).thenReturn(Optional.of(new Customer(TENANT, "Customer")));
@@ -99,7 +99,7 @@ class AppointmentMutationAuthorizationTest {
                 END,
                 true));
 
-    verify(collisions).hasCollision(appointment.getArtistId(), START, END, appointmentId);
+    verify(collisions).hasCollision(TENANT, appointment.getArtistId(), START, END, appointmentId);
   }
 
   private CreateAppointmentService createService() {

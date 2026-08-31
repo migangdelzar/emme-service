@@ -73,4 +73,15 @@ public class AppointmentPersistenceAdapter implements AppointmentRepository {
         .map(mapper::toDomain)
         .toList();
   }
+
+  @Override
+  public List<Appointment> findByTenantIdAndArtistIdAndOverlappingInterval(
+      UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt) {
+    return repository
+        .findByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(
+            tenantId, artistId, endsAt, startsAt)
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
 }

@@ -61,7 +61,7 @@ public class CreateAppointmentService implements CreateAppointmentUseCase, BookA
       Instant startsAt,
       Instant endsAt) {
     support.ensureReferences(tenantId, customerId, serviceId, artistId);
-    support.ensureAvailable(artistId, startsAt, endsAt);
+    support.ensureAvailable(tenantId, artistId, startsAt, endsAt);
     Appointment saved =
         repository.save(
             new Appointment(tenantId, customerId, serviceId, artistId, startsAt, endsAt));

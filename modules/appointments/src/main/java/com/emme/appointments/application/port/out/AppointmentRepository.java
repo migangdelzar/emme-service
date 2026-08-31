@@ -23,4 +23,9 @@ public interface AppointmentRepository {
 
   List<Appointment> findByArtistIdAndOverlappingInterval(
       UUID artistId, Instant startsAt, Instant endsAt);
+
+  default List<Appointment> findByTenantIdAndArtistIdAndOverlappingInterval(
+      UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt) {
+    return findByArtistIdAndOverlappingInterval(artistId, startsAt, endsAt);
+  }
 }

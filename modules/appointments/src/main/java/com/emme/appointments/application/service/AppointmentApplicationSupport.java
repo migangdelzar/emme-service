@@ -96,9 +96,23 @@ final class AppointmentApplicationSupport {
     ensureAvailable(artistId, startsAt, endsAt, null);
   }
 
+  void ensureAvailable(UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt) {
+    ensureAvailable(tenantId, artistId, startsAt, endsAt, null);
+  }
+
   void ensureAvailable(
       UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId) {
     if (collisionPort.hasCollision(artistId, startsAt, endsAt, excludedAppointmentId)) {
+      throw new IllegalStateException(
+          "Slot conflict: artist "
+              + artistId
+              + " already has a confirmed appointment in this time range");
+    }
+  }
+
+  void ensureAvailable(
+      UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId) {
+    if (collisionPort.hasCollision(tenantId, artistId, startsAt, endsAt, excludedAppointmentId)) {
       throw new IllegalStateException(
           "Slot conflict: artist "
               + artistId

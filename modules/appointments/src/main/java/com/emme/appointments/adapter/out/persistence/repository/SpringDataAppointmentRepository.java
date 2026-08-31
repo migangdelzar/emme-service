@@ -16,6 +16,9 @@ public interface SpringDataAppointmentRepository extends JpaRepository<Appointme
   List<AppointmentEntity> findByArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(
       UUID artistId, Instant end, Instant start);
 
+  List<AppointmentEntity> findByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(
+      UUID tenantId, UUID artistId, Instant end, Instant start);
+
   List<AppointmentEntity> findByArtistIdAndStartsAtBetween(
       UUID artistId, Instant start, Instant end);
 

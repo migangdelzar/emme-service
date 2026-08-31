@@ -65,7 +65,7 @@ public class FindAvailableSlotsService implements FindAvailableSlotsUseCase {
       Instant startsAt = toInstant(date, slotStart);
       Instant endsAt = toInstant(date, slotStart.plusMinutes(service.getDurationMinutes()));
       for (UUID artistId : artistIds) {
-        if (!collisionPort.hasCollision(artistId, startsAt, endsAt)) {
+        if (!collisionPort.hasCollision(tenantId, artistId, startsAt, endsAt, null)) {
           slots.add(new AvailableSlot(artistId, startsAt, endsAt));
         }
       }

@@ -30,6 +30,13 @@ Added actor-tenant reference checks and canonical tenant/tool/principal/idempote
 
 Verification: Java 25 appointment repository tests and repository-wide `spotlessCheck` pass. Assistant production sources compile successfully; the full assistant suite's only failures are the 16 baseline tests listed above.
 
+## Task 4 isolation fix
+
+Collision lookup is now tenant-scoped through the application use cases, collision port, persistence adapter, and Spring Data repository query (`tenantId` + `artistId` + overlapping interval). Legacy collision signatures remain available as compatibility defaults. Available-slot lookup, booking, and rescheduling use the tenant-aware path. Regression coverage proves that an appointment for the same artist ID in another tenant cannot affect a collision decision.
+
+Focused verification (Java 25):
+`mise exec java@25.0.2 -- ./gradlew :modules:appointments:spotlessApply :modules:appointments:test --tests 'com.emme.appointments.adapter.out.persistence.adapter.AppointmentCollisionAdapterTest' --tests 'com.emme.appointments.application.service.AppointmentMutationAuthorizationTest'` — passed.
+
 ## Task 4 review remediation completion
 
 Added `AppointmentMutationAuthorizationTest` covering tenant mismatch and

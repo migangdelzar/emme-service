@@ -2776,3 +2776,22 @@ appointment mutation tools are registered.
 - Scheduled work is enumerated from active tenants and binds an authoritative backend AI execution context for each tenant; JDBC establishes the PostgreSQL RLS setting within each transaction.
 - `AiJobReconciliationClaimIntegrationTest` passes against PostgreSQL 16 in Testcontainers using a non-superuser role with forced RLS, covering duplicate claim prevention and tenant isolation.
 - Focused Java 25 unit tests and assistant Spotless checks pass. The full assistant test task remains blocked by the pre-existing unrelated `AiCapabilityConventionTest` storage-package metadata failure; no unrelated fix was included.
+
+## Task 5 final-review closure — 2026-08-31
+
+- [x] Execute only canonical durable job payload/context after claim.
+- [x] Force row-level security in the job migration and verify it through the
+      non-superuser Testcontainers runtime role.
+- [x] Add live retry timing/progression and `DEAD_LETTER` coverage.
+- [x] Add metadata for all new production packages and document unrelated
+      package/application-context convention blockers.
+- [x] Add minimal injected Micrometer job lifecycle, queue, and tenant fairness
+      metrics while preserving deferred Redis and real handlers.
+- [x] Verify focused Java 25 tests and Spotless; update the Task 5 report.
+
+### Results
+
+- Focused job unit, migration-contract, and PostgreSQL/Testcontainers tests pass.
+- Full assistant tests remain blocked by the pre-existing storage package
+  metadata violation and missing `TenantImageReader` application-context bean;
+  neither unrelated issue was changed.

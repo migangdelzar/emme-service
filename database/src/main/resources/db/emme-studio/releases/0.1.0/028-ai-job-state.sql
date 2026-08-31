@@ -17,5 +17,6 @@ END $$;
 CREATE INDEX IF NOT EXISTS idx_ai_job_state_ready ON emme_core.ai_job_state (tenant_id, status, available_at);
 CREATE INDEX IF NOT EXISTS idx_ai_job_state_claimed ON emme_core.ai_job_state (status, updated_at);
 ALTER TABLE emme_core.ai_job_state ENABLE ROW LEVEL SECURITY;
+ALTER TABLE emme_core.ai_job_state FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS ai_job_tenant_isolation ON emme_core.ai_job_state;
 CREATE POLICY ai_job_tenant_isolation ON emme_core.ai_job_state FOR ALL USING (tenant_id = current_tenant_id()) WITH CHECK (tenant_id = current_tenant_id());

@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.adapter.in.messaging;
 
+import com.emme.assistant.ai.application.port.out.AiJobMetrics;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
 import com.emme.assistant.ai.configuration.AiJobProperties;
 import com.emme.kernel.context.AiExecutionContext;
@@ -21,16 +22,19 @@ public final class AiJobReconciliationPoller {
   private final AiJobListener listener;
   private final AiJobProperties properties;
   private final TenantRepository tenants;
+  private final AiJobMetrics metrics;
 
   public AiJobReconciliationPoller(
       AiJobStatusStore store,
       AiJobListener listener,
       AiJobProperties properties,
-      TenantRepository tenants) {
+      TenantRepository tenants,
+      AiJobMetrics metrics) {
     this.store = store;
     this.listener = listener;
     this.properties = properties;
     this.tenants = tenants;
+    this.metrics = metrics;
   }
 
   @Scheduled(fixedDelayString = "${app.ai.jobs.reconciliation-delay-ms:5000}")
@@ -41,6 +45,7 @@ public final class AiJobReconciliationPoller {
   }
 
   private void reconcileTenant(UUID tenantId) {
+    metrics.recordTenantFairness();
     AiExecutionContext context =
         new AiExecutionContext(
             tenantId,

@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.adapter.in.messaging;
 
 import com.emme.ai.contracts.job.AiJobRequest;
+import com.emme.assistant.ai.application.port.out.AiJobMetrics;
 import com.emme.assistant.ai.application.service.AiJobWorkerService;
 import java.util.concurrent.ExecutorService;
 import org.springframework.context.event.EventListener;
@@ -10,10 +11,13 @@ import org.springframework.stereotype.Component;
 public final class AiJobListener {
   private final AiJobWorkerService worker;
   private final ExecutorService executor;
+  private final AiJobMetrics metrics;
 
-  public AiJobListener(AiJobWorkerService worker, ExecutorService aiJobExecutor) {
+  public AiJobListener(
+      AiJobWorkerService worker, ExecutorService aiJobExecutor, AiJobMetrics metrics) {
     this.worker = worker;
     this.executor = aiJobExecutor;
+    this.metrics = metrics;
   }
 
   @EventListener
@@ -31,6 +35,10 @@ public final class AiJobListener {
       executor.execute(task);
     } catch (java.util.concurrent.RejectedExecutionException rejected) {
       // The durable row remains queued/retryable and is picked up by reconciliation.
+    } finally {
+      if (executor instanceof java.util.concurrent.ThreadPoolExecutor boundedExecutor) {
+        metrics.recordQueueDepth(boundedExecutor.getQueue().size());
+      }
     }
   }
 }

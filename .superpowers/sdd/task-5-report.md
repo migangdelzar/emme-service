@@ -97,3 +97,20 @@ Verification:
 - The full `:modules:assistant:test` task still reports the pre-existing `AiCapabilityConventionTest` failure for the unrelated `adapter/out/storage` package lacking `package-info.java`; no unrelated file was changed.
 
 The concrete AI job handlers remain intentionally disabled/deferred, and Redis remains an optional live-event/projection boundary. This remediation does not claim handler implementation, Redis queue semantics, or end-to-end application bootstrap coverage beyond the focused live PostgreSQL contract.
+
+## 2026-08-31 — Final review closure: canonical worker payloads, retry evidence, and metrics
+
+- `AiJobStatusStore.claimAndLoad` atomically claims an event-addressed row and returns the canonical durable payload and execution context. `AiJobWorkerService` executes only that returned request; the reconciliation path reloads the claimed row with `loadClaimed` before execution. A regression test proves altered event payloads and context do not reach the handler or completion transition.
+- `028-ai-job-state.sql` now enables and forces row-level security. The Testcontainers suite relies on the migration’s `FORCE ROW LEVEL SECURITY` statement and verifies the catalog flag while running claims as a non-superuser role.
+- `AiJobReconciliationClaimIntegrationTest` now executes the PostgreSQL retry lifecycle: first failure schedules a one-second retry, the second schedules a two-second retry, and the third failure transitions the row to `DEAD_LETTER` with its error code.
+- Added `package-info.java` for the new `com.emme.ai.contracts.job`, `com.emme.assistant.ai.domain.job`, and `com.emme.assistant.ai.adapter.in.messaging` production packages. The existing unrelated `com.emme.assistant.ai.adapter.out.storage` package still lacks metadata; it remains intentionally unchanged and is the known failing assertion in `AiCapabilityConventionTest`.
+- Added a small injected `AiJobMetrics` boundary with Micrometer and no-op implementations. It records executor queue depth, claim outcomes, failures, retries, dead-letter transitions, and tenant scheduling selections with bounded labels and no tenant-ID metric cardinality. Redis and concrete job handlers remain explicitly deferred.
+
+Verification for this closure:
+
+- Worker, listener, poller, Micrometer, and migration contract tests pass under Java 25.
+- `AiJobReconciliationClaimIntegrationTest` passes against PostgreSQL 16/Testcontainers, including tenant isolation, concurrent claim prevention, forced RLS, retry timing, and dead-letter progression.
+- Scoped Spotless checks pass for `modules:assistant`, `libraries:ai-contracts`, and `database`.
+- The full assistant unit test task remains blocked by the pre-existing `adapter/out/storage/package-info.java` convention violation documented above and a separate missing `TenantImageReader` application-context bean.
+
+The final full `:modules:assistant:test` run also reproduces the branch's unrelated application-context failure: 15 web/module tests cannot create `CatalogDesignImageReader` because no `TenantImageReader` bean is available. That dependency/application wiring is outside Task 5 and was not changed; the scoped job test suites remain green.

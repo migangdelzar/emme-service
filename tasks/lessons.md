@@ -1122,3 +1122,15 @@
   expose that package as a named interface and list the exact named interface
   in the consumer’s `allowedDependencies`; do not suppress the architecture
   test or duplicate the infrastructure.
+
+## 2026-08-31 — Pair PostgreSQL update queries with RETURNING when reading outcomes
+
+- **Failure mode:** A JDBC metrics transition changed `UPDATE` to `query` so it
+  could classify retry versus dead-letter outcomes, but initially omitted
+  PostgreSQL's `RETURNING` clause.
+- **Detection signal:** The live Testcontainers retry test failed with
+  `No results were returned by the query` before the state transition could be
+  observed.
+- **Prevention rule:** When a PostgreSQL `UPDATE` is executed through a JDBC
+  read API, include an explicit `RETURNING` projection and cover the returned
+  state in a live database test.

@@ -93,7 +93,11 @@ class AiJobReconciliationClaimIntegrationTest {
         """);
     jdbc.execute("GRANT USAGE ON SCHEMA emme_core TO ai_job_runtime");
     jdbc.execute("GRANT SELECT, INSERT, UPDATE ON TABLE emme_core.ai_job_state TO ai_job_runtime");
-    jdbc.execute("ALTER TABLE emme_core.ai_job_state FORCE ROW LEVEL SECURITY");
+    assertThat(
+            adminJdbc.queryForObject(
+                "SELECT relforcerowsecurity FROM pg_class WHERE oid='emme_core.ai_job_state'::regclass",
+                Boolean.class))
+        .isTrue();
     dataSource =
         new DriverManagerDataSource(POSTGRES.getJdbcUrl(), RUNTIME_USERNAME, RUNTIME_PASSWORD);
     jdbc = new JdbcTemplate(dataSource);
@@ -156,6 +160,35 @@ class AiJobReconciliationClaimIntegrationTest {
     List<AiJobRequest> secondClaim = withContext(secondContext, () -> store.claimAvailable(10));
     assertThat(firstClaim).extracting(AiJobRequest::jobId).containsExactly(first.jobId());
     assertThat(secondClaim).extracting(AiJobRequest::jobId).containsExactly(second.jobId());
+  }
+
+  @Test
+  void progressesRetryBackoffAndMovesTheThirdFailureToDeadLetter() {
+    AiExecutionContext context = context(TENANT_ID, "retry-progression");
+    AiJobRequest request =
+        new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
+    runWithContext(context, () -> store.enqueue(request));
+
+    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+        .isPresent();
+    runWithContext(context, () -> store.fail(request.jobId(), "FIRST_FAILURE", context));
+    assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
+    assertThat(backoffSecondsFor(request.jobId())).isEqualTo(1.0);
+
+    makeDue(request.jobId());
+    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+        .isPresent();
+    runWithContext(context, () -> store.fail(request.jobId(), "SECOND_FAILURE", context));
+    assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
+    assertThat(backoffSecondsFor(request.jobId())).isEqualTo(2.0);
+
+    makeDue(request.jobId());
+    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+        .isPresent();
+    runWithContext(context, () -> store.fail(request.jobId(), "THIRD_FAILURE", context));
+
+    assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.DEAD_LETTER.name());
+    assertThat(lastErrorFor(request.jobId())).isEqualTo("THIRD_FAILURE");
   }
 
   private static AiExecutionContext context(UUID tenantId, String key) {
@@ -222,5 +255,22 @@ class AiJobReconciliationClaimIntegrationTest {
                   Integer.class,
                   context.tenantId());
             });
+  }
+
+  private void makeDue(UUID jobId) {
+    adminJdbc.update(
+        "UPDATE emme_core.ai_job_state SET available_at=CURRENT_TIMESTAMP WHERE job_id = ?", jobId);
+  }
+
+  private double backoffSecondsFor(UUID jobId) {
+    return adminJdbc.queryForObject(
+        "SELECT EXTRACT(EPOCH FROM (available_at - updated_at))::double precision FROM emme_core.ai_job_state WHERE job_id = ?",
+        Double.class,
+        jobId);
+  }
+
+  private String lastErrorFor(UUID jobId) {
+    return adminJdbc.queryForObject(
+        "SELECT last_error FROM emme_core.ai_job_state WHERE job_id = ?", String.class, jobId);
   }
 }

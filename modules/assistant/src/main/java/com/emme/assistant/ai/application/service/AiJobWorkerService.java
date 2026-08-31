@@ -4,7 +4,6 @@ import com.emme.ai.contracts.job.AiJobRequest;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
-import com.emme.assistant.ai.domain.job.AiJobStatus;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextBridge;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -41,22 +40,19 @@ public final class AiJobWorkerService {
   }
 
   public void handle(AiJobRequest request) {
-    handle(request, false);
+    store.claimAndLoad(request.jobId(), request.context()).ifPresent(this::executeCanonicalRequest);
   }
 
   public void handleClaimed(AiJobRequest request) {
-    handle(request, true);
+    store.loadClaimed(request.jobId(), request.context()).ifPresent(this::executeCanonicalRequest);
   }
 
-  private void handle(AiJobRequest request, boolean alreadyClaimed) {
+  private void executeCanonicalRequest(AiJobRequest request) {
     AiExecutionContextScope.run(
-        request.context(),
-        () -> AiExecutionContextBridge.runCurrent(() -> handleBound(request, alreadyClaimed)));
+        request.context(), () -> AiExecutionContextBridge.runCurrent(() -> executeBound(request)));
   }
 
-  private void handleBound(AiJobRequest request, boolean alreadyClaimed) {
-    if (!alreadyClaimed && store.claim(request.jobId(), request.context()) != AiJobStatus.CLAIMED)
-      return;
+  private void executeBound(AiJobRequest request) {
     try {
       scheduler.execute(
           ModelCapability.GENERATION,

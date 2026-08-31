@@ -20,7 +20,8 @@ class AiJobMigrationContractTest {
             "attempts INTEGER NOT NULL DEFAULT 0",
             "CHECK (status IN ('QUEUED','CLAIMED','COMPLETED','RETRYING','DEAD_LETTER'))",
             "idx_ai_job_state_ready",
-            "FOR ALL USING (tenant_id = current_tenant_id())");
+            "FOR ALL USING (tenant_id = current_tenant_id())",
+            "ALTER TABLE emme_core.ai_job_state FORCE ROW LEVEL SECURITY");
   }
 
   @Test

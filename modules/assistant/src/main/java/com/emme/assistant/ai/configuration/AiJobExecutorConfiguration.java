@@ -2,10 +2,14 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.adapter.out.event.SpringModulithAiJobPublisher;
+import com.emme.assistant.ai.application.port.out.AiJobMetrics;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
+import com.emme.assistant.ai.application.port.out.NoopAiJobMetrics;
 import com.emme.assistant.ai.application.service.AiJobWorkerService;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.util.concurrent.*;
 import javax.sql.DataSource;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.*;
@@ -17,6 +21,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 @org.springframework.scheduling.annotation.EnableScheduling
 @EnableConfigurationProperties(AiJobProperties.class)
 public class AiJobExecutorConfiguration {
+  @Bean
+  @ConditionalOnMissingBean({AiJobMetrics.class, MeterRegistry.class})
+  AiJobMetrics aiJobMetrics() {
+    return NoopAiJobMetrics.INSTANCE;
+  }
+
   @Bean
   SpringModulithAiJobPublisher aiJobPublisher(
       ApplicationEventPublisher events, AiJobStatusStore store) {

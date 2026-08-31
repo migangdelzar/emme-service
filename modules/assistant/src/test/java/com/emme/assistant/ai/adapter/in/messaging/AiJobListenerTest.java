@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 
 import com.emme.ai.contracts.job.AiJobRequest;
 import com.emme.ai.contracts.job.AiJobType;
+import com.emme.assistant.ai.application.port.out.NoopAiJobMetrics;
 import com.emme.assistant.ai.application.service.AiJobWorkerService;
 import com.emme.kernel.context.AiExecutionContext;
 import java.util.Set;
@@ -18,7 +19,7 @@ class AiJobListenerTest {
     AiJobWorkerService worker = mock(AiJobWorkerService.class);
     ExecutorService executor = mock(ExecutorService.class);
     doThrow(new RejectedExecutionException()).when(executor).execute(any());
-    AiJobListener listener = new AiJobListener(worker, executor);
+    AiJobListener listener = new AiJobListener(worker, executor, NoopAiJobMetrics.INSTANCE);
 
     listener.onJob(request());
 

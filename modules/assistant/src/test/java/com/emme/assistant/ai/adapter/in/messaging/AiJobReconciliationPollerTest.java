@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
+import com.emme.assistant.ai.application.port.out.AiJobMetrics;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
 import com.emme.assistant.ai.configuration.AiJobProperties;
 import com.emme.kernel.context.AiExecutionContext;
@@ -28,6 +29,7 @@ class AiJobReconciliationPollerTest {
     when(tenants.findByStatus(TenantStatus.ACTIVE))
         .thenReturn(List.of(tenant(tenantA), tenant(tenantB)));
     AiJobStatusStore store = mock(AiJobStatusStore.class);
+    AiJobMetrics metrics = mock(AiJobMetrics.class);
     List<AiExecutionContext> observedContexts = new ArrayList<>();
     doAnswer(
             invocation -> {
@@ -41,13 +43,14 @@ class AiJobReconciliationPollerTest {
 
     AiJobReconciliationPoller poller =
         new AiJobReconciliationPoller(
-            store, mock(AiJobListener.class), new AiJobProperties(1, 1, 3, 7), tenants);
+            store, mock(AiJobListener.class), new AiJobProperties(1, 1, 3, 7), tenants, metrics);
 
     poller.reconcile();
 
     assertThat(observedContexts)
         .extracting(AiExecutionContext::tenantId)
         .containsExactly(tenantA, tenantB);
+    verify(metrics, times(2)).recordTenantFairness();
     assertThat(TenantContextHolder.currentTenantOptional()).isEmpty();
     assertThat(AiExecutionContextScope.current()).isEmpty();
   }

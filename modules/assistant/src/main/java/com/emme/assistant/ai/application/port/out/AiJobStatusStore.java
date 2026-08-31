@@ -2,10 +2,19 @@ package com.emme.assistant.ai.application.port.out;
 
 import com.emme.assistant.ai.domain.job.AiJobStatus;
 import com.emme.kernel.context.AiExecutionContext;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface AiJobStatusStore {
   void enqueue(com.emme.ai.contracts.job.AiJobRequest request);
+
+  /** Atomically claims a due event job and returns its canonical durable request. */
+  Optional<com.emme.ai.contracts.job.AiJobRequest> claimAndLoad(
+      UUID jobId, AiExecutionContext eventContext);
+
+  /** Reloads the canonical durable request for a job already claimed by reconciliation. */
+  Optional<com.emme.ai.contracts.job.AiJobRequest> loadClaimed(
+      UUID jobId, AiExecutionContext context);
 
   AiJobStatus claim(UUID jobId, AiExecutionContext context);
 

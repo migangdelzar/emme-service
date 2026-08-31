@@ -73,8 +73,12 @@ public class DesignQuoteController {
     return AiExecutionContextScope.call(
         context,
         () -> {
-          String key = storage.store(context.tenantId(), image.getBytes());
+          String key = null;
           try {
+            byte[] bytes = image.getBytes();
+            key = storage.store(context.tenantId(), bytes);
+            // Re-read through the multipart boundary so a late I/O failure is compensatable.
+            image.getBytes();
             metadata.save(
                 context.tenantId(),
                 context.workflowId(),
@@ -87,7 +91,7 @@ public class DesignQuoteController {
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(new DesignQuoteResponse(result.workflowId(), result.state()));
           } catch (RuntimeException | Error failure) {
-            storage.delete(context.tenantId(), key);
+            if (key != null) storage.delete(context.tenantId(), key);
             throw failure;
           }
         });

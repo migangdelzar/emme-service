@@ -5,6 +5,7 @@ import com.emme.catalog.configuration.CatalogImageStorageProperties;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.Optional;
@@ -36,9 +37,16 @@ class LocalImageStorage implements ImageStorage {
   @Override
   public Optional<StoredImage> read(UUID tenantId, String storageKey) {
     if (tenantId == null || storageKey == null || storageKey.isBlank()) return Optional.empty();
-    Path tenantRoot = baseDir.resolve(tenantId.toString()).normalize();
-    Path file = baseDir.resolve(storageKey).normalize();
-    if (!file.startsWith(tenantRoot) || !Files.isRegularFile(file)) return Optional.empty();
+    Path tenantRoot = baseDir.resolve(tenantId.toString()).toAbsolutePath().normalize();
+    Path file = baseDir.resolve(storageKey).toAbsolutePath().normalize();
+    if (!file.startsWith(tenantRoot) || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS))
+      return Optional.empty();
+    try {
+      if (!file.toRealPath(LinkOption.NOFOLLOW_LINKS)
+          .startsWith(tenantRoot.toRealPath(LinkOption.NOFOLLOW_LINKS))) return Optional.empty();
+    } catch (IOException e) {
+      return Optional.empty();
+    }
     try {
       String contentType = Files.probeContentType(file);
       byte[] bytes = Files.readAllBytes(file);
@@ -55,9 +63,15 @@ class LocalImageStorage implements ImageStorage {
   @Override
   public void delete(UUID tenantId, String storageKey) {
     if (tenantId == null || storageKey == null) return;
-    Path root = baseDir.resolve(tenantId.toString()).normalize();
-    Path file = baseDir.resolve(storageKey).normalize();
-    if (file.startsWith(root)) {
+    Path root = baseDir.resolve(tenantId.toString()).toAbsolutePath().normalize();
+    Path file = baseDir.resolve(storageKey).toAbsolutePath().normalize();
+    if (file.startsWith(root) && Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
+      try {
+        if (!file.toRealPath(LinkOption.NOFOLLOW_LINKS)
+            .startsWith(root.toRealPath(LinkOption.NOFOLLOW_LINKS))) return;
+      } catch (IOException e) {
+        return;
+      }
       try {
         Files.deleteIfExists(file);
       } catch (IOException e) {

@@ -14,6 +14,7 @@ COMPLETE_WITH_LIMITATION. Task 3 reviewer findings have been addressed within th
 - Reader now requires an explicit execution context and rejects active-scope tenant mismatches.
 - Reader is consumed by the existing Spring AI vision extraction path.
 - Added compensating storage deletion when metadata persistence or quote processing fails.
+- Compensating cleanup also covers late multipart read failures after storage succeeds.
 - Removed the silent ImageStorage read default; local storage returns SHA-256 metadata.
 - Added durable `ai_design_image` metadata migration with RLS and changelog registration.
 
@@ -37,3 +38,4 @@ COMPLETE_WITH_LIMITATION. Task 3 reviewer findings have been addressed within th
 
 - Database tests are migration contract assertions; PostgreSQL/Testcontainers infrastructure is not enabled in this module, so live RLS enforcement is not exercised.
 - Controller tests remain unit-level rather than full authenticated MockMvc coverage because the existing security test harness does not expose tenant context setup for this endpoint.
+- Local storage tests cover symlink escape resistance for reads and deletes.

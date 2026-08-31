@@ -75,10 +75,10 @@ public class DesignQuoteController {
         () -> {
           String key = null;
           try {
-            byte[] bytes = image.getBytes();
+            byte[] bytes = readBytes(image);
             key = storage.store(context.tenantId(), bytes);
             // Re-read through the multipart boundary so a late I/O failure is compensatable.
-            image.getBytes();
+            readBytes(image);
             metadata.save(
                 context.tenantId(),
                 context.workflowId(),
@@ -95,5 +95,13 @@ public class DesignQuoteController {
             throw failure;
           }
         });
+  }
+
+  private static byte[] readBytes(MultipartFile image) {
+    try {
+      return image.getBytes();
+    } catch (java.io.IOException exception) {
+      throw new java.io.UncheckedIOException("Failed to read uploaded image", exception);
+    }
   }
 }

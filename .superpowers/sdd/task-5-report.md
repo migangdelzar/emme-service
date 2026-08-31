@@ -1,4 +1,4 @@
-## 2026-08-05 — Task 5: Tenant Activation Listener
+## 2026-08-31 — Task 5: Durable AI jobs and backpressure remediation
 
 ### Task: Tenant Activation Listener — final provisioning step
 
@@ -48,8 +48,8 @@
 
 ### Summary — Current Status
 
-Task 5 complete. The provisioning chain now has its final step:
-- `TenantCreated` → `TenantSchemaReady` → `TenantRealmReady` → `TenantActivated` (@Externalized to Kafka)
+The prior report content was unrelated tenant provisioning and has been retained
+below as historical material; it must not be used as evidence for AI jobs.
 
 ## 2026-08-31 — Durable AI jobs and backpressure slice
 
@@ -60,7 +60,9 @@ Tests:
 - Red: `mise exec java@25.0.2 -- ./gradlew :modules:assistant:test --tests '*AiJobWorkerServiceTest'` failed at expected missing-contract compilation.
 - Green: `mise exec java@25.0.2 -- ./gradlew :modules:assistant:test --tests '*AiJobWorkerServiceTest' --tests '*AiJobExecutorConfigurationTest' :database:test --tests '*AiJobMigrationContractTest'` — `BUILD SUCCESSFUL`.
 
-Limitations: no JDBC status-store adapter or Redis Streams consumer group is wired yet; delayed broker redelivery/backoff remains a follow-up. Model handlers must continue to use the existing `BoundedModelExecutionScheduler`.
+Implemented: durable-before-event enqueue, tenant-scoped atomic JDBC claim/complete/failure transitions, constraints/RLS/indexes, Spring event listener and bounded executor wiring. Retry state uses durable `RETRYING`/`DEAD_LETTER` transitions and exponential availability timestamps. Redis remains an operational projection boundary already supplied by `AiLiveEventPublisher`; no second queue was introduced.
+
+Genuinely future work: production job handlers per job type, reconciliation for events missed before restart, configurable retry ceiling in the SQL transition (currently aligned to the default three attempts), and integration tests requiring the project PostgreSQL/Testcontainers profile. The worker also requires each concrete handler to call `BoundedModelExecutionScheduler`; the generic boundary cannot safely invent model capability for all job types.
 
 ### Next Up
 

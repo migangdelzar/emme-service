@@ -4,4 +4,10 @@ CREATE TABLE IF NOT EXISTS emme_core.ai_job_state (
   available_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, last_error TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE emme_core.ai_job_state ADD CONSTRAINT ck_ai_job_status CHECK (status IN ('QUEUED','CLAIMED','COMPLETED','RETRYING','DEAD_LETTER'));
+ALTER TABLE emme_core.ai_job_state ADD CONSTRAINT ck_ai_job_attempts CHECK (attempts >= 0);
 CREATE INDEX IF NOT EXISTS idx_ai_job_state_ready ON emme_core.ai_job_state (tenant_id, status, available_at);
+CREATE INDEX IF NOT EXISTS idx_ai_job_state_claimed ON emme_core.ai_job_state (status, updated_at);
+ALTER TABLE emme_core.ai_job_state ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS ai_job_tenant_isolation ON emme_core.ai_job_state;
+CREATE POLICY ai_job_tenant_isolation ON emme_core.ai_job_state FOR ALL USING (tenant_id = current_tenant_id()) WITH CHECK (tenant_id = current_tenant_id());

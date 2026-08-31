@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.UUID;
+import java.security.MessageDigest;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -40,9 +41,37 @@ class LocalImageStorage implements ImageStorage {
     if (!file.startsWith(tenantRoot) || !Files.isRegularFile(file)) return Optional.empty();
     try {
       String contentType = Files.probeContentType(file);
-      return Optional.of(new StoredImage(Files.readAllBytes(file), contentType == null ? "application/octet-stream" : contentType));
+      byte[] bytes = Files.readAllBytes(file);
+      return Optional.of(
+          new StoredImage(
+              bytes,
+              contentType == null ? "application/octet-stream" : contentType,
+              checksum(bytes)));
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to read catalog image", e);
+    }
+  }
+
+  @Override
+  public void delete(UUID tenantId, String storageKey) {
+    if (tenantId == null || storageKey == null) return;
+    Path root = baseDir.resolve(tenantId.toString()).normalize();
+    Path file = baseDir.resolve(storageKey).normalize();
+    if (file.startsWith(root)) {
+      try {
+        Files.deleteIfExists(file);
+      } catch (IOException e) {
+        throw new UncheckedIOException("Failed to delete catalog image", e);
+      }
+    }
+  }
+
+  private static String checksum(byte[] bytes) {
+    try {
+      var digest = MessageDigest.getInstance("SHA-256");
+      return java.util.HexFormat.of().formatHex(digest.digest(bytes));
+    } catch (java.security.NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
     }
   }
 }

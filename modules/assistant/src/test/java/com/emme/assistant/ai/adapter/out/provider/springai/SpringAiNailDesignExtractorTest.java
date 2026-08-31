@@ -62,7 +62,7 @@ class SpringAiNailDesignExtractorTest {
             "vision-v1",
             "quote-prompt-v1",
             "nail-features-v1",
-            key -> {
+            (key, context) -> {
               throw new UnsupportedOperationException("image not configured");
             });
 
@@ -90,7 +90,7 @@ class SpringAiNailDesignExtractorTest {
             "vision-v1",
             "quote-prompt-v1",
             "nail-features-v1",
-            key -> {
+            (key, context) -> {
               throw new UnsupportedOperationException("image not configured");
             });
 
@@ -118,7 +118,7 @@ class SpringAiNailDesignExtractorTest {
             "vision-v1",
             "quote-prompt-v1",
             "nail-features-v1",
-            key -> {
+            (key, context) -> {
               throw new UnsupportedOperationException("image not configured");
             });
 
@@ -147,7 +147,7 @@ class SpringAiNailDesignExtractorTest {
             "vision-v1",
             "quote-prompt-v1",
             "nail-features-v1",
-            key -> {
+            (key, context) -> {
               throw new UnsupportedOperationException("image not configured");
             },
             recorder);
@@ -186,7 +186,7 @@ class SpringAiNailDesignExtractorTest {
             "vision-v1",
             "quote-prompt-v1",
             "nail-features-v1",
-            key -> {
+            (key, context) -> {
               throw new UnsupportedOperationException("image not configured");
             },
             scheduler,

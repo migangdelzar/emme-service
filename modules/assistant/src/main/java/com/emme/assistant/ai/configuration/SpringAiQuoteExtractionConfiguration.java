@@ -47,7 +47,8 @@ public class SpringAiQuoteExtractionConfiguration {
       AiTraceRecorder traceRecorder,
       Optional<ModelExecutionScheduler> modelExecutionScheduler,
       AiExecutorProperties executorProperties) {
-    DesignImageReader imageReader = imageReaders.getIfAvailable(() -> key -> Optional.empty());
+    DesignImageReader imageReader =
+        imageReaders.getIfAvailable(() -> (key, context) -> Optional.empty());
     if (modelExecutionScheduler.isPresent()) {
       return new SpringAiNailDesignExtractor(
           aiQuoteExtractionChatClient,
@@ -73,7 +74,8 @@ public class SpringAiQuoteExtractionConfiguration {
       SpringAiExtractionProperties properties,
       ObjectProvider<DesignImageReader> imageReaders,
       AiTraceRecorder traceRecorder) {
-    DesignImageReader imageReader = imageReaders.getIfAvailable(() -> key -> Optional.empty());
+    DesignImageReader imageReader =
+        imageReaders.getIfAvailable(() -> (key, context) -> Optional.empty());
     return new SpringAiNailDesignExtractor(
         aiQuoteExtractionChatClient,
         properties.modelVersion(),

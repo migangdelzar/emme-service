@@ -74,17 +74,22 @@ public class DesignQuoteController {
         context,
         () -> {
           String key = storage.store(context.tenantId(), image.getBytes());
-          metadata.save(
-              context.tenantId(),
-              context.workflowId(),
-              key,
-              image.getContentType(),
-              image.getSize());
-          var result =
-              quote.process(
-                  new ProcessDesignQuoteCommand(request.templateKey(), request.inputText(), key));
-          return ResponseEntity.status(HttpStatus.ACCEPTED)
-              .body(new DesignQuoteResponse(result.workflowId(), result.state()));
+          try {
+            metadata.save(
+                context.tenantId(),
+                context.workflowId(),
+                key,
+                image.getContentType(),
+                image.getSize());
+            var result =
+                quote.process(
+                    new ProcessDesignQuoteCommand(request.templateKey(), request.inputText(), key));
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(new DesignQuoteResponse(result.workflowId(), result.state()));
+          } catch (RuntimeException | Error failure) {
+            storage.delete(context.tenantId(), key);
+            throw failure;
+          }
         });
   }
 }

@@ -4,4 +4,5 @@ import java.util.UUID;
 
 public interface TenantImageWriter {
   String store(UUID tenantId, byte[] bytes);
+  void delete(UUID tenantId, String storageKey);
 }

@@ -231,7 +231,7 @@ public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
   private NailDesignFeatures extractImage(ExtractionRequest request) {
     DesignImageReader.StoredImage image =
         imageReader
-            .read(request.imageStorageKey())
+            .read(request.imageStorageKey(), AiExecutionContextScope.requireCurrent())
             .orElseThrow(
                 () ->
                     new NailDesignExtractionRejectedException(

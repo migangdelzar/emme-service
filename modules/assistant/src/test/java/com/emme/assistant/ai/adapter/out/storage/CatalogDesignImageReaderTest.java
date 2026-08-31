@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.adapter.out.storage;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 import com.emme.ai.contracts.image.TenantImageReader;
@@ -12,6 +13,41 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class CatalogDesignImageReaderTest {
+  @Test
+  void rejectsMissingExplicitContext() {
+    var reader = new CatalogDesignImageReader(mock(TenantImageReader.class));
+    assertThatThrownBy(() -> reader.read("images/design.jpg", null))
+        .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void rejectsContextFromDifferentActiveTenant() {
+    var reader = new CatalogDesignImageReader(mock(TenantImageReader.class));
+    UUID activeTenant = UUID.randomUUID();
+    UUID otherTenant = UUID.randomUUID();
+    var active =
+        new AiExecutionContext(
+            activeTenant,
+            UUID.randomUUID(),
+            Set.of(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "trace-a",
+            "idem-a");
+    var supplied =
+        new AiExecutionContext(
+            otherTenant,
+            UUID.randomUUID(),
+            Set.of(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "trace-b",
+            "idem-b");
+    assertThatThrownBy(
+            () -> AiExecutionContextScope.call(active, () -> reader.read("key", supplied)))
+        .isInstanceOf(SecurityException.class);
+  }
+
   @Test
   void readsOnlyUsingAuthenticatedTenant() {
     TenantImageReader storage = mock(TenantImageReader.class);
@@ -29,7 +65,7 @@ class CatalogDesignImageReaderTest {
             "trace",
             "idem");
 
-    var result = AiExecutionContextScope.call(context, () -> reader.read("images/design.jpg"));
+    var result = reader.read("images/design.jpg", context);
 
     assertThat(result).isPresent();
     verify(storage).read(tenant, "images/design.jpg");

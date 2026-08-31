@@ -47,7 +47,7 @@ class SpringAiQuoteExtractionConfigurationTest {
   void createsAProviderNeutralExtractorWithConfiguredVersionMetadata() {
     SpringAiQuoteExtractionConfiguration configuration = new SpringAiQuoteExtractionConfiguration();
     ObjectProvider<DesignImageReader> imageReaders = emptyImageReaderProvider();
-    when(imageReaders.getIfAvailable(any())).thenReturn(key -> Optional.empty());
+    when(imageReaders.getIfAvailable(any())).thenReturn((key, context) -> Optional.empty());
 
     NailDesignExtractor extractor =
         configuration.nailDesignExtractor(
@@ -75,7 +75,7 @@ class SpringAiQuoteExtractionConfigurationTest {
         .thenAnswer(
             invocation -> invocation.getArgument(3, java.util.concurrent.Callable.class).call());
     ObjectProvider<DesignImageReader> imageReaders = emptyImageReaderProvider();
-    when(imageReaders.getIfAvailable(any())).thenReturn(key -> Optional.empty());
+    when(imageReaders.getIfAvailable(any())).thenReturn((key, context) -> Optional.empty());
 
     NailDesignExtractor extractor =
         configuration.nailDesignExtractor(

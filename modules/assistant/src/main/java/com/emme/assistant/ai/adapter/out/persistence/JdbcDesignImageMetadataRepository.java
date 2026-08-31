@@ -19,11 +19,8 @@ public final class JdbcDesignImageMetadataRepository implements DesignImageMetad
       UUID tenantId, UUID workflowId, String storageKey, String mediaType, long sizeBytes) {
     jdbc.sql(
             """
-        INSERT INTO ai_design_image (tenant_id, workflow_id, storage_key, media_type, size_bytes)
+            INSERT INTO ai_design_image (tenant_id, workflow_id, storage_key, media_type, size_bytes)
         VALUES (:tenantId, :workflowId, :storageKey, :mediaType, :sizeBytes)
-        ON CONFLICT (tenant_id, workflow_id) DO UPDATE SET
-          storage_key = EXCLUDED.storage_key, media_type = EXCLUDED.media_type,
-          size_bytes = EXCLUDED.size_bytes
         """)
         .param("tenantId", tenantId)
         .param("workflowId", workflowId)

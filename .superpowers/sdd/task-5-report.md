@@ -67,3 +67,14 @@ Genuinely future work: production job handlers per job type, reconciliation for 
 ### Next Up
 
 Kafka event contract tests (step 6 — validate `TenantActivated` event serialization/message structure)
+
+## 2026-08-31 — Final Task 5 remediation
+
+Remediated the reviewer findings on `feat/ai-platform-foundation`:
+
+- `JdbcAiJobStatusStore.findAvailable(limit)` now recovers claims older than five minutes and selects due `QUEUED`/`RETRYING` rows with `FOR UPDATE SKIP LOCKED`, deterministic ordering, and an explicit `current_tenant_id()` predicate. Durable context columns are persisted so reconciliation can reconstruct `AiExecutionContext`.
+- Executor rejection now leaves the durable row for reconciliation; it never invokes the worker inline.
+- `AiJobProperties.maxAttempts` is wired into both the JDBC store and worker. Retry availability uses PostgreSQL `power(2, attempts - 1)` progression and exhausted attempts become `DEAD_LETTER`.
+- Added regression coverage for rejection behavior and strengthened migration contract assertions for schema, constraints, indexes, RLS, and PostgreSQL-only statements.
+
+The migration tests are static contract tests only. They do not execute the SQL against live PostgreSQL because this repository’s existing database test infrastructure does not provision a PostgreSQL/Testcontainers runtime in this task. Live validation remains required before production rollout. Production job handlers remain intentionally disabled/deferred; the durable scheduling, claiming, retry, and reconciliation boundary is implemented, but no concrete job-type business handler is claimed complete.

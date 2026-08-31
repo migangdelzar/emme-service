@@ -20,13 +20,15 @@ public class AiJobExecutorConfiguration {
   }
 
   @Bean
-  AiJobWorkerService aiJobWorker(AiJobStatusStore store, ModelExecutionScheduler scheduler) {
+  AiJobWorkerService aiJobWorker(
+      AiJobStatusStore store, ModelExecutionScheduler scheduler, AiJobProperties properties) {
     return new AiJobWorkerService(
         store,
         scheduler,
         (request, context) -> {
-          throw new IllegalStateException("AI job handler disabled: " + request.type());
-        });
+          throw new IllegalStateException("AI job handler disabled/deferred: " + request.type());
+        },
+        properties.maxAttempts());
   }
 
   @Bean(name = "aiJobExecutor", destroyMethod = "shutdown")

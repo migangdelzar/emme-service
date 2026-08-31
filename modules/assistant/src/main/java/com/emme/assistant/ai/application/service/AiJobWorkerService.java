@@ -20,13 +20,24 @@ public final class AiJobWorkerService {
   private final AiJobStatusStore store;
   private final ModelExecutionScheduler scheduler;
   private final JobHandler handler;
+  private final int maxAttempts;
   private Duration lastBackoff = Duration.ZERO;
 
   public AiJobWorkerService(
       AiJobStatusStore store, ModelExecutionScheduler scheduler, JobHandler handler) {
+    this(store, scheduler, handler, 3);
+  }
+
+  public AiJobWorkerService(
+      AiJobStatusStore store,
+      ModelExecutionScheduler scheduler,
+      JobHandler handler,
+      int maxAttempts) {
     this.store = Objects.requireNonNull(store);
     this.scheduler = Objects.requireNonNull(scheduler);
     this.handler = Objects.requireNonNull(handler);
+    if (maxAttempts <= 0) throw new IllegalArgumentException("maxAttempts must be positive");
+    this.maxAttempts = maxAttempts;
   }
 
   public void handle(AiJobRequest request) {
@@ -47,7 +58,7 @@ public final class AiJobWorkerService {
           });
       store.complete(request.jobId(), request.context());
     } catch (RuntimeException failure) {
-      lastBackoff = Duration.ofSeconds(1);
+      lastBackoff = Duration.ofSeconds(1L << Math.min(maxAttempts - 1, 30));
       store.fail(request.jobId(), "AI_JOB_FAILED", request.context());
     }
   }

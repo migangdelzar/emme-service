@@ -21,7 +21,7 @@ public final class AiJobListener {
     try {
       executor.execute(() -> worker.handle(request));
     } catch (java.util.concurrent.RejectedExecutionException rejected) {
-      worker.handle(request);
+      // The durable row remains queued/retryable and is picked up by reconciliation.
     }
   }
 }

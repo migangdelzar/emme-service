@@ -28,10 +28,13 @@ import org.junit.jupiter.api.Test;
 
 class AiJobReconciliationPollerTest {
 
+  private static final UUID TENANT_A = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  private static final UUID TENANT_B = UUID.fromString("00000000-0000-0000-0000-000000000002");
+
   @Test
   void claimsAvailableJobsInsideTheAuthoritativeTenantAiContext() {
-    UUID tenantA = UUID.randomUUID();
-    UUID tenantB = UUID.randomUUID();
+    UUID tenantA = TENANT_A;
+    UUID tenantB = TENANT_B;
     TenantRepository tenants = mock(TenantRepository.class);
     when(tenants.findByStatus(TenantStatus.ACTIVE))
         .thenReturn(List.of(tenant(tenantA), tenant(tenantB)));
@@ -50,7 +53,7 @@ class AiJobReconciliationPollerTest {
 
     AiJobReconciliationPoller poller =
         new AiJobReconciliationPoller(
-            store, mock(AiJobListener.class), new AiJobProperties(1, 1, 3, 7), tenants, metrics);
+            store, mock(AiJobListener.class), new AiJobProperties(1, 1, 3, 2), tenants, metrics);
 
     poller.reconcile();
 
@@ -64,8 +67,8 @@ class AiJobReconciliationPollerTest {
 
   @Test
   void alternatesTenantsAndDefersEveryRejectedClaimImmediately() {
-    UUID tenantA = UUID.randomUUID();
-    UUID tenantB = UUID.randomUUID();
+    UUID tenantA = TENANT_A;
+    UUID tenantB = TENANT_B;
     AiExecutionContext contextA = context(tenantA, "a");
     AiExecutionContext contextB = context(tenantB, "b");
     AiJobRequest requestA = request(contextA);
@@ -97,12 +100,43 @@ class AiJobReconciliationPollerTest {
             mock(AiJobWorkerService.class), executor, store, NoopAiJobMetrics.INSTANCE);
 
     new AiJobReconciliationPoller(
-            store, listener, new AiJobProperties(1, 1, 3, 1), tenants, NoopAiJobMetrics.INSTANCE)
+            store, listener, new AiJobProperties(1, 1, 3, 2), tenants, NoopAiJobMetrics.INSTANCE)
         .reconcile();
 
     assertThat(events)
         .containsExactly(
             "claim:" + tenantA, "defer:" + tenantA, "claim:" + tenantB, "defer:" + tenantB);
+  }
+
+  @Test
+  void rotatesDeterministicallyAcrossSaturatedReconciliationCycles() {
+    TenantRepository tenants = mock(TenantRepository.class);
+    when(tenants.findByStatus(TenantStatus.ACTIVE))
+        .thenReturn(List.of(tenant(TENANT_B), tenant(TENANT_A)));
+    AiJobStatusStore store = mock(AiJobStatusStore.class);
+    List<UUID> claimedTenants = new ArrayList<>();
+    when(store.claimAvailable(1))
+        .thenAnswer(
+            invocation -> {
+              UUID tenantId = AiExecutionContextScope.requireCurrent().tenantId();
+              claimedTenants.add(tenantId);
+              return List.of(request(context(tenantId, tenantId.toString())));
+            });
+    doNothing().when(store).defer(any(), any(), any());
+    ExecutorService saturatedExecutor = mock(ExecutorService.class);
+    doThrow(new RejectedExecutionException()).when(saturatedExecutor).execute(any());
+    AiJobListener listener =
+        new AiJobListener(
+            mock(AiJobWorkerService.class), saturatedExecutor, store, NoopAiJobMetrics.INSTANCE);
+    AiJobReconciliationPoller poller =
+        new AiJobReconciliationPoller(
+            store, listener, new AiJobProperties(1, 1, 3, 1), tenants, NoopAiJobMetrics.INSTANCE);
+
+    poller.reconcile();
+    poller.reconcile();
+    poller.reconcile();
+
+    assertThat(claimedTenants).containsExactly(TENANT_A, TENANT_B, TENANT_A);
   }
 
   private static AiExecutionContext context(UUID tenantId, String key) {

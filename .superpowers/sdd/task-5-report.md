@@ -72,12 +72,12 @@ Kafka event contract tests (step 6 — validate `TenantActivated` event serializ
 
 Remediated the reviewer findings on `feat/ai-platform-foundation`:
 
-- `JdbcAiJobStatusStore.findAvailable(limit)` now recovers claims older than five minutes and selects due `QUEUED`/`RETRYING` rows with `FOR UPDATE SKIP LOCKED`, deterministic ordering, and an explicit `current_tenant_id()` predicate. Durable context columns are persisted so reconciliation can reconstruct `AiExecutionContext`.
+- `JdbcAiJobStatusStore.claimAvailable(limit)` now recovers claims older than five minutes and selects due `QUEUED`/`RETRYING` rows with `FOR UPDATE SKIP LOCKED`, deterministic ordering, and an explicit `current_tenant_id()` predicate. Durable context columns are persisted so reconciliation can reconstruct `AiExecutionContext`.
 - Executor rejection now leaves the durable row for reconciliation; it never invokes the worker inline.
 - `AiJobProperties.maxAttempts` is wired into both the JDBC store and worker. Retry availability uses PostgreSQL `power(2, attempts - 1)` progression and exhausted attempts become `DEAD_LETTER`.
 - Added regression coverage for rejection behavior and strengthened migration contract assertions for schema, constraints, indexes, RLS, and PostgreSQL-only statements.
 
-The migration tests are static contract tests only. They do not execute the SQL against live PostgreSQL because this repository’s existing database test infrastructure does not provision a PostgreSQL/Testcontainers runtime in this task. Live validation remains required before production rollout. Production job handlers remain intentionally disabled/deferred; the durable scheduling, claiming, retry, and reconciliation boundary is implemented, but no concrete job-type business handler is claimed complete.
+The `AiJobMigrationContractTest` is a static Liquibase ownership/metadata contract: it verifies the formatted SQL and that the core changelog includes the single changeset, but it does not invoke Liquibase. `AiJobReconciliationClaimIntegrationTest` executes the current `012-ai-job-state.sql` formatted SQL text directly through JDBC against PostgreSQL/Testcontainers, covering PostgreSQL SQL semantics, RLS, claiming, retry progression, rejection deferral, and dead-lettering. That direct-SQL setup does not replace a Liquibase-runner integration test for changelog orchestration. Production job handlers remain intentionally disabled/deferred; the durable scheduling, claiming, retry, and reconciliation boundary is implemented, but no concrete job-type business handler is claimed complete.
 
 ## 2026-08-31 — Final review remediation: durable claiming and tenant-safe reconciliation
 
@@ -86,7 +86,7 @@ The final-review gaps are remediated on `feat/ai-platform-foundation`:
 - Reconciliation now calls `AiJobStatusStore.claimAvailable(limit)`, whose JDBC implementation runs one transaction containing stale-claim recovery and a PostgreSQL `WITH candidates ... FOR UPDATE SKIP LOCKED` followed by `UPDATE ... RETURNING`. The durable status transition to `CLAIMED` occurs before the rows are returned; there is no select-only reconciliation lock.
 - The scheduled poller obtains active tenant IDs from the authoritative `TenantRepository`. For each registry tenant it binds a synthetic backend `AiExecutionContext` and `TenantContextHolder`, and the JDBC transaction establishes `app.current_tenant_id` with `set_config(..., true)`. Every recovery/claim/update predicate also carries the explicit tenant ID and `current_tenant_id()` check. Frontend, event, and LLM tenant IDs are not used to enumerate scheduled work.
 - Jobs returned by reconciliation use a dedicated already-claimed worker path, so dispatch does not attempt a second claim. Rejected executor submissions remain durable and retryable.
-- New unit coverage verifies authoritative tenant iteration and context cleanup. A direct Testcontainers PostgreSQL integration test applies migration `028-ai-job-state.sql`, runs with a non-superuser runtime role and forced RLS, and verifies both tenant isolation and that two concurrent reconciliation claims produce exactly one durable claim.
+- New unit coverage verifies authoritative tenant iteration and context cleanup. A direct Testcontainers PostgreSQL integration test applies the core migration `012-ai-job-state.sql`, runs with a non-superuser runtime role and forced RLS, and verifies both tenant isolation and that two concurrent reconciliation claims produce exactly one durable claim.
 - Enqueue availability uses PostgreSQL’s `CURRENT_TIMESTAMP` default so readiness comparisons use one database clock rather than application and database clocks.
 
 Verification:
@@ -101,7 +101,7 @@ The concrete AI job handlers remain intentionally disabled/deferred, and Redis r
 ## 2026-08-31 — Final review closure: canonical worker payloads, retry evidence, and metrics
 
 - `AiJobStatusStore.claimAndLoad` atomically claims an event-addressed row and returns the canonical durable payload and execution context. `AiJobWorkerService` executes only that returned request; the reconciliation path reloads the claimed row with `loadClaimed` before execution. A regression test proves altered event payloads and context do not reach the handler or completion transition.
-- `028-ai-job-state.sql` now enables and forces row-level security. The Testcontainers suite relies on the migration’s `FORCE ROW LEVEL SECURITY` statement and verifies the catalog flag while running claims as a non-superuser role.
+- `012-ai-job-state.sql` now enables and forces row-level security. The Testcontainers suite relies on the core migration’s `FORCE ROW LEVEL SECURITY` statement and verifies the catalog flag while running claims as a non-superuser role.
 - `AiJobReconciliationClaimIntegrationTest` now executes the PostgreSQL retry lifecycle: first failure schedules a one-second retry, the second schedules a two-second retry, and the third failure transitions the row to `DEAD_LETTER` with its error code.
 - Added `package-info.java` for the new `com.emme.ai.contracts.job`, `com.emme.assistant.ai.domain.job`, and `com.emme.assistant.ai.adapter.in.messaging` production packages. The existing unrelated `com.emme.assistant.ai.adapter.out.storage` package still lacks metadata; it remains intentionally unchanged and is the known failing assertion in `AiCapabilityConventionTest`.
 - Added a small injected `AiJobMetrics` boundary with Micrometer and no-op implementations. It records executor queue depth, claim outcomes, failures, retries, dead-letter transitions, and tenant scheduling selections with bounded labels and no tenant-ID metric cardinality. Redis and concrete job handlers remain explicitly deferred.
@@ -146,3 +146,15 @@ Verification:
 - `mise exec java@25.0.2 -- ./gradlew :modules:assistant:integrationTest --tests '*AiJobReconciliationClaimIntegrationTest' --no-daemon` — PASS against PostgreSQL 16/Testcontainers.
 
 Canonical durable reload, RLS, retry/DLQ, Redis/live-event deferral, and intentionally deferred concrete handlers remain preserved. Unrelated pre-existing worktree edits and known full-suite convention/application-context blockers were not staged or changed.
+
+## 2026-08-31 — Final Task 5 fixes: bounded fairness and delivery accounting
+
+- Active tenant enumeration now has a stable `id ASC` repository order, and the reconciliation poller additionally sorts/deduplicates its input and carries a round-robin cursor across scheduled cycles. Each reconciliation run consumes a bounded global `pollLimit`, claiming at most one job per tenant turn, so a saturated executor cannot repeatedly favor the first tenant.
+- Durable job selection now uses `available_at, created_at, job_id` ordering, including the unique job ID tie-breaker. A rejected already-claimed delivery atomically returns the row to `RETRYING` and restores the claim admission increment in `attempts`; delivery rejection therefore cannot consume execution retry attempts.
+- Regression coverage proves deterministic tenant rotation under executor saturation and proves repeated rejection is followed by the first real failure at attempt one, then the configured retry/DLQ progression.
+
+Verification:
+
+- Java 25 focused database, scheduling/ownership, AI job unit, live PostgreSQL/Testcontainers, compilation, and Spotless checks pass.
+- The Liquibase migration contract remains static for formatted SQL metadata/changelog ownership; the live integration test applies `012-ai-job-state.sql` directly through JDBC and does not validate Liquibase runner orchestration.
+- Existing unrelated worktree edits were not staged or changed.

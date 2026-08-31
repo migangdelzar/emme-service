@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.sql.DataSource;
@@ -186,6 +187,28 @@ class AiJobReconciliationClaimIntegrationTest {
   }
 
   @Test
+  void claimsJobsWithEqualTimestampsInStableJobIdOrder() {
+    AiExecutionContext context = context(TENANT_ID, "stable-job-order");
+    UUID firstJobId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    UUID secondJobId = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    AiJobRequest secondRequest =
+        new AiJobRequest(secondJobId, AiJobType.GRAPH_PROJECTION, "second", context);
+    AiJobRequest firstRequest =
+        new AiJobRequest(firstJobId, AiJobType.GRAPH_PROJECTION, "first", context);
+
+    runWithContext(context, () -> store.enqueue(secondRequest));
+    runWithContext(context, () -> store.enqueue(firstRequest));
+    adminJdbc.update(
+        "UPDATE ai_job_state SET created_at='2026-01-01T00:00:00Z'::timestamptz, available_at='2026-01-01T00:00:00Z'::timestamptz WHERE job_id IN (?, ?)",
+        firstJobId,
+        secondJobId);
+
+    assertThat(withContext(context, () -> store.claimAvailable(2)))
+        .extracting(AiJobRequest::jobId)
+        .containsExactly(firstJobId, secondJobId);
+  }
+
+  @Test
   void progressesRetryBackoffAndMovesTheThirdFailureToDeadLetter() {
     AiExecutionContext context = context(TENANT_ID, "retry-progression");
     AiJobRequest request =
@@ -227,6 +250,41 @@ class AiJobReconciliationClaimIntegrationTest {
     assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
     assertThat(backoffSecondsFor(request.jobId())).isBetween(0.9, 1.1);
     assertThat(eligibleCountFor(context)).isZero();
+  }
+
+  @Test
+  void rejectedDeliveryDoesNotConsumeExecutionAttemptsBeforeRetryAndDeadLetterPolicy() {
+    AiExecutionContext context = context(TENANT_ID, "rejection-does-not-consume-attempts");
+    AiJobRequest request =
+        new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
+    runWithContext(context, () -> store.enqueue(request));
+
+    for (int rejection = 0; rejection < 3; rejection++) {
+      assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+          .isPresent();
+      runWithContext(context, () -> store.defer(request.jobId(), context, Duration.ofSeconds(1)));
+      makeDue(request.jobId());
+    }
+
+    assertThat(attemptsFor(request.jobId())).isZero();
+
+    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+        .isPresent();
+    runWithContext(context, () -> store.fail(request.jobId(), "FIRST_REAL_FAILURE", context));
+    assertThat(attemptsFor(request.jobId())).isEqualTo(1);
+    assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
+
+    makeDue(request.jobId());
+    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+        .isPresent();
+    runWithContext(context, () -> store.fail(request.jobId(), "SECOND_REAL_FAILURE", context));
+    assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
+
+    makeDue(request.jobId());
+    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+        .isPresent();
+    runWithContext(context, () -> store.fail(request.jobId(), "THIRD_REAL_FAILURE", context));
+    assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.DEAD_LETTER.name());
   }
 
   private static AiExecutionContext context(UUID tenantId, String key) {
@@ -305,6 +363,11 @@ class AiJobReconciliationClaimIntegrationTest {
         jobId);
   }
 
+  private int attemptsFor(UUID jobId) {
+    return adminJdbc.queryForObject(
+        "SELECT attempts FROM ai_job_state WHERE job_id = ?", Integer.class, jobId);
+  }
+
   private String lastErrorFor(UUID jobId) {
     return adminJdbc.queryForObject(
         "SELECT last_error FROM ai_job_state WHERE job_id = ?", String.class, jobId);
@@ -337,8 +400,8 @@ class AiJobReconciliationClaimIntegrationTest {
 
   private static final class RecordingAiJobMetrics
       implements com.emme.assistant.ai.application.port.out.AiJobMetrics {
-    private final List<Duration> queueLags = new ArrayList<>();
-    private final List<Duration> claimDurations = new ArrayList<>();
+    private final List<Duration> queueLags = new CopyOnWriteArrayList<>();
+    private final List<Duration> claimDurations = new CopyOnWriteArrayList<>();
 
     @Override
     public void recordQueueDepth(int depth) {}

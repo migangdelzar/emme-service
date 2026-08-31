@@ -19,7 +19,7 @@ public interface SpringDataTenantRepository extends JpaRepository<TenantEntity, 
 
   boolean existsBySlug(String slug);
 
-  List<TenantEntity> findByStatus(TenantStatus status);
+  List<TenantEntity> findByStatusOrderByIdAsc(TenantStatus status);
 
   @Query("SELECT t.databaseId FROM TenantEntity t WHERE t.id = :tenantId")
   Optional<UUID> findDatabaseIdByTenantId(@Param("tenantId") UUID tenantId);

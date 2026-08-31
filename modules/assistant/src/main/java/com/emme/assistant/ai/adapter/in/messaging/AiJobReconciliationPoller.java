@@ -8,6 +8,8 @@ import com.emme.kernel.context.AiExecutionContextBridge;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.tenancy.application.port.out.TenantRepository;
 import com.emme.tenancy.domain.model.TenantStatus;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,6 +25,7 @@ public final class AiJobReconciliationPoller {
   private final AiJobProperties properties;
   private final TenantRepository tenants;
   private final AiJobMetrics metrics;
+  private UUID nextTenantId;
 
   public AiJobReconciliationPoller(
       AiJobStatusStore store,
@@ -38,10 +41,34 @@ public final class AiJobReconciliationPoller {
   }
 
   @Scheduled(fixedDelayString = "${app.ai.jobs.reconciliation-delay-ms:5000}")
-  public void reconcile() {
-    tenants.findByStatus(TenantStatus.ACTIVE).stream()
-        .map(tenant -> tenant.id())
-        .forEach(this::reconcileTenant);
+  public synchronized void reconcile() {
+    List<UUID> activeTenantIds =
+        tenants.findByStatus(TenantStatus.ACTIVE).stream()
+            .map(tenant -> tenant.id())
+            .distinct()
+            .sorted(Comparator.naturalOrder())
+            .toList();
+    if (activeTenantIds.isEmpty()) {
+      nextTenantId = null;
+      return;
+    }
+
+    int start = startingIndex(activeTenantIds);
+    int claimBudget = properties.pollLimit();
+    for (int offset = 0; offset < claimBudget; offset++) {
+      reconcileTenant(activeTenantIds.get((start + offset) % activeTenantIds.size()));
+    }
+    nextTenantId = activeTenantIds.get((start + claimBudget) % activeTenantIds.size());
+  }
+
+  private int startingIndex(List<UUID> activeTenantIds) {
+    if (nextTenantId == null) return 0;
+    int exactIndex = activeTenantIds.indexOf(nextTenantId);
+    if (exactIndex >= 0) return exactIndex;
+    for (int index = 0; index < activeTenantIds.size(); index++) {
+      if (activeTenantIds.get(index).compareTo(nextTenantId) > 0) return index;
+    }
+    return 0;
   }
 
   private void reconcileTenant(UUID tenantId) {
@@ -59,7 +86,6 @@ public final class AiJobReconciliationPoller {
         context,
         () ->
             AiExecutionContextBridge.runCurrent(
-                () ->
-                    store.claimAvailable(properties.pollLimit()).forEach(listener::onClaimedJob)));
+                () -> store.claimAvailable(1).forEach(listener::onClaimedJob)));
   }
 }

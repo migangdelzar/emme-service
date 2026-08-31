@@ -63,7 +63,7 @@ public final class TenantPersistenceAdapter implements TenantRepository {
 
   @Override
   public List<Tenant> findByStatus(TenantStatus status) {
-    return repository.findByStatus(status).stream().map(mapper::toDomain).toList();
+    return repository.findByStatusOrderByIdAsc(status).stream().map(mapper::toDomain).toList();
   }
 
   @Override

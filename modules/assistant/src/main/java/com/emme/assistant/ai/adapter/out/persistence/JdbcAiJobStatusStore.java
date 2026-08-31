@@ -159,7 +159,7 @@ public final class JdbcAiJobStatusStore implements AiJobStatusStore {
         context,
         () -> {
           jdbc.query(
-              "UPDATE ai_job_state SET status='RETRYING', available_at=CURRENT_TIMESTAMP + (? * INTERVAL '1 second'), updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND tenant_id=? AND tenant_id=current_tenant_id() AND status='CLAIMED' RETURNING job_id",
+              "UPDATE ai_job_state SET status='RETRYING', attempts=GREATEST(attempts - 1, 0), available_at=CURRENT_TIMESTAMP + (? * INTERVAL '1 second'), updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND tenant_id=? AND tenant_id=current_tenant_id() AND status='CLAIMED' RETURNING job_id",
               (rs, rowNum) -> rs.getObject("job_id", UUID.class),
               delay.toNanos() / 1_000_000_000.0,
               jobId,
@@ -184,7 +184,7 @@ public final class JdbcAiJobStatusStore implements AiJobStatusStore {
                   for (int i = 0; i < recoveredClaims; i++) metrics.recordRetry();
                   List<AiJobRequest> claimed =
                       jdbc.query(
-                          "WITH candidates AS (SELECT job_id FROM ai_job_state WHERE tenant_id=? AND tenant_id=current_tenant_id() AND available_at<=CURRENT_TIMESTAMP AND status IN ('QUEUED','RETRYING') ORDER BY available_at, created_at FOR UPDATE SKIP LOCKED LIMIT ?) UPDATE ai_job_state job SET status='CLAIMED', attempts=job.attempts+1, updated_at=CURRENT_TIMESTAMP FROM candidates WHERE job.job_id=candidates.job_id RETURNING job.job_id, job.tenant_id, job.principal_id, job.roles, job.conversation_id, job.workflow_id, job.trace_id, job.idempotency_key, job.job_type, job.payload, GREATEST(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - job.created_at)), 0) AS queue_lag_seconds",
+                          "WITH candidates AS (SELECT job_id FROM ai_job_state WHERE tenant_id=? AND tenant_id=current_tenant_id() AND available_at<=CURRENT_TIMESTAMP AND status IN ('QUEUED','RETRYING') ORDER BY available_at, created_at, job_id FOR UPDATE SKIP LOCKED LIMIT ?), claimed AS (UPDATE ai_job_state job SET status='CLAIMED', attempts=job.attempts+1, updated_at=CURRENT_TIMESTAMP FROM candidates WHERE job.job_id=candidates.job_id RETURNING job.job_id, job.tenant_id, job.principal_id, job.roles, job.conversation_id, job.workflow_id, job.trace_id, job.idempotency_key, job.job_type, job.payload, job.created_at, job.available_at) SELECT job_id, tenant_id, principal_id, roles, conversation_id, workflow_id, trace_id, idempotency_key, job_type, payload, GREATEST(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - created_at)), 0) AS queue_lag_seconds FROM claimed ORDER BY available_at, created_at, job_id",
                           jobRequestRowMapper(metrics),
                           context.tenantId(),
                           limit);

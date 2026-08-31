@@ -18,7 +18,6 @@ import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Configuration(proxyBeanMethods = false)
-@org.springframework.scheduling.annotation.EnableScheduling
 @EnableConfigurationProperties(AiJobProperties.class)
 public class AiJobExecutorConfiguration {
   @Bean

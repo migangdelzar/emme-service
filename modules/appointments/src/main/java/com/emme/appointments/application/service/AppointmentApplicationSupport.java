@@ -1,17 +1,17 @@
 package com.emme.appointments.application.service;
 
-import com.emme.appointments.api.result.AppointmentDetails;
 import com.emme.appointments.api.command.AppointmentActor;
+import com.emme.appointments.api.result.AppointmentDetails;
 import com.emme.appointments.application.mapper.AppointmentApplicationMapper;
 import com.emme.appointments.application.port.out.AppointmentCollisionPort;
 import com.emme.appointments.application.port.out.AppointmentRepository;
 import com.emme.appointments.domain.model.Appointment;
+import com.emme.appointments.domain.model.AppointmentStatus;
 import com.emme.clients.application.port.out.CustomerRepository;
 import com.emme.clients.domain.model.Customer;
 import com.emme.services.application.port.out.ArtistRepository;
 import com.emme.services.application.port.out.ServiceRepository;
 import com.emme.services.domain.model.Artist;
-import com.emme.appointments.domain.model.AppointmentStatus;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -45,8 +45,10 @@ final class AppointmentApplicationSupport {
 
   Appointment authorize(AppointmentActor actor, UUID id) {
     Appointment appointment = find(id);
-    if (!actor.tenantId().equals(appointment.getTenantId())) throw new SecurityException("Appointment is outside actor tenant");
-    if (!actor.isStaff() && (!actor.hasRole("client") || !actor.principalId().equals(appointment.getCustomerId())))
+    if (!actor.tenantId().equals(appointment.getTenantId()))
+      throw new SecurityException("Appointment is outside actor tenant");
+    if (!actor.isStaff()
+        && (!actor.hasRole("client") || !actor.principalId().equals(appointment.getCustomerId())))
       throw new SecurityException("Actor is not authorized for appointment");
     return appointment;
   }
@@ -55,12 +57,14 @@ final class AppointmentApplicationSupport {
     if (!confirmed) throw new SecurityException("User confirmation is required");
     if (!actor.isStaff() && (!actor.hasRole("client") || !actor.principalId().equals(customerId)))
       throw new SecurityException("Actor is not authorized to book for customer");
-    if (customerRepository.findByTenantId(actor.tenantId()).stream().noneMatch(c -> c.getId().equals(customerId)))
+    if (customerRepository.findByTenantId(actor.tenantId()).stream()
+        .noneMatch(c -> c.getId().equals(customerId)))
       throw new SecurityException("Customer is outside actor tenant");
   }
 
   void ensureMutable(Appointment appointment) {
-    if (appointment.getStatus() != AppointmentStatus.CONFIRMED) throw new IllegalStateException("Only confirmed appointments can be mutated");
+    if (appointment.getStatus() != AppointmentStatus.CONFIRMED)
+      throw new IllegalStateException("Only confirmed appointments can be mutated");
   }
 
   void ensureReferences(UUID customerId, UUID serviceId, UUID artistId) {
@@ -73,6 +77,19 @@ final class AppointmentApplicationSupport {
     if (artistRepository.findById(artistId).isEmpty()) {
       throw new IllegalArgumentException("Artist not found: " + artistId);
     }
+  }
+
+  void ensureReferences(UUID tenantId, UUID customerId, UUID serviceId, UUID artistId) {
+    ensureReferences(customerId, serviceId, artistId);
+    if (customerRepository.findByTenantId(tenantId).stream()
+            .noneMatch(c -> c.getId().equals(customerId))
+        || serviceRepository
+            .findByTenantIdAndStatus(tenantId, com.emme.services.domain.model.ServiceStatus.ACTIVE)
+            .stream()
+            .noneMatch(s -> s.getId().equals(serviceId))
+        || artistRepository.findByTenantId(tenantId).stream()
+            .noneMatch(a -> a.getId().equals(artistId)))
+      throw new SecurityException("Appointment reference is outside actor tenant");
   }
 
   void ensureAvailable(UUID artistId, Instant startsAt, Instant endsAt) {

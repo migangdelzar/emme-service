@@ -118,7 +118,7 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
       if (unknownArgument != null) {
         throw new AiToolExecutionRejectedException("Unknown AI tool argument: " + unknownArgument);
       }
-      claimedOperationKey = mutationOperationKey(definition, context);
+      claimedOperationKey = mutationOperationKey(definition, context, invocation.arguments());
       if (claimedOperationKey != null) {
         Optional<AiToolResult> completed = idempotencyStore.find(claimedOperationKey);
         if (completed.isPresent()) {
@@ -211,11 +211,24 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
   }
 
   private static String mutationOperationKey(
-      AiToolDefinition definition, AiExecutionContext context) {
+      AiToolDefinition definition, AiExecutionContext context, Map<String, String> arguments) {
     if (definition.risk() != AiToolRisk.MUTATION) {
       return null;
     }
-    return definition.key() + ":" + context.principalId() + ":" + context.idempotencyKey();
+    String canonical =
+        arguments.entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
+            .map(entry -> entry.getKey() + "=" + entry.getValue())
+            .collect(Collectors.joining("&"));
+    return context.tenantId()
+        + ":"
+        + definition.key()
+        + ":"
+        + context.principalId()
+        + ":"
+        + context.idempotencyKey()
+        + ":"
+        + canonical;
   }
 
   private static AiToolExecutionContext toExecutionContext(AiExecutionContext context) {

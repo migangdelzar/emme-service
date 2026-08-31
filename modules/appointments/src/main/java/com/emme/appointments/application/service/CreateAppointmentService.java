@@ -1,10 +1,10 @@
 package com.emme.appointments.application.service;
 
+import com.emme.appointments.api.command.CreateAppointmentCommand;
 import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.appointments.api.result.AppointmentDetails;
-import com.emme.appointments.api.usecase.CreateAppointmentUseCase;
 import com.emme.appointments.api.usecase.BookAppointmentUseCase;
-import com.emme.appointments.api.command.CreateAppointmentCommand;
+import com.emme.appointments.api.usecase.CreateAppointmentUseCase;
 import com.emme.appointments.application.port.out.AppointmentCollisionPort;
 import com.emme.appointments.application.port.out.AppointmentEventPublisher;
 import com.emme.appointments.application.port.out.AppointmentRepository;
@@ -43,7 +43,13 @@ public class CreateAppointmentService implements CreateAppointmentUseCase, BookA
   @Override
   public AppointmentDetails book(CreateAppointmentCommand command) {
     support.ensureActorCanBook(command.actor(), command.customerId(), command.confirmed());
-    return create(command.actor().tenantId(), command.customerId(), command.serviceId(), command.artistId(), command.startsAt(), command.endsAt());
+    return create(
+        command.actor().tenantId(),
+        command.customerId(),
+        command.serviceId(),
+        command.artistId(),
+        command.startsAt(),
+        command.endsAt());
   }
 
   @Override
@@ -54,7 +60,7 @@ public class CreateAppointmentService implements CreateAppointmentUseCase, BookA
       UUID artistId,
       Instant startsAt,
       Instant endsAt) {
-    support.ensureReferences(customerId, serviceId, artistId);
+    support.ensureReferences(tenantId, customerId, serviceId, artistId);
     support.ensureAvailable(artistId, startsAt, endsAt);
     Appointment saved =
         repository.save(

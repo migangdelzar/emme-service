@@ -74,3 +74,9 @@ databaseChangeLog:
   - include:
       file: releases/0.1.0/025-conversation-event-idempotency.sql
       relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/026-conversation-workflow-resume.sql
+      relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/027-ai-design-images.sql
+      relativeToChangelogFile: true

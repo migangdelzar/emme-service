@@ -61,7 +61,9 @@ class ConversationWorkflowCheckpointIntegrationTest {
           new ResourceDatabasePopulator(
                   new ClassPathResource("db/emme-studio/releases/0.1.0/016-ai-quote-workflow.sql"),
                   new ClassPathResource(
-                      "db/emme-studio/releases/0.1.0/017-ai-workflow-checkpoint-next-node.sql"))
+                      "db/emme-studio/releases/0.1.0/017-ai-workflow-checkpoint-next-node.sql"),
+                  new ClassPathResource(
+                      "db/emme-studio/releases/0.1.0/026-conversation-workflow-resume.sql"))
               .execute(dataSource);
         });
   }
@@ -82,16 +84,37 @@ class ConversationWorkflowCheckpointIntegrationTest {
 
     var paused = withContext(tenantAContext, () -> adapter().startOrResume(start, tenantAContext));
     assertThat(paused.status()).isEqualTo(ConversationWorkflowStatus.WAITING_FOR_APPROVAL);
+    String persistedStatus =
+        TenantContextHolder.withTenantOverride(
+            tenantA,
+            () ->
+                jdbc.sql(
+                        """
+                        SELECT status
+                        FROM ai_workflow_run
+                        WHERE id = :workflowId
+                          AND tenant_id = :tenantId
+                          AND principal_id = :principalId
+                          AND conversation_id = :conversationId
+                        """)
+                    .param("workflowId", workflow)
+                    .param("tenantId", tenantA)
+                    .param("principalId", principal)
+                    .param("conversationId", conversation)
+                    .query(String.class)
+                    .single());
+    assertThat(persistedStatus).isEqualTo("WAITING_FOR_APPROVAL");
 
+    AiExecutionContext staffContext = staffContext(tenantA, conversation, workflow);
     var resumed =
         withContext(
-            tenantAContext,
+            staffContext,
             () ->
                 adapter()
                     .resume(
                         new ResumeConversationWorkflowCommand(
                             workflow, conversation, ConversationWorkflowDecision.APPROVE),
-                        tenantAContext));
+                        staffContext));
     assertThat(resumed.status()).isEqualTo(ConversationWorkflowStatus.SUCCEEDED);
     assertThat(resumed.tenantId()).isEqualTo(tenantA);
     assertThat(resumed.principalId()).isEqualTo(principal);
@@ -134,6 +157,18 @@ class ConversationWorkflowCheckpointIntegrationTest {
         workflowId,
         "trace-workflow-checkpoint",
         "workflow-checkpoint-turn");
+  }
+
+  private static AiExecutionContext staffContext(
+      UUID tenantId, UUID conversationId, UUID workflowId) {
+    return new AiExecutionContext(
+        tenantId,
+        UUID.randomUUID(),
+        Set.of("ROLE_tenant_staff"),
+        conversationId,
+        workflowId,
+        "trace-workflow-review",
+        "workflow-review-turn");
   }
 
   private static <T> T withContext(AiExecutionContext context, ThrowingSupplier<T> action) {

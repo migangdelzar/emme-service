@@ -78,32 +78,32 @@ public class ProcessConversationService implements ProcessConversationUseCase {
         return completeRecoveredTurn(command, context, persistedAssistantResponse.get());
       }
       if (!reserved) {
-        ProcessConversationResult replay =
-            idempotency
-                .find(command.conversationId(), command.idempotencyKey())
-                .orElseThrow(
-                    () -> new IllegalStateException("AI conversation turn is already in progress"));
-        return validateCompletedResult(replay, command, context);
-      }
-      ConversationWorkflowSnapshot workflowSnapshot =
-          validateWorkflow(workflow.startOrResume(command, context), command, context);
-      if (workflowSnapshot.status() != ConversationWorkflowStatus.SUCCEEDED) {
-        ProcessConversationResult waiting =
-            waitingResult(command, context, workflowSnapshot.status());
-        idempotency.complete(command.conversationId(), command.idempotencyKey(), waiting);
-        return waiting;
+        var replay = idempotency.find(command.conversationId(), command.idempotencyKey());
+        if (replay.isPresent()) {
+          return validateCompletedResult(replay.get(), command, context);
+        }
+        ConversationWorkflowSnapshot existing =
+            validateWorkflow(workflow.startOrResume(command, context), command, context);
+        if (existing.status() != ConversationWorkflowStatus.SUCCEEDED) {
+          return waitingResult(command, context, existing.status());
+        }
+        throw new IllegalStateException("AI conversation turn is already in progress");
       }
       ConversationMemoryPort.ConversationSnapshot snapshot =
           memory.load(command.conversationId(), context);
       if (!command.conversationId().equals(snapshot.conversationId())) {
         throw new SecurityException("Conversation memory returned an unexpected conversation");
       }
-
       if (memory
           .findUserMessage(command.conversationId(), command.idempotencyKey(), context)
           .isEmpty()) {
         memory.appendUserMessage(
             command.conversationId(), command.message(), command.idempotencyKey(), context);
+      }
+      ConversationWorkflowSnapshot workflowSnapshot =
+          validateWorkflow(workflow.startOrResume(command, context), command, context);
+      if (workflowSnapshot.status() != ConversationWorkflowStatus.SUCCEEDED) {
+        return waitingResult(command, context, workflowSnapshot.status());
       }
       String response = chat.chat(conversationContext(snapshot), command.message());
       ProcessConversationResult result =
@@ -214,7 +214,14 @@ public class ProcessConversationService implements ProcessConversationUseCase {
   private static ConversationWorkflowSnapshot completed(
       ProcessConversationCommand command, AiExecutionContext context) {
     return new ConversationWorkflowSnapshot(
-        context.workflowId(), command.conversationId(), ConversationWorkflowStatus.SUCCEEDED);
+        context.workflowId(),
+        command.conversationId(),
+        ConversationWorkflowStatus.SUCCEEDED,
+        context.tenantId(),
+        context.principalId(),
+        command.message(),
+        command.idempotencyKey(),
+        "workflow completed");
   }
 
   private static ConversationWorkflowSnapshot validateWorkflow(
@@ -229,6 +236,12 @@ public class ProcessConversationService implements ProcessConversationUseCase {
     }
     if (!command.conversationId().equals(snapshot.conversationId())) {
       throw new IllegalStateException("Conversation workflow returned an unexpected conversation");
+    }
+    if (!context.tenantId().equals(snapshot.tenantId())) {
+      throw new SecurityException("Conversation workflow returned an unexpected tenant");
+    }
+    if (!context.principalId().equals(snapshot.principalId())) {
+      throw new SecurityException("Conversation workflow returned an unexpected owner");
     }
     if (snapshot.status() == ConversationWorkflowStatus.FAILED
         || snapshot.status() == ConversationWorkflowStatus.REJECTED) {

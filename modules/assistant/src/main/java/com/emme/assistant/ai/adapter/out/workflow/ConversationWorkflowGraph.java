@@ -54,6 +54,10 @@ public final class ConversationWorkflowGraph {
   public static final String STATUS = "status";
   public static final String LAST_NODE = "lastNode";
   public static final String MESSAGE = "message";
+  public static final String IDEMPOTENCY_KEY = "idempotencyKey";
+  public static final String RESPONSE = "response";
+  public static final String CLARIFICATION_ANSWER = "clarificationAnswer";
+  public static final String CLARIFICATION_SLOTS = "clarificationSlots";
   public static final String TENANT_ID = "tenantId";
   public static final String PRINCIPAL_ID = "principalId";
   public static final String CONVERSATION_ID = "conversationId";
@@ -176,8 +180,10 @@ public final class ConversationWorkflowGraph {
       update.put(LAST_NODE, node);
       update.put(NEEDS_APPROVAL, step.needsApproval());
       update.put(NEEDS_CONFIRMATION, step.needsConfirmation());
-      if (step.terminalStatus() != null) {
-        update.put(TERMINAL_STATUS, step.terminalStatus());
+      update.put(TERMINAL_STATUS, step.terminalStatus() == null ? "" : step.terminalStatus());
+      if (EXTRACT_REQUIRED_SLOTS.equals(node)
+          && "PROVIDE_CLARIFICATION".equals(state.<String>value(DECISION).orElse(""))) {
+        update.put(DECISION, "");
       }
       return CompletableFuture.completedFuture(update);
     };
@@ -214,6 +220,7 @@ public final class ConversationWorkflowGraph {
             case "APPROVE" -> COMPOSE_RESPONSE;
             case "REQUEST_CONFIRMATION" -> WAIT_FOR_CONFIRMATION;
             case "REQUEST_CLARIFICATION" -> CLARIFICATION_REQUIRED;
+            case "PROVIDE_CLARIFICATION" -> EXTRACT_REQUIRED_SLOTS;
             case "REJECT" -> REJECTED;
             default ->
                 state.<Boolean>value(NEEDS_APPROVAL).orElse(false)
@@ -233,6 +240,7 @@ public final class ConversationWorkflowGraph {
         CLARIFICATION_REQUIRED, CLARIFICATION_REQUIRED,
         REJECTED, REJECTED,
         FAILED, FAILED,
+        EXTRACT_REQUIRED_SLOTS, EXTRACT_REQUIRED_SLOTS,
         COMPOSE_RESPONSE, COMPOSE_RESPONSE,
         APPROVAL_GATE, APPROVAL_GATE);
   }
@@ -253,7 +261,6 @@ public final class ConversationWorkflowGraph {
 
   static void verifyIdentity(AgentState state, AiExecutionContext context) {
     if (!context.tenantId().toString().equals(state.<String>value(TENANT_ID).orElse(null))
-        || !context.principalId().toString().equals(state.<String>value(PRINCIPAL_ID).orElse(null))
         || !context
             .conversationId()
             .toString()
@@ -261,6 +268,19 @@ public final class ConversationWorkflowGraph {
         || !context.workflowId().toString().equals(state.<String>value(WORKFLOW_ID).orElse(null))) {
       throw new SecurityException(
           "Conversation workflow checkpoint does not match authenticated context");
+    }
+  }
+
+  static java.util.UUID ownerPrincipalId(AgentState state) {
+    String value = state.<String>value(PRINCIPAL_ID).orElse(null);
+    if (value == null) {
+      throw new SecurityException("Conversation workflow checkpoint has no owner principal");
+    }
+    try {
+      return java.util.UUID.fromString(value);
+    } catch (IllegalArgumentException exception) {
+      throw new SecurityException(
+          "Conversation workflow checkpoint has an invalid owner principal", exception);
     }
   }
 }

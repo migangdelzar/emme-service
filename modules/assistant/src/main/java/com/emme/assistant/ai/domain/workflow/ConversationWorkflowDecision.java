@@ -5,5 +5,6 @@ public enum ConversationWorkflowDecision {
   APPROVE,
   REQUEST_CONFIRMATION,
   REQUEST_CLARIFICATION,
+  PROVIDE_CLARIFICATION,
   REJECT
 }

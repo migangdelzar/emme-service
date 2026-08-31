@@ -63,10 +63,10 @@ class ConversationWorkflowGraphTest {
 
   @Test
   void resumesWithoutReexecutingCompletedCapabilities() throws Exception {
-    AtomicInteger intentCalls = new AtomicInteger();
+    InvocationCounts calls = new InvocationCounts();
     ConversationWorkflowGraph graph =
         new ConversationWorkflowGraph(
-            new TenantAwareCheckpointSaver(new MemorySaver()), capabilities(intentCalls, true));
+            new TenantAwareCheckpointSaver(new MemorySaver()), capabilities(calls, true));
     CompiledGraph<AgentState> compiled = graph.compile();
     RunnableConfig config = RunnableConfig.builder().threadId(WORKFLOW_ID.toString()).build();
 
@@ -82,7 +82,15 @@ class ConversationWorkflowGraphTest {
                     ConversationWorkflowGraph.APPROVAL_GATE));
     runWithContext(() -> compiled.invoke(GraphInput.resume(), approved).orElseThrow());
 
-    assertThat(intentCalls).hasValue(1);
+    assertThat(calls.intent()).hasValue(1);
+    assertThat(calls.decomposition()).hasValue(1);
+    assertThat(calls.routing()).hasValue(1);
+    assertThat(calls.extraction()).hasValue(1);
+    assertThat(calls.retrieval()).hasValue(1);
+    assertThat(calls.tool()).hasValue(1);
+    assertThat(calls.validation()).hasValue(1);
+    assertThat(calls.response()).hasValue(1);
+    assertThat(calls.quote()).hasValue(0);
   }
 
   @Test
@@ -130,23 +138,51 @@ class ConversationWorkflowGraphTest {
 
   private static com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities
       capabilities(AtomicInteger intentCalls, boolean needsApproval) {
+    return capabilities(new InvocationCounts(intentCalls), needsApproval);
+  }
+
+  private static com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities
+      capabilities(InvocationCounts calls, boolean needsApproval) {
     var defaults =
         com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.defaults();
     return new com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities(
         request -> {
-          intentCalls.incrementAndGet();
+          calls.intent().incrementAndGet();
           return defaults.intentDetection().detect(request);
         },
-        defaults.decomposition(),
-        defaults.semanticRouting(),
-        defaults.slotExtraction(),
-        defaults.retrieval(),
-        defaults.toolExecution(),
-        request ->
-            new com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities
-                .WorkflowStep(Map.of(), needsApproval, false, null),
-        defaults.responseComposition(),
-        defaults.quoteWorkflow());
+        request -> {
+          calls.decomposition().incrementAndGet();
+          return defaults.decomposition().decompose(request);
+        },
+        request -> {
+          calls.routing().incrementAndGet();
+          return defaults.semanticRouting().route(request);
+        },
+        request -> {
+          calls.extraction().incrementAndGet();
+          return defaults.slotExtraction().extract(request);
+        },
+        request -> {
+          calls.retrieval().incrementAndGet();
+          return defaults.retrieval().retrieve(request);
+        },
+        request -> {
+          calls.tool().incrementAndGet();
+          return defaults.toolExecution().execute(request);
+        },
+        request -> {
+          calls.validation().incrementAndGet();
+          return new com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities
+              .WorkflowStep(Map.of(), needsApproval, false, null);
+        },
+        request -> {
+          calls.response().incrementAndGet();
+          return defaults.responseComposition().compose(request);
+        },
+        request -> {
+          calls.quote().incrementAndGet();
+          return defaults.quoteWorkflow().execute(request);
+        });
   }
 
   private static com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities
@@ -183,5 +219,43 @@ class ConversationWorkflowGraphTest {
   @FunctionalInterface
   private interface CheckedSupplier<T> {
     T get() throws Exception;
+  }
+
+  private record InvocationCounts(
+      AtomicInteger intent,
+      AtomicInteger decomposition,
+      AtomicInteger routing,
+      AtomicInteger extraction,
+      AtomicInteger retrieval,
+      AtomicInteger tool,
+      AtomicInteger validation,
+      AtomicInteger response,
+      AtomicInteger quote) {
+
+    private InvocationCounts() {
+      this(
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger());
+    }
+
+    private InvocationCounts(AtomicInteger intent) {
+      this(
+          intent,
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger(),
+          new AtomicInteger());
+    }
   }
 }

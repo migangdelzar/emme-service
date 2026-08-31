@@ -43,8 +43,23 @@ public record ConversationWorkflowCapabilities(
         request -> passthrough,
         request -> passthrough,
         request -> passthrough,
-        request -> new WorkflowStep(Map.of("response", ""), false, false, null),
+        request ->
+            new WorkflowStep(Map.of("response", "Your request is ready."), false, false, null),
         request -> passthrough);
+  }
+
+  public ConversationWorkflowCapabilities withQuoteWorkflow(
+      QuoteWorkflowCapability quoteCapability) {
+    return new ConversationWorkflowCapabilities(
+        intentDetection,
+        decomposition,
+        semanticRouting,
+        slotExtraction,
+        retrieval,
+        toolExecution,
+        businessValidation,
+        responseComposition,
+        quoteCapability);
   }
 
   public record WorkflowRequest(

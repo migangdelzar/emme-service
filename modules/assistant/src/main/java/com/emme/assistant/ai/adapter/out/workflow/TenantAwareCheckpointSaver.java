@@ -49,7 +49,12 @@ public final class TenantAwareCheckpointSaver implements BaseCheckpointSaver {
     Objects.requireNonNull(config, "config must not be null");
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
     String expectedThreadId = context.workflowId().toString();
-    if (config.threadId().filter(expectedThreadId::equals).isEmpty()) {
+    if (config
+        .threadId()
+        .filter(
+            threadId ->
+                threadId.equals(expectedThreadId) || threadId.startsWith(expectedThreadId + ":"))
+        .isEmpty()) {
       throw new IllegalArgumentException("Checkpoint thread does not match AI workflow context");
     }
     return config;

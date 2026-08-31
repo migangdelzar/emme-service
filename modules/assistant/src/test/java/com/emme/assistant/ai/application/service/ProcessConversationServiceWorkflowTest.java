@@ -50,7 +50,14 @@ class ProcessConversationServiceWorkflowTest {
     when(workflow.startOrResume(command, context))
         .thenReturn(
             new ConversationWorkflowSnapshot(
-                WORKFLOW_ID, CONVERSATION_ID, ConversationWorkflowStatus.SUCCEEDED));
+                WORKFLOW_ID,
+                CONVERSATION_ID,
+                ConversationWorkflowStatus.SUCCEEDED,
+                TENANT_ID,
+                PRINCIPAL_ID,
+                "hello",
+                "idempotency-2",
+                "answer"));
 
     ProcessConversationService service =
         new ProcessConversationService(memory, chat, idempotency, workflow);
@@ -59,9 +66,9 @@ class ProcessConversationServiceWorkflowTest {
 
     InOrder calls = inOrder(workflow, memory, chat);
     calls.verify(memory).findAssistantResponse(CONVERSATION_ID, "idempotency-2", context);
-    calls.verify(workflow).startOrResume(command, context);
     calls.verify(memory).load(CONVERSATION_ID, context);
     calls.verify(memory).appendUserMessage(CONVERSATION_ID, "hello", "idempotency-2", context);
+    calls.verify(workflow).startOrResume(command, context);
     calls.verify(chat).chat("", "hello");
     verify(idempotency)
         .complete(eq(CONVERSATION_ID), eq("idempotency-2"), org.mockito.ArgumentMatchers.any());
@@ -80,6 +87,10 @@ class ProcessConversationServiceWorkflowTest {
     when(idempotency.reserve(CONVERSATION_ID, "idempotency-2")).thenReturn(true);
     when(memory.findAssistantResponse(CONVERSATION_ID, "idempotency-2", context))
         .thenReturn(Optional.empty());
+    when(memory.load(CONVERSATION_ID, context))
+        .thenReturn(new ConversationMemoryPort.ConversationSnapshot(CONVERSATION_ID, List.of()));
+    when(memory.findUserMessage(CONVERSATION_ID, "idempotency-2", context))
+        .thenReturn(Optional.empty());
     when(workflow.startOrResume(command, context))
         .thenReturn(
             new ConversationWorkflowSnapshot(
@@ -97,7 +108,8 @@ class ProcessConversationServiceWorkflowTest {
     assertThat(result.isWaiting()).isTrue();
     verify(chat, never())
         .chat(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString());
-    verify(idempotency).complete(eq(CONVERSATION_ID), eq("idempotency-2"), eq(result));
+    verify(idempotency, never()).complete(eq(CONVERSATION_ID), eq("idempotency-2"), eq(result));
+    verify(memory).appendUserMessage(CONVERSATION_ID, "hello", "idempotency-2", context);
   }
 
   private static AiExecutionContext context() {

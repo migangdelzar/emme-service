@@ -3,12 +3,15 @@ package com.emme.assistant.ai.adapter.out.workflow;
 import com.emme.assistant.ai.api.command.ProcessConversationCommand;
 import com.emme.assistant.ai.api.command.ResumeConversationWorkflowCommand;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowPort;
+import com.emme.assistant.ai.domain.workflow.ConversationWorkflowDecision;
 import com.emme.assistant.ai.domain.workflow.ConversationWorkflowSnapshot;
 import com.emme.assistant.ai.domain.workflow.ConversationWorkflowStatus;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletionException;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphInput;
 import org.bsc.langgraph4j.RunnableConfig;
@@ -17,6 +20,18 @@ import org.bsc.langgraph4j.state.StateSnapshot;
 
 /** LangGraph4j adapter for the trusted generic conversation workflow boundary. */
 public final class LangGraphConversationWorkflowAdapter implements ConversationWorkflowPort {
+
+  private static final Set<String> STAFF_ROLES =
+      Set.of(
+          "tenant_staff",
+          "tenant_owner",
+          "ROLE_tenant_staff",
+          "ROLE_tenant_owner",
+          "ROLE_STAFF",
+          "ROLE_OWNER",
+          "ROLE_ADMIN",
+          "ROLE_admin",
+          "admin");
 
   private final CompiledGraph<AgentState> graph;
 
@@ -41,6 +56,11 @@ public final class LangGraphConversationWorkflowAdapter implements ConversationW
               .orElseThrow(
                   () -> new IllegalStateException("Conversation workflow returned no state"));
       return snapshot(state, context);
+    } catch (CompletionException exception) {
+      throw new IllegalStateException(
+          "Unable to start conversation workflow: " + context.workflowId(), exception);
+    } catch (RuntimeException exception) {
+      throw exception;
     } catch (Exception exception) {
       throw new IllegalStateException(
           "Unable to start conversation workflow: " + context.workflowId(), exception);
@@ -63,11 +83,8 @@ public final class LangGraphConversationWorkflowAdapter implements ConversationW
       if (!isWaiting(persisted.status())) {
         return persisted;
       }
-      RunnableConfig updated =
-          graph.updateState(
-              config,
-              Map.of(ConversationWorkflowGraph.DECISION, command.decision().name()),
-              ConversationWorkflowGraph.APPROVAL_GATE);
+      validateResumeDecision(command, persisted, context);
+      RunnableConfig updated = updateForDecision(config, command, persisted);
       AgentState resumed =
           graph
               .invoke(GraphInput.resume(), updated)
@@ -75,6 +92,11 @@ public final class LangGraphConversationWorkflowAdapter implements ConversationW
                   () ->
                       new IllegalStateException("Conversation workflow returned no resumed state"));
       return snapshot(resumed, context);
+    } catch (CompletionException exception) {
+      throw new IllegalStateException(
+          "Unable to resume conversation workflow: " + context.workflowId(), exception);
+    } catch (RuntimeException exception) {
+      throw exception;
     } catch (Exception exception) {
       throw new IllegalStateException(
           "Unable to resume conversation workflow: " + context.workflowId(), exception);
@@ -110,6 +132,10 @@ public final class LangGraphConversationWorkflowAdapter implements ConversationW
     if (!context.conversationId().equals(command.conversationId())) {
       throw new IllegalArgumentException("conversationId does not match AI execution context");
     }
+    if (command.decision() != ConversationWorkflowDecision.PROVIDE_CLARIFICATION
+        && context.roles().stream().noneMatch(STAFF_ROLES::contains)) {
+      throw new SecurityException("Staff role is required to resume a conversation workflow");
+    }
   }
 
   private static ConversationWorkflowSnapshot snapshot(
@@ -131,7 +157,18 @@ public final class LangGraphConversationWorkflowAdapter implements ConversationW
           context.conversationId(),
           ConversationWorkflowStatus.valueOf(value),
           context.tenantId(),
-          context.principalId());
+          ConversationWorkflowGraph.ownerPrincipalId(state),
+          state
+              .<String>value(ConversationWorkflowGraph.MESSAGE)
+              .orElseThrow(
+                  () -> new IllegalStateException("Conversation workflow state has no message")),
+          state
+              .<String>value(ConversationWorkflowGraph.IDEMPOTENCY_KEY)
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException(
+                          "Conversation workflow state has no idempotency key")),
+          state.<String>value(ConversationWorkflowGraph.RESPONSE).orElse(null));
     } catch (IllegalArgumentException exception) {
       throw new IllegalStateException(
           "Conversation workflow state has an invalid status: " + value, exception);
@@ -142,10 +179,51 @@ public final class LangGraphConversationWorkflowAdapter implements ConversationW
       ProcessConversationCommand command, AiExecutionContext context) {
     return Map.of(
         ConversationWorkflowGraph.MESSAGE, command.message(),
+        ConversationWorkflowGraph.IDEMPOTENCY_KEY, command.idempotencyKey(),
         ConversationWorkflowGraph.TENANT_ID, context.tenantId().toString(),
         ConversationWorkflowGraph.PRINCIPAL_ID, context.principalId().toString(),
         ConversationWorkflowGraph.CONVERSATION_ID, context.conversationId().toString(),
         ConversationWorkflowGraph.WORKFLOW_ID, context.workflowId().toString());
+  }
+
+  private RunnableConfig updateForDecision(
+      RunnableConfig config,
+      ResumeConversationWorkflowCommand command,
+      ConversationWorkflowSnapshot persisted)
+      throws Exception {
+    if (persisted.status() == ConversationWorkflowStatus.CLARIFICATION_REQUIRED) {
+      return graph.updateState(
+          config,
+          Map.of(
+              ConversationWorkflowGraph.DECISION, command.decision().name(),
+              ConversationWorkflowGraph.CLARIFICATION_ANSWER, command.clarification().answer(),
+              ConversationWorkflowGraph.CLARIFICATION_SLOTS, command.clarification().slots(),
+              ConversationWorkflowGraph.TERMINAL_STATUS, ""),
+          ConversationWorkflowGraph.APPROVAL_GATE);
+    }
+    return graph.updateState(
+        config,
+        Map.of(ConversationWorkflowGraph.DECISION, command.decision().name()),
+        ConversationWorkflowGraph.APPROVAL_GATE);
+  }
+
+  private static void validateResumeDecision(
+      ResumeConversationWorkflowCommand command,
+      ConversationWorkflowSnapshot persisted,
+      AiExecutionContext actorContext) {
+    if (persisted.status() == ConversationWorkflowStatus.CLARIFICATION_REQUIRED) {
+      if (command.decision() != ConversationWorkflowDecision.PROVIDE_CLARIFICATION) {
+        throw new IllegalStateException(
+            "Clarification is required before the workflow can continue");
+      }
+      if (!persisted.principalId().equals(actorContext.principalId())) {
+        throw new SecurityException("Only the workflow owner can provide clarification");
+      }
+      return;
+    }
+    if (command.decision() == ConversationWorkflowDecision.PROVIDE_CLARIFICATION) {
+      throw new IllegalStateException("The workflow is not waiting for clarification");
+    }
   }
 
   private static boolean isWaiting(ConversationWorkflowStatus status) {

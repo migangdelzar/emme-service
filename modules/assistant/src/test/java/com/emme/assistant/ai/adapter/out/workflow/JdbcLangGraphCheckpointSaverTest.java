@@ -54,7 +54,9 @@ class JdbcLangGraphCheckpointSaverTest {
                     .contains("FROM ai_workflow_checkpoint")
                     .contains("tenant_id = :tenantId")
                     .contains("workflow_id = :workflowId")
-                    .contains("ORDER BY created_at"));
+                    .contains("conversation_id = :conversationId")
+                    .contains("principal_id = :principalId")
+                    .contains("ORDER BY checkpoint.created_at"));
     verify(statement, atLeast(1)).param("tenantId", TENANT_ID);
     verify(statement, atLeast(1)).param("workflowId", WORKFLOW_ID);
   }
@@ -81,8 +83,10 @@ class JdbcLangGraphCheckpointSaverTest {
             value ->
                 assertThat(value)
                     .contains("INSERT INTO ai_workflow_checkpoint")
+                    .contains("workflow_namespace")
                     .contains("next_node_name")
-                    .contains("ON CONFLICT (tenant_id, workflow_id, node_name, node_execution_key)")
+                    .contains(
+                        "ON CONFLICT (tenant_id, workflow_id, workflow_namespace, node_name, node_execution_key)")
                     .contains("RETURNING node_execution_key"));
     verify(statement, atLeast(1)).param("tenantId", TENANT_ID);
     verify(statement, atLeast(1)).param("workflowId", WORKFLOW_ID);

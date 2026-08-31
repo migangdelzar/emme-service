@@ -19,12 +19,19 @@ public class AppointmentCollisionAdapter implements AppointmentCollisionPort {
 
   @Override
   public boolean hasCollision(UUID artistId, Instant startsAt, Instant endsAt) {
+    return hasCollision(artistId, startsAt, endsAt, null);
+  }
+
+  @Override
+  public boolean hasCollision(
+      UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId) {
     return appointmentRepository
-        .findByArtistIdAndStartsAtBetween(artistId, startsAt, endsAt)
+        .findByArtistIdAndOverlappingInterval(artistId, startsAt, endsAt)
         .stream()
         .anyMatch(
             appointment ->
-                appointment.getStatus() == AppointmentStatus.CONFIRMED
-                    || appointment.getStatus() == AppointmentStatus.IN_PROGRESS);
+                !appointment.getId().equals(excludedAppointmentId)
+                    && (appointment.getStatus() == AppointmentStatus.CONFIRMED
+                        || appointment.getStatus() == AppointmentStatus.IN_PROGRESS));
   }
 }

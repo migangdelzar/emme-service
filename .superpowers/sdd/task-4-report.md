@@ -17,3 +17,11 @@ The requested named Task 4 test files were not present in the brief's starting t
 ## Review remediation
 
 Added actor-tenant reference checks and canonical tenant/tool/principal/idempotency/argument operation keys. Reformatted sources with Spotless. Focused appointment tests pass. The existing idempotency port has no fingerprint field, so fingerprint binding is implemented in the operation key; durable storage schema migration and new dedicated review tests remain limitations pending the upstream review fixtures.
+
+## Follow-up fixes
+
+- Collision persistence now uses strict interval overlap (`existing.startsAt < requested.endsAt && existing.endsAt > requested.startsAt`); endpoint-touching appointments do not collide.
+- Authorized rescheduling excludes the appointment being moved from its collision query.
+- Tool handlers translate only malformed UUID/time arguments; authorization, domain, and collision exceptions propagate unchanged.
+
+Verification: Java 25 appointment repository tests and repository-wide `spotlessCheck` pass. The requested assistant handler test selector is absent from this checkout, so Gradle reports “No tests found” for that selector; assistant production sources compile successfully.

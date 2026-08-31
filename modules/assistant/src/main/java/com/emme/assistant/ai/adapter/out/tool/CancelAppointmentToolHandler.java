@@ -16,16 +16,22 @@ public final class CancelAppointmentToolHandler implements AiToolHandler {
   }
 
   public String execute(AiToolExecutionContext c, Map<String, String> a) {
+    UUID appointmentId;
+    try {
+      appointmentId = UUID.fromString(a.get("appointmentId"));
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid appointment arguments", e);
+    }
     try {
       return m.writeValueAsString(
           u.cancel(
               new CancelAppointmentCommand(
                   new AppointmentActor(
                       c.tenantId(), c.principalId(), c.roles(), c.idempotencyKey()),
-                  UUID.fromString(a.get("appointmentId")),
+                  appointmentId,
                   true)));
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Invalid appointment arguments", e);
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+      throw new IllegalStateException(e);
     }
   }
 }

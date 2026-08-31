@@ -7,4 +7,6 @@ import java.util.UUID;
 public interface AppointmentCollisionPort {
 
   boolean hasCollision(UUID artistId, Instant startsAt, Instant endsAt);
+
+  boolean hasCollision(UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId);
 }

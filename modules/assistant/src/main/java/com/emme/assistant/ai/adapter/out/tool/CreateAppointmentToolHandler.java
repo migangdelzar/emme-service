@@ -17,20 +17,24 @@ public final class CreateAppointmentToolHandler implements AiToolHandler {
   }
 
   public String execute(AiToolExecutionContext c, Map<String, String> a) {
+    CreateAppointmentCommand command;
     try {
-      return m.writeValueAsString(
-          u.book(
-              new CreateAppointmentCommand(
-                  new AppointmentActor(
-                      c.tenantId(), c.principalId(), c.roles(), c.idempotencyKey()),
-                  UUID.fromString(a.get("customerId")),
-                  UUID.fromString(a.get("serviceId")),
-                  UUID.fromString(a.get("artistId")),
-                  Instant.parse(a.get("startsAt")),
-                  Instant.parse(a.get("endsAt")),
-                  true)));
+      command =
+          new CreateAppointmentCommand(
+              new AppointmentActor(c.tenantId(), c.principalId(), c.roles(), c.idempotencyKey()),
+              UUID.fromString(a.get("customerId")),
+              UUID.fromString(a.get("serviceId")),
+              UUID.fromString(a.get("artistId")),
+              Instant.parse(a.get("startsAt")),
+              Instant.parse(a.get("endsAt")),
+              true);
     } catch (Exception e) {
       throw new IllegalArgumentException("Invalid appointment arguments", e);
+    }
+    try {
+      return m.writeValueAsString(u.book(command));
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+      throw new IllegalStateException(e);
     }
   }
 }

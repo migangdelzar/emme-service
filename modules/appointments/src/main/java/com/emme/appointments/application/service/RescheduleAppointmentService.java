@@ -46,13 +46,18 @@ public class RescheduleAppointmentService
     if (!command.confirmed()) throw new SecurityException("User confirmation is required");
     Appointment appointment = support.authorize(command.actor(), command.appointmentId());
     support.ensureMutable(appointment);
-    return reschedule(appointment.getId(), command.startsAt(), command.endsAt());
+    return rescheduleAuthorized(appointment, command.startsAt(), command.endsAt());
   }
 
   @Override
   public AppointmentDetails reschedule(UUID id, Instant newStartsAt, Instant newEndsAt) {
     Appointment appointment = support.find(id);
-    support.ensureAvailable(appointment.getArtistId(), newStartsAt, newEndsAt);
+    return rescheduleAuthorized(appointment, newStartsAt, newEndsAt);
+  }
+
+  private AppointmentDetails rescheduleAuthorized(
+      Appointment appointment, Instant newStartsAt, Instant newEndsAt) {
+    support.ensureAvailable(appointment.getArtistId(), newStartsAt, newEndsAt, appointment.getId());
     Instant oldStartsAt = appointment.getStartsAt();
     Instant oldEndsAt = appointment.getEndsAt();
     appointment.reschedule(newStartsAt, newEndsAt);

@@ -58,7 +58,18 @@ public class AppointmentPersistenceAdapter implements AppointmentRepository {
   @Override
   public List<Appointment> findByArtistIdAndStartsAtBetween(
       UUID artistId, Instant startsAt, Instant endsAt) {
-    return repository.findByArtistIdAndStartsAtBetween(artistId, startsAt, endsAt).stream()
+    return repository
+        .findByArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(artistId, endsAt, startsAt)
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  public List<Appointment> findByArtistIdAndOverlappingInterval(
+      UUID artistId, Instant startsAt, Instant endsAt) {
+    return repository
+        .findByArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(artistId, endsAt, startsAt)
+        .stream()
         .map(mapper::toDomain)
         .toList();
   }

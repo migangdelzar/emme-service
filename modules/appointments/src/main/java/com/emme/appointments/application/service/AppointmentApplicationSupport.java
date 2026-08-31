@@ -93,7 +93,12 @@ final class AppointmentApplicationSupport {
   }
 
   void ensureAvailable(UUID artistId, Instant startsAt, Instant endsAt) {
-    if (collisionPort.hasCollision(artistId, startsAt, endsAt)) {
+    ensureAvailable(artistId, startsAt, endsAt, null);
+  }
+
+  void ensureAvailable(
+      UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId) {
+    if (collisionPort.hasCollision(artistId, startsAt, endsAt, excludedAppointmentId)) {
       throw new IllegalStateException(
           "Slot conflict: artist "
               + artistId

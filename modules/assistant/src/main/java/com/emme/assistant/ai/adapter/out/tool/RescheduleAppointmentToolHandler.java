@@ -18,18 +18,28 @@ public final class RescheduleAppointmentToolHandler implements AiToolHandler {
   }
 
   public String execute(AiToolExecutionContext c, Map<String, String> a) {
+    UUID appointmentId;
+    Instant startsAt;
+    Instant endsAt;
+    try {
+      appointmentId = UUID.fromString(a.get("appointmentId"));
+      startsAt = Instant.parse(a.get("startsAt"));
+      endsAt = Instant.parse(a.get("endsAt"));
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid appointment arguments", e);
+    }
     try {
       return m.writeValueAsString(
           u.reschedule(
               new RescheduleAppointmentCommand(
                   new AppointmentActor(
                       c.tenantId(), c.principalId(), c.roles(), c.idempotencyKey()),
-                  UUID.fromString(a.get("appointmentId")),
-                  Instant.parse(a.get("startsAt")),
-                  Instant.parse(a.get("endsAt")),
+                  appointmentId,
+                  startsAt,
+                  endsAt,
                   true)));
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Invalid appointment arguments", e);
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+      throw new IllegalStateException(e);
     }
   }
 }

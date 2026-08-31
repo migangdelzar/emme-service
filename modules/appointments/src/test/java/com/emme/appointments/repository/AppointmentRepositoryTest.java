@@ -91,4 +91,26 @@ class AppointmentRepositoryTest extends BaseRepositoryTest {
 
     assertThat(results).hasSize(2);
   }
+
+  @Test
+  void shouldFindAppointmentsThatOverlapAtEitherBoundary() {
+    Instant now = Instant.now().plus(3, ChronoUnit.DAYS).truncatedTo(ChronoUnit.MICROS);
+    appointmentRepo.save(
+        new AppointmentEntity(
+            tenantId,
+            customer.getId(),
+            service.getId(),
+            artist.getId(),
+            now,
+            now.plus(2, ChronoUnit.HOURS)));
+
+    assertThat(
+            appointmentRepo.findByArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(
+                artist.getId(), now.plus(3, ChronoUnit.HOURS), now.plus(1, ChronoUnit.HOURS)))
+        .hasSize(1);
+    assertThat(
+            appointmentRepo.findByArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(
+                artist.getId(), now, now.minus(1, ChronoUnit.HOURS)))
+        .hasSize(0);
+  }
 }

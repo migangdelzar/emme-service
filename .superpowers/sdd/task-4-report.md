@@ -29,3 +29,21 @@ Added actor-tenant reference checks and canonical tenant/tool/principal/idempote
 - Tool handlers translate only malformed UUID/time arguments; authorization, domain, and collision exceptions propagate unchanged.
 
 Verification: Java 25 appointment repository tests and repository-wide `spotlessCheck` pass. Assistant production sources compile successfully; the full assistant suite's only failures are the 16 baseline tests listed above.
+
+## Task 4 review remediation completion
+
+Added `AppointmentMutationAuthorizationTest` covering tenant mismatch and
+cross-tenant customer/service/artist reference rejection, non-owner client
+authorization, non-confirmed mutation rejection, and reschedule self-exclusion.
+The existing domain and collision tests cover strict start-before-end interval
+validation, endpoint-touching boundaries, and confirmed/in-progress versus
+non-confirmed collision status. Existing appointment tool tests verify cancel
+and reschedule backend actor/context propagation.
+
+Mutation idempotency operation identities now use sorted length-framed argument
+encoding followed by SHA-256, preserving replay compatibility while preventing
+delimiter ambiguity. Regression coverage verifies reordered arguments replay
+and ambiguous delimiter inputs receive distinct identities.
+
+Final focused verification (Java 25):
+`mise exec java@25.0.2 -- ./gradlew :modules:appointments:test --tests '*AppointmentMutationAuthorizationTest' :modules:assistant:test --tests '*AuthorizedAiToolGatewayIdempotencyTest' --tests '*AppointmentToolHandlerTest' :modules:appointments:spotlessCheck :modules:assistant:spotlessCheck` — passed.

@@ -7,6 +7,9 @@ import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -218,7 +221,7 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
     String canonical =
         arguments.entrySet().stream()
             .sorted(Map.Entry.comparingByKey())
-            .map(entry -> entry.getKey() + "=" + entry.getValue())
+            .map(entry -> frame(entry.getKey()) + frame(entry.getValue()))
             .collect(Collectors.joining("&"));
     return context.tenantId()
         + ":"
@@ -228,7 +231,21 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
         + ":"
         + context.idempotencyKey()
         + ":"
-        + canonical;
+        + sha256(canonical);
+  }
+
+  private static String frame(String value) {
+    return value.length() + ":" + value;
+  }
+
+  private static String sha256(String value) {
+    try {
+      byte[] digest =
+          MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
+      return java.util.HexFormat.of().formatHex(digest);
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException("SHA-256 is unavailable", e);
+    }
   }
 
   private static AiToolExecutionContext toExecutionContext(AiExecutionContext context) {

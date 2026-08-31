@@ -152,7 +152,44 @@ class AuthorizedAiToolGatewayIdempotencyTest {
     assertThat(store.claimedKeys).containsExactly(operationKey(context, first));
     assertThat(store.claimedKeys.getFirst())
         .contains(context.tenantId().toString(), "createAppointment");
-    assertThat(store.claimedKeys.getFirst()).contains("customerId=customer&serviceId=service");
+    assertThat(store.claimedKeys.getFirst()).matches(".*:[0-9a-f]{64}$");
+  }
+
+  @Test
+  void givesDistinctOperationKeysToAmbiguousDelimiterInputs() {
+    InMemoryToolIdempotencyStore store = new InMemoryToolIdempotencyStore();
+    AuthorizedAiToolGateway gateway = gateway(store);
+    AiExecutionContext context = context();
+
+    AiExecutionContextScope.call(
+        context,
+        () ->
+            gateway.execute(
+                new AiToolInvocation(
+                    "createAppointment", Map.of("a", "b=c", "d", "e"), true, false)));
+    AiExecutionContextScope.call(
+        context,
+        () ->
+            gateway.execute(
+                new AiToolInvocation(
+                    "createAppointment", Map.of("a", "b", "c", "d&e"), true, false)));
+
+    assertThat(store.claimedKeys).hasSize(2).doesNotHaveDuplicates();
+  }
+
+  private static AuthorizedAiToolGateway gateway(InMemoryToolIdempotencyStore store) {
+    return new AuthorizedAiToolGateway(
+        Set.of(
+            new AiToolDefinition(
+                "createAppointment",
+                "Create",
+                Set.of("client"),
+                AiToolRisk.MUTATION,
+                true,
+                false,
+                (toolContext, arguments) -> "created")),
+        NoopAiTraceRecorder.INSTANCE,
+        store);
   }
 
   @Test
@@ -202,15 +239,32 @@ class AuthorizedAiToolGatewayIdempotencyTest {
     String canonical =
         arguments.entrySet().stream()
             .sorted(Map.Entry.comparingByKey())
-            .map(entry -> entry.getKey() + "=" + entry.getValue())
+            .map(
+                entry ->
+                    entry.getKey().length()
+                        + ":"
+                        + entry.getKey()
+                        + entry.getValue().length()
+                        + ":"
+                        + entry.getValue())
             .collect(java.util.stream.Collectors.joining("&"));
+    String fingerprint;
+    try {
+      fingerprint =
+          java.util.HexFormat.of()
+              .formatHex(
+                  java.security.MessageDigest.getInstance("SHA-256")
+                      .digest(canonical.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+    } catch (java.security.NoSuchAlgorithmException e) {
+      throw new AssertionError(e);
+    }
     return context.tenantId()
         + ":createAppointment:"
         + context.principalId()
         + ":"
         + context.idempotencyKey()
         + ":"
-        + canonical;
+        + fingerprint;
   }
 
   private static final class InMemoryToolIdempotencyStore implements AiToolIdempotencyStore {

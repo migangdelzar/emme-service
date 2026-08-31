@@ -78,3 +78,22 @@ Remediated the reviewer findings on `feat/ai-platform-foundation`:
 - Added regression coverage for rejection behavior and strengthened migration contract assertions for schema, constraints, indexes, RLS, and PostgreSQL-only statements.
 
 The migration tests are static contract tests only. They do not execute the SQL against live PostgreSQL because this repository’s existing database test infrastructure does not provision a PostgreSQL/Testcontainers runtime in this task. Live validation remains required before production rollout. Production job handlers remain intentionally disabled/deferred; the durable scheduling, claiming, retry, and reconciliation boundary is implemented, but no concrete job-type business handler is claimed complete.
+
+## 2026-08-31 — Final review remediation: durable claiming and tenant-safe reconciliation
+
+The final-review gaps are remediated on `feat/ai-platform-foundation`:
+
+- Reconciliation now calls `AiJobStatusStore.claimAvailable(limit)`, whose JDBC implementation runs one transaction containing stale-claim recovery and a PostgreSQL `WITH candidates ... FOR UPDATE SKIP LOCKED` followed by `UPDATE ... RETURNING`. The durable status transition to `CLAIMED` occurs before the rows are returned; there is no select-only reconciliation lock.
+- The scheduled poller obtains active tenant IDs from the authoritative `TenantRepository`. For each registry tenant it binds a synthetic backend `AiExecutionContext` and `TenantContextHolder`, and the JDBC transaction establishes `app.current_tenant_id` with `set_config(..., true)`. Every recovery/claim/update predicate also carries the explicit tenant ID and `current_tenant_id()` check. Frontend, event, and LLM tenant IDs are not used to enumerate scheduled work.
+- Jobs returned by reconciliation use a dedicated already-claimed worker path, so dispatch does not attempt a second claim. Rejected executor submissions remain durable and retryable.
+- New unit coverage verifies authoritative tenant iteration and context cleanup. A direct Testcontainers PostgreSQL integration test applies migration `028-ai-job-state.sql`, runs with a non-superuser runtime role and forced RLS, and verifies both tenant isolation and that two concurrent reconciliation claims produce exactly one durable claim.
+- Enqueue availability uses PostgreSQL’s `CURRENT_TIMESTAMP` default so readiness comparisons use one database clock rather than application and database clocks.
+
+Verification:
+
+- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:test --tests '*AiJobReconciliationPollerTest' --tests '*AiJobWorkerServiceTest' --tests '*AiJobListenerTest'` — PASS.
+- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:integrationTest --tests '*AiJobReconciliationClaimIntegrationTest'` — PASS (2 tests, live PostgreSQL/Testcontainers).
+- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:spotlessJavaCheck` — PASS after formatting.
+- The full `:modules:assistant:test` task still reports the pre-existing `AiCapabilityConventionTest` failure for the unrelated `adapter/out/storage` package lacking `package-info.java`; no unrelated file was changed.
+
+The concrete AI job handlers remain intentionally disabled/deferred, and Redis remains an optional live-event/projection boundary. This remediation does not claim handler implementation, Redis queue semantics, or end-to-end application bootstrap coverage beyond the focused live PostgreSQL contract.

@@ -2755,3 +2755,24 @@ result without running the handler again; concurrent claims are rejected;
 handler failures release claims for retry. Existing appointment commands still
 need an application-level idempotency-aware mutation contract before concrete
 appointment mutation tools are registered.
+
+## Task 5 reconciliation final-review remediation — 2026-08-31
+
+- [x] Trace the durable job claim and scheduled reconciliation data flow.
+- [x] Add failing tests for atomic reconciliation claims, tenant context, and duplicate prevention.
+- [x] Implement the smallest durable claim transition and authoritative tenant iteration.
+- [x] Add executable PostgreSQL/Testcontainers coverage, or document the exact runtime blocker.
+- [x] Run Java 25 tests and Spotless; update `.superpowers/sdd/task-5-report.md`.
+- [x] Commit, push, and verify remote hashes.
+
+### Working Notes
+
+- Existing reconciliation selected rows with `FOR UPDATE SKIP LOCKED` outside a transaction and without a tenant context; the lock therefore did not claim durable work.
+- `modules/assistant` already applies the repository Testcontainers integration convention, so the remediation can add a focused executable PostgreSQL test.
+
+### Results
+
+- Reconciliation uses an atomic transactional claim transition and dispatches through an already-claimed worker path.
+- Scheduled work is enumerated from active tenants and binds an authoritative backend AI execution context for each tenant; JDBC establishes the PostgreSQL RLS setting within each transaction.
+- `AiJobReconciliationClaimIntegrationTest` passes against PostgreSQL 16 in Testcontainers using a non-superuser role with forced RLS, covering duplicate claim prevention and tenant isolation.
+- Focused Java 25 unit tests and assistant Spotless checks pass. The full assistant test task remains blocked by the pre-existing unrelated `AiCapabilityConventionTest` storage-package metadata failure; no unrelated fix was included.

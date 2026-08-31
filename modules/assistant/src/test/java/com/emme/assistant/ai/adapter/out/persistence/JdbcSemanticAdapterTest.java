@@ -179,6 +179,69 @@ class JdbcSemanticAdapterTest {
         .hasMessage("No AI execution context");
   }
 
+  @Test
+  void referenceSearchRejectsAQueryFromADifferentEmbeddingModel() {
+    JdbcSemanticReferenceSearchAdapter adapter =
+        new JdbcSemanticReferenceSearchAdapter(mock(JdbcClient.class), aiProperties());
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context(),
+                    () ->
+                        adapter.searchIntents(
+                            "es-MX",
+                            new EmbeddingVector(
+                                "other-model", java.util.Collections.nCopies(768, 0.0f)),
+                            2)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Embedding model version must match configured model");
+  }
+
+  @Test
+  void cacheWriteRejectsAQueryFromADifferentEmbeddingModel() {
+    JdbcSemanticCacheAdapter adapter =
+        new JdbcSemanticCacheAdapter(mock(JdbcClient.class), aiProperties());
+    SemanticCachePort.Put write =
+        new SemanticCachePort.Put(
+            "FAQ",
+            "What are your hours?",
+            "catalog-v4",
+            "prompt-v2",
+            "{\"answer\":\"We are open\"}",
+            Instant.parse("2030-01-01T00:00:00Z"),
+            new EmbeddingVector("other-model", java.util.Collections.nCopies(768, 0.0f)),
+            "cache-write-2");
+
+    assertThatThrownBy(() -> AiExecutionContextScope.call(context(), () -> adapter.put(write)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Embedding model version must match configured model");
+  }
+
+  @Test
+  void invalidatesOnlyTheAuthenticatedTenantAndPrincipalCacheRows() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    when(jdbc.sql(anyString())).thenReturn(statement);
+    when(statement.param(anyString(), any())).thenReturn(statement);
+    when(statement.update()).thenReturn(2);
+    JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc, aiProperties());
+
+    AiExecutionContextScope.run(context(), () -> adapter.invalidate("FAQ"));
+
+    ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+    verify(jdbc).sql(sql.capture());
+    assertThat(sql.getValue())
+        .contains("UPDATE ai_semantic_cache")
+        .contains("active = false")
+        .contains("tenant_id = :tenantId")
+        .contains("principal_id = :principalId")
+        .contains("cache_kind = :cacheKind");
+    verify(statement).param("tenantId", TENANT_ID);
+    verify(statement).param("principalId", PRINCIPAL_ID);
+    verify(statement).param("cacheKind", "FAQ");
+  }
+
   private static AiExecutionContext context() {
     return new AiExecutionContext(
         TENANT_ID,

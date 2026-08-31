@@ -1,5 +1,7 @@
 package com.emme.assistant.ai.application.semantic;
 
+import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
+import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
 import java.util.Objects;
 import java.util.Set;
@@ -11,10 +13,17 @@ public final class SemanticToolSelector {
 
   private final SemanticReferenceSearchPort search;
   private final SemanticMatchPolicy policy;
+  private final SemanticMetrics metrics;
 
   public SemanticToolSelector(SemanticReferenceSearchPort search, SemanticMatchPolicy policy) {
+    this(search, policy, NoopSemanticMetrics.INSTANCE);
+  }
+
+  public SemanticToolSelector(
+      SemanticReferenceSearchPort search, SemanticMatchPolicy policy, SemanticMetrics metrics) {
     this.search = Objects.requireNonNull(search, "search must not be null");
     this.policy = Objects.requireNonNull(policy, "policy must not be null");
+    this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");
   }
 
   public SemanticDecision select(
@@ -24,6 +33,7 @@ public final class SemanticToolSelector {
     Objects.requireNonNull(authorizedToolKeys, "authorizedToolKeys must not be null");
     Set<String> authorized = Set.copyOf(authorizedToolKeys);
     if (authorized.isEmpty()) {
+      record("abstained");
       return new SemanticDecision(java.util.Optional.empty(), 0.0, 0.0, 0.0, false);
     }
 
@@ -31,9 +41,19 @@ public final class SemanticToolSelector {
         policy.decide(search.searchTools(locale, query, authorized, CANDIDATE_LIMIT));
     if (decision.selectedKey().isPresent()
         && !authorized.contains(decision.selectedKey().orElseThrow())) {
+      record("unauthorized");
       return rejected(decision);
     }
+    record(decision.accepted() ? "accepted" : "abstained");
     return decision;
+  }
+
+  private void record(String outcome) {
+    try {
+      metrics.recordToolSelection(outcome);
+    } catch (RuntimeException ignored) {
+      // Observability must not change selection semantics.
+    }
   }
 
   private static SemanticDecision rejected(SemanticDecision decision) {

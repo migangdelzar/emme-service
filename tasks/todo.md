@@ -1,5 +1,28 @@
 # Service architecture migration checklist
 
+## Task 6 semantic capability hardening — 2026-08-31
+
+- [x] Write failing tests for invalidation, unsafe responses, model mismatch, and metrics.
+- [x] Implement the minimum production changes.
+- [x] Refactor without changing behavior.
+- [x] Run focused and full verification.
+- [x] Record exact results and limitations in the task report.
+
+### Results
+
+- Focused semantic assistant tests: 29 passed.
+- Redis semantic integration test: passed.
+- Database semantic migration contract: passed.
+- Assistant Spotless check: passed.
+- Full assistant suite: 357 completed, 16 failed in pre-existing unrelated package metadata and tenancy/identity/JPA context setup; no unrelated files were changed by this task.
+- Task report updated with scope mismatch and Redis invalidation limitations.
+
+### Working notes
+
+- Existing semantic routing, tool selection, pgvector, Redis, and trace boundaries are already
+  present; this task closes correctness/operability gaps at those boundaries.
+- Unrelated tenancy/identity/subscription changes in the worktree must remain untouched.
+
 ## Durable mutation claim recovery — 2026-08-29
 
 - [x] Add a configurable lease to durable AI mutation idempotency claims.

@@ -20,11 +20,13 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
 
   private final JdbcClient jdbc;
   private final int embeddingDimensions;
+  private final String embeddingModelVersion;
 
   public JdbcSemanticReferenceSearchAdapter(JdbcClient jdbc, AiProperties aiProperties) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
-    this.embeddingDimensions =
-        Objects.requireNonNull(aiProperties, "aiProperties must not be null").embeddingDimension();
+    AiProperties properties = Objects.requireNonNull(aiProperties, "aiProperties must not be null");
+    this.embeddingDimensions = properties.embeddingDimension();
+    this.embeddingModelVersion = properties.embedding().model();
   }
 
   @Override
@@ -124,6 +126,9 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
     Objects.requireNonNull(query, "query must not be null");
     if (query.values().size() != embeddingDimensions) {
       throw new IllegalArgumentException("Embedding dimensions must match pgvector schema");
+    }
+    if (!embeddingModelVersion.equals(query.modelVersion())) {
+      throw new IllegalArgumentException("Embedding model version must match configured model");
     }
     if (limit <= 0) {
       throw new IllegalArgumentException("limit must be greater than zero");

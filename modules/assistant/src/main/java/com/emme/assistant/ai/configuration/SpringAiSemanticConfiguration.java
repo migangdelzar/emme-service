@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
 import com.emme.assistant.ai.application.semantic.SemanticIntentClassifier;
 import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
@@ -29,12 +30,22 @@ public class SpringAiSemanticConfiguration {
   @Bean
   @ConditionalOnMissingBean
   SemanticIntentClassifier semanticIntentClassifier(
+      SemanticReferenceSearchPort search, SemanticMatchPolicy policy, SemanticMetrics metrics) {
+    return new SemanticIntentClassifier(search, policy, metrics);
+  }
+
+  SemanticIntentClassifier semanticIntentClassifier(
       SemanticReferenceSearchPort search, SemanticMatchPolicy policy) {
     return new SemanticIntentClassifier(search, policy);
   }
 
   @Bean
   @ConditionalOnMissingBean
+  SemanticToolSelector semanticToolSelector(
+      SemanticReferenceSearchPort search, SemanticMatchPolicy policy, SemanticMetrics metrics) {
+    return new SemanticToolSelector(search, policy, metrics);
+  }
+
   SemanticToolSelector semanticToolSelector(
       SemanticReferenceSearchPort search, SemanticMatchPolicy policy) {
     return new SemanticToolSelector(search, policy);

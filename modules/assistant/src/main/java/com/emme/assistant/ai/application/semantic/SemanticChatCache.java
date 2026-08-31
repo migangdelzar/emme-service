@@ -1,10 +1,13 @@
 package com.emme.assistant.ai.application.semantic;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
+import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -35,6 +38,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
   private final String promptVersion;
   private final Duration ttl;
   private final Optional<SemanticCacheHotStore> hotStore;
+  private final SemanticMetrics metrics;
 
   public SemanticChatCache(
       EmbeddingModelPort embeddings,
@@ -56,6 +60,28 @@ public final class SemanticChatCache implements SemanticResponseCache {
       String promptVersion,
       Duration ttl,
       Optional<SemanticCacheHotStore> hotStore) {
+    this(
+        embeddings,
+        resolver,
+        cache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        hotStore,
+        NoopSemanticMetrics.INSTANCE);
+  }
+
+  public SemanticChatCache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort cache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore,
+      SemanticMetrics metrics) {
     this.embeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.resolver = Objects.requireNonNull(resolver, "resolver must not be null");
     this.cache = Objects.requireNonNull(cache, "cache must not be null");
@@ -65,11 +91,13 @@ public final class SemanticChatCache implements SemanticResponseCache {
     this.promptVersion = promptVersion;
     this.ttl = requirePositive(ttl, "ttl");
     this.hotStore = Objects.requireNonNull(hotStore, "hotStore must not be null");
+    this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");
   }
 
   @Override
   public Optional<String> lookup(String conversationContext, String userMessage) {
     if (!isEligible(conversationContext, userMessage)) {
+      recordLookup("bypass");
       return Optional.empty();
     }
     EmbeddingVector query = embeddings.embed(userMessage);
@@ -80,17 +108,25 @@ public final class SemanticChatCache implements SemanticResponseCache {
         hotStore
             .flatMap(store -> safeHotLookup(store, lookup, userMessage))
             .flatMap(resolver::confirm);
-    return hotHit
-        .or(() -> resolver.lookup(lookup))
-        .flatMap(candidate -> codec.decodeText(candidate.responsePayload()));
+    Optional<String> result =
+        hotHit
+            .or(() -> resolver.lookup(lookup))
+            .flatMap(candidate -> codec.decodeText(candidate.responsePayload()));
+    recordLookup(result.isPresent() ? "hit" : "miss");
+    return result;
   }
 
   @Override
   public Optional<UUID> store(String conversationContext, String userMessage, String response) {
     if (!isEligible(conversationContext, userMessage)) {
+      recordWrite("bypass");
       return Optional.empty();
     }
     requireText(response, "response");
+    if (!isSafeResponse(response)) {
+      recordWrite("rejected");
+      return Optional.empty();
+    }
     EmbeddingVector query = embeddings.embed(userMessage);
     String contextFingerprint = contextFingerprint(conversationContext);
     SemanticCachePort.Put write =
@@ -105,7 +141,30 @@ public final class SemanticChatCache implements SemanticResponseCache {
             writeIdempotencyKey(contextFingerprint, userMessage));
     UUID cacheId = cache.put(write);
     hotStore.ifPresent(store -> safeHotPut(store, cacheId, write));
+    recordWrite("stored");
     return Optional.of(cacheId);
+  }
+
+  @Override
+  public void invalidate() {
+    AiExecutionContextScope.requireCurrent();
+    cache.invalidate(CACHE_KIND);
+  }
+
+  private void recordLookup(String outcome) {
+    try {
+      metrics.recordCacheLookup(outcome);
+    } catch (RuntimeException ignored) {
+      // Observability must not change cache semantics.
+    }
+  }
+
+  private void recordWrite(String outcome) {
+    try {
+      metrics.recordCacheWrite(outcome);
+    } catch (RuntimeException ignored) {
+      // Observability must not change cache semantics.
+    }
   }
 
   private static Optional<List<SemanticCachePort.Candidate>> safeHotLookup(
@@ -151,6 +210,14 @@ public final class SemanticChatCache implements SemanticResponseCache {
             "refund",
             "account")
         .noneMatch(normalized::contains);
+  }
+
+  private static boolean isSafeResponse(String response) {
+    String normalized = response.toLowerCase(java.util.Locale.ROOT);
+    return !normalized.matches(".*\\b(?:bearer\\s+)?[a-z0-9._-]{20,}\\b.*")
+        && !normalized.matches(".*\\b\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}\\b.*")
+        && !normalized.matches(".*\\b[\\w.+-]+@[\\w.-]+\\.[a-z]{2,}\\b.*")
+        && !normalized.matches(".*(?:\\+?\\d[\\d ()-]{8,}\\d).*");
   }
 
   private static String contextFingerprint(String conversationContext) {

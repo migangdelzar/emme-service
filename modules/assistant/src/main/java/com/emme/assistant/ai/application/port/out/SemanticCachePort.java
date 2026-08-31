@@ -18,6 +18,9 @@ public interface SemanticCachePort {
   /** Atomically increments the durable hit counter for an active, unexpired cache row. */
   boolean recordHit(UUID cacheId);
 
+  /** Invalidates the current authenticated principal's entries for one cache kind. */
+  void invalidate(String cacheKind);
+
   record Lookup(
       String cacheKind, String contextFingerprint, String promptVersion, EmbeddingVector query) {
 

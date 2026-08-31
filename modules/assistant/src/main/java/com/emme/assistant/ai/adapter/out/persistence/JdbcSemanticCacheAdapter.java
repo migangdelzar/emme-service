@@ -17,19 +17,19 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
 
   private final JdbcClient jdbc;
   private final int embeddingDimensions;
+  private final String embeddingModelVersion;
 
   public JdbcSemanticCacheAdapter(JdbcClient jdbc, AiProperties aiProperties) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
-    this.embeddingDimensions =
-        Objects.requireNonNull(aiProperties, "aiProperties must not be null").embeddingDimension();
+    AiProperties properties = Objects.requireNonNull(aiProperties, "aiProperties must not be null");
+    this.embeddingDimensions = properties.embeddingDimension();
+    this.embeddingModelVersion = properties.embedding().model();
   }
 
   @Override
   public List<Candidate> find(Lookup lookup, int limit) {
     Objects.requireNonNull(lookup, "lookup must not be null");
-    if (lookup.query().values().size() != embeddingDimensions) {
-      throw new IllegalArgumentException("Embedding dimensions must match pgvector schema");
-    }
+    validateEmbedding(lookup.query());
     if (limit <= 0) {
       throw new IllegalArgumentException("limit must be greater than zero");
     }
@@ -72,9 +72,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
   @Override
   public UUID put(Put write) {
     Objects.requireNonNull(write, "write must not be null");
-    if (write.query().values().size() != embeddingDimensions) {
-      throw new IllegalArgumentException("Embedding dimensions must match pgvector schema");
-    }
+    validateEmbedding(write.query());
     if (!write.expiresAt().isAfter(Instant.now())) {
       throw new IllegalArgumentException("expiresAt must be in the future");
     }
@@ -149,5 +147,38 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
             .param("principalId", context.principalId())
             .update()
         > 0;
+  }
+
+  @Override
+  public void invalidate(String cacheKind) {
+    if (cacheKind == null || cacheKind.isBlank()) {
+      throw new IllegalArgumentException("cacheKind must not be blank");
+    }
+    var context = AiExecutionContextScope.requireCurrent();
+    jdbc.sql(
+            """
+            UPDATE ai_semantic_cache
+            SET active = false,
+                updated_at = CURRENT_TIMESTAMP,
+                version = version + 1
+            WHERE tenant_id = :tenantId
+              AND principal_id = :principalId
+              AND cache_kind = :cacheKind
+              AND active = true
+            """)
+        .param("tenantId", context.tenantId())
+        .param("principalId", context.principalId())
+        .param("cacheKind", cacheKind)
+        .update();
+  }
+
+  private void validateEmbedding(
+      com.emme.assistant.ai.application.semantic.EmbeddingVector embedding) {
+    if (embedding.values().size() != embeddingDimensions) {
+      throw new IllegalArgumentException("Embedding dimensions must match pgvector schema");
+    }
+    if (!embeddingModelVersion.equals(embedding.modelVersion())) {
+      throw new IllegalArgumentException("Embedding model version must match configured model");
+    }
   }
 }

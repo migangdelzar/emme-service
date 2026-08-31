@@ -3,6 +3,7 @@ package com.emme.assistant.ai.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
+import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
@@ -105,6 +106,19 @@ class SemanticRoutingServiceTest {
         .isEmpty();
   }
 
+  @Test
+  void recordsBoundedRoutingOutcomesWithoutTenantCardinality() {
+    RecordingReferenceSearch search =
+        new RecordingReferenceSearch(List.of(new SemanticMatch("FAQ", 0.98)));
+    RecordingSemanticMetrics metrics = new RecordingSemanticMetrics();
+    SemanticIntentClassifier classifier =
+        new SemanticIntentClassifier(search, new SemanticMatchPolicy(0.90, 0.10), metrics);
+
+    classifier.classify("es-MX", QUERY);
+
+    assertThat(metrics.routingOutcome).isEqualTo("accepted");
+  }
+
   private static final class RecordingReferenceSearch implements SemanticReferenceSearchPort {
     private final List<SemanticMatch> matches;
     private int intentLimit;
@@ -155,8 +169,29 @@ class SemanticRoutingServiceTest {
       return recordHitResult;
     }
 
+    @Override
+    public void invalidate(String cacheKind) {}
+
     private UUID hitId() {
       return hitId;
     }
+  }
+
+  private static final class RecordingSemanticMetrics implements SemanticMetrics {
+    private String routingOutcome;
+
+    @Override
+    public void recordRouting(String outcome) {
+      routingOutcome = outcome;
+    }
+
+    @Override
+    public void recordToolSelection(String outcome) {}
+
+    @Override
+    public void recordCacheLookup(String outcome) {}
+
+    @Override
+    public void recordCacheWrite(String outcome) {}
   }
 }

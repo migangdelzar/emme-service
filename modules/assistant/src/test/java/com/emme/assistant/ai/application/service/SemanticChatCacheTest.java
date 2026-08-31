@@ -16,6 +16,7 @@ import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -159,5 +160,56 @@ class SemanticChatCacheTest {
     assertThat(semanticCache.store("", "What are your hours?", "We are open.")).contains(cacheId);
 
     org.mockito.Mockito.verify(hotStore).put(org.mockito.Mockito.eq(cacheId), any());
+  }
+
+  @Test
+  void doesNotStoreResponsesContainingPrivateOrPaymentData() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort durableCache = mock(SemanticCachePort.class);
+    SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            mock(SemanticCacheResolver.class),
+            durableCache,
+            codec,
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5));
+
+    assertThat(semanticCache.store("", "What are your hours?", "Pay with card 4111 1111 1111 1111"))
+        .isEmpty();
+
+    verifyNoInteractions(embeddings, durableCache, codec);
+  }
+
+  @Test
+  void invalidatesOnlyTheCurrentPrincipalDurableCacheScope() {
+    SemanticCachePort durableCache = mock(SemanticCachePort.class);
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            mock(EmbeddingModelPort.class),
+            mock(SemanticCacheResolver.class),
+            durableCache,
+            mock(SemanticCachePayloadCodec.class),
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5));
+
+    AiExecutionContextScope.run(context(), semanticCache::invalidate);
+
+    org.mockito.Mockito.verify(durableCache).invalidate("CHAT_INFORMATIONAL");
+  }
+
+  private static com.emme.kernel.context.AiExecutionContext context() {
+    UUID id = UUID.randomUUID();
+    return new com.emme.kernel.context.AiExecutionContext(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        java.util.Set.of("ROLE_CLIENT"),
+        id,
+        id,
+        "trace",
+        "id");
   }
 }

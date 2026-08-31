@@ -51,9 +51,7 @@ class AuthorizedAiToolGatewayIdempotencyTest {
 
     assertThat(first).isEqualTo(replay);
     assertThat(executions).hasValue(1);
-    assertThat(store.claimedKeys)
-        .containsExactly(
-            "createAppointment:" + context.principalId() + ":" + context.idempotencyKey());
+    assertThat(store.claimedKeys).containsExactly(operationKey(context, Map.of()));
   }
 
   @Test
@@ -90,18 +88,14 @@ class AuthorizedAiToolGatewayIdempotencyTest {
     assertThat(retry).isEqualTo(new AiToolResult("createAppointment", "appointment-created", true));
     assertThat(executions).hasValue(2);
     assertThat(store.claimedKeys)
-        .containsExactly(
-            "createAppointment:" + context.principalId() + ":" + context.idempotencyKey(),
-            "createAppointment:" + context.principalId() + ":" + context.idempotencyKey());
+        .containsExactly(operationKey(context, Map.of()), operationKey(context, Map.of()));
   }
 
   @Test
   void rejectsAConcurrentMutationWhenAnotherExecutionOwnsTheIdempotencyKey() {
     InMemoryToolIdempotencyStore store = new InMemoryToolIdempotencyStore();
     AiExecutionContext context = context();
-    String operationKey =
-        "createAppointment:" + context.principalId() + ":" + context.idempotencyKey();
-    store.inProgress.add(operationKey);
+    store.inProgress.add(operationKey(context, Map.of()));
     AuthorizedAiToolGateway gateway =
         new AuthorizedAiToolGateway(
             Set.of(
@@ -125,6 +119,40 @@ class AuthorizedAiToolGatewayIdempotencyTest {
                             new AiToolInvocation("createAppointment", Map.of(), true, false))))
         .isInstanceOf(AiToolExecutionRejectedException.class)
         .hasMessage("AI tool mutation is already in progress: createAppointment");
+  }
+
+  @Test
+  void canonicalizesArgumentsAndBindsTheirFingerprintToTenantAndToolIdentity() {
+    InMemoryToolIdempotencyStore store = new InMemoryToolIdempotencyStore();
+    AtomicInteger executions = new AtomicInteger();
+    AuthorizedAiToolGateway gateway =
+        new AuthorizedAiToolGateway(
+            Set.of(
+                new AiToolDefinition(
+                    "createAppointment",
+                    "Create",
+                    Set.of("client"),
+                    AiToolRisk.MUTATION,
+                    true,
+                    false,
+                    (context, arguments) -> "created")),
+            NoopAiTraceRecorder.INSTANCE,
+            store);
+    AiExecutionContext context = context();
+    Map<String, String> first = Map.of("serviceId", "service", "customerId", "customer");
+    Map<String, String> reordered = Map.of("customerId", "customer", "serviceId", "service");
+    AiToolInvocation firstInvocation =
+        new AiToolInvocation("createAppointment", first, true, false);
+    AiToolInvocation reorderedInvocation =
+        new AiToolInvocation("createAppointment", reordered, true, false);
+
+    AiExecutionContextScope.call(context, () -> gateway.execute(firstInvocation));
+    AiExecutionContextScope.call(context, () -> gateway.execute(reorderedInvocation));
+
+    assertThat(store.claimedKeys).containsExactly(operationKey(context, first));
+    assertThat(store.claimedKeys.getFirst())
+        .contains(context.tenantId().toString(), "createAppointment");
+    assertThat(store.claimedKeys.getFirst()).contains("customerId=customer&serviceId=service");
   }
 
   @Test
@@ -168,6 +196,21 @@ class AuthorizedAiToolGatewayIdempotencyTest {
         UUID.randomUUID(),
         "trace-tool-idempotency",
         "request-1");
+  }
+
+  private static String operationKey(AiExecutionContext context, Map<String, String> arguments) {
+    String canonical =
+        arguments.entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
+            .map(entry -> entry.getKey() + "=" + entry.getValue())
+            .collect(java.util.stream.Collectors.joining("&"));
+    return context.tenantId()
+        + ":createAppointment:"
+        + context.principalId()
+        + ":"
+        + context.idempotencyKey()
+        + ":"
+        + canonical;
   }
 
   private static final class InMemoryToolIdempotencyStore implements AiToolIdempotencyStore {

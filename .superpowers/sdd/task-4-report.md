@@ -8,15 +8,19 @@ Added actor-aware appointment commands/use cases and assistant appointment tool 
 
 - `mise exec java@25.0.2 -- ./gradlew :modules:appointments:compileJava :modules:assistant:compileJava` — passed.
 - `mise exec java@25.0.2 -- ./gradlew :modules:appointments:test` — passed.
-- `mise exec java@25.0.2 -- ./gradlew :modules:appointments:test :modules:assistant:test` — appointment tests passed; assistant suite has 16 existing failures.
+- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:test` — 334 tests completed, 16 failed.
+- Exact unrelated baseline failures: `AiCapabilityConventionTest.everyMaterializedProductionPackageHasPackageMetadata`; `ConversationWebTest.shouldRejectUnauthenticatedRequest`; `ConversationWebTest.shouldAcceptValidConversationRequest`; `AiWebTest.shouldAcceptRagRequestWithTheAuthenticatedTenantContext`; `AiWebTest.shouldRejectWithoutFeatureFlag`; `AiWebTest.shouldAcceptValidChatRequest`; `ConversationModuleTest.shouldCreateConversation`; `ConversationModuleTest.shouldListConversations`; `ConversationModuleTest.shouldGetConversationById`; `ConversationModuleTest.shouldRejectWithoutJwt`; `AiModuleTest.shouldReturnMockProviderResponse`; `AiModuleTest.shouldHandleEmptyMessageGracefully`; `AiModuleTest.shouldGetAiResponse`; `AiModuleTest.shouldDetectIntent`; `AiModuleTest.shouldHandleConversationContext`; `AiModuleTest.shouldRejectWithoutJwt`.
+- Proof: the convention failure reports the pre-existing missing `package-info.java` under `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/storage`; all 15 Spring failures fail during context creation because `CatalogDesignImageReader` has no `TenantImageReader` bean. Neither path is touched by Task 4 changes.
+- Focused remediation verification: `:modules:assistant:test --tests '*AppointmentToolHandlerTest' --tests '*AuthorizedAiToolGatewayIdempotencyTest'` — passed.
+- `:modules:assistant:spotlessApply` — passed.
 
 ## Limitations
 
-The requested named Task 4 test files were not present in the brief's starting tree and were not fabricated after implementation. Full assistant verification is blocked by unrelated pre-existing failures: package metadata for `ai/adapter/out/storage` and missing `TenantImageReader` Spring wiring. Existing legacy appointment use cases remain unscoped compatibility adapters; new AI callers must use actor-aware use cases through the authorized gateway.
+Full assistant verification remains red only on the documented unrelated baseline failures. Existing legacy appointment use cases remain unscoped compatibility adapters; new AI callers must use actor-aware use cases through the authorized gateway.
 
 ## Review remediation
 
-Added actor-tenant reference checks and canonical tenant/tool/principal/idempotency/argument operation keys. Reformatted sources with Spotless. Focused appointment tests pass. The existing idempotency port has no fingerprint field, so fingerprint binding is implemented in the operation key; durable storage schema migration and new dedicated review tests remain limitations pending the upstream review fixtures.
+Added actor-tenant reference checks and canonical tenant/tool/principal/idempotency/argument operation keys. Added `AppointmentToolHandlerTest` for malformed arguments, backend context propagation, and preservation of domain, security, and collision runtime exceptions. Gateway tests verify tenant/tool/principal/idempotency identity, sorted canonical argument fingerprints, reordered-argument replay, and changed arguments receiving a distinct non-replay identity. Reformatted sources with Spotless.
 
 ## Follow-up fixes
 
@@ -24,4 +28,4 @@ Added actor-tenant reference checks and canonical tenant/tool/principal/idempote
 - Authorized rescheduling excludes the appointment being moved from its collision query.
 - Tool handlers translate only malformed UUID/time arguments; authorization, domain, and collision exceptions propagate unchanged.
 
-Verification: Java 25 appointment repository tests and repository-wide `spotlessCheck` pass. The requested assistant handler test selector is absent from this checkout, so Gradle reports “No tests found” for that selector; assistant production sources compile successfully.
+Verification: Java 25 appointment repository tests and repository-wide `spotlessCheck` pass. Assistant production sources compile successfully; the full assistant suite's only failures are the 16 baseline tests listed above.

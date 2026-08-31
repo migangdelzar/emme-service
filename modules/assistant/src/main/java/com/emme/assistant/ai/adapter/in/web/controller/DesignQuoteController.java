@@ -6,6 +6,7 @@ import com.emme.assistant.ai.adapter.in.web.response.DesignQuoteResponse;
 import com.emme.assistant.ai.adapter.in.web.security.AiWebExecutionContextFactory;
 import com.emme.assistant.ai.api.command.ProcessDesignQuoteCommand;
 import com.emme.assistant.ai.api.usecase.ProcessDesignQuoteUseCase;
+import com.emme.assistant.ai.application.port.out.DesignImageMetadataRepository;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.tracing.CorrelationId;
 import java.util.Objects;
@@ -32,14 +33,17 @@ public class DesignQuoteController {
   private final TenantImageWriter storage;
   private final ProcessDesignQuoteUseCase quote;
   private final AiWebExecutionContextFactory contexts;
+  private final DesignImageMetadataRepository metadata;
 
   public DesignQuoteController(
       TenantImageWriter storage,
       ProcessDesignQuoteUseCase quote,
-      AiWebExecutionContextFactory contexts) {
+      AiWebExecutionContextFactory contexts,
+      DesignImageMetadataRepository metadata) {
     this.storage = storage;
     this.quote = quote;
     this.contexts = contexts;
+    this.metadata = metadata;
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -70,6 +74,12 @@ public class DesignQuoteController {
         context,
         () -> {
           String key = storage.store(context.tenantId(), image.getBytes());
+          metadata.save(
+              context.tenantId(),
+              context.workflowId(),
+              key,
+              image.getContentType(),
+              image.getSize());
           var result =
               quote.process(
                   new ProcessDesignQuoteCommand(request.templateKey(), request.inputText(), key));

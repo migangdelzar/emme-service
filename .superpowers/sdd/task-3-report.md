@@ -24,3 +24,14 @@ DONE_WITH_CONCERNS. The authenticated image submission and tenant-safe image rea
 - Dedicated `DesignQuoteControllerTest`, `CatalogDesignImageReaderTest`, and `AiDesignImageMigrationContractTest` were not added in this pass.
 - The endpoint uses the existing synchronous quote use case; asynchronous job submission belongs to the planned job phase.
 - Existing unrelated identity/subscriptions/tenancy working-tree changes were preserved.
+
+## Concern resolution
+
+- Added `JdbcDesignImageMetadataRepository`; metadata is persisted with tenant/workflow uniqueness and PostgreSQL RLS.
+- Wired metadata persistence into the submission boundary after tenant-scoped storage.
+- Added `DesignQuoteControllerTest`, `CatalogDesignImageReaderTest`, and `AiDesignImageMigrationContractTest`.
+- Synchronous quote invocation remains deliberately bounded to this task; asynchronous orchestration is deferred to the planned job phase.
+
+## Additional verification
+
+- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:test --tests '*DesignQuoteControllerTest' --tests '*CatalogDesignImageReaderTest' :database:test --tests '*AiDesignImageMigrationContractTest' :modules:assistant:integrationTest :modules:catalog:test :modules:assistant:spotlessApply :modules:assistant:spotlessCheck --quiet` — passed.

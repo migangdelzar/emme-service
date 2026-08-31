@@ -9,8 +9,10 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
 import com.emme.assistant.ai.domain.job.AiJobStatus;
 import com.emme.kernel.context.AiExecutionContext;
+import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import org.junit.jupiter.api.Test;
 
 class AiJobWorkerServiceTest {
@@ -45,14 +47,31 @@ class AiJobWorkerServiceTest {
     AiJobWorkerService worker =
         new AiJobWorkerService(
             store,
-            mock(ModelExecutionScheduler.class),
+            executingScheduler(),
             (request, ignored) -> {
               throw new IllegalStateException("boom");
             });
     AiJobRequest request =
         new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
     worker.handle(request);
-    verify(store).fail(request.jobId(), "AI_JOB_RETRY_EXHAUSTED", context);
+    verify(store).fail(request.jobId(), "AI_JOB_FAILED", context);
     assertThat(worker.lastBackoff()).isPositive();
+  }
+
+  private static ModelExecutionScheduler executingScheduler() {
+    return new ModelExecutionScheduler() {
+      @Override
+      public <T> T execute(
+          com.emme.ai.contracts.model.ModelCapability capability,
+          AiExecutionContext context,
+          Duration timeout,
+          Callable<T> operation) {
+        try {
+          return operation.call();
+        } catch (Exception exception) {
+          throw new RuntimeException(exception);
+        }
+      }
+    };
   }
 }

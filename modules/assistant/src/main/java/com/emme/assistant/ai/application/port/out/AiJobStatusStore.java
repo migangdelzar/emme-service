@@ -12,4 +12,6 @@ public interface AiJobStatusStore {
   void complete(UUID jobId, AiExecutionContext context);
 
   void fail(UUID jobId, String errorCode, AiExecutionContext context);
+
+  java.util.List<com.emme.ai.contracts.job.AiJobRequest> findAvailable(int limit);
 }

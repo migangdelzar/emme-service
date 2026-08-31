@@ -1,10 +1,13 @@
 package com.emme.assistant.ai.application.service;
 
 import com.emme.ai.contracts.job.AiJobRequest;
+import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
 import com.emme.assistant.ai.domain.job.AiJobStatus;
 import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextBridge;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
 import java.util.Objects;
 
@@ -27,13 +30,25 @@ public final class AiJobWorkerService {
   }
 
   public void handle(AiJobRequest request) {
+    AiExecutionContextScope.run(
+        request.context(), () -> AiExecutionContextBridge.runCurrent(() -> handleBound(request)));
+  }
+
+  private void handleBound(AiJobRequest request) {
     if (store.claim(request.jobId(), request.context()) != AiJobStatus.CLAIMED) return;
     try {
-      handler.run(request, request.context());
+      scheduler.execute(
+          ModelCapability.GENERATION,
+          request.context(),
+          Duration.ofSeconds(30),
+          () -> {
+            handler.run(request, request.context());
+            return null;
+          });
       store.complete(request.jobId(), request.context());
     } catch (RuntimeException failure) {
       lastBackoff = Duration.ofSeconds(1);
-      store.fail(request.jobId(), "AI_JOB_RETRY_EXHAUSTED", request.context());
+      store.fail(request.jobId(), "AI_JOB_FAILED", request.context());
     }
   }
 

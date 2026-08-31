@@ -18,6 +18,10 @@ public final class AiJobListener {
 
   @EventListener
   public void onJob(AiJobRequest request) {
-    executor.execute(() -> worker.handle(request));
+    try {
+      executor.execute(() -> worker.handle(request));
+    } catch (java.util.concurrent.RejectedExecutionException rejected) {
+      worker.handle(request);
+    }
   }
 }

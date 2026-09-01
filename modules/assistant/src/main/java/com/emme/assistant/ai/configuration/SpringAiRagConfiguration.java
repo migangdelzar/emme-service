@@ -77,6 +77,7 @@ public class SpringAiRagConfiguration {
       TenantSecurityAdvisor tenantSecurityAdvisor,
       PromptVersionAdvisor promptVersionAdvisor,
       RetrievalAugmentationAdvisor retrievalAugmentationAdvisor,
+      TenantScopedDocumentRetriever documentRetriever,
       AiTraceRecorder traceRecorder,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {
@@ -94,6 +95,6 @@ public class SpringAiRagConfiguration {
                             admission,
                             executionProperties.modelAdmissionTimeout()))
             .orElseGet(() -> new ChatProviderChain(registry.providers()));
-    return new RagAnswerProviderChain(completions);
+    return new RagAnswerProviderChain(completions, documentRetriever);
   }
 }

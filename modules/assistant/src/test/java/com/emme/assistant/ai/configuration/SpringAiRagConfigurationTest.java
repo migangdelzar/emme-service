@@ -74,6 +74,7 @@ class SpringAiRagConfigurationTest {
             new com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor(
                 "rag-v1"),
             mock(RetrievalAugmentationAdvisor.class),
+            mock(TenantScopedDocumentRetriever.class),
             mock(AiTraceRecorder.class),
             java.util.Optional.empty(),
             new AiExecutorProperties(2, 1, 1));

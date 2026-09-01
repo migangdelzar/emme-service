@@ -156,7 +156,7 @@ public class RagQueryService implements RagQueryUseCase {
       return complete(context, question);
     } catch (RuntimeException failure) {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
-      return complete("", question);
+      return "Retrieval unavailable.";
     }
   }
 

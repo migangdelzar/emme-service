@@ -142,7 +142,7 @@ class RagQueryServiceTest {
   }
 
   @Test
-  void fallsBackToNormalLlmWhenVectorEmbeddingFails() {
+  void returnsExplicitRetrievalUnavailableWhenVectorEmbeddingFails() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider model = mock(AiModelProvider.class);
     SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
@@ -157,15 +157,14 @@ class RagQueryServiceTest {
             java.util.Optional.of(chat));
 
     when(embeddings.embed("hello")).thenThrow(new IllegalStateException("vector unavailable"));
-    when(chat.complete("", "hello")).thenReturn("normal answer");
-
-    assertThat(inContext(tenantId, () -> service.query("hello"))).isEqualTo("normal answer");
-    verify(chat).complete("", "hello");
+    assertThat(inContext(tenantId, () -> service.query("hello")))
+        .isEqualTo("Retrieval unavailable.");
+    verifyNoInteractions(chat);
     verifyNoInteractions(search, model);
   }
 
   @Test
-  void fallsBackToNormalLlmWhenVectorSearchFails() {
+  void returnsExplicitRetrievalUnavailableWhenVectorSearchFails() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider model = mock(AiModelProvider.class);
     SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
@@ -182,10 +181,9 @@ class RagQueryServiceTest {
     when(embeddings.embed("hello"))
         .thenReturn(new EmbeddingVector("embedding-v1", List.of(0.1f, 0.2f)));
     when(search.search(any())).thenThrow(new IllegalStateException("pgvector unavailable"));
-    when(chat.complete("", "hello")).thenReturn("normal answer");
-
-    assertThat(inContext(tenantId, () -> service.query("hello"))).isEqualTo("normal answer");
-    verify(chat).complete("", "hello");
+    assertThat(inContext(tenantId, () -> service.query("hello")))
+        .isEqualTo("Retrieval unavailable.");
+    verifyNoInteractions(chat);
     verify(model, never()).chat(any(), any());
   }
 

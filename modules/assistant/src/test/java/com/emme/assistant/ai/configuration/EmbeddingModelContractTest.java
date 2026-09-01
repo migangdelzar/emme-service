@@ -12,7 +12,7 @@ class EmbeddingModelContractTest {
     AiProperties assistantProperties = new AiProperties(null, null, null, false);
     AiProviderProperties platformProperties = new AiProviderProperties(null, null, null, false);
     RedisSemanticProperties redisProperties =
-        new RedisSemanticProperties(true, null, null, null, null, null, null, false, null);
+        new RedisSemanticProperties(true, null, null, null, null, null, false, null);
 
     assertThat(assistantProperties.embeddingModelVersion())
         .isEqualTo(AiProviderProperties.DEFAULT_EMBEDDING_MODEL_VERSION)
@@ -22,7 +22,6 @@ class EmbeddingModelContractTest {
     assertThat(assistantProperties.embedding().model())
         .isEqualTo(AiProviderProperties.DEFAULT_EMBEDDING_MODEL_NAME);
     assertThat(assistantProperties.embeddingDimension())
-        .isEqualTo(AiProviderProperties.DEFAULT_EMBEDDING_DIMENSION)
-        .isEqualTo(redisProperties.embeddingDimension());
+        .isEqualTo(AiProviderProperties.DEFAULT_EMBEDDING_DIMENSION);
   }
 }

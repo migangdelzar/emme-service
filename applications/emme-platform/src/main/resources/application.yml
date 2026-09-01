@@ -217,7 +217,6 @@ app:
       index-name: ${EMME_AI_REDIS_SEMANTIC_INDEX:emme-ai-semantic-cache}
       prefix: ${EMME_AI_REDIS_SEMANTIC_PREFIX:emme:ai:semantic-cache:}
       embedding-model-version: ${EMME_AI_REDIS_SEMANTIC_EMBEDDING_MODEL_VERSION:${EMME_AI_EMBEDDING_MODEL_VERSION:ollama-embeddinggemma:300m}}
-      embedding-dimension: ${EMME_AI_REDIS_SEMANTIC_EMBEDDING_DIMENSION:768}
       initialize-schema: ${EMME_AI_REDIS_SEMANTIC_INITIALIZE_SCHEMA:false}
   whatsapp:
     verify-token: ${WHATSAPP_VERIFY_TOKEN:}

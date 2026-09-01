@@ -17,8 +17,9 @@ not included.
   top-1/top-2 margin policy, and explicit embedding-provider-only fallback to the legacy LLM.
 - Centralized the configured embedding model name, model version, and vector dimension in the
   immutable `EmbeddingModelConfiguration` identity shared by assistant and AI-platform provider
-  wiring. Durable pgvector searches and Redis metadata filters now reject mismatched dimensions
-  and model versions; cache idempotency keys include both dimensions and model identity.
+  wiring. Durable pgvector searches reject mismatched dimensions and model versions; Redis uses
+  the same application embedding chain and model identity, while cache idempotency keys include
+  both dimensions and model identity.
 - Added an always-available `NoopSemanticCacheDependencyPublisher` when semantic caching is
   disabled or unspecified, while preserving the Spring application-event publisher when enabled.
 - Added fail-closed validation before durable or Redis cache hit accounting, plus safe empty-result
@@ -45,9 +46,14 @@ not included.
 - Rebound asynchronous semantic-cache invalidation to a reconstructed backend tenant context
   before durable PostgreSQL work, rejected events that disagree with an already-bound tenant, and
   used the established zero-UUID system principal for tenant-wide audit traces. Invalidation traces
-  omit conversation/workflow foreign keys because a dependency event is not a conversation.
-- Removed the unsupported Redis `embeddingDimension` filter and metadata field; Redis now uses the
-  existing indexed `embeddingModelVersion` tag while the adapter retains local dimension validation.
+  omit conversation/workflow foreign keys because a dependency event is not a conversation, and now
+  persist the final `completed` or `failed` outcome after durable invalidation.
+- Removed the duplicate Redis `embeddingDimension` configuration, metadata field, and query filter.
+  Redis derives dimension validation from the canonical AI embedding configuration and retains the
+  indexed `embeddingModelVersion` tag.
+- Guarded semantic routing on both the application embedding and reference-search ports, and
+  guarded Redis composition on the named `aiSemanticEmbeddingModel` provider-chain port so
+  optional features remain inert when their dependencies are absent or multiply defined.
 - Restricted DetectIntent model fallback to `EmbeddingProviderUnavailableException` and Spring
   transient data-access failures; persistence, authorization, and other runtime failures propagate.
 - Derived a stable non-default embedding model version from the configured model when no explicit
@@ -60,7 +66,8 @@ not included.
 
 | Check | Result |
 |---|---|
-| Focused assistant semantic tests (embedding identity, cache keys, routing, RAG abstention, JDBC/Redis adapters, invalidation, publisher wiring) | **PASS — selected tests including new context/audit/fallback coverage** |
+| Focused assistant semantic/context tests (routing guard, provider-chain Redis wiring, invalidation outcomes, embedding contract, Redis properties) | **PASS — 18 tests** |
+| `:modules:assistant:test --tests '*Semantic*Test' --tests '*Embedding*Test'` | **PASS — 94 tests** |
 | `:modules:assistant:integrationTest --tests '*RedisSemanticIntegrationTest'` | **PASS** |
 | `:modules:ai-platform:test --tests '...AiProviderPropertiesTest'` | **PASS — includes non-default model identity coverage** |
 | `:modules:services:test --tests '...UpdateServiceCatalogEntryServiceTest'` | **PASS** |
@@ -103,5 +110,9 @@ staged.
   `modules/ai-platform/src/main/java/com/emme/ai/platform/configuration`.
 - Durable semantic trace migration under
   `database/src/main/resources/db/emme-studio/releases/0.1.0/028-ai-semantic-execution-traces.sql`.
+- Chain-aware Redis embedding adapter under
+  `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiEmbeddingModelAdapter.java`.
+- Redis semantic configuration now consumes the qualified `aiSemanticEmbeddingModel` port and
+  no longer exposes a duplicate Redis embedding-dimension setting.
 - Quote-template invalidation coverage under
   `modules/services/src/test/java/com/emme/services/application/service/UpdateServiceCatalogEntryServiceTest.java`.

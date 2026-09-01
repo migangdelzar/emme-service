@@ -165,6 +165,7 @@ class SemanticCacheInvalidationServiceTest {
     verify(traces).recordSemanticOutcome(trace.capture());
     assertThat(trace.getValue().tenantId()).isEqualTo(event.tenantId());
     assertThat(trace.getValue().principalId()).isEqualTo(event.principalId());
+    assertThat(trace.getValue().outcome()).isEqualTo("completed");
     assertThat(trace.getValue().dependency()).isEqualTo("QUOTE_TEMPLATE");
     assertThat(trace.getValue().dependencyVersion()).isEqualTo("template-v3");
   }
@@ -174,11 +175,12 @@ class SemanticCacheInvalidationServiceTest {
     SemanticCachePort durable = mock(SemanticCachePort.class);
     SemanticCacheHotStore hot = mock(SemanticCacheHotStore.class);
     SemanticMetrics metrics = mock(SemanticMetrics.class);
+    AiTraceRecorder traces = mock(AiTraceRecorder.class);
     org.mockito.Mockito.doThrow(new IllegalStateException("database unavailable"))
         .when(durable)
         .invalidate(any(SemanticCacheInvalidation.class));
     SemanticCacheInvalidationService service =
-        new SemanticCacheInvalidationService(durable, java.util.Optional.of(hot), metrics);
+        new SemanticCacheInvalidationService(durable, java.util.Optional.of(hot), metrics, traces);
     SemanticCacheDependencyChanged event =
         new SemanticCacheDependencyChanged(
             UUID.randomUUID(),
@@ -194,6 +196,10 @@ class SemanticCacheInvalidationServiceTest {
 
     verify(metrics).recordFailure("invalidation", "durable_store_unavailable");
     org.mockito.Mockito.verifyNoInteractions(hot);
+    var trace = org.mockito.ArgumentCaptor.forClass(AiSemanticExecutionTrace.class);
+    verify(traces).recordSemanticOutcome(trace.capture());
+    assertThat(trace.getValue().tenantId()).isEqualTo(event.tenantId());
+    assertThat(trace.getValue().outcome()).isEqualTo("failed");
   }
 
   private static SemanticCacheDependencyChanged tenantWideEvent(UUID tenantId) {

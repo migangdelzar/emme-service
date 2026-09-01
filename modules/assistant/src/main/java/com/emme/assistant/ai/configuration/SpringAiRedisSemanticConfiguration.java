@@ -1,6 +1,8 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.adapter.out.provider.springai.RedisSemanticCacheHotStore;
+import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiEmbeddingModelAdapter;
+import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import org.springframework.ai.chat.client.advisor.toolsearch.ToolSearchToolCallingAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -21,7 +23,7 @@ import redis.clients.jedis.RedisClient;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(RedisSemanticProperties.class)
 @ConditionalOnProperty(prefix = "app.ai.redis-semantic", name = "enabled", havingValue = "true")
-@ConditionalOnBean(EmbeddingModel.class)
+@ConditionalOnBean(value = EmbeddingModelPort.class, name = "aiSemanticEmbeddingModel")
 public class SpringAiRedisSemanticConfiguration {
 
   @Bean(name = "aiRedisSemanticClient", destroyMethod = "close")
@@ -34,11 +36,11 @@ public class SpringAiRedisSemanticConfiguration {
   @ConditionalOnMissingBean(name = "aiRedisSemanticVectorStore")
   RedisVectorStore redisSemanticVectorStore(
       RedisClient redisClient,
-      EmbeddingModel embeddingModel,
+      @Qualifier("aiSemanticEmbeddingModel") EmbeddingModelPort embeddingModel,
       RedisSemanticProperties properties,
       AiProperties aiProperties) {
     requireEmbeddingContract(aiProperties, properties);
-    return RedisVectorStore.builder(redisClient, embeddingModel)
+    return RedisVectorStore.builder(redisClient, redisEmbeddingModel(embeddingModel, aiProperties))
         .indexName(properties.indexName())
         .prefix(properties.prefix())
         .initializeSchema(properties.initializeSchema())
@@ -50,7 +52,6 @@ public class SpringAiRedisSemanticConfiguration {
             RedisVectorStore.MetadataField.tag("contextFingerprint"),
             RedisVectorStore.MetadataField.tag("promptVersion"),
             RedisVectorStore.MetadataField.tag("embeddingModelVersion"),
-            RedisVectorStore.MetadataField.numeric("embeddingDimension"),
             RedisVectorStore.MetadataField.text("responsePayload"),
             RedisVectorStore.MetadataField.numeric("expiresAt"))
         .build();
@@ -80,11 +81,11 @@ public class SpringAiRedisSemanticConfiguration {
       havingValue = "true")
   RedisVectorStore redisToolVectorStore(
       RedisClient redisClient,
-      EmbeddingModel embeddingModel,
+      @Qualifier("aiSemanticEmbeddingModel") EmbeddingModelPort embeddingModel,
       RedisSemanticProperties properties,
       AiProperties aiProperties) {
     requireEmbeddingContract(aiProperties, properties);
-    return RedisVectorStore.builder(redisClient, embeddingModel)
+    return RedisVectorStore.builder(redisClient, redisEmbeddingModel(embeddingModel, aiProperties))
         .indexName(properties.indexName() + "-tools")
         .prefix(properties.prefix() + "tools:")
         .initializeSchema(properties.initializeSchema())
@@ -120,10 +121,14 @@ public class SpringAiRedisSemanticConfiguration {
         .build();
   }
 
+  EmbeddingModel redisEmbeddingModel(EmbeddingModelPort embeddingModel, AiProperties aiProperties) {
+    return new SpringAiEmbeddingModelAdapter(
+        embeddingModel, aiProperties.embeddingModelConfiguration());
+  }
+
   private static void requireEmbeddingContract(
       AiProperties aiProperties, RedisSemanticProperties redisProperties) {
-    if (aiProperties.embeddingDimension() != redisProperties.embeddingDimension()
-        || !aiProperties.embeddingModelVersion().equals(redisProperties.embeddingModelVersion())) {
+    if (!aiProperties.embeddingModelVersion().equals(redisProperties.embeddingModelVersion())) {
       throw new IllegalArgumentException(
           "Redis semantic embedding settings must match configured embedding settings");
     }

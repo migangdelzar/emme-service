@@ -12,7 +12,6 @@ public record RedisSemanticProperties(
     String indexName,
     String prefix,
     String embeddingModelVersion,
-    Integer embeddingDimension,
     boolean initializeSchema,
     Integer toolSearchMaxResults) {
 
@@ -25,8 +24,6 @@ public record RedisSemanticProperties(
         embeddingModelVersion == null
             ? EmbeddingModelDefaults.MODEL_VERSION
             : embeddingModelVersion;
-    embeddingDimension =
-        embeddingDimension == null ? EmbeddingModelDefaults.DIMENSION : embeddingDimension;
     toolSearchMaxResults = toolSearchMaxResults == null ? 5 : toolSearchMaxResults;
     requireText(host, "host");
     requireText(indexName, "indexName");
@@ -34,9 +31,6 @@ public record RedisSemanticProperties(
     requireText(embeddingModelVersion, "embeddingModelVersion");
     if (port < 1 || port > 65535) {
       throw new IllegalArgumentException("port must be between 1 and 65535");
-    }
-    if (embeddingDimension <= 0) {
-      throw new IllegalArgumentException("embeddingDimension must be positive");
     }
     if (toolSearchMaxResults <= 0) {
       throw new IllegalArgumentException("toolSearchMaxResults must be positive");

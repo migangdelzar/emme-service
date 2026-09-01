@@ -9,8 +9,22 @@ import com.emme.assistant.ai.application.semantic.SemanticIntentClassifier;
 import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
 import com.emme.assistant.ai.application.semantic.SemanticMatchPolicy;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 class SpringAiSemanticConfigurationTest {
+
+  @Test
+  void doesNotStartSemanticRoutingWhenItsRequiredPortsAreUnavailable() {
+    new ApplicationContextRunner()
+        .withUserConfiguration(SpringAiSemanticConfiguration.class)
+        .withPropertyValues("app.ai.semantic-routing.enabled=true")
+        .run(
+            context ->
+                assertThat(context)
+                    .hasNotFailed()
+                    .doesNotHaveBean(SemanticIntentRouter.class)
+                    .doesNotHaveBean(SemanticIntentClassifier.class));
+  }
 
   @Test
   void buildsSemanticClassificationFromTheProviderNeutralPorts() {

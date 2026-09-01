@@ -72,13 +72,14 @@ public final class SemanticCacheInvalidationService {
         () ->
             metrics.recordInvalidation(
                 event.dependency().name(), event.principalId() == null ? "tenant" : "principal"));
-    recordTrace(event);
     try {
       durable.invalidate(invalidation);
     } catch (RuntimeException failure) {
+      recordTrace(event, "failed");
       recordSafely(() -> metrics.recordFailure("invalidation", "durable_store_unavailable"));
       throw failure;
     }
+    recordTrace(event, "completed");
     hotStore.ifPresent(store -> safelyInvalidateHotStore(store, invalidation));
   }
 
@@ -108,7 +109,7 @@ public final class SemanticCacheInvalidationService {
             });
   }
 
-  private void recordTrace(SemanticCacheDependencyChanged event) {
+  private void recordTrace(SemanticCacheDependencyChanged event, String outcome) {
     recordSafely(
         () ->
             traceRecorder.recordSemanticOutcome(
@@ -117,7 +118,7 @@ public final class SemanticCacheInvalidationService {
                     event.tenantId(),
                     effectivePrincipal(event),
                     "cache_invalidation",
-                    "requested",
+                    outcome,
                     0.0,
                     0.0,
                     0.0,

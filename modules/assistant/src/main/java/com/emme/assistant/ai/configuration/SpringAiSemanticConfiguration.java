@@ -10,6 +10,7 @@ import com.emme.assistant.ai.application.semantic.SemanticToolSelector;
 import com.emme.assistant.ai.application.tool.AiToolGateway;
 import com.emme.assistant.ai.application.tool.SemanticProactiveToolRouter;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,6 +21,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(SemanticRoutingProperties.class)
 @ConditionalOnProperty(prefix = "app.ai.semantic-routing", name = "enabled", havingValue = "true")
+@ConditionalOnBean({EmbeddingModelPort.class, SemanticReferenceSearchPort.class})
 public class SpringAiSemanticConfiguration {
 
   @Bean

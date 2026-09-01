@@ -74,6 +74,14 @@ not included.
   including regression coverage for newline, quote, and tab control-character escaping.
 - Corrected the pgvector integration fixture to supply the configured model name, explicit model
   version, and the existing 768-dimensional vector contract.
+- Resolved null tenant database mappings to the configured `emme.tenancy.pooling.default-database-id`
+  for asynchronous durable invalidation, while retaining fail-closed behavior when no valid default
+  UUID is configured.
+- Forced row-level security on the semantic execution-trace table and aligned the migration contract
+  and PostgreSQL integration assertion with `relforcerowsecurity`.
+- Mapped semantic exception metrics to stable bounded reason codes, including provider, security,
+  transient data-store, invalid-input, and unexpected-failure categories; trace persistence failures
+  emit the bounded `trace_persistence_failed` telemetry reason.
 - Kept PostgreSQL/pgvector authoritative and Redis as the existing optional hot projection; no
   competing store or provider was added.
 
@@ -91,6 +99,7 @@ not included.
 | `:modules:assistant:spotlessJavaCheck :modules:ai-platform:spotlessJavaCheck :database:spotlessJavaCheck` | **PASS** |
 | Final focused unit, migration, integration, and Spotless command | **PASS — tenancy/assistant/database tests, all 3 assistant Testcontainers integrations, and Spotless checks** |
 | Java runtime for final checks | **Java 26; only installed JDK in the environment (`/usr/libexec/java_home -V`), running the project’s Java 25-compatible build** |
+| Final semantic/telemetry focused command (`:modules:assistant:test --tests '*Semantic*Test' --tests '*FailureReasonTest' --tests '*MicrometerSemanticMetricsTest' :database:test --tests '...AiSemanticSearchMigrationContractTest'`) | **PASS — 83 assistant tests + 13 database tests; 96 total, zero failures/skips** |
 | `git diff --check` | **PASS** |
 | Full `:modules:assistant:test` run | **LIMITED — 357 completed, 16 failed** |
 | `:applications:emme-platform:test` | **LIMITED — 62 completed, 8 known unrelated architecture-baseline failures** |
@@ -107,6 +116,10 @@ staged.
 - Tenant-wide semantic traces rely on the existing zero UUID system actor convention; no schema
   migration was required because `principal_id` remains non-null and conversation/workflow are
   nullable for invalidation records.
+- Trace persistence has no simple existing retry/outbox adapter: Spring Modulith's durable
+  publication boundary is used for dependency events, not direct trace rows. Trace writes therefore
+  remain explicitly best effort; semantic trace persistence failures are swallowed to preserve
+  customer-facing semantics and increment bounded failure telemetry, covered by a focused regression.
 - Unsafe-payload detection is conservative pattern filtering, not a complete DLP system; callers
   requiring stronger guarantees need a dedicated policy service behind the existing port.
 - The checked-in Task 6 brief and the explicitly requested semantic scope do not match; the live

@@ -3,11 +3,12 @@ package com.emme.assistant.ai.application.service;
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.contracts.rag.KnowledgeQuery;
+import com.emme.ai.contracts.rag.KnowledgeSearch;
+import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
-import com.emme.assistant.ai.application.port.out.KnowledgeDocument;
-import com.emme.assistant.ai.application.port.out.KnowledgeRetrievalPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
 import com.emme.assistant.ai.application.semantic.SemanticFailurePolicy;
@@ -23,16 +24,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class RagQueryService implements RagQueryUseCase {
 
+  private static final String DEFAULT_LOCALE = "es-MX";
+
   private final AiProperties properties;
   private final AiModelProvider modelProvider;
-  private final KnowledgeRetrievalPort retrieval;
+  private final KnowledgeSearch retrieval;
   private final Optional<ChatCompletionPort> chatCompletion;
   private final Optional<RagAnswerPort> ragAnswer;
   private final Optional<ModelExecutionScheduler> modelExecutionScheduler;
   private final Duration admissionTimeout;
 
   public RagQueryService(
-      AiProperties properties, AiModelProvider modelProvider, KnowledgeRetrievalPort retrieval) {
+      AiProperties properties, AiModelProvider modelProvider, KnowledgeSearch retrieval) {
     this(
         properties,
         modelProvider,
@@ -47,7 +50,7 @@ public class RagQueryService implements RagQueryUseCase {
   public RagQueryService(
       AiProperties properties,
       AiModelProvider modelProvider,
-      KnowledgeRetrievalPort retrieval,
+      KnowledgeSearch retrieval,
       Optional<ChatCompletionPort> chatCompletion,
       Optional<RagAnswerPort> ragAnswer,
       Optional<ModelExecutionScheduler> modelExecutionScheduler,
@@ -65,7 +68,7 @@ public class RagQueryService implements RagQueryUseCase {
   public RagQueryService(
       AiProperties properties,
       AiModelProvider modelProvider,
-      KnowledgeRetrievalPort retrieval,
+      KnowledgeSearch retrieval,
       Optional<ChatCompletionPort> chatCompletion) {
     this(
         properties,
@@ -80,7 +83,7 @@ public class RagQueryService implements RagQueryUseCase {
   public RagQueryService(
       AiProperties properties,
       AiModelProvider modelProvider,
-      KnowledgeRetrievalPort retrieval,
+      KnowledgeSearch retrieval,
       Optional<ChatCompletionPort> chatCompletion,
       Optional<RagAnswerPort> ragAnswer) {
     this(
@@ -96,7 +99,7 @@ public class RagQueryService implements RagQueryUseCase {
   private RagQueryService(
       AiProperties properties,
       AiModelProvider modelProvider,
-      KnowledgeRetrievalPort retrieval,
+      KnowledgeSearch retrieval,
       Optional<ChatCompletionPort> chatCompletion,
       Optional<RagAnswerPort> ragAnswer,
       Optional<ModelExecutionScheduler> modelExecutionScheduler,
@@ -112,7 +115,7 @@ public class RagQueryService implements RagQueryUseCase {
 
   @Override
   public String query(String question) {
-    AiExecutionContextScope.requireCurrent();
+    var executionContext = AiExecutionContextScope.requireCurrent();
     if (isMock()) {
       return "MOCK RAG: Based on your documents, the answer to your question about '"
           + question
@@ -130,10 +133,11 @@ public class RagQueryService implements RagQueryUseCase {
       // Preserve the provider-neutral retrieval path as the compatibility fallback.
     }
     try {
-      List<KnowledgeDocument> documents = retrieval.retrieve(question, 5);
+      List<RetrievedDocument> documents =
+          retrieval.search(new KnowledgeQuery(question, DEFAULT_LOCALE, 5), executionContext);
       String context =
           documents.stream()
-              .map(KnowledgeDocument::content)
+              .map(RetrievedDocument::content)
               .filter(content -> content != null && !content.isBlank())
               .reduce((left, right) -> left + "\n\n" + right)
               .orElse("");

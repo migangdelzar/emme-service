@@ -7,12 +7,23 @@ import static org.mockito.Mockito.verify;
 import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
 import com.emme.ai.contracts.semantic.SemanticCacheDependencyPublisher;
 import com.emme.identity.api.command.SetTenantFeatureFlagOverrideCommand;
+import com.emme.identity.application.port.out.FeatureFlagRepository;
 import com.emme.identity.application.support.FeatureFlagTestRepository;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class SetTenantFeatureFlagOverrideServiceTest {
+
+  @Test
+  void marksTheDependencyAwareConstructorAsTheSpringInjectionConstructor() throws Exception {
+    assertThat(
+            SetTenantFeatureFlagOverrideService.class
+                .getConstructor(FeatureFlagRepository.class, Optional.class)
+                .isAnnotationPresent(Autowired.class))
+        .isTrue();
+  }
 
   @Test
   void createsTenantOverrideWithTheRequestedState() {

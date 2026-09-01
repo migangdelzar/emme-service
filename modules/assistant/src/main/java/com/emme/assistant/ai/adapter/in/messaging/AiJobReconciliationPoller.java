@@ -6,8 +6,8 @@ import com.emme.assistant.ai.configuration.AiJobProperties;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextBridge;
 import com.emme.kernel.context.AiExecutionContextScope;
-import com.emme.tenancy.application.port.out.TenantRepository;
-import com.emme.tenancy.domain.model.TenantStatus;
+import com.emme.tenancy.api.query.ListActiveTenantsQuery;
+import com.emme.tenancy.api.usecase.ListActiveTenantsUseCase;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -23,7 +23,7 @@ public final class AiJobReconciliationPoller {
   private final AiJobStatusStore store;
   private final AiJobListener listener;
   private final AiJobProperties properties;
-  private final TenantRepository tenants;
+  private final ListActiveTenantsUseCase tenants;
   private final AiJobMetrics metrics;
   private UUID nextTenantId;
 
@@ -31,7 +31,7 @@ public final class AiJobReconciliationPoller {
       AiJobStatusStore store,
       AiJobListener listener,
       AiJobProperties properties,
-      TenantRepository tenants,
+      ListActiveTenantsUseCase tenants,
       AiJobMetrics metrics) {
     this.store = store;
     this.listener = listener;
@@ -43,7 +43,7 @@ public final class AiJobReconciliationPoller {
   @Scheduled(fixedDelayString = "${app.ai.jobs.reconciliation-delay-ms:5000}")
   public synchronized void reconcile() {
     List<UUID> activeTenantIds =
-        tenants.findByStatus(TenantStatus.ACTIVE).stream()
+        tenants.list(new ListActiveTenantsQuery()).stream()
             .map(tenant -> tenant.id())
             .distinct()
             .sorted(Comparator.naturalOrder())

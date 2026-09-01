@@ -3,6 +3,7 @@ package com.emme.assistant.ai.adapter.out.provider.springai;
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -50,7 +51,7 @@ public final class SpringAiEmbeddingModelAdapter implements EmbeddingModel {
       return new Embedding(values(embeddings.embed(text)), index);
     }
     if (instruction instanceof float[] values) {
-      return new Embedding(values, index);
+      return new Embedding(rawValues(values), index);
     }
     throw new IllegalArgumentException("Embedding instructions must contain text or vectors");
   }
@@ -67,5 +68,12 @@ public final class SpringAiEmbeddingModelAdapter implements EmbeddingModel {
       values[index] = embedding.values().get(index);
     }
     return values;
+  }
+
+  private float[] rawValues(float[] values) {
+    if (values.length != configuration.dimension()) {
+      throw new IllegalArgumentException("Embedding dimensions must match configured model");
+    }
+    return Arrays.copyOf(values, values.length);
   }
 }

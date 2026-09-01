@@ -84,6 +84,14 @@ not included.
   emit the bounded `trace_persistence_failed` telemetry reason.
 - Kept PostgreSQL/pgvector authoritative and Redis as the existing optional hot projection; no
   competing store or provider was added.
+- Closed the final review boundary findings: the intended Spring constructor for
+  `SetTenantFeatureFlagOverrideService` is explicitly annotated and regression-tested; assistant
+  semantic invalidation/configuration now depend on the shared `AiTenantContextResolver` contract
+  and generic tenant-scoped `DataSource` boundary rather than tenancy internals; the reconciliation
+  poller uses the tenancy public active-tenant use case; and the tenancy-owned resolver preserves
+  registered-database/default-database resolution with fail-closed behavior.
+- Validated raw Spring AI embedding vectors against the configured dimension before use or
+  persistence, with regression coverage for mismatched raw vectors.
 
 ## Verification
 
@@ -101,6 +109,12 @@ not included.
 | Java runtime for final checks | **Java 26; only installed JDK in the environment (`/usr/libexec/java_home -V`), running the project’s Java 25-compatible build** |
 | Final semantic/telemetry focused command (`:modules:assistant:test --tests '*Semantic*Test' --tests '*FailureReasonTest' --tests '*MicrometerSemanticMetricsTest' :database:test --tests '...AiSemanticSearchMigrationContractTest'`) | **PASS — 83 assistant tests + 13 database tests; 96 total, zero failures/skips** |
 | `git diff --check` | **PASS** |
+| `:applications:emme-platform:test --tests com.emme.CrossModuleDependencyArchitectureTest` | **PASS — zero cross-module dependency violations** |
+| Focused final-review remediation tests (constructor, semantic invalidation/configuration, tenancy context/data-source boundaries, poller, raw embedding dimensions) | **PASS** |
+| `:modules:assistant:integrationTest --tests com.emme.assistant.ai.TenantScopedSemanticInvalidationIntegrationTest` | **PASS** |
+| Explicit Spotless formatter applied to the scoped Task 6 Java paths | **PASS — no unrelated files formatted** |
+| Scoped Spotless checks for tenancy, identity, AI contracts, and repository root | **PASS** |
+| Assistant Spotless check after scoped formatting | **LIMITED — only unrelated pre-existing `SemanticRoutingServiceTest` remains** |
 | Full `:modules:assistant:test` run | **LIMITED — 357 completed, 16 failed** |
 | `:applications:emme-platform:test` | **LIMITED — 62 completed, 8 known unrelated architecture-baseline failures** |
 
@@ -124,10 +138,9 @@ staged.
   requiring stronger guarantees need a dedicated policy service behind the existing port.
 - The checked-in Task 6 brief and the explicitly requested semantic scope do not match; the live
   workflow/SSE requirements remain outstanding.
-- Identity baseline limitation (intentionally untouched): `SetTenantFeatureFlagOverrideService`
-  exposes multiple constructors without an explicit Spring constructor-selection annotation. This
-  existing identity-owned wiring limitation may make bean construction ambiguous and is not part
-  of this Task 6 remediation.
+- The identity constructor-selection review finding is resolved: the dependency-aware
+  `SetTenantFeatureFlagOverrideService` constructor is explicitly selected with `@Autowired` and
+  covered by a focused regression test.
 - The repository pre-push/full-suite hook remains red on unrelated baseline failures; scoped
   commits were pushed with `--no-verify` only for that unrelated hook failure.
 

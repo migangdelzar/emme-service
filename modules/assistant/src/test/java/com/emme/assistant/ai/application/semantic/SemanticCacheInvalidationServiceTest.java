@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
+import com.emme.ai.contracts.tenant.AiTenantContextResolver;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
@@ -15,8 +16,8 @@ import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.tenancy.application.port.out.TenantRepository;
-import com.emme.tenancy.configuration.TenantPoolingProperties;
+import com.emme.kernel.context.TenantExecutionContext;
+import com.emme.kernel.context.TenantExecutionContextScope;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
@@ -34,7 +35,7 @@ class SemanticCacheInvalidationServiceTest {
             java.util.Optional.of(hot),
             mock(SemanticMetrics.class),
             mock(AiTraceRecorder.class),
-            tenantRepository());
+            java.util.Optional.of(tenantContextResolver()));
     UUID tenantId = UUID.randomUUID();
     SemanticCacheDependencyChanged event =
         new SemanticCacheDependencyChanged(
@@ -75,7 +76,7 @@ class SemanticCacheInvalidationServiceTest {
             java.util.Optional.of(hot),
             mock(SemanticMetrics.class),
             traces,
-            tenantRepository());
+            java.util.Optional.of(tenantContextResolver()));
 
     service.invalidate(event);
 
@@ -85,13 +86,49 @@ class SemanticCacheInvalidationServiceTest {
   }
 
   @Test
+  void resolvesTheDatabaseWhenTheBoundTenantContextHasNoDatabase() {
+    UUID tenantId = UUID.randomUUID();
+    UUID databaseId = UUID.randomUUID();
+    SemanticCachePort durable = mock(SemanticCachePort.class);
+    org.mockito.Mockito.doAnswer(
+            invocation -> {
+              assertThat(TenantContextHolder.currentDatabaseOptional()).contains(databaseId);
+              return null;
+            })
+        .when(durable)
+        .invalidate(any(SemanticCacheInvalidation.class));
+    AiTenantContextResolver contextResolver = mock(AiTenantContextResolver.class);
+    org.mockito.Mockito.when(
+            contextResolver.resolve(
+                org.mockito.ArgumentMatchers.eq(tenantId),
+                org.mockito.ArgumentMatchers.anyString()))
+        .thenReturn(new TenantExecutionContext(tenantId, databaseId, "resolved-correlation"));
+    SemanticCacheInvalidationService service =
+        new SemanticCacheInvalidationService(
+            durable,
+            java.util.Optional.empty(),
+            mock(SemanticMetrics.class),
+            mock(AiTraceRecorder.class),
+            java.util.Optional.of(contextResolver));
+
+    TenantExecutionContextScope.run(
+        new TenantExecutionContext(tenantId, null, "bound-correlation"),
+        () -> service.invalidate(tenantWideEvent(tenantId)));
+
+    verify(durable).invalidate(any(SemanticCacheInvalidation.class));
+  }
+
+  @Test
   void routesDurableInvalidationThroughTheTenantDatabaseFromTheRegistry() {
     SemanticCachePort durable = mock(SemanticCachePort.class);
     UUID tenantId = UUID.randomUUID();
     UUID databaseId = UUID.randomUUID();
-    TenantRepository tenants = mock(TenantRepository.class);
-    org.mockito.Mockito.when(tenants.findDatabaseIdByTenantId(tenantId))
-        .thenReturn(java.util.Optional.of(databaseId));
+    AiTenantContextResolver contextResolver = mock(AiTenantContextResolver.class);
+    org.mockito.Mockito.when(
+            contextResolver.resolve(
+                org.mockito.ArgumentMatchers.eq(tenantId),
+                org.mockito.ArgumentMatchers.anyString()))
+        .thenReturn(new TenantExecutionContext(tenantId, databaseId, "correlation"));
     org.mockito.Mockito.doAnswer(
             invocation -> {
               assertThat(TenantContextHolder.currentDatabaseOptional()).contains(databaseId);
@@ -105,7 +142,7 @@ class SemanticCacheInvalidationServiceTest {
             java.util.Optional.empty(),
             mock(SemanticMetrics.class),
             mock(AiTraceRecorder.class),
-            tenants);
+            java.util.Optional.of(contextResolver));
 
     service.invalidate(tenantWideEvent(tenantId));
 
@@ -117,9 +154,12 @@ class SemanticCacheInvalidationServiceTest {
     SemanticCachePort durable = mock(SemanticCachePort.class);
     UUID tenantId = UUID.randomUUID();
     UUID defaultDatabaseId = UUID.randomUUID();
-    TenantRepository tenants = mock(TenantRepository.class);
-    org.mockito.Mockito.when(tenants.findDatabaseIdByTenantId(tenantId))
-        .thenReturn(java.util.Optional.empty());
+    AiTenantContextResolver contextResolver = mock(AiTenantContextResolver.class);
+    org.mockito.Mockito.when(
+            contextResolver.resolve(
+                org.mockito.ArgumentMatchers.eq(tenantId),
+                org.mockito.ArgumentMatchers.anyString()))
+        .thenReturn(new TenantExecutionContext(tenantId, defaultDatabaseId, "correlation"));
     org.mockito.Mockito.doAnswer(
             invocation -> {
               assertThat(TenantContextHolder.currentDatabaseOptional()).contains(defaultDatabaseId);
@@ -133,8 +173,7 @@ class SemanticCacheInvalidationServiceTest {
             java.util.Optional.empty(),
             mock(SemanticMetrics.class),
             mock(AiTraceRecorder.class),
-            tenants,
-            new TenantPoolingProperties(200, 30, 60, 5, 20, 100, defaultDatabaseId.toString()));
+            java.util.Optional.of(contextResolver));
 
     service.invalidate(tenantWideEvent(tenantId));
 
@@ -145,17 +184,20 @@ class SemanticCacheInvalidationServiceTest {
   void failsClosedWhenTheConfiguredDefaultDatabaseIsInvalid() {
     SemanticCachePort durable = mock(SemanticCachePort.class);
     UUID tenantId = UUID.randomUUID();
-    TenantRepository tenants = mock(TenantRepository.class);
-    org.mockito.Mockito.when(tenants.findDatabaseIdByTenantId(tenantId))
-        .thenReturn(java.util.Optional.empty());
+    AiTenantContextResolver contextResolver = mock(AiTenantContextResolver.class);
+    org.mockito.Mockito.when(
+            contextResolver.resolve(
+                org.mockito.ArgumentMatchers.eq(tenantId),
+                org.mockito.ArgumentMatchers.anyString()))
+        .thenThrow(
+            new IllegalStateException("No valid default database for semantic cache invalidation"));
     SemanticCacheInvalidationService service =
         new SemanticCacheInvalidationService(
             durable,
             java.util.Optional.empty(),
             mock(SemanticMetrics.class),
             mock(AiTraceRecorder.class),
-            tenants,
-            new TenantPoolingProperties(200, 30, 60, 5, 20, 100, "not-a-uuid"));
+            java.util.Optional.of(contextResolver));
 
     assertThatThrownBy(() -> service.invalidate(tenantWideEvent(tenantId)))
         .isInstanceOf(IllegalStateException.class)
@@ -167,16 +209,12 @@ class SemanticCacheInvalidationServiceTest {
   void failsClosedWhenTheTenantDatabaseCannotBeResolved() {
     SemanticCachePort durable = mock(SemanticCachePort.class);
     UUID tenantId = UUID.randomUUID();
-    TenantRepository tenants = mock(TenantRepository.class);
-    org.mockito.Mockito.when(tenants.findDatabaseIdByTenantId(tenantId))
-        .thenReturn(java.util.Optional.empty());
     SemanticCacheInvalidationService service =
         new SemanticCacheInvalidationService(
             durable,
             java.util.Optional.empty(),
             mock(SemanticMetrics.class),
-            mock(AiTraceRecorder.class),
-            tenants);
+            mock(AiTraceRecorder.class));
 
     assertThatThrownBy(() -> service.invalidate(tenantWideEvent(tenantId)))
         .isInstanceOf(IllegalStateException.class)
@@ -193,7 +231,7 @@ class SemanticCacheInvalidationServiceTest {
             java.util.Optional.empty(),
             mock(SemanticMetrics.class),
             mock(AiTraceRecorder.class),
-            tenantRepository());
+            java.util.Optional.of(tenantContextResolver()));
     UUID boundTenant = UUID.randomUUID();
     SemanticCacheDependencyChanged event = tenantWideEvent(UUID.randomUUID());
     AiExecutionContext context =
@@ -228,7 +266,7 @@ class SemanticCacheInvalidationServiceTest {
             java.util.Optional.of(hot),
             metrics,
             mock(AiTraceRecorder.class),
-            tenantRepository());
+            java.util.Optional.of(tenantContextResolver()));
     SemanticCacheDependencyChanged event =
         new SemanticCacheDependencyChanged(
             UUID.randomUUID(),
@@ -255,7 +293,7 @@ class SemanticCacheInvalidationServiceTest {
             java.util.Optional.empty(),
             metrics,
             mock(AiTraceRecorder.class),
-            tenantRepository());
+            java.util.Optional.of(tenantContextResolver()));
     SemanticCacheDependencyChanged event =
         new SemanticCacheDependencyChanged(
             UUID.randomUUID(),
@@ -280,7 +318,7 @@ class SemanticCacheInvalidationServiceTest {
             java.util.Optional.empty(),
             mock(SemanticMetrics.class),
             traces,
-            tenantRepository());
+            java.util.Optional.of(tenantContextResolver()));
     SemanticCacheDependencyChanged event =
         new SemanticCacheDependencyChanged(
             UUID.randomUUID(),
@@ -312,7 +350,11 @@ class SemanticCacheInvalidationServiceTest {
         .invalidate(any(SemanticCacheInvalidation.class));
     SemanticCacheInvalidationService service =
         new SemanticCacheInvalidationService(
-            durable, java.util.Optional.of(hot), metrics, traces, tenantRepository());
+            durable,
+            java.util.Optional.of(hot),
+            metrics,
+            traces,
+            java.util.Optional.of(tenantContextResolver()));
     SemanticCacheDependencyChanged event =
         new SemanticCacheDependencyChanged(
             UUID.randomUUID(),
@@ -344,10 +386,14 @@ class SemanticCacheInvalidationServiceTest {
         Instant.parse("2026-08-31T12:00:00Z"));
   }
 
-  private static TenantRepository tenantRepository() {
-    TenantRepository tenants = mock(TenantRepository.class);
-    org.mockito.Mockito.when(tenants.findDatabaseIdByTenantId(any(UUID.class)))
-        .thenReturn(java.util.Optional.of(UUID.randomUUID()));
-    return tenants;
+  private static AiTenantContextResolver tenantContextResolver() {
+    AiTenantContextResolver resolver = mock(AiTenantContextResolver.class);
+    org.mockito.Mockito.when(
+            resolver.resolve(any(UUID.class), org.mockito.ArgumentMatchers.anyString()))
+        .thenAnswer(
+            invocation ->
+                new TenantExecutionContext(
+                    invocation.getArgument(0), UUID.randomUUID(), invocation.getArgument(1)));
+    return resolver;
   }
 }

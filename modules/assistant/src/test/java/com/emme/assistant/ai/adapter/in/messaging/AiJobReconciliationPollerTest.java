@@ -14,10 +14,9 @@ import com.emme.assistant.ai.configuration.AiJobProperties;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.tenancy.application.port.out.TenantRepository;
-import com.emme.tenancy.domain.model.Tenant;
-import com.emme.tenancy.domain.model.TenantStatus;
-import java.time.Instant;
+import com.emme.tenancy.api.query.ListActiveTenantsQuery;
+import com.emme.tenancy.api.result.TenantDetails;
+import com.emme.tenancy.api.usecase.ListActiveTenantsUseCase;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -35,8 +34,8 @@ class AiJobReconciliationPollerTest {
   void claimsAvailableJobsInsideTheAuthoritativeTenantAiContext() {
     UUID tenantA = TENANT_A;
     UUID tenantB = TENANT_B;
-    TenantRepository tenants = mock(TenantRepository.class);
-    when(tenants.findByStatus(TenantStatus.ACTIVE))
+    ListActiveTenantsUseCase tenants = mock(ListActiveTenantsUseCase.class);
+    when(tenants.list(new ListActiveTenantsQuery()))
         .thenReturn(List.of(tenant(tenantA), tenant(tenantB)));
     AiJobStatusStore store = mock(AiJobStatusStore.class);
     AiJobMetrics metrics = mock(AiJobMetrics.class);
@@ -73,8 +72,8 @@ class AiJobReconciliationPollerTest {
     AiExecutionContext contextB = context(tenantB, "b");
     AiJobRequest requestA = request(contextA);
     AiJobRequest requestB = request(contextB);
-    TenantRepository tenants = mock(TenantRepository.class);
-    when(tenants.findByStatus(TenantStatus.ACTIVE))
+    ListActiveTenantsUseCase tenants = mock(ListActiveTenantsUseCase.class);
+    when(tenants.list(new ListActiveTenantsQuery()))
         .thenReturn(List.of(tenant(tenantA), tenant(tenantB)));
     AiJobStatusStore store = mock(AiJobStatusStore.class);
     List<String> events = new ArrayList<>();
@@ -110,8 +109,8 @@ class AiJobReconciliationPollerTest {
 
   @Test
   void rotatesDeterministicallyAcrossSaturatedReconciliationCycles() {
-    TenantRepository tenants = mock(TenantRepository.class);
-    when(tenants.findByStatus(TenantStatus.ACTIVE))
+    ListActiveTenantsUseCase tenants = mock(ListActiveTenantsUseCase.class);
+    when(tenants.list(new ListActiveTenantsQuery()))
         .thenReturn(List.of(tenant(TENANT_B), tenant(TENANT_A)));
     AiJobStatusStore store = mock(AiJobStatusStore.class);
     List<UUID> claimedTenants = new ArrayList<>();
@@ -154,9 +153,7 @@ class AiJobReconciliationPollerTest {
     return new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
   }
 
-  private static Tenant tenant(UUID id) {
-    Instant now = Instant.parse("2026-08-31T00:00:00Z");
-    return Tenant.rehydrate(
-        id, "tenant-" + id, "Tenant " + id, TenantStatus.ACTIVE, null, "emme", now, now);
+  private static TenantDetails tenant(UUID id) {
+    return new TenantDetails(id, "tenant-" + id, "Tenant " + id, null, "ACTIVE", null, "emme");
   }
 }

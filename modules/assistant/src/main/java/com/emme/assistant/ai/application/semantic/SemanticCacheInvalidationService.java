@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.application.semantic;
 
 import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
+import com.emme.ai.contracts.tenant.AiTenantContextResolver;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
@@ -14,8 +15,6 @@ import com.emme.kernel.context.TenantContextBridge;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.context.TenantExecutionContext;
 import com.emme.kernel.context.TenantExecutionContextScope;
-import com.emme.tenancy.application.port.out.TenantRepository;
-import com.emme.tenancy.configuration.TenantPoolingProperties;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,8 +31,7 @@ public final class SemanticCacheInvalidationService {
   private final Optional<SemanticCacheHotStore> hotStore;
   private final SemanticMetrics metrics;
   private final AiTraceRecorder traceRecorder;
-  private final Optional<TenantRepository> tenantRepository;
-  private final Optional<TenantPoolingProperties> tenantPoolingProperties;
+  private final Optional<AiTenantContextResolver> tenantContextResolver;
 
   public SemanticCacheInvalidationService(
       SemanticCachePort durable, Optional<SemanticCacheHotStore> hotStore) {
@@ -52,7 +50,7 @@ public final class SemanticCacheInvalidationService {
       Optional<SemanticCacheHotStore> hotStore,
       SemanticMetrics metrics,
       AiTraceRecorder traceRecorder) {
-    this(durable, hotStore, metrics, traceRecorder, null, null);
+    this(durable, hotStore, metrics, traceRecorder, Optional.empty());
   }
 
   public SemanticCacheInvalidationService(
@@ -60,33 +58,20 @@ public final class SemanticCacheInvalidationService {
       Optional<SemanticCacheHotStore> hotStore,
       SemanticMetrics metrics,
       AiTraceRecorder traceRecorder,
-      TenantRepository tenantRepository) {
-    this(durable, hotStore, metrics, traceRecorder, tenantRepository, null);
-  }
-
-  public SemanticCacheInvalidationService(
-      SemanticCachePort durable,
-      Optional<SemanticCacheHotStore> hotStore,
-      SemanticMetrics metrics,
-      AiTraceRecorder traceRecorder,
-      TenantRepository tenantRepository,
-      TenantPoolingProperties tenantPoolingProperties) {
+      Optional<AiTenantContextResolver> tenantContextResolver) {
     this.durable = Objects.requireNonNull(durable, "durable must not be null");
     this.hotStore = Objects.requireNonNull(hotStore, "hotStore must not be null");
     this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");
     this.traceRecorder = Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
-    this.tenantRepository = Optional.ofNullable(tenantRepository);
-    this.tenantPoolingProperties = Optional.ofNullable(tenantPoolingProperties);
+    this.tenantContextResolver =
+        Objects.requireNonNull(tenantContextResolver, "tenantContextResolver must not be null");
   }
 
   public void invalidate(SemanticCacheDependencyChanged event) {
     Objects.requireNonNull(event, "event must not be null");
     verifyBoundTenant(event.tenantId());
-    UUID databaseId = resolveDatabaseId(event.tenantId());
     AiExecutionContext context = contextFor(event);
-    TenantExecutionContext tenantContext =
-        new TenantExecutionContext(
-            event.tenantId(), databaseId, "semantic-cache-invalidation:" + event.eventId());
+    TenantExecutionContext tenantContext = resolveTenantContext(event);
     TenantExecutionContextScope.run(
         tenantContext,
         () ->
@@ -95,43 +80,26 @@ public final class SemanticCacheInvalidationService {
                 () -> TenantContextBridge.runCurrent(() -> invalidateWithinBackendTenant(event))));
   }
 
-  private UUID resolveDatabaseId(UUID tenantId) {
-    Optional<UUID> boundDatabaseId =
-        TenantExecutionContextScope.current()
-            .map(
-                context -> {
-                  if (!tenantId.equals(context.tenantId())) {
-                    throw new SecurityException(
-                        "Semantic invalidation tenant does not match backend context");
-                  }
-                  return context.databaseId();
-                })
-            .filter(Objects::nonNull);
-    return boundDatabaseId
-        .or(
-        () ->
-            tenantRepository.flatMap(
-                repository -> repository.findDatabaseIdByTenantId(tenantId)))
-        .or(this::configuredDefaultDatabaseId)
-        .orElseThrow(
+  private TenantExecutionContext resolveTenantContext(SemanticCacheDependencyChanged event) {
+    String correlationId = "semantic-cache-invalidation:" + event.eventId();
+    return TenantExecutionContextScope.current()
+        .map(
+            context -> {
+              if (!event.tenantId().equals(context.tenantId())) {
+                throw new SecurityException(
+                    "Semantic invalidation tenant does not match backend context");
+              }
+              return context;
+            })
+        .filter(context -> context.databaseId() != null)
+        .orElseGet(
             () ->
-                new IllegalStateException(
-                    "No valid default database for semantic cache invalidation"));
-  }
-
-  private Optional<UUID> configuredDefaultDatabaseId() {
-    if (tenantPoolingProperties.isEmpty()) {
-      return Optional.empty();
-    }
-    String configured = tenantPoolingProperties.orElseThrow().defaultDatabaseId();
-    if (configured == null || configured.isBlank()) {
-      return Optional.empty();
-    }
-    try {
-      return Optional.of(UUID.fromString(configured));
-    } catch (IllegalArgumentException exception) {
-      return Optional.empty();
-    }
+                tenantContextResolver
+                    .map(resolver -> resolver.resolve(event.tenantId(), correlationId))
+                    .orElseThrow(
+                        () ->
+                            new IllegalStateException(
+                                "No valid default database for semantic cache invalidation")));
   }
 
   private void invalidateWithinBackendTenant(SemanticCacheDependencyChanged event) {

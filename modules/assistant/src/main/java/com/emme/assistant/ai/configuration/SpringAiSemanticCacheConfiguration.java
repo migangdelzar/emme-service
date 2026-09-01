@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.tenant.AiTenantContextResolver;
 import com.emme.assistant.ai.adapter.in.messaging.SemanticCacheInvalidationListener;
 import com.emme.assistant.ai.adapter.out.persistence.JacksonSemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
@@ -14,8 +15,6 @@ import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
-import com.emme.tenancy.application.port.out.TenantRepository;
-import com.emme.tenancy.configuration.TenantPoolingProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
 import java.util.Optional;
@@ -62,10 +61,9 @@ public class SpringAiSemanticCacheConfiguration {
       Optional<SemanticCacheHotStore> hotStore,
       SemanticMetrics metrics,
       AiTraceRecorder traceRecorder,
-      TenantRepository tenantRepository,
-      TenantPoolingProperties tenantPoolingProperties) {
+      Optional<AiTenantContextResolver> tenantContextResolver) {
     return new SemanticCacheInvalidationService(
-        cache, hotStore, metrics, traceRecorder, tenantRepository, tenantPoolingProperties);
+        cache, hotStore, metrics, traceRecorder, tenantContextResolver);
   }
 
   @Bean

@@ -5,8 +5,6 @@ import com.emme.ai.contracts.graph.KnowledgeGraphRetriever;
 import com.emme.assistant.ai.adapter.out.graph.AgeGraphAdapter;
 import com.emme.assistant.ai.adapter.out.graph.AgeGraphClient;
 import com.emme.assistant.ai.adapter.out.graph.JdbcAgeGraphClient;
-import com.emme.tenancy.adapter.out.client.database.TenantIdentifierResolver;
-import com.emme.tenancy.adapter.out.client.database.TenantScopedDataSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,19 +23,16 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(SpringAiAgeProperties.class)
 @ConditionalOnProperty(prefix = "app.ai.age", name = "enabled", havingValue = "true")
-@ConditionalOnBean(name = "tenantRoutingDataSource")
+@ConditionalOnBean(name = "tenantScopedDataSource")
 public class SpringAiAgeConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
   AgeGraphClient ageGraphClient(
-      @Qualifier("tenantRoutingDataSource") DataSource tenantDataSource,
-      ObjectMapper objectMapper) {
-    DataSource scopedDataSource =
-        new TenantScopedDataSource(tenantDataSource, new TenantIdentifierResolver());
+      @Qualifier("tenantScopedDataSource") DataSource tenantDataSource, ObjectMapper objectMapper) {
     TransactionOperations transactions =
-        new TransactionTemplate(new DataSourceTransactionManager(scopedDataSource));
-    return new JdbcAgeGraphClient(new JdbcTemplate(scopedDataSource), objectMapper, transactions);
+        new TransactionTemplate(new DataSourceTransactionManager(tenantDataSource));
+    return new JdbcAgeGraphClient(new JdbcTemplate(tenantDataSource), objectMapper, transactions);
   }
 
   @Bean

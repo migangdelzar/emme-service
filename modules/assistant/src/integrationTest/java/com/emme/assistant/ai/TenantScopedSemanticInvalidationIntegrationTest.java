@@ -1,10 +1,13 @@
 package com.emme.assistant.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
+import com.emme.ai.contracts.tenant.AiTenantContextResolver;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcAiTraceRecorder;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticCacheAdapter;
 import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidationService;
@@ -12,7 +15,6 @@ import com.emme.assistant.ai.application.trace.AiTraceRedactor;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.adapter.out.client.database.TenantScopedDataSource;
-import com.emme.tenancy.application.port.out.TenantRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.Optional;
@@ -102,7 +104,8 @@ class TenantScopedSemanticInvalidationIntegrationTest {
         )
         """);
     adminJdbc.update(
-        "INSERT INTO ai_semantic_cache (tenant_id, principal_id, cache_kind) VALUES (?, ?, ?), (?, ?, ?)",
+        "INSERT INTO ai_semantic_cache (tenant_id, principal_id, cache_kind) VALUES (?, ?, ?), (?,"
+            + " ?, ?)",
         TENANT_ID,
         UUID.randomUUID(),
         "CHAT_INFORMATIONAL",
@@ -119,8 +122,11 @@ class TenantScopedSemanticInvalidationIntegrationTest {
             null,
             new AiProperties.EmbeddingConfig("embeddinggemma:300m", "http://localhost", null, 2),
             true);
-    TenantRepository tenants = mock(TenantRepository.class);
-    when(tenants.findDatabaseIdByTenantId(TENANT_ID)).thenReturn(Optional.of(DATABASE_ID));
+    AiTenantContextResolver tenantContextResolver = mock(AiTenantContextResolver.class);
+    when(tenantContextResolver.resolve(eq(TENANT_ID), anyString()))
+        .thenReturn(
+            new com.emme.kernel.context.TenantExecutionContext(
+                TENANT_ID, DATABASE_ID, "semantic-invalidation"));
     invalidation =
         new SemanticCacheInvalidationService(
             new JdbcSemanticCacheAdapter(JdbcClient.create(scopedDataSource), properties),
@@ -128,7 +134,7 @@ class TenantScopedSemanticInvalidationIntegrationTest {
             com.emme.assistant.ai.application.port.out.NoopSemanticMetrics.INSTANCE,
             new JdbcAiTraceRecorder(
                 JdbcClient.create(scopedDataSource), new AiTraceRedactor(), new ObjectMapper()),
-            tenants);
+            Optional.of(tenantContextResolver));
   }
 
   @AfterEach
@@ -194,7 +200,8 @@ class TenantScopedSemanticInvalidationIntegrationTest {
             + table
             + "_tenant_isolation ON "
             + table
-            + " FOR ALL USING (tenant_id = current_tenant_id()) WITH CHECK (tenant_id = current_tenant_id())");
+            + " FOR ALL USING (tenant_id = current_tenant_id()) WITH CHECK (tenant_id ="
+            + " current_tenant_id())");
   }
 
   private boolean isForcedRls(String table) {

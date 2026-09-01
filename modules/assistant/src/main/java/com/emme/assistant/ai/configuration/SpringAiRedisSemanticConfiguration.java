@@ -58,9 +58,9 @@ public class SpringAiRedisSemanticConfiguration {
             RedisVectorStore.MetadataField.tag("knowledgeVersion"),
             RedisVectorStore.MetadataField.tag("policyVersion"),
             RedisVectorStore.MetadataField.tag("sourceVersion"),
-            RedisVectorStore.MetadataField.tag("channel"),
-            RedisVectorStore.MetadataField.tag("locale"),
-            RedisVectorStore.MetadataField.tag("quoteTemplateVersion"),
+            RedisVectorStore.MetadataField.tag("responseChannel"),
+            RedisVectorStore.MetadataField.tag("responseLocale"),
+            RedisVectorStore.MetadataField.tag("responseQuoteTemplateVersion"),
             RedisVectorStore.MetadataField.text("responsePayload"),
             RedisVectorStore.MetadataField.numeric("expiresAt"))
         .build();

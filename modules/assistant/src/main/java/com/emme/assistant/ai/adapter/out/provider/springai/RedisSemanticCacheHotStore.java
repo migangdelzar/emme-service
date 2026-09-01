@@ -186,15 +186,18 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
             filters.eq("sourceVersion", encodeTagValue(lookup.identity().sourceVersion())));
     responseIdentity =
         filters.and(
-            responseIdentity, filters.eq("channel", encodeTagValue(lookup.identity().channel())));
+            responseIdentity,
+            filters.eq("responseChannel", encodeTagValue(lookup.identity().channel())));
     responseIdentity =
         filters.and(
-            responseIdentity, filters.eq("locale", encodeTagValue(lookup.identity().locale())));
+            responseIdentity,
+            filters.eq("responseLocale", encodeTagValue(lookup.identity().locale())));
     responseIdentity =
         filters.and(
             responseIdentity,
             filters.eq(
-                "quoteTemplateVersion", encodeTagValue(lookup.identity().quoteTemplateVersion())));
+                "responseQuoteTemplateVersion",
+                encodeTagValue(lookup.identity().quoteTemplateVersion())));
     var identity =
         filters.and(
             filters.and(tenantAndPrincipal, kindAndContext),
@@ -242,10 +245,11 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
             Map.entry("knowledgeVersion", encodeTagValue(write.identity().knowledgeVersion())),
             Map.entry("policyVersion", encodeTagValue(write.identity().policyVersion())),
             Map.entry("sourceVersion", encodeTagValue(write.identity().sourceVersion())),
-            Map.entry("channel", encodeTagValue(write.identity().channel())),
-            Map.entry("locale", encodeTagValue(write.identity().locale())),
+            Map.entry("responseChannel", encodeTagValue(write.identity().channel())),
+            Map.entry("responseLocale", encodeTagValue(write.identity().locale())),
             Map.entry(
-                "quoteTemplateVersion", encodeTagValue(write.identity().quoteTemplateVersion())),
+                "responseQuoteTemplateVersion",
+                encodeTagValue(write.identity().quoteTemplateVersion())),
             Map.entry("responsePayload", write.responsePayload()),
             Map.entry("expiresAt", write.expiresAt().getEpochSecond()));
     vectorStore.add(

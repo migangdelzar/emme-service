@@ -27,6 +27,8 @@ class AiSemanticSearchMigrationContractTest {
       "db/emme-studio/releases/0.1.0/023-ai-tool-idempotency-lease.sql";
   private static final String MODEL_NAME_MIGRATION =
       "db/emme-studio/releases/0.1.0/029-ai-embedding-model-name.sql";
+  private static final String RESPONSE_IDENTITY_MIGRATION =
+      "db/emme-studio/releases/0.1.0/030-ai-semantic-cache-response-identity.sql";
 
   @Test
   void definesTenantScopedIntentAndToolReferenceTables() throws IOException {
@@ -155,6 +157,21 @@ class AiSemanticSearchMigrationContractTest {
         .contains("idx_ai_semantic_embedding_model_identity");
     assertThat(resource("db/emme-studio/changelog.yaml"))
         .contains("releases/0.1.0/029-ai-embedding-model-name.sql");
+  }
+
+  @Test
+  void persistsResponseAndDependencyVersionsInTheSemanticCacheIdentity() throws IOException {
+    String sql = resource(RESPONSE_IDENTITY_MIGRATION);
+
+    assertThat(sql)
+        .contains("response_provider VARCHAR(120)")
+        .contains("response_model VARCHAR(160)")
+        .contains("knowledge_version VARCHAR(160)")
+        .contains("policy_version VARCHAR(160)")
+        .contains("source_version VARCHAR(160)")
+        .contains("idx_ai_semantic_cache_response_identity");
+    assertThat(resource("db/emme-studio/changelog.yaml"))
+        .contains("releases/0.1.0/030-ai-semantic-cache-response-identity.sql");
   }
 
   @Test

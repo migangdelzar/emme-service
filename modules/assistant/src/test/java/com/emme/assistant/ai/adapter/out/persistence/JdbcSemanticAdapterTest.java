@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContext;
@@ -92,8 +93,11 @@ class JdbcSemanticAdapterTest {
     when(result.list()).thenReturn(List.of());
     JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc, aiProperties());
 
+    SemanticCacheIdentity identity =
+        new SemanticCacheIdentity(
+            "ollama", "gemma4:e4b-mlx", "knowledge-v7", "policy-v3", "source-v9");
     SemanticCachePort.Lookup lookup =
-        new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY);
+        new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY, identity);
     AiExecutionContextScope.call(context(), () -> adapter.find(lookup, 2));
 
     ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
@@ -102,14 +106,75 @@ class JdbcSemanticAdapterTest {
         .contains("tenant_id = :tenantId")
         .contains("principal_id = :principalId")
         .contains("embedding_model_name = :embeddingModelName")
+        .contains("response_provider = :responseProvider")
+        .contains("response_model = :responseModel")
+        .contains("knowledge_version = :knowledgeVersion")
+        .contains("policy_version = :policyVersion")
+        .contains("source_version = :sourceVersion")
         .contains("expires_at > CURRENT_TIMESTAMP");
     verify(statement).param("tenantId", TENANT_ID);
     verify(statement).param("principalId", PRINCIPAL_ID);
     verify(statement).param("embeddingModelName", "embeddinggemma:300m");
+    verify(statement).param("responseProvider", identity.responseProvider());
+    verify(statement).param("responseModel", identity.responseModel());
+    verify(statement).param("knowledgeVersion", identity.knowledgeVersion());
+    verify(statement).param("policyVersion", identity.policyVersion());
+    verify(statement).param("sourceVersion", identity.sourceVersion());
   }
 
   @Test
   void cacheWriteUsesAuthenticatedScopeAndAnIdempotencyKey() throws Exception {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    JdbcClient.MappedQuerySpec<UUID> result = mock(JdbcClient.MappedQuerySpec.class);
+    stubQuery(jdbc, statement, result);
+    when(result.single()).thenReturn(UUID.randomUUID());
+    JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc, aiProperties());
+
+    SemanticCacheIdentity identity =
+        new SemanticCacheIdentity(
+            "ollama", "gemma4:e4b-mlx", "knowledge-v7", "policy-v3", "source-v9");
+    SemanticCachePort.Put write =
+        new SemanticCachePort.Put(
+            "FAQ",
+            "What are your hours?",
+            "catalog-v4",
+            "prompt-v2",
+            "{\"answer\":\"We are open\"}",
+            Instant.parse("2030-01-01T00:00:00Z"),
+            QUERY,
+            "cache-write-1",
+            identity);
+
+    AiExecutionContextScope.call(context(), () -> adapter.put(write));
+
+    ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+    verify(jdbc).sql(sql.capture());
+    assertThat(sql.getValue())
+        .contains("INSERT INTO ai_semantic_cache")
+        .contains("embedding_model_name")
+        .contains("response_provider")
+        .contains("response_model")
+        .contains("knowledge_version")
+        .contains("policy_version")
+        .contains("source_version")
+        .contains("write_idempotency_key")
+        .contains("ON CONFLICT (tenant_id, principal_id, write_idempotency_key)")
+        .contains("RETURNING id");
+    verify(statement).param("tenantId", TENANT_ID);
+    verify(statement).param("principalId", PRINCIPAL_ID);
+    verify(statement).param("embeddingModelName", "embeddinggemma:300m");
+    verify(statement).param("writeIdempotencyKey", "cache-write-1");
+    verify(statement).param("responseProvider", identity.responseProvider());
+    verify(statement).param("responseModel", identity.responseModel());
+    verify(statement).param("knowledgeVersion", identity.knowledgeVersion());
+    verify(statement).param("policyVersion", identity.policyVersion());
+    verify(statement).param("sourceVersion", identity.sourceVersion());
+    verify(statement).param("expiresAt", Timestamp.from(write.expiresAt()));
+  }
+
+  @Test
+  void refreshesAnExpiredRowWhenAnIdempotentWriteConflicts() throws Exception {
     JdbcClient jdbc = mock(JdbcClient.class);
     JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
     JdbcClient.MappedQuerySpec<UUID> result = mock(JdbcClient.MappedQuerySpec.class);
@@ -126,23 +191,19 @@ class JdbcSemanticAdapterTest {
             "{\"answer\":\"We are open\"}",
             Instant.parse("2030-01-01T00:00:00Z"),
             QUERY,
-            "cache-write-1");
+            "cache-write-refresh");
 
     AiExecutionContextScope.call(context(), () -> adapter.put(write));
 
     ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
     verify(jdbc).sql(sql.capture());
     assertThat(sql.getValue())
-        .contains("INSERT INTO ai_semantic_cache")
-        .contains("embedding_model_name")
-        .contains("write_idempotency_key")
-        .contains("ON CONFLICT (tenant_id, principal_id, write_idempotency_key)")
-        .contains("RETURNING id");
-    verify(statement).param("tenantId", TENANT_ID);
-    verify(statement).param("principalId", PRINCIPAL_ID);
-    verify(statement).param("embeddingModelName", "embeddinggemma:300m");
-    verify(statement).param("writeIdempotencyKey", "cache-write-1");
-    verify(statement).param("expiresAt", Timestamp.from(write.expiresAt()));
+        .contains("DO UPDATE SET")
+        .contains("active = true")
+        .contains("expires_at = EXCLUDED.expires_at")
+        .contains("response_payload = EXCLUDED.response_payload")
+        .contains("embedding = EXCLUDED.embedding")
+        .contains("updated_at = CURRENT_TIMESTAMP");
   }
 
   @Test

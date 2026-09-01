@@ -43,6 +43,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
   private final Optional<SemanticCacheHotStore> hotStore;
   private final SemanticMetrics metrics;
   private final EmbeddingModelConfiguration embeddingModelConfiguration;
+  private final SemanticCacheIdentity identity;
 
   public SemanticChatCache(
       EmbeddingModelPort embeddings,
@@ -74,7 +75,8 @@ public final class SemanticChatCache implements SemanticResponseCache {
         ttl,
         hotStore,
         NoopSemanticMetrics.INSTANCE,
-        new EmbeddingModelConfiguration(EmbeddingModelDefaults.MODEL_NAME, "legacy", 1));
+        new EmbeddingModelConfiguration(EmbeddingModelDefaults.MODEL_NAME, "legacy", 1),
+        SemanticCacheIdentity.legacy());
   }
 
   public SemanticChatCache(
@@ -97,7 +99,8 @@ public final class SemanticChatCache implements SemanticResponseCache {
         ttl,
         hotStore,
         metrics,
-        new EmbeddingModelConfiguration(EmbeddingModelDefaults.MODEL_NAME, "legacy", 1));
+        new EmbeddingModelConfiguration(EmbeddingModelDefaults.MODEL_NAME, "legacy", 1),
+        SemanticCacheIdentity.legacy());
   }
 
   public SemanticChatCache(
@@ -111,6 +114,32 @@ public final class SemanticChatCache implements SemanticResponseCache {
       Optional<SemanticCacheHotStore> hotStore,
       SemanticMetrics metrics,
       EmbeddingModelConfiguration embeddingModelConfiguration) {
+    this(
+        embeddings,
+        resolver,
+        cache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        hotStore,
+        metrics,
+        embeddingModelConfiguration,
+        SemanticCacheIdentity.legacy());
+  }
+
+  public SemanticChatCache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort cache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore,
+      SemanticMetrics metrics,
+      EmbeddingModelConfiguration embeddingModelConfiguration,
+      SemanticCacheIdentity identity) {
     this.embeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.resolver = Objects.requireNonNull(resolver, "resolver must not be null");
     this.cache = Objects.requireNonNull(cache, "cache must not be null");
@@ -124,6 +153,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
     this.embeddingModelConfiguration =
         Objects.requireNonNull(
             embeddingModelConfiguration, "embeddingModelConfiguration must not be null");
+    this.identity = Objects.requireNonNull(identity, "identity must not be null");
   }
 
   @Override
@@ -136,7 +166,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
       EmbeddingVector query = embeddings.embed(userMessage);
       SemanticCachePort.Lookup lookup =
           new SemanticCachePort.Lookup(
-              CACHE_KIND, contextFingerprint(conversationContext), promptVersion, query);
+              CACHE_KIND, contextFingerprint(conversationContext), promptVersion, query, identity);
       Optional<SemanticCachePort.Candidate> hotHit =
           hotStore
               .flatMap(store -> safeHotLookup(store, lookup, userMessage))
@@ -180,7 +210,8 @@ public final class SemanticChatCache implements SemanticResponseCache {
               codec.encodeText(response),
               Instant.now(clock).plus(ttl),
               query,
-              writeIdempotencyKey(contextFingerprint, userMessage, query));
+              writeIdempotencyKey(contextFingerprint, userMessage, query),
+              identity);
       UUID cacheId = cache.put(write);
       hotStore.ifPresent(store -> safeHotPut(store, cacheId, write));
       recordWrite("stored");
@@ -318,7 +349,14 @@ public final class SemanticChatCache implements SemanticResponseCache {
             + query.values().size();
     return promptVersion
         + ":"
-        + sha256(contextFingerprint + "\u0000" + embeddingIdentity + "\u0000" + userMessage);
+        + sha256(
+            contextFingerprint
+                + "\u0000"
+                + embeddingIdentity
+                + "\u0000"
+                + identity
+                + "\u0000"
+                + userMessage);
   }
 
   private static String sha256(String value) {

@@ -1,79 +1,46 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
-import com.emme.documents.api.result.DocumentChunkDetails;
-import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
-import com.emme.kernel.context.AiExecutionContext;
-import com.emme.kernel.context.AiExecutionContextScope;
+import com.emme.assistant.ai.application.port.out.KnowledgeDocument;
+import com.emme.assistant.ai.application.port.out.KnowledgeRetrievalPort;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.rag.Query;
 
 class TenantScopedDocumentRetrieverTest {
 
   @Test
-  void embedsAndSearchesUsingTheBackendTenantContext() {
-    UUID tenantId = UUID.randomUUID();
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
-    UUID chunkId = UUID.randomUUID();
-    UUID documentId = UUID.randomUUID();
-    when(embeddings.embed("What is the cancellation policy?"))
-        .thenReturn(new EmbeddingVector("embedding-v1", List.of(0.1f, 0.2f)));
-    when(search.search(any()))
+  void adaptsFrameworkNeutralResultsToSpringDocuments() {
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
+    when(retrieval.retrieve("What is the cancellation policy?", 5))
         .thenReturn(
-            List.of(
-                new DocumentChunkDetails(
-                    chunkId, documentId, 2, "Cancellation requires 24 hours.", "fingerprint")));
-    TenantScopedDocumentRetriever retriever =
-        new TenantScopedDocumentRetriever(embeddings, search, 5);
+            List.of(new KnowledgeDocument("source-1", "Cancellation requires 24 hours.", 0.92)));
+    TenantScopedDocumentRetriever retriever = new TenantScopedDocumentRetriever(retrieval, 5);
 
     List<org.springframework.ai.document.Document> documents =
-        AiExecutionContextScope.call(
-            context(tenantId),
-            () -> retriever.retrieve(new Query("What is the cancellation policy?")));
+        retriever.retrieve(new Query("What is the cancellation policy?"));
 
     assertThat(documents).hasSize(1);
     assertThat(documents.getFirst().getText()).isEqualTo("Cancellation requires 24 hours.");
     assertThat(documents.getFirst().getMetadata())
-        .containsEntry("tenantId", tenantId.toString())
-        .containsEntry("sourceId", documentId.toString())
-        .containsEntry("chunkId", chunkId.toString())
-        .containsEntry("chunkIndex", 2);
-    var captured =
-        org.mockito.ArgumentCaptor.forClass(
-            com.emme.documents.api.query.SearchDocumentChunksQuery.class);
-    verify(search).search(captured.capture());
-    assertThat(captured.getValue().tenantId()).isEqualTo(tenantId);
-    assertThat(captured.getValue().queryText()).isEqualTo("What is the cancellation policy?");
+        .containsEntry("sourceId", "source-1")
+        .containsEntry("score", 0.92);
+    verify(retrieval).retrieve("What is the cancellation policy?", 5);
   }
 
   @Test
-  void failsClosedWhenTheBackendAiContextIsMissing() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
-    TenantScopedDocumentRetriever retriever =
-        new TenantScopedDocumentRetriever(embeddings, search, 5);
+  void failsClosedWhenTheQueryIsBlank() {
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
+    TenantScopedDocumentRetriever retriever = new TenantScopedDocumentRetriever(retrieval, 5);
 
-    org.assertj.core.api.Assertions.assertThatThrownBy(() -> retriever.retrieve(new Query("hello")))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("No AI execution context");
-    verifyNoInteractions(embeddings, search);
-  }
-
-  private static AiExecutionContext context(UUID tenantId) {
-    UUID id = UUID.randomUUID();
-    return new AiExecutionContext(
-        tenantId, UUID.randomUUID(), Set.of("client"), id, id, "trace-" + id, "idem-" + id);
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> retriever.retrieve(new Query(" ")))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("text cannot be null or empty");
+    verifyNoInteractions(retrieval);
   }
 }

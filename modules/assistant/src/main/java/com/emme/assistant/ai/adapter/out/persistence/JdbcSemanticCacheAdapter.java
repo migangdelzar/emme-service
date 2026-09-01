@@ -51,6 +51,11 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
               AND embedding_model_name = :embeddingModelName
               AND prompt_version = :promptVersion
               AND embedding_model_version = :embeddingModelVersion
+              AND response_provider = :responseProvider
+              AND response_model = :responseModel
+              AND knowledge_version = :knowledgeVersion
+              AND policy_version = :policyVersion
+              AND source_version = :sourceVersion
               AND vector_dims(embedding) = :embeddingDimension
               AND active = true
               AND expires_at > CURRENT_TIMESTAMP
@@ -64,6 +69,11 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .param("embeddingModelName", embeddingModelName)
         .param("promptVersion", lookup.promptVersion())
         .param("embeddingModelVersion", lookup.query().modelVersion())
+        .param("responseProvider", lookup.identity().responseProvider())
+        .param("responseModel", lookup.identity().responseModel())
+        .param("knowledgeVersion", lookup.identity().knowledgeVersion())
+        .param("policyVersion", lookup.identity().policyVersion())
+        .param("sourceVersion", lookup.identity().sourceVersion())
         .param("embeddingDimension", lookup.query().values().size())
         .param("queryEmbedding", lookup.query().values().toString())
         .param("limit", limit)
@@ -97,6 +107,11 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
                 embedding_model_name,
                 embedding_model_version,
                 prompt_version,
+                response_provider,
+                response_model,
+                knowledge_version,
+                policy_version,
+                source_version,
                 response_payload,
                 expires_at,
                 write_idempotency_key
@@ -111,12 +126,32 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
                 :embeddingModelName,
                 :embeddingModelVersion,
                 :promptVersion,
+                :responseProvider,
+                :responseModel,
+                :knowledgeVersion,
+                :policyVersion,
+                :sourceVersion,
                 CAST(:responsePayload AS jsonb),
                 :expiresAt,
                 :writeIdempotencyKey
             )
             ON CONFLICT (tenant_id, principal_id, write_idempotency_key)
-            DO UPDATE SET updated_at = ai_semantic_cache.updated_at
+            DO UPDATE SET query_text = EXCLUDED.query_text,
+                          context_fingerprint = EXCLUDED.context_fingerprint,
+                          embedding = EXCLUDED.embedding,
+                          embedding_model_name = EXCLUDED.embedding_model_name,
+                          embedding_model_version = EXCLUDED.embedding_model_version,
+                          prompt_version = EXCLUDED.prompt_version,
+                          response_provider = EXCLUDED.response_provider,
+                          response_model = EXCLUDED.response_model,
+                          knowledge_version = EXCLUDED.knowledge_version,
+                          policy_version = EXCLUDED.policy_version,
+                          source_version = EXCLUDED.source_version,
+                          response_payload = EXCLUDED.response_payload,
+                          expires_at = EXCLUDED.expires_at,
+                          active = true,
+                          updated_at = CURRENT_TIMESTAMP,
+                          version = ai_semantic_cache.version + 1
             RETURNING id
             """)
         .param("tenantId", context.tenantId())
@@ -128,6 +163,11 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .param("embeddingModelName", embeddingModelName)
         .param("embeddingModelVersion", write.query().modelVersion())
         .param("promptVersion", write.promptVersion())
+        .param("responseProvider", write.identity().responseProvider())
+        .param("responseModel", write.identity().responseModel())
+        .param("knowledgeVersion", write.identity().knowledgeVersion())
+        .param("policyVersion", write.identity().policyVersion())
+        .param("sourceVersion", write.identity().sourceVersion())
         .param("responsePayload", write.responsePayload())
         .param("expiresAt", Timestamp.from(write.expiresAt()))
         .param("writeIdempotencyKey", write.writeIdempotencyKey())

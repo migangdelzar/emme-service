@@ -6,11 +6,11 @@ import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersion
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.KnowledgeRetrievalPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.ChatProviderChain;
 import com.emme.assistant.ai.application.provider.RagAnswerProviderChain;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
-import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Map;
@@ -51,11 +51,8 @@ public class SpringAiRagConfiguration {
   @Bean
   @ConditionalOnMissingBean
   TenantScopedDocumentRetriever tenantScopedDocumentRetriever(
-      EmbeddingModelPort embeddings,
-      SearchDocumentChunksUseCase searchDocuments,
-      SpringAiRagProperties properties) {
-    return new TenantScopedDocumentRetriever(
-        embeddings, searchDocuments, properties.retrievalLimit());
+      KnowledgeRetrievalPort retrieval, SpringAiRagProperties properties) {
+    return new TenantScopedDocumentRetriever(retrieval, properties.retrievalLimit());
   }
 
   @Bean(name = "aiRetrievalAugmentationAdvisor")
@@ -77,7 +74,7 @@ public class SpringAiRagConfiguration {
       TenantSecurityAdvisor tenantSecurityAdvisor,
       PromptVersionAdvisor promptVersionAdvisor,
       RetrievalAugmentationAdvisor retrievalAugmentationAdvisor,
-      TenantScopedDocumentRetriever documentRetriever,
+      KnowledgeRetrievalPort retrieval,
       AiTraceRecorder traceRecorder,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {
@@ -95,6 +92,6 @@ public class SpringAiRagConfiguration {
                             admission,
                             executionProperties.modelAdmissionTimeout()))
             .orElseGet(() -> new ChatProviderChain(registry.providers()));
-    return new RagAnswerProviderChain(completions, documentRetriever);
+    return new RagAnswerProviderChain(completions, retrieval);
   }
 }

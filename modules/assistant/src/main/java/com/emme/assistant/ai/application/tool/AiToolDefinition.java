@@ -1,5 +1,7 @@
 package com.emme.assistant.ai.application.tool;
 
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.Channel;
 import java.util.Objects;
 import java.util.Set;
 
@@ -13,7 +15,10 @@ public record AiToolDefinition(
     boolean staffApprovalRequired,
     AiToolHandler handler,
     Set<String> requiredArgumentNames,
-    Set<String> allowedArgumentNames) {
+    Set<String> allowedArgumentNames,
+    Set<String> requiredTenantCapabilities,
+    Set<String> requiredFeatures,
+    Set<Channel> allowedChannels) {
 
   public AiToolDefinition(
       String key,
@@ -31,6 +36,60 @@ public record AiToolDefinition(
         userConfirmationRequired,
         staffApprovalRequired,
         handler,
+        Set.of(),
+        Set.of(),
+        Set.of(),
+        Set.of(),
+        Set.of());
+  }
+
+  public AiToolDefinition(
+      String key,
+      String description,
+      Set<String> allowedRoles,
+      AiToolRisk risk,
+      boolean userConfirmationRequired,
+      boolean staffApprovalRequired,
+      AiToolHandler handler,
+      Set<String> requiredTenantCapabilities,
+      Set<String> requiredFeatures,
+      Set<Channel> allowedChannels) {
+    this(
+        key,
+        description,
+        allowedRoles,
+        risk,
+        userConfirmationRequired,
+        staffApprovalRequired,
+        handler,
+        Set.of(),
+        Set.of(),
+        requiredTenantCapabilities,
+        requiredFeatures,
+        allowedChannels);
+  }
+
+  public AiToolDefinition(
+      String key,
+      String description,
+      Set<String> allowedRoles,
+      AiToolRisk risk,
+      boolean userConfirmationRequired,
+      boolean staffApprovalRequired,
+      AiToolHandler handler,
+      Set<String> requiredArgumentNames,
+      Set<String> allowedArgumentNames) {
+    this(
+        key,
+        description,
+        allowedRoles,
+        risk,
+        userConfirmationRequired,
+        staffApprovalRequired,
+        handler,
+        requiredArgumentNames,
+        allowedArgumentNames,
+        Set.of(),
         Set.of(),
         Set.of());
   }
@@ -52,6 +111,14 @@ public record AiToolDefinition(
     Objects.requireNonNull(allowedArgumentNames, "allowedArgumentNames must not be null");
     requiredArgumentNames = normalizeArgumentNames(requiredArgumentNames, "required argument");
     allowedArgumentNames = normalizeArgumentNames(allowedArgumentNames, "allowed argument");
+    requiredTenantCapabilities =
+        normalizeArgumentNames(requiredTenantCapabilities, "required tenant capability");
+    requiredFeatures = normalizeArgumentNames(requiredFeatures, "required feature");
+    Objects.requireNonNull(allowedChannels, "allowedChannels must not be null");
+    if (allowedChannels.stream().anyMatch(Objects::isNull)) {
+      throw new IllegalArgumentException("allowedChannels must not contain null values");
+    }
+    allowedChannels = Set.copyOf(allowedChannels);
     if (!allowedArgumentNames.isEmpty()
         && !allowedArgumentNames.containsAll(requiredArgumentNames)) {
       throw new IllegalArgumentException("required arguments must be allowed arguments");
@@ -61,6 +128,14 @@ public record AiToolDefinition(
   public boolean isAuthorized(Set<String> roles) {
     if (roles == null || roles.isEmpty()) return false;
     return roles.stream().anyMatch(role -> allowedRoles.contains(canonicalRole(role)));
+  }
+
+  public boolean isAuthorized(AiExecutionContext context) {
+    return context != null
+        && isAuthorized(context.roles())
+        && context.tenantCapabilities().containsAll(requiredTenantCapabilities)
+        && context.enabledFeatures().containsAll(requiredFeatures)
+        && (allowedChannels.isEmpty() || allowedChannels.contains(context.channel()));
   }
 
   public boolean canRunProactively() {

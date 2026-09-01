@@ -166,7 +166,23 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
                 filters.eq("embeddingModelName", encodeTagValue(embeddingModelName)),
                 filters.eq(
                     "embeddingModelVersion", encodeTagValue(lookup.query().modelVersion()))));
-    var identity = filters.and(filters.and(tenantAndPrincipal, kindAndContext), versions);
+    var responseIdentity =
+        filters.and(
+            filters.eq("responseProvider", encodeTagValue(lookup.identity().responseProvider())),
+            filters.and(
+                filters.eq("responseModel", encodeTagValue(lookup.identity().responseModel())),
+                filters.and(
+                    filters.eq(
+                        "knowledgeVersion", encodeTagValue(lookup.identity().knowledgeVersion())),
+                    filters.and(
+                        filters.eq(
+                            "policyVersion", encodeTagValue(lookup.identity().policyVersion())),
+                        filters.eq(
+                            "sourceVersion", encodeTagValue(lookup.identity().sourceVersion()))))));
+    var identity =
+        filters.and(
+            filters.and(tenantAndPrincipal, kindAndContext),
+            filters.and(versions, responseIdentity));
     var filter =
         filters.and(identity, filters.gt("expiresAt", Instant.now(clock).getEpochSecond())).build();
 
@@ -196,17 +212,22 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
 
     Map<String, Object> metadata =
-        Map.of(
-            "tenantId", encodeTagValue(context.tenantId().toString()),
-            "principalId", encodeTagValue(context.principalId().toString()),
-            "durableCacheId", durableCacheId.toString(),
-            "cacheKind", encodeTagValue(write.cacheKind()),
-            "contextFingerprint", encodeTagValue(write.contextFingerprint()),
-            "promptVersion", encodeTagValue(write.promptVersion()),
-            "embeddingModelName", encodeTagValue(embeddingModelName),
-            "embeddingModelVersion", encodeTagValue(write.query().modelVersion()),
-            "responsePayload", write.responsePayload(),
-            "expiresAt", write.expiresAt().getEpochSecond());
+        Map.ofEntries(
+            Map.entry("tenantId", encodeTagValue(context.tenantId().toString())),
+            Map.entry("principalId", encodeTagValue(context.principalId().toString())),
+            Map.entry("durableCacheId", durableCacheId.toString()),
+            Map.entry("cacheKind", encodeTagValue(write.cacheKind())),
+            Map.entry("contextFingerprint", encodeTagValue(write.contextFingerprint())),
+            Map.entry("promptVersion", encodeTagValue(write.promptVersion())),
+            Map.entry("embeddingModelName", encodeTagValue(embeddingModelName)),
+            Map.entry("embeddingModelVersion", encodeTagValue(write.query().modelVersion())),
+            Map.entry("responseProvider", encodeTagValue(write.identity().responseProvider())),
+            Map.entry("responseModel", encodeTagValue(write.identity().responseModel())),
+            Map.entry("knowledgeVersion", encodeTagValue(write.identity().knowledgeVersion())),
+            Map.entry("policyVersion", encodeTagValue(write.identity().policyVersion())),
+            Map.entry("sourceVersion", encodeTagValue(write.identity().sourceVersion())),
+            Map.entry("responsePayload", write.responsePayload()),
+            Map.entry("expiresAt", write.expiresAt().getEpochSecond()));
     vectorStore.add(
         List.of(
             Document.builder()

@@ -6,20 +6,17 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.KnowledgeDocument;
+import com.emme.assistant.ai.application.port.out.KnowledgeRetrievalPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
 import com.emme.assistant.ai.application.semantic.SemanticFailurePolicy;
 import com.emme.assistant.ai.configuration.AiExecutorProperties;
 import com.emme.assistant.ai.configuration.AiProperties;
-import com.emme.documents.api.query.SearchDocumentChunksQuery;
-import com.emme.documents.api.result.DocumentChunkDetails;
-import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,22 +25,18 @@ public class RagQueryService implements RagQueryUseCase {
 
   private final AiProperties properties;
   private final AiModelProvider modelProvider;
-  private final SearchDocumentChunksUseCase searchDocuments;
-  private final Optional<EmbeddingModelPort> embeddingModel;
+  private final KnowledgeRetrievalPort retrieval;
   private final Optional<ChatCompletionPort> chatCompletion;
   private final Optional<RagAnswerPort> ragAnswer;
   private final Optional<ModelExecutionScheduler> modelExecutionScheduler;
   private final Duration admissionTimeout;
 
   public RagQueryService(
-      AiProperties properties,
-      AiModelProvider modelProvider,
-      SearchDocumentChunksUseCase searchDocuments) {
+      AiProperties properties, AiModelProvider modelProvider, KnowledgeRetrievalPort retrieval) {
     this(
         properties,
         modelProvider,
-        searchDocuments,
-        Optional.empty(),
+        retrieval,
         Optional.empty(),
         Optional.empty(),
         Optional.empty(),
@@ -54,8 +47,7 @@ public class RagQueryService implements RagQueryUseCase {
   public RagQueryService(
       AiProperties properties,
       AiModelProvider modelProvider,
-      SearchDocumentChunksUseCase searchDocuments,
-      Optional<EmbeddingModelPort> embeddingModel,
+      KnowledgeRetrievalPort retrieval,
       Optional<ChatCompletionPort> chatCompletion,
       Optional<RagAnswerPort> ragAnswer,
       Optional<ModelExecutionScheduler> modelExecutionScheduler,
@@ -63,8 +55,7 @@ public class RagQueryService implements RagQueryUseCase {
     this(
         properties,
         modelProvider,
-        searchDocuments,
-        embeddingModel,
+        retrieval,
         chatCompletion,
         ragAnswer,
         modelExecutionScheduler,
@@ -74,14 +65,12 @@ public class RagQueryService implements RagQueryUseCase {
   public RagQueryService(
       AiProperties properties,
       AiModelProvider modelProvider,
-      SearchDocumentChunksUseCase searchDocuments,
-      Optional<EmbeddingModelPort> embeddingModel,
+      KnowledgeRetrievalPort retrieval,
       Optional<ChatCompletionPort> chatCompletion) {
     this(
         properties,
         modelProvider,
-        searchDocuments,
-        embeddingModel,
+        retrieval,
         chatCompletion,
         Optional.empty(),
         Optional.empty(),
@@ -91,15 +80,13 @@ public class RagQueryService implements RagQueryUseCase {
   public RagQueryService(
       AiProperties properties,
       AiModelProvider modelProvider,
-      SearchDocumentChunksUseCase searchDocuments,
-      Optional<EmbeddingModelPort> embeddingModel,
+      KnowledgeRetrievalPort retrieval,
       Optional<ChatCompletionPort> chatCompletion,
       Optional<RagAnswerPort> ragAnswer) {
     this(
         properties,
         modelProvider,
-        searchDocuments,
-        embeddingModel,
+        retrieval,
         chatCompletion,
         ragAnswer,
         Optional.empty(),
@@ -109,27 +96,23 @@ public class RagQueryService implements RagQueryUseCase {
   private RagQueryService(
       AiProperties properties,
       AiModelProvider modelProvider,
-      SearchDocumentChunksUseCase searchDocuments,
-      Optional<EmbeddingModelPort> embeddingModel,
+      KnowledgeRetrievalPort retrieval,
       Optional<ChatCompletionPort> chatCompletion,
       Optional<RagAnswerPort> ragAnswer,
       Optional<ModelExecutionScheduler> modelExecutionScheduler,
       Duration admissionTimeout) {
     this.properties = properties;
     this.modelProvider = modelProvider;
-    this.searchDocuments = searchDocuments;
-    this.embeddingModel = embeddingModel;
+    this.retrieval = retrieval;
     this.chatCompletion = chatCompletion;
     this.ragAnswer = ragAnswer;
     this.modelExecutionScheduler = modelExecutionScheduler;
     this.admissionTimeout = admissionTimeout;
   }
 
-  /** RAG query — mock returns canned answer, real embeds + queries pgvector. */
   @Override
   public String query(String question) {
-    var executionContext = AiExecutionContextScope.requireCurrent();
-    var tenantId = executionContext.tenantId();
+    AiExecutionContextScope.requireCurrent();
     if (isMock()) {
       return "MOCK RAG: Based on your documents, the answer to your question about '"
           + question
@@ -144,17 +127,16 @@ public class RagQueryService implements RagQueryUseCase {
         }
       }
     } catch (ChatProviderUnavailableException unavailable) {
-      // Preserve the existing provider-neutral retrieval path as the compatibility fallback.
+      // Preserve the provider-neutral retrieval path as the compatibility fallback.
     }
     try {
-      var queryVector = embed(question);
-      var chunks =
-          searchDocuments.search(new SearchDocumentChunksQuery(tenantId, queryVector, question, 5));
+      List<KnowledgeDocument> documents = retrieval.retrieve(question, 5);
       String context =
-          chunks.stream()
-              .map(DocumentChunkDetails::content)
+          documents.stream()
+              .map(KnowledgeDocument::content)
               .filter(content -> content != null && !content.isBlank())
-              .collect(Collectors.joining("\n\n"));
+              .reduce((left, right) -> left + "\n\n" + right)
+              .orElse("");
       if (context.isBlank()) {
         return "No relevant documents were found.";
       }
@@ -163,13 +145,6 @@ public class RagQueryService implements RagQueryUseCase {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
       return "Retrieval unavailable.";
     }
-  }
-
-  private List<Float> embed(String question) {
-    return embeddingModel
-        .map(model -> model.embed(question).values())
-        .orElseGet(
-            () -> executeLegacy(ModelCapability.EMBEDDING, () -> modelProvider.embed(question)));
   }
 
   private String complete(String context, String question) {

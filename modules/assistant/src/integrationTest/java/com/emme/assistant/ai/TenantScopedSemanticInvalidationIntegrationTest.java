@@ -48,7 +48,9 @@ class TenantScopedSemanticInvalidationIntegrationTest {
 
   private JdbcTemplate adminJdbc;
   private JdbcTemplate scopedJdbc;
+  private JdbcTemplate nonOwnerScopedJdbc;
   private DataSource scopedDataSource;
+  private DataSource nonOwnerScopedDataSource;
   private SemanticCacheInvalidationService invalidation;
 
   @BeforeEach
@@ -69,6 +71,18 @@ class TenantScopedSemanticInvalidationIntegrationTest {
         STABLE
         AS 'SELECT nullif(current_setting(''app.current_tenant_id'', true), '''')::UUID'
         """);
+    adminJdbc.execute(
+        """
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'semantic_test_user') THEN
+            EXECUTE 'DROP OWNED BY semantic_test_user';
+            EXECUTE 'DROP ROLE semantic_test_user';
+          END IF;
+        END
+        $$
+        """);
+    adminJdbc.execute("CREATE ROLE semantic_test_user LOGIN PASSWORD 'semantic'");
     adminJdbc.execute("DROP TABLE IF EXISTS ai_semantic_execution, ai_semantic_cache");
     adminJdbc.execute(
         """
@@ -114,8 +128,19 @@ class TenantScopedSemanticInvalidationIntegrationTest {
         "CHAT_INFORMATIONAL");
     enableTenantRls("ai_semantic_cache");
     enableTenantRls("ai_semantic_execution");
+    adminJdbc.execute("GRANT USAGE ON SCHEMA public TO semantic_test_user");
+    adminJdbc.execute(
+        "GRANT SELECT, INSERT, UPDATE ON ai_semantic_cache, ai_semantic_execution"
+            + " TO semantic_test_user");
+    adminJdbc.execute("GRANT EXECUTE ON FUNCTION current_tenant_id() TO semantic_test_user");
     assertThat(isForcedRls("ai_semantic_cache")).isTrue();
     assertThat(isForcedRls("ai_semantic_execution")).isTrue();
+
+    nonOwnerScopedDataSource =
+        new TenantScopedDataSource(
+            new DriverManagerDataSource(POSTGRES.getJdbcUrl(), "semantic_test_user", "semantic"),
+            (Function<UUID, String>) ignored -> "public");
+    nonOwnerScopedJdbc = new JdbcTemplate(nonOwnerScopedDataSource);
 
     AiProperties properties =
         new AiProperties(
@@ -130,11 +155,13 @@ class TenantScopedSemanticInvalidationIntegrationTest {
                 TENANT_ID, DATABASE_ID, "semantic-invalidation"));
     invalidation =
         new SemanticCacheInvalidationService(
-            new JdbcSemanticCacheAdapter(JdbcClient.create(scopedDataSource), properties),
+            new JdbcSemanticCacheAdapter(JdbcClient.create(nonOwnerScopedDataSource), properties),
             Optional.empty(),
             com.emme.assistant.ai.application.port.out.NoopSemanticMetrics.INSTANCE,
             new JdbcAiTraceRecorder(
-                JdbcClient.create(scopedDataSource), new AiTraceRedactor(), new ObjectMapper()),
+                JdbcClient.create(nonOwnerScopedDataSource),
+                new AiTraceRedactor(),
+                new ObjectMapper()),
             Optional.of(tenantContextResolver));
   }
 
@@ -190,6 +217,33 @@ class TenantScopedSemanticInvalidationIntegrationTest {
                 "SELECT COUNT(*) FROM ai_semantic_execution WHERE tenant_id = ?",
                 Integer.class,
                 OTHER_TENANT_ID))
+        .isZero();
+  }
+
+  @Test
+  void forcedRlsHidesOtherTenantRowsFromTheNonOwnerRole() {
+    assertThat(
+            TenantContextHolder.withTenantOverride(
+                TENANT_ID,
+                () ->
+                    nonOwnerScopedJdbc.queryForObject(
+                        "SELECT COUNT(*) FROM ai_semantic_cache", Integer.class)))
+        .isEqualTo(1);
+    assertThat(
+            TenantContextHolder.withTenantOverride(
+                OTHER_TENANT_ID,
+                () ->
+                    nonOwnerScopedJdbc.queryForObject(
+                        "SELECT COUNT(*) FROM ai_semantic_cache", Integer.class)))
+        .isEqualTo(1);
+    assertThat(
+            TenantContextHolder.withTenantOverride(
+                TENANT_ID,
+                () ->
+                    nonOwnerScopedJdbc.queryForObject(
+                        "SELECT COUNT(*) FROM ai_semantic_cache WHERE tenant_id = ?",
+                        Integer.class,
+                        OTHER_TENANT_ID)))
         .isZero();
   }
 

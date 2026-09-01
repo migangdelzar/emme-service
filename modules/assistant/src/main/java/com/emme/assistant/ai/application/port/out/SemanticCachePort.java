@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.application.port.out;
 
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Instant;
@@ -38,7 +39,16 @@ public interface SemanticCachePort {
   }
 
   record Lookup(
-      String cacheKind, String contextFingerprint, String promptVersion, EmbeddingVector query) {
+      String cacheKind,
+      String contextFingerprint,
+      String promptVersion,
+      EmbeddingVector query,
+      SemanticCacheIdentity identity) {
+
+    public Lookup(
+        String cacheKind, String contextFingerprint, String promptVersion, EmbeddingVector query) {
+      this(cacheKind, contextFingerprint, promptVersion, query, SemanticCacheIdentity.legacy());
+    }
 
     public Lookup {
       requireText(cacheKind, "cacheKind");
@@ -47,6 +57,7 @@ public interface SemanticCachePort {
       if (query == null) {
         throw new NullPointerException("query must not be null");
       }
+      Objects.requireNonNull(identity, "identity must not be null");
     }
   }
 
@@ -71,7 +82,29 @@ public interface SemanticCachePort {
       String responsePayload,
       Instant expiresAt,
       EmbeddingVector query,
-      String writeIdempotencyKey) {
+      String writeIdempotencyKey,
+      SemanticCacheIdentity identity) {
+
+    public Put(
+        String cacheKind,
+        String queryText,
+        String contextFingerprint,
+        String promptVersion,
+        String responsePayload,
+        Instant expiresAt,
+        EmbeddingVector query,
+        String writeIdempotencyKey) {
+      this(
+          cacheKind,
+          queryText,
+          contextFingerprint,
+          promptVersion,
+          responsePayload,
+          expiresAt,
+          query,
+          writeIdempotencyKey,
+          SemanticCacheIdentity.legacy());
+    }
 
     public Put {
       requireText(cacheKind, "cacheKind");
@@ -82,6 +115,7 @@ public interface SemanticCachePort {
       Objects.requireNonNull(expiresAt, "expiresAt must not be null");
       Objects.requireNonNull(query, "query must not be null");
       requireText(writeIdempotencyKey, "writeIdempotencyKey");
+      Objects.requireNonNull(identity, "identity must not be null");
     }
   }
 

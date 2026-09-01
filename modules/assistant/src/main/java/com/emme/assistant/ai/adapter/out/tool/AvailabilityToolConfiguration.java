@@ -3,6 +3,7 @@ package com.emme.assistant.ai.adapter.out.tool;
 import com.emme.appointments.api.usecase.FindAvailableSlotsUseCase;
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
 import com.emme.assistant.ai.application.tool.AiToolRisk;
+import com.emme.kernel.context.Channel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,9 @@ public class AvailabilityToolConfiguration {
         false,
         new AvailabilityToolHandler(findAvailability, objectMapper),
         java.util.Set.of("serviceId", "date"),
-        java.util.Set.of("serviceId", "date"));
+        java.util.Set.of("serviceId", "date"),
+        java.util.Set.of("appointments"),
+        java.util.Set.of("ai_chat"),
+        java.util.Set.of(Channel.WEB, Channel.WHATSAPP));
   }
 }

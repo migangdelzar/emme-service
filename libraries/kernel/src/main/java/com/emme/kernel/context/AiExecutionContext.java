@@ -17,7 +17,31 @@ public record AiExecutionContext(
     UUID conversationId,
     UUID workflowId,
     String traceId,
-    String idempotencyKey) {
+    String idempotencyKey,
+    Channel channel,
+    Set<String> tenantCapabilities,
+    Set<String> enabledFeatures) {
+
+  public AiExecutionContext(
+      UUID tenantId,
+      UUID principalId,
+      Set<String> roles,
+      UUID conversationId,
+      UUID workflowId,
+      String traceId,
+      String idempotencyKey) {
+    this(
+        tenantId,
+        principalId,
+        roles,
+        conversationId,
+        workflowId,
+        traceId,
+        idempotencyKey,
+        Channel.INTERNAL,
+        Set.of(),
+        Set.of());
+  }
 
   public AiExecutionContext {
     tenantId = Objects.requireNonNull(tenantId, "tenantId must not be null");
@@ -27,6 +51,9 @@ public record AiExecutionContext(
     workflowId = Objects.requireNonNull(workflowId, "workflowId must not be null");
     traceId = requireText(traceId, "traceId");
     idempotencyKey = requireText(idempotencyKey, "idempotencyKey");
+    channel = Objects.requireNonNull(channel, "channel must not be null");
+    tenantCapabilities = immutableTextSet(tenantCapabilities, "tenantCapabilities");
+    enabledFeatures = immutableTextSet(enabledFeatures, "enabledFeatures");
 
     if (roles.stream().anyMatch(role -> role == null || role.isBlank())) {
       throw new IllegalArgumentException("roles must not contain blank values");
@@ -37,7 +64,24 @@ public record AiExecutionContext(
   /** Returns a context with backend-resolved resource correlation identifiers. */
   public AiExecutionContext withWorkflow(UUID conversationId, UUID workflowId) {
     return new AiExecutionContext(
-        tenantId, principalId, roles, conversationId, workflowId, traceId, idempotencyKey);
+        tenantId,
+        principalId,
+        roles,
+        conversationId,
+        workflowId,
+        traceId,
+        idempotencyKey,
+        channel,
+        tenantCapabilities,
+        enabledFeatures);
+  }
+
+  private static Set<String> immutableTextSet(Set<String> values, String field) {
+    Objects.requireNonNull(values, field + " must not be null");
+    if (values.stream().anyMatch(value -> value == null || value.isBlank())) {
+      throw new IllegalArgumentException(field + " must not contain blank values");
+    }
+    return Set.copyOf(values);
   }
 
   private static String requireText(String value, String fieldName) {

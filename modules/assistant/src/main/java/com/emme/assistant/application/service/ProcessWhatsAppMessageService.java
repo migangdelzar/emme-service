@@ -19,6 +19,7 @@ import com.emme.assistant.domain.model.ChannelParticipant;
 import com.emme.assistant.domain.model.ConsentStatus;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import com.emme.kernel.context.Channel;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.type.ChannelType;
 import java.nio.charset.StandardCharsets;
@@ -157,7 +158,10 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
             resourceId,
             resourceId,
             traceId,
-            command.eventId());
+            command.eventId(),
+            Channel.WHATSAPP,
+            Set.of(),
+            Set.of());
     TenantContextHolder.withTenantAndCorrelation(
         command.tenantId(),
         databaseId,

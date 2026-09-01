@@ -3,6 +3,7 @@ package com.emme.configuration;
 import com.emme.ai.adapter.out.tool.ServiceCatalogAiToolHandler;
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
 import com.emme.assistant.ai.application.tool.AiToolRisk;
+import com.emme.kernel.context.Channel;
 import com.emme.services.api.usecase.ListActiveServiceCatalogEntriesUseCase;
 import java.util.Set;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -24,6 +25,9 @@ public class SpringAiPlatformToolConfiguration {
         AiToolRisk.READ_ONLY,
         false,
         false,
-        new ServiceCatalogAiToolHandler(listActiveServiceCatalogEntries));
+        new ServiceCatalogAiToolHandler(listActiveServiceCatalogEntries),
+        Set.of("service_catalog"),
+        Set.of("ai_chat"),
+        Set.of(Channel.WEB, Channel.WHATSAPP));
   }
 }

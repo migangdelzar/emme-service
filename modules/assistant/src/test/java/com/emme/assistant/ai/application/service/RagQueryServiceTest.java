@@ -10,13 +10,11 @@ import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.KnowledgeDocument;
+import com.emme.assistant.ai.application.port.out.KnowledgeRetrievalPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.configuration.AiProperties;
-import com.emme.documents.api.result.DocumentChunkDetails;
-import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
@@ -27,25 +25,37 @@ import org.junit.jupiter.api.Test;
 class RagQueryServiceTest {
 
   @Test
+  void queriesThroughTheFrameworkNeutralRetrievalPort() {
+    UUID tenantId = UUID.randomUUID();
+    AiModelProvider model = mock(AiModelProvider.class);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
+    RagQueryService service = new RagQueryService(realProperties(), model, retrieval);
+
+    when(retrieval.retrieve("What is the premium?", 5))
+        .thenReturn(List.of(new KnowledgeDocument("source-1", "The premium is monthly.", 0.91)));
+    when(model.chat("The premium is monthly.", "What is the premium?"))
+        .thenReturn("It is monthly.");
+
+    assertThat(inContext(tenantId, () -> service.query("What is the premium?")))
+        .isEqualTo("It is monthly.");
+  }
+
+  @Test
   void embedsSearchesAndAnswersUsingRankedDocumentContext() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider model = mock(AiModelProvider.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
-    RagQueryService service = new RagQueryService(realProperties(), model, search);
-    DocumentChunkDetails chunk =
-        new DocumentChunkDetails(
-            UUID.randomUUID(), UUID.randomUUID(), 0, "The premium is monthly.", "fingerprint");
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
+    RagQueryService service = new RagQueryService(realProperties(), model, retrieval);
 
-    when(model.embed("What is the premium?")).thenReturn(List.of(0.1f, 0.2f));
-    when(search.search(any())).thenReturn(List.of(chunk));
+    when(retrieval.retrieve("What is the premium?", 5))
+        .thenReturn(List.of(new KnowledgeDocument("source-1", "The premium is monthly.", 0.91)));
     when(model.chat("The premium is monthly.", "What is the premium?"))
         .thenReturn("It is monthly.");
 
     String answer = inContext(tenantId, () -> service.query("What is the premium?"));
 
     assertThat(answer).isEqualTo("It is monthly.");
-    verify(model).embed("What is the premium?");
-    verify(search).search(any());
+    verify(retrieval).retrieve("What is the premium?", 5);
     verify(model).chat("The premium is monthly.", "What is the premium?");
   }
 
@@ -53,38 +63,37 @@ class RagQueryServiceTest {
   void usesKeywordOnlySearchWhenEmbeddingIsUnavailable() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider model = mock(AiModelProvider.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
-    RagQueryService service = new RagQueryService(realProperties(), model, search);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
+    RagQueryService service = new RagQueryService(realProperties(), model, retrieval);
 
-    when(model.embed("Which cancellation rules apply?")).thenReturn(List.of());
-    when(search.search(any())).thenReturn(List.of());
+    when(retrieval.retrieve("Which cancellation rules apply?", 5)).thenReturn(List.of());
 
     String answer = inContext(tenantId, () -> service.query("Which cancellation rules apply?"));
 
     assertThat(answer).isEqualTo("No relevant documents were found.");
-    verify(search).search(any());
+    verify(retrieval).retrieve("Which cancellation rules apply?", 5);
     verify(model, never()).chat(any(), any());
   }
 
   @Test
   void keepsTheCannedResponseInMockMode() {
     AiModelProvider model = mock(AiModelProvider.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
     RagQueryService service =
-        new RagQueryService(new AiProperties("mock", null, null, true), model, search);
+        new RagQueryService(new AiProperties("mock", null, null, true), model, retrieval);
 
     String answer = inContext(UUID.randomUUID(), () -> service.query("hello"));
 
     assertThat(answer).contains("MOCK RAG").contains("hello");
     verify(model, never()).embed(any());
-    verify(search, never()).search(any());
+    verify(retrieval, never()).retrieve(any(), any(Integer.class));
   }
 
   @Test
   void rejectsAQueryWhenTheBackendAiContextIsMissing() {
     AiModelProvider model = mock(AiModelProvider.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
-    RagQueryService service = new RagQueryService(realProperties(), model, search);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
+    RagQueryService service = new RagQueryService(realProperties(), model, retrieval);
 
     org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.query("hello"))
         .isInstanceOf(IllegalStateException.class)
@@ -95,48 +104,33 @@ class RagQueryServiceTest {
   void usesTheTenantFromTheBackendContextWhenSearchingDocuments() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider model = mock(AiModelProvider.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
-    RagQueryService service = new RagQueryService(realProperties(), model, search);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
+    RagQueryService service = new RagQueryService(realProperties(), model, retrieval);
 
-    when(model.embed("hello")).thenReturn(List.of(0.1f, 0.2f));
-    when(search.search(any())).thenReturn(List.of());
+    when(retrieval.retrieve("hello", 5)).thenReturn(List.of());
 
     inContext(tenantId, () -> service.query("hello"));
 
-    org.mockito.ArgumentCaptor<com.emme.documents.api.query.SearchDocumentChunksQuery> query =
-        org.mockito.ArgumentCaptor.forClass(
-            com.emme.documents.api.query.SearchDocumentChunksQuery.class);
-    verify(search).search(query.capture());
-    assertThat(query.getValue().tenantId()).isEqualTo(tenantId);
+    verify(retrieval).retrieve("hello", 5);
   }
 
   @Test
   void prefersProviderNeutralEmbeddingAndChatPortsWhenConfigured() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider legacyModel = mock(AiModelProvider.class);
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
     ChatCompletionPort chat = mock(ChatCompletionPort.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
     RagQueryService service =
-        new RagQueryService(
-            realProperties(),
-            legacyModel,
-            search,
-            java.util.Optional.of(embeddings),
-            java.util.Optional.of(chat));
-    DocumentChunkDetails chunk =
-        new DocumentChunkDetails(
-            UUID.randomUUID(), UUID.randomUUID(), 0, "The premium is monthly.", "fingerprint");
+        new RagQueryService(realProperties(), legacyModel, retrieval, java.util.Optional.of(chat));
 
-    when(embeddings.embed("What is the premium?"))
-        .thenReturn(new EmbeddingVector("embedding-v1", List.of(0.1f, 0.2f)));
-    when(search.search(any())).thenReturn(List.of(chunk));
+    when(retrieval.retrieve("What is the premium?", 5))
+        .thenReturn(List.of(new KnowledgeDocument("source-1", "The premium is monthly.", 0.91)));
     when(chat.complete("The premium is monthly.", "What is the premium?"))
         .thenReturn("It is monthly.");
 
     assertThat(inContext(tenantId, () -> service.query("What is the premium?")))
         .isEqualTo("It is monthly.");
-    verify(embeddings).embed("What is the premium?");
+    verify(retrieval).retrieve("What is the premium?", 5);
     verify(chat).complete("The premium is monthly.", "What is the premium?");
     verify(legacyModel, never()).embed(any());
     verify(legacyModel, never()).chat(any(), any());
@@ -146,88 +140,68 @@ class RagQueryServiceTest {
   void returnsExplicitRetrievalUnavailableWhenVectorEmbeddingFails() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider model = mock(AiModelProvider.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
     ChatCompletionPort chat = mock(ChatCompletionPort.class);
     RagQueryService service =
-        new RagQueryService(
-            realProperties(),
-            model,
-            search,
-            java.util.Optional.of(embeddings),
-            java.util.Optional.of(chat));
+        new RagQueryService(realProperties(), model, retrieval, java.util.Optional.of(chat));
 
-    when(embeddings.embed("hello")).thenThrow(new IllegalStateException("vector unavailable"));
+    when(retrieval.retrieve("hello", 5)).thenThrow(new IllegalStateException("vector unavailable"));
     assertThat(inContext(tenantId, () -> service.query("hello")))
         .isEqualTo("Retrieval unavailable.");
     verifyNoInteractions(chat);
-    verifyNoInteractions(search, model);
+    verifyNoInteractions(model);
+    verify(retrieval).retrieve("hello", 5);
   }
 
   @Test
   void returnsExplicitRetrievalUnavailableWhenVectorSearchFails() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider model = mock(AiModelProvider.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
     ChatCompletionPort chat = mock(ChatCompletionPort.class);
     RagQueryService service =
-        new RagQueryService(
-            realProperties(),
-            model,
-            search,
-            java.util.Optional.of(embeddings),
-            java.util.Optional.of(chat));
+        new RagQueryService(realProperties(), model, retrieval, java.util.Optional.of(chat));
 
-    when(embeddings.embed("hello"))
-        .thenReturn(new EmbeddingVector("embedding-v1", List.of(0.1f, 0.2f)));
-    when(search.search(any())).thenThrow(new IllegalStateException("pgvector unavailable"));
+    when(retrieval.retrieve("hello", 5))
+        .thenThrow(new IllegalStateException("pgvector unavailable"));
     assertThat(inContext(tenantId, () -> service.query("hello")))
         .isEqualTo("Retrieval unavailable.");
     verifyNoInteractions(chat);
-    verify(model, never()).chat(any(), any());
+    verifyNoInteractions(model);
+    verify(retrieval).retrieve("hello", 5);
   }
 
   @Test
   void doesNotHideSecurityFailuresFromVectorSearch() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider model = mock(AiModelProvider.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
     ChatCompletionPort chat = mock(ChatCompletionPort.class);
     RagQueryService service =
-        new RagQueryService(
-            realProperties(),
-            model,
-            search,
-            java.util.Optional.of(embeddings),
-            java.util.Optional.of(chat));
+        new RagQueryService(realProperties(), model, retrieval, java.util.Optional.of(chat));
 
-    when(embeddings.embed("hello"))
-        .thenReturn(new EmbeddingVector("embedding-v1", List.of(0.1f, 0.2f)));
-    when(search.search(any())).thenThrow(new SecurityException("tenant denied"));
+    when(retrieval.retrieve("hello", 5)).thenThrow(new SecurityException("tenant denied"));
 
     org.assertj.core.api.Assertions.assertThatThrownBy(
             () -> inContext(tenantId, () -> service.query("hello")))
         .isInstanceOf(SecurityException.class)
         .hasMessage("tenant denied");
     verifyNoInteractions(chat, model);
+    verify(retrieval).retrieve("hello", 5);
   }
 
   @Test
   void prefersTheConfiguredSpringRagAnswerPortWhenAvailable() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider legacyModel = mock(AiModelProvider.class);
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
     ChatCompletionPort chat = mock(ChatCompletionPort.class);
     RagAnswerPort ragAnswer = mock(RagAnswerPort.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
     RagQueryService service =
         new RagQueryService(
             realProperties(),
             legacyModel,
-            search,
-            java.util.Optional.of(embeddings),
+            retrieval,
             java.util.Optional.of(chat),
             java.util.Optional.of(ragAnswer));
     when(ragAnswer.answer("Which cancellation rules apply?"))
@@ -236,7 +210,7 @@ class RagQueryServiceTest {
     assertThat(inContext(tenantId, () -> service.query("Which cancellation rules apply?")))
         .isEqualTo("The salon requires 24 hours.");
     verify(ragAnswer).answer("Which cancellation rules apply?");
-    verifyNoInteractions(embeddings, chat, search, legacyModel);
+    verifyNoInteractions(chat, retrieval, legacyModel);
   }
 
   @Test
@@ -244,13 +218,12 @@ class RagQueryServiceTest {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider legacyModel = mock(AiModelProvider.class);
     RagAnswerPort ragAnswer = mock(RagAnswerPort.class);
-    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    KnowledgeRetrievalPort retrieval = mock(KnowledgeRetrievalPort.class);
     RagQueryService service =
         new RagQueryService(
             realProperties(),
             legacyModel,
-            search,
-            java.util.Optional.empty(),
+            retrieval,
             java.util.Optional.empty(),
             java.util.Optional.of(ragAnswer));
     when(ragAnswer.answer("hello")).thenThrow(new RetrievalUnavailableException());
@@ -258,7 +231,7 @@ class RagQueryServiceTest {
     assertThat(inContext(tenantId, () -> service.query("hello")))
         .isEqualTo("Retrieval unavailable.");
     verify(ragAnswer).answer("hello");
-    verifyNoInteractions(search, legacyModel);
+    verifyNoInteractions(retrieval, legacyModel);
   }
 
   private static <T> T inContext(UUID tenantId, java.util.function.Supplier<T> action) {

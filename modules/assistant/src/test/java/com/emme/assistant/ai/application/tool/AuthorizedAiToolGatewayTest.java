@@ -11,6 +11,7 @@ import com.emme.assistant.ai.application.trace.AiToolCallTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import com.emme.kernel.context.Channel;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -197,6 +198,65 @@ class AuthorizedAiToolGatewayTest {
                     .collect(java.util.stream.Collectors.toUnmodifiableSet()));
 
     assertThat(keys).containsExactlyInAnyOrder("findAvailability", "getSalonServices");
+  }
+
+  @Test
+  void requiresTenantCapabilityFeatureAndChannelForToolExposureAndExecution() {
+    AuthorizedAiToolGateway gateway =
+        new AuthorizedAiToolGateway(
+            Set.of(
+                new AiToolDefinition(
+                    "getSalonServices",
+                    "List active salon services",
+                    Set.of("client"),
+                    AiToolRisk.READ_ONLY,
+                    false,
+                    false,
+                    (context, arguments) -> "services",
+                    Set.of("service_catalog"),
+                    Set.of("ai_chat"),
+                    Set.of(Channel.WEB))));
+    AiExecutionContext allowed =
+        new AiExecutionContext(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            Set.of("client"),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "trace-policy",
+            "idem-policy",
+            Channel.WEB,
+            Set.of("service_catalog"),
+            Set.of("ai_chat"));
+
+    assertThat(
+            AiExecutionContextScope.call(
+                allowed,
+                () ->
+                    gateway.agentEligibleToolDefinitions().stream()
+                        .map(AiToolDefinition::key)
+                        .toList()))
+        .containsExactly("getSalonServices");
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    new AiExecutionContext(
+                        allowed.tenantId(),
+                        allowed.principalId(),
+                        allowed.roles(),
+                        allowed.conversationId(),
+                        allowed.workflowId(),
+                        allowed.traceId(),
+                        allowed.idempotencyKey(),
+                        Channel.WHATSAPP,
+                        Set.of(),
+                        Set.of("ai_chat")),
+                    () ->
+                        gateway.execute(
+                            new AiToolInvocation("getSalonServices", Map.of(), false, false))))
+        .isInstanceOf(AiToolExecutionRejectedException.class)
+        .hasMessage("AI tool is not authorized: getSalonServices");
   }
 
   @Test

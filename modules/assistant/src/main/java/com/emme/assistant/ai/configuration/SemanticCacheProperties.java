@@ -10,11 +10,23 @@ public record SemanticCacheProperties(
     Double minimumSimilarity,
     Double minimumMargin,
     Duration ttl,
-    String promptVersion) {
+    String promptVersion,
+    String knowledgeVersion,
+    String policyVersion,
+    String sourceVersion) {
 
   public SemanticCacheProperties(
       boolean enabled, Double minimumSimilarity, Duration ttl, String promptVersion) {
-    this(enabled, minimumSimilarity, null, ttl, promptVersion);
+    this(enabled, minimumSimilarity, null, ttl, promptVersion, null, null, null);
+  }
+
+  public SemanticCacheProperties(
+      boolean enabled,
+      Double minimumSimilarity,
+      Double minimumMargin,
+      Duration ttl,
+      String promptVersion) {
+    this(enabled, minimumSimilarity, minimumMargin, ttl, promptVersion, null, null, null);
   }
 
   public SemanticCacheProperties {
@@ -22,6 +34,9 @@ public record SemanticCacheProperties(
     minimumMargin = minimumMargin == null ? 0.05 : minimumMargin;
     ttl = ttl == null ? Duration.ofMinutes(5) : ttl;
     promptVersion = promptVersion == null ? "chat-v1" : promptVersion;
+    knowledgeVersion = knowledgeVersion == null ? "knowledge-v1" : knowledgeVersion;
+    policyVersion = policyVersion == null ? "policy-v1" : policyVersion;
+    sourceVersion = sourceVersion == null ? "source-v1" : sourceVersion;
     if (!Double.isFinite(minimumSimilarity)
         || minimumSimilarity < -1.0
         || minimumSimilarity > 1.0) {
@@ -35,6 +50,15 @@ public record SemanticCacheProperties(
     }
     if (promptVersion.isBlank()) {
       throw new IllegalArgumentException("promptVersion must not be blank");
+    }
+    if (knowledgeVersion.isBlank()) {
+      throw new IllegalArgumentException("knowledgeVersion must not be blank");
+    }
+    if (policyVersion.isBlank()) {
+      throw new IllegalArgumentException("policyVersion must not be blank");
+    }
+    if (sourceVersion.isBlank()) {
+      throw new IllegalArgumentException("sourceVersion must not be blank");
     }
   }
 }

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -83,6 +84,9 @@ class RedisSemanticCacheHotStoreTest {
     UUID durableId = UUID.randomUUID();
     RedisSemanticCacheHotStore hotStore =
         new RedisSemanticCacheHotStore(vectorStore, "embeddinggemma-v1", 2);
+    SemanticCacheIdentity identity =
+        new SemanticCacheIdentity(
+            "ollama", "gemma4:e4b-mlx", "knowledge-v7", "policy-v3", "source-v9");
     SemanticCachePort.Put write =
         new SemanticCachePort.Put(
             "CHAT_INFORMATIONAL",
@@ -92,7 +96,8 @@ class RedisSemanticCacheHotStoreTest {
             "{\"text\":\"We are open.\"}",
             Instant.now().plusSeconds(60),
             QUERY,
-            "write-key");
+            "write-key",
+            identity);
 
     AiExecutionContextScope.run(context(), () -> hotStore.put(durableId, write));
 
@@ -110,7 +115,12 @@ class RedisSemanticCacheHotStoreTest {
         .containsEntry("tenantId", encodeTagValue(TENANT_ID.toString()))
         .containsEntry("principalId", encodeTagValue(PRINCIPAL_ID.toString()))
         .containsEntry("durableCacheId", durableId.toString())
-        .containsEntry("embeddingModelName", encodeTagValue("embeddinggemma:300m"));
+        .containsEntry("embeddingModelName", encodeTagValue("embeddinggemma:300m"))
+        .containsEntry("responseProvider", encodeTagValue(identity.responseProvider()))
+        .containsEntry("responseModel", encodeTagValue(identity.responseModel()))
+        .containsEntry("knowledgeVersion", encodeTagValue(identity.knowledgeVersion()))
+        .containsEntry("policyVersion", encodeTagValue(identity.policyVersion()))
+        .containsEntry("sourceVersion", encodeTagValue(identity.sourceVersion()));
   }
 
   @Test

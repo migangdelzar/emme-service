@@ -86,3 +86,6 @@ databaseChangeLog:
   - include:
       file: releases/0.1.0/029-ai-embedding-model-name.sql
       relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/030-ai-semantic-cache-response-identity.sql
+      relativeToChangelogFile: true

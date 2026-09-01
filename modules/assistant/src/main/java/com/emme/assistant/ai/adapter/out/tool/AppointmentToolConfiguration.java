@@ -2,6 +2,7 @@ package com.emme.assistant.ai.adapter.out.tool;
 
 import com.emme.appointments.api.usecase.*;
 import com.emme.assistant.ai.application.tool.*;
+import com.emme.kernel.context.Channel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Set;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -25,7 +26,10 @@ public class AppointmentToolConfiguration {
         false,
         new CreateAppointmentToolHandler(u, m),
         Set.of("customerId", "serviceId", "artistId", "startsAt", "endsAt"),
-        Set.of("customerId", "serviceId", "artistId", "startsAt", "endsAt"));
+        Set.of("customerId", "serviceId", "artistId", "startsAt", "endsAt"),
+        Set.of("appointments"),
+        Set.of("ai_appointments"),
+        Set.of(Channel.WEB, Channel.WHATSAPP));
   }
 
   @Bean
@@ -39,7 +43,10 @@ public class AppointmentToolConfiguration {
         false,
         new CancelAppointmentToolHandler(u, m),
         Set.of("appointmentId"),
-        Set.of("appointmentId"));
+        Set.of("appointmentId"),
+        Set.of("appointments"),
+        Set.of("ai_appointments"),
+        Set.of(Channel.WEB, Channel.WHATSAPP));
   }
 
   @Bean
@@ -54,6 +61,9 @@ public class AppointmentToolConfiguration {
         false,
         new RescheduleAppointmentToolHandler(u, m),
         Set.of("appointmentId", "startsAt", "endsAt"),
-        Set.of("appointmentId", "startsAt", "endsAt"));
+        Set.of("appointmentId", "startsAt", "endsAt"),
+        Set.of("appointments"),
+        Set.of("ai_appointments"),
+        Set.of(Channel.WEB, Channel.WHATSAPP));
   }
 }

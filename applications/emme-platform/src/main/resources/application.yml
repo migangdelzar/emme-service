@@ -169,6 +169,9 @@ app:
       minimum-margin: ${EMME_AI_SEMANTIC_CACHE_MIN_MARGIN:0.05}
       ttl: ${EMME_AI_SEMANTIC_CACHE_TTL:5m}
       prompt-version: ${EMME_AI_SEMANTIC_CACHE_PROMPT_VERSION:chat-v1}
+      knowledge-version: ${EMME_AI_SEMANTIC_CACHE_KNOWLEDGE_VERSION:knowledge-v1}
+      policy-version: ${EMME_AI_SEMANTIC_CACHE_POLICY_VERSION:policy-v1}
+      source-version: ${EMME_AI_SEMANTIC_CACHE_SOURCE_VERSION:source-v1}
     spring-chat:
       enabled: ${EMME_SPRING_AI_CHAT_ENABLED:false}
       # Additional named ChatClient beans can be added by provider modules and

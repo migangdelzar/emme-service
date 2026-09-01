@@ -10,6 +10,7 @@ import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
+import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidationService;
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
@@ -107,7 +108,13 @@ public class SpringAiSemanticCacheConfiguration {
         properties.ttl(),
         hotStore,
         metrics,
-        aiProperties.embeddingModelConfiguration());
+        aiProperties.embeddingModelConfiguration(),
+        new SemanticCacheIdentity(
+            aiProperties.provider(),
+            aiProperties.chat().model(),
+            properties.knowledgeVersion(),
+            properties.policyVersion(),
+            properties.sourceVersion()));
   }
 
   SemanticResponseCache semanticChatCache(

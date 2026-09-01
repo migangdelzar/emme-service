@@ -58,7 +58,7 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
     return definitions.values().stream()
         .filter(AiToolDefinition::canRunProactively)
-        .filter(definition -> definition.isAuthorized(context.roles()))
+        .filter(definition -> definition.isAuthorized(context))
         .map(AiToolDefinition::key)
         .collect(Collectors.toUnmodifiableSet());
   }
@@ -70,7 +70,7 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
         .filter(definition -> definition.risk() == AiToolRisk.READ_ONLY)
         .filter(definition -> !definition.userConfirmationRequired())
         .filter(definition -> !definition.staffApprovalRequired())
-        .filter(definition -> definition.isAuthorized(context.roles()))
+        .filter(definition -> definition.isAuthorized(context))
         .collect(Collectors.toUnmodifiableSet());
   }
 
@@ -80,7 +80,7 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
     AiToolDefinition definition = definitions.get(invocation.toolKey());
     long startedAt = System.nanoTime();
-    boolean authorized = definition != null && definition.isAuthorized(context.roles());
+    boolean authorized = definition != null && definition.isAuthorized(context);
     String claimedOperationKey = null;
     boolean claimed = false;
     boolean mutationHandlerExecuted = false;
@@ -256,6 +256,9 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
         context.conversationId(),
         context.workflowId(),
         context.traceId(),
-        context.idempotencyKey());
+        context.idempotencyKey(),
+        context.channel(),
+        context.tenantCapabilities(),
+        context.enabledFeatures());
   }
 }

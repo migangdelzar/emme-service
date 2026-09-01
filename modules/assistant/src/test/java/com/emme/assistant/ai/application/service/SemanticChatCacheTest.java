@@ -15,6 +15,7 @@ import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
@@ -150,6 +151,39 @@ class SemanticChatCacheTest {
     verify(cache, org.mockito.Mockito.times(2)).put(write.capture());
     assertThat(write.getAllValues().get(0).writeIdempotencyKey())
         .isNotEqualTo(write.getAllValues().get(1).writeIdempotencyKey());
+  }
+
+  @Test
+  void includesResponseProviderModelAndDependencyVersionsInTheCacheIdentity() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort cache = mock(SemanticCachePort.class);
+    SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
+    when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
+    when(codec.encodeText(any())).thenReturn("payload");
+    when(cache.put(any())).thenReturn(UUID.randomUUID());
+    SemanticCacheIdentity identity =
+        new SemanticCacheIdentity(
+            "ollama", "gemma4:e4b-mlx", "knowledge-v7", "policy-v3", "source-v9");
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            mock(SemanticCacheResolver.class),
+            cache,
+            codec,
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5),
+            Optional.empty(),
+            mock(com.emme.assistant.ai.application.port.out.SemanticMetrics.class),
+            new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration(
+                "custom-embedding", "embedding-v1", 2),
+            identity);
+
+    semanticCache.store("", "What are your hours?", "We are open.");
+
+    var write = org.mockito.ArgumentCaptor.forClass(SemanticCachePort.Put.class);
+    verify(cache).put(write.capture());
+    assertThat(write.getValue().identity()).isEqualTo(identity);
   }
 
   @Test

@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.adapter.in.web.security;
 
 import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.Channel;
 import com.emme.kernel.context.TenantContextHolder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -27,7 +28,10 @@ public final class AiWebExecutionContextFactory {
         resourceId,
         resourceId,
         traceId,
-        traceId);
+        traceId,
+        Channel.WEB,
+        Set.of(),
+        Set.of());
   }
 
   public AiExecutionContext forConversation(
@@ -53,7 +57,10 @@ public final class AiWebExecutionContextFactory {
         conversationId,
         workflowId,
         traceId,
-        idempotencyKey);
+        idempotencyKey,
+        Channel.WEB,
+        Set.of(),
+        Set.of());
   }
 
   public AiExecutionContext forReview(
@@ -73,7 +80,10 @@ public final class AiWebExecutionContextFactory {
         reviewTaskId,
         reviewTaskId,
         traceId,
-        idempotencyKey);
+        idempotencyKey,
+        Channel.WEB,
+        Set.of(),
+        Set.of());
   }
 
   private static Set<String> roles(Collection<? extends GrantedAuthority> authorities) {

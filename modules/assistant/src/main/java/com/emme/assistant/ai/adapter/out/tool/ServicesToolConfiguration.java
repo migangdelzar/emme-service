@@ -2,6 +2,7 @@ package com.emme.assistant.ai.adapter.out.tool;
 
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
 import com.emme.assistant.ai.application.tool.AiToolRisk;
+import com.emme.kernel.context.Channel;
 import com.emme.services.api.usecase.ListActiveServiceCatalogEntriesUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -25,6 +26,9 @@ public class ServicesToolConfiguration {
         false,
         new ServicesToolHandler(listServices, objectMapper),
         java.util.Set.of(),
-        java.util.Set.of("locale"));
+        java.util.Set.of("locale"),
+        java.util.Set.of("service_catalog"),
+        java.util.Set.of("ai_chat"),
+        java.util.Set.of(Channel.WEB, Channel.WHATSAPP));
   }
 }

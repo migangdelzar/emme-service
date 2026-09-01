@@ -53,6 +53,11 @@ public class SpringAiRedisSemanticConfiguration {
             RedisVectorStore.MetadataField.tag("promptVersion"),
             RedisVectorStore.MetadataField.tag("embeddingModelName"),
             RedisVectorStore.MetadataField.tag("embeddingModelVersion"),
+            RedisVectorStore.MetadataField.tag("responseProvider"),
+            RedisVectorStore.MetadataField.tag("responseModel"),
+            RedisVectorStore.MetadataField.tag("knowledgeVersion"),
+            RedisVectorStore.MetadataField.tag("policyVersion"),
+            RedisVectorStore.MetadataField.tag("sourceVersion"),
             RedisVectorStore.MetadataField.text("responsePayload"),
             RedisVectorStore.MetadataField.numeric("expiresAt"))
         .build();

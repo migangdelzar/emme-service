@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.emme.assistant.ai.adapter.out.provider.springai.RedisSemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Instant;
@@ -79,6 +80,11 @@ class RedisSemanticIntegrationTest {
                 RedisVectorStore.MetadataField.tag("promptVersion"),
                 RedisVectorStore.MetadataField.tag("embeddingModelName"),
                 RedisVectorStore.MetadataField.tag("embeddingModelVersion"),
+                RedisVectorStore.MetadataField.tag("responseProvider"),
+                RedisVectorStore.MetadataField.tag("responseModel"),
+                RedisVectorStore.MetadataField.tag("knowledgeVersion"),
+                RedisVectorStore.MetadataField.tag("policyVersion"),
+                RedisVectorStore.MetadataField.tag("sourceVersion"),
                 RedisVectorStore.MetadataField.text("responsePayload"),
                 RedisVectorStore.MetadataField.numeric("expiresAt"))
             .build();
@@ -107,7 +113,9 @@ class RedisSemanticIntegrationTest {
             "{\"text\":\"We are open.\"}",
             Instant.now().plusSeconds(60),
             QUERY,
-            "integration-write-1");
+            "integration-write-1",
+            new SemanticCacheIdentity(
+                "ollama", "gemma4:e4b-mlx", "knowledge-v1", "policy-v1", "source-v1"));
 
     AiExecutionContext context = context(TENANT_ID);
     AiExecutionContextScope.run(context, () -> hotStore.put(durableId, write));
@@ -120,7 +128,12 @@ class RedisSemanticIntegrationTest {
             () ->
                 hotStore.find(
                     new SemanticCachePort.Lookup(
-                        "CHAT_INFORMATIONAL", "context-v1:empty", "chat-v1", QUERY),
+                        "CHAT_INFORMATIONAL",
+                        "context-v1:empty",
+                        "chat-v1",
+                        QUERY,
+                        new SemanticCacheIdentity(
+                            "ollama", "gemma4:e4b-mlx", "knowledge-v1", "policy-v1", "source-v1")),
                     "What are your hours?",
                     2));
 
@@ -136,7 +149,16 @@ class RedisSemanticIntegrationTest {
                 () ->
                     hotStore.find(
                         new SemanticCachePort.Lookup(
-                            "CHAT_INFORMATIONAL", "context-v1:empty", "chat-v1", QUERY),
+                            "CHAT_INFORMATIONAL",
+                            "context-v1:empty",
+                            "chat-v1",
+                            QUERY,
+                            new SemanticCacheIdentity(
+                                "ollama",
+                                "gemma4:e4b-mlx",
+                                "knowledge-v1",
+                                "policy-v1",
+                                "source-v1")),
                         "What are your hours?",
                         2)))
         .isEmpty();

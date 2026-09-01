@@ -17,9 +17,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** In-process tool gateway that keeps authorization and tenant context outside model control. */
 public final class AuthorizedAiToolGateway implements AiToolGateway {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizedAiToolGateway.class);
 
   private final Map<String, AiToolDefinition> definitions;
   private final AiTraceRecorder traceRecorder;
@@ -125,11 +129,13 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
       if (claimedOperationKey != null) {
         Optional<AiToolResult> completed = idempotencyStore.find(claimedOperationKey);
         if (completed.isPresent()) {
+          recordReplay(invocation, definition, startedAt, completed.orElseThrow());
           return completed.get();
         }
         if (!idempotencyStore.claim(claimedOperationKey, definition.key())) {
           completed = idempotencyStore.find(claimedOperationKey);
           if (completed.isPresent()) {
+            recordReplay(invocation, definition, startedAt, completed.orElseThrow());
             return completed.get();
           }
           throw new AiToolExecutionRejectedException(
@@ -204,9 +210,30 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
   private void record(AiToolCallTrace trace) {
     try {
       traceRecorder.recordToolCall(trace);
-    } catch (RuntimeException ignored) {
-      // Trace persistence is best effort and must not alter tool semantics.
+    } catch (RuntimeException failure) {
+      LOGGER.warn("AI tool trace persistence failed for {}", trace.toolKey(), failure);
     }
+  }
+
+  private void recordReplay(
+      AiToolInvocation invocation,
+      AiToolDefinition definition,
+      long startedAt,
+      AiToolResult result) {
+    record(
+        new AiToolCallTrace(
+            java.util.UUID.randomUUID(),
+            invocation.toolKey(),
+            definition.risk().name(),
+            AiToolCallStatus.SUCCEEDED,
+            true,
+            invocation.userConfirmed(),
+            invocation.staffApproved(),
+            elapsedMillis(startedAt),
+            invocation.arguments().toString(),
+            result.content(),
+            "IDEMPOTENT_REPLAY",
+            "Result returned from idempotency store"));
   }
 
   private static long elapsedMillis(long startedAt) {

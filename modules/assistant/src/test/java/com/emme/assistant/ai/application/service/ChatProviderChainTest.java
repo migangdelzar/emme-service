@@ -10,6 +10,7 @@ import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
+import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatProviderChain;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -81,6 +82,17 @@ class ChatProviderChainTest {
 
     assertThat(response).isEqualTo("hola");
     assertThat(scheduler.capabilities).containsExactly(ModelCapability.GENERATION);
+  }
+
+  @Test
+  void reportsTheProviderAndModelThatProducedTheResponse() {
+    ChatCompletionPort local = mock(ChatCompletionPort.class);
+    when(local.complete("", "hello")).thenReturn("hola");
+    ChatProviderChain chain =
+        new ChatProviderChain(List.of(new ChatProviderChain.Provider("local", local, "llama-3")));
+
+    assertThat(chain.completeWithIdentity("", "hello"))
+        .isEqualTo(new IdentifiedChatCompletionPort.ChatCompletionResult("hola", "local", "llama-3"));
   }
 
   private static AiExecutionContext context() {

@@ -97,7 +97,8 @@ public class SpringAiSemanticCacheConfiguration {
       SemanticCacheProperties properties,
       Optional<SemanticCacheHotStore> hotStore,
       SemanticMetrics metrics,
-      AiProperties aiProperties) {
+      AiProperties aiProperties,
+      AiTraceRecorder traceRecorder) {
     return new SemanticChatCache(
         embeddings,
         resolver,
@@ -114,7 +115,13 @@ public class SpringAiSemanticCacheConfiguration {
             aiProperties.chat().model(),
             properties.knowledgeVersion(),
             properties.policyVersion(),
-            properties.sourceVersion()));
+            properties.sourceVersion(),
+            "INTERNAL",
+            properties.locale(),
+            properties.quoteTemplateVersion()),
+        properties.locale(),
+        properties.quoteTemplateVersion(),
+        traceRecorder);
   }
 
   SemanticResponseCache semanticChatCache(

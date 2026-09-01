@@ -1,6 +1,8 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.adapter.in.web.security.AiWebExecutionContextFactory;
+import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
+import java.util.Optional;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +13,8 @@ public class SpringAiWebConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  AiWebExecutionContextFactory aiWebExecutionContextFactory() {
-    return new AiWebExecutionContextFactory();
+  AiWebExecutionContextFactory aiWebExecutionContextFactory(
+      Optional<AiAuthorizationContextResolver> authorizationResolver) {
+    return new AiWebExecutionContextFactory(authorizationResolver);
   }
 }

@@ -19,12 +19,17 @@ import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
+import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContextScope;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.Channel;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -187,6 +192,66 @@ class SemanticChatCacheTest {
   }
 
   @Test
+  void includesChannelLocaleQuoteTemplateAndActualProducingModelInTheCacheIdentity() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort cache = mock(SemanticCachePort.class);
+    SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
+    when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
+    when(codec.encodeText(any())).thenReturn("payload");
+    UUID cacheId = UUID.randomUUID();
+    when(cache.put(any())).thenReturn(cacheId);
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            mock(SemanticCacheResolver.class),
+            cache,
+            codec,
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5),
+            Optional.empty(),
+            mock(com.emme.assistant.ai.application.port.out.SemanticMetrics.class),
+            new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration(
+                "custom-embedding", "embedding-v1", 2),
+            new SemanticCacheIdentity(
+                "configured-provider",
+                "configured-model",
+                "knowledge-v7",
+                "policy-v3",
+                "source-v9"),
+            "es-US",
+            "quote-template-v4");
+
+    AiExecutionContext context =
+        new com.emme.kernel.context.AiExecutionContext(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            Set.of("client"),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "trace-channel",
+            "turn-channel",
+            Channel.WHATSAPP,
+            Set.of("appointments"),
+            Set.of("ai_chat"));
+    AiExecutionContextScope.run(
+        context,
+        () ->
+            semanticCache.store(
+                "", "What are your hours?", "We are open.",
+                new SemanticCacheIdentity(
+                    "ollama", "gemma4:e4b-mlx", "knowledge-v7", "policy-v3", "source-v9")));
+
+    var write = org.mockito.ArgumentCaptor.forClass(SemanticCachePort.Put.class);
+    verify(cache).put(write.capture());
+    assertThat(write.getValue().identity().responseProvider()).isEqualTo("ollama");
+    assertThat(write.getValue().identity().responseModel()).isEqualTo("gemma4:e4b-mlx");
+    assertThat(write.getValue().identity().channel()).isEqualTo("WHATSAPP");
+    assertThat(write.getValue().identity().locale()).isEqualTo("es-US");
+    assertThat(write.getValue().identity().quoteTemplateVersion()).isEqualTo("quote-template-v4");
+  }
+
+  @Test
   void separatesCacheWritesByEmbeddingModelAndDimension() {
     EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
     SemanticCachePort cache = mock(SemanticCachePort.class);
@@ -335,6 +400,37 @@ class SemanticChatCacheTest {
 
     assertThat(semanticCache.lookup("", "What are your hours?")).isEmpty();
     verifyNoInteractions(durableCache);
+  }
+
+  @Test
+  void recordsASemanticFailureWhilePreservingTheSafeEmptyFallback() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort durableCache = mock(SemanticCachePort.class);
+    AiTraceRecorder traces = mock(AiTraceRecorder.class);
+    when(embeddings.embed("What are your hours?"))
+        .thenThrow(new EmbeddingProviderUnavailableException("embedding unavailable"));
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            mock(SemanticCacheResolver.class),
+            durableCache,
+            mock(SemanticCachePayloadCodec.class),
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5),
+            Optional.empty(),
+            mock(com.emme.assistant.ai.application.port.out.SemanticMetrics.class),
+            new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration("embedding", "v1", 2),
+            SemanticCacheIdentity.legacy(),
+            "es-MX",
+            "quote-template-v1",
+            traces);
+
+    assertThat(semanticCache.lookup("", "What are your hours?")).isEmpty();
+
+    var trace = org.mockito.ArgumentCaptor.forClass(AiSemanticExecutionTrace.class);
+    verify(traces).recordSemanticOutcome(trace.capture());
+    assertThat(trace.getValue().outcome()).isEqualTo("failed");
   }
 
   @Test

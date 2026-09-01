@@ -52,6 +52,10 @@ public final class SemanticToolSelector {
     try {
       if (authorized.isEmpty()) {
         record("abstained");
+        recordTrace(
+            new SemanticDecision(java.util.Optional.empty(), 0.0, 0.0, 0.0, false),
+            List.of(),
+            "no_authorized_tools");
         return new SemanticDecision(java.util.Optional.empty(), 0.0, 0.0, 0.0, false);
       }
 
@@ -64,11 +68,15 @@ public final class SemanticToolSelector {
         return rejected(decision);
       }
       record(decision.accepted() ? "accepted" : "abstained");
-      recordTrace(decision, matches);
+      recordTrace(decision, matches, decision.accepted() ? "accepted" : "abstained");
       return decision;
     } catch (RuntimeException failure) {
       recordSafely(
           () -> metrics.recordFailure("tool_selection", SemanticFailureReason.code(failure)));
+      recordTrace(
+          new SemanticDecision(java.util.Optional.empty(), 0.0, 0.0, 0.0, false),
+          List.of(),
+          "failed");
       throw failure;
     } finally {
       recordSafely(
@@ -78,7 +86,8 @@ public final class SemanticToolSelector {
     }
   }
 
-  private void recordTrace(SemanticDecision decision, List<SemanticMatch> matches) {
+  private void recordTrace(
+      SemanticDecision decision, List<SemanticMatch> matches, String outcome) {
     try {
       traceRecorder.recordSemanticOutcome(
           new AiSemanticExecutionTrace(
@@ -86,7 +95,7 @@ public final class SemanticToolSelector {
               null,
               null,
               "tool_selection",
-              decision.accepted() ? "accepted" : "abstained",
+              outcome,
               decision.top1Similarity(),
               decision.top2Similarity(),
               decision.margin(),

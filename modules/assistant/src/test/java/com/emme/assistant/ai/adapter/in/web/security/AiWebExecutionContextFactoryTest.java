@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import com.emme.kernel.context.Channel;
+import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
 import com.emme.kernel.context.TenantContextHolder;
 import java.util.List;
 import java.util.Set;
@@ -122,5 +124,32 @@ class AiWebExecutionContextFactoryTest {
     assertThat(first.conversationId()).isEqualTo(conversationId);
     assertThat(first.workflowId()).isEqualTo(second.workflowId());
     assertThat(first.idempotencyKey()).isEqualTo("conversation-turn-1");
+  }
+
+  @Test
+  void carriesResolvedTenantCapabilitiesAndFeaturesIntoTheWebContext() {
+    UUID tenantId = UUID.randomUUID();
+    AiAuthorizationContextResolver resolver =
+        (resolvedTenant, subject, roles, channel) ->
+            new AiAuthorizationContextResolver.AiAuthorizationContext(
+                Set.of("tenant_staff"), Set.of("appointments"), Set.of("ai_chat"));
+    AiWebExecutionContextFactory factory = new AiWebExecutionContextFactory(resolver);
+
+    AiExecutionContext context =
+        TenantContextHolder.withTenantOverride(
+            tenantId,
+            () ->
+                factory.forConversation(
+                    UUID.randomUUID(),
+                    "trace-resolved",
+                    "turn-resolved",
+                    "https://issuer",
+                    "user-1",
+                    List.of(new SimpleGrantedAuthority("ROLE_tenant_staff"))));
+
+    assertThat(context.channel()).isEqualTo(Channel.WEB);
+    assertThat(context.roles()).containsExactly("tenant_staff");
+    assertThat(context.tenantCapabilities()).containsExactly("appointments");
+    assertThat(context.enabledFeatures()).containsExactly("ai_chat");
   }
 }

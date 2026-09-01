@@ -4,6 +4,7 @@ import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
+import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /** Ordered chat-provider failover policy. */
-public final class ChatProviderChain implements ChatCompletionPort {
+public final class ChatProviderChain implements IdentifiedChatCompletionPort {
 
   private final List<Provider> providers;
   private final Optional<ModelExecutionScheduler> scheduler;
@@ -49,10 +50,17 @@ public final class ChatProviderChain implements ChatCompletionPort {
 
   @Override
   public String complete(String conversationContext, String userMessage) {
+    return completeWithIdentity(conversationContext, userMessage).content();
+  }
+
+  @Override
+  public IdentifiedChatCompletionPort.ChatCompletionResult completeWithIdentity(
+      String conversationContext, String userMessage) {
     ChatProviderUnavailableException lastFailure = null;
     for (Provider provider : providers) {
       try {
-        return execute(provider, conversationContext, userMessage);
+        return new IdentifiedChatCompletionPort.ChatCompletionResult(
+            execute(provider, conversationContext, userMessage), provider.key(), provider.modelVersion());
       } catch (ChatProviderUnavailableException unavailable) {
         lastFailure = unavailable;
       }
@@ -75,12 +83,19 @@ public final class ChatProviderChain implements ChatCompletionPort {
             () -> provider.model().complete(conversationContext, userMessage));
   }
 
-  public record Provider(String key, ChatCompletionPort model) {
+  public record Provider(String key, ChatCompletionPort model, String modelVersion) {
+    public Provider(String key, ChatCompletionPort model) {
+      this(key, model, "unknown-model");
+    }
+
     public Provider {
       if (key == null || key.isBlank()) {
         throw new IllegalArgumentException("Chat provider key must not be blank");
       }
       Objects.requireNonNull(model, "model must not be null");
+      if (modelVersion == null || modelVersion.isBlank()) {
+        throw new IllegalArgumentException("Chat provider model version must not be blank");
+      }
     }
   }
 }

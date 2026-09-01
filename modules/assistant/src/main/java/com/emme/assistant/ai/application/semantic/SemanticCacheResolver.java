@@ -56,6 +56,7 @@ public final class SemanticCacheResolver {
       return confirm(cache.find(lookup, CANDIDATE_LIMIT), validator);
     } catch (RuntimeException failure) {
       recordFailure("lookup", SemanticFailureReason.code(failure));
+      recordTrace(List.of(), "failed");
       throw failure;
     } finally {
       recordLatency("lookup", Duration.ofNanos(System.nanoTime() - started));

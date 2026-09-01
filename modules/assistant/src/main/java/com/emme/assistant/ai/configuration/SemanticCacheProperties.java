@@ -13,11 +13,13 @@ public record SemanticCacheProperties(
     String promptVersion,
     String knowledgeVersion,
     String policyVersion,
-    String sourceVersion) {
+    String sourceVersion,
+    String locale,
+    String quoteTemplateVersion) {
 
   public SemanticCacheProperties(
       boolean enabled, Double minimumSimilarity, Duration ttl, String promptVersion) {
-    this(enabled, minimumSimilarity, null, ttl, promptVersion, null, null, null);
+    this(enabled, minimumSimilarity, null, ttl, promptVersion, null, null, null, null, null);
   }
 
   public SemanticCacheProperties(
@@ -26,7 +28,7 @@ public record SemanticCacheProperties(
       Double minimumMargin,
       Duration ttl,
       String promptVersion) {
-    this(enabled, minimumSimilarity, minimumMargin, ttl, promptVersion, null, null, null);
+    this(enabled, minimumSimilarity, minimumMargin, ttl, promptVersion, null, null, null, null, null);
   }
 
   public SemanticCacheProperties {
@@ -37,6 +39,8 @@ public record SemanticCacheProperties(
     knowledgeVersion = knowledgeVersion == null ? "knowledge-v1" : knowledgeVersion;
     policyVersion = policyVersion == null ? "policy-v1" : policyVersion;
     sourceVersion = sourceVersion == null ? "source-v1" : sourceVersion;
+    locale = locale == null ? "es-MX" : locale;
+    quoteTemplateVersion = quoteTemplateVersion == null ? "quote-template-v1" : quoteTemplateVersion;
     if (!Double.isFinite(minimumSimilarity)
         || minimumSimilarity < -1.0
         || minimumSimilarity > 1.0) {
@@ -59,6 +63,12 @@ public record SemanticCacheProperties(
     }
     if (sourceVersion.isBlank()) {
       throw new IllegalArgumentException("sourceVersion must not be blank");
+    }
+    if (locale.isBlank()) {
+      throw new IllegalArgumentException("locale must not be blank");
+    }
+    if (quoteTemplateVersion.isBlank()) {
+      throw new IllegalArgumentException("quoteTemplateVersion must not be blank");
     }
   }
 }

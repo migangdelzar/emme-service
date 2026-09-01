@@ -1,6 +1,7 @@
 package com.emme.assistant.application.service;
 
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
+import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
 import com.emme.assistant.api.command.AddConversationEventCommand;
 import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
 import com.emme.assistant.api.command.StartConversationCommand;
@@ -48,6 +49,7 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
   private final WhatsAppWebhookEventRepository webhookEvents;
   private final WhatsAppReplyPort replyPort;
   private final ApplicationEventPublisher eventPublisher;
+  private final java.util.Optional<AiAuthorizationContextResolver> authorizationResolver;
 
   public ProcessWhatsAppMessageService(
       StartConversationUseCase startConversation,
@@ -65,7 +67,29 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
         participantRepository,
         webhookEvents,
         replyPort,
-        event -> {});
+        event -> {},
+        java.util.Optional.empty());
+  }
+
+  public ProcessWhatsAppMessageService(
+      StartConversationUseCase startConversation,
+      ListConversationsUseCase listConversations,
+      AddConversationEventUseCase addConversationEvent,
+      ChatUseCase chatUseCase,
+      ChannelParticipantRepository participantRepository,
+      WhatsAppWebhookEventRepository webhookEvents,
+      WhatsAppReplyPort replyPort,
+      ApplicationEventPublisher eventPublisher) {
+    this(
+        startConversation,
+        listConversations,
+        addConversationEvent,
+        chatUseCase,
+        participantRepository,
+        webhookEvents,
+        replyPort,
+        eventPublisher,
+        java.util.Optional.empty());
   }
 
   @Autowired
@@ -77,7 +101,8 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
       ChannelParticipantRepository participantRepository,
       WhatsAppWebhookEventRepository webhookEvents,
       WhatsAppReplyPort replyPort,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      java.util.Optional<AiAuthorizationContextResolver> authorizationResolver) {
     this.startConversation = startConversation;
     this.listConversations = listConversations;
     this.addConversationEvent = addConversationEvent;
@@ -86,6 +111,7 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
     this.webhookEvents = webhookEvents;
     this.replyPort = replyPort;
     this.eventPublisher = eventPublisher;
+    this.authorizationResolver = java.util.Objects.requireNonNull(authorizationResolver, "authorizationResolver must not be null");
   }
 
   @Override
@@ -130,11 +156,39 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
         new AddConversationEventCommand(
             command.tenantId(), conversation.id(), "MESSAGE_RECEIVED", command.text()));
 
-    String response = chatUseCase.chat("", command.text());
+    String response = chatInResolvedAuthorization(command, participant);
     addConversationEvent.add(
         new AddConversationEventCommand(
             command.tenantId(), conversation.id(), "MESSAGE_SENT", response));
     replyPort.send(command.from(), response);
+  }
+
+  private String chatInResolvedAuthorization(
+      ProcessWhatsAppMessageCommand command, ChannelParticipant participant) {
+    if (authorizationResolver.isEmpty()) {
+      return chatUseCase.chat("", command.text());
+    }
+    Set<String> authenticatedRoles = participant.customerId() == null ? Set.of() : Set.of("client");
+    String principalReference =
+        participant.customerId() == null ? command.from() : participant.customerId().toString();
+    var authorization =
+        authorizationResolver
+            .orElseThrow()
+            .resolve(command.tenantId(), principalReference, authenticatedRoles, Channel.WHATSAPP);
+    AiExecutionContext current = AiExecutionContextScope.requireCurrent();
+    AiExecutionContext authorized =
+        new AiExecutionContext(
+            current.tenantId(),
+            current.principalId(),
+            authorization.roles(),
+            current.conversationId(),
+            current.workflowId(),
+            current.traceId(),
+            current.idempotencyKey(),
+            Channel.WHATSAPP,
+            authorization.tenantCapabilities(),
+            authorization.enabledFeatures());
+    return AiExecutionContextScope.call(authorized, () -> chatUseCase.chat("", command.text()));
   }
 
   @ApplicationModuleListener(id = "assistant.whatsapp-message-received")

@@ -56,6 +56,9 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
               AND knowledge_version = :knowledgeVersion
               AND policy_version = :policyVersion
               AND source_version = :sourceVersion
+              AND channel = :channel
+              AND locale = :locale
+              AND quote_template_version = :quoteTemplateVersion
               AND vector_dims(embedding) = :embeddingDimension
               AND active = true
               AND expires_at > CURRENT_TIMESTAMP
@@ -74,6 +77,9 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .param("knowledgeVersion", lookup.identity().knowledgeVersion())
         .param("policyVersion", lookup.identity().policyVersion())
         .param("sourceVersion", lookup.identity().sourceVersion())
+        .param("channel", lookup.identity().channel())
+        .param("locale", lookup.identity().locale())
+        .param("quoteTemplateVersion", lookup.identity().quoteTemplateVersion())
         .param("embeddingDimension", lookup.query().values().size())
         .param("queryEmbedding", lookup.query().values().toString())
         .param("limit", limit)
@@ -112,6 +118,9 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
                 knowledge_version,
                 policy_version,
                 source_version,
+                channel,
+                locale,
+                quote_template_version,
                 response_payload,
                 expires_at,
                 write_idempotency_key
@@ -131,6 +140,9 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
                 :knowledgeVersion,
                 :policyVersion,
                 :sourceVersion,
+                :channel,
+                :locale,
+                :quoteTemplateVersion,
                 CAST(:responsePayload AS jsonb),
                 :expiresAt,
                 :writeIdempotencyKey
@@ -147,6 +159,9 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
                           knowledge_version = EXCLUDED.knowledge_version,
                           policy_version = EXCLUDED.policy_version,
                           source_version = EXCLUDED.source_version,
+                          channel = EXCLUDED.channel,
+                          locale = EXCLUDED.locale,
+                          quote_template_version = EXCLUDED.quote_template_version,
                           response_payload = EXCLUDED.response_payload,
                           expires_at = EXCLUDED.expires_at,
                           active = true,
@@ -168,6 +183,9 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .param("knowledgeVersion", write.identity().knowledgeVersion())
         .param("policyVersion", write.identity().policyVersion())
         .param("sourceVersion", write.identity().sourceVersion())
+        .param("channel", write.identity().channel())
+        .param("locale", write.identity().locale())
+        .param("quoteTemplateVersion", write.identity().quoteTemplateVersion())
         .param("responsePayload", write.responsePayload())
         .param("expiresAt", Timestamp.from(write.expiresAt()))
         .param("writeIdempotencyKey", write.writeIdempotencyKey())

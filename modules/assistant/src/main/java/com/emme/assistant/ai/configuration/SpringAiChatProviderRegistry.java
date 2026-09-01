@@ -76,7 +76,8 @@ public final class SpringAiChatProviderRegistry {
                           configured.key(),
                           configured.modelVersion(),
                           "chat-v1",
-                          traceRecorder));
+                          traceRecorder),
+                      configured.modelVersion());
                 })
             .toList();
     if (providers.isEmpty()) {

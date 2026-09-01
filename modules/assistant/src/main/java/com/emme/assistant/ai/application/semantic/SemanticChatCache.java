@@ -10,6 +10,9 @@ import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
+import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -44,6 +47,9 @@ public final class SemanticChatCache implements SemanticResponseCache {
   private final SemanticMetrics metrics;
   private final EmbeddingModelConfiguration embeddingModelConfiguration;
   private final SemanticCacheIdentity identity;
+  private final String locale;
+  private final String quoteTemplateVersion;
+  private final AiTraceRecorder traceRecorder;
 
   public SemanticChatCache(
       EmbeddingModelPort embeddings,
@@ -125,7 +131,10 @@ public final class SemanticChatCache implements SemanticResponseCache {
         hotStore,
         metrics,
         embeddingModelConfiguration,
-        SemanticCacheIdentity.legacy());
+        SemanticCacheIdentity.legacy(),
+        "es-MX",
+        "quote-template-v1",
+        NoopAiTraceRecorder.INSTANCE);
   }
 
   public SemanticChatCache(
@@ -140,6 +149,69 @@ public final class SemanticChatCache implements SemanticResponseCache {
       SemanticMetrics metrics,
       EmbeddingModelConfiguration embeddingModelConfiguration,
       SemanticCacheIdentity identity) {
+    this(
+        embeddings,
+        resolver,
+        cache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        hotStore,
+        metrics,
+        embeddingModelConfiguration,
+        identity,
+        "es-MX",
+        "quote-template-v1",
+        NoopAiTraceRecorder.INSTANCE);
+  }
+
+  public SemanticChatCache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort cache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore,
+      SemanticMetrics metrics,
+      EmbeddingModelConfiguration embeddingModelConfiguration,
+      SemanticCacheIdentity identity,
+      String locale,
+      String quoteTemplateVersion) {
+    this(
+        embeddings,
+        resolver,
+        cache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        hotStore,
+        metrics,
+        embeddingModelConfiguration,
+        identity,
+        locale,
+        quoteTemplateVersion,
+        NoopAiTraceRecorder.INSTANCE);
+  }
+
+  public SemanticChatCache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort cache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore,
+      SemanticMetrics metrics,
+      EmbeddingModelConfiguration embeddingModelConfiguration,
+      SemanticCacheIdentity identity,
+      String locale,
+      String quoteTemplateVersion,
+      AiTraceRecorder traceRecorder) {
     this.embeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.resolver = Objects.requireNonNull(resolver, "resolver must not be null");
     this.cache = Objects.requireNonNull(cache, "cache must not be null");
@@ -154,6 +226,11 @@ public final class SemanticChatCache implements SemanticResponseCache {
         Objects.requireNonNull(
             embeddingModelConfiguration, "embeddingModelConfiguration must not be null");
     this.identity = Objects.requireNonNull(identity, "identity must not be null");
+    requireText(locale, "locale");
+    requireText(quoteTemplateVersion, "quoteTemplateVersion");
+    this.locale = locale;
+    this.quoteTemplateVersion = quoteTemplateVersion;
+    this.traceRecorder = Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
   }
 
   @Override
@@ -166,7 +243,11 @@ public final class SemanticChatCache implements SemanticResponseCache {
       EmbeddingVector query = embeddings.embed(userMessage);
       SemanticCachePort.Lookup lookup =
           new SemanticCachePort.Lookup(
-              CACHE_KIND, contextFingerprint(conversationContext), promptVersion, query, identity);
+              CACHE_KIND,
+              contextFingerprint(conversationContext),
+              promptVersion,
+              query,
+              identityForCurrentContext());
       Optional<SemanticCachePort.Candidate> hotHit =
           hotStore
               .flatMap(store -> safeHotLookup(store, lookup, userMessage))
@@ -182,6 +263,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
       recordFailure("cache.lookup", failure);
       recordFallback("cache.lookup", fallbackReason(failure));
+      recordSemanticFailure("cache.lookup", failure);
       recordLookup("failure");
       return Optional.empty();
     }
@@ -189,6 +271,15 @@ public final class SemanticChatCache implements SemanticResponseCache {
 
   @Override
   public Optional<UUID> store(String conversationContext, String userMessage, String response) {
+    return store(conversationContext, userMessage, response, identityForCurrentContext());
+  }
+
+  @Override
+  public Optional<UUID> store(
+      String conversationContext,
+      String userMessage,
+      String response,
+      SemanticCacheIdentity producingIdentity) {
     if (!isEligible(conversationContext, userMessage)) {
       recordWrite("bypass");
       return Optional.empty();
@@ -201,6 +292,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
     try {
       EmbeddingVector query = embeddings.embed(userMessage);
       String contextFingerprint = contextFingerprint(conversationContext);
+      SemanticCacheIdentity cacheIdentity = mergeContextIdentity(producingIdentity);
       SemanticCachePort.Put write =
           new SemanticCachePort.Put(
               CACHE_KIND,
@@ -210,8 +302,8 @@ public final class SemanticChatCache implements SemanticResponseCache {
               codec.encodeText(response),
               Instant.now(clock).plus(ttl),
               query,
-              writeIdempotencyKey(contextFingerprint, userMessage, query),
-              identity);
+              writeIdempotencyKey(contextFingerprint, userMessage, query, cacheIdentity),
+              cacheIdentity);
       UUID cacheId = cache.put(write);
       hotStore.ifPresent(store -> safeHotPut(store, cacheId, write));
       recordWrite("stored");
@@ -220,6 +312,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
       recordFailure("cache.store", failure);
       recordFallback("cache.store", fallbackReason(failure));
+      recordSemanticFailure("cache.store", failure);
       recordWrite("failure");
       return Optional.empty();
     }
@@ -293,6 +386,28 @@ public final class SemanticChatCache implements SemanticResponseCache {
     }
   }
 
+  private void recordSemanticFailure(String operation, RuntimeException failure) {
+    try {
+      traceRecorder.recordSemanticOutcome(
+          new AiSemanticExecutionTrace(
+              UUID.randomUUID(),
+              null,
+              null,
+              operation,
+              "failed",
+              0.0,
+              0.0,
+              0.0,
+              List.of(),
+              null,
+              null,
+              null,
+              0));
+    } catch (RuntimeException traceFailure) {
+      recordFailure("trace", traceFailure);
+    }
+  }
+
   private static String fallbackReason(RuntimeException failure) {
     return failure instanceof EmbeddingProviderUnavailableException
         ? "embedding_unavailable"
@@ -340,7 +455,10 @@ public final class SemanticChatCache implements SemanticResponseCache {
   }
 
   private String writeIdempotencyKey(
-      String contextFingerprint, String userMessage, EmbeddingVector query) {
+      String contextFingerprint,
+      String userMessage,
+      EmbeddingVector query,
+      SemanticCacheIdentity cacheIdentity) {
     String embeddingIdentity =
         embeddingModelConfiguration.modelName()
             + "@"
@@ -354,9 +472,28 @@ public final class SemanticChatCache implements SemanticResponseCache {
                 + "\u0000"
                 + embeddingIdentity
                 + "\u0000"
-                + identity
+                + cacheIdentity
                 + "\u0000"
                 + userMessage);
+  }
+
+  private SemanticCacheIdentity identityForCurrentContext() {
+    return mergeContextIdentity(identity);
+  }
+
+  private SemanticCacheIdentity mergeContextIdentity(SemanticCacheIdentity producingIdentity) {
+    Objects.requireNonNull(producingIdentity, "producingIdentity must not be null");
+    String channel =
+        AiExecutionContextScope.current().map(context -> context.channel().name()).orElse(producingIdentity.channel());
+    return new SemanticCacheIdentity(
+        producingIdentity.responseProvider(),
+        producingIdentity.responseModel(),
+        identity.knowledgeVersion(),
+        identity.policyVersion(),
+        identity.sourceVersion(),
+        channel,
+        locale,
+        quoteTemplateVersion);
   }
 
   private static String sha256(String value) {

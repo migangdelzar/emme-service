@@ -29,6 +29,8 @@ class AiSemanticSearchMigrationContractTest {
       "db/emme-studio/releases/0.1.0/029-ai-embedding-model-name.sql";
   private static final String RESPONSE_IDENTITY_MIGRATION =
       "db/emme-studio/releases/0.1.0/030-ai-semantic-cache-response-identity.sql";
+  private static final String FULL_RESPONSE_IDENTITY_MIGRATION =
+      "db/emme-studio/releases/0.1.0/032-ai-semantic-cache-full-response-identity.sql";
   private static final String CATALOG_DIMENSION_MIGRATION =
       "db/emme-studio/releases/0.1.0/031-ai-catalog-embedding-dimension.sql";
 
@@ -174,6 +176,19 @@ class AiSemanticSearchMigrationContractTest {
         .contains("idx_ai_semantic_cache_response_identity");
     assertThat(resource("db/emme-studio/changelog.yaml"))
         .contains("releases/0.1.0/030-ai-semantic-cache-response-identity.sql");
+  }
+
+  @Test
+  void persistsChannelLocaleAndQuoteTemplateInTheSemanticCacheIdentity() throws IOException {
+    String sql = resource(FULL_RESPONSE_IDENTITY_MIGRATION);
+
+    assertThat(sql)
+        .contains("ADD COLUMN IF NOT EXISTS channel VARCHAR(32)")
+        .contains("ADD COLUMN IF NOT EXISTS locale VARCHAR(32)")
+        .contains("ADD COLUMN IF NOT EXISTS quote_template_version VARCHAR(160)")
+        .contains("channel,")
+        .contains("locale,")
+        .contains("quote_template_version");
   }
 
   @Test

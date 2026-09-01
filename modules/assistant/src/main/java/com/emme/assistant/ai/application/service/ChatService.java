@@ -6,6 +6,7 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
+import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.ProactiveToolRouter;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
@@ -155,25 +156,56 @@ public class ChatService implements ChatUseCase {
     if (cached.isPresent()) {
       return cached.orElseThrow();
     }
-    String response;
+    Completion response;
     try {
       response =
           chatCompletion
-              .map(chat -> chat.complete(conversationContext, userMessage))
-              .orElseGet(() -> executeLegacyChat(conversationContext, userMessage));
+              .map(chat -> complete(chat, conversationContext, userMessage))
+              .orElseGet(() -> new Completion(executeLegacyChat(conversationContext, userMessage), provider.name(), "legacy-model"));
     } catch (ChatProviderUnavailableException unavailable) {
-      response = executeLegacyChat(conversationContext, userMessage);
+      response = new Completion(executeLegacyChat(conversationContext, userMessage), provider.name(), "legacy-model");
     }
-    String completedResponse = response;
+    Completion completed = response;
+    String completedResponse = completed.content();
     try {
       semanticCache.ifPresent(
-          cache -> cache.store(conversationContext, userMessage, completedResponse));
+          cache -> {
+            if (completed.identified()) {
+              cache.store(
+                  conversationContext,
+                  userMessage,
+                  completedResponse,
+                  new com.emme.assistant.ai.application.semantic.SemanticCacheIdentity(
+                      completed.provider(),
+                      completed.model(),
+                      "knowledge-v1",
+                      "policy-v1",
+                      "source-v1"));
+            } else {
+              cache.store(conversationContext, userMessage, completedResponse);
+            }
+          });
     } catch (RuntimeException failure) {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
       recordFallback("semantic_cache_write_failure");
       // Semantic caching is an optimization and must not make chat unavailable.
     }
     return completedResponse;
+  }
+
+  private static Completion complete(
+      ChatCompletionPort chat, String conversationContext, String userMessage) {
+    if (chat instanceof IdentifiedChatCompletionPort identified) {
+      var result = identified.completeWithIdentity(conversationContext, userMessage);
+      return new Completion(result.content(), result.provider(), result.model(), true);
+    }
+    return new Completion(chat.complete(conversationContext, userMessage), "legacy-provider", "legacy-model");
+  }
+
+  private record Completion(String content, String provider, String model, boolean identified) {
+    private Completion(String content, String provider, String model) {
+      this(content, provider, model, false);
+    }
   }
 
   private void recordFallback(String reason) {

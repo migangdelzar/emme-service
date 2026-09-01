@@ -172,6 +172,8 @@ app:
       knowledge-version: ${EMME_AI_SEMANTIC_CACHE_KNOWLEDGE_VERSION:knowledge-v1}
       policy-version: ${EMME_AI_SEMANTIC_CACHE_POLICY_VERSION:policy-v1}
       source-version: ${EMME_AI_SEMANTIC_CACHE_SOURCE_VERSION:source-v1}
+      locale: ${EMME_AI_SEMANTIC_CACHE_LOCALE:es-MX}
+      quote-template-version: ${EMME_AI_SEMANTIC_CACHE_QUOTE_TEMPLATE_VERSION:quote-template-v1}
     spring-chat:
       enabled: ${EMME_SPRING_AI_CHAT_ENABLED:false}
       # Additional named ChatClient beans can be added by provider modules and

@@ -50,10 +50,14 @@ public final class SemanticIntentClassifier {
       SemanticDecision decision = policy.decide(matches);
       recordScores(decision);
       record(decision.accepted() ? "accepted" : "abstained");
-      recordTrace(decision, matches);
+      recordTrace(decision, matches, decision.accepted() ? "accepted" : "abstained");
       return decision;
     } catch (RuntimeException failure) {
       recordSafely(() -> metrics.recordFailure("routing", SemanticFailureReason.code(failure)));
+      recordTrace(
+          new SemanticDecision(java.util.Optional.empty(), 0.0, 0.0, 0.0, false),
+          List.of(),
+          "failed");
       throw failure;
     } finally {
       recordSafely(
@@ -61,7 +65,8 @@ public final class SemanticIntentClassifier {
     }
   }
 
-  private void recordTrace(SemanticDecision decision, List<SemanticMatch> matches) {
+  private void recordTrace(
+      SemanticDecision decision, List<SemanticMatch> matches, String outcome) {
     try {
       traceRecorder.recordSemanticOutcome(
           new AiSemanticExecutionTrace(
@@ -69,7 +74,7 @@ public final class SemanticIntentClassifier {
               null,
               null,
               "intent_routing",
-              decision.accepted() ? "accepted" : "abstained",
+              outcome,
               decision.top1Similarity(),
               decision.top2Similarity(),
               decision.margin(),

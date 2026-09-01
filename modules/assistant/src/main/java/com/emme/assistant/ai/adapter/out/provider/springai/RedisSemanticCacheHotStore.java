@@ -167,18 +167,34 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
                 filters.eq(
                     "embeddingModelVersion", encodeTagValue(lookup.query().modelVersion()))));
     var responseIdentity =
+        filters.eq("responseProvider", encodeTagValue(lookup.identity().responseProvider()));
+    responseIdentity =
         filters.and(
-            filters.eq("responseProvider", encodeTagValue(lookup.identity().responseProvider())),
-            filters.and(
-                filters.eq("responseModel", encodeTagValue(lookup.identity().responseModel())),
-                filters.and(
-                    filters.eq(
-                        "knowledgeVersion", encodeTagValue(lookup.identity().knowledgeVersion())),
-                    filters.and(
-                        filters.eq(
-                            "policyVersion", encodeTagValue(lookup.identity().policyVersion())),
-                        filters.eq(
-                            "sourceVersion", encodeTagValue(lookup.identity().sourceVersion()))))));
+            responseIdentity,
+            filters.eq("responseModel", encodeTagValue(lookup.identity().responseModel())));
+    responseIdentity =
+        filters.and(
+            responseIdentity,
+            filters.eq("knowledgeVersion", encodeTagValue(lookup.identity().knowledgeVersion())));
+    responseIdentity =
+        filters.and(
+            responseIdentity,
+            filters.eq("policyVersion", encodeTagValue(lookup.identity().policyVersion())));
+    responseIdentity =
+        filters.and(
+            responseIdentity,
+            filters.eq("sourceVersion", encodeTagValue(lookup.identity().sourceVersion())));
+    responseIdentity =
+        filters.and(
+            responseIdentity, filters.eq("channel", encodeTagValue(lookup.identity().channel())));
+    responseIdentity =
+        filters.and(
+            responseIdentity, filters.eq("locale", encodeTagValue(lookup.identity().locale())));
+    responseIdentity =
+        filters.and(
+            responseIdentity,
+            filters.eq(
+                "quoteTemplateVersion", encodeTagValue(lookup.identity().quoteTemplateVersion())));
     var identity =
         filters.and(
             filters.and(tenantAndPrincipal, kindAndContext),
@@ -226,6 +242,10 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
             Map.entry("knowledgeVersion", encodeTagValue(write.identity().knowledgeVersion())),
             Map.entry("policyVersion", encodeTagValue(write.identity().policyVersion())),
             Map.entry("sourceVersion", encodeTagValue(write.identity().sourceVersion())),
+            Map.entry("channel", encodeTagValue(write.identity().channel())),
+            Map.entry("locale", encodeTagValue(write.identity().locale())),
+            Map.entry(
+                "quoteTemplateVersion", encodeTagValue(write.identity().quoteTemplateVersion())),
             Map.entry("responsePayload", write.responsePayload()),
             Map.entry("expiresAt", write.expiresAt().getEpochSecond()));
     vectorStore.add(

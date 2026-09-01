@@ -1,8 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
-import com.emme.ai.contracts.semantic.SemanticCacheDependencyPublisher;
 import com.emme.assistant.ai.adapter.in.messaging.SemanticCacheInvalidationListener;
-import com.emme.assistant.ai.adapter.out.event.SpringSemanticCacheDependencyPublisher;
 import com.emme.assistant.ai.adapter.out.persistence.JacksonSemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
@@ -23,7 +21,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -64,13 +61,6 @@ public class SpringAiSemanticCacheConfiguration {
   SemanticCacheInvalidationListener semanticCacheInvalidationListener(
       SemanticCacheInvalidationService invalidation) {
     return new SemanticCacheInvalidationListener(invalidation);
-  }
-
-  @Bean
-  @ConditionalOnMissingBean
-  SemanticCacheDependencyPublisher semanticCacheDependencyPublisher(
-      ApplicationEventPublisher events) {
-    return new SpringSemanticCacheDependencyPublisher(events);
   }
 
   @Bean

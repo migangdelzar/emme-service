@@ -3,6 +3,7 @@ package com.emme.assistant.ai.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import com.emme.assistant.ai.adapter.out.event.NoopSemanticCacheDependencyPublisher;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
@@ -13,8 +14,23 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 class SpringAiSemanticCacheConfigurationTest {
+
+  @Test
+  void suppliesNoopDependencyPublisherWhenSemanticCacheIsDisabled() {
+    new ApplicationContextRunner()
+        .withUserConfiguration(SemanticCacheDependencyPublisherConfiguration.class)
+        .withPropertyValues("app.ai.semantic-cache.enabled=false")
+        .run(
+            context ->
+                assertThat(context)
+                    .hasSingleBean(
+                        com.emme.ai.contracts.semantic.SemanticCacheDependencyPublisher.class)
+                    .getBean(com.emme.ai.contracts.semantic.SemanticCacheDependencyPublisher.class)
+                    .isInstanceOf(NoopSemanticCacheDependencyPublisher.class));
+  }
 
   @Test
   void wiresTheProviderNeutralSemanticCacheBoundary() {

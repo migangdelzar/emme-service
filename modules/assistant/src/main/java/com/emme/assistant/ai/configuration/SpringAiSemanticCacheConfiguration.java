@@ -14,6 +14,7 @@ import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.tenancy.application.port.out.TenantRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
 import java.util.Optional;
@@ -59,8 +60,10 @@ public class SpringAiSemanticCacheConfiguration {
       SemanticCachePort cache,
       Optional<SemanticCacheHotStore> hotStore,
       SemanticMetrics metrics,
-      AiTraceRecorder traceRecorder) {
-    return new SemanticCacheInvalidationService(cache, hotStore, metrics, traceRecorder);
+      AiTraceRecorder traceRecorder,
+      TenantRepository tenantRepository) {
+    return new SemanticCacheInvalidationService(
+        cache, hotStore, metrics, traceRecorder, tenantRepository);
   }
 
   @Bean

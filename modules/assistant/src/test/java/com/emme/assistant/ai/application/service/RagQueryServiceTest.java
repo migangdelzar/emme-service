@@ -12,6 +12,7 @@ import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
+import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.documents.api.result.DocumentChunkDetails;
@@ -236,6 +237,28 @@ class RagQueryServiceTest {
         .isEqualTo("The salon requires 24 hours.");
     verify(ragAnswer).answer("Which cancellation rules apply?");
     verifyNoInteractions(embeddings, chat, search, legacyModel);
+  }
+
+  @Test
+  void returnsExplicitRetrievalUnavailableWhenTheConfiguredRagAnswerPortCannotRetrieve() {
+    UUID tenantId = UUID.randomUUID();
+    AiModelProvider legacyModel = mock(AiModelProvider.class);
+    RagAnswerPort ragAnswer = mock(RagAnswerPort.class);
+    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    RagQueryService service =
+        new RagQueryService(
+            realProperties(),
+            legacyModel,
+            search,
+            java.util.Optional.empty(),
+            java.util.Optional.empty(),
+            java.util.Optional.of(ragAnswer));
+    when(ragAnswer.answer("hello")).thenThrow(new RetrievalUnavailableException());
+
+    assertThat(inContext(tenantId, () -> service.query("hello")))
+        .isEqualTo("Retrieval unavailable.");
+    verify(ragAnswer).answer("hello");
+    verifyNoInteractions(search, legacyModel);
   }
 
   private static <T> T inContext(UUID tenantId, java.util.function.Supplier<T> action) {

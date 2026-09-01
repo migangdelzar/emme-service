@@ -37,16 +37,19 @@ not included.
   tenant-scoped quote-template dependency event; JDBC remains authoritative and Redis remains
   asynchronous/best-effort.
 - RAG retrieval and vector failures now return `Retrieval unavailable.` and never invoke the LLM
-  with empty grounding; the Spring RAG provider chain rejects empty retrieval explicitly.
+  with empty grounding; the Spring RAG provider chain rejects empty retrieval explicitly, and its
+  `RetrievalUnavailableException` is handled as the same safe response by `RagQueryService`.
 - Rejected unsafe semantic-cache response payloads before embedding or persistence (payment-card,
   email, phone-like, and bearer-token patterns); existing transactional/personalized bypasses
   remain in force.
 - Enforced configured embedding model identity, in addition to dimension checks, for JDBC
   semantic reference search and cache operations.
 - Rebound asynchronous semantic-cache invalidation to a reconstructed backend tenant context
-  before durable PostgreSQL work, rejected events that disagree with an already-bound tenant, and
-  used the established zero-UUID system principal for tenant-wide audit traces. Invalidation traces
-  omit conversation/workflow foreign keys because a dependency event is not a conversation, and now
+  before durable PostgreSQL work, resolving the tenant's registered `databaseId`, rejecting events
+  that disagree with an already-bound tenant, and failing closed when no database can be resolved.
+  The database-aware `TenantContextBridge` now installs the resolved database for durable work.
+  Invalidation traces use the established zero-UUID system principal for tenant-wide audit traces,
+  omit conversation/workflow foreign keys because a dependency event is not a conversation, and
   persist the final `completed` or `failed` outcome after durable invalidation.
 - Removed the duplicate Redis `embeddingDimension` configuration, metadata field, and query filter.
   Redis derives dimension validation from the canonical AI embedding configuration and retains the
@@ -66,8 +69,9 @@ not included.
 
 | Check | Result |
 |---|---|
+| `:modules:assistant:test --tests '...SemanticCacheInvalidationServiceTest' --tests '...RagQueryServiceTest'` | **PASS — 20 tests** |
 | Focused assistant semantic/context tests (routing guard, provider-chain Redis wiring, invalidation outcomes, embedding contract, Redis properties) | **PASS — 18 tests** |
-| `:modules:assistant:test --tests '*Semantic*Test' --tests '*Embedding*Test'` | **PASS — 94 tests** |
+| `:modules:assistant:test --tests '*Semantic*Test' --tests '*Embedding*Test'` | **PASS — 88 tests** |
 | `:modules:assistant:integrationTest --tests '*RedisSemanticIntegrationTest'` | **PASS** |
 | `:modules:ai-platform:test --tests '...AiProviderPropertiesTest'` | **PASS — includes non-default model identity coverage** |
 | `:modules:services:test --tests '...UpdateServiceCatalogEntryServiceTest'` | **PASS** |
@@ -94,6 +98,10 @@ staged.
   requiring stronger guarantees need a dedicated policy service behind the existing port.
 - The checked-in Task 6 brief and the explicitly requested semantic scope do not match; the live
   workflow/SSE requirements remain outstanding.
+- Identity baseline limitation (intentionally untouched): `SetTenantFeatureFlagOverrideService`
+  exposes multiple constructors without an explicit Spring constructor-selection annotation. This
+  existing identity-owned wiring limitation may make bean construction ambiguous and is not part
+  of this Task 6 remediation.
 - The repository pre-push/full-suite hook remains red on unrelated baseline failures; scoped
   commits were pushed with `--no-verify` only for that unrelated hook failure.
 

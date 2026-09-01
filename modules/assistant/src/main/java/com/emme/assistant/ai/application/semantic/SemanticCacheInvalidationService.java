@@ -9,9 +9,12 @@ import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
-import com.emme.kernel.context.AiExecutionContextBridge;
 import com.emme.kernel.context.AiExecutionContextScope;
+import com.emme.kernel.context.TenantContextBridge;
 import com.emme.kernel.context.TenantContextHolder;
+import com.emme.kernel.context.TenantExecutionContext;
+import com.emme.kernel.context.TenantExecutionContextScope;
+import com.emme.tenancy.application.port.out.TenantRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,10 +31,11 @@ public final class SemanticCacheInvalidationService {
   private final Optional<SemanticCacheHotStore> hotStore;
   private final SemanticMetrics metrics;
   private final AiTraceRecorder traceRecorder;
+  private final Optional<TenantRepository> tenantRepository;
 
   public SemanticCacheInvalidationService(
       SemanticCachePort durable, Optional<SemanticCacheHotStore> hotStore) {
-    this(durable, hotStore, NoopSemanticMetrics.INSTANCE);
+    this(durable, hotStore, NoopSemanticMetrics.INSTANCE, NoopAiTraceRecorder.INSTANCE);
   }
 
   public SemanticCacheInvalidationService(
@@ -46,19 +50,57 @@ public final class SemanticCacheInvalidationService {
       Optional<SemanticCacheHotStore> hotStore,
       SemanticMetrics metrics,
       AiTraceRecorder traceRecorder) {
+    this(durable, hotStore, metrics, traceRecorder, null);
+  }
+
+  public SemanticCacheInvalidationService(
+      SemanticCachePort durable,
+      Optional<SemanticCacheHotStore> hotStore,
+      SemanticMetrics metrics,
+      AiTraceRecorder traceRecorder,
+      TenantRepository tenantRepository) {
     this.durable = Objects.requireNonNull(durable, "durable must not be null");
     this.hotStore = Objects.requireNonNull(hotStore, "hotStore must not be null");
     this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");
     this.traceRecorder = Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
+    this.tenantRepository = Optional.ofNullable(tenantRepository);
   }
 
   public void invalidate(SemanticCacheDependencyChanged event) {
     Objects.requireNonNull(event, "event must not be null");
     verifyBoundTenant(event.tenantId());
+    UUID databaseId = resolveDatabaseId(event.tenantId());
     AiExecutionContext context = contextFor(event);
-    AiExecutionContextScope.run(
-        context,
-        () -> AiExecutionContextBridge.runCurrent(() -> invalidateWithinBackendTenant(event)));
+    TenantExecutionContext tenantContext =
+        new TenantExecutionContext(
+            event.tenantId(), databaseId, "semantic-cache-invalidation:" + event.eventId());
+    TenantExecutionContextScope.run(
+        tenantContext,
+        () ->
+            AiExecutionContextScope.run(
+                context,
+                () -> TenantContextBridge.runCurrent(() -> invalidateWithinBackendTenant(event))));
+  }
+
+  private UUID resolveDatabaseId(UUID tenantId) {
+    Optional<UUID> boundDatabaseId =
+        TenantExecutionContextScope.current()
+            .map(
+                context -> {
+                  if (!tenantId.equals(context.tenantId())) {
+                    throw new SecurityException(
+                        "Semantic invalidation tenant does not match backend context");
+                  }
+                  return context.databaseId();
+                })
+            .filter(Objects::nonNull);
+    return boundDatabaseId
+        .or(
+            () ->
+                tenantRepository.flatMap(
+                    repository -> repository.findDatabaseIdByTenantId(tenantId)))
+        .orElseThrow(
+            () -> new IllegalStateException("No database context for semantic cache invalidation"));
   }
 
   private void invalidateWithinBackendTenant(SemanticCacheDependencyChanged event) {

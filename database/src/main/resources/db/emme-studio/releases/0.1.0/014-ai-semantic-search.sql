@@ -61,8 +61,11 @@ CREATE TABLE IF NOT EXISTS ai_semantic_cache (
 );
 
 ALTER TABLE ai_intent_reference ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_intent_reference FORCE ROW LEVEL SECURITY;
 ALTER TABLE ai_tool_reference ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_tool_reference FORCE ROW LEVEL SECURITY;
 ALTER TABLE ai_semantic_cache ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_semantic_cache FORCE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS tenant_isolation ON ai_intent_reference;
 CREATE POLICY tenant_isolation ON ai_intent_reference

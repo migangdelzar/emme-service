@@ -143,17 +143,18 @@ public final class JdbcAiTraceRecorder implements AiTraceRecorder {
   @Override
   public void recordSemanticOutcome(AiSemanticExecutionTrace trace) {
     Objects.requireNonNull(trace, "trace must not be null");
-    var current = AiExecutionContextScope.current();
-    var context = current.orElse(null);
-    if (trace.tenantId() == null && context == null) {
-      throw new IllegalStateException("No AI execution context");
+    AiExecutionContext context = AiExecutionContextScope.requireCurrent();
+    if ((trace.tenantId() != null && !context.tenantId().equals(trace.tenantId()))
+        || (trace.principalId() != null && !context.principalId().equals(trace.principalId()))) {
+      throw new SecurityException(
+          "Semantic trace identity does not match active AI execution context");
     }
-    var tenantId = trace.tenantId() != null ? trace.tenantId() : context.tenantId();
-    var principalId = trace.principalId() != null ? trace.principalId() : context.principalId();
+    var tenantId = context.tenantId();
+    var principalId = context.principalId();
     boolean invalidation = "cache_invalidation".equals(trace.operation());
-    var conversationId = context == null || invalidation ? null : context.conversationId();
-    var workflowId = context == null || invalidation ? null : context.workflowId();
-    var traceId = context == null ? null : context.traceId();
+    var conversationId = invalidation ? null : context.conversationId();
+    var workflowId = invalidation ? null : context.workflowId();
+    var traceId = context.traceId();
     jdbc.sql(
             """
             INSERT INTO ai_semantic_execution (
@@ -166,7 +167,22 @@ public final class JdbcAiTraceRecorder implements AiTraceRecorder {
                 CAST(:matches AS jsonb), :dependency, :dependencyVersion,
                 :invalidationContext, :latencyMillis
             )
-            ON CONFLICT (tenant_id, id) DO NOTHING
+            ON CONFLICT (tenant_id, id)
+            DO UPDATE SET
+                principal_id = EXCLUDED.principal_id,
+                conversation_id = EXCLUDED.conversation_id,
+                workflow_id = EXCLUDED.workflow_id,
+                trace_id = EXCLUDED.trace_id,
+                operation = EXCLUDED.operation,
+                outcome = EXCLUDED.outcome,
+                top1_similarity = EXCLUDED.top1_similarity,
+                top2_similarity = EXCLUDED.top2_similarity,
+                margin = EXCLUDED.margin,
+                matches = EXCLUDED.matches,
+                dependency = EXCLUDED.dependency,
+                dependency_version = EXCLUDED.dependency_version,
+                invalidation_context = EXCLUDED.invalidation_context,
+                latency_ms = EXCLUDED.latency_ms
             """)
         .param("executionId", trace.executionId())
         .param("tenantId", tenantId)

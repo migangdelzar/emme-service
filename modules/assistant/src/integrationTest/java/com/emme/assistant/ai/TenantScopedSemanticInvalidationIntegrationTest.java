@@ -114,6 +114,7 @@ class TenantScopedSemanticInvalidationIntegrationTest {
         "CHAT_INFORMATIONAL");
     enableTenantRls("ai_semantic_cache");
     enableTenantRls("ai_semantic_execution");
+    assertThat(isForcedRls("ai_semantic_cache")).isTrue();
     assertThat(isForcedRls("ai_semantic_execution")).isTrue();
 
     AiProperties properties =

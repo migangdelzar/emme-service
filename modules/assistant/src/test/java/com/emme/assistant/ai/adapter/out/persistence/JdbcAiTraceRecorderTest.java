@@ -148,7 +148,7 @@ class JdbcAiTraceRecorderTest {
             "catalog-item=123",
             7);
 
-    recorder.recordSemanticOutcome(trace);
+    AiExecutionContextScope.run(context(), () -> recorder.recordSemanticOutcome(trace));
 
     ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
     verify(jdbc).sql(sql.capture());
@@ -190,7 +190,7 @@ class JdbcAiTraceRecorderTest {
             "tenant-wide",
             0);
 
-    AiExecutionContextScope.run(context(), () -> recorder.recordSemanticOutcome(trace));
+    AiExecutionContextScope.run(systemContext(), () -> recorder.recordSemanticOutcome(trace));
 
     verify(statement).param("principalId", new UUID(0, 0));
     verify(statement).param("conversationId", null);
@@ -205,6 +205,87 @@ class JdbcAiTraceRecorderTest {
     assertThatThrownBy(() -> recorder.recordModelExecution(modelTrace()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("No AI execution context");
+  }
+
+  @Test
+  void refusesToPersistSemanticOutcomeWithoutBackendExecutionContext() {
+    JdbcAiTraceRecorder recorder =
+        new JdbcAiTraceRecorder(mock(JdbcClient.class), new AiTraceRedactor(), new ObjectMapper());
+
+    assertThatThrownBy(() -> recorder.recordSemanticOutcome(semanticTrace(null, null)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("No AI execution context");
+  }
+
+  @Test
+  void refusesToPersistSemanticOutcomeWithIdentityDifferentFromActiveContext() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcAiTraceRecorder recorder =
+        new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor(), new ObjectMapper());
+    AiSemanticExecutionTrace trace = semanticTrace(UUID.randomUUID(), PRINCIPAL_ID);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.run(context(), () -> recorder.recordSemanticOutcome(trace)))
+        .isInstanceOf(SecurityException.class)
+        .hasMessage("Semantic trace identity does not match active AI execution context");
+  }
+
+  @Test
+  void refusesToPersistSemanticOutcomeWithPrincipalDifferentFromActiveContext() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcAiTraceRecorder recorder =
+        new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor(), new ObjectMapper());
+    AiSemanticExecutionTrace trace = semanticTrace(TENANT_ID, UUID.randomUUID());
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.run(context(), () -> recorder.recordSemanticOutcome(trace)))
+        .isInstanceOf(SecurityException.class)
+        .hasMessage("Semantic trace identity does not match active AI execution context");
+  }
+
+  @Test
+  void derivesSemanticOutcomeIdentityFromTheActiveContextWhenTraceIdentityIsAbsent() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    when(jdbc.sql(anyString())).thenReturn(statement);
+    when(statement.param(anyString(), any())).thenReturn(statement);
+    when(statement.update()).thenReturn(1);
+    JdbcAiTraceRecorder recorder =
+        new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor(), new ObjectMapper());
+
+    AiExecutionContextScope.run(
+        context(), () -> recorder.recordSemanticOutcome(semanticTrace(null, null)));
+
+    verify(statement).param("tenantId", TENANT_ID);
+    verify(statement).param("principalId", PRINCIPAL_ID);
+  }
+
+  @Test
+  void replacesAFailedSemanticOutcomeWhenTheSameExecutionIsRetried() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    when(jdbc.sql(anyString())).thenReturn(statement);
+    when(statement.param(anyString(), any())).thenReturn(statement);
+    when(statement.update()).thenReturn(1);
+    JdbcAiTraceRecorder recorder =
+        new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor(), new ObjectMapper());
+    UUID executionId = UUID.randomUUID();
+
+    AiExecutionContextScope.run(
+        context(),
+        () -> {
+          recorder.recordSemanticOutcome(semanticTrace(executionId, PRINCIPAL_ID, "failed"));
+          recorder.recordSemanticOutcome(semanticTrace(executionId, PRINCIPAL_ID, "completed"));
+        });
+
+    ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+    verify(jdbc, org.mockito.Mockito.times(2)).sql(sql.capture());
+    assertThat(sql.getAllValues().get(1))
+        .contains("ON CONFLICT (tenant_id, id)")
+        .contains("DO UPDATE SET")
+        .contains("outcome = EXCLUDED.outcome");
   }
 
   @Test
@@ -232,7 +313,7 @@ class JdbcAiTraceRecorderTest {
             null,
             1);
 
-    recorder.recordSemanticOutcome(trace);
+    AiExecutionContextScope.run(context(), () -> recorder.recordSemanticOutcome(trace));
 
     verify(statement).param("matches", "[\"line\\nquote\\\"tab\\t\"]");
   }
@@ -266,5 +347,43 @@ class JdbcAiTraceRecorderTest {
         WORKFLOW_ID,
         "trace-1",
         "idem-1");
+  }
+
+  private static AiExecutionContext systemContext() {
+    return new AiExecutionContext(
+        TENANT_ID,
+        new UUID(0, 0),
+        Set.of("ROLE_SYSTEM"),
+        CONVERSATION_ID,
+        WORKFLOW_ID,
+        "trace-system",
+        "idem-system");
+  }
+
+  private static AiSemanticExecutionTrace semanticTrace(UUID tenantId, UUID principalId) {
+    return semanticTrace(UUID.randomUUID(), tenantId, principalId, "accepted");
+  }
+
+  private static AiSemanticExecutionTrace semanticTrace(
+      UUID executionId, UUID principalId, String outcome) {
+    return semanticTrace(executionId, TENANT_ID, principalId, outcome);
+  }
+
+  private static AiSemanticExecutionTrace semanticTrace(
+      UUID executionId, UUID tenantId, UUID principalId, String outcome) {
+    return new AiSemanticExecutionTrace(
+        executionId,
+        tenantId,
+        principalId,
+        "routing",
+        outcome,
+        0.98,
+        0.72,
+        0.26,
+        java.util.List.of("availability"),
+        null,
+        null,
+        null,
+        1);
   }
 }

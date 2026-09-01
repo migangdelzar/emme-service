@@ -59,8 +59,11 @@ class AiSemanticSearchMigrationContractTest {
     String sql = migration();
 
     assertThat(sql).contains("ALTER TABLE ai_intent_reference ENABLE ROW LEVEL SECURITY");
+    assertThat(sql).contains("ALTER TABLE ai_intent_reference FORCE ROW LEVEL SECURITY");
     assertThat(sql).contains("ALTER TABLE ai_tool_reference ENABLE ROW LEVEL SECURITY");
+    assertThat(sql).contains("ALTER TABLE ai_tool_reference FORCE ROW LEVEL SECURITY");
     assertThat(sql).contains("ALTER TABLE ai_semantic_cache ENABLE ROW LEVEL SECURITY");
+    assertThat(sql).contains("ALTER TABLE ai_semantic_cache FORCE ROW LEVEL SECURITY");
     assertThat(sql)
         .containsPattern(
             "(?s)CREATE POLICY tenant_isolation ON ai_intent_reference.*tenant_id = current_tenant_id\\(\\)");

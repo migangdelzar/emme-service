@@ -1,6 +1,6 @@
 # Task 6 — Semantic routing, tool selection, and caching
 
-**Date:** 2026-08-31
+**Date:** 2026-09-01
 **Branch:** `feat/ai-platform-foundation`
 **Scope:** semantic AI capability hardening requested by the implementation brief
 
@@ -92,6 +92,15 @@ not included.
   registered-database/default-database resolution with fail-closed behavior.
 - Validated raw Spring AI embedding vectors against the configured dimension before use or
   persistence, with regression coverage for mismatched raw vectors.
+- Added `FORCE ROW LEVEL SECURITY` to the semantic intent-reference, tool-reference, and
+  semantic-cache tables in migration 014, with migration-contract coverage and a PostgreSQL
+  integration regression asserting forced RLS on the cache table.
+- Changed semantic execution trace persistence to upsert the complete outcome row for the same
+  tenant/event identifier, so a retry replaces an earlier `failed` trace with its final
+  `completed` outcome instead of being discarded by `DO NOTHING`.
+- Made `JdbcAiTraceRecorder` require an active `AiExecutionContext` for semantic traces, derive
+  persisted `tenant_id` and `principal_id` exclusively from that context, and reject any supplied
+  trace identity that does not match the active context.
 
 ## Verification
 
@@ -103,7 +112,7 @@ not included.
 | `:modules:assistant:integrationTest --tests '*RedisSemanticIntegrationTest'` | **PASS** |
 | `:modules:ai-platform:test --tests '...AiProviderPropertiesTest'` | **PASS — includes non-default model identity coverage** |
 | `:modules:services:test --tests '...UpdateServiceCatalogEntryServiceTest'` | **PASS** |
-| `:database:test --tests '...AiSemanticSearchMigrationContractTest'` | **PASS** |
+| `:database:test --tests '...AiSemanticSearchMigrationContractTest'` | **PASS — includes forced RLS assertions for all migration-014 semantic tables** |
 | `:modules:assistant:spotlessJavaCheck :modules:ai-platform:spotlessJavaCheck :database:spotlessJavaCheck` | **PASS** |
 | Final focused unit, migration, integration, and Spotless command | **PASS — tenancy/assistant/database tests, all 3 assistant Testcontainers integrations, and Spotless checks** |
 | Java runtime for final checks | **Java 26; only installed JDK in the environment (`/usr/libexec/java_home -V`), running the project’s Java 25-compatible build** |
@@ -111,12 +120,14 @@ not included.
 | `git diff --check` | **PASS** |
 | `:applications:emme-platform:test --tests com.emme.CrossModuleDependencyArchitectureTest` | **PASS — zero cross-module dependency violations** |
 | Focused final-review remediation tests (constructor, semantic invalidation/configuration, tenancy context/data-source boundaries, poller, raw embedding dimensions) | **PASS** |
-| `:modules:assistant:integrationTest --tests com.emme.assistant.ai.TenantScopedSemanticInvalidationIntegrationTest` | **PASS** |
+| `:modules:assistant:integrationTest --tests com.emme.assistant.ai.TenantScopedSemanticInvalidationIntegrationTest` | **PASS — Java 26; forced cache RLS and tenant-isolated invalidation/trace regression** |
+| `:modules:assistant:test --tests com.emme.assistant.ai.adapter.out.persistence.JdbcAiTraceRecorderTest --tests com.emme.assistant.ai.application.semantic.SemanticCacheInvalidationServiceTest` | **PASS — 23 tests; active-context identity rejection, identity derivation, and failed-to-completed retry upsert coverage** |
 | Explicit Spotless formatter applied to the scoped Task 6 Java paths | **PASS — no unrelated files formatted** |
 | Scoped Spotless checks for tenancy, identity, AI contracts, and repository root | **PASS** |
 | Assistant Spotless check after scoped formatting | **LIMITED — only unrelated pre-existing `SemanticRoutingServiceTest` remains** |
 | Full `:modules:assistant:test` run | **LIMITED — 357 completed, 16 failed** |
 | `:applications:emme-platform:test` | **LIMITED — 62 completed, 8 known unrelated architecture-baseline failures** |
+| `:modules:assistant:spotlessJavaCheck :database:spotlessJavaCheck` (Java 26 final review run) | **LIMITED — database and modified recorder test pass; only unrelated pre-existing `SemanticRoutingServiceTest` violation remains** |
 
 The 16 full-suite failures are the known pre-existing failures in unrelated package metadata and
 tenancy/identity/JPA application-context setup. The unrelated dirty files were preserved and not
@@ -133,7 +144,8 @@ staged.
 - Trace persistence has no simple existing retry/outbox adapter: Spring Modulith's durable
   publication boundary is used for dependency events, not direct trace rows. Trace writes therefore
   remain explicitly best effort; semantic trace persistence failures are swallowed to preserve
-  customer-facing semantics and increment bounded failure telemetry, covered by a focused regression.
+  customer-facing semantics and increment bounded failure telemetry, while repeated writes for a
+  semantic event upsert the latest outcome.
 - Unsafe-payload detection is conservative pattern filtering, not a complete DLP system; callers
   requiring stronger guarantees need a dedicated policy service behind the existing port.
 - The checked-in Task 6 brief and the explicitly requested semantic scope do not match; the live
@@ -173,3 +185,9 @@ successfully and all selected tests passed.
   no longer exposes a duplicate Redis embedding-dimension setting.
 - Quote-template invalidation coverage under
   `modules/services/src/test/java/com/emme/services/application/service/UpdateServiceCatalogEntryServiceTest.java`.
+- Migration-014 forced-RLS coverage under
+  `database/src/main/resources/db/emme-studio/releases/0.1.0/014-ai-semantic-search.sql` and
+  `database/src/test/java/com/emme/database/AiSemanticSearchMigrationContractTest.java`.
+- Active-context trace identity and retry-upsert coverage under
+  `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiTraceRecorder.java`
+  and `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiTraceRecorderTest.java`.

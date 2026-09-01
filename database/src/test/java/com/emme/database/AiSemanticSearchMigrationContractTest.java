@@ -17,6 +17,8 @@ class AiSemanticSearchMigrationContractTest {
       "db/emme-studio/releases/0.1.0/015-ai-semantic-cache-idempotency.sql";
   private static final String TRACE_MIGRATION =
       "db/emme-studio/releases/0.1.0/018-ai-execution-traces.sql";
+  private static final String SEMANTIC_TRACE_MIGRATION =
+      "db/emme-studio/releases/0.1.0/028-ai-semantic-execution-traces.sql";
   private static final String DIMENSION_MIGRATION =
       "db/emme-studio/releases/0.1.0/021-ai-embeddinggemma-dimension.sql";
   private static final String TOOL_IDEMPOTENCY_MIGRATION =
@@ -116,6 +118,23 @@ class AiSemanticSearchMigrationContractTest {
     assertThat(sql).contains("CREATE POLICY tenant_isolation ON ai_model_execution");
     assertThat(sql).contains("CREATE POLICY tenant_isolation ON ai_tool_call");
     assertThat(changelog).contains("releases/0.1.0/018-ai-execution-traces.sql");
+  }
+
+  @Test
+  void definesDurableTenantScopedSemanticOutcomeTraces() throws IOException {
+    String sql = resource(SEMANTIC_TRACE_MIGRATION);
+
+    assertThat(sql)
+        .contains("CREATE TABLE IF NOT EXISTS ai_semantic_execution")
+        .contains("top1_similarity")
+        .contains("top2_similarity")
+        .contains("margin")
+        .contains("matches JSONB NOT NULL")
+        .contains("dependency_version")
+        .contains("invalidation_context")
+        .contains("ALTER TABLE ai_semantic_execution ENABLE ROW LEVEL SECURITY");
+    assertThat(resource("db/emme-studio/changelog.yaml"))
+        .contains("releases/0.1.0/028-ai-semantic-execution-traces.sql");
   }
 
   @Test

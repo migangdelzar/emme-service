@@ -68,6 +68,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
             .param("locale", locale)
             .param("queryEmbedding", vectorLiteral(query))
             .param("embeddingModelVersion", query.modelVersion())
+            .param("embeddingDimension", query.values().size())
             .param("limit", limit);
     for (int index = 0; index < authorized.size(); index++) {
       statement = statement.param("authorizedTool" + index, authorized.get(index));
@@ -91,6 +92,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
         .param("locale", locale)
         .param("queryEmbedding", vectorLiteral(query))
         .param("embeddingModelVersion", query.modelVersion())
+        .param("embeddingDimension", query.values().size())
         .param("limit", limit)
         .query(
             (resultSet, rowNumber) ->
@@ -107,6 +109,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
     WHERE tenant_id = :tenantId
       AND active = true
       AND embedding IS NOT NULL
+      AND vector_dims(embedding) = :embeddingDimension
       AND %s
       AND %s
     ORDER BY embedding <=> CAST(:queryEmbedding AS vector), id

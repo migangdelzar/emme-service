@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
@@ -70,6 +71,21 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
       throw new NullPointerException("redisKeyPrefix must not be null");
     }
     this.redisKeyPrefix = redisKeyPrefix;
+  }
+
+  public RedisSemanticCacheHotStore(
+      VectorStore vectorStore,
+      EmbeddingModelConfiguration embeddingConfiguration,
+      Clock clock,
+      RedisClient redisClient,
+      String redisKeyPrefix) {
+    this(
+        vectorStore,
+        embeddingConfiguration.modelVersion(),
+        embeddingConfiguration.dimension(),
+        clock,
+        redisClient,
+        redisKeyPrefix);
   }
 
   @Override

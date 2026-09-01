@@ -54,9 +54,11 @@ class JdbcSemanticAdapterTest {
     assertThat(sql.getValue())
         .contains("tenant_id = :tenantId")
         .contains("embedding_model_version = :embeddingModelVersion")
+        .contains("vector_dims(embedding) = :embeddingDimension")
         .contains("ORDER BY embedding <=> CAST(:queryEmbedding AS vector)");
     verify(statement).param("tenantId", TENANT_ID);
     verify(statement).param("embeddingModelVersion", EmbeddingModelDefaults.MODEL_VERSION);
+    verify(statement).param("embeddingDimension", 768);
   }
 
   @Test

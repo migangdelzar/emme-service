@@ -48,6 +48,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
               AND context_fingerprint = :contextFingerprint
               AND prompt_version = :promptVersion
               AND embedding_model_version = :embeddingModelVersion
+              AND vector_dims(embedding) = :embeddingDimension
               AND active = true
               AND expires_at > CURRENT_TIMESTAMP
             ORDER BY embedding <=> CAST(:queryEmbedding AS vector), id
@@ -59,6 +60,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .param("contextFingerprint", lookup.contextFingerprint())
         .param("promptVersion", lookup.promptVersion())
         .param("embeddingModelVersion", lookup.query().modelVersion())
+        .param("embeddingDimension", lookup.query().values().size())
         .param("queryEmbedding", lookup.query().values().toString())
         .param("limit", limit)
         .query(

@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiEmbeddingAdapter;
 import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
 import com.emme.assistant.ai.application.provider.TracingEmbeddingModelPort;
@@ -38,8 +39,24 @@ public final class SpringAiEmbeddingProviderRegistry {
       int dimension,
       String expectedModelVersion,
       AiTraceRecorder traceRecorder) {
+    this(
+        embeddingModels,
+        properties,
+        new EmbeddingModelConfiguration(
+            "configured",
+            expectedModelVersion == null ? "embedding-v1" : expectedModelVersion,
+            dimension),
+        traceRecorder);
+  }
+
+  public SpringAiEmbeddingProviderRegistry(
+      Map<String, EmbeddingModel> embeddingModels,
+      SpringAiEmbeddingProperties properties,
+      EmbeddingModelConfiguration embeddingConfiguration,
+      AiTraceRecorder traceRecorder) {
     Objects.requireNonNull(embeddingModels, "embeddingModels must not be null");
     Objects.requireNonNull(properties, "properties must not be null");
+    Objects.requireNonNull(embeddingConfiguration, "embeddingConfiguration must not be null");
     Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
 
     Set<String> providerKeys = new HashSet<>();
@@ -54,8 +71,7 @@ public final class SpringAiEmbeddingProviderRegistry {
                             + configured.key()
                             + "'");
                   }
-                  if (expectedModelVersion != null
-                      && !expectedModelVersion.equals(configured.modelVersion())) {
+                  if (!embeddingConfiguration.modelVersion().equals(configured.modelVersion())) {
                     throw new IllegalArgumentException(
                         "Embedding provider model version must match configured semantic index");
                   }
@@ -66,7 +82,8 @@ public final class SpringAiEmbeddingProviderRegistry {
                   return new EmbeddingProviderChain.Provider(
                       configured.key(),
                       new TracingEmbeddingModelPort(
-                          new SpringAiEmbeddingAdapter(model, configured.modelVersion(), dimension),
+                          new SpringAiEmbeddingAdapter(
+                              model, configured.modelVersion(), embeddingConfiguration.dimension()),
                           configured.key(),
                           configured.modelVersion(),
                           "embedding-v1",

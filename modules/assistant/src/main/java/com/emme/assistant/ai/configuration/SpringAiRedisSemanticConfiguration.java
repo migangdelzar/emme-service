@@ -50,6 +50,7 @@ public class SpringAiRedisSemanticConfiguration {
             RedisVectorStore.MetadataField.tag("contextFingerprint"),
             RedisVectorStore.MetadataField.tag("promptVersion"),
             RedisVectorStore.MetadataField.tag("embeddingModelVersion"),
+            RedisVectorStore.MetadataField.numeric("embeddingDimension"),
             RedisVectorStore.MetadataField.text("responsePayload"),
             RedisVectorStore.MetadataField.numeric("expiresAt"))
         .build();
@@ -65,8 +66,7 @@ public class SpringAiRedisSemanticConfiguration {
     requireEmbeddingContract(aiProperties, properties);
     return new RedisSemanticCacheHotStore(
         vectorStore,
-        properties.embeddingModelVersion(),
-        properties.embeddingDimension(),
+        aiProperties.embeddingModelConfiguration(),
         java.time.Clock.systemUTC(),
         redisClient,
         properties.prefix());

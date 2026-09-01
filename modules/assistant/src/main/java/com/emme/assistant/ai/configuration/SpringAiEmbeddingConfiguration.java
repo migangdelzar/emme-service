@@ -37,11 +37,7 @@ public class SpringAiEmbeddingConfiguration {
       AiProperties aiProperties,
       AiTraceRecorder traceRecorder) {
     return new SpringAiEmbeddingProviderRegistry(
-        embeddingModels,
-        properties,
-        aiProperties.embeddingDimension(),
-        aiProperties.embeddingModelVersion(),
-        traceRecorder);
+        embeddingModels, properties, aiProperties.embeddingModelConfiguration(), traceRecorder);
   }
 
   SpringAiEmbeddingProviderRegistry providerRegistry(
@@ -51,8 +47,7 @@ public class SpringAiEmbeddingConfiguration {
     return new SpringAiEmbeddingProviderRegistry(
         embeddingModels,
         properties,
-        aiProperties.embeddingDimension(),
-        aiProperties.embeddingModelVersion(),
+        aiProperties.embeddingModelConfiguration(),
         NoopAiTraceRecorder.INSTANCE);
   }
 

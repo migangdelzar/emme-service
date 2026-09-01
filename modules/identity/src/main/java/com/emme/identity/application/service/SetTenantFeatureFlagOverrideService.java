@@ -1,5 +1,7 @@
 package com.emme.identity.application.service;
 
+import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
+import com.emme.ai.contracts.semantic.SemanticCacheDependencyPublisher;
 import com.emme.identity.api.command.SetTenantFeatureFlagOverrideCommand;
 import com.emme.identity.api.result.FeatureFlagDetails;
 import com.emme.identity.api.usecase.SetTenantFeatureFlagOverrideUseCase;
@@ -17,15 +19,35 @@ import org.springframework.transaction.annotation.Transactional;
 public class SetTenantFeatureFlagOverrideService implements SetTenantFeatureFlagOverrideUseCase {
 
   private final FeatureFlagRepository repository;
+  private final Optional<SemanticCacheDependencyPublisher> cacheDependencies;
 
   public SetTenantFeatureFlagOverrideService(FeatureFlagRepository repository) {
+    this(repository, Optional.empty());
+  }
+
+  public SetTenantFeatureFlagOverrideService(
+      FeatureFlagRepository repository,
+      Optional<SemanticCacheDependencyPublisher> cacheDependencies) {
     this.repository = repository;
+    this.cacheDependencies = cacheDependencies;
   }
 
   @Override
   public FeatureFlagDetails set(SetTenantFeatureFlagOverrideCommand command) {
-    return FeatureFlagApplicationMapper.toResult(
-        setOverride(command.tenantId(), command.code(), command.enabled()));
+    FeatureFlagDetails result =
+        FeatureFlagApplicationMapper.toResult(
+            setOverride(command.tenantId(), command.code(), command.enabled()));
+    cacheDependencies.ifPresent(
+        publisher ->
+            publisher.publish(
+                new SemanticCacheDependencyChanged(
+                    UUID.randomUUID(),
+                    command.tenantId(),
+                    null,
+                    SemanticCacheDependencyChanged.Dependency.TENANT_POLICY,
+                    command.code() + ":" + command.enabled(),
+                    java.time.Instant.now())));
+    return result;
   }
 
   /** Applies a tenant override to the domain model. */

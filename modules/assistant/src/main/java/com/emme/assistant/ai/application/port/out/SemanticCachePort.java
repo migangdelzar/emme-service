@@ -1,6 +1,8 @@
 package com.emme.assistant.ai.application.port.out;
 
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -19,7 +21,21 @@ public interface SemanticCachePort {
   boolean recordHit(UUID cacheId);
 
   /** Invalidates the current authenticated principal's entries for one cache kind. */
-  void invalidate(String cacheKind);
+  default void invalidate(String cacheKind) {
+    var context = AiExecutionContextScope.requireCurrent();
+    invalidate(
+        new SemanticCacheInvalidation(
+            context.tenantId(),
+            context.principalId(),
+            cacheKind,
+            com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged.Dependency.MANUAL,
+            "manual"));
+  }
+
+  /** Invalidates a tenant-wide or principal-scoped cache target. */
+  default void invalidate(SemanticCacheInvalidation invalidation) {
+    throw new UnsupportedOperationException("Semantic cache invalidation is not implemented");
+  }
 
   record Lookup(
       String cacheKind, String contextFingerprint, String promptVersion, EmbeddingVector query) {

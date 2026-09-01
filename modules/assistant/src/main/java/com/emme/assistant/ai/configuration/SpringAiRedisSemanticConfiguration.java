@@ -33,7 +33,11 @@ public class SpringAiRedisSemanticConfiguration {
   @Bean(name = "aiRedisSemanticVectorStore")
   @ConditionalOnMissingBean(name = "aiRedisSemanticVectorStore")
   RedisVectorStore redisSemanticVectorStore(
-      RedisClient redisClient, EmbeddingModel embeddingModel, RedisSemanticProperties properties) {
+      RedisClient redisClient,
+      EmbeddingModel embeddingModel,
+      RedisSemanticProperties properties,
+      AiProperties aiProperties) {
+    requireEmbeddingContract(aiProperties, properties);
     return RedisVectorStore.builder(redisClient, embeddingModel)
         .indexName(properties.indexName())
         .prefix(properties.prefix())
@@ -56,7 +60,9 @@ public class SpringAiRedisSemanticConfiguration {
   SemanticCacheHotStore semanticCacheHotStore(
       @Qualifier("aiRedisSemanticVectorStore") RedisVectorStore vectorStore,
       @Qualifier("aiRedisSemanticClient") RedisClient redisClient,
-      RedisSemanticProperties properties) {
+      RedisSemanticProperties properties,
+      AiProperties aiProperties) {
+    requireEmbeddingContract(aiProperties, properties);
     return new RedisSemanticCacheHotStore(
         vectorStore,
         properties.embeddingModelVersion(),
@@ -73,7 +79,11 @@ public class SpringAiRedisSemanticConfiguration {
       name = "tool-search-enabled",
       havingValue = "true")
   RedisVectorStore redisToolVectorStore(
-      RedisClient redisClient, EmbeddingModel embeddingModel, RedisSemanticProperties properties) {
+      RedisClient redisClient,
+      EmbeddingModel embeddingModel,
+      RedisSemanticProperties properties,
+      AiProperties aiProperties) {
+    requireEmbeddingContract(aiProperties, properties);
     return RedisVectorStore.builder(redisClient, embeddingModel)
         .indexName(properties.indexName() + "-tools")
         .prefix(properties.prefix() + "tools:")
@@ -108,5 +118,14 @@ public class SpringAiRedisSemanticConfiguration {
         .maxResults(properties.toolSearchMaxResults())
         .sessionIdKeyName(ChatMemory.CONVERSATION_ID)
         .build();
+  }
+
+  private static void requireEmbeddingContract(
+      AiProperties aiProperties, RedisSemanticProperties redisProperties) {
+    if (aiProperties.embeddingDimension() != redisProperties.embeddingDimension()
+        || !aiProperties.embeddingModelVersion().equals(redisProperties.embeddingModelVersion())) {
+      throw new IllegalArgumentException(
+          "Redis semantic embedding settings must match configured embedding settings");
+    }
   }
 }

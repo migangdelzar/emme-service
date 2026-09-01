@@ -3,6 +3,7 @@ package com.emme.assistant.ai.application.semantic;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Set;
 
@@ -32,25 +33,52 @@ public final class SemanticToolSelector {
     Objects.requireNonNull(query, "query must not be null");
     Objects.requireNonNull(authorizedToolKeys, "authorizedToolKeys must not be null");
     Set<String> authorized = Set.copyOf(authorizedToolKeys);
-    if (authorized.isEmpty()) {
-      record("abstained");
-      return new SemanticDecision(java.util.Optional.empty(), 0.0, 0.0, 0.0, false);
-    }
+    long started = System.nanoTime();
+    try {
+      if (authorized.isEmpty()) {
+        record("abstained");
+        return new SemanticDecision(java.util.Optional.empty(), 0.0, 0.0, 0.0, false);
+      }
 
-    SemanticDecision decision =
-        policy.decide(search.searchTools(locale, query, authorized, CANDIDATE_LIMIT));
-    if (decision.selectedKey().isPresent()
-        && !authorized.contains(decision.selectedKey().orElseThrow())) {
-      record("unauthorized");
-      return rejected(decision);
+      SemanticDecision decision =
+          policy.decide(search.searchTools(locale, query, authorized, CANDIDATE_LIMIT));
+      recordScores(decision);
+      if (decision.selectedKey().isPresent()
+          && !authorized.contains(decision.selectedKey().orElseThrow())) {
+        record("unauthorized");
+        return rejected(decision);
+      }
+      record(decision.accepted() ? "accepted" : "abstained");
+      return decision;
+    } catch (RuntimeException failure) {
+      recordSafely(
+          () -> metrics.recordFailure("tool_selection", failure.getClass().getSimpleName()));
+      throw failure;
+    } finally {
+      recordSafely(
+          () ->
+              metrics.recordLatency(
+                  "tool_selection", Duration.ofNanos(System.nanoTime() - started)));
     }
-    record(decision.accepted() ? "accepted" : "abstained");
-    return decision;
+  }
+
+  private void recordScores(SemanticDecision decision) {
+    recordSafely(
+        () ->
+            metrics.recordScores(
+                "tool_selection",
+                decision.top1Similarity(),
+                decision.top2Similarity(),
+                decision.margin()));
   }
 
   private void record(String outcome) {
+    recordSafely(() -> metrics.recordToolSelection(outcome));
+  }
+
+  private static void recordSafely(Runnable recorder) {
     try {
-      metrics.recordToolSelection(outcome);
+      recorder.run();
     } catch (RuntimeException ignored) {
       // Observability must not change selection semantics.
     }

@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /** Optional Redis Stack settings for the non-authoritative semantic cache projection. */
@@ -21,8 +22,11 @@ public record RedisSemanticProperties(
     indexName = indexName == null ? "emme-ai-semantic-cache" : indexName;
     prefix = prefix == null ? "emme:ai:semantic-cache:" : prefix;
     embeddingModelVersion =
-        embeddingModelVersion == null ? "ollama-embeddinggemma:300m" : embeddingModelVersion;
-    embeddingDimension = embeddingDimension == null ? 768 : embeddingDimension;
+        embeddingModelVersion == null
+            ? EmbeddingModelDefaults.MODEL_VERSION
+            : embeddingModelVersion;
+    embeddingDimension =
+        embeddingDimension == null ? EmbeddingModelDefaults.DIMENSION : embeddingDimension;
     toolSearchMaxResults = toolSearchMaxResults == null ? 5 : toolSearchMaxResults;
     requireText(host, "host");
     requireText(indexName, "indexName");

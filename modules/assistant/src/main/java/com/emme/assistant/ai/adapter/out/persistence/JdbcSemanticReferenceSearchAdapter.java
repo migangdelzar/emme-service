@@ -26,7 +26,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
     AiProperties properties = Objects.requireNonNull(aiProperties, "aiProperties must not be null");
     this.embeddingDimensions = properties.embeddingDimension();
-    this.embeddingModelVersion = properties.embedding().model();
+    this.embeddingModelVersion = properties.embeddingModelVersion();
   }
 
   @Override
@@ -101,17 +101,17 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
   private static String semanticSearchSql(
       String table, String keyColumn, String referencePredicate, String modelPredicate) {
     return """
-        SELECT %s AS semantic_key,
-               1 - (embedding <=> CAST(:queryEmbedding AS vector)) AS similarity
-        FROM %s
-        WHERE tenant_id = :tenantId
-          AND active = true
-          AND embedding IS NOT NULL
-          AND %s
-          AND %s
-        ORDER BY embedding <=> CAST(:queryEmbedding AS vector), id
-        LIMIT :limit
-        """
+    SELECT %s AS semantic_key,
+           1 - (embedding <=> CAST(:queryEmbedding AS vector)) AS similarity
+    FROM %s
+    WHERE tenant_id = :tenantId
+      AND active = true
+      AND embedding IS NOT NULL
+      AND %s
+      AND %s
+    ORDER BY embedding <=> CAST(:queryEmbedding AS vector), id
+    LIMIT :limit
+    """
         .formatted(keyColumn, table, referencePredicate, modelPredicate);
   }
 
@@ -120,6 +120,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
   }
 
   private void requireSearchArguments(String locale, EmbeddingVector query, int limit) {
+    AiExecutionContextScope.requireCurrent();
     if (locale == null || locale.isBlank()) {
       throw new IllegalArgumentException("locale must not be blank");
     }

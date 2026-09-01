@@ -8,6 +8,7 @@ import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
+import com.emme.assistant.ai.application.semantic.SemanticFailurePolicy;
 import com.emme.assistant.ai.configuration.AiExecutorProperties;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.documents.api.query.SearchDocumentChunksQuery;
@@ -140,18 +141,23 @@ public class RagQueryService implements RagQueryUseCase {
     } catch (ChatProviderUnavailableException unavailable) {
       // Preserve the existing provider-neutral retrieval path as the compatibility fallback.
     }
-    var queryVector = embed(question);
-    var chunks =
-        searchDocuments.search(new SearchDocumentChunksQuery(tenantId, queryVector, question, 5));
-    String context =
-        chunks.stream()
-            .map(DocumentChunkDetails::content)
-            .filter(content -> content != null && !content.isBlank())
-            .collect(Collectors.joining("\n\n"));
-    if (context.isBlank()) {
-      return "No relevant documents were found.";
+    try {
+      var queryVector = embed(question);
+      var chunks =
+          searchDocuments.search(new SearchDocumentChunksQuery(tenantId, queryVector, question, 5));
+      String context =
+          chunks.stream()
+              .map(DocumentChunkDetails::content)
+              .filter(content -> content != null && !content.isBlank())
+              .collect(Collectors.joining("\n\n"));
+      if (context.isBlank()) {
+        return "No relevant documents were found.";
+      }
+      return complete(context, question);
+    } catch (RuntimeException failure) {
+      SemanticFailurePolicy.rethrowSecurityFailure(failure);
+      return complete("", question);
     }
-    return complete(context, question);
   }
 
   private List<Float> embed(String question) {

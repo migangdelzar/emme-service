@@ -3,6 +3,7 @@ package com.emme.assistant.ai.adapter.out.provider.springai;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
@@ -140,7 +141,55 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
                 .text(write.queryText())
                 .metadata(metadata)
                 .build()));
+    indexProjection(context, durableCacheId, write.expiresAt());
     expireProjection(durableCacheId, write.expiresAt());
+  }
+
+  @Override
+  public void invalidate(SemanticCacheInvalidation invalidation) {
+    Objects.requireNonNull(invalidation, "invalidation must not be null");
+    if (redisClient == null) {
+      return;
+    }
+    String tenantIndex = tenantIndexKey(invalidation.tenantId());
+    if (invalidation.principalId() != null) {
+      deletePrincipalProjection(
+          principalIndexKey(invalidation.tenantId(), invalidation.principalId()));
+      return;
+    }
+    for (String principalIndex : redisClient.smembers(tenantIndex)) {
+      deletePrincipalProjection(principalIndex);
+    }
+    redisClient.del(tenantIndex);
+  }
+
+  private void indexProjection(AiExecutionContext context, UUID durableCacheId, Instant expiresAt) {
+    if (redisClient == null) {
+      return;
+    }
+    String tenantIndex = tenantIndexKey(context.tenantId());
+    String principalIndex = principalIndexKey(context.tenantId(), context.principalId());
+    String documentKey = redisKeyPrefix + DOCUMENT_ID_PREFIX + durableCacheId;
+    redisClient.sadd(principalIndex, documentKey);
+    redisClient.sadd(tenantIndex, principalIndex);
+    long ttlSeconds = Math.max(1L, Duration.between(Instant.now(clock), expiresAt).getSeconds());
+    redisClient.expire(principalIndex, ttlSeconds);
+    redisClient.expire(tenantIndex, ttlSeconds);
+  }
+
+  private void deletePrincipalProjection(String principalIndex) {
+    for (String documentKey : redisClient.smembers(principalIndex)) {
+      redisClient.del(documentKey);
+    }
+    redisClient.del(principalIndex);
+  }
+
+  private String tenantIndexKey(UUID tenantId) {
+    return redisKeyPrefix + "tenant:" + tenantId;
+  }
+
+  private String principalIndexKey(UUID tenantId, UUID principalId) {
+    return tenantIndexKey(tenantId) + ":principal:" + principalId;
   }
 
   private void expireProjection(UUID durableCacheId, Instant expiresAt) {

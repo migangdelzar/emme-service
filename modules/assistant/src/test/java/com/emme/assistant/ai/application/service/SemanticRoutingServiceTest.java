@@ -93,6 +93,34 @@ class SemanticRoutingServiceTest {
   }
 
   @Test
+  void cacheAbstainsWhenTheTopCandidateHasInsufficientMargin() {
+    RecordingCache cache =
+        new RecordingCache(
+            List.of(
+                new SemanticCachePort.Candidate(UUID.randomUUID(), "ambiguous answer", 0.98),
+                new SemanticCachePort.Candidate(UUID.randomUUID(), "competing answer", 0.97)));
+    SemanticCacheResolver resolver =
+        new SemanticCacheResolver(cache, new SemanticCachePolicy(0.95, 0.05));
+
+    assertThat(
+            resolver.lookup(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY)))
+        .isEmpty();
+  }
+
+  @Test
+  void cacheAbstainsWhenNoSecondCandidateCanEstablishAConfiguredMargin() {
+    RecordingCache cache =
+        new RecordingCache(
+            List.of(new SemanticCachePort.Candidate(UUID.randomUUID(), "only answer", 0.99)));
+    SemanticCacheResolver resolver =
+        new SemanticCacheResolver(cache, new SemanticCachePolicy(0.95, 0.05));
+
+    assertThat(
+            resolver.lookup(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY)))
+        .isEmpty();
+  }
+
+  @Test
   void cacheAbstainsWhenTheDurableHitUpdateCannotConfirmTheEntryIsStillValid() {
     RecordingCache cache =
         new RecordingCache(
@@ -107,6 +135,25 @@ class SemanticRoutingServiceTest {
   }
 
   @Test
+  void recordsTopScoresAndMarginForSemanticCacheLookup() {
+    RecordingCache cache =
+        new RecordingCache(
+            List.of(
+                new SemanticCachePort.Candidate(UUID.randomUUID(), "cached answer", 0.97),
+                new SemanticCachePort.Candidate(UUID.randomUUID(), "other answer", 0.80)));
+    RecordingSemanticMetrics metrics = new RecordingSemanticMetrics();
+    SemanticCacheResolver resolver =
+        new SemanticCacheResolver(cache, new SemanticCachePolicy(0.90, 0.10), metrics);
+
+    resolver.lookup(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY));
+
+    assertThat(metrics.scoreOperation).isEqualTo("cache");
+    assertThat(metrics.top1).isEqualTo(0.97);
+    assertThat(metrics.top2).isEqualTo(0.80);
+    assertThat(metrics.margin).isCloseTo(0.17, org.assertj.core.data.Offset.offset(0.0000001));
+  }
+
+  @Test
   void recordsBoundedRoutingOutcomesWithoutTenantCardinality() {
     RecordingReferenceSearch search =
         new RecordingReferenceSearch(List.of(new SemanticMatch("FAQ", 0.98)));
@@ -117,6 +164,40 @@ class SemanticRoutingServiceTest {
     classifier.classify("es-MX", QUERY);
 
     assertThat(metrics.routingOutcome).isEqualTo("accepted");
+  }
+
+  @Test
+  void recordsTopScoresAndMarginForSemanticRouting() {
+    RecordingReferenceSearch search =
+        new RecordingReferenceSearch(
+            List.of(new SemanticMatch("FAQ", 0.98), new SemanticMatch("OTHER", 0.70)));
+    RecordingSemanticMetrics metrics = new RecordingSemanticMetrics();
+    SemanticIntentClassifier classifier =
+        new SemanticIntentClassifier(search, new SemanticMatchPolicy(0.90, 0.10), metrics);
+
+    classifier.classify("es-MX", QUERY);
+
+    assertThat(metrics.scoreOperation).isEqualTo("routing");
+    assertThat(metrics.top1).isEqualTo(0.98);
+    assertThat(metrics.top2).isEqualTo(0.70);
+    assertThat(metrics.margin).isEqualTo(0.28);
+  }
+
+  @Test
+  void recordsTopScoresAndMarginForSemanticToolSelection() {
+    RecordingReferenceSearch search =
+        new RecordingReferenceSearch(
+            List.of(new SemanticMatch("findAvailability", 0.91), new SemanticMatch("book", 0.76)));
+    RecordingSemanticMetrics metrics = new RecordingSemanticMetrics();
+    SemanticToolSelector selector =
+        new SemanticToolSelector(search, new SemanticMatchPolicy(0.80, 0.10), metrics);
+
+    selector.select("es-MX", QUERY, Set.of("findAvailability", "book"));
+
+    assertThat(metrics.scoreOperation).isEqualTo("tool_selection");
+    assertThat(metrics.top1).isEqualTo(0.91);
+    assertThat(metrics.top2).isEqualTo(0.76);
+    assertThat(metrics.margin).isCloseTo(0.15, org.assertj.core.data.Offset.offset(0.0000001));
   }
 
   private static final class RecordingReferenceSearch implements SemanticReferenceSearchPort {
@@ -179,6 +260,10 @@ class SemanticRoutingServiceTest {
 
   private static final class RecordingSemanticMetrics implements SemanticMetrics {
     private String routingOutcome;
+    private String scoreOperation;
+    private double top1;
+    private double top2;
+    private double margin;
 
     @Override
     public void recordRouting(String outcome) {
@@ -193,5 +278,13 @@ class SemanticRoutingServiceTest {
 
     @Override
     public void recordCacheWrite(String outcome) {}
+
+    @Override
+    public void recordScores(String operation, double top1, double top2, double margin) {
+      this.scoreOperation = operation;
+      this.top1 = top1;
+      this.top2 = top2;
+      this.margin = margin;
+    }
   }
 }

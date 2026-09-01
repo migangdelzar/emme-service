@@ -13,6 +13,7 @@ import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.ProactiveToolRouter;
+import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
 import com.emme.assistant.ai.application.tool.AiToolResult;
 import com.emme.kernel.context.AiExecutionContext;
@@ -68,6 +69,68 @@ class ChatServiceTest {
 
     assertThat(inContext(() -> service.chat("context", "hello"))).isEqualTo("response");
     verify(model).chat("context", "hello");
+  }
+
+  @Test
+  void fallsBackToTheNormalModelWhenSemanticCacheInfrastructureFails() {
+    AiModelProvider model = mock(AiModelProvider.class);
+    SemanticResponseCache cache = mock(SemanticResponseCache.class);
+    when(cache.lookup("", "What are your hours?"))
+        .thenThrow(new IllegalStateException("database unavailable"));
+    when(model.chat("", "What are your hours?")).thenReturn("Open today.");
+    ChatService service = new ChatService(model, Optional.of(cache));
+
+    assertThat(inContext(() -> service.chat("", "What are your hours?"))).isEqualTo("Open today.");
+    verify(model).chat("", "What are your hours?");
+  }
+
+  @Test
+  void recordsTheReasonWhenSemanticCacheFailureFallsBackToTheModel() {
+    AiModelProvider model = mock(AiModelProvider.class);
+    SemanticResponseCache cache = mock(SemanticResponseCache.class);
+    SemanticMetrics metrics = mock(SemanticMetrics.class);
+    when(cache.lookup("", "What are your hours?"))
+        .thenThrow(new IllegalStateException("database unavailable"));
+    when(model.chat("", "What are your hours?")).thenReturn("Open today.");
+    ChatService service =
+        new ChatService(
+            model,
+            Optional.of(cache),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Duration.ofSeconds(5),
+            metrics);
+
+    assertThat(inContext(() -> service.chat("", "What are your hours?"))).isEqualTo("Open today.");
+
+    verify(metrics).recordFallback("chat", "semantic_cache_failure");
+  }
+
+  @Test
+  void propagatesSecurityFailuresFromSemanticCacheInsteadOfFallingBack() {
+    AiModelProvider model = mock(AiModelProvider.class);
+    SemanticResponseCache cache = mock(SemanticResponseCache.class);
+    SecurityException failure = new SecurityException("tenant access denied");
+    when(cache.lookup("", "What are your hours?")).thenThrow(failure);
+    ChatService service = new ChatService(model, Optional.of(cache));
+
+    assertThatThrownBy(() -> inContext(() -> service.chat("", "What are your hours?")))
+        .isSameAs(failure);
+    verifyNoInteractions(model);
+  }
+
+  @Test
+  void keepsTheModelResponseWhenSemanticCacheWriteInfrastructureFails() {
+    AiModelProvider model = mock(AiModelProvider.class);
+    SemanticResponseCache cache = mock(SemanticResponseCache.class);
+    when(cache.lookup("", "What are your hours?")).thenReturn(Optional.empty());
+    when(model.chat("", "What are your hours?")).thenReturn("Open today.");
+    when(cache.store("", "What are your hours?", "Open today."))
+        .thenThrow(new IllegalStateException("database unavailable"));
+    ChatService service = new ChatService(model, Optional.of(cache));
+
+    assertThat(inContext(() -> service.chat("", "What are your hours?"))).isEqualTo("Open today.");
   }
 
   @Test

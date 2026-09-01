@@ -3,6 +3,7 @@ package com.emme.assistant.ai.application.semantic;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
+import java.time.Duration;
 import java.util.Objects;
 
 /** Deterministic intent classifier backed by tenant-scoped vector references. */
@@ -28,14 +29,39 @@ public final class SemanticIntentClassifier {
   public SemanticDecision classify(String locale, EmbeddingVector query) {
     requireLocale(locale);
     Objects.requireNonNull(query, "query must not be null");
-    SemanticDecision decision = policy.decide(search.searchIntents(locale, query, CANDIDATE_LIMIT));
-    record(decision.accepted() ? "accepted" : "abstained");
-    return decision;
+    long started = System.nanoTime();
+    try {
+      SemanticDecision decision =
+          policy.decide(search.searchIntents(locale, query, CANDIDATE_LIMIT));
+      recordScores(decision);
+      record(decision.accepted() ? "accepted" : "abstained");
+      return decision;
+    } catch (RuntimeException failure) {
+      recordSafely(() -> metrics.recordFailure("routing", failure.getClass().getSimpleName()));
+      throw failure;
+    } finally {
+      recordSafely(
+          () -> metrics.recordLatency("routing", Duration.ofNanos(System.nanoTime() - started)));
+    }
+  }
+
+  private void recordScores(SemanticDecision decision) {
+    recordSafely(
+        () ->
+            metrics.recordScores(
+                "routing",
+                decision.top1Similarity(),
+                decision.top2Similarity(),
+                decision.margin()));
   }
 
   private void record(String outcome) {
+    recordSafely(() -> metrics.recordRouting(outcome));
+  }
+
+  private static void recordSafely(Runnable recorder) {
     try {
-      metrics.recordRouting(outcome);
+      recorder.run();
     } catch (RuntimeException ignored) {
       // Observability must not change routing semantics.
     }

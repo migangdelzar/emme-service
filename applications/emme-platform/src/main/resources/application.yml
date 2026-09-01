@@ -166,6 +166,7 @@ app:
     semantic-cache:
       enabled: ${EMME_AI_SEMANTIC_CACHE_ENABLED:false}
       minimum-similarity: ${EMME_AI_SEMANTIC_CACHE_MIN_SIMILARITY:0.95}
+      minimum-margin: ${EMME_AI_SEMANTIC_CACHE_MIN_MARGIN:0.05}
       ttl: ${EMME_AI_SEMANTIC_CACHE_TTL:5m}
       prompt-version: ${EMME_AI_SEMANTIC_CACHE_PROMPT_VERSION:chat-v1}
     spring-chat:
@@ -182,7 +183,7 @@ app:
       providers:
         - bean-name: ollamaEmbeddingModel
           key: local-ollama
-          model-version: ollama-embeddinggemma:300m
+          model-version: ${EMME_AI_EMBEDDING_MODEL_VERSION:ollama-embeddinggemma:300m}
     spring-rag:
       # Requires the named Spring AI chat and embedding integrations above.
       enabled: ${EMME_SPRING_AI_RAG_ENABLED:false}
@@ -215,7 +216,7 @@ app:
       port: ${EMME_AI_REDIS_SEMANTIC_PORT:${SPRING_DATA_REDIS_PORT:6379}}
       index-name: ${EMME_AI_REDIS_SEMANTIC_INDEX:emme-ai-semantic-cache}
       prefix: ${EMME_AI_REDIS_SEMANTIC_PREFIX:emme:ai:semantic-cache:}
-      embedding-model-version: ${EMME_AI_REDIS_SEMANTIC_EMBEDDING_MODEL_VERSION:ollama-embeddinggemma:300m}
+      embedding-model-version: ${EMME_AI_REDIS_SEMANTIC_EMBEDDING_MODEL_VERSION:${EMME_AI_EMBEDDING_MODEL_VERSION:ollama-embeddinggemma:300m}}
       embedding-dimension: ${EMME_AI_REDIS_SEMANTIC_EMBEDDING_DIMENSION:768}
       initialize-schema: ${EMME_AI_REDIS_SEMANTIC_INITIALIZE_SCHEMA:false}
   whatsapp:

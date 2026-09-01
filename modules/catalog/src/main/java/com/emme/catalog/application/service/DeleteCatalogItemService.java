@@ -1,11 +1,14 @@
 package com.emme.catalog.application.service;
 
+import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
+import com.emme.ai.contracts.semantic.SemanticCacheDependencyPublisher;
 import com.emme.catalog.api.command.DeleteCatalogItemCommand;
 import com.emme.catalog.api.exception.CatalogItemNotFoundException;
 import com.emme.catalog.api.usecase.DeleteCatalogItemUseCase;
 import com.emme.catalog.application.port.out.CatalogItemImageRepository;
 import com.emme.catalog.application.port.out.CatalogItemRepository;
 import com.emme.catalog.domain.model.CatalogItem;
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,11 +20,15 @@ public class DeleteCatalogItemService implements DeleteCatalogItemUseCase {
 
   private final CatalogItemRepository itemRepository;
   private final CatalogItemImageRepository imageRepository;
+  private final SemanticCacheDependencyPublisher cacheDependencies;
 
   public DeleteCatalogItemService(
-      CatalogItemRepository itemRepository, CatalogItemImageRepository imageRepository) {
+      CatalogItemRepository itemRepository,
+      CatalogItemImageRepository imageRepository,
+      SemanticCacheDependencyPublisher cacheDependencies) {
     this.itemRepository = itemRepository;
     this.imageRepository = imageRepository;
+    this.cacheDependencies = cacheDependencies;
   }
 
   @Override
@@ -29,6 +36,14 @@ public class DeleteCatalogItemService implements DeleteCatalogItemUseCase {
     CatalogItem item = findOwned(command.tenantId(), command.itemId());
     imageRepository.deleteAll(imageRepository.findByCatalogItemId(item.getId()));
     itemRepository.delete(item);
+    cacheDependencies.publish(
+        new SemanticCacheDependencyChanged(
+            UUID.randomUUID(),
+            item.getTenantId(),
+            null,
+            SemanticCacheDependencyChanged.Dependency.PRICE,
+            item.getId().toString(),
+            Instant.now()));
   }
 
   private CatalogItem findOwned(UUID tenantId, UUID itemId) {

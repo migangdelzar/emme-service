@@ -1,12 +1,17 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.semantic.SemanticCacheDependencyPublisher;
+import com.emme.assistant.ai.adapter.in.messaging.SemanticCacheInvalidationListener;
+import com.emme.assistant.ai.adapter.out.event.SpringSemanticCacheDependencyPublisher;
 import com.emme.assistant.ai.adapter.out.persistence.JacksonSemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
+import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidationService;
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
@@ -18,6 +23,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -31,14 +37,40 @@ public class SpringAiSemanticCacheConfiguration {
   @Bean
   @ConditionalOnMissingBean
   SemanticCachePolicy semanticCachePolicy(SemanticCacheProperties properties) {
-    return new SemanticCachePolicy(properties.minimumSimilarity());
+    return new SemanticCachePolicy(properties.minimumSimilarity(), properties.minimumMargin());
   }
 
   @Bean
   @ConditionalOnMissingBean
   SemanticCacheResolver semanticCacheResolver(
+      SemanticCachePort cache, SemanticCachePolicy semanticCachePolicy, SemanticMetrics metrics) {
+    return new SemanticCacheResolver(cache, semanticCachePolicy, metrics);
+  }
+
+  SemanticCacheResolver semanticCacheResolver(
       SemanticCachePort cache, SemanticCachePolicy semanticCachePolicy) {
-    return new SemanticCacheResolver(cache, semanticCachePolicy);
+    return new SemanticCacheResolver(cache, semanticCachePolicy, NoopSemanticMetrics.INSTANCE);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  SemanticCacheInvalidationService semanticCacheInvalidationService(
+      SemanticCachePort cache, Optional<SemanticCacheHotStore> hotStore, SemanticMetrics metrics) {
+    return new SemanticCacheInvalidationService(cache, hotStore, metrics);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  SemanticCacheInvalidationListener semanticCacheInvalidationListener(
+      SemanticCacheInvalidationService invalidation) {
+    return new SemanticCacheInvalidationListener(invalidation);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  SemanticCacheDependencyPublisher semanticCacheDependencyPublisher(
+      ApplicationEventPublisher events) {
+    return new SpringSemanticCacheDependencyPublisher(events);
   }
 
   @Bean

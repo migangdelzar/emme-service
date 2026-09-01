@@ -8,6 +8,7 @@ plugins {
 dependencies {
   implementation(project(":modules:shared"))
   implementation(project(":libraries:kernel"))
+  implementation(project(":libraries:ai-contracts"))
   implementation(project(":modules:tenancy"))
   implementation(project(":modules:appointments"))
   implementation(project(":modules:salon"))

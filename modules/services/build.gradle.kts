@@ -9,6 +9,7 @@ plugins {
 dependencies {
   implementation(project(":modules:shared"))
   implementation(project(":libraries:kernel"))
+  implementation(project(":libraries:ai-contracts"))
   implementation(project(":modules:tenancy"))
   implementation(project(":modules:subscriptions"))
   implementation(libs.spring.boot.starter.web)

@@ -7,8 +7,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
@@ -149,6 +151,33 @@ class RedisSemanticCacheHotStoreTest {
                     1))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("No AI execution context");
+  }
+
+  @Test
+  void invalidatesOnlyTheTargetPrincipalProjectionKeys() {
+    VectorStore vectorStore = mock(VectorStore.class);
+    RedisClient redisClient = mock(RedisClient.class);
+    when(redisClient.smembers("prefix:tenant:" + TENANT_ID))
+        .thenReturn(Set.of("prefix:tenant:" + TENANT_ID + ":principal:" + PRINCIPAL_ID));
+    String documentKey = "prefix:cache-" + UUID.randomUUID();
+    when(redisClient.smembers("prefix:tenant:" + TENANT_ID + ":principal:" + PRINCIPAL_ID))
+        .thenReturn(Set.of(documentKey));
+    RedisSemanticCacheHotStore hotStore =
+        new RedisSemanticCacheHotStore(
+            vectorStore, "embeddinggemma-v1", 2, Clock.systemUTC(), redisClient, "prefix:");
+    SemanticCacheInvalidation invalidation =
+        new SemanticCacheInvalidation(
+            TENANT_ID,
+            PRINCIPAL_ID,
+            "CHAT_INFORMATIONAL",
+            SemanticCacheDependencyChanged.Dependency.PRICE,
+            "price-v2");
+
+    hotStore.invalidate(invalidation);
+
+    verify(redisClient).smembers("prefix:tenant:" + TENANT_ID + ":principal:" + PRINCIPAL_ID);
+    verify(redisClient).del(documentKey);
+    verify(redisClient).del("prefix:tenant:" + TENANT_ID + ":principal:" + PRINCIPAL_ID);
   }
 
   private static AiExecutionContext context() {

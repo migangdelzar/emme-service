@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
@@ -32,7 +33,8 @@ class JdbcSemanticAdapterTest {
   private static final UUID CONVERSATION_ID = UUID.randomUUID();
   private static final UUID WORKFLOW_ID = UUID.randomUUID();
   private static final EmbeddingVector QUERY =
-      new EmbeddingVector("embeddinggemma:300m", java.util.Collections.nCopies(768, 0.0f));
+      new EmbeddingVector(
+          EmbeddingModelDefaults.MODEL_VERSION, java.util.Collections.nCopies(768, 0.0f));
 
   @Test
   void referenceSearchUsesAuthenticatedTenantAndEmbeddingVersion() throws Exception {
@@ -54,7 +56,7 @@ class JdbcSemanticAdapterTest {
         .contains("embedding_model_version = :embeddingModelVersion")
         .contains("ORDER BY embedding <=> CAST(:queryEmbedding AS vector)");
     verify(statement).param("tenantId", TENANT_ID);
-    verify(statement).param("embeddingModelVersion", "embeddinggemma:300m");
+    verify(statement).param("embeddingModelVersion", EmbeddingModelDefaults.MODEL_VERSION);
   }
 
   @Test

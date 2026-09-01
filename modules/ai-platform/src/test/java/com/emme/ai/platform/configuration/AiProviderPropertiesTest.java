@@ -14,4 +14,17 @@ class AiProviderPropertiesTest {
     assertThat(properties.embedding().model()).isEqualTo("embeddinggemma:300m");
     assertThat(properties.embeddingDimension()).isEqualTo(768);
   }
+
+  @Test
+  void defaultsAnExplicitlyConfiguredEmbeddingWithoutDimensionTo768() {
+    AiProviderProperties properties =
+        new AiProviderProperties(
+            null,
+            null,
+            new AiProviderProperties.EmbeddingConfig(
+                "embeddinggemma:300m", "http://localhost", null, null),
+            false);
+
+    assertThat(properties.embeddingDimension()).isEqualTo(768);
+  }
 }

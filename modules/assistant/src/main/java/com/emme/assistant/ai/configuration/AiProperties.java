@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -24,11 +25,20 @@ public record AiProperties(
     if (provider == null || provider.isBlank()) provider = "mock";
     if (chat == null) chat = new ProviderConfig("gemma4:e4b-mlx", "http://localhost:11434", null);
     if (embedding == null)
-      embedding = new EmbeddingConfig("embeddinggemma:300m", "http://localhost:11434", null, 768);
+      embedding =
+          new EmbeddingConfig(
+              EmbeddingModelDefaults.MODEL_NAME,
+              "http://localhost:11434",
+              null,
+              EmbeddingModelDefaults.DIMENSION);
   }
 
   /** Single source of truth for the vector dimension used across schema, mock, and doctor. */
   public int embeddingDimension() {
     return embedding.dimension();
+  }
+
+  public String embeddingModelVersion() {
+    return EmbeddingModelDefaults.MODEL_VERSION;
   }
 }

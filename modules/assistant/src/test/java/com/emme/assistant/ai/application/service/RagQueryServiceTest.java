@@ -142,6 +142,80 @@ class RagQueryServiceTest {
   }
 
   @Test
+  void fallsBackToNormalLlmWhenVectorEmbeddingFails() {
+    UUID tenantId = UUID.randomUUID();
+    AiModelProvider model = mock(AiModelProvider.class);
+    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    RagQueryService service =
+        new RagQueryService(
+            realProperties(),
+            model,
+            search,
+            java.util.Optional.of(embeddings),
+            java.util.Optional.of(chat));
+
+    when(embeddings.embed("hello")).thenThrow(new IllegalStateException("vector unavailable"));
+    when(chat.complete("", "hello")).thenReturn("normal answer");
+
+    assertThat(inContext(tenantId, () -> service.query("hello"))).isEqualTo("normal answer");
+    verify(chat).complete("", "hello");
+    verifyNoInteractions(search, model);
+  }
+
+  @Test
+  void fallsBackToNormalLlmWhenVectorSearchFails() {
+    UUID tenantId = UUID.randomUUID();
+    AiModelProvider model = mock(AiModelProvider.class);
+    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    RagQueryService service =
+        new RagQueryService(
+            realProperties(),
+            model,
+            search,
+            java.util.Optional.of(embeddings),
+            java.util.Optional.of(chat));
+
+    when(embeddings.embed("hello"))
+        .thenReturn(new EmbeddingVector("embedding-v1", List.of(0.1f, 0.2f)));
+    when(search.search(any())).thenThrow(new IllegalStateException("pgvector unavailable"));
+    when(chat.complete("", "hello")).thenReturn("normal answer");
+
+    assertThat(inContext(tenantId, () -> service.query("hello"))).isEqualTo("normal answer");
+    verify(chat).complete("", "hello");
+    verify(model, never()).chat(any(), any());
+  }
+
+  @Test
+  void doesNotHideSecurityFailuresFromVectorSearch() {
+    UUID tenantId = UUID.randomUUID();
+    AiModelProvider model = mock(AiModelProvider.class);
+    SearchDocumentChunksUseCase search = mock(SearchDocumentChunksUseCase.class);
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    RagQueryService service =
+        new RagQueryService(
+            realProperties(),
+            model,
+            search,
+            java.util.Optional.of(embeddings),
+            java.util.Optional.of(chat));
+
+    when(embeddings.embed("hello"))
+        .thenReturn(new EmbeddingVector("embedding-v1", List.of(0.1f, 0.2f)));
+    when(search.search(any())).thenThrow(new SecurityException("tenant denied"));
+
+    org.assertj.core.api.Assertions.assertThatThrownBy(
+            () -> inContext(tenantId, () -> service.query("hello")))
+        .isInstanceOf(SecurityException.class)
+        .hasMessage("tenant denied");
+    verifyNoInteractions(chat, model);
+  }
+
+  @Test
   void prefersTheConfiguredSpringRagAnswerPortWhenAvailable() {
     UUID tenantId = UUID.randomUUID();
     AiModelProvider legacyModel = mock(AiModelProvider.class);

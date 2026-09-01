@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.application.port.out;
 
+import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,4 +13,7 @@ public interface SemanticCacheHotStore {
 
   /** Projects an already-persisted durable cache entry into the hot store. */
   void put(UUID durableCacheId, SemanticCachePort.Put write);
+
+  /** Removes the scoped hot projection when the durable dependency changes. */
+  default void invalidate(SemanticCacheInvalidation invalidation) {}
 }

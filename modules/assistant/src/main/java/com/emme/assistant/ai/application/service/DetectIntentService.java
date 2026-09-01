@@ -3,7 +3,7 @@ package com.emme.assistant.ai.application.service;
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.api.result.IntentResult;
 import com.emme.assistant.ai.api.usecase.DetectIntentUseCase;
-import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
+import com.emme.assistant.ai.application.semantic.SemanticFailurePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Optional;
@@ -30,7 +30,8 @@ public class DetectIntentService implements DetectIntentUseCase {
       if (semanticResult.isPresent()) {
         return semanticResult.orElseThrow();
       }
-    } catch (EmbeddingProviderUnavailableException ignored) {
+    } catch (RuntimeException failure) {
+      SemanticFailurePolicy.rethrowSecurityFailure(failure);
       // The configured model provider is the explicit fallback for embedding outages.
     }
     AiModelProvider.IntentResult result = provider.routeIntent(message);

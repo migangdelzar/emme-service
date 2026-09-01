@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.application.semantic;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
@@ -100,20 +101,29 @@ public final class SemanticChatCache implements SemanticResponseCache {
       recordLookup("bypass");
       return Optional.empty();
     }
-    EmbeddingVector query = embeddings.embed(userMessage);
-    SemanticCachePort.Lookup lookup =
-        new SemanticCachePort.Lookup(
-            CACHE_KIND, contextFingerprint(conversationContext), promptVersion, query);
-    Optional<SemanticCachePort.Candidate> hotHit =
-        hotStore
-            .flatMap(store -> safeHotLookup(store, lookup, userMessage))
-            .flatMap(resolver::confirm);
-    Optional<String> result =
-        hotHit
-            .or(() -> resolver.lookup(lookup))
-            .flatMap(candidate -> codec.decodeText(candidate.responsePayload()));
-    recordLookup(result.isPresent() ? "hit" : "miss");
-    return result;
+    try {
+      EmbeddingVector query = embeddings.embed(userMessage);
+      SemanticCachePort.Lookup lookup =
+          new SemanticCachePort.Lookup(
+              CACHE_KIND, contextFingerprint(conversationContext), promptVersion, query);
+      Optional<SemanticCachePort.Candidate> hotHit =
+          hotStore
+              .flatMap(store -> safeHotLookup(store, lookup, userMessage))
+              .flatMap(candidates -> resolver.confirm(candidates, this::hasSafePayload));
+      Optional<String> result =
+          hotHit
+              .or(() -> resolver.lookup(lookup, this::hasSafePayload))
+              .flatMap(candidate -> codec.decodeText(candidate.responsePayload()));
+      result = result.filter(SemanticChatCache::isSafeResponse);
+      recordLookup(result.isPresent() ? "hit" : "miss");
+      return result;
+    } catch (RuntimeException failure) {
+      SemanticFailurePolicy.rethrowSecurityFailure(failure);
+      recordFailure("cache.lookup", failure);
+      recordFallback("cache.lookup", fallbackReason(failure));
+      recordLookup("failure");
+      return Optional.empty();
+    }
   }
 
   @Override
@@ -127,22 +137,30 @@ public final class SemanticChatCache implements SemanticResponseCache {
       recordWrite("rejected");
       return Optional.empty();
     }
-    EmbeddingVector query = embeddings.embed(userMessage);
-    String contextFingerprint = contextFingerprint(conversationContext);
-    SemanticCachePort.Put write =
-        new SemanticCachePort.Put(
-            CACHE_KIND,
-            userMessage,
-            contextFingerprint,
-            promptVersion,
-            codec.encodeText(response),
-            Instant.now(clock).plus(ttl),
-            query,
-            writeIdempotencyKey(contextFingerprint, userMessage));
-    UUID cacheId = cache.put(write);
-    hotStore.ifPresent(store -> safeHotPut(store, cacheId, write));
-    recordWrite("stored");
-    return Optional.of(cacheId);
+    try {
+      EmbeddingVector query = embeddings.embed(userMessage);
+      String contextFingerprint = contextFingerprint(conversationContext);
+      SemanticCachePort.Put write =
+          new SemanticCachePort.Put(
+              CACHE_KIND,
+              userMessage,
+              contextFingerprint,
+              promptVersion,
+              codec.encodeText(response),
+              Instant.now(clock).plus(ttl),
+              query,
+              writeIdempotencyKey(contextFingerprint, userMessage));
+      UUID cacheId = cache.put(write);
+      hotStore.ifPresent(store -> safeHotPut(store, cacheId, write));
+      recordWrite("stored");
+      return Optional.of(cacheId);
+    } catch (RuntimeException failure) {
+      SemanticFailurePolicy.rethrowSecurityFailure(failure);
+      recordFailure("cache.store", failure);
+      recordFallback("cache.store", fallbackReason(failure));
+      recordWrite("failure");
+      return Optional.empty();
+    }
   }
 
   @Override
@@ -159,6 +177,13 @@ public final class SemanticChatCache implements SemanticResponseCache {
     }
   }
 
+  private boolean hasSafePayload(SemanticCachePort.Candidate candidate) {
+    return codec
+        .decodeText(candidate.responsePayload())
+        .map(SemanticChatCache::isSafeResponse)
+        .orElse(false);
+  }
+
   private void recordWrite(String outcome) {
     try {
       metrics.recordCacheWrite(outcome);
@@ -167,22 +192,49 @@ public final class SemanticChatCache implements SemanticResponseCache {
     }
   }
 
-  private static Optional<List<SemanticCachePort.Candidate>> safeHotLookup(
+  private Optional<List<SemanticCachePort.Candidate>> safeHotLookup(
       SemanticCacheHotStore store, SemanticCachePort.Lookup lookup, String queryText) {
     try {
       return Optional.of(store.find(lookup, queryText, 2));
-    } catch (RuntimeException ignored) {
+    } catch (RuntimeException failure) {
+      SemanticFailurePolicy.rethrowSecurityFailure(failure);
+      recordFailure("cache.hot_lookup", failure);
+      recordFallback("cache.hot_lookup", "hot_store_unavailable");
       return Optional.empty();
     }
   }
 
-  private static void safeHotPut(
-      SemanticCacheHotStore store, UUID cacheId, SemanticCachePort.Put write) {
+  private void safeHotPut(SemanticCacheHotStore store, UUID cacheId, SemanticCachePort.Put write) {
     try {
       store.put(cacheId, write);
-    } catch (RuntimeException ignored) {
+    } catch (RuntimeException failure) {
+      SemanticFailurePolicy.rethrowSecurityFailure(failure);
+      recordFailure("cache.hot_store", failure);
+      recordFallback("cache.hot_store", "hot_store_unavailable");
       // Redis is an optimization; durable PostgreSQL persistence has already succeeded.
     }
+  }
+
+  private void recordFailure(String operation, RuntimeException failure) {
+    try {
+      metrics.recordFailure(operation, failure.getClass().getSimpleName());
+    } catch (RuntimeException ignored) {
+      // Observability must not change cache semantics.
+    }
+  }
+
+  private void recordFallback(String operation, String reason) {
+    try {
+      metrics.recordFallback(operation, reason);
+    } catch (RuntimeException ignored) {
+      // Observability must not change cache semantics.
+    }
+  }
+
+  private static String fallbackReason(RuntimeException failure) {
+    return failure instanceof EmbeddingProviderUnavailableException
+        ? "embedding_unavailable"
+        : "cache_unavailable";
   }
 
   private static boolean isEligible(String conversationContext, String userMessage) {

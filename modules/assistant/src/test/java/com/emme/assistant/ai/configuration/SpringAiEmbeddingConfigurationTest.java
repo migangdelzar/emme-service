@@ -35,7 +35,7 @@ class SpringAiEmbeddingConfigurationTest {
                 new SpringAiEmbeddingProperties.Provider(
                     "ollamaEmbeddingModel", "local", "ollama-embeddinggemma:300m"),
                 new SpringAiEmbeddingProperties.Provider(
-                    "openAiEmbeddingModel", "cloud", "openai-text-embedding")));
+                    "openAiEmbeddingModel", "cloud", "ollama-embeddinggemma:300m")));
 
     SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
     SpringAiEmbeddingProviderRegistry registry =
@@ -46,7 +46,7 @@ class SpringAiEmbeddingConfigurationTest {
     EmbeddingModelPort embeddingModel = configuration.embeddingModel(registry);
 
     assertThat(embeddingModel.embed("faq"))
-        .isEqualTo(new EmbeddingVector("openai-text-embedding", List.of(0.2f, 0.8f)));
+        .isEqualTo(new EmbeddingVector("ollama-embeddinggemma:300m", List.of(0.2f, 0.8f)));
   }
 
   @Test
@@ -82,6 +82,25 @@ class SpringAiEmbeddingConfigurationTest {
 
     assertThatThrownBy(() -> embeddingModel.embed("faq"))
         .isInstanceOf(EmbeddingProviderUnavailableException.class);
+  }
+
+  @Test
+  void rejectsAProviderThatWouldQueryADifferentEmbeddingIndexVersion() {
+    EmbeddingModel local = mock(EmbeddingModel.class);
+    SpringAiEmbeddingProperties properties =
+        new SpringAiEmbeddingProperties(
+            true,
+            List.of(
+                new SpringAiEmbeddingProperties.Provider(
+                    "ollamaEmbeddingModel", "local", "different-embedding-space")));
+    SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
+
+    assertThatThrownBy(
+            () ->
+                configuration.providerRegistry(
+                    Map.of("ollamaEmbeddingModel", local), properties, aiProperties(2)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Embedding provider model version must match configured semantic index");
   }
 
   @Test

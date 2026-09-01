@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
@@ -181,6 +183,71 @@ class SemanticChatCacheTest {
         .isEmpty();
 
     verifyNoInteractions(embeddings, durableCache, codec);
+  }
+
+  @Test
+  void rejectsAnUnsafePayloadAgainWhenAStoredEntryIsLookedUp() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort durableCache = mock(SemanticCachePort.class);
+    SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
+    UUID cacheId = UUID.randomUUID();
+    when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
+    when(durableCache.find(any(), anyInt()))
+        .thenReturn(List.of(new SemanticCachePort.Candidate(cacheId, "payload", 0.99)));
+    when(durableCache.recordHit(cacheId)).thenReturn(true);
+    when(codec.decodeText("payload"))
+        .thenReturn(Optional.of("Contact client@example.com for your private details."));
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            new SemanticCacheResolver(durableCache, new SemanticCachePolicy(0.95)),
+            durableCache,
+            codec,
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5));
+
+    assertThat(semanticCache.lookup("", "What are your hours?")).isEmpty();
+    verify(durableCache, never()).recordHit(cacheId);
+  }
+
+  @Test
+  void returnsAnEmptyResultWhenTheEmbeddingProviderIsUnavailable() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort durableCache = mock(SemanticCachePort.class);
+    when(embeddings.embed("What are your hours?"))
+        .thenThrow(new EmbeddingProviderUnavailableException("embedding unavailable"));
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            mock(SemanticCacheResolver.class),
+            durableCache,
+            mock(SemanticCachePayloadCodec.class),
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5));
+
+    assertThat(semanticCache.lookup("", "What are your hours?")).isEmpty();
+    verifyNoInteractions(durableCache);
+  }
+
+  @Test
+  void returnsAnEmptyResultWhenTheDurableCacheIsUnavailable() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort durableCache = mock(SemanticCachePort.class);
+    when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
+    when(durableCache.find(any(), anyInt())).thenThrow(new IllegalStateException("database down"));
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            new SemanticCacheResolver(durableCache, new SemanticCachePolicy(0.95, 0.05)),
+            durableCache,
+            mock(SemanticCachePayloadCodec.class),
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5));
+
+    assertThat(semanticCache.lookup("", "What are your hours?")).isEmpty();
   }
 
   @Test

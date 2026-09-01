@@ -29,6 +29,15 @@ public final class SpringAiEmbeddingProviderRegistry {
       SpringAiEmbeddingProperties properties,
       int dimension,
       AiTraceRecorder traceRecorder) {
+    this(embeddingModels, properties, dimension, null, traceRecorder);
+  }
+
+  public SpringAiEmbeddingProviderRegistry(
+      Map<String, EmbeddingModel> embeddingModels,
+      SpringAiEmbeddingProperties properties,
+      int dimension,
+      String expectedModelVersion,
+      AiTraceRecorder traceRecorder) {
     Objects.requireNonNull(embeddingModels, "embeddingModels must not be null");
     Objects.requireNonNull(properties, "properties must not be null");
     Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
@@ -44,6 +53,11 @@ public final class SpringAiEmbeddingProviderRegistry {
                         "No Spring AI embedding model bean configured for provider '"
                             + configured.key()
                             + "'");
+                  }
+                  if (expectedModelVersion != null
+                      && !expectedModelVersion.equals(configured.modelVersion())) {
+                    throw new IllegalArgumentException(
+                        "Embedding provider model version must match configured semantic index");
                   }
                   if (!providerKeys.add(configured.key())) {
                     throw new IllegalArgumentException(

@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
+import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
 import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.sql.Timestamp;
@@ -23,18 +24,18 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
     AiProperties properties = Objects.requireNonNull(aiProperties, "aiProperties must not be null");
     this.embeddingDimensions = properties.embeddingDimension();
-    this.embeddingModelVersion = properties.embedding().model();
+    this.embeddingModelVersion = properties.embeddingModelVersion();
   }
 
   @Override
   public List<Candidate> find(Lookup lookup, int limit) {
     Objects.requireNonNull(lookup, "lookup must not be null");
+    var context = AiExecutionContextScope.requireCurrent();
     validateEmbedding(lookup.query());
     if (limit <= 0) {
       throw new IllegalArgumentException("limit must be greater than zero");
     }
 
-    var context = AiExecutionContextScope.requireCurrent();
     return jdbc.sql(
             """
             SELECT id,
@@ -72,12 +73,12 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
   @Override
   public UUID put(Put write) {
     Objects.requireNonNull(write, "write must not be null");
+    var context = AiExecutionContextScope.requireCurrent();
     validateEmbedding(write.query());
     if (!write.expiresAt().isAfter(Instant.now())) {
       throw new IllegalArgumentException("expiresAt must be in the future");
     }
 
-    var context = AiExecutionContextScope.requireCurrent();
     return jdbc.sql(
             """
             INSERT INTO ai_semantic_cache (
@@ -150,11 +151,8 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
   }
 
   @Override
-  public void invalidate(String cacheKind) {
-    if (cacheKind == null || cacheKind.isBlank()) {
-      throw new IllegalArgumentException("cacheKind must not be blank");
-    }
-    var context = AiExecutionContextScope.requireCurrent();
+  public void invalidate(SemanticCacheInvalidation invalidation) {
+    Objects.requireNonNull(invalidation, "invalidation must not be null");
     jdbc.sql(
             """
             UPDATE ai_semantic_cache
@@ -162,13 +160,13 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
                 updated_at = CURRENT_TIMESTAMP,
                 version = version + 1
             WHERE tenant_id = :tenantId
-              AND principal_id = :principalId
+              AND (:principalId IS NULL OR principal_id = :principalId)
               AND cache_kind = :cacheKind
               AND active = true
             """)
-        .param("tenantId", context.tenantId())
-        .param("principalId", context.principalId())
-        .param("cacheKind", cacheKind)
+        .param("tenantId", invalidation.tenantId())
+        .param("principalId", invalidation.principalId())
+        .param("cacheKind", invalidation.cacheKind())
         .update();
   }
 

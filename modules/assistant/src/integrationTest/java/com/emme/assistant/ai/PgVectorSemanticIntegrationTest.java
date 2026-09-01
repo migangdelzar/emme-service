@@ -2,6 +2,7 @@ package com.emme.assistant.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcAiToolIdempotencyStore;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticCacheAdapter;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticReferenceSearchAdapter;
@@ -35,7 +36,8 @@ import org.testcontainers.utility.DockerImageName;
 class PgVectorSemanticIntegrationTest {
 
   private static final String IMAGE = "pgvector/pgvector:0.8.6-pg16-trixie";
-  private static final String MODEL_VERSION = "embeddinggemma:300m";
+  private static final String MODEL_NAME = EmbeddingModelDefaults.MODEL_NAME;
+  private static final String MODEL_VERSION = EmbeddingModelDefaults.MODEL_VERSION;
   private static final UUID TENANT_ID = UUID.randomUUID();
   private static final UUID OTHER_TENANT_ID = UUID.randomUUID();
   private static final UUID PRINCIPAL_ID = UUID.randomUUID();
@@ -67,7 +69,7 @@ class PgVectorSemanticIntegrationTest {
                 "mock",
                 null,
                 new AiProperties.EmbeddingConfig(
-                    MODEL_VERSION, "http://localhost:11434", null, 768),
+                    MODEL_NAME, "http://localhost:11434", null, 768, MODEL_VERSION),
                 true));
     semanticCache =
         new JdbcSemanticCacheAdapter(
@@ -76,7 +78,7 @@ class PgVectorSemanticIntegrationTest {
                 "mock",
                 null,
                 new AiProperties.EmbeddingConfig(
-                    MODEL_VERSION, "http://localhost:11434", null, 768),
+                    MODEL_NAME, "http://localhost:11434", null, 768, MODEL_VERSION),
                 true));
     toolIdempotency =
         new JdbcAiToolIdempotencyStore(JdbcClient.create(dataSource), new ObjectMapper());
@@ -93,6 +95,7 @@ class PgVectorSemanticIntegrationTest {
             intent_key VARCHAR(80) NOT NULL,
             locale VARCHAR(10) NOT NULL,
             embedding vector(768),
+            embedding_model_name VARCHAR(120),
             embedding_model_version VARCHAR(150),
             active BOOLEAN NOT NULL
         )
@@ -108,6 +111,7 @@ class PgVectorSemanticIntegrationTest {
             query_text VARCHAR(4000) NOT NULL,
             context_fingerprint VARCHAR(128) NOT NULL,
             embedding vector(768) NOT NULL,
+            embedding_model_name VARCHAR(120) NOT NULL,
             embedding_model_version VARCHAR(150) NOT NULL,
             prompt_version VARCHAR(150) NOT NULL,
             response_payload JSONB NOT NULL,
@@ -144,21 +148,24 @@ class PgVectorSemanticIntegrationTest {
     jdbc.update(
         """
         INSERT INTO ai_intent_reference
-            (id, tenant_id, intent_key, locale, embedding, embedding_model_version, active)
-        VALUES (?, ?, ?, ?, CAST(? AS vector), ?, true),
-               (?, ?, ?, ?, CAST(? AS vector), ?, true)
+            (id, tenant_id, intent_key, locale, embedding, embedding_model_name,
+             embedding_model_version, active)
+        VALUES (?, ?, ?, ?, CAST(? AS vector), ?, ?, true),
+               (?, ?, ?, ?, CAST(? AS vector), ?, ?, true)
         """,
         UUID.randomUUID(),
         TENANT_ID,
         "QUOTE_DESIGN",
         "es-MX",
         "[1,0,0" + vectorPadding(),
+        MODEL_NAME,
         MODEL_VERSION,
         UUID.randomUUID(),
         OTHER_TENANT_ID,
         "CHECK_AVAILABILITY",
         "es-MX",
         "[1,0,0" + vectorPadding(),
+        MODEL_NAME,
         MODEL_VERSION);
   }
 

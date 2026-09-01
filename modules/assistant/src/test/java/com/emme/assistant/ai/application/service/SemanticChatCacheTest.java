@@ -109,6 +109,50 @@ class SemanticChatCacheTest {
   }
 
   @Test
+  void includesConfiguredEmbeddingModelNameInTheCacheIdentity() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort cache = mock(SemanticCachePort.class);
+    SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
+    when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
+    when(codec.encodeText(any())).thenReturn("payload");
+    when(cache.put(any())).thenReturn(UUID.randomUUID());
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            mock(SemanticCacheResolver.class),
+            cache,
+            codec,
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5),
+            Optional.empty(),
+            mock(com.emme.assistant.ai.application.port.out.SemanticMetrics.class),
+            new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration(
+                "custom-embedding", "embedding-v1", 2));
+
+    semanticCache.store("", "What are your hours?", "We are open.");
+    SemanticChatCache otherModelCache =
+        new SemanticChatCache(
+            embeddings,
+            mock(SemanticCacheResolver.class),
+            cache,
+            codec,
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5),
+            Optional.empty(),
+            mock(com.emme.assistant.ai.application.port.out.SemanticMetrics.class),
+            new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration(
+                "other-embedding", "embedding-v1", 2));
+    otherModelCache.store("", "What are your hours?", "We are open.");
+
+    var write = org.mockito.ArgumentCaptor.forClass(SemanticCachePort.Put.class);
+    verify(cache, org.mockito.Mockito.times(2)).put(write.capture());
+    assertThat(write.getAllValues().get(0).writeIdempotencyKey())
+        .isNotEqualTo(write.getAllValues().get(1).writeIdempotencyKey());
+  }
+
+  @Test
   void separatesCacheWritesByEmbeddingModelAndDimension() {
     EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
     SemanticCachePort cache = mock(SemanticCachePort.class);

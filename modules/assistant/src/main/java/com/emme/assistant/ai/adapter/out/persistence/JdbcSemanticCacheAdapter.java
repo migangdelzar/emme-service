@@ -17,12 +17,14 @@ import org.springframework.stereotype.Component;
 public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
 
   private final JdbcClient jdbc;
+  private final String embeddingModelName;
   private final int embeddingDimensions;
   private final String embeddingModelVersion;
 
   public JdbcSemanticCacheAdapter(JdbcClient jdbc, AiProperties aiProperties) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
     AiProperties properties = Objects.requireNonNull(aiProperties, "aiProperties must not be null");
+    this.embeddingModelName = properties.embeddingModelName();
     this.embeddingDimensions = properties.embeddingDimension();
     this.embeddingModelVersion = properties.embeddingModelVersion();
   }
@@ -46,6 +48,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
               AND principal_id = :principalId
               AND cache_kind = :cacheKind
               AND context_fingerprint = :contextFingerprint
+              AND embedding_model_name = :embeddingModelName
               AND prompt_version = :promptVersion
               AND embedding_model_version = :embeddingModelVersion
               AND vector_dims(embedding) = :embeddingDimension
@@ -58,6 +61,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .param("principalId", context.principalId())
         .param("cacheKind", lookup.cacheKind())
         .param("contextFingerprint", lookup.contextFingerprint())
+        .param("embeddingModelName", embeddingModelName)
         .param("promptVersion", lookup.promptVersion())
         .param("embeddingModelVersion", lookup.query().modelVersion())
         .param("embeddingDimension", lookup.query().values().size())
@@ -90,6 +94,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
                 query_text,
                 context_fingerprint,
                 embedding,
+                embedding_model_name,
                 embedding_model_version,
                 prompt_version,
                 response_payload,
@@ -103,6 +108,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
                 :queryText,
                 :contextFingerprint,
                 CAST(:queryEmbedding AS vector),
+                :embeddingModelName,
                 :embeddingModelVersion,
                 :promptVersion,
                 CAST(:responsePayload AS jsonb),
@@ -119,6 +125,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .param("queryText", write.queryText())
         .param("contextFingerprint", write.contextFingerprint())
         .param("queryEmbedding", write.query().values().toString())
+        .param("embeddingModelName", embeddingModelName)
         .param("embeddingModelVersion", write.query().modelVersion())
         .param("promptVersion", write.promptVersion())
         .param("responsePayload", write.responsePayload())
@@ -162,7 +169,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
                 updated_at = CURRENT_TIMESTAMP,
                 version = version + 1
             WHERE tenant_id = :tenantId
-              AND (:principalId IS NULL OR principal_id = :principalId)
+              AND (CAST(:principalId AS uuid) IS NULL OR principal_id = :principalId)
               AND cache_kind = :cacheKind
               AND active = true
             """)

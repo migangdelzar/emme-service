@@ -16,6 +16,7 @@ import com.emme.assistant.ai.application.trace.AiToolCallTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRedactor;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,8 @@ class JdbcAiTraceRecorderTest {
     when(jdbc.sql(anyString())).thenReturn(statement);
     when(statement.param(anyString(), any())).thenReturn(statement);
     when(statement.update()).thenReturn(1);
-    JdbcAiTraceRecorder recorder = new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor());
+    JdbcAiTraceRecorder recorder =
+        new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor(), new ObjectMapper());
 
     AiModelExecutionTrace trace =
         new AiModelExecutionTrace(
@@ -89,7 +91,8 @@ class JdbcAiTraceRecorderTest {
     when(jdbc.sql(anyString())).thenReturn(statement);
     when(statement.param(anyString(), any())).thenReturn(statement);
     when(statement.update()).thenReturn(1);
-    JdbcAiTraceRecorder recorder = new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor());
+    JdbcAiTraceRecorder recorder =
+        new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor(), new ObjectMapper());
 
     AiToolCallTrace trace =
         new AiToolCallTrace(
@@ -126,7 +129,8 @@ class JdbcAiTraceRecorderTest {
     when(jdbc.sql(anyString())).thenReturn(statement);
     when(statement.param(anyString(), any())).thenReturn(statement);
     when(statement.update()).thenReturn(1);
-    JdbcAiTraceRecorder recorder = new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor());
+    JdbcAiTraceRecorder recorder =
+        new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor(), new ObjectMapper());
 
     AiSemanticExecutionTrace trace =
         new AiSemanticExecutionTrace(
@@ -168,7 +172,8 @@ class JdbcAiTraceRecorderTest {
     when(jdbc.sql(anyString())).thenReturn(statement);
     when(statement.param(anyString(), any())).thenReturn(statement);
     when(statement.update()).thenReturn(1);
-    JdbcAiTraceRecorder recorder = new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor());
+    JdbcAiTraceRecorder recorder =
+        new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor(), new ObjectMapper());
     AiSemanticExecutionTrace trace =
         new AiSemanticExecutionTrace(
             UUID.randomUUID(),
@@ -195,11 +200,41 @@ class JdbcAiTraceRecorderTest {
   @Test
   void refusesToPersistATraceWithoutBackendExecutionContext() {
     JdbcAiTraceRecorder recorder =
-        new JdbcAiTraceRecorder(mock(JdbcClient.class), new AiTraceRedactor());
+        new JdbcAiTraceRecorder(mock(JdbcClient.class), new AiTraceRedactor(), new ObjectMapper());
 
     assertThatThrownBy(() -> recorder.recordModelExecution(modelTrace()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("No AI execution context");
+  }
+
+  @Test
+  void serializesSemanticMatchesWithJacksonControlCharacterEscaping() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    when(jdbc.sql(anyString())).thenReturn(statement);
+    when(statement.param(anyString(), any())).thenReturn(statement);
+    when(statement.update()).thenReturn(1);
+    JdbcAiTraceRecorder recorder =
+        new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor(), new ObjectMapper());
+    AiSemanticExecutionTrace trace =
+        new AiSemanticExecutionTrace(
+            UUID.randomUUID(),
+            TENANT_ID,
+            PRINCIPAL_ID,
+            "routing",
+            "accepted",
+            0.98,
+            0.72,
+            0.26,
+            java.util.List.of("line\nquote\"tab\t"),
+            null,
+            null,
+            null,
+            1);
+
+    recorder.recordSemanticOutcome(trace);
+
+    verify(statement).param("matches", "[\"line\\nquote\\\"tab\\t\"]");
   }
 
   private static AiModelExecutionTrace modelTrace() {

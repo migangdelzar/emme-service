@@ -54,10 +54,12 @@ class JdbcSemanticAdapterTest {
     assertThat(sql.getValue())
         .contains("tenant_id = :tenantId")
         .contains("embedding_model_version = :embeddingModelVersion")
+        .contains("embedding_model_name = :embeddingModelName")
         .contains("vector_dims(embedding) = :embeddingDimension")
         .contains("ORDER BY embedding <=> CAST(:queryEmbedding AS vector)");
     verify(statement).param("tenantId", TENANT_ID);
     verify(statement).param("embeddingModelVersion", EmbeddingModelDefaults.MODEL_VERSION);
+    verify(statement).param("embeddingModelName", "embeddinggemma:300m");
     verify(statement).param("embeddingDimension", 768);
   }
 
@@ -99,9 +101,11 @@ class JdbcSemanticAdapterTest {
     assertThat(sql.getValue())
         .contains("tenant_id = :tenantId")
         .contains("principal_id = :principalId")
+        .contains("embedding_model_name = :embeddingModelName")
         .contains("expires_at > CURRENT_TIMESTAMP");
     verify(statement).param("tenantId", TENANT_ID);
     verify(statement).param("principalId", PRINCIPAL_ID);
+    verify(statement).param("embeddingModelName", "embeddinggemma:300m");
   }
 
   @Test
@@ -130,11 +134,13 @@ class JdbcSemanticAdapterTest {
     verify(jdbc).sql(sql.capture());
     assertThat(sql.getValue())
         .contains("INSERT INTO ai_semantic_cache")
+        .contains("embedding_model_name")
         .contains("write_idempotency_key")
         .contains("ON CONFLICT (tenant_id, principal_id, write_idempotency_key)")
         .contains("RETURNING id");
     verify(statement).param("tenantId", TENANT_ID);
     verify(statement).param("principalId", PRINCIPAL_ID);
+    verify(statement).param("embeddingModelName", "embeddinggemma:300m");
     verify(statement).param("writeIdempotencyKey", "cache-write-1");
     verify(statement).param("expiresAt", Timestamp.from(write.expiresAt()));
   }

@@ -95,7 +95,8 @@ public class SpringAiSemanticCacheConfiguration {
       @Qualifier("aiCacheClock") Clock clock,
       SemanticCacheProperties properties,
       Optional<SemanticCacheHotStore> hotStore,
-      SemanticMetrics metrics) {
+      SemanticMetrics metrics,
+      AiProperties aiProperties) {
     return new SemanticChatCache(
         embeddings,
         resolver,
@@ -105,7 +106,8 @@ public class SpringAiSemanticCacheConfiguration {
         properties.promptVersion(),
         properties.ttl(),
         hotStore,
-        metrics);
+        metrics,
+        aiProperties.embeddingModelConfiguration());
   }
 
   SemanticResponseCache semanticChatCache(

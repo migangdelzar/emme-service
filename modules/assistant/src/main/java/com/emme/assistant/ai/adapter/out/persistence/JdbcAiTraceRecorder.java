@@ -7,8 +7,9 @@ import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.AiTraceRedactor;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** PostgreSQL adapter for tenant-scoped, redacted AI execution traces. */
@@ -16,10 +17,16 @@ public final class JdbcAiTraceRecorder implements AiTraceRecorder {
 
   private final JdbcClient jdbc;
   private final AiTraceRedactor redactor;
+  private final ObjectMapper objectMapper;
 
   public JdbcAiTraceRecorder(JdbcClient jdbc, AiTraceRedactor redactor) {
+    this(jdbc, redactor, new ObjectMapper());
+  }
+
+  public JdbcAiTraceRecorder(JdbcClient jdbc, AiTraceRedactor redactor, ObjectMapper objectMapper) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
     this.redactor = Objects.requireNonNull(redactor, "redactor must not be null");
+    this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper must not be null");
   }
 
   @Override
@@ -172,15 +179,19 @@ public final class JdbcAiTraceRecorder implements AiTraceRecorder {
         .param("top1Similarity", trace.top1Similarity())
         .param("top2Similarity", trace.top2Similarity())
         .param("margin", trace.margin())
-        .param(
-            "matches",
-            trace.matches().stream()
-                .map(match -> "\"" + match.replace("\\", "\\\\").replace("\"", "\\\"") + "\"")
-                .collect(Collectors.joining(",", "[", "]")))
+        .param("matches", serializeMatches(trace.matches()))
         .param("dependency", trace.dependency())
         .param("dependencyVersion", trace.dependencyVersion())
         .param("invalidationContext", redactor.redact(trace.invalidationContext()))
         .param("latencyMillis", trace.latencyMillis())
         .update();
+  }
+
+  private String serializeMatches(java.util.List<String> matches) {
+    try {
+      return objectMapper.writeValueAsString(matches);
+    } catch (JsonProcessingException exception) {
+      throw new IllegalStateException("Could not serialize semantic trace matches", exception);
+    }
   }
 }

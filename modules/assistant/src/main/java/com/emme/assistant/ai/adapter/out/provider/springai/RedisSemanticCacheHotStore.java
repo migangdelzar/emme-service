@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
+import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
@@ -33,6 +34,7 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
   private static final String DOCUMENT_ID_PREFIX = "cache-";
 
   private final VectorStore vectorStore;
+  private final String embeddingModelName;
   private final String embeddingModelVersion;
   private final int embeddingDimensions;
   private final Clock clock;
@@ -41,12 +43,40 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
 
   public RedisSemanticCacheHotStore(
       VectorStore vectorStore, String embeddingModelVersion, int embeddingDimensions) {
-    this(vectorStore, embeddingModelVersion, embeddingDimensions, Clock.systemUTC());
+    this(
+        vectorStore,
+        EmbeddingModelDefaults.MODEL_NAME,
+        embeddingModelVersion,
+        embeddingDimensions,
+        Clock.systemUTC());
   }
 
   public RedisSemanticCacheHotStore(
       VectorStore vectorStore, String embeddingModelVersion, int embeddingDimensions, Clock clock) {
-    this(vectorStore, embeddingModelVersion, embeddingDimensions, clock, null, "");
+    this(
+        vectorStore,
+        EmbeddingModelDefaults.MODEL_NAME,
+        embeddingModelVersion,
+        embeddingDimensions,
+        clock,
+        null,
+        "");
+  }
+
+  public RedisSemanticCacheHotStore(
+      VectorStore vectorStore,
+      String embeddingModelName,
+      String embeddingModelVersion,
+      int embeddingDimensions,
+      Clock clock) {
+    this(
+        vectorStore,
+        embeddingModelName,
+        embeddingModelVersion,
+        embeddingDimensions,
+        clock,
+        null,
+        "");
   }
 
   public RedisSemanticCacheHotStore(
@@ -56,13 +86,35 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
       Clock clock,
       RedisClient redisClient,
       String redisKeyPrefix) {
+    this(
+        vectorStore,
+        EmbeddingModelDefaults.MODEL_NAME,
+        embeddingModelVersion,
+        embeddingDimensions,
+        clock,
+        redisClient,
+        redisKeyPrefix);
+  }
+
+  public RedisSemanticCacheHotStore(
+      VectorStore vectorStore,
+      String embeddingModelName,
+      String embeddingModelVersion,
+      int embeddingDimensions,
+      Clock clock,
+      RedisClient redisClient,
+      String redisKeyPrefix) {
     this.vectorStore = Objects.requireNonNull(vectorStore, "vectorStore must not be null");
+    if (embeddingModelName == null || embeddingModelName.isBlank()) {
+      throw new IllegalArgumentException("embeddingModelName must not be blank");
+    }
     if (embeddingModelVersion == null || embeddingModelVersion.isBlank()) {
       throw new IllegalArgumentException("embeddingModelVersion must not be blank");
     }
     if (embeddingDimensions <= 0) {
       throw new IllegalArgumentException("embeddingDimensions must be positive");
     }
+    this.embeddingModelName = embeddingModelName;
     this.embeddingModelVersion = embeddingModelVersion;
     this.embeddingDimensions = embeddingDimensions;
     this.clock = Objects.requireNonNull(clock, "clock must not be null");
@@ -81,6 +133,7 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
       String redisKeyPrefix) {
     this(
         vectorStore,
+        embeddingConfiguration.modelName(),
         embeddingConfiguration.modelVersion(),
         embeddingConfiguration.dimension(),
         clock,
@@ -109,7 +162,10 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
     var versions =
         filters.and(
             filters.eq("promptVersion", encodeTagValue(lookup.promptVersion())),
-            filters.eq("embeddingModelVersion", encodeTagValue(lookup.query().modelVersion())));
+            filters.and(
+                filters.eq("embeddingModelName", encodeTagValue(embeddingModelName)),
+                filters.eq(
+                    "embeddingModelVersion", encodeTagValue(lookup.query().modelVersion()))));
     var identity = filters.and(filters.and(tenantAndPrincipal, kindAndContext), versions);
     var filter =
         filters.and(identity, filters.gt("expiresAt", Instant.now(clock).getEpochSecond())).build();
@@ -147,6 +203,7 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
             "cacheKind", encodeTagValue(write.cacheKind()),
             "contextFingerprint", encodeTagValue(write.contextFingerprint()),
             "promptVersion", encodeTagValue(write.promptVersion()),
+            "embeddingModelName", encodeTagValue(embeddingModelName),
             "embeddingModelVersion", encodeTagValue(write.query().modelVersion()),
             "responsePayload", write.responsePayload(),
             "expiresAt", write.expiresAt().getEpochSecond());

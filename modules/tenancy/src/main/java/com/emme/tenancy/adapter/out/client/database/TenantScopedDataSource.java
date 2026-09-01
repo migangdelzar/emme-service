@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
 
@@ -19,35 +21,45 @@ import javax.sql.DataSource;
 public final class TenantScopedDataSource implements DataSource {
 
   private final DataSource delegate;
-  private final TenantIdentifierResolver schemaResolver;
+  private final Function<UUID, String> schemaResolver;
 
   public TenantScopedDataSource(DataSource delegate, TenantIdentifierResolver schemaResolver) {
+    this(delegate, ignored -> schemaResolver.resolveCurrentTenantIdentifier());
+  }
+
+  public TenantScopedDataSource(DataSource delegate, Function<UUID, String> schemaResolver) {
     this.delegate = Objects.requireNonNull(delegate, "delegate must not be null");
     this.schemaResolver = Objects.requireNonNull(schemaResolver, "schemaResolver must not be null");
   }
 
   @Override
   public Connection getConnection() throws SQLException {
+    UUID tenantId = TenantContextHolder.requireCurrentTenantId();
     String schema = currentSchema();
-    return scoped(delegate.getConnection(), schema);
+    return scoped(delegate.getConnection(), tenantId, schema);
   }
 
   @Override
   public Connection getConnection(String username, String password) throws SQLException {
+    UUID tenantId = TenantContextHolder.requireCurrentTenantId();
     String schema = currentSchema();
-    return scoped(delegate.getConnection(username, password), schema);
+    return scoped(delegate.getConnection(username, password), tenantId, schema);
   }
 
   private String currentSchema() {
     TenantContextHolder.requireCurrentTenantId();
-    return TenantSchemaName.requireValid(schemaResolver.resolveCurrentTenantIdentifier());
+    return TenantSchemaName.requireValid(
+        schemaResolver.apply(TenantContextHolder.requireCurrentTenantId()));
   }
 
-  private Connection scoped(Connection connection, String schema) throws SQLException {
+  private Connection scoped(Connection connection, UUID tenantId, String schema)
+      throws SQLException {
     try {
       connection.setSchema(schema);
       try (Statement statement = connection.createStatement()) {
         statement.execute("SET search_path TO %s, emme_core, public".formatted(schema));
+        statement.execute(
+            "SELECT set_config('app.current_tenant_id', '%s', false)".formatted(tenantId));
       }
       return connection;
     } catch (RuntimeException | SQLException exception) {

@@ -57,6 +57,10 @@ public record AiProperties(
     return embedding.modelVersion();
   }
 
+  public String embeddingModelName() {
+    return embedding.model();
+  }
+
   public EmbeddingModelConfiguration embeddingModelConfiguration() {
     return new EmbeddingModelConfiguration(
         embedding.model(), embedding.modelVersion(), embedding.dimension());

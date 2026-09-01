@@ -25,6 +25,8 @@ class AiSemanticSearchMigrationContractTest {
       "db/emme-studio/releases/0.1.0/022-ai-tool-idempotency.sql";
   private static final String TOOL_IDEMPOTENCY_LEASE_MIGRATION =
       "db/emme-studio/releases/0.1.0/023-ai-tool-idempotency-lease.sql";
+  private static final String MODEL_NAME_MIGRATION =
+      "db/emme-studio/releases/0.1.0/029-ai-embedding-model-name.sql";
 
   @Test
   void definesTenantScopedIntentAndToolReferenceTables() throws IOException {
@@ -135,6 +137,20 @@ class AiSemanticSearchMigrationContractTest {
         .contains("ALTER TABLE ai_semantic_execution ENABLE ROW LEVEL SECURITY");
     assertThat(resource("db/emme-studio/changelog.yaml"))
         .contains("releases/0.1.0/028-ai-semantic-execution-traces.sql");
+  }
+
+  @Test
+  void persistsEmbeddingModelNameAcrossSemanticVectorTables() throws IOException {
+    String sql = resource(MODEL_NAME_MIGRATION);
+
+    assertThat(sql)
+        .contains("ai_intent_reference")
+        .contains("ai_tool_reference")
+        .contains("ai_semantic_cache")
+        .contains("ADD COLUMN IF NOT EXISTS embedding_model_name VARCHAR(120)")
+        .contains("idx_ai_semantic_embedding_model_identity");
+    assertThat(resource("db/emme-studio/changelog.yaml"))
+        .contains("releases/0.1.0/029-ai-embedding-model-name.sql");
   }
 
   @Test

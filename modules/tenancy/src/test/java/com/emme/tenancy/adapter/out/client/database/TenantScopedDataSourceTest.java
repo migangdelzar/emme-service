@@ -42,6 +42,8 @@ class TenantScopedDataSourceTest {
     verify(schemaResolver).resolveCurrentTenantIdentifier();
     verify(connection).setSchema("e2e_studio");
     verify(statement).execute("SET search_path TO e2e_studio, emme_core, public");
+    verify(statement)
+        .execute("SELECT set_config('app.current_tenant_id', '" + tenantId + "', false)");
   }
 
   @Test

@@ -1,5 +1,7 @@
 package com.emme.assistant.ai.application.semantic;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
+import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
@@ -40,6 +42,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
   private final Duration ttl;
   private final Optional<SemanticCacheHotStore> hotStore;
   private final SemanticMetrics metrics;
+  private final EmbeddingModelConfiguration embeddingModelConfiguration;
 
   public SemanticChatCache(
       EmbeddingModelPort embeddings,
@@ -70,7 +73,8 @@ public final class SemanticChatCache implements SemanticResponseCache {
         promptVersion,
         ttl,
         hotStore,
-        NoopSemanticMetrics.INSTANCE);
+        NoopSemanticMetrics.INSTANCE,
+        new EmbeddingModelConfiguration(EmbeddingModelDefaults.MODEL_NAME, "legacy", 1));
   }
 
   public SemanticChatCache(
@@ -83,6 +87,30 @@ public final class SemanticChatCache implements SemanticResponseCache {
       Duration ttl,
       Optional<SemanticCacheHotStore> hotStore,
       SemanticMetrics metrics) {
+    this(
+        embeddings,
+        resolver,
+        cache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        hotStore,
+        metrics,
+        new EmbeddingModelConfiguration(EmbeddingModelDefaults.MODEL_NAME, "legacy", 1));
+  }
+
+  public SemanticChatCache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort cache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore,
+      SemanticMetrics metrics,
+      EmbeddingModelConfiguration embeddingModelConfiguration) {
     this.embeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.resolver = Objects.requireNonNull(resolver, "resolver must not be null");
     this.cache = Objects.requireNonNull(cache, "cache must not be null");
@@ -93,6 +121,9 @@ public final class SemanticChatCache implements SemanticResponseCache {
     this.ttl = requirePositive(ttl, "ttl");
     this.hotStore = Objects.requireNonNull(hotStore, "hotStore must not be null");
     this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");
+    this.embeddingModelConfiguration =
+        Objects.requireNonNull(
+            embeddingModelConfiguration, "embeddingModelConfiguration must not be null");
   }
 
   @Override
@@ -279,7 +310,12 @@ public final class SemanticChatCache implements SemanticResponseCache {
 
   private String writeIdempotencyKey(
       String contextFingerprint, String userMessage, EmbeddingVector query) {
-    String embeddingIdentity = query.modelVersion() + "#" + query.values().size();
+    String embeddingIdentity =
+        embeddingModelConfiguration.modelName()
+            + "@"
+            + query.modelVersion()
+            + "#"
+            + query.values().size();
     return promptVersion
         + ":"
         + sha256(contextFingerprint + "\u0000" + embeddingIdentity + "\u0000" + userMessage);

@@ -109,7 +109,8 @@ class RedisSemanticCacheHotStoreTest {
     assertThat(document.getMetadata())
         .containsEntry("tenantId", encodeTagValue(TENANT_ID.toString()))
         .containsEntry("principalId", encodeTagValue(PRINCIPAL_ID.toString()))
-        .containsEntry("durableCacheId", durableId.toString());
+        .containsEntry("durableCacheId", durableId.toString())
+        .containsEntry("embeddingModelName", encodeTagValue("embeddinggemma:300m"));
   }
 
   @Test

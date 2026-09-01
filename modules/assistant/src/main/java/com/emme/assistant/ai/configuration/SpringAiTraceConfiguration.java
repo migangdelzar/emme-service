@@ -4,6 +4,7 @@ import com.emme.assistant.ai.adapter.out.persistence.JdbcAiTraceRecorder;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.AiTraceRedactor;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -22,8 +23,14 @@ public class SpringAiTraceConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(AiTraceRecorder.class)
-  AiTraceRecorder aiTraceRecorder(Optional<JdbcClient> jdbc, AiTraceRedactor redactor) {
-    return jdbc.<AiTraceRecorder>map(client -> new JdbcAiTraceRecorder(client, redactor))
+  AiTraceRecorder aiTraceRecorder(
+      Optional<JdbcClient> jdbc, AiTraceRedactor redactor, ObjectMapper objectMapper) {
+    return jdbc.<AiTraceRecorder>map(
+            client -> new JdbcAiTraceRecorder(client, redactor, objectMapper))
         .orElse(NoopAiTraceRecorder.INSTANCE);
+  }
+
+  AiTraceRecorder aiTraceRecorder(Optional<JdbcClient> jdbc, AiTraceRedactor redactor) {
+    return aiTraceRecorder(jdbc, redactor, new ObjectMapper());
   }
 }

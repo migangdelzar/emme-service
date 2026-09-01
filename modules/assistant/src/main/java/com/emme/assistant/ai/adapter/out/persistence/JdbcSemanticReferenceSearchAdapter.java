@@ -19,12 +19,14 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
   private static final String TOOL_TABLE = "ai_tool_reference";
 
   private final JdbcClient jdbc;
+  private final String embeddingModelName;
   private final int embeddingDimensions;
   private final String embeddingModelVersion;
 
   public JdbcSemanticReferenceSearchAdapter(JdbcClient jdbc, AiProperties aiProperties) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
     AiProperties properties = Objects.requireNonNull(aiProperties, "aiProperties must not be null");
+    this.embeddingModelName = properties.embeddingModelName();
     this.embeddingDimensions = properties.embeddingDimension();
     this.embeddingModelVersion = properties.embeddingModelVersion();
   }
@@ -67,6 +69,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
             .param("tenantId", AiExecutionContextScope.requireCurrent().tenantId())
             .param("locale", locale)
             .param("queryEmbedding", vectorLiteral(query))
+            .param("embeddingModelName", embeddingModelName)
             .param("embeddingModelVersion", query.modelVersion())
             .param("embeddingDimension", query.values().size())
             .param("limit", limit);
@@ -91,6 +94,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
         .param("tenantId", AiExecutionContextScope.requireCurrent().tenantId())
         .param("locale", locale)
         .param("queryEmbedding", vectorLiteral(query))
+        .param("embeddingModelName", embeddingModelName)
         .param("embeddingModelVersion", query.modelVersion())
         .param("embeddingDimension", query.values().size())
         .param("limit", limit)
@@ -110,6 +114,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
       AND active = true
       AND embedding IS NOT NULL
       AND vector_dims(embedding) = :embeddingDimension
+      AND embedding_model_name = :embeddingModelName
       AND %s
       AND %s
     ORDER BY embedding <=> CAST(:queryEmbedding AS vector), id

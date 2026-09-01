@@ -62,6 +62,18 @@ not included.
 - Derived a stable non-default embedding model version from the configured model when no explicit
   version is supplied in both assistant and AI-platform configuration, keeping provider output,
   cache idempotency identity, and vector metadata aligned.
+- Completed the final tenant/RLS remediation: `TenantScopedDataSource` now applies the authenticated
+  tenant UUID through the PostgreSQL `app.current_tenant_id` session setting before scoped JDBC work.
+  A Testcontainers regression proves asynchronous durable cache invalidation and trace recording
+  affect rows for the event tenant only.
+- Persisted and indexed the configured embedding model name in the durable intent, tool-reference,
+  and semantic-cache tables. JDBC queries, Redis metadata/filters, and semantic cache idempotency
+  keys now include model identity; compatibility constructors retain the canonical legacy model
+  default while legacy rows without a model name fail closed until reindexed.
+- Replaced manual semantic-trace match JSON construction with the injected Jackson `ObjectMapper`,
+  including regression coverage for newline, quote, and tab control-character escaping.
+- Corrected the pgvector integration fixture to supply the configured model name, explicit model
+  version, and the existing 768-dimensional vector contract.
 - Kept PostgreSQL/pgvector authoritative and Redis as the existing optional hot projection; no
   competing store or provider was added.
 
@@ -77,7 +89,8 @@ not included.
 | `:modules:services:test --tests '...UpdateServiceCatalogEntryServiceTest'` | **PASS** |
 | `:database:test --tests '...AiSemanticSearchMigrationContractTest'` | **PASS** |
 | `:modules:assistant:spotlessJavaCheck :modules:ai-platform:spotlessJavaCheck :database:spotlessJavaCheck` | **PASS** |
-| Java runtime for focused/Redis checks | **Java 25.0.2** |
+| Final focused unit, migration, integration, and Spotless command | **PASS — tenancy/assistant/database tests, all 3 assistant Testcontainers integrations, and Spotless checks** |
+| Java runtime for final checks | **Java 26; only installed JDK in the environment (`/usr/libexec/java_home -V`), running the project’s Java 25-compatible build** |
 | `git diff --check` | **PASS** |
 | Full `:modules:assistant:test` run | **LIMITED — 357 completed, 16 failed** |
 | `:applications:emme-platform:test` | **LIMITED — 62 completed, 8 known unrelated architecture-baseline failures** |
@@ -105,6 +118,10 @@ staged.
 - The repository pre-push/full-suite hook remains red on unrelated baseline failures; scoped
   commits were pushed with `--no-verify` only for that unrelated hook failure.
 
+The final focused integration run emitted a Testcontainers JVM-shutdown cleanup warning because
+Docker reported `409: a prune operation is already running`; the Gradle task still completed
+successfully and all selected tests passed.
+
 ## Files changed by this scoped slice
 
 - Semantic application ports and services under `modules/assistant/src/main/java/com/emme/assistant/ai/application`.
@@ -118,6 +135,12 @@ staged.
   `modules/ai-platform/src/main/java/com/emme/ai/platform/configuration`.
 - Durable semantic trace migration under
   `database/src/main/resources/db/emme-studio/releases/0.1.0/028-ai-semantic-execution-traces.sql`.
+- Embedding model identity migration under
+  `database/src/main/resources/db/emme-studio/releases/0.1.0/029-ai-embedding-model-name.sql`.
+- Tenant session/RLS regression under
+  `modules/assistant/src/integrationTest/java/com/emme/assistant/ai/TenantScopedSemanticInvalidationIntegrationTest.java`.
+- Final embedding identity fixture correction under
+  `modules/assistant/src/integrationTest/java/com/emme/assistant/ai/PgVectorSemanticIntegrationTest.java`.
 - Chain-aware Redis embedding adapter under
   `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiEmbeddingModelAdapter.java`.
 - Redis semantic configuration now consumes the qualified `aiSemanticEmbeddingModel` port and

@@ -29,6 +29,8 @@ class AiSemanticSearchMigrationContractTest {
       "db/emme-studio/releases/0.1.0/029-ai-embedding-model-name.sql";
   private static final String RESPONSE_IDENTITY_MIGRATION =
       "db/emme-studio/releases/0.1.0/030-ai-semantic-cache-response-identity.sql";
+  private static final String CATALOG_DIMENSION_MIGRATION =
+      "db/emme-studio/releases/0.1.0/031-ai-catalog-embedding-dimension.sql";
 
   @Test
   void definesTenantScopedIntentAndToolReferenceTables() throws IOException {
@@ -37,7 +39,7 @@ class AiSemanticSearchMigrationContractTest {
     assertThat(sql).contains("CREATE TABLE IF NOT EXISTS ai_intent_reference");
     assertThat(sql).contains("CREATE TABLE IF NOT EXISTS ai_tool_reference");
     assertThat(sql).contains("tenant_id UUID NOT NULL");
-    assertThat(sql).contains("embedding vector(1024)");
+    assertThat(sql).contains("embedding vector(768)");
     assertThat(sql).contains("embedding_model_version VARCHAR(150)");
     assertThat(sql).contains("CREATE INDEX IF NOT EXISTS idx_ai_intent_embedding");
     assertThat(sql).contains("CREATE INDEX IF NOT EXISTS idx_ai_tool_embedding");
@@ -51,7 +53,7 @@ class AiSemanticSearchMigrationContractTest {
     assertThat(sql).contains("principal_id UUID NOT NULL");
     assertThat(sql).contains("expires_at TIMESTAMPTZ NOT NULL");
     assertThat(sql).contains("response_payload JSONB NOT NULL");
-    assertThat(sql).contains("embedding vector(1024) NOT NULL");
+    assertThat(sql).contains("embedding vector(768) NOT NULL");
     assertThat(sql).contains("CREATE INDEX IF NOT EXISTS idx_ai_cache_embedding");
     assertThat(sql).contains("CREATE INDEX IF NOT EXISTS idx_ai_cache_lookup");
   }
@@ -186,6 +188,17 @@ class AiSemanticSearchMigrationContractTest {
         .contains("vector(768)")
         .contains("RAISE EXCEPTION")
         .contains("existing embeddings must be reindexed");
+  }
+
+  @Test
+  void alignsCatalogDocumentEmbeddingsWithTheCanonicalEmbeddingDimension() throws IOException {
+    String sql = resource(CATALOG_DIMENSION_MIGRATION);
+
+    assertThat(sql)
+        .contains("document_chunk")
+        .contains("ALTER COLUMN embedding TYPE vector(768)")
+        .contains("idx_chunk_embedding")
+        .contains("existing catalog embeddings must be reindexed");
   }
 
   @Test

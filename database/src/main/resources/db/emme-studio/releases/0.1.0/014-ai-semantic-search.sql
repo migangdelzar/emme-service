@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS ai_intent_reference (
     locale VARCHAR(10) NOT NULL DEFAULT 'es-MX',
     reference_tsv tsvector
         GENERATED ALWAYS AS (to_tsvector('spanish', reference_text)) STORED,
-    embedding vector(1024),
+    embedding vector(768),
     embedding_model_version VARCHAR(150),
     active BOOLEAN NOT NULL DEFAULT true,
     metadata JSONB NOT NULL DEFAULT '{}',
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS ai_tool_reference (
         CHECK (risk_level IN ('READ_ONLY', 'CONFIRMATION_REQUIRED', 'STAFF_APPROVAL')),
     reference_tsv tsvector
         GENERATED ALWAYS AS (to_tsvector('spanish', description)) STORED,
-    embedding vector(1024),
+    embedding vector(768),
     embedding_model_version VARCHAR(150),
     active BOOLEAN NOT NULL DEFAULT true,
     metadata JSONB NOT NULL DEFAULT '{}',
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS ai_semantic_cache (
     cache_kind VARCHAR(40) NOT NULL,
     query_text VARCHAR(4000) NOT NULL,
     context_fingerprint VARCHAR(128) NOT NULL,
-    embedding vector(1024) NOT NULL,
+    embedding vector(768) NOT NULL,
     embedding_model_version VARCHAR(150) NOT NULL,
     prompt_version VARCHAR(150) NOT NULL,
     response_payload JSONB NOT NULL,

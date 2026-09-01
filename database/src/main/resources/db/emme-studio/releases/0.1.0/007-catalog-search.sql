@@ -3,7 +3,7 @@
 -- comment: Catalog and hybrid search structures for tenant studio schemas.
 
 ALTER TABLE document_chunk
-    ADD COLUMN IF NOT EXISTS embedding vector(1024),
+    ADD COLUMN IF NOT EXISTS embedding vector(768),
     ADD COLUMN IF NOT EXISTS content_tsv tsvector
         GENERATED ALWAYS AS (to_tsvector('spanish', content)) STORED;
 
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS catalog_item (
     status VARCHAR(10) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','RETIRED')),
     search_tsv tsvector
         GENERATED ALWAYS AS (to_tsvector('spanish', name || ' ' || coalesce(description, ''))) STORED,
-    embedding vector(1024),
+    embedding vector(768),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     version BIGINT NOT NULL DEFAULT 0,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS catalog_item_image (
     caption VARCHAR(2000),
     caption_tsv tsvector
         GENERATED ALWAYS AS (to_tsvector('spanish', coalesce(caption, ''))) STORED,
-    embedding vector(1024),
+    embedding vector(768),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     version BIGINT NOT NULL DEFAULT 0

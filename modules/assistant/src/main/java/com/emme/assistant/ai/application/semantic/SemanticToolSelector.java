@@ -68,7 +68,7 @@ public final class SemanticToolSelector {
       return decision;
     } catch (RuntimeException failure) {
       recordSafely(
-          () -> metrics.recordFailure("tool_selection", failure.getClass().getSimpleName()));
+          () -> metrics.recordFailure("tool_selection", SemanticFailureReason.code(failure)));
       throw failure;
     } finally {
       recordSafely(
@@ -79,23 +79,25 @@ public final class SemanticToolSelector {
   }
 
   private void recordTrace(SemanticDecision decision, List<SemanticMatch> matches) {
-    recordSafely(
-        () ->
-            traceRecorder.recordSemanticOutcome(
-                new AiSemanticExecutionTrace(
-                    UUID.randomUUID(),
-                    null,
-                    null,
-                    "tool_selection",
-                    decision.accepted() ? "accepted" : "abstained",
-                    decision.top1Similarity(),
-                    decision.top2Similarity(),
-                    decision.margin(),
-                    matches.stream().map(SemanticMatch::key).toList(),
-                    null,
-                    null,
-                    null,
-                    0)));
+    try {
+      traceRecorder.recordSemanticOutcome(
+          new AiSemanticExecutionTrace(
+              UUID.randomUUID(),
+              null,
+              null,
+              "tool_selection",
+              decision.accepted() ? "accepted" : "abstained",
+              decision.top1Similarity(),
+              decision.top2Similarity(),
+              decision.margin(),
+              matches.stream().map(SemanticMatch::key).toList(),
+              null,
+              null,
+              null,
+              0));
+    } catch (RuntimeException failure) {
+      recordSafely(() -> metrics.recordFailure("trace", "trace_persistence_failed"));
+    }
   }
 
   private void recordScores(SemanticDecision decision) {

@@ -55,7 +55,7 @@ public final class SemanticCacheResolver {
     try {
       return confirm(cache.find(lookup, CANDIDATE_LIMIT), validator);
     } catch (RuntimeException failure) {
-      recordFailure("lookup", failure.getClass().getSimpleName());
+      recordFailure("lookup", SemanticFailureReason.code(failure));
       throw failure;
     } finally {
       recordLatency("lookup", Duration.ofNanos(System.nanoTime() - started));
@@ -95,23 +95,25 @@ public final class SemanticCacheResolver {
     if (candidates.size() < 2) top2 = 0.0;
     double margin = Math.max(0.0, top1 - top2);
     double finalTop2 = top2;
-    recordSafely(
-        () ->
-            traceRecorder.recordSemanticOutcome(
-                new AiSemanticExecutionTrace(
-                    UUID.randomUUID(),
-                    null,
-                    null,
-                    "semantic_cache",
-                    outcome,
-                    top1,
-                    finalTop2,
-                    margin,
-                    candidates.stream().map(candidate -> candidate.id().toString()).toList(),
-                    null,
-                    null,
-                    null,
-                    0)));
+    try {
+      traceRecorder.recordSemanticOutcome(
+          new AiSemanticExecutionTrace(
+              UUID.randomUUID(),
+              null,
+              null,
+              "semantic_cache",
+              outcome,
+              top1,
+              finalTop2,
+              margin,
+              candidates.stream().map(candidate -> candidate.id().toString()).toList(),
+              null,
+              null,
+              null,
+              0));
+    } catch (RuntimeException failure) {
+      recordSafely(() -> metrics.recordFailure("trace", "trace_persistence_failed"));
+    }
   }
 
   private void recordScores(List<SemanticCachePort.Candidate> candidates) {

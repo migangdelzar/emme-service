@@ -134,7 +134,8 @@ class AiSemanticSearchMigrationContractTest {
         .contains("matches JSONB NOT NULL")
         .contains("dependency_version")
         .contains("invalidation_context")
-        .contains("ALTER TABLE ai_semantic_execution ENABLE ROW LEVEL SECURITY");
+        .contains("ALTER TABLE ai_semantic_execution ENABLE ROW LEVEL SECURITY")
+        .contains("ALTER TABLE ai_semantic_execution FORCE ROW LEVEL SECURITY");
     assertThat(resource("db/emme-studio/changelog.yaml"))
         .contains("releases/0.1.0/028-ai-semantic-execution-traces.sql");
   }

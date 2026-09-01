@@ -111,6 +111,7 @@ class TenantScopedSemanticInvalidationIntegrationTest {
         "CHAT_INFORMATIONAL");
     enableTenantRls("ai_semantic_cache");
     enableTenantRls("ai_semantic_execution");
+    assertThat(isForcedRls("ai_semantic_execution")).isTrue();
 
     AiProperties properties =
         new AiProperties(
@@ -194,5 +195,10 @@ class TenantScopedSemanticInvalidationIntegrationTest {
             + "_tenant_isolation ON "
             + table
             + " FOR ALL USING (tenant_id = current_tenant_id()) WITH CHECK (tenant_id = current_tenant_id())");
+  }
+
+  private boolean isForcedRls(String table) {
+    return adminJdbc.queryForObject(
+        "SELECT relforcerowsecurity FROM pg_class WHERE oid = ?::regclass", Boolean.class, table);
   }
 }

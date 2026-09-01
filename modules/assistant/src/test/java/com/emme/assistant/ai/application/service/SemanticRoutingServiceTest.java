@@ -1,6 +1,9 @@
 package com.emme.assistant.ai.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
@@ -13,6 +16,8 @@ import com.emme.assistant.ai.application.semantic.SemanticIntentClassifier;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import com.emme.assistant.ai.application.semantic.SemanticMatchPolicy;
 import com.emme.assistant.ai.application.semantic.SemanticToolSelector;
+import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -200,6 +205,26 @@ class SemanticRoutingServiceTest {
     assertThat(metrics.margin).isCloseTo(0.15, org.assertj.core.data.Offset.offset(0.0000001));
   }
 
+  @Test
+  void recordsBoundedTelemetryWhenDurableSemanticTracePersistenceFails() {
+    RecordingReferenceSearch search =
+        new RecordingReferenceSearch(List.of(new SemanticMatch("FAQ", 0.98)));
+    RecordingSemanticMetrics metrics = new RecordingSemanticMetrics();
+    AiTraceRecorder traces = mock(AiTraceRecorder.class);
+    doThrow(new IllegalStateException("database connection failed"))
+        .when(traces)
+        .recordSemanticOutcome(any(AiSemanticExecutionTrace.class));
+    SemanticIntentClassifier classifier =
+        new SemanticIntentClassifier(
+            search, new SemanticMatchPolicy(0.90, 0.10), metrics, traces);
+
+    classifier.classify("es-MX", QUERY);
+
+    assertThat(metrics.failureOperation).isEqualTo("trace");
+    assertThat(metrics.failureReason).isEqualTo("trace_persistence_failed");
+    assertThat(metrics.failureReason).hasSizeLessThan(32);
+  }
+
   private static final class RecordingReferenceSearch implements SemanticReferenceSearchPort {
     private final List<SemanticMatch> matches;
     private int intentLimit;
@@ -264,6 +289,8 @@ class SemanticRoutingServiceTest {
     private double top1;
     private double top2;
     private double margin;
+    private String failureOperation;
+    private String failureReason;
 
     @Override
     public void recordRouting(String outcome) {
@@ -285,6 +312,12 @@ class SemanticRoutingServiceTest {
       this.top1 = top1;
       this.top2 = top2;
       this.margin = margin;
+    }
+
+    @Override
+    public void recordFailure(String operation, String reason) {
+      this.failureOperation = operation;
+      this.failureReason = reason;
     }
   }
 }

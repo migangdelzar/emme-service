@@ -53,7 +53,7 @@ public final class SemanticIntentClassifier {
       recordTrace(decision, matches);
       return decision;
     } catch (RuntimeException failure) {
-      recordSafely(() -> metrics.recordFailure("routing", failure.getClass().getSimpleName()));
+      recordSafely(() -> metrics.recordFailure("routing", SemanticFailureReason.code(failure)));
       throw failure;
     } finally {
       recordSafely(
@@ -62,23 +62,25 @@ public final class SemanticIntentClassifier {
   }
 
   private void recordTrace(SemanticDecision decision, List<SemanticMatch> matches) {
-    recordSafely(
-        () ->
-            traceRecorder.recordSemanticOutcome(
-                new AiSemanticExecutionTrace(
-                    UUID.randomUUID(),
-                    null,
-                    null,
-                    "intent_routing",
-                    decision.accepted() ? "accepted" : "abstained",
-                    decision.top1Similarity(),
-                    decision.top2Similarity(),
-                    decision.margin(),
-                    matches.stream().map(SemanticMatch::key).toList(),
-                    null,
-                    null,
-                    null,
-                    0)));
+    try {
+      traceRecorder.recordSemanticOutcome(
+          new AiSemanticExecutionTrace(
+              UUID.randomUUID(),
+              null,
+              null,
+              "intent_routing",
+              decision.accepted() ? "accepted" : "abstained",
+              decision.top1Similarity(),
+              decision.top2Similarity(),
+              decision.margin(),
+              matches.stream().map(SemanticMatch::key).toList(),
+              null,
+              null,
+              null,
+              0));
+    } catch (RuntimeException failure) {
+      recordSafely(() -> metrics.recordFailure("trace", "trace_persistence_failed"));
+    }
   }
 
   private void recordScores(SemanticDecision decision) {

@@ -16,6 +16,7 @@ import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.application.port.out.TenantRepository;
+import com.emme.tenancy.configuration.TenantPoolingProperties;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
@@ -112,6 +113,57 @@ class SemanticCacheInvalidationServiceTest {
   }
 
   @Test
+  void resolvesNullTenantDatabaseToTheConfiguredDefaultDatabase() {
+    SemanticCachePort durable = mock(SemanticCachePort.class);
+    UUID tenantId = UUID.randomUUID();
+    UUID defaultDatabaseId = UUID.randomUUID();
+    TenantRepository tenants = mock(TenantRepository.class);
+    org.mockito.Mockito.when(tenants.findDatabaseIdByTenantId(tenantId))
+        .thenReturn(java.util.Optional.empty());
+    org.mockito.Mockito.doAnswer(
+            invocation -> {
+              assertThat(TenantContextHolder.currentDatabaseOptional()).contains(defaultDatabaseId);
+              return null;
+            })
+        .when(durable)
+        .invalidate(any(SemanticCacheInvalidation.class));
+    SemanticCacheInvalidationService service =
+        new SemanticCacheInvalidationService(
+            durable,
+            java.util.Optional.empty(),
+            mock(SemanticMetrics.class),
+            mock(AiTraceRecorder.class),
+            tenants,
+            new TenantPoolingProperties(200, 30, 60, 5, 20, 100, defaultDatabaseId.toString()));
+
+    service.invalidate(tenantWideEvent(tenantId));
+
+    verify(durable).invalidate(any(SemanticCacheInvalidation.class));
+  }
+
+  @Test
+  void failsClosedWhenTheConfiguredDefaultDatabaseIsInvalid() {
+    SemanticCachePort durable = mock(SemanticCachePort.class);
+    UUID tenantId = UUID.randomUUID();
+    TenantRepository tenants = mock(TenantRepository.class);
+    org.mockito.Mockito.when(tenants.findDatabaseIdByTenantId(tenantId))
+        .thenReturn(java.util.Optional.empty());
+    SemanticCacheInvalidationService service =
+        new SemanticCacheInvalidationService(
+            durable,
+            java.util.Optional.empty(),
+            mock(SemanticMetrics.class),
+            mock(AiTraceRecorder.class),
+            tenants,
+            new TenantPoolingProperties(200, 30, 60, 5, 20, 100, "not-a-uuid"));
+
+    assertThatThrownBy(() -> service.invalidate(tenantWideEvent(tenantId)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("No valid default database for semantic cache invalidation");
+    org.mockito.Mockito.verifyNoInteractions(durable);
+  }
+
+  @Test
   void failsClosedWhenTheTenantDatabaseCannotBeResolved() {
     SemanticCachePort durable = mock(SemanticCachePort.class);
     UUID tenantId = UUID.randomUUID();
@@ -128,7 +180,7 @@ class SemanticCacheInvalidationServiceTest {
 
     assertThatThrownBy(() -> service.invalidate(tenantWideEvent(tenantId)))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessage("No database context for semantic cache invalidation");
+        .hasMessage("No valid default database for semantic cache invalidation");
     org.mockito.Mockito.verifyNoInteractions(durable);
   }
 

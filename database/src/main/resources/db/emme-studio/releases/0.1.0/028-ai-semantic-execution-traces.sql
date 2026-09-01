@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS ai_semantic_execution (
 );
 
 ALTER TABLE ai_semantic_execution ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_semantic_execution FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS tenant_isolation ON ai_semantic_execution;
 CREATE POLICY tenant_isolation ON ai_semantic_execution
     FOR ALL

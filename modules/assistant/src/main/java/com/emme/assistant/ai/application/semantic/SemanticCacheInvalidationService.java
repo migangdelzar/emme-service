@@ -15,6 +15,7 @@ import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.context.TenantExecutionContext;
 import com.emme.kernel.context.TenantExecutionContextScope;
 import com.emme.tenancy.application.port.out.TenantRepository;
+import com.emme.tenancy.configuration.TenantPoolingProperties;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,6 +33,7 @@ public final class SemanticCacheInvalidationService {
   private final SemanticMetrics metrics;
   private final AiTraceRecorder traceRecorder;
   private final Optional<TenantRepository> tenantRepository;
+  private final Optional<TenantPoolingProperties> tenantPoolingProperties;
 
   public SemanticCacheInvalidationService(
       SemanticCachePort durable, Optional<SemanticCacheHotStore> hotStore) {
@@ -50,7 +52,7 @@ public final class SemanticCacheInvalidationService {
       Optional<SemanticCacheHotStore> hotStore,
       SemanticMetrics metrics,
       AiTraceRecorder traceRecorder) {
-    this(durable, hotStore, metrics, traceRecorder, null);
+    this(durable, hotStore, metrics, traceRecorder, null, null);
   }
 
   public SemanticCacheInvalidationService(
@@ -59,11 +61,22 @@ public final class SemanticCacheInvalidationService {
       SemanticMetrics metrics,
       AiTraceRecorder traceRecorder,
       TenantRepository tenantRepository) {
+    this(durable, hotStore, metrics, traceRecorder, tenantRepository, null);
+  }
+
+  public SemanticCacheInvalidationService(
+      SemanticCachePort durable,
+      Optional<SemanticCacheHotStore> hotStore,
+      SemanticMetrics metrics,
+      AiTraceRecorder traceRecorder,
+      TenantRepository tenantRepository,
+      TenantPoolingProperties tenantPoolingProperties) {
     this.durable = Objects.requireNonNull(durable, "durable must not be null");
     this.hotStore = Objects.requireNonNull(hotStore, "hotStore must not be null");
     this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");
     this.traceRecorder = Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
     this.tenantRepository = Optional.ofNullable(tenantRepository);
+    this.tenantPoolingProperties = Optional.ofNullable(tenantPoolingProperties);
   }
 
   public void invalidate(SemanticCacheDependencyChanged event) {
@@ -96,11 +109,29 @@ public final class SemanticCacheInvalidationService {
             .filter(Objects::nonNull);
     return boundDatabaseId
         .or(
-            () ->
-                tenantRepository.flatMap(
-                    repository -> repository.findDatabaseIdByTenantId(tenantId)))
+        () ->
+            tenantRepository.flatMap(
+                repository -> repository.findDatabaseIdByTenantId(tenantId)))
+        .or(this::configuredDefaultDatabaseId)
         .orElseThrow(
-            () -> new IllegalStateException("No database context for semantic cache invalidation"));
+            () ->
+                new IllegalStateException(
+                    "No valid default database for semantic cache invalidation"));
+  }
+
+  private Optional<UUID> configuredDefaultDatabaseId() {
+    if (tenantPoolingProperties.isEmpty()) {
+      return Optional.empty();
+    }
+    String configured = tenantPoolingProperties.orElseThrow().defaultDatabaseId();
+    if (configured == null || configured.isBlank()) {
+      return Optional.empty();
+    }
+    try {
+      return Optional.of(UUID.fromString(configured));
+    } catch (IllegalArgumentException exception) {
+      return Optional.empty();
+    }
   }
 
   private void invalidateWithinBackendTenant(SemanticCacheDependencyChanged event) {
@@ -152,23 +183,25 @@ public final class SemanticCacheInvalidationService {
   }
 
   private void recordTrace(SemanticCacheDependencyChanged event, String outcome) {
-    recordSafely(
-        () ->
-            traceRecorder.recordSemanticOutcome(
-                new AiSemanticExecutionTrace(
-                    event.eventId(),
-                    event.tenantId(),
-                    effectivePrincipal(event),
-                    "cache_invalidation",
-                    outcome,
-                    0.0,
-                    0.0,
-                    0.0,
-                    List.of(),
-                    event.dependency().name(),
-                    event.version(),
-                    "occurredAt=" + event.occurredAt(),
-                    0)));
+    try {
+      traceRecorder.recordSemanticOutcome(
+          new AiSemanticExecutionTrace(
+              event.eventId(),
+              event.tenantId(),
+              effectivePrincipal(event),
+              "cache_invalidation",
+              outcome,
+              0.0,
+              0.0,
+              0.0,
+              List.of(),
+              event.dependency().name(),
+              event.version(),
+              "occurredAt=" + event.occurredAt(),
+              0));
+    } catch (RuntimeException failure) {
+      recordSafely(() -> metrics.recordFailure("trace", "trace_persistence_failed"));
+    }
   }
 
   private void safelyInvalidateHotStore(

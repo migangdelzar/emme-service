@@ -248,7 +248,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
 
   private void recordFailure(String operation, RuntimeException failure) {
     try {
-      metrics.recordFailure(operation, failure.getClass().getSimpleName());
+      metrics.recordFailure(operation, SemanticFailureReason.code(failure));
     } catch (RuntimeException ignored) {
       // Observability must not change cache semantics.
     }

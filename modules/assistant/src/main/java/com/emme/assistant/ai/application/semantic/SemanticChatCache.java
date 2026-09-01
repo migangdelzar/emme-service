@@ -149,7 +149,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
               codec.encodeText(response),
               Instant.now(clock).plus(ttl),
               query,
-              writeIdempotencyKey(contextFingerprint, userMessage));
+              writeIdempotencyKey(contextFingerprint, userMessage, query));
       UUID cacheId = cache.put(write);
       hotStore.ifPresent(store -> safeHotPut(store, cacheId, write));
       recordWrite("stored");
@@ -277,8 +277,12 @@ public final class SemanticChatCache implements SemanticResponseCache {
     return "context-v1:" + sha256(value);
   }
 
-  private String writeIdempotencyKey(String contextFingerprint, String userMessage) {
-    return promptVersion + ":" + sha256(contextFingerprint + "\u0000" + userMessage);
+  private String writeIdempotencyKey(
+      String contextFingerprint, String userMessage, EmbeddingVector query) {
+    String embeddingIdentity = query.modelVersion() + "#" + query.values().size();
+    return promptVersion
+        + ":"
+        + sha256(contextFingerprint + "\u0000" + embeddingIdentity + "\u0000" + userMessage);
   }
 
   private static String sha256(String value) {

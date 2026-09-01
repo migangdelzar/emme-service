@@ -27,4 +27,18 @@ class AiProviderPropertiesTest {
 
     assertThat(properties.embeddingDimension()).isEqualTo(768);
   }
+
+  @Test
+  void bindsTheConfiguredEmbeddingVersionIntoTheSharedIdentity() {
+    AiProviderProperties properties =
+        new AiProviderProperties(
+            null,
+            null,
+            new AiProviderProperties.EmbeddingConfig(
+                "embeddinggemma:300m", "http://localhost", null, 384, "gemma-v2"),
+            false);
+
+    assertThat(properties.embeddingModelConfiguration().modelVersion()).isEqualTo("gemma-v2");
+    assertThat(properties.embeddingModelConfiguration().dimension()).isEqualTo(384);
+  }
 }

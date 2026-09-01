@@ -2,6 +2,7 @@ package com.emme.assistant.ai.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import org.junit.jupiter.api.Test;
 
 class AiPropertiesTest {
@@ -26,5 +27,23 @@ class AiPropertiesTest {
             false);
 
     assertThat(properties.embeddingDimension()).isEqualTo(768);
+  }
+
+  @Test
+  void exposesOneImmutableEmbeddingConfigurationForProviderAndCacheIdentity() {
+    AiProperties properties =
+        new AiProperties(
+            "ollama",
+            null,
+            new AiProperties.EmbeddingConfig(
+                "embeddinggemma:300m", "http://localhost:11434", null, 384, "gemma-v2"),
+            false);
+
+    EmbeddingModelConfiguration configuration = properties.embeddingModelConfiguration();
+
+    assertThat(configuration.modelName()).isEqualTo("embeddinggemma:300m");
+    assertThat(configuration.modelVersion()).isEqualTo("gemma-v2");
+    assertThat(configuration.dimension()).isEqualTo(384);
+    assertThat(configuration.namespace()).contains("gemma-v2").contains("384");
   }
 }

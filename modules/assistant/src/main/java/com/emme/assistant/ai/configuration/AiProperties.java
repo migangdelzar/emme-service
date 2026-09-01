@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -15,9 +16,16 @@ public record AiProperties(
     String provider, ProviderConfig chat, EmbeddingConfig embedding, boolean mockMode) {
   public record ProviderConfig(String model, String baseUrl, String apiKey) {}
 
-  public record EmbeddingConfig(String model, String baseUrl, String apiKey, Integer dimension) {
+  public record EmbeddingConfig(
+      String model, String baseUrl, String apiKey, Integer dimension, String modelVersion) {
+    public EmbeddingConfig(String model, String baseUrl, String apiKey, Integer dimension) {
+      this(model, baseUrl, apiKey, dimension, null);
+    }
+
     public EmbeddingConfig {
       if (dimension == null || dimension <= 0) dimension = 768;
+      if (modelVersion == null || modelVersion.isBlank())
+        modelVersion = EmbeddingModelDefaults.MODEL_VERSION;
     }
   }
 
@@ -30,7 +38,8 @@ public record AiProperties(
               EmbeddingModelDefaults.MODEL_NAME,
               "http://localhost:11434",
               null,
-              EmbeddingModelDefaults.DIMENSION);
+              EmbeddingModelDefaults.DIMENSION,
+              EmbeddingModelDefaults.MODEL_VERSION);
   }
 
   /** Single source of truth for the vector dimension used across schema, mock, and doctor. */
@@ -39,6 +48,11 @@ public record AiProperties(
   }
 
   public String embeddingModelVersion() {
-    return EmbeddingModelDefaults.MODEL_VERSION;
+    return embedding.modelVersion();
+  }
+
+  public EmbeddingModelConfiguration embeddingModelConfiguration() {
+    return new EmbeddingModelConfiguration(
+        embedding.model(), embedding.modelVersion(), embedding.dimension());
   }
 }

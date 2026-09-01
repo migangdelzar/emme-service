@@ -1,5 +1,6 @@
 package com.emme.ai.platform.configuration;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -14,9 +15,16 @@ public record AiProviderProperties(
 
   public record ProviderConfig(String model, String baseUrl, String apiKey) {}
 
-  public record EmbeddingConfig(String model, String baseUrl, String apiKey, Integer dimension) {
+  public record EmbeddingConfig(
+      String model, String baseUrl, String apiKey, Integer dimension, String modelVersion) {
+    public EmbeddingConfig(String model, String baseUrl, String apiKey, Integer dimension) {
+      this(model, baseUrl, apiKey, dimension, null);
+    }
+
     public EmbeddingConfig {
       if (dimension == null || dimension <= 0) dimension = DEFAULT_EMBEDDING_DIMENSION;
+      if (modelVersion == null || modelVersion.isBlank())
+        modelVersion = DEFAULT_EMBEDDING_MODEL_VERSION;
     }
   }
 
@@ -29,7 +37,8 @@ public record AiProviderProperties(
               DEFAULT_EMBEDDING_MODEL_NAME,
               "http://localhost:11434",
               null,
-              DEFAULT_EMBEDDING_DIMENSION);
+              DEFAULT_EMBEDDING_DIMENSION,
+              DEFAULT_EMBEDDING_MODEL_VERSION);
   }
 
   public int embeddingDimension() {
@@ -37,6 +46,11 @@ public record AiProviderProperties(
   }
 
   public String embeddingModelVersion() {
-    return DEFAULT_EMBEDDING_MODEL_VERSION;
+    return embedding.modelVersion();
+  }
+
+  public EmbeddingModelConfiguration embeddingModelConfiguration() {
+    return new EmbeddingModelConfiguration(
+        embedding.model(), embedding.modelVersion(), embedding.dimension());
   }
 }

@@ -92,8 +92,10 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
             filters.eq("contextFingerprint", encodeTagValue(lookup.contextFingerprint())));
     var versions =
         filters.and(
-            filters.eq("promptVersion", encodeTagValue(lookup.promptVersion())),
-            filters.eq("embeddingModelVersion", encodeTagValue(lookup.query().modelVersion())));
+            filters.and(
+                filters.eq("promptVersion", encodeTagValue(lookup.promptVersion())),
+                filters.eq("embeddingModelVersion", encodeTagValue(lookup.query().modelVersion()))),
+            filters.eq("embeddingDimension", lookup.query().values().size()));
     var identity = filters.and(filters.and(tenantAndPrincipal, kindAndContext), versions);
     var filter =
         filters.and(identity, filters.gt("expiresAt", Instant.now(clock).getEpochSecond())).build();
@@ -132,6 +134,7 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
             "contextFingerprint", encodeTagValue(write.contextFingerprint()),
             "promptVersion", encodeTagValue(write.promptVersion()),
             "embeddingModelVersion", encodeTagValue(write.query().modelVersion()),
+            "embeddingDimension", write.query().values().size(),
             "responsePayload", write.responsePayload(),
             "expiresAt", write.expiresAt().getEpochSecond());
     vectorStore.add(

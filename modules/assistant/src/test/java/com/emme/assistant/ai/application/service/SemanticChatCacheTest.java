@@ -109,6 +109,34 @@ class SemanticChatCacheTest {
   }
 
   @Test
+  void separatesCacheWritesByEmbeddingModelAndDimension() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort cache = mock(SemanticCachePort.class);
+    SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
+    when(embeddings.embed("What are your hours?"))
+        .thenReturn(QUERY, new EmbeddingVector("embedding-v2", List.of(1.0f, 0.0f, 0.0f)));
+    when(codec.encodeText(any())).thenReturn("payload");
+    when(cache.put(any())).thenReturn(UUID.randomUUID());
+    SemanticChatCache semanticCache =
+        new SemanticChatCache(
+            embeddings,
+            mock(SemanticCacheResolver.class),
+            cache,
+            codec,
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5));
+
+    semanticCache.store("", "What are your hours?", "We are open.");
+    semanticCache.store("", "What are your hours?", "We are open.");
+
+    var writes = org.mockito.ArgumentCaptor.forClass(SemanticCachePort.Put.class);
+    verify(cache, org.mockito.Mockito.times(2)).put(writes.capture());
+    assertThat(writes.getAllValues().get(0).writeIdempotencyKey())
+        .isNotEqualTo(writes.getAllValues().get(1).writeIdempotencyKey());
+  }
+
+  @Test
   void confirmsAHotHitAgainstTheDurableCacheBeforeReturningIt() {
     EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
     SemanticCachePort durableCache = mock(SemanticCachePort.class);

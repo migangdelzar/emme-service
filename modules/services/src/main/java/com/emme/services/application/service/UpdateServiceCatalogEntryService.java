@@ -54,6 +54,10 @@ public class UpdateServiceCatalogEntryService implements UpdateServiceCatalogEnt
     if (previousPrice.compareTo(service.getBasePrice()) != 0) {
       publish(details.id(), service.getTenantId(), SemanticCacheDependencyChanged.Dependency.PRICE);
     }
+    publish(
+        details.id(),
+        service.getTenantId(),
+        SemanticCacheDependencyChanged.Dependency.QUOTE_TEMPLATE);
     return details;
   }
 

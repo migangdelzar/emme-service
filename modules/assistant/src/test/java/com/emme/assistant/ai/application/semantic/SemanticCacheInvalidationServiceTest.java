@@ -9,6 +9,8 @@ import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
+import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -84,6 +86,32 @@ class SemanticCacheInvalidationServiceTest {
     service.invalidate(event);
 
     verify(metrics).recordInvalidation("QUOTE_TEMPLATE", "principal");
+  }
+
+  @Test
+  void recordsTenantScopedInvalidationContextThroughTheDurableTraceBoundary() {
+    SemanticCachePort durable = mock(SemanticCachePort.class);
+    AiTraceRecorder traces = mock(AiTraceRecorder.class);
+    SemanticCacheInvalidationService service =
+        new SemanticCacheInvalidationService(
+            durable, java.util.Optional.empty(), mock(SemanticMetrics.class), traces);
+    SemanticCacheDependencyChanged event =
+        new SemanticCacheDependencyChanged(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            SemanticCacheDependencyChanged.Dependency.QUOTE_TEMPLATE,
+            "template-v3",
+            Instant.parse("2026-08-31T12:00:00Z"));
+
+    service.invalidate(event);
+
+    var trace = org.mockito.ArgumentCaptor.forClass(AiSemanticExecutionTrace.class);
+    verify(traces).recordSemanticOutcome(trace.capture());
+    assertThat(trace.getValue().tenantId()).isEqualTo(event.tenantId());
+    assertThat(trace.getValue().principalId()).isEqualTo(event.principalId());
+    assertThat(trace.getValue().dependency()).isEqualTo("QUOTE_TEMPLATE");
+    assertThat(trace.getValue().dependencyVersion()).isEqualTo("template-v3");
   }
 
   @Test

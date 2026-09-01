@@ -3,10 +3,14 @@ package com.emme.assistant.ai.application.semantic;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
+import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 /** Resolves a semantic-cache hit before an LLM pipeline is invoked. */
@@ -17,6 +21,7 @@ public final class SemanticCacheResolver {
   private final SemanticCachePort cache;
   private final SemanticCachePolicy policy;
   private final SemanticMetrics metrics;
+  private final AiTraceRecorder traceRecorder;
 
   public SemanticCacheResolver(SemanticCachePort cache, SemanticCachePolicy policy) {
     this(cache, policy, NoopSemanticMetrics.INSTANCE);
@@ -24,9 +29,18 @@ public final class SemanticCacheResolver {
 
   public SemanticCacheResolver(
       SemanticCachePort cache, SemanticCachePolicy policy, SemanticMetrics metrics) {
+    this(cache, policy, metrics, NoopAiTraceRecorder.INSTANCE);
+  }
+
+  public SemanticCacheResolver(
+      SemanticCachePort cache,
+      SemanticCachePolicy policy,
+      SemanticMetrics metrics,
+      AiTraceRecorder traceRecorder) {
     this.cache = Objects.requireNonNull(cache, "cache must not be null");
     this.policy = Objects.requireNonNull(policy, "policy must not be null");
     this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");
+    this.traceRecorder = Objects.requireNonNull(traceRecorder, "traceRecorder must not be null");
   }
 
   public Optional<SemanticCachePort.Candidate> lookup(SemanticCachePort.Lookup lookup) {
@@ -61,10 +75,43 @@ public final class SemanticCacheResolver {
     Objects.requireNonNull(candidates, "candidates must not be null");
     Objects.requireNonNull(validator, "validator must not be null");
     recordScores(candidates);
-    return policy
-        .select(candidates)
-        .filter(validator)
-        .filter(candidate -> cache.recordHit(candidate.id()));
+    Optional<SemanticCachePort.Candidate> selected = policy.select(candidates);
+    Optional<SemanticCachePort.Candidate> confirmed =
+        selected.filter(validator).filter(candidate -> cache.recordHit(candidate.id()));
+    recordTrace(candidates, confirmed.isPresent() ? "hit" : "miss");
+    return confirmed;
+  }
+
+  private void recordTrace(List<SemanticCachePort.Candidate> candidates, String outcome) {
+    double top1 =
+        candidates.stream().mapToDouble(SemanticCachePort.Candidate::similarity).max().orElse(0.0);
+    double top2 =
+        candidates.stream()
+            .mapToDouble(SemanticCachePort.Candidate::similarity)
+            .sorted()
+            .skip(Math.max(0, candidates.size() - 2L))
+            .findFirst()
+            .orElse(0.0);
+    if (candidates.size() < 2) top2 = 0.0;
+    double margin = Math.max(0.0, top1 - top2);
+    double finalTop2 = top2;
+    recordSafely(
+        () ->
+            traceRecorder.recordSemanticOutcome(
+                new AiSemanticExecutionTrace(
+                    UUID.randomUUID(),
+                    null,
+                    null,
+                    "semantic_cache",
+                    outcome,
+                    top1,
+                    finalTop2,
+                    margin,
+                    candidates.stream().map(candidate -> candidate.id().toString()).toList(),
+                    null,
+                    null,
+                    null,
+                    0)));
   }
 
   private void recordScores(List<SemanticCachePort.Candidate> candidates) {

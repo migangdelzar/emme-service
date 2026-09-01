@@ -13,6 +13,7 @@ import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidationServi
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
 import java.util.Optional;
@@ -40,8 +41,11 @@ public class SpringAiSemanticCacheConfiguration {
   @Bean
   @ConditionalOnMissingBean
   SemanticCacheResolver semanticCacheResolver(
-      SemanticCachePort cache, SemanticCachePolicy semanticCachePolicy, SemanticMetrics metrics) {
-    return new SemanticCacheResolver(cache, semanticCachePolicy, metrics);
+      SemanticCachePort cache,
+      SemanticCachePolicy semanticCachePolicy,
+      SemanticMetrics metrics,
+      AiTraceRecorder traceRecorder) {
+    return new SemanticCacheResolver(cache, semanticCachePolicy, metrics, traceRecorder);
   }
 
   SemanticCacheResolver semanticCacheResolver(
@@ -52,8 +56,11 @@ public class SpringAiSemanticCacheConfiguration {
   @Bean
   @ConditionalOnMissingBean
   SemanticCacheInvalidationService semanticCacheInvalidationService(
-      SemanticCachePort cache, Optional<SemanticCacheHotStore> hotStore, SemanticMetrics metrics) {
-    return new SemanticCacheInvalidationService(cache, hotStore, metrics);
+      SemanticCachePort cache,
+      Optional<SemanticCacheHotStore> hotStore,
+      SemanticMetrics metrics,
+      AiTraceRecorder traceRecorder) {
+    return new SemanticCacheInvalidationService(cache, hotStore, metrics, traceRecorder);
   }
 
   @Bean

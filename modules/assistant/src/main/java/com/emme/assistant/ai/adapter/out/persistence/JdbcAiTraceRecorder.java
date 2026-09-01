@@ -1,12 +1,14 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
+import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiToolCallTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.AiTraceRedactor;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** PostgreSQL adapter for tenant-scoped, redacted AI execution traces. */
@@ -128,6 +130,56 @@ public final class JdbcAiTraceRecorder implements AiTraceRecorder {
         .param("latencyMillis", trace.latencyMillis())
         .param("errorCode", trace.errorCode())
         .param("errorMessage", redactor.redact(trace.errorMessage()))
+        .update();
+  }
+
+  @Override
+  public void recordSemanticOutcome(AiSemanticExecutionTrace trace) {
+    Objects.requireNonNull(trace, "trace must not be null");
+    var current = AiExecutionContextScope.current();
+    var context = current.orElse(null);
+    if (trace.tenantId() == null && context == null) {
+      throw new IllegalStateException("No AI execution context");
+    }
+    var tenantId = trace.tenantId() != null ? trace.tenantId() : context.tenantId();
+    var principalId = trace.principalId() != null ? trace.principalId() : context.principalId();
+    var conversationId = context == null ? null : context.conversationId();
+    var workflowId = context == null ? null : context.workflowId();
+    var traceId = context == null ? null : context.traceId();
+    jdbc.sql(
+            """
+            INSERT INTO ai_semantic_execution (
+                id, tenant_id, principal_id, conversation_id, workflow_id, trace_id,
+                operation, outcome, top1_similarity, top2_similarity, margin,
+                matches, dependency, dependency_version, invalidation_context, latency_ms
+            ) VALUES (
+                :executionId, :tenantId, :principalId, :conversationId, :workflowId,
+                :traceId, :operation, :outcome, :top1Similarity, :top2Similarity, :margin,
+                CAST(:matches AS jsonb), :dependency, :dependencyVersion,
+                :invalidationContext, :latencyMillis
+            )
+            ON CONFLICT (tenant_id, id) DO NOTHING
+            """)
+        .param("executionId", trace.executionId())
+        .param("tenantId", tenantId)
+        .param("principalId", principalId)
+        .param("conversationId", conversationId)
+        .param("workflowId", workflowId)
+        .param("traceId", traceId)
+        .param("operation", trace.operation())
+        .param("outcome", trace.outcome())
+        .param("top1Similarity", trace.top1Similarity())
+        .param("top2Similarity", trace.top2Similarity())
+        .param("margin", trace.margin())
+        .param(
+            "matches",
+            trace.matches().stream()
+                .map(match -> "\"" + match.replace("\\", "\\\\").replace("\"", "\\\"") + "\"")
+                .collect(Collectors.joining(",", "[", "]")))
+        .param("dependency", trace.dependency())
+        .param("dependencyVersion", trace.dependencyVersion())
+        .param("invalidationContext", redactor.redact(trace.invalidationContext()))
+        .param("latencyMillis", trace.latencyMillis())
         .update();
   }
 }

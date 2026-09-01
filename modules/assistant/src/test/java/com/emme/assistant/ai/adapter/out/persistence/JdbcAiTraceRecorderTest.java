@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
+import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiToolCallStatus;
 import com.emme.assistant.ai.application.trace.AiToolCallTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRedactor;
@@ -116,6 +117,48 @@ class JdbcAiTraceRecorderTest {
         .contains("tenant_id");
     verify(statement).param("tenantId", TENANT_ID);
     verify(statement).param("argumentsPayload", "{\"email\":\"[REDACTED_EMAIL]\"}");
+  }
+
+  @Test
+  void persistsSemanticOutcomeScoresMatchesAndInvalidationContext() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    when(jdbc.sql(anyString())).thenReturn(statement);
+    when(statement.param(anyString(), any())).thenReturn(statement);
+    when(statement.update()).thenReturn(1);
+    JdbcAiTraceRecorder recorder = new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor());
+
+    AiSemanticExecutionTrace trace =
+        new AiSemanticExecutionTrace(
+            UUID.randomUUID(),
+            TENANT_ID,
+            PRINCIPAL_ID,
+            "routing",
+            "accepted",
+            0.98,
+            0.72,
+            0.26,
+            java.util.List.of("book_appointment", "availability"),
+            "QUOTE_TEMPLATE",
+            "template-v4",
+            "catalog-item=123",
+            7);
+
+    recorder.recordSemanticOutcome(trace);
+
+    ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+    verify(jdbc).sql(sql.capture());
+    assertThat(sql.getValue())
+        .contains("INSERT INTO ai_semantic_execution")
+        .contains("top1_similarity")
+        .contains("matches")
+        .contains("invalidation_context");
+    verify(statement).param("tenantId", TENANT_ID);
+    verify(statement).param("principalId", PRINCIPAL_ID);
+    verify(statement).param("top1Similarity", 0.98);
+    verify(statement).param("margin", 0.26);
+    verify(statement).param("dependency", "QUOTE_TEMPLATE");
+    verify(statement).param("dependencyVersion", "template-v4");
   }
 
   @Test

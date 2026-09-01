@@ -9,6 +9,7 @@ import com.emme.assistant.ai.application.semantic.SemanticMatchPolicy;
 import com.emme.assistant.ai.application.semantic.SemanticToolSelector;
 import com.emme.assistant.ai.application.tool.AiToolGateway;
 import com.emme.assistant.ai.application.tool.SemanticProactiveToolRouter;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -30,8 +31,11 @@ public class SpringAiSemanticConfiguration {
   @Bean
   @ConditionalOnMissingBean
   SemanticIntentClassifier semanticIntentClassifier(
-      SemanticReferenceSearchPort search, SemanticMatchPolicy policy, SemanticMetrics metrics) {
-    return new SemanticIntentClassifier(search, policy, metrics);
+      SemanticReferenceSearchPort search,
+      SemanticMatchPolicy policy,
+      SemanticMetrics metrics,
+      AiTraceRecorder traceRecorder) {
+    return new SemanticIntentClassifier(search, policy, metrics, traceRecorder);
   }
 
   SemanticIntentClassifier semanticIntentClassifier(
@@ -42,8 +46,11 @@ public class SpringAiSemanticConfiguration {
   @Bean
   @ConditionalOnMissingBean
   SemanticToolSelector semanticToolSelector(
-      SemanticReferenceSearchPort search, SemanticMatchPolicy policy, SemanticMetrics metrics) {
-    return new SemanticToolSelector(search, policy, metrics);
+      SemanticReferenceSearchPort search,
+      SemanticMatchPolicy policy,
+      SemanticMetrics metrics,
+      AiTraceRecorder traceRecorder) {
+    return new SemanticToolSelector(search, policy, metrics, traceRecorder);
   }
 
   SemanticToolSelector semanticToolSelector(

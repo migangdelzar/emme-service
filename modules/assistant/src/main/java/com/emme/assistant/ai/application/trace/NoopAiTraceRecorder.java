@@ -13,4 +13,9 @@ public enum NoopAiTraceRecorder implements AiTraceRecorder {
   public void recordToolCall(AiToolCallTrace trace) {
     // Intentionally empty: observability must not make a tool request fail.
   }
+
+  @Override
+  public void recordSemanticOutcome(AiSemanticExecutionTrace trace) {
+    // Intentionally empty: observability must not make a semantic request fail.
+  }
 }

@@ -8,14 +8,21 @@ import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextBridge;
+import com.emme.kernel.context.AiExecutionContextScope;
+import com.emme.kernel.context.TenantContextHolder;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /** Coordinates durable and hot semantic-cache invalidation for dependency changes. */
 public final class SemanticCacheInvalidationService {
 
   private static final String CACHE_KIND = "CHAT_INFORMATIONAL";
+  private static final UUID SYSTEM_PRINCIPAL_ID = new UUID(0, 0);
 
   private final SemanticCachePort durable;
   private final Optional<SemanticCacheHotStore> hotStore;
@@ -47,6 +54,17 @@ public final class SemanticCacheInvalidationService {
 
   public void invalidate(SemanticCacheDependencyChanged event) {
     Objects.requireNonNull(event, "event must not be null");
+    verifyBoundTenant(event.tenantId());
+    AiExecutionContext context = contextFor(event);
+    AiExecutionContextScope.run(
+        context,
+        () -> AiExecutionContextBridge.runCurrent(() -> invalidateWithinBackendTenant(event)));
+  }
+
+  private void invalidateWithinBackendTenant(SemanticCacheDependencyChanged event) {
+    if (!event.tenantId().equals(TenantContextHolder.requireCurrentTenantId())) {
+      throw new SecurityException("Semantic invalidation tenant does not match backend context");
+    }
     SemanticCacheInvalidation invalidation =
         new SemanticCacheInvalidation(
             event.tenantId(), event.principalId(), CACHE_KIND, event.dependency(), event.version());
@@ -64,6 +82,32 @@ public final class SemanticCacheInvalidationService {
     hotStore.ifPresent(store -> safelyInvalidateHotStore(store, invalidation));
   }
 
+  private static AiExecutionContext contextFor(SemanticCacheDependencyChanged event) {
+    UUID principalId = effectivePrincipal(event);
+    return new AiExecutionContext(
+        event.tenantId(),
+        principalId,
+        Set.of("ROLE_SYSTEM"),
+        SYSTEM_PRINCIPAL_ID,
+        SYSTEM_PRINCIPAL_ID,
+        "semantic-cache-invalidation:" + event.eventId(),
+        "semantic-cache-invalidation:" + event.eventId());
+  }
+
+  private static UUID effectivePrincipal(SemanticCacheDependencyChanged event) {
+    return event.principalId() == null ? SYSTEM_PRINCIPAL_ID : event.principalId();
+  }
+
+  private static void verifyBoundTenant(UUID eventTenantId) {
+    AiExecutionContextScope.current()
+        .filter(context -> !eventTenantId.equals(context.tenantId()))
+        .ifPresent(
+            ignored -> {
+              throw new SecurityException(
+                  "Semantic invalidation tenant does not match backend context");
+            });
+  }
+
   private void recordTrace(SemanticCacheDependencyChanged event) {
     recordSafely(
         () ->
@@ -71,7 +115,7 @@ public final class SemanticCacheInvalidationService {
                 new AiSemanticExecutionTrace(
                     event.eventId(),
                     event.tenantId(),
-                    event.principalId(),
+                    effectivePrincipal(event),
                     "cache_invalidation",
                     "requested",
                     0.0,

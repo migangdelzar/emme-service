@@ -143,8 +143,9 @@ public final class JdbcAiTraceRecorder implements AiTraceRecorder {
     }
     var tenantId = trace.tenantId() != null ? trace.tenantId() : context.tenantId();
     var principalId = trace.principalId() != null ? trace.principalId() : context.principalId();
-    var conversationId = context == null ? null : context.conversationId();
-    var workflowId = context == null ? null : context.workflowId();
+    boolean invalidation = "cache_invalidation".equals(trace.operation());
+    var conversationId = context == null || invalidation ? null : context.conversationId();
+    var workflowId = context == null || invalidation ? null : context.workflowId();
     var traceId = context == null ? null : context.traceId();
     jdbc.sql(
             """

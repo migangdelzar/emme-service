@@ -24,8 +24,14 @@ public record AiProperties(
 
     public EmbeddingConfig {
       if (dimension == null || dimension <= 0) dimension = 768;
-      if (modelVersion == null || modelVersion.isBlank())
-        modelVersion = EmbeddingModelDefaults.MODEL_VERSION;
+      if (modelVersion == null || modelVersion.isBlank()) modelVersion = defaultModelVersion(model);
+    }
+
+    private static String defaultModelVersion(String model) {
+      if (model == null || model.isBlank() || EmbeddingModelDefaults.MODEL_NAME.equals(model)) {
+        return EmbeddingModelDefaults.MODEL_VERSION;
+      }
+      return model;
     }
   }
 

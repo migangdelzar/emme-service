@@ -32,7 +32,10 @@ public class DetectIntentService implements DetectIntentUseCase {
       }
     } catch (RuntimeException failure) {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
-      // The configured model provider is the explicit fallback for embedding outages.
+      if (!SemanticFailurePolicy.isTransientVectorOrProviderFailure(failure)) {
+        throw failure;
+      }
+      // The configured model provider is the explicit fallback for transient vector outages.
     }
     AiModelProvider.IntentResult result = provider.routeIntent(message);
     return new IntentResult(result.intent(), result.confidence(), result.parameters());

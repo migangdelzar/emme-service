@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.TransientDataAccessResourceException;
 
 class DetectIntentServiceTest {
 
@@ -71,6 +72,33 @@ class DetectIntentServiceTest {
 
     assertThat(inContext(() -> service.detect("book it")).intent()).isEqualTo("BOOK");
     verify(fallback).routeIntent("book it");
+  }
+
+  @Test
+  void fallsBackWhenTheSemanticVectorStoreReportsATransientFailure() {
+    AiModelProvider fallback = mock(AiModelProvider.class);
+    SemanticIntentRouter semantic = mock(SemanticIntentRouter.class);
+    when(semantic.route("book it"))
+        .thenThrow(new TransientDataAccessResourceException("vector store unavailable"));
+    when(fallback.routeIntent("book it"))
+        .thenReturn(new AiModelProvider.IntentResult("BOOK", 0.95, Map.of()));
+    DetectIntentService service = new DetectIntentService(fallback, Optional.of(semantic));
+
+    assertThat(inContext(() -> service.detect("book it")).intent()).isEqualTo("BOOK");
+    verify(fallback).routeIntent("book it");
+  }
+
+  @Test
+  void propagatesNonTransientSemanticPersistenceFailuresInsteadOfUsingTheModelFallback() {
+    AiModelProvider fallback = mock(AiModelProvider.class);
+    SemanticIntentRouter semantic = mock(SemanticIntentRouter.class);
+    IllegalStateException persistenceFailure = new IllegalStateException("persistence failure");
+    when(semantic.route("book it")).thenThrow(persistenceFailure);
+    DetectIntentService service = new DetectIntentService(fallback, Optional.of(semantic));
+
+    assertThatThrownBy(() -> inContext(() -> service.detect("book it")))
+        .isSameAs(persistenceFailure);
+    verifyNoInteractions(fallback);
   }
 
   private static <T> T inContext(java.util.function.Supplier<T> action) {

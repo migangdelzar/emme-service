@@ -162,6 +162,37 @@ class JdbcAiTraceRecorderTest {
   }
 
   @Test
+  void persistsTenantWideInvalidationWithTheSystemAuditActorAndNoConversationForeignKey() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    when(jdbc.sql(anyString())).thenReturn(statement);
+    when(statement.param(anyString(), any())).thenReturn(statement);
+    when(statement.update()).thenReturn(1);
+    JdbcAiTraceRecorder recorder = new JdbcAiTraceRecorder(jdbc, new AiTraceRedactor());
+    AiSemanticExecutionTrace trace =
+        new AiSemanticExecutionTrace(
+            UUID.randomUUID(),
+            TENANT_ID,
+            new UUID(0, 0),
+            "cache_invalidation",
+            "requested",
+            0.0,
+            0.0,
+            0.0,
+            java.util.List.of(),
+            "PRICE",
+            "price-v2",
+            "tenant-wide",
+            0);
+
+    AiExecutionContextScope.run(context(), () -> recorder.recordSemanticOutcome(trace));
+
+    verify(statement).param("principalId", new UUID(0, 0));
+    verify(statement).param("conversationId", null);
+    verify(statement).param("workflowId", null);
+  }
+
+  @Test
   void refusesToPersistATraceWithoutBackendExecutionContext() {
     JdbcAiTraceRecorder recorder =
         new JdbcAiTraceRecorder(mock(JdbcClient.class), new AiTraceRedactor());

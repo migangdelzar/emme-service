@@ -46,4 +46,17 @@ class AiPropertiesTest {
     assertThat(configuration.dimension()).isEqualTo(384);
     assertThat(configuration.namespace()).contains("gemma-v2").contains("384");
   }
+
+  @Test
+  void derivesAStableNonDefaultModelIdentityWhenItsVersionIsOmitted() {
+    AiProperties properties =
+        new AiProperties(
+            "ollama",
+            null,
+            new AiProperties.EmbeddingConfig("bge-m3", "http://localhost:11434", null, 1024, null),
+            false);
+
+    assertThat(properties.embeddingModelConfiguration().modelName()).isEqualTo("bge-m3");
+    assertThat(properties.embeddingModelConfiguration().modelVersion()).isEqualTo("bge-m3");
+  }
 }

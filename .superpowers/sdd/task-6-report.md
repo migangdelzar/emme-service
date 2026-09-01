@@ -42,6 +42,17 @@ not included.
   remain in force.
 - Enforced configured embedding model identity, in addition to dimension checks, for JDBC
   semantic reference search and cache operations.
+- Rebound asynchronous semantic-cache invalidation to a reconstructed backend tenant context
+  before durable PostgreSQL work, rejected events that disagree with an already-bound tenant, and
+  used the established zero-UUID system principal for tenant-wide audit traces. Invalidation traces
+  omit conversation/workflow foreign keys because a dependency event is not a conversation.
+- Removed the unsupported Redis `embeddingDimension` filter and metadata field; Redis now uses the
+  existing indexed `embeddingModelVersion` tag while the adapter retains local dimension validation.
+- Restricted DetectIntent model fallback to `EmbeddingProviderUnavailableException` and Spring
+  transient data-access failures; persistence, authorization, and other runtime failures propagate.
+- Derived a stable non-default embedding model version from the configured model when no explicit
+  version is supplied in both assistant and AI-platform configuration, keeping provider output,
+  cache idempotency identity, and vector metadata aligned.
 - Kept PostgreSQL/pgvector authoritative and Redis as the existing optional hot projection; no
   competing store or provider was added.
 
@@ -49,12 +60,13 @@ not included.
 
 | Check | Result |
 |---|---|
-| Focused assistant semantic tests (embedding identity, cache keys, routing, RAG abstention, JDBC/Redis adapters, invalidation, publisher wiring) | **PASS — 13 selected test classes** |
+| Focused assistant semantic tests (embedding identity, cache keys, routing, RAG abstention, JDBC/Redis adapters, invalidation, publisher wiring) | **PASS — selected tests including new context/audit/fallback coverage** |
 | `:modules:assistant:integrationTest --tests '*RedisSemanticIntegrationTest'` | **PASS** |
-| `:modules:ai-platform:test --tests '...AiProviderPropertiesTest'` | **PASS** |
+| `:modules:ai-platform:test --tests '...AiProviderPropertiesTest'` | **PASS — includes non-default model identity coverage** |
 | `:modules:services:test --tests '...UpdateServiceCatalogEntryServiceTest'` | **PASS** |
 | `:database:test --tests '...AiSemanticSearchMigrationContractTest'` | **PASS** |
-| `:modules:assistant:spotlessJavaCheck :modules:ai-platform:spotlessJavaCheck :modules:services:spotlessJavaCheck` | **PASS** |
+| `:modules:assistant:spotlessJavaCheck :modules:ai-platform:spotlessJavaCheck :database:spotlessJavaCheck` | **PASS** |
+| Java runtime for focused/Redis checks | **Java 25.0.2** |
 | `git diff --check` | **PASS** |
 | Full `:modules:assistant:test` run | **LIMITED — 357 completed, 16 failed** |
 | `:applications:emme-platform:test` | **LIMITED — 62 completed, 8 known unrelated architecture-baseline failures** |
@@ -68,6 +80,9 @@ staged.
 - Redis hot entries are removed through the indexed principal/tenant projection when the Redis
   client is available. Durable PostgreSQL invalidation plus durable hit confirmation remains the
   correctness authority when Redis is unavailable.
+- Tenant-wide semantic traces rely on the existing zero UUID system actor convention; no schema
+  migration was required because `principal_id` remains non-null and conversation/workflow are
+  nullable for invalidation records.
 - Unsafe-payload detection is conservative pattern filtering, not a complete DLP system; callers
   requiring stronger guarantees need a dedicated policy service behind the existing port.
 - The checked-in Task 6 brief and the explicitly requested semantic scope do not match; the live

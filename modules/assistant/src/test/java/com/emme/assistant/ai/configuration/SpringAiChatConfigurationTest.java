@@ -1,7 +1,9 @@
 package com.emme.assistant.ai.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
@@ -41,6 +43,32 @@ class SpringAiChatConfigurationTest {
                 mock(AiTraceRecorder.class)));
 
     assertThat(port).isInstanceOf(ChatProviderChain.class);
+  }
+
+  @Test
+  void reportsTheConfiguredProviderIdentityForAChatCompletion() {
+    ChatClient client = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    when(
+            client
+                .prompt()
+                .system(org.mockito.ArgumentMatchers.anyString())
+                .user("hello")
+                .call()
+                .content())
+        .thenReturn("answer");
+    SpringAiChatProperties properties =
+        new SpringAiChatProperties(
+            true,
+            List.of(
+                new SpringAiChatProperties.Provider(
+                    "localChatClient", "local-ollama", "ollama-chat")));
+    SpringAiChatProviderRegistry registry =
+        new SpringAiChatProviderRegistry(Map.of("localChatClient", client), properties);
+
+    var result = new ChatProviderChain(registry.providers()).completeWithIdentity("", "hello");
+
+    assertThat(result.provider()).isEqualTo("local-ollama");
+    assertThat(result.model()).isEqualTo("ollama-chat");
   }
 
   @Test

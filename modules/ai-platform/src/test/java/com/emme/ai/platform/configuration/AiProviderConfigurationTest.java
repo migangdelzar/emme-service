@@ -8,41 +8,22 @@ import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 class AiProviderConfigurationTest {
 
-  @Test
-  void createsTheSpringAiChatAdapterFromExistingProviderConfiguration() {
-    AiProviderProperties properties =
-        new AiProviderProperties(
-            "ollama",
-            new AiProviderProperties.ProviderConfig("gemma-v1", "http://localhost:11434", null),
-            null,
-            false);
-
-    SpringAiChatModel model =
-        new AiProviderConfiguration().springAiChatModel(mock(ChatClient.class), properties);
-
-    assertThat(model.provider()).isEqualTo("ollama");
-    assertThat(model.modelVersion()).isEqualTo("gemma-v1");
-  }
+  private final ApplicationContextRunner contextRunner =
+      new ApplicationContextRunner()
+          .withUserConfiguration(AiProviderConfiguration.class)
+          .withBean("ollamaChatClient", ChatClient.class, () -> mock(ChatClient.class))
+          .withBean("ollamaEmbeddingModel", EmbeddingModel.class, () -> mock(EmbeddingModel.class));
 
   @Test
-  void createsTheSpringAiEmbeddingAdapterFromExistingProviderConfiguration() {
-    AiProviderProperties properties =
-        new AiProviderProperties(
-            "ollama",
-            null,
-            new AiProviderProperties.EmbeddingConfig(
-                "embedding-v1", "http://localhost:11434", null, 2),
-            false);
-
-    SpringAiEmbeddingModel model =
-        new AiProviderConfiguration()
-            .springAiEmbeddingModel(mock(EmbeddingModel.class), properties);
-
-    assertThat(model.provider()).isEqualTo("ollama");
-    assertThat(model.modelVersion()).isEqualTo("embedding-v1");
-    assertThat(model.dimension()).isEqualTo(2);
+  void doesNotCreateUnscopedSpringAiAdaptersForProviderOwnedBeans() {
+    contextRunner.run(
+        context -> {
+          assertThat(context).doesNotHaveBean(SpringAiChatModel.class);
+          assertThat(context).doesNotHaveBean(SpringAiEmbeddingModel.class);
+        });
   }
 }

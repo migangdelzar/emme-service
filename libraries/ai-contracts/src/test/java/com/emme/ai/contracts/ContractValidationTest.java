@@ -38,8 +38,7 @@ class ContractValidationTest {
 
     for (String providerSource :
         java.util.List.of(
-            "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/ollama/OllamaModelProvider.java",
-            "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/groq/GroqModelProvider.java",
+            "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java",
             "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/mock/MockModelProvider.java")) {
       assertThat(readSource(providerSource))
           .as("provider transport source: %s", providerSource)

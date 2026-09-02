@@ -68,6 +68,46 @@ class BoundedModelExecutionSchedulerTest {
   }
 
   @Test
+  void doesNotMaterializeIdentityPermitsForRequestsRejectedByAFullQueue() throws Exception {
+    var scheduler = newScheduler(1, 0, 1, 1);
+    var started = new CountDownLatch(1);
+    var release = new CountDownLatch(1);
+
+    try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      Future<String> first =
+          executor.submit(
+              () ->
+                  scheduler.execute(
+                      ModelCapability.GENERATION,
+                      context(UUID.randomUUID()),
+                      Duration.ofSeconds(5),
+                      () -> {
+                        started.countDown();
+                        release.await();
+                        return "first";
+                      }));
+      assertThat(started.await(1, TimeUnit.SECONDS)).isTrue();
+
+      for (int request = 0; request < 128; request++) {
+        assertThatThrownBy(
+                () ->
+                    scheduler.execute(
+                        ModelCapability.GENERATION,
+                        context(UUID.randomUUID()),
+                        Duration.ofSeconds(1),
+                        () -> "rejected"))
+            .isInstanceOf(ModelAdmissionRejectedException.class);
+      }
+
+      assertThat(scheduler.tenantPermitCount()).isZero();
+      assertThat(scheduler.userPermitCount()).isZero();
+
+      release.countDown();
+      assertThat(first.get(2, TimeUnit.SECONDS)).isEqualTo("first");
+    }
+  }
+
+  @Test
   void servesTenantsInRoundRobinOrderWhenTheyAreWaiting() throws Exception {
     var scheduler = newScheduler(1, 4, 1, 1);
     var started = new CountDownLatch(1);

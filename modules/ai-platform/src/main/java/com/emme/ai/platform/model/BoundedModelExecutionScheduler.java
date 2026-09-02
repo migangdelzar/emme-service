@@ -53,6 +53,14 @@ public final class BoundedModelExecutionScheduler implements ModelExecutionSched
     }
   }
 
+  int tenantPermitCount() {
+    return tenantPermits.size();
+  }
+
+  int userPermitCount() {
+    return userPermits.size();
+  }
+
   @Override
   public <T> T execute(
       ModelCapability capability,
@@ -154,24 +162,28 @@ public final class BoundedModelExecutionScheduler implements ModelExecutionSched
 
   private Permit tryAcquire(Waiter<?> waiter) {
     List<Semaphore> acquired = new ArrayList<>(4);
-    for (Semaphore semaphore : permitsFor(waiter)) {
-      if (!semaphore.tryAcquire()) {
-        acquired.forEach(Semaphore::release);
-        return null;
-      }
-      acquired.add(semaphore);
+    if (!tryAcquire(globalPermits, acquired)
+        || !tryAcquire(capabilityPermits.get(waiter.capability), acquired)
+        || !tryAcquire(
+            tenantPermits.computeIfAbsent(
+                waiter.context.tenantId(), ignored -> new Semaphore(profile.tenantLimit(), true)),
+            acquired)
+        || !tryAcquire(
+            userPermits.computeIfAbsent(
+                waiter.context.principalId(), ignored -> new Semaphore(profile.userLimit(), true)),
+            acquired)) {
+      acquired.forEach(Semaphore::release);
+      return null;
     }
     return new Permit(acquired);
   }
 
-  private List<Semaphore> permitsFor(Waiter<?> waiter) {
-    return List.of(
-        globalPermits,
-        capabilityPermits.get(waiter.capability),
-        tenantPermits.computeIfAbsent(
-            waiter.context.tenantId(), ignored -> new Semaphore(profile.tenantLimit(), true)),
-        userPermits.computeIfAbsent(
-            waiter.context.principalId(), ignored -> new Semaphore(profile.userLimit(), true)));
+  private static boolean tryAcquire(Semaphore semaphore, List<Semaphore> acquired) {
+    if (!semaphore.tryAcquire()) {
+      return false;
+    }
+    acquired.add(semaphore);
+    return true;
   }
 
   private static <K> int available(Map<K, Semaphore> permits, K key, int limit) {

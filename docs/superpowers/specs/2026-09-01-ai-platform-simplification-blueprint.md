@@ -177,3 +177,49 @@ Each section is designed and approved before implementation work begins for that
 - Internal Emme tools call application use cases directly.
 - MCP is reserved for external or independently deployable tools.
 - Tenant isolation, authorization, idempotency, audit, and observability remain intact.
+
+## 7. ai-platform provider simplification
+
+The current `AiModelProvider` combines chat, embeddings, intent routing, and mock behavior. These are separate capabilities and must not be coupled in provider transport classes.
+
+Target responsibilities:
+
+```text
+ChatModel                  chat completion only
+EmbeddingModel             embedding only
+IntentRouter               deterministic/semantic routing in assistant
+ModelAdmissionScheduler    model capacity and bounded admission
+ChatModelSelector          ordered primary/fallback policy
+```
+
+`routeIntent()` must leave provider implementations. Intent routing belongs to `assistant` and follows deterministic rules, pgvector semantic classification, structured extraction, and only then LLM fallback.
+
+Spring AI owns supported model transport, structured output, tool calling, embeddings, and provider observations. Ollama should use the Spring AI Ollama integration. OpenAI-compatible providers such as Groq should use the Spring AI compatible integration where supported. The deterministic mock remains as a test adapter and must not emulate an HTTP provider.
+
+```mermaid
+flowchart TD
+    Chat[Chat use case] --> Selector[ChatModelSelector]
+    Selector --> Model[ChatModel contract]
+    Model --> Adapter[Spring AI ChatClient adapter]
+    Adapter --> Admission[ModelAdmissionScheduler]
+    Admission --> Ollama[Spring AI Ollama]
+    Admission --> External[Spring AI external provider]
+    Selector --> Mock[Deterministic mock adapter]
+```
+
+Migration order:
+
+```text
+1. Separate routeIntent responsibility from provider transport.
+2. Introduce canonical ChatModel and EmbeddingModel adapters.
+3. Configure Spring AI Ollama.
+4. Configure external fallback through Spring AI.
+5. Keep the deterministic mock adapter.
+6. Migrate ChatProviderChain to ChatModelSelector.
+7. Migrate EmbeddingProviderChain.
+8. Remove raw OkHttp provider implementations after integration tests.
+9. Remove tracing wrappers only when Spring observations cover required fields.
+10. Rename model admission classes last.
+```
+
+No raw provider implementation is deleted until callers, configuration, focused tests, and provider integration tests confirm that Spring AI is the active replacement.

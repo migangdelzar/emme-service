@@ -2,6 +2,7 @@ package com.emme.assistant.ai.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -105,6 +106,9 @@ class SpringAiRedisSemanticConfigurationTest {
     assertThat(redisEmbeddingModel.embed("faq")).containsExactly(0.2f, 0.8f);
     org.mockito.Mockito.verify(primary).embed("faq");
     org.mockito.Mockito.verify(fallback).embed("faq");
+    var invocationOrder = inOrder(primary, fallback);
+    invocationOrder.verify(primary).embed("faq");
+    invocationOrder.verify(fallback).embed("faq");
   }
 
   private static RedisSemanticProperties redisProperties() {

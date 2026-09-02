@@ -2,6 +2,8 @@ package com.emme.assistant.ai.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +45,30 @@ class SpringAiChatConfigurationTest {
                 mock(AiTraceRecorder.class)));
 
     assertThat(port).isInstanceOf(ChatModelSelector.class);
+  }
+
+  @Test
+  void invokesConfiguredChatClientsInOrderWhenFallingBack() {
+    ChatClient local = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    ChatClient cloud = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    when(local.prompt().system(anyString()).user("hello").call().content())
+        .thenThrow(new RuntimeException("local unavailable"));
+    when(cloud.prompt().system(anyString()).user("hello").call().content()).thenReturn("hola");
+    SpringAiChatProperties properties =
+        new SpringAiChatProperties(
+            true,
+            List.of(
+                new SpringAiChatProperties.Provider("localChatClient", "local", "local-v1"),
+                new SpringAiChatProperties.Provider("cloudChatClient", "cloud", "cloud-v1")));
+    SpringAiChatConfiguration configuration = new SpringAiChatConfiguration();
+    SpringAiChatProviderRegistry registry =
+        new SpringAiChatProviderRegistry(
+            Map.of("localChatClient", local, "cloudChatClient", cloud), properties);
+
+    assertThat(configuration.chatCompletionPort(registry).complete("", "hello")).isEqualTo("hola");
+    var invocationOrder = inOrder(local, cloud);
+    invocationOrder.verify(local).prompt();
+    invocationOrder.verify(cloud).prompt();
   }
 
   @Test

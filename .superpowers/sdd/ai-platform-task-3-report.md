@@ -22,6 +22,10 @@ policies backed by the canonical Spring AI adapters already introduced in Task
   requests and invalid embedding dimensions.
 - Renamed and expanded selector tests with fallback identity, ordered fallback,
   admission-attempt, and non-fallback propagation coverage.
+- Strengthened fallback coverage after review: `ChatModelSelector`,
+  `EmbeddingModelSelector`, Spring AI chat/embedding configuration, and Redis
+  semantic configuration tests now verify primary/local invocation before the
+  configured fallback using Mockito `InOrder`.
 - Did not delete raw provider implementations or modify later simplification
   tasks.
 
@@ -36,6 +40,12 @@ policies backed by the canonical Spring AI adapters already introduced in Task
 3. Refactor/green: the recording scheduler test doubles now preserve unchecked
    exceptions, matching `BoundedModelExecutionScheduler`; the selector suite
    then passed.
+4. Review RED proof: temporarily reversing `ChatModelSelector` provider
+   iteration caused the new ordered invocation assertion to fail because the
+   fallback was invoked before the configured primary. The production iteration
+   was restored immediately; no production behavior change is included.
+5. Review GREEN: the corrected order assertions passed across all five scoped
+   selector/configuration test classes.
 
 ## Verification
 
@@ -50,6 +60,8 @@ policies backed by the canonical Spring AI adapters already introduced in Task
   the changed selector/configuration files were not listed among the reported
   violations.
 - `git diff --check`: passed.
+- Follow-up focused order suite: **33 tests passed**, including the new
+  invocation-order assertions.
 
 ## Concerns and scope limits
 

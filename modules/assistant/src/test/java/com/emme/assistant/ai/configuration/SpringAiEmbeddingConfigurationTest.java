@@ -2,6 +2,7 @@ package com.emme.assistant.ai.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -48,6 +49,9 @@ class SpringAiEmbeddingConfigurationTest {
 
     assertThat(embeddingModel.embed("faq"))
         .isEqualTo(new EmbeddingVector("ollama-embeddinggemma:300m", List.of(0.2f, 0.8f)));
+    var invocationOrder = inOrder(local, cloud);
+    invocationOrder.verify(local).embed("faq");
+    invocationOrder.verify(cloud).embed("faq");
   }
 
   @Test

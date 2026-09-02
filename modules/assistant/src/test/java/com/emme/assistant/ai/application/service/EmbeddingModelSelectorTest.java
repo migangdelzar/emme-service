@@ -2,6 +2,7 @@ package com.emme.assistant.ai.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -58,6 +59,9 @@ class EmbeddingModelSelectorTest {
                 new EmbeddingModelSelector.Provider("cloud", fallback)));
 
     assertThat(chain.embed("quote this design")).isEqualTo(CLOUD_VECTOR);
+    var invocationOrder = inOrder(primary, fallback);
+    invocationOrder.verify(primary).embed("quote this design");
+    invocationOrder.verify(fallback).embed("quote this design");
   }
 
   @Test
@@ -108,6 +112,9 @@ class EmbeddingModelSelectorTest {
     assertThatThrownBy(() -> chain.embed("faq"))
         .isInstanceOf(EmbeddingProviderUnavailableException.class)
         .hasMessage("All configured embedding providers are unavailable: local, cloud");
+    var invocationOrder = inOrder(primary, fallback);
+    invocationOrder.verify(primary).embed("faq");
+    invocationOrder.verify(fallback).embed("faq");
   }
 
   @Test
@@ -148,6 +155,9 @@ class EmbeddingModelSelectorTest {
     assertThat(result).isEqualTo(CLOUD_VECTOR);
     assertThat(scheduler.capabilities)
         .containsExactly(ModelCapability.EMBEDDING, ModelCapability.EMBEDDING);
+    var invocationOrder = inOrder(primary, fallback);
+    invocationOrder.verify(primary).embed("faq");
+    invocationOrder.verify(fallback).embed("faq");
   }
 
   private static AiExecutionContext context() {

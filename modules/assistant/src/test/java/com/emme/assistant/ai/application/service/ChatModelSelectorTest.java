@@ -2,6 +2,7 @@ package com.emme.assistant.ai.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -52,6 +53,9 @@ class ChatModelSelectorTest {
                 new ChatModelSelector.Provider("cloud", cloud)));
 
     assertThat(chain.complete("", "hello")).isEqualTo("hola");
+    var invocationOrder = inOrder(local, cloud);
+    invocationOrder.verify(local).complete("", "hello");
+    invocationOrder.verify(cloud).complete("", "hello");
   }
 
   @Test
@@ -119,6 +123,9 @@ class ChatModelSelectorTest {
             new IdentifiedChatCompletionPort.ChatCompletionResult("hola", "cloud", "gpt-cloud"));
     assertThat(scheduler.capabilities)
         .containsExactly(ModelCapability.GENERATION, ModelCapability.GENERATION);
+    var invocationOrder = inOrder(primary, fallback);
+    invocationOrder.verify(primary).complete("", "hello");
+    invocationOrder.verify(fallback).complete("", "hello");
   }
 
   @Test

@@ -6,6 +6,7 @@ import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiModelProvider;
 import com.emme.ai.platform.model.BoundedModelExecutionScheduler;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.Optional;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
@@ -30,32 +31,53 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties({AiProviderProperties.class, ModelAdmissionProperties.class})
 public class AiProviderConfiguration {
 
+  ChatClient ollamaChatClient(AiProviderProperties properties) {
+    return ollamaChatClient(properties, ObservationRegistry.NOOP);
+  }
+
   @Bean(name = "ollamaChatClient")
   @ConditionalOnProperty(name = "app.ai.provider", havingValue = "ollama")
   @ConditionalOnMissingBean(name = "ollamaChatClient")
-  ChatClient ollamaChatClient(AiProviderProperties properties) {
+  ChatClient ollamaChatClient(
+      AiProviderProperties properties, ObservationRegistry observationRegistry) {
     ChatModel model =
         OllamaChatModel.builder()
             .ollamaApi(OllamaApi.builder().baseUrl(properties.chat().baseUrl()).build())
             .options(OllamaChatOptions.builder().model(properties.chat().model()).build())
+            .observationRegistry(observationRegistry)
             .build();
-    return ChatClient.builder(model).build();
+    return ChatClient.create(model, observationRegistry);
+  }
+
+  EmbeddingModel ollamaEmbeddingModel(AiProviderProperties properties) {
+    return ollamaEmbeddingModel(properties, ObservationRegistry.NOOP);
   }
 
   @Bean(name = "ollamaEmbeddingModel")
   @ConditionalOnProperty(name = "app.ai.provider", havingValue = "ollama")
   @ConditionalOnMissingBean(name = "ollamaEmbeddingModel")
-  EmbeddingModel ollamaEmbeddingModel(AiProviderProperties properties) {
-    return OllamaEmbeddingModel.builder()
-        .ollamaApi(OllamaApi.builder().baseUrl(properties.embedding().baseUrl()).build())
-        .options(OllamaEmbeddingOptions.builder().model(properties.embedding().model()).build())
-        .build();
+  EmbeddingModel ollamaEmbeddingModel(
+      AiProviderProperties properties, ObservationRegistry observationRegistry) {
+    OllamaEmbeddingModel model =
+        OllamaEmbeddingModel.builder()
+            .ollamaApi(OllamaApi.builder().baseUrl(properties.embedding().baseUrl()).build())
+            .options(OllamaEmbeddingOptions.builder().model(properties.embedding().model()).build())
+            .observationRegistry(observationRegistry)
+            .build();
+    model.setObservationConvention(
+        SpringAiObservationConventions.embeddingModel(properties.embedding().model()));
+    return model;
+  }
+
+  ChatClient groqChatClient(AiProviderProperties properties) {
+    return groqChatClient(properties, ObservationRegistry.NOOP);
   }
 
   @Bean(name = "groqChatClient")
   @ConditionalOnProperty(name = "app.ai.provider", havingValue = "groq")
   @ConditionalOnMissingBean(name = "groqChatClient")
-  ChatClient groqChatClient(AiProviderProperties properties) {
+  ChatClient groqChatClient(
+      AiProviderProperties properties, ObservationRegistry observationRegistry) {
     ChatModel model =
         OpenAiChatModel.builder()
             .options(
@@ -64,8 +86,9 @@ public class AiProviderConfiguration {
                     .apiKey(properties.chat().apiKey())
                     .model(properties.chat().model())
                     .build())
+            .observationRegistry(observationRegistry)
             .build();
-    return ChatClient.builder(model).build();
+    return ChatClient.create(model, observationRegistry);
   }
 
   @Bean

@@ -1,10 +1,12 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.platform.configuration.SpringAiObservationConventions;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -21,13 +23,23 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "app.ai.spring-embedding", name = "enabled", havingValue = "true")
 public class SpringAiEmbeddingConfiguration {
 
+  EmbeddingModel ollamaEmbeddingModel(AiProperties aiProperties) {
+    return ollamaEmbeddingModel(aiProperties, ObservationRegistry.NOOP);
+  }
+
   @Bean(name = "ollamaEmbeddingModel")
   @ConditionalOnMissingBean(name = "ollamaEmbeddingModel")
-  EmbeddingModel ollamaEmbeddingModel(AiProperties aiProperties) {
-    return OllamaEmbeddingModel.builder()
+  EmbeddingModel ollamaEmbeddingModel(
+      AiProperties aiProperties, ObservationRegistry observationRegistry) {
+    OllamaEmbeddingModel model =
+        OllamaEmbeddingModel.builder()
         .ollamaApi(OllamaApi.builder().baseUrl(aiProperties.embedding().baseUrl()).build())
         .options(OllamaEmbeddingOptions.builder().model(aiProperties.embedding().model()).build())
+        .observationRegistry(observationRegistry)
         .build();
+    model.setObservationConvention(
+        SpringAiObservationConventions.embeddingModel(aiProperties.embedding().model()));
+    return model;
   }
 
   @Bean

@@ -22,7 +22,7 @@ public record ModelCapacityProfile(
     }
   }
 
-  int capabilityLimit(ModelCapability capability) {
+  int limitFor(ModelCapability capability) {
     return switch (capability) {
       case GENERATION, VISION -> generationLimit;
       case EMBEDDING -> embeddingLimit;

@@ -8,6 +8,7 @@ import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,19 +33,30 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "app.ai.spring-chat", name = "enabled", havingValue = "true")
 public class SpringAiChatConfiguration {
 
+  ChatModel ollamaChatModel(AiProperties aiProperties) {
+    return ollamaChatModel(aiProperties, ObservationRegistry.NOOP);
+  }
+
   @Bean(name = "ollamaChatModel")
   @ConditionalOnMissingBean(name = "ollamaChatModel")
-  ChatModel ollamaChatModel(AiProperties aiProperties) {
+  ChatModel ollamaChatModel(
+      AiProperties aiProperties, ObservationRegistry observationRegistry) {
     return OllamaChatModel.builder()
         .ollamaApi(OllamaApi.builder().baseUrl(aiProperties.chat().baseUrl()).build())
         .options(OllamaChatOptions.builder().model(aiProperties.chat().model()).build())
+        .observationRegistry(observationRegistry)
         .build();
+  }
+
+  ChatClient ollamaChatClient(ChatModel ollamaChatModel) {
+    return ollamaChatClient(ollamaChatModel, ObservationRegistry.NOOP);
   }
 
   @Bean(name = "ollamaChatClient")
   @ConditionalOnMissingBean(name = "ollamaChatClient")
-  ChatClient ollamaChatClient(ChatModel ollamaChatModel) {
-    return ChatClient.builder(ollamaChatModel).build();
+  ChatClient ollamaChatClient(
+      ChatModel ollamaChatModel, ObservationRegistry observationRegistry) {
+    return ChatClient.create(ollamaChatModel, observationRegistry);
   }
 
   @Bean

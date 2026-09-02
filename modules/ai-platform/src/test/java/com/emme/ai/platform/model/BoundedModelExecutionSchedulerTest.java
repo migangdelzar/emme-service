@@ -15,6 +15,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
 class BoundedModelExecutionSchedulerTest {
@@ -199,6 +200,106 @@ class BoundedModelExecutionSchedulerTest {
                   Duration.ofSeconds(1),
                   () -> "after-timeout"))
           .isEqualTo("after-timeout");
+    }
+  }
+
+  @Test
+  void enforcesCapabilityLimitsWithoutBlockingOtherCapabilityWork() throws Exception {
+    var scheduler = new BoundedModelExecutionScheduler(new ModelCapacityProfile(2, 1, 1, 2, 2, 1));
+    var embeddingStarted = new CountDownLatch(1);
+    var releaseEmbedding = new CountDownLatch(1);
+
+    try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      Future<String> embedding =
+          executor.submit(
+              () ->
+                  scheduler.execute(
+                      ModelCapability.EMBEDDING,
+                      context(UUID.randomUUID()),
+                      Duration.ofSeconds(5),
+                      () -> {
+                        embeddingStarted.countDown();
+                        releaseEmbedding.await();
+                        return "embedding";
+                      }));
+      assertThat(embeddingStarted.await(1, TimeUnit.SECONDS)).isTrue();
+
+      assertThat(
+              scheduler.execute(
+                  ModelCapability.GENERATION,
+                  context(UUID.randomUUID()),
+                  Duration.ofSeconds(1),
+                  () -> "generation"))
+          .isEqualTo("generation");
+
+      Future<String> secondEmbedding =
+          executor.submit(
+              () ->
+                  scheduler.execute(
+                      ModelCapability.EMBEDDING,
+                      context(UUID.randomUUID()),
+                      Duration.ofMillis(20),
+                      () -> "second embedding"));
+      assertThatThrownBy(() -> secondEmbedding.get(1, TimeUnit.SECONDS))
+          .hasCauseInstanceOf(ModelAdmissionTimeoutException.class);
+
+      releaseEmbedding.countDown();
+      assertThat(embedding.get(2, TimeUnit.SECONDS)).isEqualTo("embedding");
+    }
+  }
+
+  @Test
+  void interruptionRemovesWaitingWorkAndLeavesCapacityAvailable() throws Exception {
+    var scheduler = newScheduler(1, 1, 1, 1);
+    var started = new CountDownLatch(1);
+    var release = new CountDownLatch(1);
+    var interrupted = new AtomicReference<Throwable>();
+    var interruptedSignal = new CountDownLatch(1);
+
+    try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      Future<String> first =
+          executor.submit(
+              () ->
+                  scheduler.execute(
+                      ModelCapability.GENERATION,
+                      context(UUID.randomUUID()),
+                      Duration.ofSeconds(5),
+                      () -> {
+                        started.countDown();
+                        release.await();
+                        return "first";
+                      }));
+      assertThat(started.await(1, TimeUnit.SECONDS)).isTrue();
+
+      Future<?> waiting =
+          executor.submit(
+              () -> {
+                try {
+                  scheduler.execute(
+                      ModelCapability.GENERATION,
+                      context(UUID.randomUUID()),
+                      Duration.ofSeconds(5),
+                      () -> "never runs");
+                } catch (Throwable failure) {
+                  interrupted.set(failure);
+                  interruptedSignal.countDown();
+                }
+              });
+      awaitQueued(scheduler, 1);
+      waiting.cancel(true);
+
+      assertThat(interruptedSignal.await(1, TimeUnit.SECONDS)).isTrue();
+      assertThat(interrupted.get()).isInstanceOf(ModelAdmissionInterruptedException.class);
+
+      release.countDown();
+      assertThat(first.get(2, TimeUnit.SECONDS)).isEqualTo("first");
+      assertThat(
+              scheduler.execute(
+                  ModelCapability.GENERATION,
+                  context(UUID.randomUUID()),
+                  Duration.ofSeconds(1),
+                  () -> "after-interruption"))
+          .isEqualTo("after-interruption");
     }
   }
 

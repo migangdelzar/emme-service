@@ -5,8 +5,11 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.kernel.context.AiExecutionContext;
 import java.time.Duration;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -35,15 +38,13 @@ public final class BoundedModelExecutionScheduler implements ModelExecutionSched
   public BoundedModelExecutionScheduler(ModelCapacityProfile profile) {
     this.profile = Objects.requireNonNull(profile, "profile must not be null");
     globalPermits = new Semaphore(profile.globalLimit(), true);
-    Semaphore generationPermits = new Semaphore(profile.generationLimit(), true);
-    capabilityPermits =
-        Map.of(
-            ModelCapability.GENERATION,
-            generationPermits,
-            ModelCapability.VISION,
-            generationPermits,
-            ModelCapability.EMBEDDING,
-            new Semaphore(profile.embeddingLimit(), true));
+    Semaphore generationPermits = new Semaphore(profile.limitFor(ModelCapability.GENERATION), true);
+    capabilityPermits = new EnumMap<>(ModelCapability.class);
+    capabilityPermits.put(ModelCapability.GENERATION, generationPermits);
+    capabilityPermits.put(ModelCapability.VISION, generationPermits);
+    capabilityPermits.put(
+        ModelCapability.EMBEDDING,
+        new Semaphore(profile.limitFor(ModelCapability.EMBEDDING), true));
   }
 
   int queuedTasks() {
@@ -147,47 +148,35 @@ public final class BoundedModelExecutionScheduler implements ModelExecutionSched
   private boolean hasAvailableCapacity(Waiter<?> waiter) {
     return globalPermits.availablePermits() > 0
         && capabilityPermits.get(waiter.capability).availablePermits() > 0
-        && tenantPermits
-                .computeIfAbsent(
-                    waiter.context.tenantId(),
-                    ignored -> new Semaphore(profile.tenantLimit(), true))
-                .availablePermits()
-            > 0
-        && userPermits
-                .computeIfAbsent(
-                    waiter.context.principalId(),
-                    ignored -> new Semaphore(profile.userLimit(), true))
-                .availablePermits()
-            > 0;
+        && available(tenantPermits, waiter.context.tenantId(), profile.tenantLimit()) > 0
+        && available(userPermits, waiter.context.principalId(), profile.userLimit()) > 0;
   }
 
   private Permit tryAcquire(Waiter<?> waiter) {
-    if (!globalPermits.tryAcquire()) {
-      return null;
+    List<Semaphore> acquired = new ArrayList<>(4);
+    for (Semaphore semaphore : permitsFor(waiter)) {
+      if (!semaphore.tryAcquire()) {
+        acquired.forEach(Semaphore::release);
+        return null;
+      }
+      acquired.add(semaphore);
     }
-    Semaphore capability = capabilityPermits.get(waiter.capability);
-    if (!capability.tryAcquire()) {
-      globalPermits.release();
-      return null;
-    }
-    Semaphore tenant =
+    return new Permit(acquired);
+  }
+
+  private List<Semaphore> permitsFor(Waiter<?> waiter) {
+    return List.of(
+        globalPermits,
+        capabilityPermits.get(waiter.capability),
         tenantPermits.computeIfAbsent(
-            waiter.context.tenantId(), ignored -> new Semaphore(profile.tenantLimit(), true));
-    if (!tenant.tryAcquire()) {
-      capability.release();
-      globalPermits.release();
-      return null;
-    }
-    Semaphore user =
+            waiter.context.tenantId(), ignored -> new Semaphore(profile.tenantLimit(), true)),
         userPermits.computeIfAbsent(
-            waiter.context.principalId(), ignored -> new Semaphore(profile.userLimit(), true));
-    if (!user.tryAcquire()) {
-      tenant.release();
-      capability.release();
-      globalPermits.release();
-      return null;
-    }
-    return new Permit(capability, tenant, user);
+            waiter.context.principalId(), ignored -> new Semaphore(profile.userLimit(), true)));
+  }
+
+  private static <K> int available(Map<K, Semaphore> permits, K key, int limit) {
+    Semaphore semaphore = permits.get(key);
+    return semaphore == null ? limit : semaphore.availablePermits();
   }
 
   private void enqueue(Waiter<?> waiter) {
@@ -217,25 +206,18 @@ public final class BoundedModelExecutionScheduler implements ModelExecutionSched
   }
 
   private final class Permit {
-    private final Semaphore capability;
-    private final Semaphore tenant;
-    private final Semaphore user;
+    private final List<Semaphore> semaphores;
     private boolean released;
 
-    private Permit(Semaphore capability, Semaphore tenant, Semaphore user) {
-      this.capability = capability;
-      this.tenant = tenant;
-      this.user = user;
+    private Permit(List<Semaphore> semaphores) {
+      this.semaphores = List.copyOf(semaphores);
     }
 
     private void release() {
       synchronized (queueMonitor) {
         if (!released) {
           released = true;
-          user.release();
-          tenant.release();
-          capability.release();
-          globalPermits.release();
+          semaphores.forEach(Semaphore::release);
           queueMonitor.notifyAll();
         }
       }

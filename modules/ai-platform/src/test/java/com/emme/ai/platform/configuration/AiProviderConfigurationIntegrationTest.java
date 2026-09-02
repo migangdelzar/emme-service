@@ -3,7 +3,11 @@ package com.emme.ai.platform.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.ai.contracts.model.AiModelProvider;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationHandler;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -99,11 +103,74 @@ class AiProviderConfigurationIntegrationTest {
         .contains("\"input\":[\"faq\"]");
   }
 
+  @Test
+  void delegatesChatProviderAndModelObservationFieldsToSpring() throws Exception {
+    server.enqueue(
+        jsonResponse(
+            "{\"model\":\"ollama-test\",\"created_at\":\"2026-09-02T00:00:00Z\","
+                + "\"message\":{\"role\":\"assistant\",\"content\":\"Hola local\"},"
+                + "\"done\":true}"));
+    ObservationCapture capture = new ObservationCapture();
+    ObservationRegistry registry = ObservationRegistry.create();
+    registry.observationConfig().observationHandler(capture);
+    AiProviderConfiguration configuration = new AiProviderConfiguration();
+    AiProviderProperties properties =
+        properties("ollama", "ollama-test", server.url("/").toString(), null);
+
+    configuration.ollamaChatClient(properties, registry).prompt().user("hello").call().content();
+
+    assertThat(capture.context()).isNotNull();
+    assertThat(capture.value("gen_ai.system")).isEqualTo("ollama");
+    assertThat(capture.value("gen_ai.request.model")).isEqualTo("ollama-test");
+  }
+
+  @Test
+  void delegatesEmbeddingProviderAndModelObservationFieldsToSpring() throws Exception {
+    server.enqueue(jsonResponse("{\"embeddings\":[[0.25,0.75]]}"));
+    ObservationCapture capture = new ObservationCapture();
+    ObservationRegistry registry = ObservationRegistry.create();
+    registry.observationConfig().observationHandler(capture);
+    AiProviderConfiguration configuration = new AiProviderConfiguration();
+    AiProviderProperties properties =
+        properties("ollama", "ollama-test", server.url("/").toString(), null);
+
+    configuration.ollamaEmbeddingModel(properties, registry).embed("faq");
+
+    assertThat(capture.context()).isNotNull();
+    assertThat(capture.value("gen_ai.system")).isEqualTo("ollama");
+    assertThat(capture.value("gen_ai.request.model")).isEqualTo("embeddinggemma:300m");
+  }
+
   private static MockResponse jsonResponse(String body) {
     return new MockResponse()
         .setResponseCode(200)
         .setHeader("Content-Type", "application/json")
         .setBody(body);
+  }
+
+  private static final class ObservationCapture implements ObservationHandler<Observation.Context> {
+    private final AtomicReference<Observation.Context> context = new AtomicReference<>();
+
+    @Override
+    public boolean supportsContext(Observation.Context context) {
+      return true;
+    }
+
+    @Override
+    public void onStop(Observation.Context context) {
+      if ("gen_ai.client.operation".equals(context.getName())) {
+        this.context.set(context);
+      }
+    }
+
+    private Observation.Context context() {
+      return context.get();
+    }
+
+    private String value(String key) {
+      var keyValue = context().getLowCardinalityKeyValue(key);
+      return keyValue == null ? null : keyValue.getValue();
+    }
   }
 
   private AiProviderProperties properties(

@@ -43,7 +43,7 @@ public final class SpringAiEmbeddingModel {
     float[] values = model.embed(text);
     int actualDimension = values == null ? 0 : values.length;
     if (actualDimension != dimension) {
-      throw new IllegalStateException(
+      throw new IllegalArgumentException(
           "Embedding dimension "
               + actualDimension
               + " does not match configured dimension "

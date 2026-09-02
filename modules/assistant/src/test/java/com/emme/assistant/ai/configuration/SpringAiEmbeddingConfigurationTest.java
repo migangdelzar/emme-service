@@ -3,6 +3,7 @@ package com.emme.assistant.ai.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
@@ -82,6 +83,33 @@ class SpringAiEmbeddingConfigurationTest {
 
     assertThatThrownBy(() -> embeddingModel.embed("faq"))
         .isInstanceOf(EmbeddingProviderUnavailableException.class);
+  }
+
+  @Test
+  void propagatesAnInvalidProviderDimensionInsteadOfFallingBack() {
+    EmbeddingModel local = mock(EmbeddingModel.class);
+    EmbeddingModel cloud = mock(EmbeddingModel.class);
+    when(local.embed("faq")).thenReturn(new float[] {0.2f});
+    when(cloud.embed("faq")).thenReturn(new float[] {0.2f, 0.8f});
+    SpringAiEmbeddingProperties properties =
+        new SpringAiEmbeddingProperties(
+            true,
+            List.of(
+                new SpringAiEmbeddingProperties.Provider(
+                    "ollamaEmbeddingModel", "local", "ollama-embeddinggemma:300m"),
+                new SpringAiEmbeddingProperties.Provider(
+                    "openAiEmbeddingModel", "cloud", "ollama-embeddinggemma:300m")));
+    SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
+    EmbeddingModelPort embeddingModel =
+        configuration.embeddingModel(
+            configuration.providerRegistry(
+                Map.of("ollamaEmbeddingModel", local, "openAiEmbeddingModel", cloud), properties,
+                aiProperties(2)));
+
+    assertThatThrownBy(() -> embeddingModel.embed("faq"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Embedding dimension 1 does not match configured dimension 2");
+    verifyNoInteractions(cloud);
   }
 
   @Test

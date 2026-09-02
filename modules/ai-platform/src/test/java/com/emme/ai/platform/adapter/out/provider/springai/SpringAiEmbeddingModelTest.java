@@ -32,4 +32,16 @@ class SpringAiEmbeddingModelTest {
 
     assertThatThrownBy(() -> model.embed("faq")).isSameAs(failure);
   }
+
+  @Test
+  void rejectsAProviderVectorWithAnInvalidConfiguredDimension() {
+    EmbeddingModel delegate = mock(EmbeddingModel.class);
+    when(delegate.embed("faq")).thenReturn(new float[] {0.25f});
+    SpringAiEmbeddingModel model =
+        new SpringAiEmbeddingModel(delegate, "ollama", "embedding-v1", 2);
+
+    assertThatThrownBy(() -> model.embed("faq"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Embedding dimension 1 does not match configured dimension 2");
+  }
 }

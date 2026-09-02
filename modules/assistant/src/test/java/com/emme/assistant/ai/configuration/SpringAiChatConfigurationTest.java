@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.inOrder;
@@ -20,6 +21,50 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.tool.ToolCallbackProvider;
 
 class SpringAiChatConfigurationTest {
+
+  @Test
+  void treatsMissingProviderCredentialsAsUnavailableSoTheSelectorCanFallback() {
+    ChatClient missingCredentialClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    ChatClient fallbackClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    when(missingCredentialClient.prompt().system(anyString()).user("hello").call())
+        .thenThrow(new IllegalArgumentException("API key must not be blank"));
+    when(fallbackClient.prompt().system(anyString()).user("hello").call().content())
+        .thenReturn("hola");
+    SpringAiChatProperties properties =
+        new SpringAiChatProperties(
+            true,
+            List.of(
+                new SpringAiChatProperties.Provider("missingCredential", "groq", "groq-v1"),
+                new SpringAiChatProperties.Provider("fallback", "ollama", "ollama-v1")));
+    SpringAiChatProviderRegistry registry =
+        new SpringAiChatProviderRegistry(
+            Map.of("missingCredential", missingCredentialClient, "fallback", fallbackClient),
+            properties);
+
+    assertThat(new ChatModelSelector(registry.providers()).complete("", "hello")).isEqualTo("hola");
+  }
+
+  @Test
+  void preservesInvalidSchemaFailuresInsteadOfTreatingThemAsProviderOutages() {
+    ChatClient schemaFailureClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    ChatClient fallbackClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    IllegalArgumentException schemaFailure =
+        new IllegalArgumentException("invalid response schema");
+    when(schemaFailureClient.prompt().system(anyString()).user("hello").call())
+        .thenThrow(schemaFailure);
+    SpringAiChatProperties properties =
+        new SpringAiChatProperties(
+            true,
+            List.of(
+                new SpringAiChatProperties.Provider("schemaFailure", "groq", "groq-v1"),
+                new SpringAiChatProperties.Provider("fallback", "ollama", "ollama-v1")));
+    SpringAiChatProviderRegistry registry =
+        new SpringAiChatProviderRegistry(
+            Map.of("schemaFailure", schemaFailureClient, "fallback", fallbackClient), properties);
+
+    assertThatThrownBy(() -> new ChatModelSelector(registry.providers()).complete("", "hello"))
+        .isSameAs(schemaFailure);
+  }
 
   @Test
   void buildsAnOrderedModelSelectorFromNamedChatClients() {
@@ -74,13 +119,12 @@ class SpringAiChatConfigurationTest {
   @Test
   void reportsTheConfiguredProviderIdentityForAChatCompletion() {
     ChatClient client = mock(ChatClient.class, RETURNS_DEEP_STUBS);
-    when(
-            client
-                .prompt()
-                .system(org.mockito.ArgumentMatchers.anyString())
-                .user("hello")
-                .call()
-                .content())
+    when(client
+            .prompt()
+            .system(org.mockito.ArgumentMatchers.anyString())
+            .user("hello")
+            .call()
+            .content())
         .thenReturn("answer");
     SpringAiChatProperties properties =
         new SpringAiChatProperties(

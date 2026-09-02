@@ -1,8 +1,8 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
-import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
+import com.emme.assistant.ai.application.provider.ChatProviderFailurePolicy;
 import com.emme.assistant.ai.application.provider.TracingChatCompletionPort;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
@@ -96,13 +96,8 @@ public final class SpringAiChatProviderRegistry {
     return (conversationContext, userMessage) -> {
       try {
         return model.complete(conversationContext, userMessage);
-      } catch (IllegalArgumentException invalidInput) {
-        throw invalidInput;
-      } catch (ChatProviderUnavailableException unavailable) {
-        throw unavailable;
       } catch (RuntimeException failure) {
-        throw new ChatProviderUnavailableException(
-            "Chat provider '" + providerKey + "' is unavailable", failure);
+        throw ChatProviderFailurePolicy.preserveInputOrUnavailable(providerKey, failure);
       }
     };
   }

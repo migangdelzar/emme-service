@@ -52,6 +52,18 @@ class SpringAiChatClientAdapterTest {
   }
 
   @Test
+  void preservesInvalidSchemaFailuresInsteadOfTreatingThemAsProviderOutages() {
+    ChatClient client = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    IllegalArgumentException schemaFailure =
+        new IllegalArgumentException("invalid response schema");
+    when(client.prompt().system(org.mockito.ArgumentMatchers.anyString()).user("hello").call())
+        .thenThrow(schemaFailure);
+    SpringAiChatClientAdapter adapter = new SpringAiChatClientAdapter(client, "ollama");
+
+    assertThatThrownBy(() -> adapter.complete("", "hello")).isSameAs(schemaFailure);
+  }
+
+  @Test
   void appliesMandatoryAdvisorsToEveryNamedProviderRequest() {
     ChatClient client = mock(ChatClient.class, RETURNS_DEEP_STUBS);
     ChatClient.ChatClientRequestSpec request = mock(ChatClient.ChatClientRequestSpec.class);

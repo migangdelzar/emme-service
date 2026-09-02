@@ -53,4 +53,22 @@ class AiProviderConfigurationTest {
           assertThat(context).doesNotHaveBean(SpringAiEmbeddingModel.class);
         });
   }
+
+  @Test
+  void wiresTheActiveGroqProviderThroughTheOpenAiCompatibleSpringAiAdapter() {
+    contextRunner
+        .withPropertyValues(
+            "app.ai.provider=groq",
+            "app.ai.chat.api-key=test-key",
+            "app.ai.chat.model=llama-test",
+            "app.ai.chat.base-url=http://localhost:9999")
+        .withBean("groqChatClient", ChatClient.class, () -> mock(ChatClient.class))
+        .run(
+            context -> {
+              assertThat(context).hasSingleBean(AiModelProvider.class);
+              assertThat(context.getBean(AiModelProvider.class))
+                  .isInstanceOf(SpringAiModelProvider.class);
+              assertThat(context.getBean("groqChatClient")).isInstanceOf(ChatClient.class);
+            });
+  }
 }

@@ -6,6 +6,15 @@ Task 4 is complete. Active Ollama and Groq provider wiring now uses Spring AI-ba
 
 Admission and observability code was not changed.
 
+## Task 4 Review Remediation — 2026-09-02
+
+Both Task 4 review findings are addressed:
+
+1. Provider contract/integration coverage now exercises the concrete Spring AI factories without paid APIs. `AiProviderConfigurationIntegrationTest` uses a local `MockWebServer` to verify Groq's OpenAI-compatible `/chat/completions` request, bearer credential, model, response mapping, and provider-neutral `AiModelProvider` bridge. It also verifies the concrete Ollama chat and embedding factories and request payloads. `AiProviderConfigurationTest` verifies active Groq context wiring.
+2. Spring AI provider failures preserve fallback semantics. `ChatProviderFailurePolicy` maps runtime outages and missing-credential failures to `ChatProviderUnavailableException`, including failures from the legacy `AiModelProvider` path. Invalid input and schema failures remain unchanged and propagate without triggering fallback. The active registry and the compatibility Spring AI adapter both use this policy.
+
+No live Ollama, Groq, or paid OpenAI API was contacted.
+
 ## Implementation
 
 - Added `SpringAiModelProvider`, the provider-neutral bridge over the existing `SpringAiChatModel` and optional `SpringAiEmbeddingModel` adapters.
@@ -29,6 +38,15 @@ Passed with Java 25 (`mise exec java@25.0.2`):
 - `:libraries:ai-contracts:test --tests '*ContractValidationTest'`
 - Focused provider configuration, architecture, bridge, Spring AI adapter, and assistant registry/service tests.
 - `git diff --check`
+
+Review-remediation verification under Java 25 (`mise exec java@25.0.2`):
+
+- Focused assistant provider/fallback/adapter tests and ai-platform provider/factory tests: passed.
+- `:modules:ai-platform:test`: passed, 46 tests.
+- The added assistant-focused tests: passed, including the three fallback/error regressions and the Spring AI adapter schema regression.
+- `:modules:assistant:test`: 441 tests completed, 18 failures in the same unrelated package-contract, datasource, and broad Spring context coverage already documented above; no remediation test failed.
+- `:modules:ai-platform:spotlessCheck`: passed.
+- `:modules:assistant:spotlessCheck`: remains blocked by pre-existing formatting violations in unrelated dirty files; the scoped Java files were formatted and no unrelated files were changed.
 
 The required aggregate command was run:
 

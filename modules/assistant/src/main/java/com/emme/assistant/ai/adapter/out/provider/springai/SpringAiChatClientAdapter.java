@@ -2,6 +2,7 @@ package com.emme.assistant.ai.adapter.out.provider.springai;
 
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
+import com.emme.assistant.ai.application.provider.ChatProviderFailurePolicy;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
@@ -89,11 +90,8 @@ public final class SpringAiChatClientAdapter implements ChatCompletionPort {
             "Chat provider '" + providerKey + "' returned an empty response");
       }
       return content.strip();
-    } catch (ChatProviderUnavailableException unavailable) {
-      throw unavailable;
     } catch (RuntimeException exception) {
-      throw new ChatProviderUnavailableException(
-          "Chat provider '" + providerKey + "' is unavailable", exception);
+      throw ChatProviderFailurePolicy.preserveInputOrUnavailable(providerKey, exception);
     }
   }
 

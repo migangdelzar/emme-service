@@ -11,6 +11,7 @@ import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.ProactiveToolRouter;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
+import com.emme.assistant.ai.application.provider.ChatProviderFailurePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticFailurePolicy;
 import com.emme.assistant.ai.application.tool.AiToolResult;
 import com.emme.assistant.ai.configuration.AiExecutorProperties;
@@ -161,9 +162,16 @@ public class ChatService implements ChatUseCase {
       response =
           chatCompletion
               .map(chat -> complete(chat, conversationContext, userMessage))
-              .orElseGet(() -> new Completion(executeLegacyChat(conversationContext, userMessage), provider.name(), "legacy-model"));
+              .orElseGet(
+                  () ->
+                      new Completion(
+                          executeLegacyChat(conversationContext, userMessage),
+                          provider.name(),
+                          "legacy-model"));
     } catch (ChatProviderUnavailableException unavailable) {
-      response = new Completion(executeLegacyChat(conversationContext, userMessage), provider.name(), "legacy-model");
+      response =
+          new Completion(
+              executeLegacyChat(conversationContext, userMessage), provider.name(), "legacy-model");
     }
     Completion completed = response;
     String completedResponse = completed.content();
@@ -199,7 +207,8 @@ public class ChatService implements ChatUseCase {
       var result = identified.completeWithIdentity(conversationContext, userMessage);
       return new Completion(result.content(), result.provider(), result.model(), true);
     }
-    return new Completion(chat.complete(conversationContext, userMessage), "legacy-provider", "legacy-model");
+    return new Completion(
+        chat.complete(conversationContext, userMessage), "legacy-provider", "legacy-model");
   }
 
   private record Completion(String content, String provider, String model, boolean identified) {
@@ -217,15 +226,19 @@ public class ChatService implements ChatUseCase {
   }
 
   private String executeLegacyChat(String conversationContext, String userMessage) {
-    if (modelExecutionScheduler.isEmpty()) {
-      return provider.chat(conversationContext, userMessage);
+    try {
+      if (modelExecutionScheduler.isEmpty()) {
+        return provider.chat(conversationContext, userMessage);
+      }
+      return modelExecutionScheduler
+          .orElseThrow()
+          .execute(
+              ModelCapability.GENERATION,
+              AiExecutionContextScope.requireCurrent(),
+              admissionTimeout,
+              () -> provider.chat(conversationContext, userMessage));
+    } catch (RuntimeException failure) {
+      throw ChatProviderFailurePolicy.preserveInputOrUnavailable(provider.name(), failure);
     }
-    return modelExecutionScheduler
-        .orElseThrow()
-        .execute(
-            ModelCapability.GENERATION,
-            AiExecutionContextScope.requireCurrent(),
-            admissionTimeout,
-            () -> provider.chat(conversationContext, userMessage));
   }
 }

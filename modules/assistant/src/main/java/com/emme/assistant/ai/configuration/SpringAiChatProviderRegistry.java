@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
-import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiChatClientAdapter;
+import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
+import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.ChatProviderChain;
 import com.emme.assistant.ai.application.provider.TracingChatCompletionPort;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
@@ -64,15 +65,20 @@ public final class SpringAiChatProviderRegistry {
                     throw new IllegalArgumentException(
                         "Duplicate Spring AI chat provider key: " + configured.key());
                   }
-                  SpringAiChatClientAdapter adapter =
+                  SpringAiChatModel model =
                       toolCallbackProvider == null
-                          ? new SpringAiChatClientAdapter(client, configured.key(), advisors)
-                          : new SpringAiChatClientAdapter(
-                              client, configured.key(), advisors, toolCallbackProvider);
+                          ? new SpringAiChatModel(
+                              client, configured.key(), configured.modelVersion(), advisors)
+                          : new SpringAiChatModel(
+                              client,
+                              configured.key(),
+                              configured.modelVersion(),
+                              advisors,
+                              toolCallbackProvider);
                   return new ChatProviderChain.Provider(
                       configured.key(),
                       new TracingChatCompletionPort(
-                          adapter,
+                          applicationPort(model, configured.key()),
                           configured.key(),
                           configured.modelVersion(),
                           "chat-v1",
@@ -83,6 +89,22 @@ public final class SpringAiChatProviderRegistry {
     if (providers.isEmpty()) {
       throw new IllegalArgumentException("At least one Spring AI chat provider must be configured");
     }
+  }
+
+  private static com.emme.assistant.ai.application.port.out.ChatCompletionPort applicationPort(
+      SpringAiChatModel model, String providerKey) {
+    return (conversationContext, userMessage) -> {
+      try {
+        return model.complete(conversationContext, userMessage);
+      } catch (IllegalArgumentException invalidInput) {
+        throw invalidInput;
+      } catch (ChatProviderUnavailableException unavailable) {
+        throw unavailable;
+      } catch (RuntimeException failure) {
+        throw new ChatProviderUnavailableException(
+            "Chat provider '" + providerKey + "' is unavailable", failure);
+      }
+    };
   }
 
   public List<ChatProviderChain.Provider> providers() {

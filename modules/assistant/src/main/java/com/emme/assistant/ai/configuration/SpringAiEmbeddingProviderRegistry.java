@@ -1,11 +1,13 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
-import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiEmbeddingAdapter;
+import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
 import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
 import com.emme.assistant.ai.application.provider.TracingEmbeddingModelPort;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
+import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -64,8 +66,8 @@ public final class SpringAiEmbeddingProviderRegistry {
         properties.providers().stream()
             .map(
                 configured -> {
-                  EmbeddingModel model = embeddingModels.get(configured.beanName());
-                  if (model == null) {
+                  EmbeddingModel delegate = embeddingModels.get(configured.beanName());
+                  if (delegate == null) {
                     throw new IllegalStateException(
                         "No Spring AI embedding model bean configured for provider '"
                             + configured.key()
@@ -79,11 +81,16 @@ public final class SpringAiEmbeddingProviderRegistry {
                     throw new IllegalArgumentException(
                         "Duplicate Spring AI embedding provider key: " + configured.key());
                   }
+                  SpringAiEmbeddingModel model =
+                      new SpringAiEmbeddingModel(
+                          delegate,
+                          configured.key(),
+                          configured.modelVersion(),
+                          embeddingConfiguration.dimension());
                   return new EmbeddingProviderChain.Provider(
                       configured.key(),
                       new TracingEmbeddingModelPort(
-                          new SpringAiEmbeddingAdapter(
-                              model, configured.modelVersion(), embeddingConfiguration.dimension()),
+                          applicationPort(model, configured.key()),
                           configured.key(),
                           configured.modelVersion(),
                           "embedding-v1",
@@ -98,5 +105,21 @@ public final class SpringAiEmbeddingProviderRegistry {
 
   public List<EmbeddingProviderChain.Provider> providers() {
     return providers;
+  }
+
+  private static com.emme.assistant.ai.application.port.out.EmbeddingModelPort applicationPort(
+      SpringAiEmbeddingModel model, String providerKey) {
+    return text -> {
+      try {
+        return new EmbeddingVector(model.modelVersion(), model.embed(text));
+      } catch (IllegalArgumentException invalidInput) {
+        throw invalidInput;
+      } catch (EmbeddingProviderUnavailableException unavailable) {
+        throw unavailable;
+      } catch (RuntimeException failure) {
+        throw new EmbeddingProviderUnavailableException(
+            "Spring AI embedding provider '" + providerKey + "' failed", failure);
+      }
+    };
   }
 }

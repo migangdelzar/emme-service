@@ -4,10 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.api.result.IntentResult;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
@@ -24,8 +22,7 @@ class DetectIntentServiceTest {
 
   @Test
   void rejectsIntentDetectionWithoutBackendAiExecutionContext() {
-    AiModelProvider fallback = mock(AiModelProvider.class);
-    DetectIntentService service = new DetectIntentService(fallback, Optional.empty());
+    DetectIntentService service = new DetectIntentService(Optional.empty());
 
     assertThatThrownBy(() -> service.detect("hello"))
         .isInstanceOf(IllegalStateException.class)
@@ -33,72 +30,71 @@ class DetectIntentServiceTest {
   }
 
   @Test
-  void usesTheSemanticRouteBeforeTheModelFallback() {
-    AiModelProvider fallback = mock(AiModelProvider.class);
+  void usesTheSemanticRouteWhenAvailable() {
     SemanticIntentRouter semantic = mock(SemanticIntentRouter.class);
     IntentResult semanticResult = new IntentResult("BOOK_APPOINTMENT", 0.98, Map.of());
     when(semantic.route("book it")).thenReturn(Optional.of(semanticResult));
-    DetectIntentService service = new DetectIntentService(fallback, Optional.of(semantic));
+    DetectIntentService service = new DetectIntentService(Optional.of(semantic));
 
     assertThat(inContext(() -> service.detect("book it"))).isEqualTo(semanticResult);
 
-    verifyNoInteractions(fallback);
+    verify(semantic).route("book it");
   }
 
   @Test
-  void fallsBackToTheModelWhenSemanticRoutingAbstains() {
-    AiModelProvider fallback = mock(AiModelProvider.class);
+  void returnsAZeroConfidenceGeneralIntentWhenSemanticRoutingAbstains() {
     SemanticIntentRouter semantic = mock(SemanticIntentRouter.class);
     when(semantic.route("unclear")).thenReturn(Optional.empty());
-    when(fallback.routeIntent("unclear"))
-        .thenReturn(new AiModelProvider.IntentResult("GENERAL", 0.70, Map.of()));
-    DetectIntentService service = new DetectIntentService(fallback, Optional.of(semantic));
+    DetectIntentService service = new DetectIntentService(Optional.of(semantic));
 
     assertThat(inContext(() -> service.detect("unclear")))
-        .isEqualTo(new IntentResult("GENERAL", 0.70, Map.of()));
+        .isEqualTo(new IntentResult("GENERAL", 0.0, Map.of("routing", "abstained")));
 
-    verify(fallback).routeIntent("unclear");
+    verify(semantic).route("unclear");
   }
 
   @Test
-  void fallsBackToTheModelOnlyWhenTheEmbeddingProviderIsUnavailable() {
-    AiModelProvider fallback = mock(AiModelProvider.class);
+  void returnsAZeroConfidenceGeneralIntentWhenTheEmbeddingProviderIsUnavailable() {
     SemanticIntentRouter semantic = mock(SemanticIntentRouter.class);
     when(semantic.route("book it"))
         .thenThrow(new EmbeddingProviderUnavailableException("local unavailable"));
-    when(fallback.routeIntent("book it"))
-        .thenReturn(new AiModelProvider.IntentResult("BOOK", 0.95, Map.of()));
-    DetectIntentService service = new DetectIntentService(fallback, Optional.of(semantic));
+    DetectIntentService service = new DetectIntentService(Optional.of(semantic));
 
-    assertThat(inContext(() -> service.detect("book it")).intent()).isEqualTo("BOOK");
-    verify(fallback).routeIntent("book it");
+    assertThat(inContext(() -> service.detect("book it")))
+        .isEqualTo(new IntentResult("GENERAL", 0.0, Map.of("routing", "unavailable")));
+    verify(semantic).route("book it");
   }
 
   @Test
-  void fallsBackWhenTheSemanticVectorStoreReportsATransientFailure() {
-    AiModelProvider fallback = mock(AiModelProvider.class);
+  void returnsAZeroConfidenceGeneralIntentWhenTheSemanticVectorStoreReportsATransientFailure() {
     SemanticIntentRouter semantic = mock(SemanticIntentRouter.class);
     when(semantic.route("book it"))
         .thenThrow(new TransientDataAccessResourceException("vector store unavailable"));
-    when(fallback.routeIntent("book it"))
-        .thenReturn(new AiModelProvider.IntentResult("BOOK", 0.95, Map.of()));
-    DetectIntentService service = new DetectIntentService(fallback, Optional.of(semantic));
+    DetectIntentService service = new DetectIntentService(Optional.of(semantic));
 
-    assertThat(inContext(() -> service.detect("book it")).intent()).isEqualTo("BOOK");
-    verify(fallback).routeIntent("book it");
+    assertThat(inContext(() -> service.detect("book it")))
+        .isEqualTo(new IntentResult("GENERAL", 0.0, Map.of("routing", "unavailable")));
+    verify(semantic).route("book it");
   }
 
   @Test
-  void propagatesNonTransientSemanticPersistenceFailuresInsteadOfUsingTheModelFallback() {
-    AiModelProvider fallback = mock(AiModelProvider.class);
+  void propagatesNonTransientSemanticPersistenceFailures() {
     SemanticIntentRouter semantic = mock(SemanticIntentRouter.class);
     IllegalStateException persistenceFailure = new IllegalStateException("persistence failure");
     when(semantic.route("book it")).thenThrow(persistenceFailure);
-    DetectIntentService service = new DetectIntentService(fallback, Optional.of(semantic));
+    DetectIntentService service = new DetectIntentService(Optional.of(semantic));
 
     assertThatThrownBy(() -> inContext(() -> service.detect("book it")))
         .isSameAs(persistenceFailure);
-    verifyNoInteractions(fallback);
+    verify(semantic).route("book it");
+  }
+
+  @Test
+  void returnsAZeroConfidenceGeneralIntentWhenSemanticRoutingIsDisabled() {
+    DetectIntentService service = new DetectIntentService(Optional.empty());
+
+    assertThat(inContext(() -> service.detect("hello")))
+        .isEqualTo(new IntentResult("GENERAL", 0.0, Map.of("routing", "unavailable")));
   }
 
   private static <T> T inContext(java.util.function.Supplier<T> action) {

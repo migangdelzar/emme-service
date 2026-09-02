@@ -28,14 +28,29 @@ class ContractValidationTest {
   }
 
   @Test
-  void providerIntentResultPreservesStructuredFallbackData() {
-    var result =
-        new com.emme.ai.contracts.model.AiModelProvider.IntentResult(
-            "BOOK", 0.95, java.util.Map.of("action", "schedule_appointment"));
+  void providerContractsAndAdaptersDoNotOwnIntentRouting() throws IOException {
+    assertThat(
+            readSource(
+                "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/AiModelProvider.java"))
+        .doesNotContain("routeIntent")
+        .doesNotContain("IntentResult")
+        .doesNotContain("intent");
 
-    assertThat(result.intent()).isEqualTo("BOOK");
-    assertThat(result.confidence()).isEqualTo(0.95);
-    assertThat(result.parameters()).containsEntry("action", "schedule_appointment");
+    for (String providerSource :
+        java.util.List.of(
+            "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/ollama/OllamaModelProvider.java",
+            "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/groq/GroqModelProvider.java",
+            "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/mock/MockModelProvider.java")) {
+      assertThat(readSource(providerSource))
+          .as("provider transport source: %s", providerSource)
+          .doesNotContain("routeIntent")
+          .doesNotContain("IntentResult")
+          .doesNotContain("intent");
+    }
+  }
+
+  private static String readSource(String relativePath) throws IOException {
+    return Files.readString(sourcePath(relativePath));
   }
 
   private static Path sourcePath(String relativePath) {

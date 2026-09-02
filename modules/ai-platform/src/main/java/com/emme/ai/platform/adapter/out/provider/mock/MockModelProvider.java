@@ -5,13 +5,12 @@ import com.emme.ai.platform.configuration.AiProviderProperties;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.IntStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
- * Always-available mock provider. Keyword-based intent routing, echo chat. Used when no real
+ * Always-available mock provider with echo chat and deterministic embeddings. Used when no real
  * provider (Ollama/OpenAI/Groq) is configured or available. Activated when app.ai.provider is
  * "mock" or not set at all.
  */
@@ -54,20 +53,6 @@ public class MockModelProvider implements AiModelProvider {
     List<Float> out = new ArrayList<>(dim);
     for (float x : v) out.add(norm == 0 ? 0.0f : (float) (x / norm));
     return out;
-  }
-
-  @Override
-  public IntentResult routeIntent(String message) {
-    String lower = message.toLowerCase(Locale.ROOT);
-    if (lower.contains("book") || lower.contains("schedule") || lower.contains("reserve"))
-      return new IntentResult("BOOK", 0.95, Map.of("action", "schedule_appointment"));
-    if (lower.contains("cancel") || lower.contains("delete appointment"))
-      return new IntentResult("CANCEL", 0.95, Map.of("action", "cancel_appointment"));
-    if (lower.contains("price") || lower.contains("cost") || lower.contains("how much"))
-      return new IntentResult("ASK_PRICE", 0.90, Map.of("action", "check_price"));
-    if (lower.contains("policy") || lower.contains("refund") || lower.contains("rules"))
-      return new IntentResult("ASK_POLICY", 0.85, Map.of("action", "check_policy"));
-    return new IntentResult("GENERAL", 0.70, Map.of());
   }
 
   @Override

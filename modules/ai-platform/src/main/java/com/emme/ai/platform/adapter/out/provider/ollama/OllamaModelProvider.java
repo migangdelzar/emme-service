@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -168,33 +167,6 @@ public class OllamaModelProvider implements AiModelProvider {
       log.error("Ollama embedding call failed", e);
       return List.of();
     }
-  }
-
-  @Override
-  public IntentResult routeIntent(String message) {
-    String prompt =
-        "Classify this message into ONE intent: BOOK, CANCEL, "
-            + "ASK_PRICE, ASK_POLICY, or GENERAL. "
-            + "Respond with only the intent name, nothing else.\n\n"
-            + "Message: "
-            + message;
-
-    String intent = chat("", prompt).trim().toUpperCase();
-
-    // Sanitize: strip any prefix/suffix artifacts from the LLM response
-    intent = intent.replaceAll("^[^A-Z_]+", "").replaceAll("[^A-Z_]+$", "");
-
-    // Validate the result is a known intent
-    Set<String> valid = Set.of("BOOK", "CANCEL", "ASK_PRICE", "ASK_POLICY", "GENERAL");
-    if (!valid.contains(intent)) {
-      log.warn(
-          "Ollama returned unknown intent '{}' for message '{}', defaulting to GENERAL",
-          intent,
-          message);
-      intent = "GENERAL";
-    }
-
-    return new IntentResult(intent, 0.85, Map.of("provider", "ollama"));
   }
 
   @Override

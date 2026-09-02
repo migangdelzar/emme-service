@@ -1,7 +1,6 @@
 package com.emme.ai.contracts.model;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Provider-neutral boundary for model capabilities used by the Assistant application layer.
@@ -23,9 +22,6 @@ public interface AiModelProvider {
    */
   List<Float> embed(String text);
 
-  /** Legacy model fallback for intent detection while semantic routing is unavailable. */
-  IntentResult routeIntent(String message);
-
   /** Vision captioning for an image represented by a base64 payload. */
   default String caption(String imageBase64) {
     return "maqueta de imagen " + java.util.UUID.randomUUID().toString().substring(0, 8);
@@ -35,7 +31,4 @@ public interface AiModelProvider {
   default boolean isMock() {
     return false;
   }
-
-  /** Provider result used only by the legacy intent fallback path. */
-  record IntentResult(String intent, double confidence, Map<String, String> parameters) {}
 }

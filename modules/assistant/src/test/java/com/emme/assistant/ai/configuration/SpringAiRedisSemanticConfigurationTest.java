@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
-import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
+import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -86,21 +86,21 @@ class SpringAiRedisSemanticConfigurationTest {
   }
 
   @Test
-  void routesRedisVectorStoreEmbeddingsThroughTheConfiguredProviderChain() {
+  void routesRedisVectorStoreEmbeddingsThroughTheConfiguredModelSelector() {
     EmbeddingModelPort primary = mock(EmbeddingModelPort.class);
     EmbeddingModelPort fallback = mock(EmbeddingModelPort.class);
     when(primary.embed("faq"))
         .thenThrow(new EmbeddingProviderUnavailableException("primary unavailable"));
     when(fallback.embed("faq"))
         .thenReturn(new EmbeddingVector("ollama-embeddinggemma:300m", List.of(0.2f, 0.8f)));
-    EmbeddingModelPort providerChain =
-        new EmbeddingProviderChain(
+    EmbeddingModelPort selector =
+        new EmbeddingModelSelector(
             List.of(
-                new EmbeddingProviderChain.Provider("primary", primary),
-                new EmbeddingProviderChain.Provider("fallback", fallback)));
+                new EmbeddingModelSelector.Provider("primary", primary),
+                new EmbeddingModelSelector.Provider("fallback", fallback)));
     SpringAiRedisSemanticConfiguration configuration = new SpringAiRedisSemanticConfiguration();
 
-    var redisEmbeddingModel = configuration.redisEmbeddingModel(providerChain, aiProperties(2));
+    var redisEmbeddingModel = configuration.redisEmbeddingModel(selector, aiProperties(2));
 
     assertThat(redisEmbeddingModel.embed("faq")).containsExactly(0.2f, 0.8f);
     org.mockito.Mockito.verify(primary).embed("faq");

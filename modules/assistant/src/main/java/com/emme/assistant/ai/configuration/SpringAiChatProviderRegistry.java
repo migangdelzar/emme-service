@@ -2,7 +2,7 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
-import com.emme.assistant.ai.application.provider.ChatProviderChain;
+import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.provider.TracingChatCompletionPort;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
@@ -15,10 +15,10 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.tool.ToolCallbackProvider;
 
-/** Builds the ordered provider-neutral chat chain from explicitly named clients. */
+/** Builds the ordered provider-neutral chat model candidates from named Spring AI clients. */
 public final class SpringAiChatProviderRegistry {
 
-  private final List<ChatProviderChain.Provider> providers;
+  private final List<ChatModelSelector.Provider> providers;
 
   public SpringAiChatProviderRegistry(
       Map<String, ChatClient> clients, SpringAiChatProperties properties) {
@@ -75,7 +75,7 @@ public final class SpringAiChatProviderRegistry {
                               configured.modelVersion(),
                               advisors,
                               toolCallbackProvider);
-                  return new ChatProviderChain.Provider(
+                  return new ChatModelSelector.Provider(
                       configured.key(),
                       new TracingChatCompletionPort(
                           applicationPort(model, configured.key()),
@@ -107,7 +107,7 @@ public final class SpringAiChatProviderRegistry {
     };
   }
 
-  public List<ChatProviderChain.Provider> providers() {
+  public List<ChatModelSelector.Provider> providers() {
     return providers;
   }
 }

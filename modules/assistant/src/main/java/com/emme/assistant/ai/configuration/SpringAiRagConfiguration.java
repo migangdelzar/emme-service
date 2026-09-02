@@ -8,7 +8,7 @@ import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurit
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
-import com.emme.assistant.ai.application.provider.ChatProviderChain;
+import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.provider.RagAnswerProviderChain;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -31,7 +31,7 @@ import org.springframework.core.task.TaskExecutor;
 /**
  * Optional Spring AI RAG composition root.
  *
- * <p>RAG reuses the existing named chat providers, completion fallback chain, embedding port,
+ * <p>RAG reuses the existing named chat providers, completion fallback selector, embedding port,
  * application-layer document search, and AI I/O executor. It is only active when chat and
  * embeddings are already configured, so the provider-neutral compatibility path remains available
  * when this feature is disabled.
@@ -87,11 +87,11 @@ public class SpringAiRagConfiguration {
             .map(
                 admission ->
                     (ChatCompletionPort)
-                        new ChatProviderChain(
+                        new ChatModelSelector(
                             registry.providers(),
                             admission,
                             executionProperties.modelAdmissionTimeout()))
-            .orElseGet(() -> new ChatProviderChain(registry.providers()));
+            .orElseGet(() -> new ChatModelSelector(registry.providers()));
     return new RagAnswerProviderChain(completions, retrieval);
   }
 }

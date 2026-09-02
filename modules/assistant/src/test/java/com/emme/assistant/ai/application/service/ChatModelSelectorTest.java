@@ -11,7 +11,7 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
-import com.emme.assistant.ai.application.provider.ChatProviderChain;
+import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
@@ -21,18 +21,18 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.Test;
 
-class ChatProviderChainTest {
+class ChatModelSelectorTest {
 
   @Test
   void returnsTheFirstHealthyProviderResponse() {
     ChatCompletionPort local = mock(ChatCompletionPort.class);
     ChatCompletionPort cloud = mock(ChatCompletionPort.class);
     when(local.complete("", "hello")).thenReturn("hola");
-    ChatProviderChain chain =
-        new ChatProviderChain(
+    ChatModelSelector chain =
+        new ChatModelSelector(
             List.of(
-                new ChatProviderChain.Provider("local", local),
-                new ChatProviderChain.Provider("cloud", cloud)));
+                new ChatModelSelector.Provider("local", local),
+                new ChatModelSelector.Provider("cloud", cloud)));
 
     assertThat(chain.complete("", "hello")).isEqualTo("hola");
     verifyNoInteractions(cloud);
@@ -45,11 +45,11 @@ class ChatProviderChainTest {
     when(local.complete("", "hello"))
         .thenThrow(new ChatProviderUnavailableException("local unavailable"));
     when(cloud.complete("", "hello")).thenReturn("hola");
-    ChatProviderChain chain =
-        new ChatProviderChain(
+    ChatModelSelector chain =
+        new ChatModelSelector(
             List.of(
-                new ChatProviderChain.Provider("local", local),
-                new ChatProviderChain.Provider("cloud", cloud)));
+                new ChatModelSelector.Provider("local", local),
+                new ChatModelSelector.Provider("cloud", cloud)));
 
     assertThat(chain.complete("", "hello")).isEqualTo("hola");
   }
@@ -59,8 +59,8 @@ class ChatProviderChainTest {
     ChatCompletionPort local = mock(ChatCompletionPort.class);
     when(local.complete("", "hello"))
         .thenThrow(new ChatProviderUnavailableException("local unavailable"));
-    ChatProviderChain chain =
-        new ChatProviderChain(List.of(new ChatProviderChain.Provider("local", local)));
+    ChatModelSelector chain =
+        new ChatModelSelector(List.of(new ChatModelSelector.Provider("local", local)));
 
     assertThatThrownBy(() -> chain.complete("", "hello"))
         .isInstanceOf(ChatProviderUnavailableException.class)
@@ -72,9 +72,9 @@ class ChatProviderChainTest {
     ChatCompletionPort local = mock(ChatCompletionPort.class);
     when(local.complete("", "hello")).thenReturn("hola");
     var scheduler = new RecordingScheduler();
-    ChatProviderChain chain =
-        new ChatProviderChain(
-            List.of(new ChatProviderChain.Provider("local", local)),
+    ChatModelSelector chain =
+        new ChatModelSelector(
+            List.of(new ChatModelSelector.Provider("local", local)),
             scheduler,
             Duration.ofSeconds(1));
 
@@ -88,11 +88,54 @@ class ChatProviderChainTest {
   void reportsTheProviderAndModelThatProducedTheResponse() {
     ChatCompletionPort local = mock(ChatCompletionPort.class);
     when(local.complete("", "hello")).thenReturn("hola");
-    ChatProviderChain chain =
-        new ChatProviderChain(List.of(new ChatProviderChain.Provider("local", local, "llama-3")));
+    ChatModelSelector chain =
+        new ChatModelSelector(List.of(new ChatModelSelector.Provider("local", local, "llama-3")));
 
     assertThat(chain.completeWithIdentity("", "hello"))
         .isEqualTo(new IdentifiedChatCompletionPort.ChatCompletionResult("hola", "local", "llama-3"));
+  }
+
+  @Test
+  void preservesFallbackIdentityAndAdmissionForEachAttempt() {
+    ChatCompletionPort primary = mock(ChatCompletionPort.class);
+    ChatCompletionPort fallback = mock(ChatCompletionPort.class);
+    when(primary.complete("", "hello"))
+        .thenThrow(new ChatProviderUnavailableException("local unavailable"));
+    when(fallback.complete("", "hello")).thenReturn("hola");
+    var scheduler = new RecordingScheduler();
+    ChatModelSelector selector =
+        new ChatModelSelector(
+            List.of(
+                new ChatModelSelector.Provider("local", primary, "llama-local"),
+                new ChatModelSelector.Provider("cloud", fallback, "gpt-cloud")),
+            scheduler,
+            Duration.ofSeconds(1));
+
+    var result =
+        AiExecutionContextScope.call(context(), () -> selector.completeWithIdentity("", "hello"));
+
+    assertThat(result)
+        .isEqualTo(
+            new IdentifiedChatCompletionPort.ChatCompletionResult("hola", "cloud", "gpt-cloud"));
+    assertThat(scheduler.capabilities)
+        .containsExactly(ModelCapability.GENERATION, ModelCapability.GENERATION);
+  }
+
+  @Test
+  void propagatesNonFallbackChatFailuresWithoutTryingAnotherModel() {
+    ChatCompletionPort primary = mock(ChatCompletionPort.class);
+    ChatCompletionPort fallback = mock(ChatCompletionPort.class);
+    IllegalArgumentException invalidRequest = new IllegalArgumentException("invalid request");
+    when(primary.complete("", "hello")).thenThrow(invalidRequest);
+    ChatModelSelector selector =
+        new ChatModelSelector(
+            List.of(
+                new ChatModelSelector.Provider("local", primary),
+                new ChatModelSelector.Provider("cloud", fallback)));
+
+    assertThatThrownBy(() -> selector.complete("", "hello"))
+        .isSameAs(invalidRequest);
+    verifyNoInteractions(fallback);
   }
 
   private static AiExecutionContext context() {
@@ -118,6 +161,8 @@ class ChatProviderChainTest {
       capabilities.add(capability);
       try {
         return operation.call();
+      } catch (RuntimeException exception) {
+        throw exception;
       } catch (Exception exception) {
         throw new RuntimeException(exception);
       }

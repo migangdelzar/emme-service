@@ -9,7 +9,7 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
-import com.emme.assistant.ai.application.provider.ChatProviderChain;
+import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +20,7 @@ import org.springframework.ai.tool.ToolCallbackProvider;
 class SpringAiChatConfigurationTest {
 
   @Test
-  void buildsAnOrderedProviderChainFromNamedChatClients() {
+  void buildsAnOrderedModelSelectorFromNamedChatClients() {
     SpringAiChatConfiguration configuration = new SpringAiChatConfiguration();
     SpringAiChatProperties properties =
         new SpringAiChatProperties(
@@ -42,7 +42,7 @@ class SpringAiChatConfigurationTest {
                 new PromptVersionAdvisor("chat-v1"),
                 mock(AiTraceRecorder.class)));
 
-    assertThat(port).isInstanceOf(ChatProviderChain.class);
+    assertThat(port).isInstanceOf(ChatModelSelector.class);
   }
 
   @Test
@@ -65,7 +65,7 @@ class SpringAiChatConfigurationTest {
     SpringAiChatProviderRegistry registry =
         new SpringAiChatProviderRegistry(Map.of("localChatClient", client), properties);
 
-    var result = new ChatProviderChain(registry.providers()).completeWithIdentity("", "hello");
+    var result = new ChatModelSelector(registry.providers()).completeWithIdentity("", "hello");
 
     assertThat(result.provider()).isEqualTo("local-ollama");
     assertThat(result.model()).isEqualTo("ollama-chat");
@@ -90,7 +90,7 @@ class SpringAiChatConfigurationTest {
   }
 
   @Test
-  void wiresTheExistingModelSchedulerIntoTheProviderChain() {
+  void wiresTheExistingModelSchedulerIntoTheModelSelector() {
     SpringAiChatConfiguration configuration = new SpringAiChatConfiguration();
     SpringAiChatProperties properties =
         new SpringAiChatProperties(
@@ -106,7 +106,7 @@ class SpringAiChatConfigurationTest {
     assertThat(
             configuration.chatCompletionPort(
                 registry, mock(ModelExecutionScheduler.class), new AiExecutorProperties(2, 1, 1)))
-        .isInstanceOf(ChatProviderChain.class);
+        .isInstanceOf(ChatModelSelector.class);
   }
 
   @Test

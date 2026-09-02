@@ -12,24 +12,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Ordered embedding-provider failover policy.
- *
- * <p>Fallback is deliberately limited to {@link EmbeddingProviderUnavailableException}. Invalid
- * vectors and other application failures propagate immediately instead of being hidden by a
- * different provider.
- */
-public final class EmbeddingProviderChain implements EmbeddingModelPort {
+/** Ordered embedding-model selection policy with unavailable-provider failover. */
+public final class EmbeddingModelSelector implements EmbeddingModelPort {
 
   private final List<Provider> providers;
   private final Optional<ModelExecutionScheduler> scheduler;
   private final Duration admissionTimeout;
 
-  public EmbeddingProviderChain(List<Provider> providers) {
+  public EmbeddingModelSelector(List<Provider> providers) {
     this(providers, Optional.empty(), Duration.ZERO);
   }
 
-  public EmbeddingProviderChain(
+  public EmbeddingModelSelector(
       List<Provider> providers, ModelExecutionScheduler scheduler, Duration admissionTimeout) {
     this(
         providers,
@@ -37,7 +31,7 @@ public final class EmbeddingProviderChain implements EmbeddingModelPort {
         admissionTimeout);
   }
 
-  private EmbeddingProviderChain(
+  private EmbeddingModelSelector(
       List<Provider> providers,
       Optional<ModelExecutionScheduler> scheduler,
       Duration admissionTimeout) {

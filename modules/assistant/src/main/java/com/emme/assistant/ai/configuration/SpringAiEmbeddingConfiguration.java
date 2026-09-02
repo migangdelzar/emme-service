@@ -2,7 +2,7 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
-import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
+import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.Map;
@@ -59,18 +59,18 @@ public class SpringAiEmbeddingConfiguration {
       AiExecutorProperties executionProperties) {
     return scheduler
         .map(admission -> embeddingModel(registry, admission, executionProperties))
-        .orElseGet(() -> new EmbeddingProviderChain(registry.providers()));
+        .orElseGet(() -> new EmbeddingModelSelector(registry.providers()));
   }
 
   EmbeddingModelPort embeddingModel(
       SpringAiEmbeddingProviderRegistry registry,
       ModelExecutionScheduler scheduler,
       AiExecutorProperties executionProperties) {
-    return new EmbeddingProviderChain(
+    return new EmbeddingModelSelector(
         registry.providers(), scheduler, executionProperties.modelAdmissionTimeout());
   }
 
   EmbeddingModelPort embeddingModel(SpringAiEmbeddingProviderRegistry registry) {
-    return new EmbeddingProviderChain(registry.providers());
+    return new EmbeddingModelSelector(registry.providers());
   }
 }

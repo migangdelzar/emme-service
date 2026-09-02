@@ -2,7 +2,7 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
-import com.emme.assistant.ai.application.provider.EmbeddingProviderChain;
+import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
 import com.emme.assistant.ai.application.provider.TracingEmbeddingModelPort;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
@@ -18,7 +18,7 @@ import org.springframework.ai.embedding.EmbeddingModel;
 /** Builds the ordered application provider list from explicitly named Spring AI beans. */
 public final class SpringAiEmbeddingProviderRegistry {
 
-  private final List<EmbeddingProviderChain.Provider> providers;
+  private final List<EmbeddingModelSelector.Provider> providers;
 
   public SpringAiEmbeddingProviderRegistry(
       Map<String, EmbeddingModel> embeddingModels,
@@ -87,7 +87,7 @@ public final class SpringAiEmbeddingProviderRegistry {
                           configured.key(),
                           configured.modelVersion(),
                           embeddingConfiguration.dimension());
-                  return new EmbeddingProviderChain.Provider(
+                  return new EmbeddingModelSelector.Provider(
                       configured.key(),
                       new TracingEmbeddingModelPort(
                           applicationPort(model, configured.key()),
@@ -103,7 +103,7 @@ public final class SpringAiEmbeddingProviderRegistry {
     }
   }
 
-  public List<EmbeddingProviderChain.Provider> providers() {
+  public List<EmbeddingModelSelector.Provider> providers() {
     return providers;
   }
 

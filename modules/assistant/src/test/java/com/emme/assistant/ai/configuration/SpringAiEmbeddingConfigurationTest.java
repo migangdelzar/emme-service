@@ -132,7 +132,7 @@ class SpringAiEmbeddingConfigurationTest {
   }
 
   @Test
-  void wiresTheTraceRecorderIntoTheConfiguredEmbeddingProviderChain() {
+  void wiresTheTraceRecorderIntoTheConfiguredEmbeddingModelSelector() {
     EmbeddingModel local = mock(EmbeddingModel.class);
     when(local.embed("faq")).thenReturn(new float[] {0.2f, 0.8f});
     SpringAiEmbeddingProperties properties =
@@ -179,7 +179,7 @@ class SpringAiEmbeddingConfigurationTest {
     assertThat(
             configuration.embeddingModel(
                 registry, mock(ModelExecutionScheduler.class), new AiExecutorProperties(2, 1, 1)))
-        .isInstanceOf(com.emme.assistant.ai.application.provider.EmbeddingProviderChain.class);
+        .isInstanceOf(com.emme.assistant.ai.application.provider.EmbeddingModelSelector.class);
   }
 
   private static AiProperties aiProperties(int dimension) {

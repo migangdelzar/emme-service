@@ -12,18 +12,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/** Ordered chat-provider failover policy. */
-public final class ChatProviderChain implements IdentifiedChatCompletionPort {
+/** Ordered chat-model selection policy with unavailable-provider failover. */
+public final class ChatModelSelector implements IdentifiedChatCompletionPort {
 
   private final List<Provider> providers;
   private final Optional<ModelExecutionScheduler> scheduler;
   private final Duration admissionTimeout;
 
-  public ChatProviderChain(List<Provider> providers) {
+  public ChatModelSelector(List<Provider> providers) {
     this(providers, Optional.empty(), Duration.ZERO);
   }
 
-  public ChatProviderChain(
+  public ChatModelSelector(
       List<Provider> providers, ModelExecutionScheduler scheduler, Duration admissionTimeout) {
     this(
         providers,
@@ -31,7 +31,7 @@ public final class ChatProviderChain implements IdentifiedChatCompletionPort {
         admissionTimeout);
   }
 
-  private ChatProviderChain(
+  private ChatModelSelector(
       List<Provider> providers,
       Optional<ModelExecutionScheduler> scheduler,
       Duration admissionTimeout) {
@@ -60,7 +60,9 @@ public final class ChatProviderChain implements IdentifiedChatCompletionPort {
     for (Provider provider : providers) {
       try {
         return new IdentifiedChatCompletionPort.ChatCompletionResult(
-            execute(provider, conversationContext, userMessage), provider.key(), provider.modelVersion());
+            execute(provider, conversationContext, userMessage),
+            provider.key(),
+            provider.modelVersion());
       } catch (ChatProviderUnavailableException unavailable) {
         lastFailure = unavailable;
       }

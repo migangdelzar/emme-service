@@ -5,7 +5,7 @@ import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiToolCallbackP
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
-import com.emme.assistant.ai.application.provider.ChatProviderChain;
+import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.ArrayList;
@@ -132,18 +132,18 @@ public class SpringAiChatConfiguration {
       AiExecutorProperties executionProperties) {
     return scheduler
         .map(admission -> chatCompletionPort(registry, admission, executionProperties))
-        .orElseGet(() -> new ChatProviderChain(registry.providers()));
+        .orElseGet(() -> new ChatModelSelector(registry.providers()));
   }
 
   ChatCompletionPort chatCompletionPort(
       SpringAiChatProviderRegistry registry,
       ModelExecutionScheduler scheduler,
       AiExecutorProperties executionProperties) {
-    return new ChatProviderChain(
+    return new ChatModelSelector(
         registry.providers(), scheduler, executionProperties.modelAdmissionTimeout());
   }
 
   ChatCompletionPort chatCompletionPort(SpringAiChatProviderRegistry registry) {
-    return new ChatProviderChain(registry.providers());
+    return new ChatModelSelector(registry.providers());
   }
 }

@@ -61,7 +61,7 @@ class SpringAiRagConfigurationTest {
   }
 
   @Test
-  void reusesTheExistingNamedChatProviderChainForRagFallback() {
+  void reusesTheExistingNamedChatModelSelectorForRagFallback() {
     SpringAiRagConfiguration configuration = new SpringAiRagConfiguration();
     SpringAiChatProperties chatProperties =
         new SpringAiChatProperties(

@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.emme.assistant.ai.adapter.in.web.security.AiPrincipalIdentity;
 import com.emme.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
 import com.emme.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
 import com.emme.subscriptions.api.type.PlanType;
@@ -43,15 +44,25 @@ class ConversationWebTest extends BaseWebTest {
 
   @Test
   void shouldAcceptValidConversationRequest() throws Exception {
+    UUID callerControlledParticipant = UUID.randomUUID();
+
     mockMvc
         .perform(
             post("/api/conversations")
                 .with(auth())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
-                    "{\"participantId\":\"" + UUID.randomUUID() + "\",\"channel\":\"WHATSAPP\"}"))
+                    "{\"participantId\":\""
+                        + callerControlledParticipant
+                        + "\",\"channel\":\"WEB_CHAT\"}"))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").exists())
+        .andExpect(
+            jsonPath("$.participantId")
+                .value(
+                    AiPrincipalIdentity.fromTrustedClaims(
+                            "https://issuer.example/emme-test", "test-user")
+                        .toString()))
         .andExpect(jsonPath("$.status").value("ACTIVE"));
   }
 }

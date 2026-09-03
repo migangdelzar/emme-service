@@ -8,6 +8,7 @@ import com.emme.assistant.adapter.in.web.request.StartConversationRequest;
 import com.emme.assistant.adapter.in.web.response.ConversationResponse;
 import com.emme.assistant.adapter.in.web.response.EventResponse;
 import com.emme.assistant.adapter.in.web.response.PendingActionResponse;
+import com.emme.assistant.ai.adapter.in.web.security.AiPrincipalIdentity;
 import com.emme.assistant.api.command.CloseConversationCommand;
 import com.emme.assistant.api.command.ConfirmPendingActionCommand;
 import com.emme.assistant.api.command.RejectPendingActionCommand;
@@ -27,8 +28,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,10 +75,17 @@ public class ConversationController {
   @PostMapping
   @Operation(summary = "Start a new conversation")
   public ResponseEntity<ConversationResponse> start(
-      @Valid @RequestBody StartConversationRequest request) {
+      @Valid @RequestBody StartConversationRequest request,
+      @AuthenticationPrincipal Jwt jwt) {
     return withCurrentTenant(
         tenantId -> {
-          var conversation = start.start(AssistantWebMapper.toCommand(tenantId, request));
+          var owner =
+              AiPrincipalIdentity.fromTrustedClaims(
+                  Objects.requireNonNull(jwt, "Authenticated JWT is required")
+                      .getIssuer()
+                      .toString(),
+                  jwt.getSubject());
+          var conversation = start.start(AssistantWebMapper.toCommand(tenantId, owner, request));
           return ResponseEntity.created(URI.create("/api/conversations/" + conversation.id()))
               .body(ConversationResponse.from(conversation));
         });

@@ -10,8 +10,8 @@ public final class AssistantWebMapper {
   private AssistantWebMapper() {}
 
   public static StartConversationCommand toCommand(
-      UUID tenantId, StartConversationRequest request) {
-    return new StartConversationCommand(tenantId, request.participantId(), request.channel());
+      UUID tenantId, UUID ownerId, StartConversationRequest request) {
+    return new StartConversationCommand(tenantId, ownerId, request.channel());
   }
 
   public static ProposePendingActionCommand toCommand(

@@ -101,18 +101,18 @@
 - Review/modify only if required: `modules/ai-platform/src/main/java/com/emme/ai/platform/learning/*`
 - Test: learning lifecycle and worker tests
 
-- [ ] Add or update tests proving learning evaluation is asynchronous and cannot mutate production routing from one interaction.
-- [ ] Confirm persistence uses PostgreSQL and scheduled coordination uses existing Modulith/ShedLock mechanisms.
-- [ ] Remove no learning behavior unless it is demonstrably duplicated by an existing framework.
-- [ ] Commit `test(ai-platform): verify asynchronous learning boundaries`.
+- [x] Add or update tests proving learning evaluation is asynchronous and cannot mutate production routing from one interaction.
+- [x] Confirm persistence uses PostgreSQL and coordination uses the existing Modulith/application-job mechanisms; no learning-specific scheduler was added.
+- [x] Remove no learning behavior except unsafe no-op dependency escape hatches that made durable evaluation optional.
+- [x] Commit `test(ai-platform): verify asynchronous learning boundaries`.
 
 ## Final verification
 
-- [ ] Run focused `ai-platform` and assistant tests.
-- [ ] Run contract and architecture tests.
-- [ ] Run relevant integration tests for Spring AI provider wiring.
-- [ ] Run formatting and `git diff --check`.
-- [ ] Confirm unrelated dirty files remain unstaged.
+- [x] Run focused `ai-platform` and assistant tests.
+- [x] Run contract and architecture tests.
+- [x] Run relevant integration tests for Spring AI provider wiring.
+- [x] Run formatting and `git diff --check`.
+- [x] Confirm unrelated dirty files remain unstaged.
 - [ ] Update the blueprint and progress ledger with actual removals and remaining intentional abstractions.
 - [ ] Push all commits to `feat/ai-platform-foundation`.
 

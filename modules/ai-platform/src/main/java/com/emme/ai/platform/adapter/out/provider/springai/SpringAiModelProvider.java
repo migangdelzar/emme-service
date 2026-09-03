@@ -10,11 +10,20 @@ public final class SpringAiModelProvider implements AiModelProvider {
 
   private final SpringAiChatModel chatModel;
   private final Optional<SpringAiEmbeddingModel> embeddingModel;
+  private final Optional<SpringAiVisionModel> visionModel;
 
   public SpringAiModelProvider(
       SpringAiChatModel chatModel, Optional<SpringAiEmbeddingModel> embeddingModel) {
+    this(chatModel, embeddingModel, Optional.empty());
+  }
+
+  public SpringAiModelProvider(
+      SpringAiChatModel chatModel,
+      Optional<SpringAiEmbeddingModel> embeddingModel,
+      Optional<SpringAiVisionModel> visionModel) {
     this.chatModel = Objects.requireNonNull(chatModel, "chatModel must not be null");
     this.embeddingModel = Objects.requireNonNull(embeddingModel, "embeddingModel must not be null");
+    this.visionModel = Objects.requireNonNull(visionModel, "visionModel must not be null");
   }
 
   @Override
@@ -30,5 +39,15 @@ public final class SpringAiModelProvider implements AiModelProvider {
   @Override
   public List<Float> embed(String text) {
     return embeddingModel.map(model -> model.embed(text)).orElseGet(List::of);
+  }
+
+  @Override
+  public String caption(String imageBase64) {
+    return visionModel
+        .map(model -> model.caption(imageBase64))
+        .orElseThrow(
+            () ->
+                new UnsupportedOperationException(
+                    "Provider '" + name() + "' does not support vision captioning"));
   }
 }

@@ -5,6 +5,7 @@ import com.emme.ai.platform.configuration.AiProviderProperties;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.stream.IntStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -53,6 +54,11 @@ public class MockModelProvider implements AiModelProvider {
     List<Float> out = new ArrayList<>(dim);
     for (float x : v) out.add(norm == 0 ? 0.0f : (float) (x / norm));
     return out;
+  }
+
+  @Override
+  public String caption(String imageBase64) {
+    return "maqueta de imagen " + UUID.randomUUID().toString().substring(0, 8);
   }
 
   @Override

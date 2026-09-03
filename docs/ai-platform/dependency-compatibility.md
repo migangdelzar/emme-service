@@ -37,6 +37,23 @@ The initial production direction is:
 - Redis for temporary operational state, never as the durable semantic source
   of truth.
 
+## Vision capability matrix
+
+Image captioning remains on the existing provider-neutral `AiModelProvider`
+contract and uses Spring AI's existing `ChatClient` multimodal `Media` support;
+no second HTTP transport is introduced.
+
+| Provider | Current vision behavior |
+|---|---|
+| Mock | Retains its deterministic-development placeholder caption behavior. |
+| Ollama | Uses the configured Spring AI chat client for captioning when the selected Ollama model supports vision (the default Gemma 4 profile does). |
+| Groq | Remains unchanged: the current OpenAI-compatible wiring is chat-only and does not configure a vision model. Caption requests fail explicitly as unsupported rather than returning a fabricated caption. |
+
+The tenant-safe quote workflow remains on `SpringAiNailDesignExtractor`, which
+loads image bytes through `DesignImageReader` under `AiExecutionContext` before
+calling Spring AI. The base64 caption contract is used only by existing catalog
+flows that already receive tenant-scoped image input.
+
 ## Compatibility verification
 
 The baseline is verified by Gradle BOM resolution and module compilation before

@@ -24,7 +24,8 @@ public interface AiModelProvider {
 
   /** Vision captioning for an image represented by a base64 payload. */
   default String caption(String imageBase64) {
-    return "maqueta de imagen " + java.util.UUID.randomUUID().toString().substring(0, 8);
+    throw new UnsupportedOperationException(
+        "Provider '" + name() + "' does not support vision captioning");
   }
 
   /** Whether the implementation is deterministic test infrastructure. */

@@ -5,6 +5,7 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiModelProvider;
+import com.emme.ai.platform.adapter.out.provider.springai.SpringAiVisionModel;
 import com.emme.ai.platform.model.BoundedModelExecutionScheduler;
 import io.micrometer.observation.ObservationRegistry;
 import java.util.Optional;
@@ -105,7 +106,8 @@ public class AiProviderConfiguration {
                 embeddingModel,
                 properties.provider(),
                 properties.embedding().modelVersion(),
-                properties.embedding().dimension())));
+                properties.embedding().dimension()),
+        Optional.of(new SpringAiVisionModel(chatClient)));
   }
 
   @Bean

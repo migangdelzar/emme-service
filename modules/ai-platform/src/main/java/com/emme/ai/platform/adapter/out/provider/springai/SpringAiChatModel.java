@@ -1,5 +1,6 @@
 package com.emme.ai.platform.adapter.out.provider.springai;
 
+import com.emme.ai.contracts.model.ChatModel;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +17,7 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.tool.ToolCallbackProvider;
 
 /** Thin provider-identified adapter over a Spring AI {@link ChatClient}. */
-public final class SpringAiChatModel {
+public final class SpringAiChatModel implements ChatModel {
 
   private static final String SYSTEM_PROMPT =
       "You are EMME, a helpful salon assistant. Answer in the user's language. "

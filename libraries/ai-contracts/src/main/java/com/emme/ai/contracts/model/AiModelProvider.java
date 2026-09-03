@@ -3,12 +3,17 @@ package com.emme.ai.contracts.model;
 import java.util.List;
 
 /**
- * Provider-neutral boundary for model capabilities used by the Assistant application layer.
+ * Provider-neutral compatibility boundary for model capabilities used by the Assistant application
+ * layer.
  *
  * <p>Implementations belong to infrastructure modules. The contract deliberately contains no
  * Spring, HTTP-client, provider SDK, tenant-resolution, or persistence types.
+ *
+ * @deprecated use {@link ChatModel}, {@link EmbeddingModel}, and the image capability contract
+ * independently. This composite remains only as a compatibility boundary for existing wiring.
  */
-public interface AiModelProvider {
+@Deprecated
+public interface AiModelProvider extends ChatModel, EmbeddingModel {
 
   /** Stable provider identifier used for telemetry and configuration diagnostics. */
   String name();

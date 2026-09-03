@@ -24,6 +24,20 @@ class ChatCompositionArchitectureTest {
   }
 
   @Test
+  void keepsRagQueryServiceOnTheCanonicalChatBoundary() throws IOException {
+    String ragQueryService =
+        Files.readString(
+            sourcePath(
+                "modules/assistant/src/main/java/com/emme/assistant/ai/application/service/RagQueryService.java"));
+
+    assertThat(ragQueryService)
+        .contains("private final ChatCompletionPort chatCompletion")
+        .doesNotContain("AiModelProvider")
+        .doesNotContain("ModelExecutionScheduler")
+        .doesNotContain("executeLegacy");
+  }
+
+  @Test
   void selectsExactlyOneAssistantChatCompositionRootPerRuntimeProfile() throws IOException {
     String springChat =
         Files.readString(

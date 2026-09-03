@@ -8,6 +8,7 @@ import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -20,9 +21,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Coordinates durable and hot semantic-cache invalidation for dependency changes. */
 public final class SemanticCacheInvalidationService {
+
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(SemanticCacheInvalidationService.class);
 
   private static final String CACHE_KIND = "CHAT_INFORMATIONAL";
   private static final UUID SYSTEM_PRINCIPAL_ID = new UUID(0, 0);
@@ -169,6 +175,7 @@ public final class SemanticCacheInvalidationService {
               0));
     } catch (RuntimeException failure) {
       recordSafely(() -> metrics.recordFailure("trace", "trace_persistence_failed"));
+      AiTracePersistenceFailureReporter.report(LOGGER, "cache_invalidation", failure);
     }
   }
 

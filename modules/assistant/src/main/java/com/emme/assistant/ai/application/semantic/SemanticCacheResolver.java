@@ -5,6 +5,7 @@ import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.time.Duration;
 import java.util.List;
@@ -12,9 +13,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Resolves a semantic-cache hit before an LLM pipeline is invoked. */
 public final class SemanticCacheResolver {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SemanticCacheResolver.class);
 
   private static final int CANDIDATE_LIMIT = 2;
 
@@ -114,6 +119,7 @@ public final class SemanticCacheResolver {
               0));
     } catch (RuntimeException failure) {
       recordSafely(() -> metrics.recordFailure("trace", "trace_persistence_failed"));
+      AiTracePersistenceFailureReporter.report(LOGGER, "semantic_cache", failure);
     }
   }
 

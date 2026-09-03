@@ -4,12 +4,17 @@ import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Records each provider attempt without changing provider failure semantics. */
 public final class TracingChatCompletionPort implements ChatCompletionPort {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TracingChatCompletionPort.class);
 
   private final ChatCompletionPort delegate;
   private final String providerKey;
@@ -86,8 +91,9 @@ public final class TracingChatCompletionPort implements ChatCompletionPort {
     if (AiExecutionContextScope.current().isEmpty()) return;
     try {
       recorder.recordModelExecution(trace);
-    } catch (RuntimeException ignored) {
+    } catch (RuntimeException failure) {
       // Trace persistence is best effort and must not alter the provider result.
+      AiTracePersistenceFailureReporter.report(LOGGER, trace.operation(), failure);
     }
   }
 

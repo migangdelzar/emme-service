@@ -5,12 +5,17 @@ import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Records each embedding-provider attempt without persisting vector values. */
 public final class TracingEmbeddingModelPort implements EmbeddingModelPort {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TracingEmbeddingModelPort.class);
 
   private final EmbeddingModelPort delegate;
   private final String providerKey;
@@ -82,8 +87,9 @@ public final class TracingEmbeddingModelPort implements EmbeddingModelPort {
     if (AiExecutionContextScope.current().isEmpty()) return;
     try {
       recorder.recordModelExecution(trace);
-    } catch (RuntimeException ignored) {
+    } catch (RuntimeException failure) {
       // Trace persistence is best effort and must not alter provider semantics.
+      AiTracePersistenceFailureReporter.report(LOGGER, trace.operation(), failure);
     }
   }
 

@@ -8,6 +8,7 @@ import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.assistant.ai.domain.quote.NailDesignFeatures;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -15,12 +16,17 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.content.Media;
 import org.springframework.util.MimeTypeUtils;
 
 /** Spring AI structured-output adapter for text and securely loaded design images. */
 public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
+
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(SpringAiNailDesignExtractor.class);
 
   private static final String SYSTEM_PROMPT =
       "You extract nail-design attributes for Emme. Return only the requested structured schema. "
@@ -205,8 +211,9 @@ public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
     if (AiExecutionContextScope.current().isEmpty()) return;
     try {
       traceRecorder.recordModelExecution(trace);
-    } catch (RuntimeException ignored) {
+    } catch (RuntimeException failure) {
       // Trace persistence is best effort and must not alter extraction semantics.
+      AiTracePersistenceFailureReporter.report(LOGGER, trace.operation(), failure);
     }
   }
 

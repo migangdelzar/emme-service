@@ -4,6 +4,7 @@ import com.emme.assistant.ai.application.port.out.AiToolIdempotencyStore;
 import com.emme.assistant.ai.application.trace.AiToolCallStatus;
 import com.emme.assistant.ai.application.trace.AiToolCallTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -211,7 +212,7 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
     try {
       traceRecorder.recordToolCall(trace);
     } catch (RuntimeException failure) {
-      LOGGER.warn("AI tool trace persistence failed for {}", trace.toolKey(), failure);
+      AiTracePersistenceFailureReporter.report(LOGGER, trace.toolKey(), failure);
     }
   }
 

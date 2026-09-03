@@ -12,6 +12,7 @@ import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
 import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +26,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Principal-scoped semantic cache for safe informational chat responses.
@@ -33,6 +36,8 @@ import java.util.UUID;
  * response and hit accounting; this service only defines eligibility and cache identity.
  */
 public final class SemanticChatCache implements SemanticResponseCache {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SemanticChatCache.class);
 
   private static final String CACHE_KIND = "CHAT_INFORMATIONAL";
 
@@ -405,6 +410,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
               0));
     } catch (RuntimeException traceFailure) {
       recordFailure("trace", traceFailure);
+      AiTracePersistenceFailureReporter.report(LOGGER, operation, traceFailure);
     }
   }
 

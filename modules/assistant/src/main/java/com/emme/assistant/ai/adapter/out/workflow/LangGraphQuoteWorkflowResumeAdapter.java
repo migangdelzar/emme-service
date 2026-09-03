@@ -16,6 +16,7 @@ import org.bsc.langgraph4j.state.AgentState;
 public final class LangGraphQuoteWorkflowResumeAdapter implements QuoteWorkflowResumePort {
 
   private static final String APPROVAL_GATE_NODE = "approval_gate";
+  private static final String QUOTE_NAMESPACE = "quote";
 
   private final CompiledGraph<AgentState> graph;
 
@@ -35,7 +36,8 @@ public final class LangGraphQuoteWorkflowResumeAdapter implements QuoteWorkflowR
       return;
     }
 
-    RunnableConfig config = RunnableConfig.builder().threadId(workflowId.toString()).build();
+    RunnableConfig config =
+        RunnableConfig.builder().threadId(workflowId + ":" + QUOTE_NAMESPACE).build();
     try {
       RunnableConfig updated =
           graph.updateState(config, Map.of("needsReview", false), APPROVAL_GATE_NODE);

@@ -93,30 +93,31 @@ public final class JdbcQuoteWorkflowRepository implements QuoteWorkflowRepositor
 
   private static String insertSql() {
     return """
-        INSERT INTO ai_workflow_run (
-            id, tenant_id, principal_id, conversation_id, workflow_type, status,
-            graph_version, idempotency_key, state, version
-        )
-        VALUES (
-            :workflowId, :tenantId, :principalId, :conversationId, 'DESIGN_QUOTE',
-            :status, 'quote-v1', :idempotencyKey, CAST('{}' AS jsonb), 0
-        )
-        ON CONFLICT (tenant_id, idempotency_key) DO NOTHING
-        RETURNING id, tenant_id, principal_id, conversation_id, status, idempotency_key, version
-        """;
+    INSERT INTO ai_workflow_run (
+        id, tenant_id, principal_id, conversation_id, workflow_type, status,
+        graph_version, idempotency_key, state, version
+    )
+    VALUES (
+        :workflowId, :tenantId, :principalId, :conversationId, 'DESIGN_QUOTE',
+        :status, 'quote-v1', :idempotencyKey, CAST('{}' AS jsonb), 0
+    )
+    ON CONFLICT (tenant_id, idempotency_key) DO UPDATE
+    SET id = ai_workflow_run.id
+    RETURNING id, tenant_id, principal_id, conversation_id, status, idempotency_key, version
+    """;
   }
 
   private static String updateSql() {
     return """
-        UPDATE ai_workflow_run
-        SET status = :status,
-            updated_at = CURRENT_TIMESTAMP,
-            version = :expectedVersion + 1
-        WHERE id = :workflowId
-          AND tenant_id = :tenantId
-          AND version = :expectedVersion
-        RETURNING id, tenant_id, principal_id, conversation_id, status, idempotency_key, version
-        """;
+    UPDATE ai_workflow_run
+    SET status = :status,
+        updated_at = CURRENT_TIMESTAMP,
+        version = :expectedVersion + 1
+    WHERE id = :workflowId
+      AND tenant_id = :tenantId
+      AND version = :expectedVersion
+    RETURNING id, tenant_id, principal_id, conversation_id, status, idempotency_key, version
+    """;
   }
 
   private static QuoteWorkflow workflowFromRow(java.sql.ResultSet resultSet)

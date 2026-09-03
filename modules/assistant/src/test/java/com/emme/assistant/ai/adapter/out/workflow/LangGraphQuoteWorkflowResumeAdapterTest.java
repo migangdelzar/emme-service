@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.adapter.out.workflow;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -19,6 +20,7 @@ import org.bsc.langgraph4j.GraphInput;
 import org.bsc.langgraph4j.RunnableConfig;
 import org.bsc.langgraph4j.state.AgentState;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 class LangGraphQuoteWorkflowResumeAdapterTest {
@@ -47,6 +49,12 @@ class LangGraphQuoteWorkflowResumeAdapterTest {
     verify(graph, org.mockito.Mockito.times(2))
         .updateState(
             any(RunnableConfig.class), eq(Map.of("needsReview", false)), eq("approval_gate"));
+    ArgumentCaptor<RunnableConfig> configs = ArgumentCaptor.forClass(RunnableConfig.class);
+    verify(graph, org.mockito.Mockito.times(2))
+        .updateState(configs.capture(), anyMap(), eq("approval_gate"));
+    assertThat(configs.getAllValues())
+        .extracting(config -> config.threadId().orElseThrow())
+        .containsOnly(WORKFLOW_ID + ":quote");
     verify(graph, org.mockito.Mockito.times(2)).invoke(any(GraphInput.class), eq(updated));
   }
 

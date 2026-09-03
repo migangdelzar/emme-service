@@ -91,6 +91,32 @@ class JdbcQuotePersistenceAdapterTest {
   }
 
   @Test
+  void returnsTheExistingWorkflowWhenAnIdempotentInsertConflicts() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    JdbcClient.MappedQuerySpec<QuoteWorkflow> result = mock(JdbcClient.MappedQuerySpec.class);
+    stubQuery(jdbc, statement, result);
+    QuoteWorkflow existing = workflow(QuoteWorkflowStateHolder.WAITING_FOR_STAFF, 4);
+    when(result.single()).thenReturn(existing);
+    JdbcQuoteWorkflowRepository repository = new JdbcQuoteWorkflowRepository(jdbc);
+
+    QuoteWorkflow saved =
+        AiExecutionContextScope.call(
+            context(),
+            () ->
+                repository.save(
+                    QuoteWorkflow.received(
+                        WORKFLOW_ID, TENANT_ID, PRINCIPAL_ID, CONVERSATION_ID, "idem-1")));
+
+    assertThat(saved).isEqualTo(existing);
+    ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+    verify(jdbc).sql(sql.capture());
+    assertThat(sql.getValue())
+        .contains("ON CONFLICT (tenant_id, idempotency_key) DO UPDATE")
+        .contains("RETURNING id");
+  }
+
+  @Test
   void savesExtractionUsingTenantWorkflowAndModelVersionMetadata() {
     JdbcClient jdbc = mock(JdbcClient.class);
     JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);

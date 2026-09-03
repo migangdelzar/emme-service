@@ -133,7 +133,7 @@ class ChatServiceTest {
     when(router.route("what services do you have?"))
         .thenReturn(Optional.of(new AiToolResult("getSalonServices", "services", true)));
     ChatService service =
-        new ChatService(model, Optional.of(cache), Optional.empty(), Optional.of(router));
+        new ChatService(model, Optional.of(cache), Optional.of(router));
 
     assertThat(inContext(() -> service.chat("", "what services do you have?")))
         .isEqualTo("services");

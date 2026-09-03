@@ -49,15 +49,10 @@ public class ChatService implements ChatUseCase {
       Optional<SemanticResponseCache> semanticCache,
       Optional<ProactiveToolRouter> proactiveToolRouter,
       SemanticMetrics metrics) {
-    this(
-        chatCompletion,
-        semanticCache,
-        proactiveToolRouter,
-        metrics);
-  }
-
-    this.chatCompletion = Objects.requireNonNull(chatCompletion, "chatCompletion must not be null");
-    this.semanticCache = Objects.requireNonNull(semanticCache, "semanticCache must not be null");
+    this.chatCompletion =
+        Objects.requireNonNull(chatCompletion, "chatCompletion must not be null");
+    this.semanticCache =
+        Objects.requireNonNull(semanticCache, "semanticCache must not be null");
     this.proactiveToolRouter =
         Objects.requireNonNull(proactiveToolRouter, "proactiveToolRouter must not be null");
     this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");
@@ -141,5 +136,4 @@ public class ChatService implements ChatUseCase {
       // Observability must not change chat semantics.
     }
   }
-
 }

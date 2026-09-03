@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-03
 **Branch:** `feat/ai-platform-foundation`
-**Status:** Checkpointed, incomplete
+**Status:** Implemented scoped slice; broader module baseline remains failing
 
 ## Scope
 
@@ -10,6 +10,21 @@ The approved slice is to make assistant chat depend on one required
 `ChatCompletionPort`, remove `ChatService`'s direct `AiModelProvider` fallback,
 and provide a mutually exclusive compatibility composition path that preserves
 the existing selector, admission, and durable tracing behavior.
+
+## Implementation
+
+- `ChatService` now requires one `ChatCompletionPort` and no longer imports or
+  invokes `AiModelProvider`, `ChatProviderFailurePolicy`, or a legacy fallback.
+- `LegacyChatCompletionConfiguration` adapts the existing provider only when
+  `app.ai.spring-chat.enabled` is false or absent. It applies the existing
+  selector, generation admission scheduler, failure policy, and durable tracing
+  wrapper.
+- `SpringAiChatConfiguration` exposes its selected provider as an
+  `IdentifiedChatCompletionPort`; the enabled Spring chat root and compatibility
+  root are mutually exclusive by property.
+- Regression coverage now includes canonical service behavior, compatibility
+  tracing/admission, Spring-enabled application-context selection, and source
+  architecture guards.
 
 ## Exact verification result
 
@@ -19,35 +34,56 @@ Command run with the repository's Java 25 toolchain:
 mise exec -- ./gradlew :modules:assistant:test --tests 'com.emme.assistant.ai.application.service.ChatServiceTest' --tests 'com.emme.assistant.ai.application.service.ChatServiceProviderFallbackTest' --no-daemon
 ```
 
-Result: **failed at `:modules:assistant:compileTestJava`** with exit code 1.
-The twelve compilation errors all reported that `ChatCompletionPort` could not
-be converted to the current `ChatService` constructor's `AiModelProvider`
-parameter. This was the expected red result after updating the regression tests
-first.
+Result: **passed** for the focused canonical-path classes. The result files
+report 42 assistant tests and 9 ai-platform tests, with zero skips, failures, or
+errors:
 
-After that red result, `ChatService` was changed to require a `ChatCompletionPort`
-and no longer contain the legacy provider fallback. A first compile exposed a
-duplicate constructor; that source error was corrected, but the focused tests
-were intentionally **not rerun** after the correction at the user's request.
+```text
+ChatServiceTest                         10 passed
+ChatServiceProviderFallbackTest          2 passed
+ChatModelSelectorTest                    7 passed
+TracingChatCompletionPortTest            3 passed
+SpringAiChatConfigurationTest             8 passed
+LegacyChatCompletionConfigurationTest     4 passed
+ChatCompositionArchitectureTest           2 passed
+SpringAiChatClientAdapterTest              6 passed
+SpringAiModelProviderTest                  2 passed
+SpringAiChatModelTest                      2 passed
+AiProviderConfigurationTest                 4 passed
+AiProviderWiringArchitectureTest            1 passed
+```
 
-## Current incomplete work
+The initial red run failed at `:modules:assistant:compileTestJava` with twelve
+constructor errors after the regression tests were updated first. A later
+configuration red run exposed two wiring defects (unconditional legacy bean
+creation and unstubbed test-provider identity); both were fixed and the focused
+tests subsequently passed.
 
-- `ChatService` production code now has the required canonical port shape, but
-  its focused tests have not yet reached a green run.
-- The existing service tests were migrated from direct `AiModelProvider.chat`
-  calls to `ChatCompletionPort.complete`.
-- The provider-fallback regression test now asserts that chat-port provider
-  unavailability is propagated and does not invoke an unrelated legacy model.
-- The compatibility composition configuration has not yet been implemented.
-- Spring chat bean return types/conditional wiring have not yet been updated.
-- The architecture/configuration regression test has not yet been added.
-- No Java 25 focused test suite or full build result exists for this checkpoint.
+## Broader verification limitation
+
+The combined module invocation also executed the existing broader assistant
+suite and ended with **456 tests completed, 18 failed**. Those failures are
+outside this slice and include pre-existing package metadata and application
+context failures, notably missing `DataSource`/`coreDataSource` setup in
+conversation and AI module context tests. The output also shows the existing
+`RagQueryService` legacy compatibility path, which is intentionally the next
+separate RAG/embedding slice from the final-review document.
+
+Spotless was not clean at repository baseline: the unrelated
+`libraries/ai-contracts/src/main/java/com/emme/ai/contracts/rag/package-info.java`
+file violates the configured formatter. The scoped assistant source was
+formatted by the module task during verification; no unrelated file was
+changed.
 
 ## Checkpoint files
 
 - `modules/assistant/src/main/java/com/emme/assistant/ai/application/service/ChatService.java`
 - `modules/assistant/src/test/java/com/emme/assistant/ai/application/service/ChatServiceTest.java`
 - `modules/assistant/src/test/java/com/emme/assistant/ai/application/service/ChatServiceProviderFallbackTest.java`
+- `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/LegacyChatCompletionConfiguration.java`
+- `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiChatConfiguration.java`
+- `modules/assistant/src/test/java/com/emme/assistant/ai/configuration/LegacyChatCompletionConfigurationTest.java`
+- `modules/assistant/src/test/java/com/emme/assistant/ai/configuration/ChatCompositionArchitectureTest.java`
 - `docs/superpowers/plans/2026-09-03-canonical-chat-path.md`
 
 The unrelated pre-existing dirty-worktree changes were not staged.

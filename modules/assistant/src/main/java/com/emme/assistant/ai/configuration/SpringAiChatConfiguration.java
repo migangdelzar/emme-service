@@ -4,7 +4,7 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiToolCallbackProvider;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
-import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
+import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
@@ -138,7 +138,7 @@ public class SpringAiChatConfiguration {
 
   @Bean(name = "aiChatCompletion")
   @ConditionalOnMissingBean(name = "aiChatCompletion")
-  ChatCompletionPort chatCompletionPort(
+  IdentifiedChatCompletionPort chatCompletionPort(
       SpringAiChatProviderRegistry registry,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {
@@ -147,7 +147,7 @@ public class SpringAiChatConfiguration {
         .orElseGet(() -> new ChatModelSelector(registry.providers()));
   }
 
-  ChatCompletionPort chatCompletionPort(
+  IdentifiedChatCompletionPort chatCompletionPort(
       SpringAiChatProviderRegistry registry,
       ModelExecutionScheduler scheduler,
       AiExecutorProperties executionProperties) {
@@ -155,7 +155,7 @@ public class SpringAiChatConfiguration {
         registry.providers(), scheduler, executionProperties.modelAdmissionTimeout());
   }
 
-  ChatCompletionPort chatCompletionPort(SpringAiChatProviderRegistry registry) {
+  IdentifiedChatCompletionPort chatCompletionPort(SpringAiChatProviderRegistry registry) {
     return new ChatModelSelector(registry.providers());
   }
 }

@@ -7,6 +7,8 @@ import com.emme.assistant.ai.adapter.in.web.security.AiWebExecutionContextFactor
 import com.emme.assistant.ai.api.command.ProcessDesignQuoteCommand;
 import com.emme.assistant.ai.api.usecase.ProcessDesignQuoteUseCase;
 import com.emme.assistant.ai.application.port.out.DesignImageMetadataRepository;
+import com.emme.assistant.api.query.GetConversationQuery;
+import com.emme.assistant.api.usecase.GetConversationUseCase;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.tracing.CorrelationId;
 import java.util.Objects;
@@ -15,6 +17,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -34,19 +38,23 @@ public class DesignQuoteController {
   private final ProcessDesignQuoteUseCase quote;
   private final AiWebExecutionContextFactory contexts;
   private final DesignImageMetadataRepository metadata;
+  private final GetConversationUseCase conversations;
 
   public DesignQuoteController(
       TenantImageWriter storage,
       ProcessDesignQuoteUseCase quote,
       AiWebExecutionContextFactory contexts,
-      DesignImageMetadataRepository metadata) {
+      DesignImageMetadataRepository metadata,
+      GetConversationUseCase conversations) {
     this.storage = storage;
     this.quote = quote;
     this.contexts = contexts;
     this.metadata = metadata;
+    this.conversations = conversations;
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PreAuthorize("hasAnyRole('tenant_client', 'client') && @featureFlagService.isEnabled('ai_chat')")
   public ResponseEntity<DesignQuoteResponse> submit(
       @RequestPart("image") MultipartFile image,
       @RequestParam UUID conversationId,
@@ -73,6 +81,7 @@ public class DesignQuoteController {
     return AiExecutionContextScope.call(
         context,
         () -> {
+          authorize(context, conversationId);
           String key = null;
           try {
             byte[] bytes = readBytes(image);
@@ -96,6 +105,35 @@ public class DesignQuoteController {
             throw failure;
           }
         });
+  }
+
+  private void authorize(com.emme.kernel.context.AiExecutionContext context, UUID conversationId) {
+    if (!context.enabledFeatures().contains("ai_chat")) {
+      throw new AccessDeniedException("Design quote capability is not enabled");
+    }
+    if (!context.tenantCapabilities().contains("ai:basic")) {
+      throw new AccessDeniedException("Design quote capability is not enabled");
+    }
+    if (context.roles().stream().noneMatch(DesignQuoteController::isClientRole)) {
+      throw new AccessDeniedException("Design quote client role is required");
+    }
+    boolean owned =
+        conversations
+            .get(new GetConversationQuery(context.tenantId(), conversationId))
+            .filter(
+                conversation ->
+                    context.tenantId().equals(conversation.tenantId())
+                        && context.principalId().equals(conversation.participantId()))
+            .isPresent();
+    if (!owned) {
+      throw new AccessDeniedException("Conversation access denied");
+    }
+  }
+
+  private static boolean isClientRole(String role) {
+    if (role == null) return false;
+    String canonical = role.startsWith("ROLE_") ? role.substring(5) : role;
+    return canonical.equalsIgnoreCase("tenant_client") || canonical.equalsIgnoreCase("client");
   }
 
   private void cleanup(UUID tenantId, UUID workflowId, String key, Throwable failure) {

@@ -105,7 +105,8 @@ class BoundedModelExecutionSchedulerTest {
   void doesNotMaterializeIdentityPermitsForMixedCapabilityRequestsRejectedByAFullQueue()
       throws Exception {
     var scheduler =
-        new BoundedModelExecutionScheduler(new ModelCapacityProfile(2, 1, 2, 1, 1, 1));
+        new BoundedModelExecutionScheduler(
+            new ModelCapacityProfile(2, 1, 2, 1, 1, 1));
     var started = new CountDownLatch(1);
     var release = new CountDownLatch(1);
 

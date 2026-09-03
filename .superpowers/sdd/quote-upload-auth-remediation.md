@@ -5,6 +5,7 @@
 - Web conversation creation derives ownership from the authenticated JWT issuer and subject via `AiPrincipalIdentity`; the request's `participantId` is no longer used as the owner.
 - Isolated controller coverage verifies that caller-supplied participant IDs cannot control ownership.
 - Isolated MockMvc/proxy coverage verifies owner success, same-tenant other-principal denial, cross-tenant denial, and method-security denial for role, feature, and capability failures.
+- The quote web fixture uses `@TestConfiguration`, and the shared test bootstrap applies Boot's `TypeExcludeFilter` to its explicit component scan so the fixture cannot leak into unrelated Spring contexts.
 
 ## Verification
 
@@ -19,12 +20,12 @@ mise exec java@25.0.2 -- ./gradlew :modules:assistant:test \
 
 Result: `BUILD SUCCESSFUL`; 7 tests passed.
 
-## Pre-existing integration-test blocker
+## Relevant Spring-context verification
 
-The full Spring-context web test remains blocked before test execution by the repository's existing JPA context failure. The focused attempt including `ConversationWebTest` failed during application-context startup with:
+The previous `featureFlagService` bean collision is resolved: `ConversationWebTest` now fails later during application-context startup on the repository's existing missing `coreDataSource` configuration:
 
 ```text
-NoSuchBeanDefinitionException: No bean named 'entityManagerFactory' available
+No qualifying bean of type 'javax.sql.DataSource' available
 ```
 
-The failing dependency is `jpaSharedEM_entityManagerFactory`. The same context failure is present in the existing `ConversationWebTest`, so it is not introduced by this remediation. Per the requested scope, the blocked integration run was stopped; the isolated tests above provide the executable verification available without repairing unrelated JPA configuration.
+The failing dependency is `AiJobExecutorConfiguration.coreJdbcTemplate`, which requires `coreDataSource`. This is unrelated to the quote fixture isolation and prevents the context test from reaching its test methods. The isolated authorization tests remain the executable verification for the quote endpoint in this worktree.

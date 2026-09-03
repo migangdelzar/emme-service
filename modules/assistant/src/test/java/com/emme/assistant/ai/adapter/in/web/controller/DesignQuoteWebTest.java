@@ -44,9 +44,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.Authentication;
@@ -265,7 +265,7 @@ class DesignQuoteWebTest {
         .build();
   }
 
-  @Configuration(proxyBeanMethods = false)
+  @TestConfiguration(proxyBeanMethods = false)
   @EnableMethodSecurity
   static class QuoteTestConfiguration {
     @Bean

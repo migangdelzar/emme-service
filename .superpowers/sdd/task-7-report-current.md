@@ -36,7 +36,7 @@ behavior, then passed after the minimal implementation.
   — initial validation test failed before the fix; passed after the fix.
 - `./gradlew :modules:tenancy:test --tests com.emme.tenancy.adapter.out.client.database.TenantIdentifierResolverTest`
   — initial fail-closed test failed before the fix; passed after the fix.
-- Focused combined tenancy context/event command — **PASS, 4 tests**.
+- Focused combined tenancy context/event command — **PASS, 6 tests**.
 - Focused identity/tenancy context command — **PASS, 50 tests**.
 - `git diff --check` — **PASS**.
 - Full `:modules:tenancy:test :modules:identity:test` — **LIMITED: 14 failures** from existing

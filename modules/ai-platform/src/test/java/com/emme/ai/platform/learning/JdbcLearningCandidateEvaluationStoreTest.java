@@ -61,6 +61,30 @@ class JdbcLearningCandidateEvaluationStoreTest {
     verify(statement).param("metrics", "{\"faithfulness\":0.95}");
   }
 
+  @Test
+  void scopesEvaluationInsertToACandidateOwnedByTheBoundTenant() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    JdbcClient.MappedQuerySpec<UUID> result = mock(JdbcClient.MappedQuerySpec.class);
+    when(jdbc.sql(org.mockito.ArgumentMatchers.anyString())).thenReturn(statement);
+    when(statement.param(
+            org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any()))
+        .thenReturn(statement);
+    when(statement.query(org.mockito.ArgumentMatchers.any(RowMapper.class))).thenReturn(result);
+    when(result.single()).thenReturn(UUID.randomUUID());
+    JdbcLearningCandidateEvaluationStore store =
+        new JdbcLearningCandidateEvaluationStore(jdbc, new ObjectMapper());
+
+    AiExecutionContextScope.call(CONTEXT, () -> store.save(CANDIDATE_ID, report(), CONTEXT));
+
+    org.mockito.ArgumentCaptor<String> sql = org.mockito.ArgumentCaptor.forClass(String.class);
+    verify(jdbc).sql(sql.capture());
+    assertThat(sql.getValue())
+        .contains("FROM ai_learning_candidate")
+        .contains("tenant_id = :tenantId")
+        .contains("candidate_id = :candidateId");
+  }
+
   private static LearningCandidateEvaluationReport report() {
     return new LearningCandidateEvaluationReport(
         "ragas-0.4.3", java.util.Map.of("faithfulness", 0.95), true, true, true, true, false);

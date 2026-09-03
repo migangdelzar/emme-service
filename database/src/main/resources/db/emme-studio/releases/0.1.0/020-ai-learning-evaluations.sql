@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS ai_learning_candidate_evaluation (
 );
 
 ALTER TABLE ai_learning_candidate_evaluation ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_learning_candidate_evaluation FORCE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS tenant_isolation ON ai_learning_candidate_evaluation;
 CREATE POLICY tenant_isolation ON ai_learning_candidate_evaluation

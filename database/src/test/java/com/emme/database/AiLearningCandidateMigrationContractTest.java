@@ -58,6 +58,13 @@ class AiLearningCandidateMigrationContractTest {
   }
 
   @Test
+  void forcesTenantRlsForCandidateAndEvaluationTables() throws IOException {
+    assertThat(migration()).contains("ALTER TABLE ai_learning_candidate FORCE ROW LEVEL SECURITY");
+    assertThat(resource(EVALUATION_MIGRATION))
+        .contains("ALTER TABLE ai_learning_candidate_evaluation FORCE ROW LEVEL SECURITY");
+  }
+
+  @Test
   void isIncludedByTheStudioChangelog() throws IOException {
     String changelog = resource("db/emme-studio/changelog.yaml");
 

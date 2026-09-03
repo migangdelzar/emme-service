@@ -40,11 +40,13 @@ public final class JdbcLearningCandidateEvaluationStore
                 dataset_complete, safety_passed, regression_passed,
                 shadow_comparison_passed, canary_passed, metrics
             )
-            VALUES (
+            SELECT
                 :tenantId, :candidateId, :evaluationVersion,
                 :datasetComplete, :safetyPassed, :regressionPassed,
                 :shadowComparisonPassed, :canaryPassed, CAST(:metrics AS jsonb)
-            )
+            FROM ai_learning_candidate
+            WHERE id = :candidateId
+              AND tenant_id = :tenantId
             ON CONFLICT (tenant_id, candidate_id, evaluation_version)
             DO UPDATE SET updated_at = ai_learning_candidate_evaluation.updated_at
             RETURNING id

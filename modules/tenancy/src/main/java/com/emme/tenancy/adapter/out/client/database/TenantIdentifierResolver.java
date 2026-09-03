@@ -40,8 +40,9 @@ public class TenantIdentifierResolver
       }
     } catch (Exception e) {
       log.warn("Failed to resolve schema for tenant {}: {}", tenantId, e.getMessage());
+      throw new IllegalStateException("Unable to resolve schema for tenant: " + tenantId, e);
     }
-    return CORE_SCHEMA;
+    throw new IllegalStateException("Unable to resolve schema for tenant: " + tenantId);
   }
 
   @Override

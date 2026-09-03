@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -114,5 +115,55 @@ class TenantContextFilterTest {
                 assertThat(TenantContext.getCurrentTenantId()).isNull();
 
     filter.doFilter(request, response, chain);
+  }
+
+  @Test
+  void rejectsAValidCallerTenantSelectorThatConflictsWithTheAuthenticatedTenant() {
+    TenantRepository tenantRepository = mock(TenantRepository.class);
+    UUID authenticatedTenantId = UUID.randomUUID();
+    UUID requestedTenantId = UUID.randomUUID();
+    Tenant authenticatedTenant =
+        Tenant.rehydrate(
+            authenticatedTenantId,
+            "authenticated-salon",
+            "Authenticated Salon",
+            TenantStatus.ACTIVE,
+            null,
+            "emme-authenticated-salon",
+            Instant.now(),
+            Instant.now());
+    Tenant requestedTenant =
+        Tenant.rehydrate(
+            requestedTenantId,
+            "requested-salon",
+            "Requested Salon",
+            TenantStatus.ACTIVE,
+            null,
+            "emme-requested-salon",
+            Instant.now(),
+            Instant.now());
+    when(tenantRepository.findByIdentityRealm("emme-authenticated-salon"))
+        .thenReturn(Optional.of(authenticatedTenant));
+    when(tenantRepository.findBySlug("requested-salon")).thenReturn(Optional.of(requestedTenant));
+
+    Jwt jwt =
+        Jwt.withTokenValue("token")
+            .header("alg", "none")
+            .issuer("https://identity.example/realms/emme-authenticated-salon")
+            .subject("owner")
+            .issuedAt(Instant.now())
+            .expiresAt(Instant.now().plusSeconds(300))
+            .build();
+    SecurityContextHolder.getContext()
+        .setAuthentication(new UsernamePasswordAuthenticationToken(jwt, null));
+
+    var filter = new TenantContextFilter(tenantRepository);
+    var request = new MockHttpServletRequest("GET", "/api/ai/chat");
+    request.addHeader("X-Tenant-Slug", "requested-salon");
+
+    assertThat(org.assertj.core.api.Assertions.catchThrowable(
+            () -> filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain())))
+        .isInstanceOf(AccessDeniedException.class)
+        .hasMessage("Tenant selector conflicts with authenticated tenant");
   }
 }

@@ -9,5 +9,8 @@ public record TenantActivated(
 
   public TenantActivated {
     if (eventId == null) eventId = UUID.randomUUID();
+    if (schemaName == null || !schemaName.matches("[a-z0-9_]+")) {
+      throw new IllegalArgumentException("Invalid tenant schema name");
+    }
   }
 }

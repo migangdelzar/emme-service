@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -50,6 +51,10 @@ public class TenantContextFilter extends OncePerRequestFilter {
       var authenticationTenant =
           TrustedTenantResolver.fromAuthentication(authentication, tenantRepository);
       tenantId = authenticationTenant.tenantId();
+
+      if (tenantId != null) {
+        rejectConflictingTenantSelectors(request, tenantId);
+      }
 
       if (tenantId == null && !authenticationTenant.tenantBound()) {
         // Try X-Tenant-Slug header (or X-Emme-Tenant-Slug for E2E tests)
@@ -128,5 +133,28 @@ public class TenantContextFilter extends OncePerRequestFilter {
       throw servletException;
     }
     throw exception;
+  }
+
+  private void rejectConflictingTenantSelectors(
+      HttpServletRequest request, UUID authenticatedTenantId) {
+    rejectIfDifferent(
+        TrustedTenantResolver.fromQueryParam(request.getHeader("X-Tenant-Slug"), tenantRepository),
+        authenticatedTenantId);
+    rejectIfDifferent(
+        TrustedTenantResolver.fromQueryParam(
+            request.getHeader("X-Emme-Tenant-Slug"), tenantRepository),
+        authenticatedTenantId);
+    rejectIfDifferent(
+        TrustedTenantResolver.fromQueryParam(request.getParameter("tenant"), tenantRepository),
+        authenticatedTenantId);
+    rejectIfDifferent(
+        TrustedTenantResolver.fromHost(request.getServerName(), tenantRepository),
+        authenticatedTenantId);
+  }
+
+  private static void rejectIfDifferent(UUID selectedTenantId, UUID authenticatedTenantId) {
+    if (selectedTenantId != null && !authenticatedTenantId.equals(selectedTenantId)) {
+      throw new AccessDeniedException("Tenant selector conflicts with authenticated tenant");
+    }
   }
 }

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
@@ -186,11 +187,11 @@ class SpringAiEmbeddingConfigurationTest {
         .isInstanceOf(com.emme.assistant.ai.application.provider.EmbeddingModelSelector.class);
   }
 
-  private static AiProperties aiProperties(int dimension) {
-    return new AiProperties(
+  private static AiProviderProperties aiProperties(int dimension) {
+    return new AiProviderProperties(
         "mock",
         null,
-        new AiProperties.EmbeddingConfig(
+        new AiProviderProperties.EmbeddingConfig(
             "embeddinggemma:300m", "http://localhost:11434", null, dimension),
         true);
   }

@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.tenant.AiTenantContextResolver;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.in.messaging.SemanticCacheInvalidationListener;
 import com.emme.assistant.ai.adapter.out.persistence.JacksonSemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
@@ -97,7 +98,7 @@ public class SpringAiSemanticCacheConfiguration {
       SemanticCacheProperties properties,
       Optional<SemanticCacheHotStore> hotStore,
       SemanticMetrics metrics,
-      AiProperties aiProperties,
+      AiProviderProperties aiProperties,
       AiTraceRecorder traceRecorder) {
     return new SemanticChatCache(
         embeddings,

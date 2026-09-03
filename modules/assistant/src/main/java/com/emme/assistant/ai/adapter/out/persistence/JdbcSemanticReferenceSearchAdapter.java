@@ -1,9 +1,9 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
-import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Objects;
@@ -23,10 +23,11 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
   private final int embeddingDimensions;
   private final String embeddingModelVersion;
 
-  public JdbcSemanticReferenceSearchAdapter(JdbcClient jdbc, AiProperties aiProperties) {
+  public JdbcSemanticReferenceSearchAdapter(JdbcClient jdbc, AiProviderProperties aiProperties) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
-    AiProperties properties = Objects.requireNonNull(aiProperties, "aiProperties must not be null");
-    this.embeddingModelName = properties.embeddingModelName();
+    AiProviderProperties properties =
+        Objects.requireNonNull(aiProperties, "aiProperties must not be null");
+    this.embeddingModelName = properties.embedding().model();
     this.embeddingDimensions = properties.embeddingDimension();
     this.embeddingModelVersion = properties.embeddingModelVersion();
   }

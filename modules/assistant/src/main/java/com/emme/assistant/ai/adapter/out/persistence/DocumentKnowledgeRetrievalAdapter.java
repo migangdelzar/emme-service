@@ -4,8 +4,8 @@ import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.KnowledgeSearch;
 import com.emme.ai.contracts.rag.RetrievedDocument;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
-import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.documents.api.query.SearchDocumentChunksQuery;
 import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
 import com.emme.kernel.context.AiExecutionContext;
@@ -28,14 +28,18 @@ public final class DocumentKnowledgeRetrievalAdapter implements KnowledgeSearch 
       AiModelProvider legacyModel,
       SearchDocumentChunksUseCase searchDocuments,
       Optional<EmbeddingModelPort> embeddings) {
-    this(legacyModel, searchDocuments, embeddings, new AiProperties(null, null, null, false));
+    this(
+        legacyModel,
+        searchDocuments,
+        embeddings,
+        new AiProviderProperties(null, null, null, false));
   }
 
   public DocumentKnowledgeRetrievalAdapter(
       AiModelProvider legacyModel,
       SearchDocumentChunksUseCase searchDocuments,
       Optional<EmbeddingModelPort> embeddings,
-      AiProperties aiProperties) {
+      AiProviderProperties aiProperties) {
     this.legacyModel = Objects.requireNonNull(legacyModel, "legacyModel must not be null");
     this.searchDocuments =
         Objects.requireNonNull(searchDocuments, "searchDocuments must not be null");

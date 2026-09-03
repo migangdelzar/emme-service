@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.DesignImageReader;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
@@ -123,11 +124,12 @@ class SpringAiQuoteExtractionConfigurationTest {
     assertThat(properties.schemaVersion()).isEqualTo("nail-features-v1");
   }
 
-  private static AiProperties aiProperties() {
-    return new AiProperties(
+  private static AiProviderProperties aiProperties() {
+    return new AiProviderProperties(
         "mock",
-        new AiProperties.ProviderConfig("gemma4:e4b-mlx", "http://localhost:11434", null),
-        new AiProperties.EmbeddingConfig(
+        new AiProviderProperties.ProviderConfig(
+            "gemma4:e4b-mlx", "http://localhost:11434", null),
+        new AiProviderProperties.EmbeddingConfig(
             "embeddinggemma:300m", "http://localhost:11434", null, 768),
         true);
   }

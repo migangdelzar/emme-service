@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiNailDesignExtractor;
 import com.emme.assistant.ai.application.port.out.DesignImageReader;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
@@ -25,7 +26,7 @@ public class SpringAiQuoteExtractionConfiguration {
 
   @Bean(name = "ollamaChatModel")
   @ConditionalOnMissingBean(name = "ollamaChatModel")
-  ChatModel ollamaChatModel(AiProperties aiProperties) {
+  ChatModel ollamaChatModel(AiProviderProperties aiProperties) {
     return OllamaChatModel.builder()
         .ollamaApi(OllamaApi.builder().baseUrl(aiProperties.chat().baseUrl()).build())
         .options(OllamaChatOptions.builder().model(aiProperties.chat().model()).build())

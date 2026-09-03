@@ -3,13 +3,13 @@ package com.emme.assistant.ai;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcAiToolIdempotencyStore;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticCacheAdapter;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticReferenceSearchAdapter;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.tool.AiToolResult;
-import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,19 +65,19 @@ class PgVectorSemanticIntegrationTest {
     semanticReferences =
         new JdbcSemanticReferenceSearchAdapter(
             JdbcClient.create(dataSource),
-            new AiProperties(
+            new AiProviderProperties(
                 "mock",
                 null,
-                new AiProperties.EmbeddingConfig(
+                new AiProviderProperties.EmbeddingConfig(
                     MODEL_NAME, "http://localhost:11434", null, 768, MODEL_VERSION),
                 true));
     semanticCache =
         new JdbcSemanticCacheAdapter(
             JdbcClient.create(dataSource),
-            new AiProperties(
+            new AiProviderProperties(
                 "mock",
                 null,
-                new AiProperties.EmbeddingConfig(
+                new AiProviderProperties.EmbeddingConfig(
                     MODEL_NAME, "http://localhost:11434", null, 768, MODEL_VERSION),
                 true));
     toolIdempotency =

@@ -9,11 +9,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
-import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.sql.Timestamp;
@@ -324,11 +324,11 @@ class JdbcSemanticAdapterTest {
         "idem-1");
   }
 
-  private static AiProperties aiProperties() {
-    return new AiProperties(
+  private static AiProviderProperties aiProperties() {
+    return new AiProviderProperties(
         "mock",
         null,
-        new AiProperties.EmbeddingConfig(
+        new AiProviderProperties.EmbeddingConfig(
             "embeddinggemma:300m", "http://localhost:11434", null, 768),
         true);
   }

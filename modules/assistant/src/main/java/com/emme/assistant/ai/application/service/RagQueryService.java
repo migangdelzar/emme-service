@@ -6,6 +6,7 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.KnowledgeSearch;
 import com.emme.ai.contracts.rag.RetrievedDocument;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
@@ -13,7 +14,6 @@ import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
 import com.emme.assistant.ai.application.semantic.SemanticFailurePolicy;
 import com.emme.assistant.ai.configuration.AiExecutorProperties;
-import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
 import java.util.List;
@@ -26,7 +26,7 @@ public class RagQueryService implements RagQueryUseCase {
 
   private static final String DEFAULT_LOCALE = "es-MX";
 
-  private final AiProperties properties;
+  private final AiProviderProperties properties;
   private final AiModelProvider modelProvider;
   private final KnowledgeSearch retrieval;
   private final Optional<ChatCompletionPort> chatCompletion;
@@ -35,7 +35,7 @@ public class RagQueryService implements RagQueryUseCase {
   private final Duration admissionTimeout;
 
   public RagQueryService(
-      AiProperties properties, AiModelProvider modelProvider, KnowledgeSearch retrieval) {
+      AiProviderProperties properties, AiModelProvider modelProvider, KnowledgeSearch retrieval) {
     this(
         properties,
         modelProvider,
@@ -48,7 +48,7 @@ public class RagQueryService implements RagQueryUseCase {
 
   @Autowired
   public RagQueryService(
-      AiProperties properties,
+      AiProviderProperties properties,
       AiModelProvider modelProvider,
       KnowledgeSearch retrieval,
       Optional<ChatCompletionPort> chatCompletion,
@@ -66,7 +66,7 @@ public class RagQueryService implements RagQueryUseCase {
   }
 
   public RagQueryService(
-      AiProperties properties,
+      AiProviderProperties properties,
       AiModelProvider modelProvider,
       KnowledgeSearch retrieval,
       Optional<ChatCompletionPort> chatCompletion) {
@@ -81,7 +81,7 @@ public class RagQueryService implements RagQueryUseCase {
   }
 
   public RagQueryService(
-      AiProperties properties,
+      AiProviderProperties properties,
       AiModelProvider modelProvider,
       KnowledgeSearch retrieval,
       Optional<ChatCompletionPort> chatCompletion,
@@ -97,7 +97,7 @@ public class RagQueryService implements RagQueryUseCase {
   }
 
   private RagQueryService(
-      AiProperties properties,
+      AiProviderProperties properties,
       AiModelProvider modelProvider,
       KnowledgeSearch retrieval,
       Optional<ChatCompletionPort> chatCompletion,

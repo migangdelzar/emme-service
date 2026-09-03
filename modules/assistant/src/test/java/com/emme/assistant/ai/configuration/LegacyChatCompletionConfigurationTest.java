@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
@@ -92,11 +93,11 @@ class LegacyChatCompletionConfigurationTest {
         .withBean(ObservationRegistry.class, () -> ObservationRegistry.NOOP)
         .withBean(AiExecutorProperties.class, () -> new AiExecutorProperties(2, 1, 1))
         .withBean(
-            AiProperties.class,
+            AiProviderProperties.class,
             () ->
-                new AiProperties(
+                new AiProviderProperties(
                     "mock",
-                    new AiProperties.ProviderConfig("model", "http://localhost", null),
+                    new AiProviderProperties.ProviderConfig("model", "http://localhost", null),
                     null,
                     true))
         .withBean(TenantSecurityAdvisor.class, TenantSecurityAdvisor::new)

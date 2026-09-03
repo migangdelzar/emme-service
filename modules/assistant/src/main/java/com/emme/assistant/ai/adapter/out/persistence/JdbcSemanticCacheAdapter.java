@@ -1,8 +1,8 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
-import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -21,10 +21,11 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
   private final int embeddingDimensions;
   private final String embeddingModelVersion;
 
-  public JdbcSemanticCacheAdapter(JdbcClient jdbc, AiProperties aiProperties) {
+  public JdbcSemanticCacheAdapter(JdbcClient jdbc, AiProviderProperties aiProperties) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
-    AiProperties properties = Objects.requireNonNull(aiProperties, "aiProperties must not be null");
-    this.embeddingModelName = properties.embeddingModelName();
+    AiProviderProperties properties =
+        Objects.requireNonNull(aiProperties, "aiProperties must not be null");
+    this.embeddingModelName = properties.embedding().model();
     this.embeddingDimensions = properties.embeddingDimension();
     this.embeddingModelVersion = properties.embeddingModelVersion();
   }

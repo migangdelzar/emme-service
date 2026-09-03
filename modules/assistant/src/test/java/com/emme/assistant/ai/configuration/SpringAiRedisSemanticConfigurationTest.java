@@ -6,6 +6,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
@@ -116,15 +117,15 @@ class SpringAiRedisSemanticConfigurationTest {
         true, "localhost", 6379, "index", "prefix", "ollama-embeddinggemma:300m", false, null);
   }
 
-  private static AiProperties aiProperties() {
-    return new AiProperties(null, null, null, false);
+  private static AiProviderProperties aiProperties() {
+    return new AiProviderProperties(null, null, null, false);
   }
 
-  private static AiProperties aiProperties(int dimension) {
-    return new AiProperties(
+  private static AiProviderProperties aiProperties(int dimension) {
+    return new AiProviderProperties(
         "mock",
         null,
-        new AiProperties.EmbeddingConfig(
+        new AiProviderProperties.EmbeddingConfig(
             "embeddinggemma:300m", "http://localhost:11434", null, dimension),
         true);
   }

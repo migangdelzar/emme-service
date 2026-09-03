@@ -9,13 +9,13 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.KnowledgeSearch;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
-import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
@@ -88,7 +88,7 @@ class RagQueryServiceTest {
     AiModelProvider model = mock(AiModelProvider.class);
     KnowledgeSearch retrieval = mock(KnowledgeSearch.class);
     RagQueryService service =
-        new RagQueryService(new AiProperties("mock", null, null, true), model, retrieval);
+        new RagQueryService(new AiProviderProperties("mock", null, null, true), model, retrieval);
 
     String answer = inContext(UUID.randomUUID(), () -> service.query("hello"));
 
@@ -263,7 +263,7 @@ class RagQueryServiceTest {
         action::get);
   }
 
-  private static AiProperties realProperties() {
-    return new AiProperties("ollama", null, null, false);
+  private static AiProviderProperties realProperties() {
+    return new AiProviderProperties("ollama", null, null, false);
   }
 }

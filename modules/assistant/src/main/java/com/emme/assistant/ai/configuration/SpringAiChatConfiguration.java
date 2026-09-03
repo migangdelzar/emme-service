@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiToolCallbackProvider;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
@@ -33,14 +34,14 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "app.ai.spring-chat", name = "enabled", havingValue = "true")
 public class SpringAiChatConfiguration {
 
-  ChatModel ollamaChatModel(AiProperties aiProperties) {
+  ChatModel ollamaChatModel(AiProviderProperties aiProperties) {
     return ollamaChatModel(aiProperties, ObservationRegistry.NOOP);
   }
 
   @Bean(name = "ollamaChatModel")
   @ConditionalOnMissingBean(name = "ollamaChatModel")
   ChatModel ollamaChatModel(
-      AiProperties aiProperties, ObservationRegistry observationRegistry) {
+      AiProviderProperties aiProperties, ObservationRegistry observationRegistry) {
     return OllamaChatModel.builder()
         .ollamaApi(OllamaApi.builder().baseUrl(aiProperties.chat().baseUrl()).build())
         .options(OllamaChatOptions.builder().model(aiProperties.chat().model()).build())

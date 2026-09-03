@@ -8,11 +8,11 @@ import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
 import com.emme.ai.contracts.tenant.AiTenantContextResolver;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcAiTraceRecorder;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticCacheAdapter;
 import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidationService;
 import com.emme.assistant.ai.application.trace.AiTraceRedactor;
-import com.emme.assistant.ai.configuration.AiProperties;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.adapter.out.client.database.TenantScopedDataSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -142,11 +142,12 @@ class TenantScopedSemanticInvalidationIntegrationTest {
             (Function<UUID, String>) ignored -> "public");
     nonOwnerScopedJdbc = new JdbcTemplate(nonOwnerScopedDataSource);
 
-    AiProperties properties =
-        new AiProperties(
+    AiProviderProperties properties =
+        new AiProviderProperties(
             "mock",
             null,
-            new AiProperties.EmbeddingConfig("embeddinggemma:300m", "http://localhost", null, 2),
+            new AiProviderProperties.EmbeddingConfig(
+                "embeddinggemma:300m", "http://localhost", null, 2),
             true);
     AiTenantContextResolver tenantContextResolver = mock(AiTenantContextResolver.class);
     when(tenantContextResolver.resolve(eq(TENANT_ID), anyString()))

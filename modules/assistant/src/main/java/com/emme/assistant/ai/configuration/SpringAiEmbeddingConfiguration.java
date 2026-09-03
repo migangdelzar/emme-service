@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.ai.platform.configuration.SpringAiObservationConventions;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
@@ -23,14 +24,14 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "app.ai.spring-embedding", name = "enabled", havingValue = "true")
 public class SpringAiEmbeddingConfiguration {
 
-  EmbeddingModel ollamaEmbeddingModel(AiProperties aiProperties) {
+  EmbeddingModel ollamaEmbeddingModel(AiProviderProperties aiProperties) {
     return ollamaEmbeddingModel(aiProperties, ObservationRegistry.NOOP);
   }
 
   @Bean(name = "ollamaEmbeddingModel")
   @ConditionalOnMissingBean(name = "ollamaEmbeddingModel")
   EmbeddingModel ollamaEmbeddingModel(
-      AiProperties aiProperties, ObservationRegistry observationRegistry) {
+      AiProviderProperties aiProperties, ObservationRegistry observationRegistry) {
     OllamaEmbeddingModel model =
         OllamaEmbeddingModel.builder()
         .ollamaApi(OllamaApi.builder().baseUrl(aiProperties.embedding().baseUrl()).build())
@@ -46,7 +47,7 @@ public class SpringAiEmbeddingConfiguration {
   SpringAiEmbeddingProviderRegistry providerRegistry(
       Map<String, EmbeddingModel> embeddingModels,
       SpringAiEmbeddingProperties properties,
-      AiProperties aiProperties,
+      AiProviderProperties aiProperties,
       AiTraceRecorder traceRecorder) {
     return new SpringAiEmbeddingProviderRegistry(
         embeddingModels, properties, aiProperties.embeddingModelConfiguration(), traceRecorder);
@@ -55,7 +56,7 @@ public class SpringAiEmbeddingConfiguration {
   SpringAiEmbeddingProviderRegistry providerRegistry(
       Map<String, EmbeddingModel> embeddingModels,
       SpringAiEmbeddingProperties properties,
-      AiProperties aiProperties) {
+      AiProviderProperties aiProperties) {
     return new SpringAiEmbeddingProviderRegistry(
         embeddingModels,
         properties,

@@ -12,6 +12,7 @@ import com.emme.ai.contracts.learning.LearningCandidateEvaluationReport;
 import com.emme.ai.contracts.learning.LearningCandidateStatus;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,12 @@ class LearningCandidateEvaluationWorkerTest {
           UUID.randomUUID(),
           "trace-eval",
           "idempotency-eval");
+
+  @Test
+  void requiresTheDurableEvaluationStoreAtConstruction() {
+    assertThat(Arrays.stream(LearningCandidateEvaluationWorker.class.getDeclaredConstructors()))
+        .noneMatch(constructor -> constructor.getParameterCount() == 1);
+  }
 
   @Test
   void startsAndCompletesAPendingCandidate() {
@@ -51,6 +58,7 @@ class LearningCandidateEvaluationWorkerTest {
     verify(lifecycle).beginEvaluation(candidateId);
     verify(evaluations).save(candidateId, evaluation, context());
     verify(lifecycle).completeEvaluation(candidateId, evaluation.toLifecycleEvaluation());
+    verify(lifecycle, never()).promote(candidateId, evaluation.toLifecycleEvaluation());
   }
 
   @Test

@@ -13,10 +13,6 @@ public class LearningCandidateEvaluationWorker {
   private final LearningCandidateLifecycleService lifecycle;
   private final LearningCandidateEvaluationStore evaluations;
 
-  public LearningCandidateEvaluationWorker(LearningCandidateLifecycleService lifecycle) {
-    this(lifecycle, (candidateId, report, context) -> null);
-  }
-
   public LearningCandidateEvaluationWorker(
       LearningCandidateLifecycleService lifecycle, LearningCandidateEvaluationStore evaluations) {
     this.lifecycle = Objects.requireNonNull(lifecycle, "lifecycle must not be null");

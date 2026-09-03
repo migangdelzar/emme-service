@@ -13,6 +13,9 @@ import com.emme.ai.contracts.learning.LearningCandidateEvidence;
 import com.emme.ai.contracts.learning.LearningCandidateKind;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -27,6 +30,12 @@ class LearningCandidateServiceTest {
   private static final UUID WORKFLOW_ID = UUID.fromString("00000000-0000-0000-0000-000000000004");
 
   private final LearningCandidatePolicy policy = new LearningCandidatePolicy();
+
+  @Test
+  void requiresTheAsynchronousEvaluationBoundaryAtConstruction() {
+    assertThat(Arrays.stream(LearningCandidateService.class.getDeclaredConstructors()))
+        .noneMatch(constructor -> constructor.getParameterCount() == 2);
+  }
 
   @Test
   void persistsAnAdmittedCandidateWithTheAuthenticatedExecutionContext() {
@@ -55,6 +64,25 @@ class LearningCandidateServiceTest {
   }
 
   @Test
+  void requestsOfflineEvaluationOnlyAfterTheCandidateHasBeenPersisted() {
+    List<String> boundarySteps = new ArrayList<>();
+    LearningCandidate candidate = candidate(true, true, true, true, false, false, true);
+    UUID candidateId = UUID.randomUUID();
+    LearningCandidateStore store =
+        (ignoredCandidate, ignoredContext) -> {
+          boundarySteps.add("persisted");
+          return candidateId;
+        };
+    LearningCandidateEvaluationRequester requester =
+        ignoredRequest -> boundarySteps.add("evaluation-requested");
+    LearningCandidateService service = new LearningCandidateService(policy, store, requester);
+
+    AiExecutionContextScope.call(context(), () -> service.submit(candidate));
+
+    assertThat(boundarySteps).containsExactly("persisted", "evaluation-requested");
+  }
+
+  @Test
   void rejectsACandidateBeforePersistenceWhenTheEvidenceGateFails() {
     LearningCandidate candidate = candidate(true, true, true, false, false, false, true);
     LearningCandidateStore store = mock(LearningCandidateStore.class);
@@ -75,7 +103,10 @@ class LearningCandidateServiceTest {
   @Test
   void refusesSubmissionWithoutTheBackendExecutionContext() {
     LearningCandidateService service =
-        new LearningCandidateService(policy, mock(LearningCandidateStore.class));
+        new LearningCandidateService(
+            policy,
+            mock(LearningCandidateStore.class),
+            mock(LearningCandidateEvaluationRequester.class));
 
     assertThatThrownBy(() -> service.submit(candidate(true, true, true, true, false, false, true)))
         .isInstanceOf(IllegalStateException.class)

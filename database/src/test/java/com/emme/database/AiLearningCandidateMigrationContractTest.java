@@ -70,6 +70,7 @@ class AiLearningCandidateMigrationContractTest {
     String sql = resource(EVALUATION_MIGRATION);
 
     assertThat(sql).contains("CREATE TABLE IF NOT EXISTS ai_learning_candidate_evaluation");
+    assertThat(sql).contains("TIMESTAMPTZ").contains("JSONB");
     assertThat(sql).contains("tenant_id UUID NOT NULL");
     assertThat(sql).contains("candidate_id UUID NOT NULL REFERENCES ai_learning_candidate(id)");
     assertThat(sql).contains("evaluation_version VARCHAR(150) NOT NULL");

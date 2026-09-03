@@ -14,10 +14,6 @@ public class LearningCandidateService {
   private final LearningCandidateStore store;
   private final LearningCandidateEvaluationRequester evaluationRequester;
 
-  public LearningCandidateService(LearningCandidatePolicy policy, LearningCandidateStore store) {
-    this(policy, store, request -> {});
-  }
-
   public LearningCandidateService(
       LearningCandidatePolicy policy,
       LearningCandidateStore store,

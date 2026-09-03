@@ -49,6 +49,12 @@ class JdbcLearningCandidateEvaluationStoreTest {
         AiExecutionContextScope.call(CONTEXT, () -> store.save(CANDIDATE_ID, report, CONTEXT));
 
     assertThat(saved).isEqualTo(evaluationId);
+    org.mockito.ArgumentCaptor<String> sql = org.mockito.ArgumentCaptor.forClass(String.class);
+    verify(jdbc).sql(sql.capture());
+    assertThat(sql.getValue())
+        .contains("INSERT INTO ai_learning_candidate_evaluation")
+        .contains("CAST(:metrics AS jsonb)")
+        .contains("ON CONFLICT (tenant_id, candidate_id, evaluation_version)");
     verify(statement).param("tenantId", CONTEXT.tenantId());
     verify(statement).param("candidateId", CANDIDATE_ID);
     verify(statement).param("evaluationVersion", "ragas-0.4.3");

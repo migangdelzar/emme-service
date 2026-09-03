@@ -90,15 +90,15 @@ public final class BoundedModelExecutionScheduler implements ModelExecutionSched
   private Permit awaitPermit(Waiter<?> waiter) {
     long deadline = System.nanoTime() + waiter.timeout.toNanos();
     synchronized (queueMonitor) {
+      if (queuedCount >= profile.queueCapacity()) {
+        throw new ModelAdmissionRejectedException("Model admission queue is full");
+      }
       Permit immediate = tryAcquire(waiter);
       if (immediate != null && queuedCount == 0) {
         return immediate;
       }
       if (immediate != null) {
         immediate.release();
-      }
-      if (queuedCount >= profile.queueCapacity()) {
-        throw new ModelAdmissionRejectedException("Model admission queue is full");
       }
       enqueue(waiter);
       while (true) {

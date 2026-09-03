@@ -75,35 +75,77 @@ class BoundedModelExecutionSchedulerTest {
 
     try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
       Future<String> first =
-          executor.submit(
-              () ->
-                  scheduler.execute(
-                      ModelCapability.GENERATION,
-                      context(UUID.randomUUID()),
-                      Duration.ofSeconds(5),
-                      () -> {
-                        started.countDown();
-                        release.await();
-                        return "first";
-                      }));
-      assertThat(started.await(1, TimeUnit.SECONDS)).isTrue();
+          submitBlocking(executor, scheduler, ModelCapability.GENERATION, started, release);
+      try {
+        assertThat(started.await(1, TimeUnit.SECONDS)).isTrue();
+        int tenantPermitBaseline = scheduler.tenantPermitCount();
+        int userPermitBaseline = scheduler.userPermitCount();
 
-      for (int request = 0; request < 128; request++) {
-        assertThatThrownBy(
+        for (int request = 0; request < 128; request++) {
+          assertThatThrownBy(
+                  () ->
+                      scheduler.execute(
+                          ModelCapability.GENERATION,
+                          context(UUID.randomUUID()),
+                          Duration.ofSeconds(1),
+                          () -> "rejected"))
+              .isInstanceOf(ModelAdmissionRejectedException.class);
+        }
+
+        assertThat(scheduler.tenantPermitCount()).isEqualTo(tenantPermitBaseline);
+        assertThat(scheduler.userPermitCount()).isEqualTo(userPermitBaseline);
+      } finally {
+        release.countDown();
+      }
+      assertThat(first.get(2, TimeUnit.SECONDS)).isEqualTo("first");
+    }
+  }
+
+  @Test
+  void doesNotMaterializeIdentityPermitsForMixedCapabilityRequestsRejectedByAFullQueue()
+      throws Exception {
+    var scheduler =
+        new BoundedModelExecutionScheduler(new ModelCapacityProfile(2, 1, 2, 1, 1, 1));
+    var started = new CountDownLatch(1);
+    var release = new CountDownLatch(1);
+
+    try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      Future<String> first =
+          submitBlocking(executor, scheduler, ModelCapability.GENERATION, started, release);
+      try {
+        assertThat(started.await(1, TimeUnit.SECONDS)).isTrue();
+
+        Future<String> queued =
+            executor.submit(
                 () ->
                     scheduler.execute(
                         ModelCapability.GENERATION,
                         context(UUID.randomUUID()),
-                        Duration.ofSeconds(1),
-                        () -> "rejected"))
-            .isInstanceOf(ModelAdmissionRejectedException.class);
+                        Duration.ofSeconds(5),
+                        () -> "queued"));
+        awaitQueued(scheduler, 1);
+        int tenantPermitBaseline = scheduler.tenantPermitCount();
+        int userPermitBaseline = scheduler.userPermitCount();
+
+        for (int request = 0; request < 128; request++) {
+          assertThatThrownBy(
+                  () ->
+                      scheduler.execute(
+                          ModelCapability.EMBEDDING,
+                          context(UUID.randomUUID()),
+                          Duration.ofSeconds(1),
+                          () -> "rejected"))
+              .isInstanceOf(ModelAdmissionRejectedException.class);
+        }
+
+        assertThat(scheduler.tenantPermitCount()).isEqualTo(tenantPermitBaseline);
+        assertThat(scheduler.userPermitCount()).isEqualTo(userPermitBaseline);
+        release.countDown();
+        assertThat(first.get(2, TimeUnit.SECONDS)).isEqualTo("first");
+        assertThat(queued.get(2, TimeUnit.SECONDS)).isEqualTo("queued");
+      } finally {
+        release.countDown();
       }
-
-      assertThat(scheduler.tenantPermitCount()).isZero();
-      assertThat(scheduler.userPermitCount()).isZero();
-
-      release.countDown();
-      assertThat(first.get(2, TimeUnit.SECONDS)).isEqualTo("first");
     }
   }
 
@@ -383,6 +425,25 @@ class BoundedModelExecutionSchedulerTest {
                 () -> {
                   order.add(result);
                   return result;
+                }));
+  }
+
+  private static Future<String> submitBlocking(
+      java.util.concurrent.ExecutorService executor,
+      ModelExecutionScheduler scheduler,
+      ModelCapability capability,
+      CountDownLatch started,
+      CountDownLatch release) {
+    return executor.submit(
+        () ->
+            scheduler.execute(
+                capability,
+                context(UUID.randomUUID()),
+                Duration.ofSeconds(5),
+                () -> {
+                  started.countDown();
+                  release.await();
+                  return "first";
                 }));
   }
 

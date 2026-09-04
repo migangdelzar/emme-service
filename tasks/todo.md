@@ -56,6 +56,16 @@
 - [x] Collapse `SemanticChatCache` and semantic-cache configuration to one production construction path.
 - [x] Verify focused RAG/semantic tests and record the remaining Redis/vector work.
 
+### Current slice — Task 6B Redis hot-projection hardening
+
+- [x] Add a failing test for one canonical `RedisSemanticCacheHotStore` constructor.
+- [x] Collapse the Redis hot-store production API to the canonical embedding-configuration constructor.
+- [x] Add a failing test for malformed Redis vector documents without a score.
+- [x] Fail closed for Redis documents that do not contain a similarity score.
+- [x] Add regression coverage for durable-cache fallback when Redis is unavailable.
+- [x] Run focused semantic/RAG/Redis tests and Spotless.
+- [ ] Complete advisor-order, metadata-contract, and measured hybrid-search follow-up slices.
+
 ## Task 6 semantic capability hardening — 2026-08-31
 
 - [ ] Remediate review findings with strict red→green→refactor slices.

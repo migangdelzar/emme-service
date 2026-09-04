@@ -314,6 +314,37 @@ class SemanticChatCacheTest {
   }
 
   @Test
+  void fallsBackToTheDurableCacheWhenTheHotProjectionIsUnavailable() {
+    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    SemanticCachePort durableCache = mock(SemanticCachePort.class);
+    SemanticCacheHotStore hotStore = mock(SemanticCacheHotStore.class);
+    SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
+    UUID cacheId = UUID.randomUUID();
+    when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
+    when(hotStore.find(any(), any(), anyInt())).thenThrow(new IllegalStateException("Redis down"));
+    when(durableCache.find(any(), anyInt()))
+        .thenReturn(List.of(new SemanticCachePort.Candidate(cacheId, "payload", 0.99)));
+    when(durableCache.recordHit(cacheId)).thenReturn(true);
+    when(codec.decodeText("payload")).thenReturn(Optional.of("We are open from 9 to 6."));
+    SemanticChatCache semanticCache =
+        cache(
+            embeddings,
+            new SemanticCacheResolver(durableCache, new SemanticCachePolicy(0.95)),
+            durableCache,
+            codec,
+            Clock.systemUTC(),
+            "chat-v1",
+            java.time.Duration.ofMinutes(5),
+            Optional.of(hotStore));
+
+    assertThat(semanticCache.lookup("", "What are your hours?"))
+        .contains("We are open from 9 to 6.");
+
+    verify(durableCache).find(any(), anyInt());
+    verify(durableCache).recordHit(cacheId);
+  }
+
+  @Test
   void writesTheDurableEntryBeforeProjectingToTheHotStore() {
     EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
     SemanticCachePort durableCache = mock(SemanticCachePort.class);

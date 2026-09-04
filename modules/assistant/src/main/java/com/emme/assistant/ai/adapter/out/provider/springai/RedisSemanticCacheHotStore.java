@@ -1,7 +1,6 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
-import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
@@ -42,103 +41,22 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
   private final String redisKeyPrefix;
 
   public RedisSemanticCacheHotStore(
-      VectorStore vectorStore, String embeddingModelVersion, int embeddingDimensions) {
-    this(
-        vectorStore,
-        EmbeddingModelDefaults.MODEL_NAME,
-        embeddingModelVersion,
-        embeddingDimensions,
-        Clock.systemUTC());
-  }
-
-  public RedisSemanticCacheHotStore(
-      VectorStore vectorStore, String embeddingModelVersion, int embeddingDimensions, Clock clock) {
-    this(
-        vectorStore,
-        EmbeddingModelDefaults.MODEL_NAME,
-        embeddingModelVersion,
-        embeddingDimensions,
-        clock,
-        null,
-        "");
-  }
-
-  public RedisSemanticCacheHotStore(
       VectorStore vectorStore,
-      String embeddingModelName,
-      String embeddingModelVersion,
-      int embeddingDimensions,
-      Clock clock) {
-    this(
-        vectorStore,
-        embeddingModelName,
-        embeddingModelVersion,
-        embeddingDimensions,
-        clock,
-        null,
-        "");
-  }
-
-  public RedisSemanticCacheHotStore(
-      VectorStore vectorStore,
-      String embeddingModelVersion,
-      int embeddingDimensions,
-      Clock clock,
-      RedisClient redisClient,
-      String redisKeyPrefix) {
-    this(
-        vectorStore,
-        EmbeddingModelDefaults.MODEL_NAME,
-        embeddingModelVersion,
-        embeddingDimensions,
-        clock,
-        redisClient,
-        redisKeyPrefix);
-  }
-
-  public RedisSemanticCacheHotStore(
-      VectorStore vectorStore,
-      String embeddingModelName,
-      String embeddingModelVersion,
-      int embeddingDimensions,
+      EmbeddingModelConfiguration embeddingConfiguration,
       Clock clock,
       RedisClient redisClient,
       String redisKeyPrefix) {
     this.vectorStore = Objects.requireNonNull(vectorStore, "vectorStore must not be null");
-    if (embeddingModelName == null || embeddingModelName.isBlank()) {
-      throw new IllegalArgumentException("embeddingModelName must not be blank");
-    }
-    if (embeddingModelVersion == null || embeddingModelVersion.isBlank()) {
-      throw new IllegalArgumentException("embeddingModelVersion must not be blank");
-    }
-    if (embeddingDimensions <= 0) {
-      throw new IllegalArgumentException("embeddingDimensions must be positive");
-    }
-    this.embeddingModelName = embeddingModelName;
-    this.embeddingModelVersion = embeddingModelVersion;
-    this.embeddingDimensions = embeddingDimensions;
+    Objects.requireNonNull(embeddingConfiguration, "embeddingConfiguration must not be null");
+    this.embeddingModelName = embeddingConfiguration.modelName();
+    this.embeddingModelVersion = embeddingConfiguration.modelVersion();
+    this.embeddingDimensions = embeddingConfiguration.dimension();
     this.clock = Objects.requireNonNull(clock, "clock must not be null");
     this.redisClient = redisClient;
     if (redisKeyPrefix == null) {
       throw new NullPointerException("redisKeyPrefix must not be null");
     }
     this.redisKeyPrefix = redisKeyPrefix;
-  }
-
-  public RedisSemanticCacheHotStore(
-      VectorStore vectorStore,
-      EmbeddingModelConfiguration embeddingConfiguration,
-      Clock clock,
-      RedisClient redisClient,
-      String redisKeyPrefix) {
-    this(
-        vectorStore,
-        embeddingConfiguration.modelName(),
-        embeddingConfiguration.modelVersion(),
-        embeddingConfiguration.dimension(),
-        clock,
-        redisClient,
-        redisKeyPrefix);
   }
 
   @Override
@@ -334,8 +252,10 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
           UUID.fromString(String.valueOf(document.getMetadata().get("durableCacheId")));
       String responsePayload = String.valueOf(document.getMetadata().get("responsePayload"));
       Double score = document.getScore();
-      return new SemanticCachePort.Candidate(
-          durableId, responsePayload, score == null ? 0.0 : score);
+      if (score == null) {
+        return null;
+      }
+      return new SemanticCachePort.Candidate(durableId, responsePayload, score);
     } catch (RuntimeException ignored) {
       return null;
     }

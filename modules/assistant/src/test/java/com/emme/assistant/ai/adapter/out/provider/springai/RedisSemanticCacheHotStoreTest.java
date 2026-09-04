@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
@@ -40,6 +41,11 @@ class RedisSemanticCacheHotStoreTest {
       new EmbeddingVector("embeddinggemma-v1", List.of(1.0f, 0.0f));
 
   @Test
+  void exposesOneCanonicalConstructionPath() {
+    assertThat(RedisSemanticCacheHotStore.class.getConstructors()).hasSize(1);
+  }
+
+  @Test
   void readsAHotCandidateUsingTheQueryAndTheBackendTenantFilter() {
     VectorStore vectorStore = mock(VectorStore.class);
     UUID durableId = UUID.randomUUID();
@@ -55,8 +61,7 @@ class RedisSemanticCacheHotStoreTest {
             .score(0.98)
             .build();
     when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of(document));
-    RedisSemanticCacheHotStore hotStore =
-        new RedisSemanticCacheHotStore(vectorStore, "embeddinggemma-v1", 2);
+    RedisSemanticCacheHotStore hotStore = hotStore(vectorStore);
 
     List<SemanticCachePort.Candidate> result =
         AiExecutionContextScope.call(
@@ -79,11 +84,38 @@ class RedisSemanticCacheHotStoreTest {
   }
 
   @Test
+  void ignoresAHotDocumentWithoutASimilarityScore() {
+    VectorStore vectorStore = mock(VectorStore.class);
+    Document document =
+        Document.builder()
+            .id("hot-entry")
+            .text("What are your hours?")
+            .metadata(
+                Map.of(
+                    "durableCacheId", UUID.randomUUID().toString(),
+                    "responsePayload", "{\"text\":\"We are open.\"}",
+                    "expiresAt", Instant.now().plusSeconds(60).getEpochSecond()))
+            .build();
+    when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of(document));
+
+    List<SemanticCachePort.Candidate> result =
+        AiExecutionContextScope.call(
+            context(),
+            () ->
+                hotStore(vectorStore)
+                    .find(
+                        new SemanticCachePort.Lookup("CHAT_INFORMATIONAL", "ctx", "chat-v1", QUERY),
+                        "What are your hours?",
+                        2));
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
   void projectsDurableEntryWithBackendScopeMetadata() {
     VectorStore vectorStore = mock(VectorStore.class);
     UUID durableId = UUID.randomUUID();
-    RedisSemanticCacheHotStore hotStore =
-        new RedisSemanticCacheHotStore(vectorStore, "embeddinggemma-v1", 2);
+    RedisSemanticCacheHotStore hotStore = hotStore(vectorStore);
     SemanticCacheIdentity identity =
         new SemanticCacheIdentity(
             "ollama", "gemma4:e4b-mlx", "knowledge-v7", "policy-v3", "source-v9");
@@ -130,8 +162,7 @@ class RedisSemanticCacheHotStoreTest {
     Clock clock = Clock.fixed(Instant.parse("2026-08-29T12:00:00Z"), ZoneOffset.UTC);
     UUID durableId = UUID.randomUUID();
     RedisSemanticCacheHotStore hotStore =
-        new RedisSemanticCacheHotStore(
-            vectorStore, "embeddinggemma-v1", 2, clock, redisClient, "emme:ai:semantic-cache:");
+        hotStore(vectorStore, clock, redisClient, "emme:ai:semantic-cache:");
     SemanticCachePort.Put write =
         new SemanticCachePort.Put(
             "CHAT_INFORMATIONAL",
@@ -151,8 +182,7 @@ class RedisSemanticCacheHotStoreTest {
 
   @Test
   void rejectsHotOperationsWithoutTheBackendContext() {
-    RedisSemanticCacheHotStore hotStore =
-        new RedisSemanticCacheHotStore(mock(VectorStore.class), "embeddinggemma-v1", 2);
+    RedisSemanticCacheHotStore hotStore = hotStore(mock(VectorStore.class));
 
     org.assertj.core.api.Assertions.assertThatThrownBy(
             () ->
@@ -174,8 +204,7 @@ class RedisSemanticCacheHotStoreTest {
     when(redisClient.smembers("prefix:tenant:" + TENANT_ID + ":principal:" + PRINCIPAL_ID))
         .thenReturn(Set.of(documentKey));
     RedisSemanticCacheHotStore hotStore =
-        new RedisSemanticCacheHotStore(
-            vectorStore, "embeddinggemma-v1", 2, Clock.systemUTC(), redisClient, "prefix:");
+        hotStore(vectorStore, Clock.systemUTC(), redisClient, "prefix:");
     SemanticCacheInvalidation invalidation =
         new SemanticCacheInvalidation(
             TENANT_ID,
@@ -200,6 +229,20 @@ class RedisSemanticCacheHotStoreTest {
         WORKFLOW_ID,
         "trace-hot-cache",
         "idempotency-hot-cache");
+  }
+
+  private static RedisSemanticCacheHotStore hotStore(VectorStore vectorStore) {
+    return hotStore(vectorStore, Clock.systemUTC(), null, "");
+  }
+
+  private static RedisSemanticCacheHotStore hotStore(
+      VectorStore vectorStore, Clock clock, RedisClient redisClient, String redisKeyPrefix) {
+    return new RedisSemanticCacheHotStore(
+        vectorStore,
+        new EmbeddingModelConfiguration("embeddinggemma:300m", "embeddinggemma-v1", 2),
+        clock,
+        redisClient,
+        redisKeyPrefix);
   }
 
   private static String encodeTagValue(String value) {

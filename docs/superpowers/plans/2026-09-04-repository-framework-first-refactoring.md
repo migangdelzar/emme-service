@@ -395,11 +395,22 @@ Completed in this slice:
 
 Remaining Task 6 work is tracked by the steps below: Redis outage/eviction behavior, vector/cache ranking and metadata contracts, advisor-order coverage, and the measured `HybridSearch` decision.
 
+#### Current slice 6B — Redis hot-projection hardening and construction simplification
+
+Completed in this slice:
+
+- `RedisSemanticCacheHotStore` now has one canonical production constructor accepting the provider-neutral `EmbeddingModelConfiguration`, clock, and optional Redis projection dependencies.
+- Test-only construction variants were migrated to a local fixture helper, removing six ambiguous public entry points without changing the application port.
+- Redis vector documents without a similarity score are ignored instead of being converted into a synthetic `0.0` candidate.
+- Regression coverage confirms a Redis outage safely falls back to the durable PostgreSQL cache and that malformed hot documents fail closed.
+
+The remaining Task 6 work is intentionally not collapsed into this slice: advisor-order assertions, complete metadata/model contract coverage, and measured `HybridSearch` alternatives still require separate evidence.
+
 **Files:**
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiRagConfiguration.java`
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/TenantScopedDocumentRetriever.java`
-- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/RagAnswerProviderChain.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/RagAnswerPolicy.java`
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/semantic/SemanticChatCache.java`
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiRedisSemanticConfiguration.java`
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcSemanticCacheAdapter.java`

@@ -146,6 +146,18 @@ class JdbcLangGraphCheckpointSaverTest {
         .hasMessage("Checkpoint thread does not match AI workflow context");
   }
 
+  @Test
+  void rejectsAWorkflowThreadWithAnEmptyNamespace() {
+    JdbcLangGraphCheckpointSaver saver =
+        new JdbcLangGraphCheckpointSaver(mock(JdbcClient.class), new ObjectMapper());
+    RunnableConfig malformedConfig = RunnableConfig.builder().threadId(WORKFLOW_ID + ":").build();
+
+    assertThatThrownBy(
+            () -> AiExecutionContextScope.call(context(), () -> saver.list(malformedConfig)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Checkpoint thread namespace must not be blank");
+  }
+
   private static RunnableConfig config() {
     return RunnableConfig.builder().threadId(WORKFLOW_ID.toString()).build();
   }

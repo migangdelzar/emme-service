@@ -101,7 +101,8 @@
 - [x] Add a failing test for a capability-qualified checkpoint bean name.
 - [x] Rename the composition-root bean/method to `workflowCheckpointStore`.
 - [x] Update both graph consumers and focused configuration tests.
-- [ ] Complete checkpoint security and malformed-thread integration gates.
+- [x] Reject empty checkpoint namespaces before database access.
+- [ ] Complete remaining checkpoint security and malformed-thread integration gates.
 
 ### Remaining repository-wide framework-first work
 

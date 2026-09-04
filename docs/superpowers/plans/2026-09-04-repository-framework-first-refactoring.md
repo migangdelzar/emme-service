@@ -531,7 +531,16 @@ Completed in this slice:
 - Conversation and quote graph composition both consume that one qualified
   bean; no graph or application port was renamed.
 - Configuration coverage verifies the qualifier and the focused LangGraph
-  tests remain green.
+tests remain green.
+
+#### Current slice 8B — Checkpoint namespace validation
+
+Completed in this slice:
+
+- Added regression coverage for a thread ID with an empty namespace.
+- The PostgreSQL checkpoint adapter now rejects empty or nested namespaces
+  before any database access, preserving the tenant/workflow boundary.
+- Focused LangGraph, checkpoint, and compilation tests pass.
 
 **Files:**
 

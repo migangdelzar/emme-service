@@ -1,5 +1,15 @@
 # Engineering lessons
 
+## 2026-09-04 — Add metadata for every new package level
+
+- Failure mode: adding a nested production adapter package caused the module
+  architecture test to fail because the intermediate package lacked
+  `package-info.java`.
+- Detection signal: `AiCapabilityConventionTest` reported missing package
+  metadata for `adapter/out/messaging`.
+- Prevention rule: when introducing a nested Java package, add metadata for
+  each materialized package level before running the full module suite.
+
 ## 2026-09-04 — Remove forwarding mappers only after contract coverage
 
 - Failure mode: A persistence mapper duplicated entity conversion methods and

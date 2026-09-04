@@ -14,6 +14,7 @@ import com.emme.assistant.api.usecase.AddConversationEventUseCase;
 import com.emme.assistant.api.usecase.ListConversationsUseCase;
 import com.emme.assistant.api.usecase.StartConversationUseCase;
 import com.emme.assistant.application.port.out.ChannelParticipantRepository;
+import com.emme.assistant.application.port.out.WhatsAppMessageEventPublisher;
 import com.emme.assistant.application.port.out.WhatsAppReplyPort;
 import com.emme.assistant.application.port.out.WhatsAppWebhookEventRepository;
 import com.emme.assistant.domain.model.ChannelParticipant;
@@ -24,7 +25,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationEventPublisher;
 
 class ProcessWhatsAppMessageServiceTest {
 
@@ -35,7 +35,7 @@ class ProcessWhatsAppMessageServiceTest {
   private final ChannelParticipantRepository participantRepository = org.mockito.Mockito.mock();
   private final WhatsAppWebhookEventRepository webhookEvents = org.mockito.Mockito.mock();
   private final WhatsAppReplyPort replyPort = org.mockito.Mockito.mock();
-  private final ApplicationEventPublisher eventPublisher = org.mockito.Mockito.mock();
+  private final WhatsAppMessageEventPublisher eventPublisher = org.mockito.Mockito.mock();
   private final ProcessWhatsAppMessageService service =
       new ProcessWhatsAppMessageService(
           startConversation,
@@ -112,7 +112,7 @@ class ProcessWhatsAppMessageServiceTest {
     com.emme.kernel.context.TenantContextHolder.withTenantOverride(
         tenantId, () -> service.enqueue(command));
 
-    verify(eventPublisher).publishEvent(new WhatsAppMessageReceived(command));
+    verify(eventPublisher).publish(new WhatsAppMessageReceived(command));
     verify(webhookEvents, never()).claim(any(), any(), any());
     verify(chatUseCase, never()).chat(any(), any());
     verify(replyPort, never()).send(any(), any());

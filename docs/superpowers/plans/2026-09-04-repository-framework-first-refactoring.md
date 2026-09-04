@@ -1250,6 +1250,22 @@ application layer.
 - [ ] Complete the listener idempotency, context reconstruction, and Kafka
       externalization gates.
 
+#### Current slice 19B — Keep WhatsApp event publication behind a port
+
+`ProcessWhatsAppMessageService` now depends on the provider-neutral
+`WhatsAppMessageEventPublisher` port. `SpringWhatsAppMessageEventPublisher`
+contains the Spring Modulith publication mechanic, so the application service
+no longer imports Spring event infrastructure. The existing durable webhook
+claim, tenant validation, and asynchronous context reconstruction remain
+unchanged.
+
+- [x] Update the enqueue contract test to use the provider-neutral publisher.
+- [x] Add the WhatsApp event publisher port and Spring adapter.
+- [x] Remove Spring event infrastructure and the redundant constructor overload
+      from the application service.
+- [x] Run focused assistant tests and architecture checks.
+- [ ] Complete listener duplicate-delivery and external Kafka boundary tests.
+
 **Files:**
 
 - Modify: event publishers/listeners under `modules/assistant/src/main/java/com/emme/assistant/**`

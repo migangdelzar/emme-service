@@ -76,6 +76,14 @@
 - [x] Run tenancy tests, compilation, Checkstyle, and Spotless.
 - [ ] Complete listener idempotency, tenant-context reconstruction, and Kafka boundary tests.
 
+### Current slice — Task 19B WhatsApp event boundary
+
+- [x] Add the provider-neutral `WhatsAppMessageEventPublisher` port.
+- [x] Move Spring Modulith publication to `SpringWhatsAppMessageEventPublisher`.
+- [x] Remove `ApplicationEventPublisher` from `ProcessWhatsAppMessageService`.
+- [x] Verify enqueue, processing, idempotency, and context-rebinding tests.
+- [ ] Continue listener duplicate-delivery and Kafka externalization coverage.
+
 
 - User requested subagent-driven execution when work can be safely parallelized.
 - Shared contracts, Liquibase migrations, version catalog, and composition-root

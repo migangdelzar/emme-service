@@ -14,6 +14,7 @@ import com.emme.assistant.api.usecase.ListConversationsUseCase;
 import com.emme.assistant.api.usecase.ProcessWhatsAppMessageUseCase;
 import com.emme.assistant.api.usecase.StartConversationUseCase;
 import com.emme.assistant.application.port.out.ChannelParticipantRepository;
+import com.emme.assistant.application.port.out.WhatsAppMessageEventPublisher;
 import com.emme.assistant.application.port.out.WhatsAppReplyPort;
 import com.emme.assistant.application.port.out.WhatsAppWebhookEventRepository;
 import com.emme.assistant.domain.model.ChannelParticipant;
@@ -30,7 +31,6 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +48,7 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
   private final ChannelParticipantRepository participantRepository;
   private final WhatsAppWebhookEventRepository webhookEvents;
   private final WhatsAppReplyPort replyPort;
-  private final ApplicationEventPublisher eventPublisher;
+  private final WhatsAppMessageEventPublisher eventPublisher;
   private final java.util.Optional<AiAuthorizationContextResolver> authorizationResolver;
 
   public ProcessWhatsAppMessageService(
@@ -79,7 +79,7 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
       ChannelParticipantRepository participantRepository,
       WhatsAppWebhookEventRepository webhookEvents,
       WhatsAppReplyPort replyPort,
-      ApplicationEventPublisher eventPublisher) {
+      WhatsAppMessageEventPublisher eventPublisher) {
     this(
         startConversation,
         listConversations,
@@ -101,7 +101,7 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
       ChannelParticipantRepository participantRepository,
       WhatsAppWebhookEventRepository webhookEvents,
       WhatsAppReplyPort replyPort,
-      ApplicationEventPublisher eventPublisher,
+      WhatsAppMessageEventPublisher eventPublisher,
       java.util.Optional<AiAuthorizationContextResolver> authorizationResolver) {
     this.startConversation = startConversation;
     this.listConversations = listConversations;
@@ -123,7 +123,7 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
     if (!currentTenant.equals(command.tenantId())) {
       throw new SecurityException("WhatsApp tenant does not match the backend context");
     }
-    eventPublisher.publishEvent(new WhatsAppMessageReceived(command));
+    eventPublisher.publish(new WhatsAppMessageReceived(command));
   }
 
   @Override

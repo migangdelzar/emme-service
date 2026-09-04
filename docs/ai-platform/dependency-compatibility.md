@@ -1,7 +1,7 @@
 # AI Dependency Compatibility Baseline
 
-**Date:** 2026-08-27
-**Status:** Pinned baseline; framework API adoption remains incremental
+**Date:** 2026-09-04
+**Status:** Pinned baseline; runtime integration validation pending local infrastructure
 
 ## Decision
 
@@ -16,6 +16,14 @@ independent of both libraries.
 The LangGraph4j `1.9.0-beta3` line is not selected for the production baseline
 because it is a pre-release. It may be evaluated in an isolated compatibility
 branch when a required feature cannot be implemented on the stable line.
+
+The optional `langgraph4j-spring-ai` bridge is intentionally not part of the
+runtime dependency graph yet. The application uses Spring AI for model,
+advisor, retrieval, and tool mechanics, while LangGraph4j core owns only the
+durable state graph and checkpoint lifecycle. Adding the bridge would be
+appropriate only when graph nodes need its Spring AI-specific agent/tool
+services; adding it now would create a second tool-loop owner and increase
+coupling without providing a required capability.
 
 ## Provider posture
 
@@ -83,3 +91,6 @@ Authoritative references checked on 2026-08-27:
   selector.
 - Re-run dependency resolution after every Spring Boot, Spring AI, or
   LangGraph4j version change.
+- Run container-backed integration and deployed E2E validation before declaring
+  a production runtime certification; source compilation and unit checks do not
+  prove Docker/PostgreSQL/Kafka wiring.

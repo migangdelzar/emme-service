@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-09-04 — Keep one composition root per AI tool
+
+- Failure mode: Moving an assistant tool configuration into the canonical
+  assistant configuration package left an older application-level registration
+  active, causing duplicate Spring bean names at application startup.
+- Detection signal: The application integration context failed with a
+  `BeanDefinitionOverrideException` before external containers initialized.
+- Prevention rule: Before moving or adding a configuration class, search every
+  composition root for the bean name and keep exactly one authoritative
+  registration; verify startup wiring separately from compilation.
+
 ## 2026-09-03 — Name classes for one responsibility
 
 - Failure mode: A rescheduling application service implemented both the ordinary

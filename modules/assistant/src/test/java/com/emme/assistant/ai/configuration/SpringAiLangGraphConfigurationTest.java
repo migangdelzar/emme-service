@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import com.emme.assistant.ai.WorkflowTestCapabilities;
 import com.emme.assistant.ai.adapter.out.workflow.ConversationWorkflowGraph;
 import com.emme.assistant.ai.adapter.out.workflow.JdbcLangGraphCheckpointSaver;
 import com.emme.assistant.ai.adapter.out.workflow.LangGraphConversationWorkflowAdapter;
@@ -31,7 +32,7 @@ class SpringAiLangGraphConfigurationTest {
     BaseCheckpointSaver tenantAwareSaver =
         configuration.tenantAwareCheckpointSaver(checkpointSaver);
     ConversationWorkflowGraph conversationGraph =
-        configuration.conversationWorkflowGraph(tenantAwareSaver);
+        configuration.conversationWorkflowGraph(tenantAwareSaver, WorkflowTestCapabilities.basic());
     CompiledGraph<AgentState> compiledConversationGraph =
         configuration.conversationWorkflowCompiledGraph(conversationGraph);
     ConversationWorkflowPort conversationWorkflowPort =

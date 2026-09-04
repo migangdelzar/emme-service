@@ -2,6 +2,7 @@ package com.emme.assistant.ai.adapter.out.workflow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.assistant.ai.WorkflowTestCapabilities;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Map;
@@ -116,8 +117,7 @@ class ConversationWorkflowGraphTest {
 
   private static CompiledGraph<AgentState> graph() throws Exception {
     return new ConversationWorkflowGraph(
-            new TenantAwareCheckpointSaver(new MemorySaver()),
-            com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.defaults())
+            new TenantAwareCheckpointSaver(new MemorySaver()), WorkflowTestCapabilities.basic())
         .compile();
   }
 
@@ -145,8 +145,7 @@ class ConversationWorkflowGraphTest {
 
   private static com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities
       capabilities(InvocationCounts calls, boolean needsApproval) {
-    var defaults =
-        com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.defaults();
+    var defaults = WorkflowTestCapabilities.basic();
     return new com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities(
         request -> {
           calls.intent().incrementAndGet();
@@ -189,8 +188,7 @@ class ConversationWorkflowGraphTest {
 
   private static com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities
       terminalCapabilities(String terminal) {
-    var defaults =
-        com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.defaults();
+    var defaults = WorkflowTestCapabilities.basic();
     return new com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities(
         defaults.intentDetection(),
         defaults.decomposition(),

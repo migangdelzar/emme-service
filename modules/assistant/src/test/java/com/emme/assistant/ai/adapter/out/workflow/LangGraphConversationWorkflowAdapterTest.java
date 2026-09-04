@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.emme.assistant.ai.WorkflowTestCapabilities;
 import com.emme.assistant.ai.api.command.ProcessConversationCommand;
 import com.emme.assistant.ai.api.command.ResumeConversationWorkflowCommand;
 import com.emme.assistant.ai.api.command.WorkflowClarificationCommand;
@@ -151,7 +152,7 @@ class LangGraphConversationWorkflowAdapterTest {
   }
 
   private static LangGraphConversationWorkflowAdapter adapter() throws Exception {
-    return adapter(ConversationWorkflowCapabilities.defaults());
+    return adapter(WorkflowTestCapabilities.basic());
   }
 
   private static LangGraphConversationWorkflowAdapter adapter(
@@ -163,7 +164,7 @@ class LangGraphConversationWorkflowAdapterTest {
   }
 
   private static ConversationWorkflowCapabilities approvalCapabilities() {
-    ConversationWorkflowCapabilities defaults = ConversationWorkflowCapabilities.defaults();
+    ConversationWorkflowCapabilities defaults = WorkflowTestCapabilities.basic();
     return new ConversationWorkflowCapabilities(
         defaults.intentDetection(),
         defaults.decomposition(),
@@ -179,7 +180,7 @@ class LangGraphConversationWorkflowAdapterTest {
   }
 
   private static ConversationWorkflowCapabilities clarificationCapabilities() {
-    ConversationWorkflowCapabilities defaults = ConversationWorkflowCapabilities.defaults();
+    ConversationWorkflowCapabilities defaults = WorkflowTestCapabilities.basic();
     return new ConversationWorkflowCapabilities(
         defaults.intentDetection(),
         defaults.decomposition(),

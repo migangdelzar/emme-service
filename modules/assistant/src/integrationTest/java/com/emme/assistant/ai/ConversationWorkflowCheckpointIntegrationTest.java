@@ -134,17 +134,24 @@ class ConversationWorkflowCheckpointIntegrationTest {
   }
 
   private static ConversationWorkflowCapabilities approvalCapabilities() {
-    ConversationWorkflowCapabilities defaults = ConversationWorkflowCapabilities.defaults();
+    ConversationWorkflowCapabilities.WorkflowStep empty =
+        ConversationWorkflowCapabilities.WorkflowStep.empty();
     return new ConversationWorkflowCapabilities(
-        defaults.intentDetection(),
-        defaults.decomposition(),
-        defaults.semanticRouting(),
-        defaults.slotExtraction(),
-        defaults.retrieval(),
-        defaults.toolExecution(),
+        request ->
+            new ConversationWorkflowCapabilities.WorkflowStep(
+                Map.of("intent", "GENERAL"), false, false, null),
+        request -> empty,
+        request ->
+            new ConversationWorkflowCapabilities.WorkflowStep(
+                Map.of("route", "GENERAL"), false, false, null),
+        request -> empty,
+        request -> empty,
+        request -> empty,
         request -> new ConversationWorkflowCapabilities.WorkflowStep(Map.of(), true, false, null),
-        defaults.responseComposition(),
-        defaults.quoteWorkflow());
+        request ->
+            new ConversationWorkflowCapabilities.WorkflowStep(
+                Map.of("response", "Your request is ready."), false, false, null),
+        request -> empty);
   }
 
   private static AiExecutionContext context(

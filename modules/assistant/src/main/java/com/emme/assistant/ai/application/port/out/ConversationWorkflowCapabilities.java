@@ -33,21 +33,6 @@ public record ConversationWorkflowCapabilities(
     Objects.requireNonNull(quoteWorkflow, "quoteWorkflow must not be null");
   }
 
-  public static ConversationWorkflowCapabilities defaults() {
-    WorkflowStep passthrough = WorkflowStep.empty();
-    return new ConversationWorkflowCapabilities(
-        request -> new WorkflowStep(Map.of("intent", "GENERAL"), false, false, null),
-        request -> passthrough,
-        request -> new WorkflowStep(Map.of("route", "GENERAL"), false, false, null),
-        request -> passthrough,
-        request -> passthrough,
-        request -> passthrough,
-        request -> passthrough,
-        request ->
-            new WorkflowStep(Map.of("response", "Your request is ready."), false, false, null),
-        request -> passthrough);
-  }
-
   public ConversationWorkflowCapabilities withQuoteWorkflow(
       QuoteWorkflowCapability quoteCapability) {
     return new ConversationWorkflowCapabilities(

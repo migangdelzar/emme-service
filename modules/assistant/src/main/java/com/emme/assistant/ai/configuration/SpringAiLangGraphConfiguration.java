@@ -54,10 +54,6 @@ public class SpringAiLangGraphConfiguration {
     return new ConversationWorkflowGraph(checkpointSaver, capabilities);
   }
 
-  ConversationWorkflowGraph conversationWorkflowGraph(BaseCheckpointSaver checkpointSaver) {
-    return conversationWorkflowGraph(checkpointSaver, ConversationWorkflowCapabilities.defaults());
-  }
-
   @Bean(name = "aiConversationWorkflowCompiledGraph")
   @ConditionalOnMissingBean(name = "aiConversationWorkflowCompiledGraph")
   CompiledGraph<AgentState> conversationWorkflowCompiledGraph(ConversationWorkflowGraph graph)

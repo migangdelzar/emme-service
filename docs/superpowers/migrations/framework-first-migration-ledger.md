@@ -65,7 +65,7 @@ assigned to wave B/H for stable AI contract consumption and offline evaluation.
 
 The following paths are every production Java file currently matching
 `JdbcTemplate`, `JdbcClient`, `JdbcOperations`,
-`NamedParameterJdbcTemplate`, or `JdbcConnectionExecutor` under modules and
+`NamedParameterJdbcTemplate`, or `BootstrapConnectionExecutor` under modules and
 libraries. Configuration files are included because they establish the
 boundary, even when they do not execute SQL themselves.
 
@@ -105,7 +105,7 @@ boundary, even when they do not execute SQL themselves.
 
 | File | Status | Target / reason |
 |---|---|---|
-| `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/JdbcConnectionExecutor.java` | Keep | Rename to `BootstrapConnectionExecutor` only if caller search proves bootstrap-only; lower-level callback is an infrastructure exception |
+| `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/BootstrapConnectionExecutor.java` | Replacement tested | Lower-level managed connection callback is limited to bootstrap and tenant lifecycle callers; `JdbcTemplate` remains because `ConnectionCallback` is required |
 | `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/package-info.java` | Keep | Documents the narrow connection boundary |
 | `modules/shared/src/main/java/com/emme/shared/search/HybridSearch.java` | Keep | Rename to `PostgresHybridKnowledgeRetriever` after callers migrate; exact RRF/FTS/pgvector query is specialized |
 | `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/in/messaging/consumer/SubscriptionProvisioningListener.java` | Replacement tested | Calls `EnsureTenantSubscriptionUseCase` under `TenantContextHolder`; JPA repository owns duplicate check and operational failures propagate |

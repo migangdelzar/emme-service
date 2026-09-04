@@ -1172,3 +1172,9 @@
 - Failure mode: concurrent Gradle invocations corrupted the local incremental build outputs/cache and produced misleading missing-class failures.
 - Detection signal: one build attempted to delete `modules/assistant/build/classes` while another was compiling, followed by an incomplete cached `compileJava` result.
 - Prevention rule: run Gradle verification commands serially; if build outputs are incomplete, force a clean/`--rerun-tasks` Java 25 compilation before diagnosing source failures.
+
+## 2026-09-04 — Do not overlap explicit Gradle verification with push hooks
+
+- **Failure mode:** An explicit broad test run overlapped with the repository-wide Gradle hook started by `git push`, creating duplicate Gradle workers and making completion status harder to attribute.
+- **Detection signal:** Two Gradle wrapper processes and workers for the same repository were visible simultaneously.
+- **Prevention rule:** After a commit, let the push hook finish before starting another Gradle command; use `jps -lv` to confirm the previous invocation has exited.

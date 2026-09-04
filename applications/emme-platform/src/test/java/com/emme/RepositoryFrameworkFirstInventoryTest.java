@@ -75,7 +75,7 @@ class RepositoryFrameworkFirstInventoryTest {
           || source.contains("JdbcClient")
           || source.contains("JdbcOperations")
           || source.contains("NamedParameterJdbcTemplate")
-          || source.contains("JdbcConnectionExecutor");
+          || source.contains("BootstrapConnectionExecutor");
     } catch (IOException exception) {
       throw new IllegalStateException("Cannot read " + path, exception);
     }

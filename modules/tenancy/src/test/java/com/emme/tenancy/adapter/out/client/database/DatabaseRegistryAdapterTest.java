@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.emme.shared.persistence.jdbc.JdbcConnectionExecutor;
+import com.emme.shared.persistence.jdbc.BootstrapConnectionExecutor;
 import com.emme.shared.persistence.jdbc.ThrowingSqlConnectionFunction;
 import com.emme.tenancy.application.port.out.DatabaseRegistryEntry;
 import com.emme.tenancy.application.port.out.DatabaseRegistryPort;
@@ -30,7 +30,7 @@ class DatabaseRegistryAdapterTest {
         new DatabaseRegistryAdapter(
             connectionProperties,
             Optional.of(connectionDetails()),
-            Optional.of(mock(JdbcConnectionExecutor.class)));
+            Optional.of(mock(BootstrapConnectionExecutor.class)));
 
     assertThat(port.findById(DEFAULT_DATABASE_ID))
         .get()
@@ -41,7 +41,7 @@ class DatabaseRegistryAdapterTest {
 
   @Test
   void performsTenantRegistryLookupThroughTheManagedConnectionExecutor() throws Exception {
-    JdbcConnectionExecutor executor = mock(JdbcConnectionExecutor.class);
+    BootstrapConnectionExecutor executor = mock(BootstrapConnectionExecutor.class);
     Connection connection = mock(Connection.class);
     PreparedStatement statement = mock(PreparedStatement.class);
     ResultSet resultSet = mock(ResultSet.class);

@@ -1,6 +1,6 @@
 package com.emme.tenancy.adapter.out.client.database;
 
-import com.emme.shared.persistence.jdbc.JdbcConnectionExecutor;
+import com.emme.shared.persistence.jdbc.BootstrapConnectionExecutor;
 import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
 import java.sql.Statement;
 import java.util.UUID;
@@ -17,9 +17,9 @@ public final class LiquibaseTenantSchemaMigrationAdapter implements TenantSchema
 
   private static final String STUDIO_CHANGELOG = "db/emme-studio/changelog.yaml";
 
-  private final JdbcConnectionExecutor connectionExecutor;
+  private final BootstrapConnectionExecutor connectionExecutor;
 
-  public LiquibaseTenantSchemaMigrationAdapter(JdbcConnectionExecutor connectionExecutor) {
+  public LiquibaseTenantSchemaMigrationAdapter(BootstrapConnectionExecutor connectionExecutor) {
     this.connectionExecutor = connectionExecutor;
   }
 

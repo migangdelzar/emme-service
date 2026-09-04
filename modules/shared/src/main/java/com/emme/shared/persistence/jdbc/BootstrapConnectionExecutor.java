@@ -6,18 +6,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Reusable higher-order boundary for connection-scoped JDBC work.
+ * Managed connection boundary for bootstrap and tenant-lifecycle JDBC operations.
  *
  * <p>Spring owns acquisition, transaction participation, thread binding, and cleanup through {@link
  * JdbcTemplate#execute(ConnectionCallback)}. Callers must not acquire or close a connection
  * themselves.
  */
 @Component
-public final class JdbcConnectionExecutor {
+public final class BootstrapConnectionExecutor {
 
   private final JdbcTemplate jdbcTemplate;
 
-  public JdbcConnectionExecutor(JdbcTemplate jdbcTemplate) {
+  public BootstrapConnectionExecutor(JdbcTemplate jdbcTemplate) {
     this.jdbcTemplate = jdbcTemplate;
   }
 

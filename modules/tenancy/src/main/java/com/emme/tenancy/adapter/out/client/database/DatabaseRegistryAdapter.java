@@ -1,6 +1,6 @@
 package com.emme.tenancy.adapter.out.client.database;
 
-import com.emme.shared.persistence.jdbc.JdbcConnectionExecutor;
+import com.emme.shared.persistence.jdbc.BootstrapConnectionExecutor;
 import com.emme.shared.persistence.jdbc.ThrowingSqlConnectionFunction;
 import com.emme.tenancy.application.port.out.DatabaseRegistryEntry;
 import com.emme.tenancy.application.port.out.DatabaseRegistryPort;
@@ -28,12 +28,12 @@ public class DatabaseRegistryAdapter implements DatabaseRegistryPort {
           + "FROM emme_core.database_registry WHERE database_id = ?";
 
   private final String bootstrapUrl;
-  private final Optional<JdbcConnectionExecutor> connectionExecutor;
+  private final Optional<BootstrapConnectionExecutor> connectionExecutor;
 
   public DatabaseRegistryAdapter(
       TenantDatabaseConnectionProperties connectionProperties,
       Optional<JdbcConnectionDetails> connectionDetails,
-      Optional<JdbcConnectionExecutor> connectionExecutor) {
+      Optional<BootstrapConnectionExecutor> connectionExecutor) {
     this.bootstrapUrl =
         connectionDetails
             .map(JdbcConnectionDetails::getJdbcUrl)

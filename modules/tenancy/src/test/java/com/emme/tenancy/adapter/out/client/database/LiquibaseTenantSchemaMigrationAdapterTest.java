@@ -6,13 +6,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import com.emme.shared.persistence.jdbc.JdbcConnectionExecutor;
+import com.emme.shared.persistence.jdbc.BootstrapConnectionExecutor;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class LiquibaseTenantSchemaMigrationAdapterTest {
 
-  private final JdbcConnectionExecutor connectionExecutor = mock(JdbcConnectionExecutor.class);
+  private final BootstrapConnectionExecutor connectionExecutor =
+      mock(BootstrapConnectionExecutor.class);
   private final LiquibaseTenantSchemaMigrationAdapter adapter =
       new LiquibaseTenantSchemaMigrationAdapter(connectionExecutor);
 

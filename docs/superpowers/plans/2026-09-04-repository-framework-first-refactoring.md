@@ -43,7 +43,7 @@ mean introducing a second compatibility abstraction.
 
 These are not automatic deletion targets:
 
-- `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/JdbcConnectionExecutor.java`
+- `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/BootstrapConnectionExecutor.java`
   because Liquibase/bootstrap operations require managed connection access;
 - `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java`
   because dynamic schema creation is not JPA CRUD;
@@ -155,7 +155,7 @@ Add tests that import the production packages and assert the forbidden package
 dependencies and class locations. The allowed JDBC classes must be exactly:
 
 ```text
-com.emme.shared.persistence.jdbc.JdbcConnectionExecutor
+com.emme.shared.persistence.jdbc.BootstrapConnectionExecutor
 com.emme.tenancy.configuration.BootstrapJdbcConfiguration
 com.emme.tenancy.adapter.out.client.database.*
 com.emme.assistant.ai.adapter.out.workflow.JdbcLangGraphCheckpointSaver
@@ -724,36 +724,36 @@ git commit -m "refactor(tenancy): isolate bootstrap persistence"
 - Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/DatabaseRegistryAdapter.java`
 - Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java`
 - Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantIdentifierResolver.java`
-- Modify: `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/JdbcConnectionExecutor.java`
+- Rename: `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/JdbcConnectionExecutor.java` → `BootstrapConnectionExecutor.java`
 - Modify: `modules/tenancy/src/main/java/com/emme/tenancy/configuration/BootstrapJdbcConfiguration.java`
 - Test: `modules/tenancy/src/test/java/com/emme/tenancy/adapter/out/client/database/**`
-- Test: `modules/shared/src/test/java/com/emme/shared/persistence/jdbc/JdbcConnectionExecutorTest.java`
+- Rename: `modules/shared/src/test/java/com/emme/shared/persistence/jdbc/JdbcConnectionExecutorTest.java` → `BootstrapConnectionExecutorTest.java`
 
 **Acceptance criteria:**
 
 - The remaining lower-level JDBC code is limited to dynamic schema, Liquibase, resolver, registry-cycle, and session/RLS concerns.
-- `JdbcConnectionExecutor` is renamed to `BootstrapConnectionExecutor` only if all callers are bootstrap/lifecycle callers.
+- `BootstrapConnectionExecutor` is used only by bootstrap/lifecycle callers; the caller search proved the rename safe.
 - Every dynamic schema identifier is validated against the trusted tenant registry and cannot be supplied as an untrusted SQL value.
 
-- [ ] **Step 1: Write failing boundary tests**
+- [x] **Step 1: Write failing boundary tests**
 
 Cover dynamic schema validation, bootstrap connection closure, resolver before
 entity-manager initialization, Liquibase failure, registry-cycle behavior,
 tenant session setup, and cross-tenant access rejection.
 
-- [ ] **Step 2: Run focused tenancy/shared tests**
+- [x] **Step 2: Run focused tenancy/shared tests**
 
 ```bash
-./gradlew :modules:tenancy:test :modules:shared:test --tests '*DatabaseRegistry*' --tests '*LiquibaseTenant*' --tests '*TenantIdentifier*' --tests '*JdbcConnectionExecutor*' --no-parallel --no-configuration-cache
+./gradlew :modules:tenancy:test :modules:shared:test --tests '*DatabaseRegistry*' --tests '*LiquibaseTenant*' --tests '*TenantIdentifier*' --tests '*BootstrapConnectionExecutor*' --no-parallel --no-configuration-cache
 ```
 
-- [ ] **Step 3: Rename only if the verified purpose is bootstrap-only**
+- [x] **Step 3: Rename only if the verified purpose is bootstrap-only**
 
 Keep the lower-level connection callback because Spring documents that advanced
 JDBC operations may need it. Do not replace it with JPA. Move any accidental
 feature caller to a typed repository or `JdbcClient` adapter.
 
-- [ ] **Step 4: Run tests, compile, and commit**
+- [x] **Step 4: Run tests, compile, and commit**
 
 ```bash
 ./gradlew :modules:tenancy:test :modules:shared:test :modules:tenancy:compileJava :modules:shared:compileJava --no-parallel --no-configuration-cache

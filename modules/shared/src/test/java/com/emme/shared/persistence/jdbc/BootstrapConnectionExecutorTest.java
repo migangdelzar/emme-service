@@ -15,11 +15,12 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @SuppressWarnings("unchecked")
-class JdbcConnectionExecutorTest {
+class BootstrapConnectionExecutorTest {
 
   private final JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
   private final Connection connection = mock(Connection.class);
-  private final JdbcConnectionExecutor executor = new JdbcConnectionExecutor(jdbcTemplate);
+  private final BootstrapConnectionExecutor executor =
+      new BootstrapConnectionExecutor(jdbcTemplate);
 
   @Test
   void returnsTheFunctionResultThroughSpringManagedConnectionExecution() {

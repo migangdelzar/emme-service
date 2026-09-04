@@ -175,7 +175,7 @@ connection lifecycle APIs that are not CRUD repositories.
 | Notification transport | `modules/notification/**/NotificationHttpClient.java`, `adapter/out/provider/{email,push,sms}/**` | `{Provider}{Channel}Sender` with typed DTOs and explicit retry/error policy |
 | Google transport | `modules/calendar/**/GoogleHttpClient.java`, `adapter/out/google/client/**` | `GoogleCalendarGateway`/`GoogleSheetsGateway`; Spring OAuth/client or official auth SDK where safer |
 | Keycloak transport | `modules/identity/**/KeycloakAdminClient.java` | `KeycloakIdentityGateway`; typed Spring client or official admin SDK after comparison |
-| AI transport | `modules/assistant/**/AiHttpClient.java` | Spring AI model/client path; retain raw HTTP only for an unsupported provider capability |
+| AI/WhatsApp transport | `modules/assistant/adapter/out/client/whatsapp/WhatsAppReplyAdapter.java` | WhatsApp now uses a qualified provider-scoped Spring `RestClient`; Spring AI owns model transport, and no universal `AiHttpClient` wrapper remains |
 
 ### 4.2 AI contract candidates
 

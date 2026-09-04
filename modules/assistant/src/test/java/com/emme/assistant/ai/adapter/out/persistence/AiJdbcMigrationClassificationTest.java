@@ -16,6 +16,8 @@ class AiJdbcMigrationClassificationTest {
           "JPA candidate",
           "dynamic identifier",
           "atomic claim",
+          "atomic transition",
+          "atomic review transition",
           "atomic idempotency",
           "JSONB",
           "pgvector/FTS/RRF",

@@ -237,7 +237,7 @@ focused tests, integration tests, and architecture tests.
 | `src/main/java/com/emme/assistant/ai/adapter/in/messaging/AiJobListener.java` | Review | Use Modulith listener and durable job state |
 | `src/main/java/com/emme/assistant/ai/adapter/in/messaging/AiJobReconciliationPoller.java` | Review | Retain only recovery work not supplied by publication registry/outbox |
 | `src/main/java/com/emme/assistant/ai/configuration/*.java` | Consolidate | Rename configuration by capability and remove duplicate bean roots |
-| `src/main/java/com/emme/assistant/ai/configuration/AiClientConfiguration.java` | Refactor/delete | Replace raw HTTP client where Spring AI or `RestClient` supports it |
+| `src/main/java/com/emme/assistant/ai/configuration/AiClientConfiguration.java` | Deleted | WhatsApp uses a qualified provider-scoped Spring `RestClient`; Spring AI owns model transport and no generic AI HTTP wrapper is maintained |
 | `src/main/java/com/emme/assistant/ai/configuration/AiJobExecutorConfiguration.java` | Refactor | Spring-managed executor, `JdbcClient` only if required |
 | `src/main/java/com/emme/assistant/ai/configuration/SpringAiTenantJdbcConfiguration.java` | Rename/refine | Explicit bootstrap/tenant client ownership |
 | `src/main/java/com/emme/assistant/ai/configuration/SpringAiSemanticConfiguration.java` | Refactor | One vector/search composition root |

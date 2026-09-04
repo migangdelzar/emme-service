@@ -17,6 +17,7 @@ dependencies {
   testImplementation(project(":modules:subscriptions"))
 
   implementation(libs.spring.boot.starter.web)
+  implementation(libs.spring.boot.restclient)
   implementation(libs.spring.boot.starter.actuator)
   implementation(libs.spring.boot.starter.data.redis)
   implementation(libs.spring.boot.starter.validation)

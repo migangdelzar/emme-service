@@ -1229,3 +1229,14 @@
 - **Prevention rule:** Every dependency-boundary replacement test must include a
   successful behavior assertion and verify the new dependency path; failure
   tests alone are insufficient.
+
+## 2026-09-04 — Keep classification guardrails aligned with documented reasons
+
+- **Failure mode:** A valid JDBC survivor classification used “atomic review
+  transition,” but the guardrail test accepted only a narrower list of reason
+  phrases.
+- **Detection signal:** The full assistant suite failed in the migration-ledger
+  classification test after the documentation was made more precise.
+- **Prevention rule:** When adding a new architectural classification reason,
+  update the executable vocabulary test and the plan’s reason list in the same
+  change.

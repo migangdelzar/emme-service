@@ -1,19 +1,17 @@
 package com.emme.assistant.adapter.out.client.whatsapp;
 
-import com.emme.assistant.ai.configuration.AiHttpClient;
 import com.emme.assistant.application.port.out.WhatsAppReplyPort;
 import com.emme.assistant.configuration.WhatsAppProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.Map;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /** Meta Graph API adapter implementing the Assistant WhatsApp reply port. */
 @Component
@@ -23,14 +21,12 @@ public class WhatsAppReplyAdapter implements WhatsAppReplyPort {
   private static final Logger log = LoggerFactory.getLogger(WhatsAppReplyAdapter.class);
 
   private final WhatsAppProperties properties;
-  private final AiHttpClient httpClient;
-  private final ObjectMapper objectMapper;
+  private final RestClient restClient;
 
   public WhatsAppReplyAdapter(
-      WhatsAppProperties properties, AiHttpClient httpClient, ObjectMapper objectMapper) {
+      WhatsAppProperties properties, @Qualifier("whatsappRestClient") RestClient restClient) {
     this.properties = properties;
-    this.httpClient = httpClient;
-    this.objectMapper = objectMapper;
+    this.restClient = restClient;
   }
 
   @Override
@@ -43,8 +39,12 @@ public class WhatsAppReplyAdapter implements WhatsAppReplyPort {
     }
 
     try {
-      String body =
-          objectMapper.writeValueAsString(
+      restClient
+          .post()
+          .uri("/{phoneNumberId}/messages", properties.phoneNumberId())
+          .header("Authorization", "Bearer " + properties.accessToken())
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(
               Map.of(
                   "messaging_product",
                   "whatsapp",
@@ -55,26 +55,16 @@ public class WhatsAppReplyAdapter implements WhatsAppReplyPort {
                   "type",
                   "text",
                   "text",
-                  Map.of("body", text)));
-      Request request =
-          new Request.Builder()
-              .url(properties.apiBaseUrl() + "/" + properties.phoneNumberId() + "/messages")
-              .header("Authorization", "Bearer " + properties.accessToken())
-              .header("Content-Type", "application/json")
-              .post(RequestBody.create(body, MediaType.get("application/json")))
-              .build();
-
-      try (Response response = httpClient.newCall(request).execute()) {
-        if (!response.isSuccessful()) {
-          log.error(
-              "WhatsApp send failed: {} - {}",
-              response.code(),
-              response.body() != null ? response.body().string() : "no body");
-        } else {
-          log.info("WhatsApp message sent to {}", recipient);
-        }
-      }
-    } catch (IOException exception) {
+                  Map.of("body", text)))
+          .retrieve()
+          .toBodilessEntity();
+      log.info("WhatsApp message sent to {}", recipient);
+    } catch (RestClientResponseException exception) {
+      log.error(
+          "WhatsApp send failed: {} - {}",
+          exception.getStatusCode().value(),
+          exception.getResponseBodyAsString());
+    } catch (RestClientException exception) {
       log.error("WhatsApp send error: {}", exception.getMessage());
     }
   }

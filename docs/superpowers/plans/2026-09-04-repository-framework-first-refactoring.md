@@ -630,7 +630,7 @@ git commit -m "refactor(ai): simplify LangGraph workflow composition"
 **Acceptance criteria:**
 
 - Every production JDBC adapter is classified as JPA candidate, `JdbcClient` survivor, or lower-level connection boundary.
-- Each survivor has a concrete reason: dynamic identifier, atomic claim, JSONB, pgvector/FTS/RRF, AGE, LangGraph checkpoint, RLS/session lifecycle, or measured lower complexity.
+- Each survivor has a concrete reason: dynamic identifier, atomic claim, atomic transition, JSONB, pgvector/FTS/RRF, AGE, LangGraph checkpoint, RLS/session lifecycle, or measured lower complexity.
 - No implementation is changed in this task; the classification is reviewable and complete before migration.
 
 - [x] **Step 1: Write a failing classification test**
@@ -984,6 +984,25 @@ git add modules/identity modules/calendar modules/notification modules/payment
 git commit -m "refactor(integrations): standardize Spring HTTP clients"
 ```
 
+#### Task 14A: Migrate the WhatsApp transport wrapper
+
+The first provider slice is complete. WhatsApp reply delivery now injects a
+qualified, singleton Spring `RestClient` built from `WhatsAppProperties`; the
+one-method `AiHttpClient`/`OkHttpClient` wrapper and its generic AI transport
+configuration were deleted. `WhatsAppReplyPort` remains unchanged, so the
+application contract stays provider-neutral while the Graph API details remain
+inside the outbound adapter.
+
+- [x] Add provider contract coverage for request URL, bearer authentication,
+      JSON body, incomplete credentials, and HTTP failure handling.
+- [x] Configure one provider-scoped `whatsappRestClient` bean from the existing
+      Spring Boot RestClient support.
+- [x] Delete the zero-value `AiHttpClient` wrapper and generic configuration.
+- [x] Verify the assistant test slice and dependency verification metadata.
+- [ ] Repeat the same analysis for payment, notification, calendar, and
+      Keycloak; preserve official SDKs where authentication/signing risk makes
+      them safer than a hand-written Spring client.
+
 ### Task 15: Replace zero-value HTTP wrappers with named gateways
 
 **Files:**
@@ -991,7 +1010,7 @@ git commit -m "refactor(integrations): standardize Spring HTTP clients"
 - Delete after caller migration: `modules/payment/src/main/java/com/emme/payment/configuration/PaymentHttpClient.java`
 - Delete after caller migration: `modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java`
 - Delete after caller migration: `modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleHttpClient.java`
-- Delete after caller migration: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/AiHttpClient.java`
+- ~~Delete after caller migration: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/AiHttpClient.java`~~ (done in Task 14A)
 - Modify: provider classes under `modules/payment/src/main/java/com/emme/payment/adapter/out/provider/**`
 - Modify: provider classes under `modules/notification/src/main/java/com/emme/notification/adapter/out/provider/**`
 - Modify: Google clients under `modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/client/**`

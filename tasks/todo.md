@@ -126,6 +126,9 @@
       execution.
 - [ ] Migrate external provider gateways to typed Spring HTTP clients or
       justified official SDKs.
+- [x] Migrate WhatsApp reply delivery from the zero-value `AiHttpClient` wrapper
+      to a qualified provider-scoped Spring `RestClient`; keep
+      `WhatsAppReplyPort` provider-neutral.
 - [ ] Apply JPA-first repository waves across business modules.
 - [ ] Consolidate Modulith/Kafka boundaries, Redis wiring, shared fixtures,
       Gradle conventions, migrations, deployment, and final cleanup.

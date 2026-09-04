@@ -33,6 +33,15 @@
   into the application service, and keep Modulith/Kafka mechanics in an
   outbound adapter.
 
+## 2026-09-04 — Add package metadata with every new production package
+
+- Failure mode: A new publisher package compiled successfully but failed the
+  repository architecture gate because it had no `package-info.java`.
+- Detection signal: `PackageMetadataArchitectureTest` reported the exact
+  materialized package after the broad push gate.
+- Prevention rule: Whenever a production package is created, add its package
+  metadata in the same patch and run the repository package-convention test.
+
 ## 2026-09-04 — Keep provider substitution at the port boundary
 
 - Failure mode: A naming proposal treated every PostgreSQL/JDBC adapter as a

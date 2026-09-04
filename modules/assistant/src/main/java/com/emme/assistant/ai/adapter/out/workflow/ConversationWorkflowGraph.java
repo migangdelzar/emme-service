@@ -71,10 +71,6 @@ public final class ConversationWorkflowGraph {
   private final BaseCheckpointSaver checkpointSaver;
   private final ConversationWorkflowCapabilities capabilities;
 
-  public ConversationWorkflowGraph(BaseCheckpointSaver checkpointSaver) {
-    this(checkpointSaver, ConversationWorkflowCapabilities.defaults());
-  }
-
   public ConversationWorkflowGraph(
       BaseCheckpointSaver checkpointSaver, ConversationWorkflowCapabilities capabilities) {
     this.checkpointSaver =

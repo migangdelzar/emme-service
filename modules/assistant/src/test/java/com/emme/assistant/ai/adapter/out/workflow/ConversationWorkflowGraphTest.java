@@ -115,7 +115,9 @@ class ConversationWorkflowGraphTest {
   }
 
   private static CompiledGraph<AgentState> graph() throws Exception {
-    return new ConversationWorkflowGraph(new TenantAwareCheckpointSaver(new MemorySaver()))
+    return new ConversationWorkflowGraph(
+            new TenantAwareCheckpointSaver(new MemorySaver()),
+            com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.defaults())
         .compile();
   }
 

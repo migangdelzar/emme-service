@@ -2950,6 +2950,8 @@ appointment mutation tools are registered.
   keeps explicit minimal capabilities in test sources only.
 - Concurrent identity, tenancy, and subscriptions migration files remain
   unstaged and were not included in the AI workflow commit.
+- Focused verification after the boundary cleanup passes:
+  `./gradlew :modules:assistant:check --no-parallel --no-configuration-cache`.
 - The final enterprise gate passed on 2026-09-04. Docker-backed integration,
   local PostgreSQL startup, and deployed E2E remain blocked only by unavailable
   environment services/configuration.

@@ -24,8 +24,10 @@ class SpringAiAgeConfigurationTest {
   @Test
   void wiresTheJdbcClientBehindTheProviderNeutralGraphContracts() {
     SpringAiAgeConfiguration configuration = new SpringAiAgeConfiguration();
+    DataSource dataSource = mock(DataSource.class);
     AgeGraphClient client =
-        configuration.ageGraphClient(mock(DataSource.class), new ObjectMapper());
+        configuration.ageGraphClient(
+            dataSource, configuration.tenantScopedJdbcClient(dataSource), new ObjectMapper());
     AgeGraphAdapter adapter =
         configuration.ageGraphAdapter(client, new SpringAiAgeProperties(true, "emme_ai_graph_", 5));
 

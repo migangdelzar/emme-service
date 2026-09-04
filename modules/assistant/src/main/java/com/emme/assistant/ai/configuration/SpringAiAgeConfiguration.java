@@ -14,7 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -29,10 +29,19 @@ public class SpringAiAgeConfiguration {
   @Bean
   @ConditionalOnMissingBean
   AgeGraphClient ageGraphClient(
-      @Qualifier("tenantScopedDataSource") DataSource tenantDataSource, ObjectMapper objectMapper) {
+      @Qualifier("tenantScopedDataSource") DataSource tenantDataSource,
+      @Qualifier("tenantScopedJdbcClient") JdbcClient tenantJdbc,
+      ObjectMapper objectMapper) {
     TransactionOperations transactions =
         new TransactionTemplate(new DataSourceTransactionManager(tenantDataSource));
-    return new JdbcAgeGraphClient(new JdbcTemplate(tenantDataSource), objectMapper, transactions);
+    return new JdbcAgeGraphClient(tenantJdbc, objectMapper, transactions);
+  }
+
+  @Bean("tenantScopedJdbcClient")
+  @ConditionalOnMissingBean(name = "tenantScopedJdbcClient")
+  JdbcClient tenantScopedJdbcClient(
+      @Qualifier("tenantScopedDataSource") DataSource tenantDataSource) {
+    return JdbcClient.create(tenantDataSource);
   }
 
   @Bean

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -60,7 +61,7 @@ class AgeGraphIntegrationTest {
     transactions = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
     adapter =
         new AgeGraphAdapter(
-            new JdbcAgeGraphClient(jdbc, new ObjectMapper(), transactions),
+            new JdbcAgeGraphClient(JdbcClient.create(dataSource), new ObjectMapper(), transactions),
             new SpringAiAgeProperties(true, "emme_ai_graph_", 5));
   }
 

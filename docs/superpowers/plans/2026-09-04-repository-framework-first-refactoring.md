@@ -663,6 +663,20 @@ Completed in this slice:
 
 The live PostgreSQL concurrency gate remains required; it was not runnable in this environment because Testcontainers could not find a Docker runtime.
 
+#### Current slice 11B — AGE graph adapter JdbcClient boundary
+
+The AGE adapter remains a deliberate `JdbcClient` survivor because Apache AGE
+requires PostgreSQL extension commands, `ag_catalog.cypher`, graph-name
+allow-listing, and transaction-local search-path control. The adapter no longer
+accepts the legacy `JdbcOperations` abstraction and no longer converts it
+internally. `SpringAiAgeConfiguration` now supplies a qualified
+`tenantScopedJdbcClient`, while the integration test keeps `JdbcTemplate` only
+for test-database setup statements. This removes a production legacy JDBC
+boundary without pretending AGE traversal is a JPA concern.
+
+Verification: the AGE configuration test, assistant compilation, and Spotless
+pass. The live AGE Testcontainers gate remains environment-dependent on Docker.
+
 **Files:**
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiJobStatusStore.java`

@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.support.TransactionOperations;
 
@@ -26,14 +25,12 @@ public final class JdbcAgeGraphClient implements AgeGraphClient {
       new TypeReference<>() {};
 
   private final JdbcClient jdbc;
-  private final JdbcOperations operations;
   private final ObjectMapper objectMapper;
   private final TransactionOperations transactions;
 
   public JdbcAgeGraphClient(
-      JdbcOperations operations, ObjectMapper objectMapper, TransactionOperations transactions) {
-    this.operations = Objects.requireNonNull(operations, "operations must not be null");
-    this.jdbc = JdbcClient.create(operations);
+      JdbcClient jdbc, ObjectMapper objectMapper, TransactionOperations transactions) {
+    this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
     this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper must not be null");
     this.transactions = Objects.requireNonNull(transactions, "transactions must not be null");
   }
@@ -122,14 +119,15 @@ public final class JdbcAgeGraphClient implements AgeGraphClient {
             AS (target_id ag_catalog.agtype, payload_json ag_catalog.agtype)
         """
             .formatted(sqlStringLiteral(graphName), dollarQuoted(cypher));
-    return operations.query(
-        sql,
-        (resultSet, rowNumber) ->
-            recommendation(
-                query.sourceId(),
-                resultSet.getString("target_id"),
-                resultSet.getString("payload_json"),
-                projectedAt));
+    return jdbc.sql(sql)
+        .query(
+            (resultSet, rowNumber) ->
+                recommendation(
+                    query.sourceId(),
+                    resultSet.getString("target_id"),
+                    resultSet.getString("payload_json"),
+                    projectedAt))
+        .list();
   }
 
   private void setAgeSearchPath() {
@@ -195,7 +193,7 @@ public final class JdbcAgeGraphClient implements AgeGraphClient {
             AS (result ag_catalog.agtype)
         """
             .formatted(sqlStringLiteral(graphName), dollarQuoted(cypher));
-    operations.query(sql, (resultSet, rowNumber) -> resultSet.getObject("result"));
+    jdbc.sql(sql).query((resultSet, rowNumber) -> resultSet.getObject("result")).list();
   }
 
   private void updateRegistry(String graphName, UUID tenantId, Instant projectedAt) {

@@ -75,6 +75,16 @@
 - [x] Run deterministic job, JDBC, architecture, compilation, and Spotless checks.
 - [ ] Re-run PostgreSQL concurrency integration with Docker available.
 
+### Current slice — Task 11B AGE graph JDBC boundary
+
+- [x] Add a failing configuration test requiring a qualified tenant `JdbcClient`.
+- [x] Remove `JdbcOperations` from the AGE production adapter boundary.
+- [x] Keep AGE-specific SQL, transaction-local search path, and graph traversal
+      in the specialized `JdbcClient` adapter.
+- [x] Keep `JdbcTemplate` only in AGE integration-test database setup.
+- [x] Run focused configuration tests, compilation, and Spotless.
+- [ ] Re-run the live AGE Testcontainers integration with Docker available.
+
 ## Task 6 semantic capability hardening — 2026-08-31
 
 - [ ] Remediate review findings with strict red→green→refactor slices.

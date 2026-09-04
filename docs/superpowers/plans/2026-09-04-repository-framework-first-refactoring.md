@@ -1235,6 +1235,21 @@ git commit -m "refactor(domain): standardize remaining JPA persistence"
 
 ### Task 19: Standardize Modulith events and Kafka boundaries
 
+#### Current slice 19A — Keep tenant event publication behind a port
+
+`CreateTenantService` no longer imports Spring event infrastructure. The
+application service publishes `TenantCreated` through the provider-neutral
+`TenantEventPublisher` port, while `SpringTenantEventPublisher` remains the
+single Modulith adapter. This preserves provider substitution and the
+transactional event flow without introducing a Kafka dependency into the
+application layer.
+
+- [x] Add a service test proving tenant creation publishes through the port.
+- [x] Add the Spring Modulith publisher adapter.
+- [x] Remove `ApplicationEventPublisher` from the application service.
+- [ ] Complete the listener idempotency, context reconstruction, and Kafka
+      externalization gates.
+
 **Files:**
 
 - Modify: event publishers/listeners under `modules/assistant/src/main/java/com/emme/assistant/**`

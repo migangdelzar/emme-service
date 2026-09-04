@@ -68,6 +68,15 @@
 
 ### Plan working notes
 
+### Current slice — Task 19A tenant event boundary
+
+- [x] Add a service test for provider-neutral tenant event publication.
+- [x] Add `TenantEventPublisher` and the Spring Modulith adapter.
+- [x] Remove Spring event infrastructure from `CreateTenantService`.
+- [x] Run tenancy tests, compilation, Checkstyle, and Spotless.
+- [ ] Complete listener idempotency, tenant-context reconstruction, and Kafka boundary tests.
+
+
 - User requested subagent-driven execution when work can be safely parallelized.
 - Shared contracts, Liquibase migrations, version catalog, and composition-root
   changes remain sequential; independent assistant/provider/test-fixture slices

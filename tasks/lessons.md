@@ -22,6 +22,17 @@
   explicitly unless the domain type defines value equality as part of its
   contract.
 
+## 2026-09-04 — Keep event mechanics in outbound adapters
+
+- Failure mode: An application service imported Spring's event publisher
+  directly even though the module already used provider-neutral outbound ports.
+- Detection signal: The service layer contained a framework import for an
+  implementation detail, while the event payload itself was already a stable
+  module API record.
+- Prevention rule: Define a capability port for event publication, inject it
+  into the application service, and keep Modulith/Kafka mechanics in an
+  outbound adapter.
+
 ## 2026-09-04 — Keep provider substitution at the port boundary
 
 - Failure mode: A naming proposal treated every PostgreSQL/JDBC adapter as a

@@ -70,6 +70,9 @@ class TenancyPackageConventionTest {
   private static final Path TENANT_SERVICE =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/CreateTenantService.java");
+  private static final Path SPRING_TENANT_EVENT_PUBLISHER =
+      sourcePath(
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/messaging/publisher/SpringTenantEventPublisher.java");
   private static final Path AUDIT_RECORDER =
       sourcePath(
           "modules/tenancy/src/main/java/com/emme/tenancy/application/audit/AuditEventRecorder.java");
@@ -246,6 +249,14 @@ class TenancyPackageConventionTest {
     assertThat(Files.exists(LEGACY_PROVISIONING_SERVICE)).isFalse();
     assertThat(Files.exists(LEGACY_PROVISIONING_IMPLEMENTATION)).isFalse();
     assertThat(Files.exists(LEGACY_PROVISIONING_WORKER)).isFalse();
+  }
+
+  @Test
+  void keepsSpringEventInfrastructureOutsideTheApplicationService() throws IOException {
+    assertThat(Files.readString(TENANT_SERVICE))
+        .doesNotContain("ApplicationEventPublisher")
+        .doesNotContain("org.springframework.context");
+    assertThat(Files.exists(SPRING_TENANT_EVENT_PUBLISHER)).isTrue();
   }
 
   @Test

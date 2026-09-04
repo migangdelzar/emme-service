@@ -78,7 +78,8 @@ public class SpringAiRagConfiguration {
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {
     List<Advisor> advisors =
-        List.of(tenantSecurityAdvisor, promptVersionAdvisor, retrievalAugmentationAdvisor);
+        SpringAiAdvisorConfiguration.orderedAdvisors(
+            List.of(tenantSecurityAdvisor, promptVersionAdvisor, retrievalAugmentationAdvisor));
     var registry =
         new SpringAiChatProviderRegistry(chatClients, chatProperties, advisors, traceRecorder);
     ChatCompletionPort completions =

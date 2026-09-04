@@ -29,8 +29,7 @@ class SpringAiLangGraphConfigurationTest {
     JdbcLangGraphCheckpointSaver checkpointSaver =
         configuration.jdbcCheckpointSaver(mock(JdbcClient.class), new ObjectMapper());
 
-    BaseCheckpointSaver tenantAwareSaver =
-        configuration.tenantAwareCheckpointSaver(checkpointSaver);
+    BaseCheckpointSaver tenantAwareSaver = configuration.workflowCheckpointStore(checkpointSaver);
     ConversationWorkflowGraph conversationGraph =
         configuration.conversationWorkflowGraph(tenantAwareSaver, WorkflowTestCapabilities.basic());
     CompiledGraph<AgentState> compiledConversationGraph =
@@ -72,7 +71,7 @@ class SpringAiLangGraphConfigurationTest {
             "quoteWorkflowGraph", BaseCheckpointSaver.class);
 
     assertThat(method.getParameters()[0].getAnnotation(Qualifier.class).value())
-        .isEqualTo("aiLangGraphCheckpointSaver");
+        .isEqualTo("workflowCheckpointStore");
   }
 
   @Test

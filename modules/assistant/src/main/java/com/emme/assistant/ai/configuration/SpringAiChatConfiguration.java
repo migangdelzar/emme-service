@@ -66,8 +66,10 @@ public class SpringAiChatConfiguration {
       Optional<ToolSearchToolCallingAdvisor> toolSearchAdvisor) {
     List<Advisor> configuredAdvisors =
         new ArrayList<>(List.of(tenantSecurityAdvisor, promptVersionAdvisor));
-    toolCallbackProvider.ifPresent(
-        provider -> toolSearchAdvisor.ifPresent(configuredAdvisors::add));
+    if (toolCallbackProvider.isPresent() && toolSearchAdvisor.isPresent()) {
+      configuredAdvisors.add(toolSearchAdvisor.orElseThrow());
+    }
+    configuredAdvisors = SpringAiAdvisorConfiguration.orderedAdvisors(configuredAdvisors);
     return new SpringAiChatProviderRegistry(
         chatClients,
         properties,

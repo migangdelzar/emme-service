@@ -33,9 +33,9 @@ public class SpringAiLangGraphConfiguration {
     return new JdbcLangGraphCheckpointSaver(jdbc, objectMapper);
   }
 
-  @Bean(name = "aiLangGraphCheckpointSaver")
-  @ConditionalOnMissingBean(name = "aiLangGraphCheckpointSaver")
-  BaseCheckpointSaver tenantAwareCheckpointSaver(JdbcLangGraphCheckpointSaver checkpointSaver) {
+  @Bean(name = "workflowCheckpointStore")
+  @ConditionalOnMissingBean(name = "workflowCheckpointStore")
+  BaseCheckpointSaver workflowCheckpointStore(JdbcLangGraphCheckpointSaver checkpointSaver) {
     return new TenantAwareCheckpointSaver(checkpointSaver);
   }
 
@@ -49,7 +49,7 @@ public class SpringAiLangGraphConfiguration {
   @Bean
   @ConditionalOnMissingBean
   ConversationWorkflowGraph conversationWorkflowGraph(
-      @Qualifier("aiLangGraphCheckpointSaver") BaseCheckpointSaver checkpointSaver,
+      @Qualifier("workflowCheckpointStore") BaseCheckpointSaver checkpointSaver,
       ConversationWorkflowCapabilities capabilities) {
     return new ConversationWorkflowGraph(checkpointSaver, capabilities);
   }
@@ -71,7 +71,7 @@ public class SpringAiLangGraphConfiguration {
   @Bean
   @ConditionalOnMissingBean
   QuoteWorkflowGraph quoteWorkflowGraph(
-      @Qualifier("aiLangGraphCheckpointSaver") BaseCheckpointSaver checkpointSaver) {
+      @Qualifier("workflowCheckpointStore") BaseCheckpointSaver checkpointSaver) {
     return new QuoteWorkflowGraph(checkpointSaver);
   }
 

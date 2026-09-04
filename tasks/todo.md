@@ -64,7 +64,8 @@
 - [x] Fail closed for Redis documents that do not contain a similarity score.
 - [x] Add regression coverage for durable-cache fallback when Redis is unavailable.
 - [x] Run focused semantic/RAG/Redis tests and Spotless.
-- [ ] Complete advisor-order, metadata-contract, and measured hybrid-search follow-up slices.
+- [x] Centralize Spring AI advisor ordering and verify security → prompt → retrieval precedence.
+- [ ] Complete metadata-contract and measured hybrid-search follow-up slices.
 
 ### Current slice — Task 11A atomic AI job persistence
 
@@ -87,10 +88,24 @@
 - [x] Run focused configuration tests, compilation, and Spotless.
 - [ ] Re-run the live AGE Testcontainers integration with Docker available.
 
+### Current slice — Task 7 LangGraph scope proof
+
+- [x] Verify conversation and quote topology, interrupt, resume, and
+      capability-boundary tests.
+- [x] Record the graph complexity and the Modulith boundary in the migration
+      ledger.
+- [x] Run focused LangGraph/checkpoint tests and compilation.
+
+### Current slice — Task 8A checkpoint bean naming
+
+- [x] Add a failing test for a capability-qualified checkpoint bean name.
+- [x] Rename the composition-root bean/method to `workflowCheckpointStore`.
+- [x] Update both graph consumers and focused configuration tests.
+- [ ] Complete checkpoint security and malformed-thread integration gates.
+
 ### Remaining repository-wide framework-first work
 
-- [ ] Finish Spring AI advisor-order, metadata-contract, and hybrid-search
-      measurements.
+- [ ] Finish Spring AI metadata-contract and hybrid-search measurements.
 - [ ] Complete LangGraph boundary simplification and checkpoint security tests.
 - [ ] Classify and migrate stable AI quote/trace CRUD to JPA where it reduces
       code; retain atomic/JSONB/AGE/vector/checkpoint SQL as `JdbcClient`.

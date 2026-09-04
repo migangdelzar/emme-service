@@ -22,6 +22,22 @@ dependency search, focused tests, affected compilation, architecture tests,
 and the relevant integration test are green. Database migrations already
 deployed to an environment are never edited in place.
 
+## 1.1 LangGraph complexity record
+
+The two current LangGraph4j definitions are retained because they model
+durable, resumable workflows rather than simple status transitions:
+
+| Workflow | Branch or interrupt | Checkpoint/resume evidence | Boundary rule |
+|---|---|---|---|
+| Conversation | Intent/decomposition/routing/extraction/retrieval/tool/validation chain; validation branches to success, rejection, failure, clarification, or approval | Approval and clarification states pause at named gates and resume from the persisted checkpoint without re-running completed capabilities | Graph nodes receive application capabilities; authorization, repository access, external calls, and durable state remain outside the graph definition |
+| Design quote | Required-slot extraction and calculation branch to staff review or response composition; staff review interrupts | `WAITING_FOR_STAFF` is checkpointed and resumes through `approval_gate` to `QUOTE_READY` | The graph coordinates workflow state only; quote calculation, authorization, persistence, and provider calls remain application/domain responsibilities |
+
+Linear operations that only update lifecycle state and publish an internal
+event are not graph candidates. They belong in an application service with the
+existing Modulith event boundary. A future graph change must preserve the
+checkpoint identity tuple (tenant, workflow, conversation, principal/actor,
+namespace) and add a topology/resume test before implementation changes.
+
 Stable ports are the canonical names in this ledger. Current and future
 JPA/JdbcClient/Redis/Spring AI/provider adapters are implementation details
 selected by configuration and composition-root wiring. Do not rename an

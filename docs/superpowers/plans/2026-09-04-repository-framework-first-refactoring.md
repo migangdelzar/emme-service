@@ -406,6 +406,22 @@ Completed in this slice:
 
 The remaining Task 6 work is intentionally not collapsed into this slice: advisor-order assertions, complete metadata/model contract coverage, and measured `HybridSearch` alternatives still require separate evidence.
 
+#### Current slice 6C — Advisor precedence centralization
+
+Completed in this slice:
+
+- Spring AI advisor lists are normalized through one composition-root helper using
+  Spring's `AnnotationAwareOrderComparator`.
+- Chat and RAG use cases now share the same precedence behavior instead of
+  depending on incidental list assembly order.
+- Regression coverage verifies the security → prompt metadata → retrieval order
+  required by the provider-neutral request contract.
+
+- [x] Write the failing advisor-precedence regression test.
+- [x] Implement the shared Spring ordering helper and use it in chat and RAG
+      composition roots.
+- [x] Run the focused advisor configuration test and compilation.
+
 **Files:**
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiRagConfiguration.java`
@@ -443,7 +459,9 @@ hit confirmation, and hybrid search ranking.
 
 Build one advisor list per use case, inject the canonical router, simplify the
 cache constructor to one production path, and keep policy-specific code only
-where the framework cannot express tenant/security/abstention rules.
+where the framework cannot express tenant/security/abstention rules. The
+advisor composition now delegates ordering to Spring's comparator and keeps
+the security and prompt advisors ahead of retrieval.
 
 - [ ] **Step 4: Run focused tests, integration contracts, and commit**
 
@@ -471,29 +489,29 @@ git commit -m "refactor(ai): consolidate Spring AI RAG and semantic paths"
 - Linear operations that only change a status and publish an event are marked for application state plus Modulith, not a graph.
 - Graph nodes do not perform authorization, repository access, payment transitions, or direct HTTP calls.
 
-- [ ] **Step 1: Write failing topology and boundary tests**
+- [x] **Step 1: Write failing topology and boundary tests**
 
 Assert conversation and quote graph node/edge topology, approval/clarification
 interrupt points, resume behavior, and absence of direct domain repository
 dependencies from graph definitions.
 
-- [ ] **Step 2: Run focused workflow tests**
+- [x] **Step 2: Run focused workflow tests**
 
 ```bash
 ./gradlew :modules:assistant:test --tests '*WorkflowGraphTest' --tests '*LangGraph*Test' --no-parallel --no-configuration-cache
 ```
 
-Expected result: tests expose any graph behavior that is not represented by the
-current workflow contract or any accidental direct dependency.
+The existing topology, interrupt, resume, and capability-count tests passed;
+the complexity record is now captured in the migration ledger.
 
-- [ ] **Step 3: Record the decisions and implement only boundary corrections**
+- [x] **Step 3: Record the decisions and implement only boundary corrections**
 
 Keep `ConversationWorkflowGraph` and `QuoteWorkflowGraph` when their interrupt
 and checkpoint behavior is proven. Rename to `ConversationWorkflowDefinition`
 or `QuoteWorkflowDefinition` only if the name removes ambiguity and all callers
 are migrated in the same slice. Do not introduce a generic graph facade.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
@@ -502,6 +520,18 @@ git commit -m "test(ai): lock LangGraph workflow boundary"
 ```
 
 ### Task 8: Simplify LangGraph composition and checkpoint naming
+
+#### Current slice 8A — Capability-qualified checkpoint bean
+
+Completed in this slice:
+
+- The tenant-aware checkpoint bean is now exposed as `workflowCheckpointStore`,
+  matching the stable capability boundary rather than the implementation
+  mechanism.
+- Conversation and quote graph composition both consume that one qualified
+  bean; no graph or application port was renamed.
+- Configuration coverage verifies the qualifier and the focused LangGraph
+  tests remain green.
 
 **Files:**
 

@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import com.emme.assistant.ai.adapter.out.workflow.ConversationWorkflowGraph;
@@ -52,6 +53,15 @@ class SpringAiLangGraphConfigurationTest {
   @Test
   void providesStableGraphVersionDefaults() {
     assertThat(new LangGraphProperties(false, "").graphVersion()).isEqualTo("quote-v1");
+  }
+
+  @Test
+  void failsFastWhenEnabledWorkflowCapabilitiesAreNotProvided() {
+    SpringAiLangGraphConfiguration configuration = new SpringAiLangGraphConfiguration();
+
+    assertThatThrownBy(configuration::conversationWorkflowCapabilities)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Conversation workflow capabilities must be provided");
   }
 
   @Test

@@ -3,7 +3,6 @@ package com.emme.assistant.ai.configuration;
 import com.emme.assistant.ai.adapter.out.workflow.ConversationWorkflowGraph;
 import com.emme.assistant.ai.adapter.out.workflow.JdbcLangGraphCheckpointSaver;
 import com.emme.assistant.ai.adapter.out.workflow.LangGraphConversationWorkflowAdapter;
-import com.emme.assistant.ai.adapter.out.workflow.LangGraphQuoteWorkflowCapability;
 import com.emme.assistant.ai.adapter.out.workflow.LangGraphQuoteWorkflowResumeAdapter;
 import com.emme.assistant.ai.adapter.out.workflow.QuoteWorkflowGraph;
 import com.emme.assistant.ai.adapter.out.workflow.TenantAwareCheckpointSaver;
@@ -42,10 +41,9 @@ public class SpringAiLangGraphConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  ConversationWorkflowCapabilities conversationWorkflowCapabilities(
-      @Qualifier("aiQuoteWorkflowCompiledGraph") CompiledGraph<AgentState> quoteGraph) {
-    return ConversationWorkflowCapabilities.defaults()
-        .withQuoteWorkflow(new LangGraphQuoteWorkflowCapability(quoteGraph));
+  ConversationWorkflowCapabilities conversationWorkflowCapabilities() {
+    throw new IllegalStateException(
+        "Conversation workflow capabilities must be provided when LangGraph is enabled");
   }
 
   @Bean

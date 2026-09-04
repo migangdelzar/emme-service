@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-09-03 — Name classes for one responsibility
+
+- Failure mode: A rescheduling application service implemented both the ordinary
+  and authorized use cases, while a durable job executor carried a `Service`
+  suffix despite being a worker.
+- Detection signal: Architecture checks reported multiple use cases and service
+  naming violations in the same class boundary.
+- Prevention rule: Give each application service one use-case responsibility;
+  name worker/executor classes after the mechanism they run and use a separate,
+  explicit service for each authorized workflow boundary.
+
 ## 2026-08-29 — Configure Spring AI Redis return metadata explicitly
 
 - Failure mode: A Redis vector search found the projected document, but the

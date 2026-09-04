@@ -2,6 +2,27 @@
 
 ## Task 6 semantic capability hardening — 2026-08-31
 
+- [ ] Remediate review findings with strict red→green→refactor slices.
+- [ ] Establish one embedding model/version contract across provider, config,
+      pgvector, Redis, indexing, and query paths.
+- [ ] Add safe vector/cache/database fallback handling while propagating
+      security failures.
+- [ ] Enforce semantic-cache top-1 and top-1/top-2 margin gates and revalidate
+      safety/eligibility at lookup.
+- [ ] Wire tenant policy/service/price/template invalidation through the
+      existing durable event boundary and scoped Redis keys.
+- [ ] Add score, margin, latency, failure, fallback, and invalidation telemetry
+      with focused tests.
+- [ ] Run focused Java 25 tests, pgvector/Redis integration checks, Spotless,
+      update the task report, commit, and push.
+
+### Remediation working notes
+
+- Preserve the existing dirty tenancy, identity, subscription, contracts, and
+  database changes; only stage files belonging to this remediation.
+- PostgreSQL remains authoritative and Redis remains the existing hot
+  projection; no new store is permitted.
+
 - [x] Write failing tests for invalidation, unsafe responses, model mismatch, and metrics.
 - [x] Implement the minimum production changes.
 - [x] Refactor without changing behavior.
@@ -2851,3 +2872,27 @@ appointment mutation tools are registered.
 - Core-owned migration, conditional scheduling, rejected-claim deferral, queue/claim timers, and qualified core JDBC wiring are implemented and covered by focused tests.
 - Java 25 focused unit, architecture, migration, context/DI, compilation, Spotless, and PostgreSQL/Testcontainers checks pass.
 - Existing unrelated worktree edits remain unstaged and unchanged.
+
+## AI platform simplification consolidation — 2026-09-03
+
+- [x] Reconcile the in-progress Task 6/7 AI contract, RAG, tenant-security,
+      learning, and durable-job changes with the simplification blueprint.
+- [x] Keep framework-neutral provider contracts behind an active
+      `AiExecutionContext` and preserve fail-closed tenant boundaries.
+- [x] Remove architecture-test violations caused by misplaced job/configuration
+      classes and expose only stable appointments, tenancy, and subscription APIs.
+- [x] Run the final consolidated local lint, test, integration compilation,
+      architecture, and regression validation pass.
+- [ ] Run container-backed integration/startup validation when Docker and
+      PostgreSQL are available; run deployed E2E when `EMME_E2E_BASE_URL` is set.
+
+### Working notes
+
+- Final validation was run after the implementation edits were written, per the
+  requested workflow.
+- `./gradlew check --no-parallel --no-configuration-cache` passes (251 tasks).
+- `git diff --check` passes; focused provider, RAG, tenancy, appointment,
+  assistant, architecture, migration, and contract checks pass.
+- Container-backed integration is blocked by the unavailable Docker daemon and
+  local PostgreSQL (`localhost:5432` refused). Deployed E2E is blocked because
+  `EMME_E2E_BASE_URL` is not configured. The tests remain strict and unchanged.

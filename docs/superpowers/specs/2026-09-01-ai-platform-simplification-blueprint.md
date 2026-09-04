@@ -1,7 +1,7 @@
 # Emme AI Platform Simplification Blueprint
 
 **Date:** 2026-09-01  
-**Status:** Complete design; approved for implementation planning
+**Status:** Implementation complete; validation recorded below
 
 This document consolidates the assistant channel/payment design and AI contract simplification design. It is the source of truth for reducing custom code by delegating capabilities to frameworks already present in the repository.
 
@@ -372,3 +372,33 @@ lint checks, compilation, focused unit tests, module architecture tests, migrati
 contracts, Testcontainers integration tests, provider-offline behavior, startup checks,
 webhook/API checks, and the complete regression suite. Known baseline failures must be
 recorded separately from regressions introduced by this blueprint.
+
+## Implementation results — 2026-09-03
+
+The Task 6/7 implementation is consolidated behind the blueprint boundaries. Provider
+contracts are framework-neutral and require a bound AI execution context. RAG retrieval
+and completion use one assistant-owned chain with bounded unavailable behavior. Durable
+quote jobs rebind trusted tenant, actor, correlation, and role context before execution,
+and tenant resolution rejects missing, malformed, unknown, conflicting, or mismatched
+selectors.
+
+The implementation also removes duplicate tool registration, keeps tool configuration in
+the assistant configuration boundary, and uses clear names for distinct responsibilities:
+`AiJobWorker`, `BookAppointmentService`, `CancelAuthorizedAppointmentService`, and
+`RescheduleAuthorizedAppointmentService`. Appointment value types are under `api.type`,
+subscription entitlement policy is exposed through the API, and package metadata/dependency
+rules now enforce those boundaries.
+
+Validation completed locally:
+
+- `./gradlew check --no-parallel --no-configuration-cache` passes (251 tasks).
+- Focused architecture, tenancy, appointments, assistant, provider, RAG, migration, and
+  contract checks pass.
+- `git diff --check` passes.
+
+Container-backed integration requires a running Docker daemon and the application integration
+profile requires PostgreSQL. Both are unavailable in the current environment. The assistant
+idempotency integration test therefore stops at Testcontainers startup, the platform Kafka
+integration test stops when `localhost:5432` refuses the core database connection, and the
+deployed E2E suite requires `EMME_E2E_BASE_URL`. These are recorded environment gates, not
+reasons to weaken the tests or alter the production boundaries.

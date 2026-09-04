@@ -1,5 +1,6 @@
 package com.emme.identity.adapter.out.persistence.adapter;
 
+import com.emme.identity.adapter.out.persistence.entity.RoleEntity;
 import com.emme.identity.adapter.out.persistence.mapper.RolePersistenceMapper;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository;
 import com.emme.identity.application.port.out.RoleRepository;
@@ -21,7 +22,29 @@ public class RolePersistenceAdapter implements RoleRepository {
   }
 
   @Override
+  public Role save(Role role) {
+    RoleEntity entity =
+        role.id() == null
+            ? mapper.toEntity(role)
+            : repository
+                .findById(role.id())
+                .map(existing -> update(existing, role))
+                .orElseGet(() -> mapper.toEntity(role));
+    return mapper.toDomain(repository.save(entity));
+  }
+
+  @Override
   public Optional<Role> findById(UUID roleId) {
     return repository.findById(roleId).map(mapper::toDomain);
+  }
+
+  @Override
+  public Optional<Role> findByCode(String code) {
+    return repository.findByCode(code).map(mapper::toDomain);
+  }
+
+  private RoleEntity update(RoleEntity entity, Role role) {
+    entity.setActive(role.isActive());
+    return entity;
   }
 }

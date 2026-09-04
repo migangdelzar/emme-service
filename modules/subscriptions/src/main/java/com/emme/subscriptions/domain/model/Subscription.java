@@ -24,6 +24,11 @@ public final class Subscription {
     this(UUID.randomUUID(), tenantId, plan, SubscriptionStatus.TRIAL, periodEndsAt, Instant.now());
   }
 
+  public static Subscription provisioned(UUID tenantId, PlanType plan, Instant periodEndsAt) {
+    return new Subscription(
+        UUID.randomUUID(), tenantId, plan, SubscriptionStatus.ACTIVE, periodEndsAt, Instant.now());
+  }
+
   private Subscription(
       UUID id,
       UUID tenantId,

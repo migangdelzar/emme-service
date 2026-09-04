@@ -4,8 +4,12 @@ import com.emme.identity.domain.model.Role;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Role lookup capability required when creating an Identity membership. */
+/** Role persistence capability required by Identity membership workflows. */
 public interface RoleRepository {
 
+  Role save(Role role);
+
   Optional<Role> findById(UUID roleId);
+
+  Optional<Role> findByCode(String code);
 }

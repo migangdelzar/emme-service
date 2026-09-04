@@ -10,6 +10,8 @@ public interface MembershipRepository {
 
   Membership save(Membership membership);
 
+  Optional<Membership> findByTenantIdAndUserReference(UUID tenantId, String userReference);
+
   Optional<Membership> findByIdInTenant(UUID membershipId, UUID tenantId);
 
   List<Membership> findActiveByUserReference(String userReference);

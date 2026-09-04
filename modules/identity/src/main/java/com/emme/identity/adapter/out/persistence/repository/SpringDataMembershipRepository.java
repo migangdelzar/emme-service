@@ -16,6 +16,7 @@ public interface SpringDataMembershipRepository extends JpaRepository<Membership
   @EntityGraph(attributePaths = {"role"})
   Optional<MembershipEntity> findByIdAndTenantId(UUID membershipId, UUID tenantId);
 
+  @EntityGraph(attributePaths = {"role"})
   Optional<MembershipEntity> findByTenantIdAndUserReference(UUID tenantId, String userReference);
 
   @EntityGraph(attributePaths = {"role"})

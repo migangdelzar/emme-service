@@ -12,7 +12,7 @@
 - [ ] Execute Phase B AI contracts and Spring AI consolidation — Task 3 canonical contract slice complete; Tasks 4–6 pending.
 - [ ] Execute Phase C LangGraph4j boundary.
 - [ ] Execute Phase D AI persistence with JPA-first decisions.
-- [ ] Execute Phase E tenancy/bootstrap safety.
+- [ ] Execute Phase E tenancy/bootstrap safety — membership/subscription policy slice complete; bootstrap boundary verification remains.
 - [ ] Execute Phase F provider HTTP migration.
 - [ ] Execute Phase G domain persistence waves.
 - [ ] Execute Phase H events, Redis, libraries, and build foundations.

@@ -671,42 +671,45 @@ git commit -m "refactor(ai): standardize atomic JdbcClient stores"
 
 **Files:**
 
-- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/application/service/EnsureTenantMembershipService.java`
-- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/TenantPersistenceAdapter.java`
-- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/TenantProvisioningPersistenceAdapter.java`
-- Modify/create: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/repository/SpringDataTenantRepository.java`
-- Modify/create: `modules/tenancy/src/main/java/com/emme/tenancy/application/port/out/TenantMembershipRepository.java`
-- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/configuration/BootstrapJdbcConfiguration.java`
+- Delete: `modules/tenancy/src/main/java/com/emme/tenancy/application/service/EnsureTenantMembershipService.java`
+- Create: `modules/identity/src/main/java/com/emme/identity/application/service/EnsureTenantMembershipService.java`
+- Modify: `modules/identity/src/main/java/com/emme/identity/application/port/out/{RoleRepository,MembershipRepository}.java`
+- Modify: `modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/{adapter,repository}/**`
+- Create: `modules/subscriptions/src/main/java/com/emme/subscriptions/api/usecase/EnsureTenantSubscriptionUseCase.java`
+- Create: `modules/subscriptions/src/main/java/com/emme/subscriptions/application/service/EnsureTenantSubscriptionService.java`
+- Modify: `modules/subscriptions/src/main/java/com/emme/subscriptions/domain/model/Subscription.java`
 - Modify: `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/in/messaging/consumer/SubscriptionProvisioningListener.java`
-- Test: existing tenancy membership/provisioning tests and `modules/subscriptions/src/test/**`
+- Test: identity membership, tenancy boundary, and subscription provisioning tests
 
 **Acceptance criteria:**
 
 - Application services express membership/provisioning policy and do not inject `JdbcTemplate` or bootstrap `JdbcClient`.
-- Stable tenant registry/membership CRUD uses JPA where the entity-manager lifecycle is available.
-- Subscription provisioning calls a tenancy-owned typed port/event and does not interpolate unvalidated schema names.
+- Stable tenant registry/membership CRUD uses JPA where the entity-manager lifecycle is available; membership ownership stays in Identity because that module already owns the JPA model.
+- Subscription provisioning calls a typed application use case under the trusted tenant context and does not interpolate schema identifiers.
 - Duplicate provisioning is a no-op only when the database confirms the duplicate; operational failures remain visible and retryable.
 
-- [ ] **Step 1: Write failing service/listener tests**
+- [x] **Step 1: Write failing service/listener tests**
 
 Test membership creation, duplicate membership, tenant context mismatch,
 subscription provisioning duplicate, invalid schema name, and migration
 failure propagation. Assert no application service depends on bootstrap JDBC.
 
-- [ ] **Step 2: Run the focused tests**
+- [x] **Step 2: Run the focused tests**
 
 ```bash
 ./gradlew :modules:tenancy:test :modules:subscriptions:test --tests '*Membership*' --tests '*Provisioning*' --no-parallel --no-configuration-cache
 ```
 
-- [ ] **Step 3: Implement the smallest JPA/port move**
+- [x] **Step 3: Implement the smallest JPA/port move**
 
-Create a tenancy-owned repository/port with explicit membership methods. Keep
-`BootstrapJdbcConfiguration` only for bootstrap consumers and keep raw
-connection/Liquibase classes unchanged. Replace broad exception swallowing in
-the listener with duplicate classification plus propagated failure.
+Reuse Identity's existing JPA role/membership repositories through explicit
+application ports, and keep `BootstrapJdbcConfiguration` only for bootstrap
+consumers. Keep raw connection/Liquibase classes unchanged. Route subscription
+activation through the subscription repository under an explicit tenant context;
+the repository lookup is the duplicate check, while persistence failures remain
+visible for Modulith retry.
 
-- [ ] **Step 4: Run tests, compile, and commit**
+- [x] **Step 4: Run tests, compile, and commit**
 
 ```bash
 ./gradlew :modules:tenancy:test :modules:subscriptions:test :modules:tenancy:compileJava :modules:subscriptions:compileJava --no-parallel --no-configuration-cache

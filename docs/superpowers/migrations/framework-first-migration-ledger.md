@@ -4,7 +4,7 @@
 |---|---|
 | Design | [`2026-09-03-repository-framework-first-refactoring-design.md`](../specs/2026-09-03-repository-framework-first-refactoring-design.md) |
 | Plan | [`2026-09-04-repository-framework-first-refactoring.md`](../plans/2026-09-04-repository-framework-first-refactoring.md) |
-| Status | Baseline inventory; implementation waves not started |
+| Status | Phase A guardrails, AI contract slice, and tenancy membership/subscription slice implemented; remaining waves pending |
 | Owner | Backend architecture / `eng` |
 | Rule | Every replacement must preserve behavior, pass focused tests, and satisfy its deletion condition before the old path is removed |
 
@@ -108,11 +108,11 @@ boundary, even when they do not execute SQL themselves.
 | `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/JdbcConnectionExecutor.java` | Keep | Rename to `BootstrapConnectionExecutor` only if caller search proves bootstrap-only; lower-level callback is an infrastructure exception |
 | `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/package-info.java` | Keep | Documents the narrow connection boundary |
 | `modules/shared/src/main/java/com/emme/shared/search/HybridSearch.java` | Keep | Rename to `PostgresHybridKnowledgeRetriever` after callers migrate; exact RRF/FTS/pgvector query is specialized |
-| `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/in/messaging/consumer/SubscriptionProvisioningListener.java` | Classified | Remove direct bootstrap JDBC; call tenancy-owned provisioning port/event; classify duplicate versus failure |
+| `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/in/messaging/consumer/SubscriptionProvisioningListener.java` | Replacement tested | Calls `EnsureTenantSubscriptionUseCase` under `TenantContextHolder`; JPA repository owns duplicate check and operational failures propagate |
 | `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/DatabaseRegistryAdapter.java` | Keep/Classified | Verify entity-manager cycle; retain bootstrap connection only if JPA cannot initialize safely |
 | `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java` | Keep | Dynamic schema/Liquibase boundary; JPA is not applicable |
 | `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantIdentifierResolver.java` | Keep | Hibernate bootstrap resolver may execute before normal JPA routing |
-| `modules/tenancy/src/main/java/com/emme/tenancy/application/service/EnsureTenantMembershipService.java` | Classified | Move SQL to tenancy-owned JPA repository/port; preserve membership policy in service |
+| `modules/tenancy/src/main/java/com/emme/tenancy/application/service/EnsureTenantMembershipService.java` | Deleted | Duplicate removed; Identity owns the existing role/membership JPA model and now implements the tenancy provisioning use case |
 | `modules/tenancy/src/main/java/com/emme/tenancy/configuration/BootstrapJdbcConfiguration.java` | Keep | Dedicated bootstrap data source; no general feature access |
 
 ## 4. Other framework-first inventories

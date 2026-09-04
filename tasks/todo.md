@@ -66,6 +66,14 @@
 - [x] Run the subscriptions test, compile, and Spotless gates.
 - [ ] Continue the same JPA-first review across the remaining entity modules.
 
+### Current slice — Task 18C customer tenant-scoped update
+
+- [x] Add an adapter contract test for existing-customer updates.
+- [x] Replace unscoped `findById` with `findByTenantIdAndId` in the JPA adapter.
+- [x] Keep the provider-neutral `CustomerRepository` port and existing mapper.
+- [x] Run the focused clients persistence test.
+- [ ] Audit customer reads and use-case contracts for tenant scope.
+
 ### Plan working notes
 
 ### Current slice — Task 19A tenant event boundary

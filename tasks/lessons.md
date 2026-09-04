@@ -21,6 +21,15 @@
   restoration in inbound adapters; keep the application service focused on its
   use-case operations.
 
+## 2026-09-04 — Include tenant identity in aggregate updates
+
+- Failure mode: an existing customer update selected by UUID alone could load
+  a record outside the aggregate's tenant scope.
+- Detection signal: the adapter used `JpaRepository.findById` while the domain
+  object already supplied `tenantId`.
+- Prevention rule: derived JPA update lookups must include tenant identity when
+  the aggregate is tenant-owned; cover the lookup choice with an adapter test.
+
 ## 2026-09-04 — Remove forwarding mappers only after contract coverage
 
 - Failure mode: A persistence mapper duplicated entity conversion methods and

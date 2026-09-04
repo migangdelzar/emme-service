@@ -27,7 +27,9 @@ public class CustomerPersistenceAdapter implements CustomerRepository {
     CustomerEntity entity =
         customer.getId() == null
             ? mapper.toNewEntity(customer)
-            : repository.findById(customer.getId()).orElseThrow();
+            : repository
+                .findByTenantIdAndId(customer.getTenantId(), customer.getId())
+                .orElseThrow();
     mapper.updateEntity(customer, entity);
     return mapper.toDomain(repository.save(entity));
   }

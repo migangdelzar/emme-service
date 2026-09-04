@@ -1205,6 +1205,20 @@ lookup and update semantics.
 - [x] Preserve the `SubscriptionRepository` port and tenant-scoped update lookup.
 - [ ] Extend the same evidence-based review to the remaining entity modules.
 
+#### Current slice 18C — Enforce tenant scope on customer updates
+
+The clients adapter previously loaded an existing customer with the generic
+`JpaRepository.findById`, even though the customer aggregate carries its tenant
+identity. The adapter now uses the Spring Data derived query
+`findByTenantIdAndId`, preventing an update path from selecting a record owned
+by another tenant while retaining the existing mapper and application port.
+
+- [x] Add an adapter test that rejects unscoped update lookup by contract.
+- [x] Add the tenant-scoped Spring Data query.
+- [x] Update customer save to use tenant and customer identity together.
+- [x] Run the focused clients persistence test.
+- [ ] Audit read/use-case ports for the same tenant-scope assumption.
+
 - [ ] **Step 1: Write failing per-module persistence tests**
 
 Use the same create/find/list/update/not-found/tenant/version/idempotency matrix

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SpringDataCustomerRepository extends JpaRepository<CustomerEntity, UUID> {
+  Optional<CustomerEntity> findByTenantIdAndId(UUID tenantId, UUID id);
+
   List<CustomerEntity> findByTenantId(UUID tenantId);
 
   Optional<CustomerEntity> findByTenantIdAndPhone(UUID tenantId, String phone);

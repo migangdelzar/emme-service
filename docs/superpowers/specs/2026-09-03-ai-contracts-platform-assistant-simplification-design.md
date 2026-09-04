@@ -1,10 +1,12 @@
 # AI Contracts, AI Platform, and Assistant Simplification Design
 
+> Repository-wide canonical design: [framework-first refactoring design](2026-09-03-repository-framework-first-refactoring-design.md). This document remains the detailed first-wave AI reference and is superseded for repository-wide scope.
+
 | Field | Detail |
 |---|---|
 | Date | 2026-09-03 |
 | Scope | Entire repository: all `modules/*`, `libraries/*`, applications, database, platform, tools, build logic, infrastructure, scripts, tests, and documentation |
-| Status | Design approved in principle; pending written-spec review |
+| Status | First-wave reference; repository-wide scope superseded by the canonical design above |
 | Primary goal | Reduce custom code by delegating mechanics to existing Spring and provider capabilities while preserving Emme policy and enterprise guarantees |
 | Current platform baseline | Spring Boot `4.1.0`, Spring Modulith `2.1.0`, Spring AI `2.0.1`, Java 25-compatible Gradle build |
 

@@ -663,6 +663,21 @@ git commit -m "docs(ai): classify JDBC persistence boundaries"
 
 ### Task 10: Convert stable AI aggregate CRUD to JPA
 
+#### Current slice 10A — Design-image metadata CRUD
+
+Completed in this slice:
+
+- Replaced `JdbcDesignImageMetadataRepository` with `JpaDesignImageMetadataRepository`.
+- Added a module-private `DesignImageEntity` and `SpringDataDesignImageRepository` using the
+  existing stable application port.
+- Kept tenant/workflow/storage-key delete scoping and the database uniqueness boundary intact.
+- Kept vector, JSONB, claim, and dynamic-schema stores on `JdbcClient` as classified.
+
+- [x] Write the failing adapter test before implementation.
+- [x] Implement the JPA entity, derived repository delete, and port adapter.
+- [x] Run the assistant suite and compilation successfully.
+- [ ] Add a live PostgreSQL JPA mapping/concurrency gate before migrating the next aggregate.
+
 **Files:**
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiTraceRecorder.java`

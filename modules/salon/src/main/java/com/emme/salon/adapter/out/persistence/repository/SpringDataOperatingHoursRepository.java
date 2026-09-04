@@ -14,4 +14,6 @@ public interface SpringDataOperatingHoursRepository
   List<OperatingHoursEntity> findByTenantId(UUID tenantId);
 
   Optional<OperatingHoursEntity> findByTenantIdAndDayOfWeek(UUID tenantId, DayOfWeek dayOfWeek);
+
+  Optional<OperatingHoursEntity> findByTenantIdAndId(UUID tenantId, UUID id);
 }

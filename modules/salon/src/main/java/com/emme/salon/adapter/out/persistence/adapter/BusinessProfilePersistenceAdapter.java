@@ -26,7 +26,7 @@ public class BusinessProfilePersistenceAdapter implements BusinessProfileReposit
     BusinessProfileEntity entity =
         profile.getId() == null
             ? mapper.toNewEntity(profile)
-            : repository.findById(profile.getId()).orElseThrow();
+            : repository.findByTenantIdAndId(profile.getTenantId(), profile.getId()).orElseThrow();
     mapper.updateEntity(profile, entity);
     return mapper.toDomain(repository.save(entity));
   }

@@ -75,6 +75,15 @@
 - [x] Run the focused clients persistence test.
 - [x] Audit customer reads and use-case contracts for tenant scope.
 
+### Current slice — Task 18D salon tenant-scoped updates
+
+- [x] Add adapter tests for booking-policy, business-profile, and
+      operating-hours existing-record updates.
+- [x] Replace unscoped JPA `findById` with derived tenant-qualified queries.
+- [x] Keep salon application ports provider-neutral and unchanged.
+- [x] Run the focused salon adapter test.
+- [ ] Run the broader salon module quality gates and commit the slice.
+
 ### Plan working notes
 
 ### Current slice — Task 19A tenant event boundary

@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataBookingPolicyRepository
     extends JpaRepository<BookingPolicyEntity, UUID> {
   Optional<BookingPolicyEntity> findByTenantId(UUID tenantId);
+
+  Optional<BookingPolicyEntity> findByTenantIdAndId(UUID tenantId, UUID id);
 }

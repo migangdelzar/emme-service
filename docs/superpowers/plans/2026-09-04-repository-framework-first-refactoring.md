@@ -1221,6 +1221,23 @@ by another tenant while retaining the existing mapper and application port.
 - [x] Run the focused clients persistence test.
 - [x] Audit customer read/use-case ports for the same tenant-scope assumption.
 
+#### Current slice 18D — Enforce tenant scope on salon aggregate updates
+
+The salon booking-policy, business-profile, and operating-hours adapters already
+use Spring Data JPA for stable entity CRUD. Their existing-record branches were
+still using generic `findById`, which did not carry the aggregate tenant scope
+into the update lookup. The adapters now use derived JPA queries combining
+`tenantId` and aggregate `id`; no `JdbcClient` or application-port change is
+needed because Spring Data expresses the invariant directly and keeps the
+provider-neutral boundaries intact.
+
+- [x] Add adapter coverage for tenant-scoped booking-policy, business-profile,
+      and operating-hours updates.
+- [x] Add `findByTenantIdAndId` to the three Spring Data repositories.
+- [x] Update all three adapter update branches to use tenant and aggregate ID.
+- [x] Verify no salon update path uses unscoped `findById`.
+- [ ] Continue the same evidence-based review across remaining entity modules.
+
 - [ ] **Step 1: Write failing per-module persistence tests**
 
 Use the same create/find/list/update/not-found/tenant/version/idempotency matrix

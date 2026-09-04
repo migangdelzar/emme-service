@@ -26,7 +26,7 @@ public class BookingPolicyPersistenceAdapter implements BookingPolicyRepository 
     BookingPolicyEntity entity =
         policy.getId() == null
             ? mapper.toNewEntity(policy)
-            : repository.findById(policy.getId()).orElseThrow();
+            : repository.findByTenantIdAndId(policy.getTenantId(), policy.getId()).orElseThrow();
     mapper.updateEntity(policy, entity);
     return mapper.toDomain(repository.save(entity));
   }

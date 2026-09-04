@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-09-04 — Reuse domain enum vocabulary in adapter tests
+
+- Failure mode: a focused persistence test used the familiar JDK day-of-week
+  constant instead of the domain enum's abbreviated value.
+- Detection signal: test compilation failed before reaching the intended
+  missing tenant-scoped repository methods.
+- Prevention rule: inspect domain value objects and enums before constructing
+  adapter fixtures; tests must use the domain vocabulary exactly.
+
 ## 2026-09-04 — Add metadata for every new package level
 
 - Failure mode: adding a nested production adapter package caused the module

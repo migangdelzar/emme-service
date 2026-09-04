@@ -129,7 +129,8 @@ boundary, even when they do not execute SQL themselves.
 |---|---|---|
 | `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/BootstrapConnectionExecutor.java` | Replacement tested | Lower-level managed connection callback is limited to bootstrap and tenant lifecycle callers; `JdbcTemplate` remains because `ConnectionCallback` is required |
 | `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/package-info.java` | Keep | Documents the narrow connection boundary |
-| `modules/shared/src/main/java/com/emme/shared/search/HybridSearch.java` | Keep | `KnowledgeRetriever` is the stable port; retain `HybridSearch` as the specialized adapter while the exact RRF/FTS/pgvector query is required |
+| `modules/shared/src/main/java/com/emme/shared/search/HybridSearch.java` | Keep as port | Provider-neutral hybrid-search capability; application modules depend on this interface and do not see JDBC or PostgreSQL types |
+| `modules/shared/src/main/java/com/emme/shared/search/postgres/PostgresHybridSearch.java` | JdbcClient survivor: PostgreSQL search | Exact pgvector/FTS/RRF query and embedding maintenance remain direct SQL until an equivalent measured framework path exists |
 | `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/in/messaging/consumer/SubscriptionProvisioningListener.java` | Replacement tested | Calls `EnsureTenantSubscriptionUseCase` under `TenantContextHolder`; JPA repository owns duplicate check and operational failures propagate |
 | `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/DatabaseRegistryAdapter.java` | Keep/Classified | Verify entity-manager cycle; retain bootstrap connection only if JPA cannot initialize safely |
 | `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java` | Keep | Dynamic schema/Liquibase boundary; JPA is not applicable |

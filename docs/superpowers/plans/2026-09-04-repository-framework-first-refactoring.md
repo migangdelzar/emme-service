@@ -406,6 +406,23 @@ Completed in this slice:
 
 The remaining Task 6 work is intentionally not collapsed into this slice: advisor-order assertions, complete metadata/model contract coverage, and measured `HybridSearch` alternatives still require separate evidence.
 
+#### Current slice 6D — Hybrid search capability boundary
+
+Completed in this slice:
+
+- `HybridSearch` is now a provider-neutral capability interface with no Spring JDBC types.
+- PostgreSQL pgvector/full-text/RRF SQL moved to `PostgresHybridSearch`, the infrastructure
+  implementation selected by Spring component scanning.
+- Catalog and Documents continue to depend only on `HybridSearch`; no application behavior or
+  query semantics changed.
+- The direct SQL implementation remains because no equivalent Spring AI vector-store path has
+  been measured to preserve FTS, RRF, tenant predicates, and embedding maintenance semantics.
+
+- [x] Add a failing ownership test requiring an interface contract and separate PostgreSQL adapter.
+- [x] Move the existing SQL implementation behind `HybridSearch` without changing its API.
+- [x] Verify shared, Catalog, Documents, and Spotless checks.
+- [ ] Measure a future Spring AI/vector-store alternative before considering replacement.
+
 #### Current slice 6C — Advisor precedence centralization
 
 Completed in this slice:

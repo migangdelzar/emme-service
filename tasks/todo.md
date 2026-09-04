@@ -65,6 +65,7 @@
 - [x] Add regression coverage for durable-cache fallback when Redis is unavailable.
 - [x] Run focused semantic/RAG/Redis tests and Spotless.
 - [x] Centralize Spring AI advisor ordering and verify security → prompt → retrieval precedence.
+- [x] Put hybrid PostgreSQL SQL behind the provider-neutral `HybridSearch` port.
 - [ ] Complete metadata-contract and measured hybrid-search follow-up slices.
 
 ### Current slice — Task 11A atomic AI job persistence

@@ -80,7 +80,9 @@
 
 - [x] Add the provider-neutral `WhatsAppMessageEventPublisher` port.
 - [x] Move Spring Modulith publication to `SpringWhatsAppMessageEventPublisher`.
-- [x] Remove `ApplicationEventPublisher` from `ProcessWhatsAppMessageService`.
+- [x] Remove event infrastructure from `ProcessWhatsAppMessageService`.
+- [x] Move `WhatsAppMessageReceived` listening and context reconstruction to
+      `WhatsAppMessageReceivedListener`.
 - [x] Verify enqueue, processing, idempotency, and context-rebinding tests.
 - [ ] Continue listener duplicate-delivery and Kafka externalization coverage.
 

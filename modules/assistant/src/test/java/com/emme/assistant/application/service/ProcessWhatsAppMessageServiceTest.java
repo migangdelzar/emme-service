@@ -5,6 +5,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.assistant.adapter.in.messaging.WhatsAppMessageReceivedListener;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
 import com.emme.assistant.api.event.WhatsAppMessageReceived;
@@ -147,7 +148,8 @@ class ProcessWhatsAppMessageServiceTest {
               return "reply";
             });
 
-    service.processReceivedMessage(new WhatsAppMessageReceived(command, null));
+    new WhatsAppMessageReceivedListener(service)
+        .onMessage(new WhatsAppMessageReceived(command, null));
 
     verify(replyPort).send("phone", "reply");
     org.assertj.core.api.Assertions.assertThat(AiExecutionContextScope.current()).isEmpty();

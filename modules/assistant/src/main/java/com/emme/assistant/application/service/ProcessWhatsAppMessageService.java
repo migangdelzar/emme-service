@@ -26,12 +26,10 @@ import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.type.ChannelType;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -191,12 +189,6 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
             authorization.tenantCapabilities(),
             authorization.enabledFeatures());
     return AiExecutionContextScope.call(authorized, () -> chatUseCase.chat("", command.text()));
-  }
-
-  @ApplicationModuleListener(id = "assistant.whatsapp-message-received")
-  void processReceivedMessage(WhatsAppMessageReceived event) {
-    Objects.requireNonNull(event, "event must not be null");
-    bindSystemContext(event.command(), event.databaseId(), () -> process(event.command()));
   }
 
   private void bindSystemContext(

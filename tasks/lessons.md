@@ -10,6 +10,17 @@
 - Prevention rule: when introducing a nested Java package, add metadata for
   each materialized package level before running the full module suite.
 
+## 2026-09-04 — Keep inbound event mechanics out of application services
+
+- Failure mode: removing the event publisher dependency still left the
+  application service coupled to `@ApplicationModuleListener` and responsible
+  for event-context reconstruction.
+- Detection signal: the service retained a Modulith import and a listener
+  method after publication had already moved behind a port.
+- Prevention rule: place event listener annotations and transport/context
+  restoration in inbound adapters; keep the application service focused on its
+  use-case operations.
+
 ## 2026-09-04 — Remove forwarding mappers only after contract coverage
 
 - Failure mode: A persistence mapper duplicated entity conversion methods and

@@ -1255,14 +1255,17 @@ application layer.
 `ProcessWhatsAppMessageService` now depends on the provider-neutral
 `WhatsAppMessageEventPublisher` port. `SpringWhatsAppMessageEventPublisher`
 contains the Spring Modulith publication mechanic, so the application service
-no longer imports Spring event infrastructure. The existing durable webhook
-claim, tenant validation, and asynchronous context reconstruction remain
-unchanged.
+no longer imports Spring event infrastructure. The inbound
+`WhatsAppMessageReceivedListener` is also an adapter: it restores the event's
+tenant/database context and delegates to `ProcessWhatsAppMessageUseCase`.
+The existing durable webhook claim and tenant validation remain unchanged.
 
 - [x] Update the enqueue contract test to use the provider-neutral publisher.
 - [x] Add the WhatsApp event publisher port and Spring adapter.
 - [x] Remove Spring event infrastructure and the redundant constructor overload
       from the application service.
+- [x] Move the Modulith listener and event-context reconstruction into the
+      inbound messaging adapter.
 - [x] Run focused assistant tests and architecture checks.
 - [ ] Complete listener duplicate-delivery and external Kafka boundary tests.
 

@@ -1,5 +1,15 @@
 # Engineering lessons
 
+## 2026-09-04 — Keep test and composition-root signatures synchronized
+
+- Failure mode: A focused wiring test was changed to require a `JdbcClient`
+  before the production configuration method had the matching dependency shape.
+- Detection signal: The intended red test stopped at Java compilation with an
+  incompatible argument type instead of exercising the boundary behavior.
+- Prevention rule: When a TDD red test changes a composition-root signature,
+  inspect and update the complete production dependency graph in the same
+  slice, then rerun the red check before implementing behavior.
+
 ## 2026-09-04 — Keep workflow test fixtures out of production APIs
 
 - Failure mode: A generic workflow capability record exposed a default factory

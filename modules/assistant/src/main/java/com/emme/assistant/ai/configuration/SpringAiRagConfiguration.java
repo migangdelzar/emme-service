@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
-import com.emme.ai.contracts.rag.KnowledgeSearch;
+import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.assistant.ai.adapter.out.provider.springai.TenantScopedDocumentRetriever;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
@@ -51,7 +51,7 @@ public class SpringAiRagConfiguration {
   @Bean
   @ConditionalOnMissingBean
   TenantScopedDocumentRetriever tenantScopedDocumentRetriever(
-      KnowledgeSearch retrieval, SpringAiRagProperties properties) {
+      KnowledgeRetriever retrieval, SpringAiRagProperties properties) {
     return new TenantScopedDocumentRetriever(retrieval, properties.retrievalLimit());
   }
 
@@ -74,7 +74,7 @@ public class SpringAiRagConfiguration {
       TenantSecurityAdvisor tenantSecurityAdvisor,
       PromptVersionAdvisor promptVersionAdvisor,
       RetrievalAugmentationAdvisor retrievalAugmentationAdvisor,
-      KnowledgeSearch retrieval,
+      KnowledgeRetriever retrieval,
       AiTraceRecorder traceRecorder,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {

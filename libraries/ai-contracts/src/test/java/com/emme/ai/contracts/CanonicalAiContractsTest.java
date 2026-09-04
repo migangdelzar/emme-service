@@ -138,6 +138,10 @@ class CanonicalAiContractsTest {
             sourcePath(
                 "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/embedding/EmbedTextUseCase.java"))
         .doesNotExist();
+    assertThat(
+            sourcePath(
+                "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/rag/KnowledgeSearch.java"))
+        .doesNotExist();
   }
 
   private static AiExecutionContext executionContext() {

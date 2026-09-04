@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.application.provider;
 
 import com.emme.ai.contracts.rag.KnowledgeQuery;
-import com.emme.ai.contracts.rag.KnowledgeSearch;
+import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
@@ -22,9 +22,9 @@ public final class RagAnswerProviderChain implements RagAnswerPort {
   private static final int RETRIEVAL_LIMIT = 5;
 
   private final ChatCompletionPort completions;
-  private final KnowledgeSearch retriever;
+  private final KnowledgeRetriever retriever;
 
-  public RagAnswerProviderChain(ChatCompletionPort completions, KnowledgeSearch retriever) {
+  public RagAnswerProviderChain(ChatCompletionPort completions, KnowledgeRetriever retriever) {
     this.completions = Objects.requireNonNull(completions, "completions must not be null");
     this.retriever = Objects.requireNonNull(retriever, "retriever must not be null");
   }

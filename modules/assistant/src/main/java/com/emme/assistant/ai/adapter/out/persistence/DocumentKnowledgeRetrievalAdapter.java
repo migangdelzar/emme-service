@@ -2,7 +2,7 @@ package com.emme.assistant.ai.adapter.out.persistence;
 
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
-import com.emme.ai.contracts.rag.KnowledgeSearch;
+import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 
 /** Adapts the tenant-safe document use case to the application retrieval port. */
 @Component
-public final class DocumentKnowledgeRetrievalAdapter implements KnowledgeSearch {
+public final class DocumentKnowledgeRetrievalAdapter implements KnowledgeRetriever {
 
   private final AiModelProvider legacyModel;
   private final SearchDocumentChunksUseCase searchDocuments;

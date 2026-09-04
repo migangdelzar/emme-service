@@ -146,7 +146,7 @@ boundary, even when they do not execute SQL themselves.
 | `model.ChatModel` | `model.AiChatCompletion` for policy-facing use; Spring AI `ChatModel` remains provider-internal | Keep until Task 4 moves assistant callers behind the `ChatClient` router |
 | `assistant.application.port.out.ChatCompletionPort` | `model.AiChatCompletion` | Keep until Task 4 migrates selector/composition callers and fallback tests |
 | `assistant.application.port.out.EmbeddingModelPort` | `embedding.EmbeddingService` for raw embedding use; retain metadata-bearing semantic value internally until Task 6 | Keep until semantic callers are migrated without losing model/version/dimension checks |
-| `rag.KnowledgeSearch` | `rag.KnowledgeRetriever` | Keep until Task 6 migrates retrieval adapters/configuration and tests |
+| `rag.KnowledgeSearch` | `rag.KnowledgeRetriever` | No callers remain after the assistant retrieval/configuration migration; deleted in Task 3 |
 | `tool.*` contracts in `libraries:ai-contracts` | assistant-owned `AiToolDefinition`, `AiToolGateway`, `AiToolInvocation`, and `AiToolResult` | Removed in Task 3 after repository caller search found no production callers |
 | `workflow.WorkflowRuntime` | `ConversationWorkflow` and `QuoteWorkflow` | Removed in Task 3 after repository caller search found no production callers |
 

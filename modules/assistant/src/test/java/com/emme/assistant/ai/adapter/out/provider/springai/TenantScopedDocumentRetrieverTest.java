@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.emme.ai.contracts.rag.KnowledgeSearch;
+import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -21,7 +21,7 @@ class TenantScopedDocumentRetrieverTest {
 
   @Test
   void adaptsFrameworkNeutralResultsToSpringDocuments() {
-    KnowledgeSearch retrieval = mock(KnowledgeSearch.class);
+    KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
     when(retrieval.search(any(), any()))
         .thenReturn(
             List.of(
@@ -43,7 +43,7 @@ class TenantScopedDocumentRetrieverTest {
 
   @Test
   void failsClosedWhenTheQueryIsBlank() {
-    KnowledgeSearch retrieval = mock(KnowledgeSearch.class);
+    KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
     TenantScopedDocumentRetriever retriever = new TenantScopedDocumentRetriever(retrieval, 5);
 
     org.assertj.core.api.Assertions.assertThatThrownBy(

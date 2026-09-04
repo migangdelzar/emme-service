@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.application.service;
 
 import com.emme.ai.contracts.rag.KnowledgeQuery;
-import com.emme.ai.contracts.rag.KnowledgeSearch;
+import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
@@ -22,13 +22,13 @@ public class RagQueryService implements RagQueryUseCase {
   private static final String DEFAULT_LOCALE = "es-MX";
 
   private final AiProviderProperties properties;
-  private final KnowledgeSearch retrieval;
+  private final KnowledgeRetriever retrieval;
   private final ChatCompletionPort chatCompletion;
   private final Optional<RagAnswerPort> ragAnswer;
 
   public RagQueryService(
       AiProviderProperties properties,
-      KnowledgeSearch retrieval,
+      KnowledgeRetriever retrieval,
       ChatCompletionPort chatCompletion) {
     this(properties, retrieval, chatCompletion, Optional.empty());
   }
@@ -36,7 +36,7 @@ public class RagQueryService implements RagQueryUseCase {
   @Autowired
   public RagQueryService(
       AiProviderProperties properties,
-      KnowledgeSearch retrieval,
+      KnowledgeRetriever retrieval,
       ChatCompletionPort chatCompletion,
       Optional<RagAnswerPort> ragAnswer) {
     this.properties = properties;

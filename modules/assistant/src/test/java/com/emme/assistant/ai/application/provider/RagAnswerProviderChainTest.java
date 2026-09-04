@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.emme.ai.contracts.rag.KnowledgeSearch;
+import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.kernel.context.AiExecutionContext;
@@ -23,7 +23,7 @@ class RagAnswerProviderChainTest {
   @Test
   void delegatesRagQuestionsToTheOrderedCompletionChainWithoutConversationContext() {
     ChatCompletionPort completions = mock(ChatCompletionPort.class);
-    KnowledgeSearch retriever = mock(KnowledgeSearch.class);
+    KnowledgeRetriever retriever = mock(KnowledgeRetriever.class);
     when(completions.complete("24 hours.", "What is the cancellation policy?"))
         .thenReturn("The salon requires 24 hours.");
     when(retriever.search(any(), any()))
@@ -42,7 +42,7 @@ class RagAnswerProviderChainTest {
   void failsClosedWhenTheBackendAiContextIsMissing() {
     ChatCompletionPort completions = mock(ChatCompletionPort.class);
     RagAnswerProviderChain answers =
-        new RagAnswerProviderChain(completions, mock(KnowledgeSearch.class));
+        new RagAnswerProviderChain(completions, mock(KnowledgeRetriever.class));
 
     assertThatThrownBy(() -> answers.answer("hello"))
         .isInstanceOf(IllegalStateException.class)
@@ -54,7 +54,7 @@ class RagAnswerProviderChainTest {
   void rejectsBlankQuestionsBeforeCallingAProvider() {
     ChatCompletionPort completions = mock(ChatCompletionPort.class);
     RagAnswerProviderChain answers =
-        new RagAnswerProviderChain(completions, mock(KnowledgeSearch.class));
+        new RagAnswerProviderChain(completions, mock(KnowledgeRetriever.class));
 
     assertThatThrownBy(() -> AiExecutionContextScope.call(context(), () -> answers.answer("  ")))
         .isInstanceOf(IllegalArgumentException.class)
@@ -65,7 +65,7 @@ class RagAnswerProviderChainTest {
   @Test
   void refusesToCallTheLlmWhenRetrievalReturnsNoGrounding() {
     ChatCompletionPort completions = mock(ChatCompletionPort.class);
-    KnowledgeSearch retriever = mock(KnowledgeSearch.class);
+    KnowledgeRetriever retriever = mock(KnowledgeRetriever.class);
     when(retriever.search(any(), any())).thenReturn(List.of());
     RagAnswerProviderChain answers = new RagAnswerProviderChain(completions, retriever);
 

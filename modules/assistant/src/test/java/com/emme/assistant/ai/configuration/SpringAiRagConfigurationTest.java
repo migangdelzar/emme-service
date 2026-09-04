@@ -3,7 +3,7 @@ package com.emme.assistant.ai.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import com.emme.ai.contracts.rag.KnowledgeSearch;
+import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.assistant.ai.adapter.out.provider.springai.TenantScopedDocumentRetriever;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RagAnswerProviderChain;
@@ -75,7 +75,7 @@ class SpringAiRagConfigurationTest {
             new com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor(
                 "rag-v1"),
             mock(RetrievalAugmentationAdvisor.class),
-            mock(KnowledgeSearch.class),
+            mock(KnowledgeRetriever.class),
             mock(AiTraceRecorder.class),
             java.util.Optional.empty(),
             new AiExecutorProperties(2, 1, 1));

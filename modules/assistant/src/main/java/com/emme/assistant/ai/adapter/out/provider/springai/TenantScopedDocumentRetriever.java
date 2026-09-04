@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
 import com.emme.ai.contracts.rag.KnowledgeQuery;
-import com.emme.ai.contracts.rag.KnowledgeSearch;
+import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -22,10 +22,10 @@ public final class TenantScopedDocumentRetriever implements DocumentRetriever {
 
   private static final String DEFAULT_LOCALE = "es-MX";
 
-  private final KnowledgeSearch retrieval;
+  private final KnowledgeRetriever retrieval;
   private final int limit;
 
-  public TenantScopedDocumentRetriever(KnowledgeSearch retrieval, int limit) {
+  public TenantScopedDocumentRetriever(KnowledgeRetriever retrieval, int limit) {
     this.retrieval = Objects.requireNonNull(retrieval, "retrieval must not be null");
     if (limit < 1 || limit > 20) {
       throw new IllegalArgumentException("limit must be between 1 and 20");

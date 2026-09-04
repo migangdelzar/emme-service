@@ -46,7 +46,7 @@ class AssistantPackageConventionTest {
     assertThat(build).contains("implementation(project(\":modules:documents\"))");
     assertThat(metadata).contains("documents-api");
     assertThat(ragService)
-        .contains("com.emme.ai.contracts.rag.KnowledgeSearch")
+        .contains("com.emme.ai.contracts.rag.KnowledgeRetriever")
         .doesNotContain("com.emme.documents.")
         .doesNotContain("com.emme.documents.adapter")
         .doesNotContain("com.emme.documents.application")
@@ -73,25 +73,25 @@ class AssistantPackageConventionTest {
   }
 
   @Test
-  void usesTheCanonicalSharedKnowledgeSearchContract() throws Exception {
+  void usesTheCanonicalSharedKnowledgeRetrieverContract() throws Exception {
     Path contractsRoot =
         sourcePath("libraries/ai-contracts/src/main/java/com/emme/ai/contracts/rag");
     Path aiApplication = ROOT.resolve("ai/application");
     String ragService =
         Files.readString(ROOT.resolve("ai/application/service/RagQueryService.java"));
 
-    assertThat(Files.exists(contractsRoot.resolve("KnowledgeSearch.java"))).isTrue();
-    assertThat(Files.exists(contractsRoot.resolve("KnowledgeRetriever.java"))).isFalse();
+    assertThat(Files.exists(contractsRoot.resolve("KnowledgeRetriever.java"))).isTrue();
+    assertThat(Files.exists(contractsRoot.resolve("KnowledgeSearch.java"))).isFalse();
     assertThat(Files.exists(ROOT.resolve("ai/application/port/out/KnowledgeRetrievalPort.java")))
         .isFalse();
-    assertThat(ragService).contains("import com.emme.ai.contracts.rag.KnowledgeSearch;");
+    assertThat(ragService).contains("import com.emme.ai.contracts.rag.KnowledgeRetriever;");
 
     try (Stream<Path> sources = Files.walk(aiApplication)) {
       for (Path source : sources.filter(path -> path.toString().endsWith(".java")).toList()) {
         assertThat(Files.readString(source))
             .as("assistant AI application source: %s", source)
             .doesNotContain("KnowledgeRetrievalPort")
-            .doesNotContain("KnowledgeRetriever");
+            .doesNotContain("KnowledgeSearch");
       }
     }
   }

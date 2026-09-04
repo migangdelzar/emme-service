@@ -62,10 +62,11 @@ class is deliberately treated as an Apache AGE/PostgreSQL lock-in. The same
 rule applies to job, idempotency, checkpoint, semantic, quote, and search
 adapters.
 
-`JdbcDesignImageMetadataRepository` was migrated to
-`JpaDesignImageMetadataRepository` after the metadata CRUD slice proved that
-Spring Data preserved the existing port and tenant/workflow/storage-key
-scoping. Do not add compatibility classes solely for renaming.
+`JdbcDesignImageMetadataRepository` remains the selected adapter because its
+two small metadata statements do not become simpler with a JPA entity and
+repository. Do not add compatibility classes or rename adapters solely for
+mechanism consistency; select JPA only where it reduces implementation and
+maintenance cost without weakening the database contract.
 
 ## 3. Vector projection model
 

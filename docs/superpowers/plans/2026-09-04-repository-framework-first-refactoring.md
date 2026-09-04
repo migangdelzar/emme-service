@@ -663,36 +663,31 @@ git commit -m "docs(ai): classify JDBC persistence boundaries"
 
 ### Task 10: Convert stable AI aggregate CRUD to JPA
 
-#### Current slice 10A — Design-image metadata CRUD
+#### Current slice 10A — Design-image metadata decision
 
-Completed in this slice:
+The initial JPA experiment was reverted after comparison with the original adapter:
 
-- Replaced `JdbcDesignImageMetadataRepository` with `JpaDesignImageMetadataRepository`.
-- Added a module-private `DesignImageEntity` and `SpringDataDesignImageRepository` using the
-  existing stable application port.
-- Kept tenant/workflow/storage-key delete scoping and the database uniqueness boundary intact.
-- Kept vector, JSONB, claim, and dynamic-schema stores on `JdbcClient` as classified.
+- The original `JdbcDesignImageMetadataRepository` is restored.
+- The JPA version added an entity, repository, validation, and package surface without reducing
+  the two-statement CRUD boundary.
+- Tenant/workflow/storage-key scoping and the database uniqueness boundary remain unchanged.
 
-- [x] Write the failing adapter test before implementation.
-- [x] Implement the JPA entity, derived repository delete, and port adapter.
-- [x] Run the assistant suite and compilation successfully.
-- [ ] Add a live PostgreSQL JPA mapping/concurrency gate before migrating the next aggregate.
+- [x] Compare the JPA mapping with the original adapter.
+- [x] Restore the `JdbcClient` adapter and add focused SQL boundary tests.
+- [x] Confirm the application port remains unchanged.
 
-#### Current slice 10B — Conversation workflow review audit
+#### Current slice 10B — Conversation workflow review audit decision
 
-Completed in this slice:
+The initial JPA experiment was reverted after comparison with the original adapter:
 
-- Replaced `JdbcConversationWorkflowReviewAuditAdapter` with
-  `JpaConversationWorkflowReviewAuditAdapter`.
-- Added a module-private Spring Data repository and JSONB-backed audit entity.
-- Preserved the authenticated tenant/workflow/conversation checks and unchanged application port.
-- Kept workflow state transitions and checkpoint persistence on `JdbcClient` because they retain
-  atomic/versioned invariants.
+- The original `JdbcConversationWorkflowReviewAuditAdapter` is restored.
+- The JPA version added an entity and repository for one append-only JSONB insert without reducing
+  mapping or serialization code.
+- Authenticated tenant/workflow/conversation checks and the unchanged application port remain.
 
-- [x] Write the failing JPA adapter test before implementation.
-- [x] Implement the entity, repository, JSONB mapping, and adapter.
-- [x] Run the full assistant test suite successfully.
-- [ ] Add a live PostgreSQL JSONB round-trip gate before migrating the next aggregate.
+- [x] Compare the JPA mapping with the original adapter.
+- [x] Restore the `JdbcClient` adapter and add focused SQL boundary tests.
+- [x] Confirm the application port remains unchanged.
 
 **Files:**
 

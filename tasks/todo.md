@@ -113,8 +113,8 @@
 - [ ] Complete LangGraph boundary simplification and checkpoint security tests.
 - [ ] Classify and migrate stable AI quote/trace CRUD to JPA where it reduces
       code; retain atomic/JSONB/AGE/vector/checkpoint SQL as `JdbcClient`.
-- [x] Migrate design-image metadata CRUD to JPA behind the existing port.
-- [x] Migrate conversation workflow review audit persistence to JPA behind the existing port.
+- [x] Evaluate design-image metadata CRUD; retain `JdbcClient` because JPA adds indirection without reducing code.
+- [x] Evaluate conversation workflow review audit; retain `JdbcClient` because one append-only JSONB insert is simpler.
 - [x] Evaluate quote artifact persistence; retain `JdbcClient` for atomic JSONB upserts and FK ordering.
 - [ ] Add a live PostgreSQL JPA mapping gate before the next AI aggregate wave.
 - [ ] Complete AI idempotency, learning-candidate, and evaluation concurrency

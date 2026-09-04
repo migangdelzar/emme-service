@@ -1177,6 +1177,21 @@ git commit -m "fix(appointments): enforce collision invariant"
 - Document/catalog vector indexing remains a projection boundary; metadata CRUD is JPA-first.
 - No module imports another module's entity or repository.
 
+#### Current slice 18A — Remove zero-value document persistence mapper
+
+The document JPA entities already own the complete persistence conversion
+(`DocumentEntity.from/toDomain` and `DocumentChunkEntity.from/toDomain`).
+`DocumentPersistenceMapper` only forwarded to those methods and required a
+dedicated configuration bean, so it added indirection without preserving a
+provider-neutral boundary. The application `DocumentRepository` port remains
+unchanged and the adapter still owns all JPA repository access.
+
+- [x] Add adapter contract coverage for document and chunk persistence.
+- [x] Remove the redundant mapper and its zero-value configuration/package files.
+- [x] Keep tenant-scoped repository methods and the explicit chunk replacement
+      delete/flush/write sequence unchanged.
+- [ ] Extend the same evidence-based review to the remaining entity modules.
+
 - [ ] **Step 1: Write failing per-module persistence tests**
 
 Use the same create/find/list/update/not-found/tenant/version/idempotency matrix

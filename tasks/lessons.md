@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-09-04 — Remove forwarding mappers only after contract coverage
+
+- Failure mode: A persistence mapper duplicated entity conversion methods and
+  required a dedicated Spring configuration bean without adding provider
+  substitution or behavior.
+- Detection signal: Every mapper method was a one-line delegation to the JPA
+  entity, and the application port already isolated the adapter.
+- Prevention rule: Add adapter-level characterization coverage first, then
+  remove forwarding mappers only when the application port and tenant scope
+  remain unchanged.
+
 ## 2026-09-04 — Keep provider substitution at the port boundary
 
 - Failure mode: A naming proposal treated every PostgreSQL/JDBC adapter as a

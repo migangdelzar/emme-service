@@ -49,6 +49,15 @@
 - [x] Add a Testcontainers concurrency test requiring one successful insert and one `23P01` failure.
 - [ ] Run the live concurrency gate with Docker available and verify the deployed Liquibase path.
 
+### Current slice — Task 18A document persistence simplification
+
+- [x] Add adapter contract tests for document save and chunk replacement.
+- [x] Remove the zero-value `DocumentPersistenceMapper` and its only-purpose
+      Spring configuration bean.
+- [x] Preserve the provider-neutral `DocumentRepository` port and tenant scope.
+- [x] Run the focused document test slice.
+- [ ] Continue the same JPA-first review across the remaining entity modules.
+
 ### Plan working notes
 
 - User requested subagent-driven execution when work can be safely parallelized.

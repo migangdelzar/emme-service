@@ -20,7 +20,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionOperations;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -58,17 +58,17 @@ public class AiJobExecutorConfiguration {
   @ConditionalOnBean(name = "coreDataSource")
   @ConditionalOnMissingBean(AiJobStatusStore.class)
   JdbcAiJobStatusStore aiJobStatusStore(
-      @Qualifier("coreJdbcTemplate") JdbcTemplate jdbc,
+      @Qualifier("coreJdbcClient") JdbcClient jdbc,
       AiJobProperties properties,
       TransactionOperations transactions,
       AiJobMetrics metrics) {
     return new JdbcAiJobStatusStore(jdbc, properties.maxAttempts(), transactions, metrics);
   }
 
-  @Bean(name = "coreJdbcTemplate")
+  @Bean(name = "coreJdbcClient")
   @ConditionalOnBean(name = "coreDataSource")
-  JdbcTemplate coreJdbcTemplate(@Qualifier("coreDataSource") DataSource dataSource) {
-    return new JdbcTemplate(dataSource);
+  JdbcClient coreJdbcClient(@Qualifier("coreDataSource") DataSource dataSource) {
+    return JdbcClient.create(dataSource);
   }
 
   @Bean

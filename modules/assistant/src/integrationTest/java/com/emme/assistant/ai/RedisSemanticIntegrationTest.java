@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.assistant.ai.adapter.out.provider.springai.RedisSemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
@@ -94,7 +95,11 @@ class RedisSemanticIntegrationTest {
     vectorStore.afterPropertiesSet();
     hotStore =
         new RedisSemanticCacheHotStore(
-            vectorStore, MODEL_VERSION, 768, java.time.Clock.systemUTC(), redisClient, PREFIX);
+            vectorStore,
+            new EmbeddingModelConfiguration("embeddinggemma:300m", MODEL_VERSION, 768),
+            java.time.Clock.systemUTC(),
+            redisClient,
+            PREFIX);
   }
 
   @AfterAll

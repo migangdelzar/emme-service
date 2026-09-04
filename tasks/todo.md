@@ -66,6 +66,15 @@
 - [x] Run focused semantic/RAG/Redis tests and Spotless.
 - [ ] Complete advisor-order, metadata-contract, and measured hybrid-search follow-up slices.
 
+### Current slice — Task 11A atomic AI job persistence
+
+- [x] Add a failing configuration test requiring the qualified `coreJdbcClient` boundary.
+- [x] Migrate `JdbcAiJobStatusStore` from `JdbcTemplate` to named-parameter `JdbcClient` operations.
+- [x] Remove the feature-level `coreJdbcTemplate` bean and preserve the `AiJobStatusStore` port.
+- [x] Migrate job and semantic integration-test construction to the canonical adapters.
+- [x] Run deterministic job, JDBC, architecture, compilation, and Spotless checks.
+- [ ] Re-run PostgreSQL concurrency integration with Docker available.
+
 ## Task 6 semantic capability hardening — 2026-08-31
 
 - [ ] Remediate review findings with strict red→green→refactor slices.

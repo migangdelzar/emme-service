@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 class AiJobCoreJdbcConfigurationTest {
@@ -20,13 +21,13 @@ class AiJobCoreJdbcConfigurationTest {
           .withUserConfiguration(CoreJdbcDependencies.class, AiJobExecutorConfiguration.class);
 
   @Test
-  void resolvesTheJobStoreToTheCoreJdbcTemplateWhenAnotherJdbcTemplateAlsoExists() {
+  void resolvesTheJobStoreToTheCoreJdbcClientWhenAnotherJdbcTemplateAlsoExists() {
     contextRunner.run(
         context -> {
           assertThat(context).hasNotFailed();
-          JdbcTemplate core = context.getBean("coreJdbcTemplate", JdbcTemplate.class);
-          assertThat(core.getDataSource())
-              .isSameAs(context.getBean("coreDataSource", DataSource.class));
+          assertThat(context).hasSingleBean(JdbcClient.class);
+          assertThat(context).hasBean("coreJdbcClient");
+          assertThat(context).doesNotHaveBean("coreJdbcTemplate");
           assertThat(context.getBean(JdbcAiJobStatusStore.class)).isNotNull();
         });
   }
@@ -63,7 +64,7 @@ class AiJobCoreJdbcConfigurationTest {
         .run(
             context -> {
               assertThat(context).hasNotFailed();
-              assertThat(context).doesNotHaveBean("coreJdbcTemplate");
+              assertThat(context).doesNotHaveBean("coreJdbcClient");
             });
   }
 }

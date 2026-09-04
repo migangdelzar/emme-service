@@ -652,6 +652,17 @@ git commit -m "refactor(ai): use JPA for stable workflow persistence"
 
 ### Task 11: Retain and simplify atomic AI stores with JdbcClient
 
+#### Current slice 11A — AI job status store migration
+
+Completed in this slice:
+
+- `JdbcAiJobStatusStore` now depends on Spring JDBC `JdbcClient` and uses named parameters for enqueue, claim, retry, completion, lease recovery, and tenant-context setup.
+- `AiJobExecutorConfiguration` exposes one qualified `coreJdbcClient` for the atomic job boundary; the previous feature-level `coreJdbcTemplate` bean was removed.
+- The job store remains a `JdbcClient` survivor because claiming, `FOR UPDATE SKIP LOCKED`, retry recovery, and status transitions are one PostgreSQL transaction/invariant.
+- Configuration and integration-test construction were migrated without changing the `AiJobStatusStore` application port.
+
+The live PostgreSQL concurrency gate remains required; it was not runnable in this environment because Testcontainers could not find a Docker runtime.
+
 **Files:**
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiJobStatusStore.java`

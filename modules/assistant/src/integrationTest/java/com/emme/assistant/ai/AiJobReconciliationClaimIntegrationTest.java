@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.AbstractDataSource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -121,7 +122,7 @@ class AiJobReconciliationClaimIntegrationTest {
     assertThat(jdbc.queryForObject("SELECT current_schema()", String.class)).isEqualTo(CORE_SCHEMA);
     store =
         new JdbcAiJobStatusStore(
-            jdbc,
+            JdbcClient.create(dataSource),
             3,
             new TransactionTemplate(new DataSourceTransactionManager(dataSource)),
             metrics);

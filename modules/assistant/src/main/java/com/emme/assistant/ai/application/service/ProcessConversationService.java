@@ -105,7 +105,10 @@ public class ProcessConversationService implements ProcessConversationUseCase {
       if (workflowSnapshot.status() != ConversationWorkflowStatus.SUCCEEDED) {
         return waitingResult(command, context, workflowSnapshot.status());
       }
-      String response = chat.chat(conversationContext(snapshot), command.message());
+      String response =
+          workflow.ownsResponse()
+              ? workflowSnapshot.response()
+              : chat.chat(conversationContext(snapshot), command.message());
       ProcessConversationResult result =
           validateCompletedResult(
               new ProcessConversationResult(

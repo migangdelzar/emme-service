@@ -8,6 +8,11 @@ import com.emme.kernel.context.AiExecutionContext;
 /** Starts or returns the persisted generic workflow for an authenticated conversation turn. */
 public interface ConversationWorkflowPort {
 
+  /** Whether this workflow produces the final assistant response. */
+  default boolean ownsResponse() {
+    return false;
+  }
+
   ConversationWorkflowSnapshot startOrResume(
       ProcessConversationCommand command, AiExecutionContext context);
 

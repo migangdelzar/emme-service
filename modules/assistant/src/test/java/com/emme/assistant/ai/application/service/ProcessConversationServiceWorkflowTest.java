@@ -32,7 +32,7 @@ class ProcessConversationServiceWorkflowTest {
   private static final UUID WORKFLOW_ID = UUID.randomUUID();
 
   @Test
-  void startsTheTrustedWorkflowBeforeExecutingTheConversationBoundary() {
+  void returnsTheWorkflowResponseWithoutExecutingTheChatBoundaryTwice() {
     ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
     ChatUseCase chat = mock(ChatUseCase.class);
     ConversationTurnIdempotencyPort idempotency = mock(ConversationTurnIdempotencyPort.class);
@@ -47,6 +47,7 @@ class ProcessConversationServiceWorkflowTest {
     when(memory.load(CONVERSATION_ID, context))
         .thenReturn(new ConversationMemoryPort.ConversationSnapshot(CONVERSATION_ID, List.of()));
     when(chat.chat("", "hello")).thenReturn("answer");
+    when(workflow.ownsResponse()).thenReturn(true);
     when(workflow.startOrResume(command, context))
         .thenReturn(
             new ConversationWorkflowSnapshot(
@@ -62,14 +63,15 @@ class ProcessConversationServiceWorkflowTest {
     ProcessConversationService service =
         new ProcessConversationService(memory, chat, idempotency, workflow);
 
-    AiExecutionContextScope.run(context, () -> service.process(command));
+    var result = AiExecutionContextScope.call(context, () -> service.process(command));
 
     InOrder calls = inOrder(workflow, memory, chat);
     calls.verify(memory).findAssistantResponse(CONVERSATION_ID, "idempotency-2", context);
     calls.verify(memory).load(CONVERSATION_ID, context);
     calls.verify(memory).appendUserMessage(CONVERSATION_ID, "hello", "idempotency-2", context);
     calls.verify(workflow).startOrResume(command, context);
-    calls.verify(chat).chat("", "hello");
+    assertThat(result.response()).isEqualTo("answer");
+    verify(chat, never()).chat("", "hello");
     verify(idempotency)
         .complete(eq(CONVERSATION_ID), eq("idempotency-2"), org.mockito.ArgumentMatchers.any());
   }

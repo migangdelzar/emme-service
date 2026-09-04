@@ -40,6 +40,11 @@ public final class LangGraphConversationWorkflowAdapter implements ConversationW
   }
 
   @Override
+  public boolean ownsResponse() {
+    return true;
+  }
+
+  @Override
   public ConversationWorkflowSnapshot startOrResume(
       ProcessConversationCommand command, AiExecutionContext context) {
     validate(command, context);

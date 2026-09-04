@@ -2,6 +2,13 @@
 
 ## Repository framework-first refactoring plan — 2026-09-04
 
+### Current slice — Task 5 structured extraction and tool wiring
+
+- [x] Confirm Spring AI already owns the tool-calling loop and structured entity mapping.
+- [x] Write a failing test for builder-configured extraction clients and one extractor constructor.
+- [x] Collapse extraction/configuration overloads without changing authorization or validation behavior.
+- [x] Verify focused tests, compilation, Spotless, and update the execution plan.
+
 ### Current slice — Task 4 chat composition
 
 - [x] Confirm interface-first boundary: retain `ChatModelSelector`; do not add a `ChatClient`-named application router.
@@ -25,7 +32,7 @@
 - [x] Define subagent-driven execution protocol for independent slices.
 - [ ] Review and approve `docs/superpowers/plans/2026-09-04-repository-framework-first-refactoring.md`.
 - [x] Execute Phase A baseline/architecture guardrails — Tasks 1–2 complete; Phase B pending.
-- [ ] Execute Phase B AI contracts and Spring AI consolidation — Tasks 3 and 4 opt-in chat composition slice complete; Tasks 5–6 and legacy compatibility cleanup pending.
+- [ ] Execute Phase B AI contracts and Spring AI consolidation — Tasks 3–5 framework-first slices complete; Task 6 and legacy compatibility cleanup pending.
 - [ ] Execute Phase C LangGraph4j boundary.
 - [ ] Execute Phase D AI persistence with JPA-first decisions (Task 9 classification complete; Tasks 10–11 pending).
 - [x] Execute Phase E tenancy/bootstrap safety — membership/subscription policy and bootstrap boundary slices complete; remaining repository waves pending.

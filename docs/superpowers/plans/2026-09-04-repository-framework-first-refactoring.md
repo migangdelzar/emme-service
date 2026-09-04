@@ -347,32 +347,40 @@ remain intentionally pending their later migration tasks.
 - Structured extraction uses `ChatClient` entity mapping with schema/provider validation where supported, followed by domain validation and abstention.
 - Semantic tool search is opt-in and used only when the configured tool catalog justifies vector-index cost and latency.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Test unauthorized role, confirmation-required tool, duplicate idempotency key,
 authoritative versus informational result, callback argument conversion,
 structured-output invalid schema, domain-invalid enum, and model unavailable.
 
-- [ ] **Step 2: Run tests to verify current custom mechanics fail the target contract**
+- [x] **Step 2: Run tests to verify current custom mechanics fail the target contract**
 
 ```bash
 ./gradlew :modules:assistant:test --tests '*Tool*' --tests '*NailDesignExtractorTest' --no-parallel --no-configuration-cache
 ```
 
-- [ ] **Step 3: Implement the minimum framework delegation**
+- [x] **Step 3: Implement the minimum framework delegation**
 
-Expose callbacks from existing definitions, delegate loop execution to Spring
-AI, and keep the gateway as the callback body. Replace manual extraction
-serialization with `ChatClient...call().entity(...)`, retaining explicit
-validation and safe rejection.
+Keep the existing callbacks and gateway boundary because they already delegate
+the tool loop to Spring AI while preserving authorization, confirmation,
+idempotency, tracing, and tenant context. Keep structured extraction on
+`ChatClient...call().entity(...)` with explicit schema/provider validation and
+safe rejection. Simplify only the duplicate configuration and constructor
+paths, and route all extraction client construction through the configured
+Spring AI builder.
 
-- [ ] **Step 4: Run focused tests and commit**
+- [x] **Step 4: Run focused tests and commit**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
 git add modules/assistant
 git commit -m "refactor(ai): delegate tools and extraction to Spring AI"
 ```
+
+**Current slice result:** Spring AI owns the tool-calling loop and structured
+entity mapping. The application gateway remains the security and durability
+gate; extraction now has one explicit execution configuration and its named
+client retains Spring AI builder customizers/observability.
 
 ### Task 6: Consolidate Spring AI RAG, advisors, cache, and vector boundaries
 

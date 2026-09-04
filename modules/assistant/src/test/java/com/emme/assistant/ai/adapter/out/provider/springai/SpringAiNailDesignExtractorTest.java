@@ -16,6 +16,7 @@ import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.assistant.ai.domain.quote.NailDesignFeatures;
 import com.emme.assistant.ai.domain.quote.NailLength;
 import com.emme.assistant.ai.domain.quote.NailShape;
@@ -24,6 +25,7 @@ import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -47,6 +49,32 @@ class SpringAiNailDesignExtractorTest {
           false);
 
   @Test
+  void acceptsOneExplicitExecutionConfiguration() {
+    ChatClient client = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+    when(client
+            .prompt()
+            .system(anyString())
+            .user(anyString())
+            .call()
+            .entity(eq(NailDesignFeatures.class), any()))
+        .thenReturn(FEATURES);
+    SpringAiNailDesignExtractor extractor =
+        new SpringAiNailDesignExtractor(
+            client,
+            "vision-v1",
+            "quote-prompt-v1",
+            "nail-features-v1",
+            (key, context) -> Optional.empty(),
+            NoopAiTraceRecorder.INSTANCE,
+            Optional.empty(),
+            Duration.ofSeconds(5));
+
+    assertThat(
+            extractor.extract(new NailDesignExtractor.ExtractionRequest("pink", null)).features())
+        .isEqualTo(FEATURES);
+  }
+
+  @Test
   void requestsAValidatedProviderStructuredNailDesignEntity() {
     ChatClient client = mock(ChatClient.class, RETURNS_DEEP_STUBS);
     when(client
@@ -64,7 +92,10 @@ class SpringAiNailDesignExtractorTest {
             "nail-features-v1",
             (key, context) -> {
               throw new UnsupportedOperationException("image not configured");
-            });
+            },
+            NoopAiTraceRecorder.INSTANCE,
+            Optional.empty(),
+            Duration.ofSeconds(5));
 
     NailDesignExtractor.ExtractionResult result =
         extractor.extract(new NailDesignExtractor.ExtractionRequest("almond pink nails", null));
@@ -92,7 +123,10 @@ class SpringAiNailDesignExtractorTest {
             "nail-features-v1",
             (key, context) -> {
               throw new UnsupportedOperationException("image not configured");
-            });
+            },
+            NoopAiTraceRecorder.INSTANCE,
+            Optional.empty(),
+            Duration.ofSeconds(5));
 
     assertThatThrownBy(
             () ->
@@ -120,7 +154,10 @@ class SpringAiNailDesignExtractorTest {
             "nail-features-v1",
             (key, context) -> {
               throw new UnsupportedOperationException("image not configured");
-            });
+            },
+            NoopAiTraceRecorder.INSTANCE,
+            Optional.empty(),
+            Duration.ofSeconds(5));
 
     assertThatThrownBy(
             () ->
@@ -150,7 +187,9 @@ class SpringAiNailDesignExtractorTest {
             (key, context) -> {
               throw new UnsupportedOperationException("image not configured");
             },
-            recorder);
+            recorder,
+            Optional.empty(),
+            Duration.ofSeconds(5));
 
     AiExecutionContext context = context();
     AiExecutionContextScope.call(
@@ -189,7 +228,8 @@ class SpringAiNailDesignExtractorTest {
             (key, context) -> {
               throw new UnsupportedOperationException("image not configured");
             },
-            scheduler,
+            NoopAiTraceRecorder.INSTANCE,
+            Optional.of(scheduler),
             Duration.ofSeconds(3));
 
     AiExecutionContext expectedContext = context();

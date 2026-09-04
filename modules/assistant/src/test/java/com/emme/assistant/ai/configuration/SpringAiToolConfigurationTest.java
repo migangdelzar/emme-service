@@ -8,6 +8,7 @@ import com.emme.assistant.ai.application.tool.AiToolGateway;
 import com.emme.assistant.ai.application.tool.AuthorizedAiToolGateway;
 import com.emme.assistant.ai.application.tool.NoopAiToolIdempotencyStore;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +30,12 @@ class SpringAiToolConfigurationTest {
             false,
             (context, arguments) -> "services");
 
-    AiToolGateway gateway = new SpringAiToolConfiguration().aiToolGateway(List.of(definition));
+    AiToolGateway gateway =
+        new SpringAiToolConfiguration()
+            .aiToolGateway(
+                List.of(definition),
+                NoopAiTraceRecorder.INSTANCE,
+                NoopAiToolIdempotencyStore.INSTANCE);
 
     assertThat(gateway).isInstanceOf(AuthorizedAiToolGateway.class);
   }
@@ -48,7 +54,10 @@ class SpringAiToolConfigurationTest {
 
     AiToolGateway gateway =
         new SpringAiToolConfiguration()
-            .aiToolGateway(List.of(definition), org.mockito.Mockito.mock(AiTraceRecorder.class));
+            .aiToolGateway(
+                List.of(definition),
+                org.mockito.Mockito.mock(AiTraceRecorder.class),
+                NoopAiToolIdempotencyStore.INSTANCE);
 
     assertThat(gateway).isInstanceOf(AuthorizedAiToolGateway.class);
   }
@@ -80,7 +89,9 @@ class SpringAiToolConfigurationTest {
     AiToolIdempotencyStore store =
         new SpringAiToolConfiguration()
             .aiToolIdempotencyStore(
-                Optional.of(org.mockito.Mockito.mock(JdbcClient.class)), new ObjectMapper());
+                Optional.of(org.mockito.Mockito.mock(JdbcClient.class)),
+                new ObjectMapper(),
+                new AiToolIdempotencyProperties(null));
 
     assertThat(store)
         .isInstanceOf(
@@ -91,7 +102,8 @@ class SpringAiToolConfigurationTest {
   void selectsTheNoopIdempotencyStoreWhenJdbcIsUnavailable() {
     AiToolIdempotencyStore store =
         new SpringAiToolConfiguration()
-            .aiToolIdempotencyStore(Optional.empty(), new ObjectMapper());
+            .aiToolIdempotencyStore(
+                Optional.empty(), new ObjectMapper(), new AiToolIdempotencyProperties(null));
 
     assertThat(store).isSameAs(NoopAiToolIdempotencyStore.INSTANCE);
   }

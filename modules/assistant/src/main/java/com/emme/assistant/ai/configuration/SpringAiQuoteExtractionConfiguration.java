@@ -6,10 +6,11 @@ import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiNailDesignExt
 import com.emme.assistant.ai.application.port.out.DesignImageReader;
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
-import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
+import io.micrometer.observation.ObservationRegistry;
 import java.util.Optional;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.model.chat.client.autoconfigure.ChatClientBuilderConfigurer;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
@@ -35,8 +36,13 @@ public class SpringAiQuoteExtractionConfiguration {
 
   @Bean(name = "aiQuoteExtractionChatClient")
   @ConditionalOnMissingBean(name = "aiQuoteExtractionChatClient")
-  ChatClient quoteExtractionChatClient(ChatModel chatModel) {
-    return ChatClient.create(chatModel);
+  ChatClient quoteExtractionChatClient(
+      ChatModel chatModel,
+      ObservationRegistry observationRegistry,
+      ChatClientBuilderConfigurer builderConfigurer) {
+    return builderConfigurer
+        .configure(ChatClient.builder(chatModel, observationRegistry, null, null))
+        .build();
   }
 
   @Bean
@@ -50,47 +56,14 @@ public class SpringAiQuoteExtractionConfiguration {
       AiExecutorProperties executorProperties) {
     DesignImageReader imageReader =
         imageReaders.getIfAvailable(() -> (key, context) -> Optional.empty());
-    if (modelExecutionScheduler.isPresent()) {
-      return new SpringAiNailDesignExtractor(
-          aiQuoteExtractionChatClient,
-          properties.modelVersion(),
-          properties.promptVersion(),
-          properties.schemaVersion(),
-          imageReader,
-          traceRecorder,
-          modelExecutionScheduler.orElseThrow(),
-          executorProperties.modelAdmissionTimeout());
-    }
     return new SpringAiNailDesignExtractor(
         aiQuoteExtractionChatClient,
         properties.modelVersion(),
         properties.promptVersion(),
         properties.schemaVersion(),
         imageReader,
-        traceRecorder);
-  }
-
-  NailDesignExtractor nailDesignExtractor(
-      ChatClient aiQuoteExtractionChatClient,
-      SpringAiExtractionProperties properties,
-      ObjectProvider<DesignImageReader> imageReaders,
-      AiTraceRecorder traceRecorder) {
-    DesignImageReader imageReader =
-        imageReaders.getIfAvailable(() -> (key, context) -> Optional.empty());
-    return new SpringAiNailDesignExtractor(
-        aiQuoteExtractionChatClient,
-        properties.modelVersion(),
-        properties.promptVersion(),
-        properties.schemaVersion(),
-        imageReader,
-        traceRecorder);
-  }
-
-  NailDesignExtractor nailDesignExtractor(
-      ChatClient aiQuoteExtractionChatClient,
-      SpringAiExtractionProperties properties,
-      ObjectProvider<DesignImageReader> imageReaders) {
-    return nailDesignExtractor(
-        aiQuoteExtractionChatClient, properties, imageReaders, NoopAiTraceRecorder.INSTANCE);
+        traceRecorder,
+        modelExecutionScheduler,
+        executorProperties.modelAdmissionTimeout());
   }
 }

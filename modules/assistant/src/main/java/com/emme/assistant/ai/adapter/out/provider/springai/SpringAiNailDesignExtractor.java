@@ -9,7 +9,6 @@ import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
-import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.assistant.ai.domain.quote.NailDesignFeatures;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
@@ -43,80 +42,6 @@ public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
   private final Duration admissionTimeout;
 
   public SpringAiNailDesignExtractor(
-      ChatClient chatClient,
-      String modelVersion,
-      String promptVersion,
-      String schemaVersion,
-      DesignImageReader imageReader) {
-    this(
-        chatClient,
-        modelVersion,
-        promptVersion,
-        schemaVersion,
-        imageReader,
-        NoopAiTraceRecorder.INSTANCE,
-        Optional.empty(),
-        Duration.ofSeconds(5));
-  }
-
-  public SpringAiNailDesignExtractor(
-      ChatClient chatClient,
-      String modelVersion,
-      String promptVersion,
-      String schemaVersion,
-      DesignImageReader imageReader,
-      AiTraceRecorder traceRecorder) {
-    this(
-        chatClient,
-        modelVersion,
-        promptVersion,
-        schemaVersion,
-        imageReader,
-        traceRecorder,
-        Optional.empty(),
-        Duration.ofSeconds(5));
-  }
-
-  public SpringAiNailDesignExtractor(
-      ChatClient chatClient,
-      String modelVersion,
-      String promptVersion,
-      String schemaVersion,
-      DesignImageReader imageReader,
-      ModelExecutionScheduler modelExecutionScheduler,
-      Duration admissionTimeout) {
-    this(
-        chatClient,
-        modelVersion,
-        promptVersion,
-        schemaVersion,
-        imageReader,
-        NoopAiTraceRecorder.INSTANCE,
-        Optional.of(modelExecutionScheduler),
-        admissionTimeout);
-  }
-
-  public SpringAiNailDesignExtractor(
-      ChatClient chatClient,
-      String modelVersion,
-      String promptVersion,
-      String schemaVersion,
-      DesignImageReader imageReader,
-      AiTraceRecorder traceRecorder,
-      ModelExecutionScheduler modelExecutionScheduler,
-      Duration admissionTimeout) {
-    this(
-        chatClient,
-        modelVersion,
-        promptVersion,
-        schemaVersion,
-        imageReader,
-        traceRecorder,
-        Optional.of(modelExecutionScheduler),
-        admissionTimeout);
-  }
-
-  private SpringAiNailDesignExtractor(
       ChatClient chatClient,
       String modelVersion,
       String promptVersion,

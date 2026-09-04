@@ -17,6 +17,7 @@ import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.assistant.ai.domain.quote.NailDesignFeatures;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import io.micrometer.observation.ObservationRegistry;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
@@ -24,6 +25,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.model.chat.client.autoconfigure.ChatClientBuilderConfigurer;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.beans.factory.ObjectProvider;
 
@@ -39,9 +41,16 @@ class SpringAiQuoteExtractionConfigurationTest {
   @Test
   void createsAChatClientFromTheInjectedChatModel() {
     SpringAiQuoteExtractionConfiguration configuration = new SpringAiQuoteExtractionConfiguration();
+    ChatClientBuilderConfigurer configurer = mock(ChatClientBuilderConfigurer.class);
+    ChatClient.Builder configuredBuilder = mock(ChatClient.Builder.class);
+    ChatClient expectedClient = mock(ChatClient.class);
+    when(configurer.configure(any(ChatClient.Builder.class))).thenReturn(configuredBuilder);
+    when(configuredBuilder.build()).thenReturn(expectedClient);
 
-    assertThat(configuration.quoteExtractionChatClient(mock(ChatModel.class)))
-        .isInstanceOf(ChatClient.class);
+    assertThat(
+            configuration.quoteExtractionChatClient(
+                mock(ChatModel.class), ObservationRegistry.NOOP, configurer))
+        .isSameAs(expectedClient);
   }
 
   @Test
@@ -54,7 +63,10 @@ class SpringAiQuoteExtractionConfigurationTest {
         configuration.nailDesignExtractor(
             mock(ChatClient.class),
             new SpringAiExtractionProperties(true, "vision-v1", "prompt-v4", "schema-v2"),
-            imageReaders);
+            imageReaders,
+            NoopAiTraceRecorder.INSTANCE,
+            Optional.empty(),
+            new AiExecutorProperties(2, 1, 1));
 
     assertThat(extractor).isInstanceOf(NailDesignExtractor.class);
   }

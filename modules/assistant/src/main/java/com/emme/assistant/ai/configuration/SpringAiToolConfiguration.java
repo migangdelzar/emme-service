@@ -8,7 +8,6 @@ import com.emme.assistant.ai.application.tool.AiToolGateway;
 import com.emme.assistant.ai.application.tool.AuthorizedAiToolGateway;
 import com.emme.assistant.ai.application.tool.NoopAiToolIdempotencyStore;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
-import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Optional;
@@ -31,14 +30,6 @@ public class SpringAiToolConfiguration {
     return new AuthorizedAiToolGateway(definitions, traceRecorder, idempotencyStore);
   }
 
-  AiToolGateway aiToolGateway(List<AiToolDefinition> definitions) {
-    return new AuthorizedAiToolGateway(definitions, NoopAiTraceRecorder.INSTANCE);
-  }
-
-  AiToolGateway aiToolGateway(List<AiToolDefinition> definitions, AiTraceRecorder traceRecorder) {
-    return new AuthorizedAiToolGateway(definitions, traceRecorder);
-  }
-
   @Bean
   @ConditionalOnMissingBean(AiToolIdempotencyStore.class)
   AiToolIdempotencyStore aiToolIdempotencyStore(
@@ -48,11 +39,6 @@ public class SpringAiToolConfiguration {
     return jdbc.<AiToolIdempotencyStore>map(
             client -> new JdbcAiToolIdempotencyStore(client, objectMapper, properties.claimLease()))
         .orElse(NoopAiToolIdempotencyStore.INSTANCE);
-  }
-
-  AiToolIdempotencyStore aiToolIdempotencyStore(
-      Optional<JdbcClient> jdbc, ObjectMapper objectMapper) {
-    return aiToolIdempotencyStore(jdbc, objectMapper, new AiToolIdempotencyProperties(null));
   }
 
   @Bean

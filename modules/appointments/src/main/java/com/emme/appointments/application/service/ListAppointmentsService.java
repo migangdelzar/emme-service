@@ -44,7 +44,7 @@ public class ListAppointmentsService implements ListAppointmentsUseCase {
   private AppointmentSummary toAppointmentSummary(Appointment appointment) {
     String customerName =
         customerRepository
-            .findById(appointment.getCustomerId())
+            .findByTenantIdAndId(appointment.getTenantId(), appointment.getCustomerId())
             .map(Customer::getName)
             .orElse(null);
     String serviceName =

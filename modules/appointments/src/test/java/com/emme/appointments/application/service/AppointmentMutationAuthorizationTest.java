@@ -16,7 +16,6 @@ import com.emme.appointments.domain.model.Appointment;
 import com.emme.appointments.domain.model.AppointmentStatus;
 import com.emme.appointments.domain.model.ExternalCalendarStatus;
 import com.emme.clients.application.port.out.CustomerRepository;
-import com.emme.clients.domain.model.Customer;
 import com.emme.services.application.port.out.ArtistRepository;
 import com.emme.services.application.port.out.ServiceRepository;
 import java.time.Instant;
@@ -27,7 +26,6 @@ import org.junit.jupiter.api.Test;
 
 class AppointmentMutationAuthorizationTest {
   private static final UUID TENANT = UUID.randomUUID();
-  private static final UUID OTHER_TENANT = UUID.randomUUID();
   private static final UUID PRINCIPAL = UUID.randomUUID();
   private final AppointmentRepository appointments = mock(AppointmentRepository.class);
   private final AppointmentCollisionPort collisions = mock(AppointmentCollisionPort.class);
@@ -41,7 +39,7 @@ class AppointmentMutationAuthorizationTest {
     UUID customer = UUID.randomUUID();
     UUID service = UUID.randomUUID();
     UUID artist = UUID.randomUUID();
-    when(customers.findById(customer)).thenReturn(Optional.of(new Customer(OTHER_TENANT, "Other")));
+    when(customers.findByTenantIdAndId(TENANT, customer)).thenReturn(Optional.empty());
     when(services.findById(service))
         .thenReturn(Optional.of(mock(com.emme.services.domain.model.Service.class)));
     when(artists.findById(artist))
@@ -99,8 +97,6 @@ class AppointmentMutationAuthorizationTest {
     when(collisions.hasCollision(TENANT, appointment.getArtistId(), START, END, appointmentId))
         .thenReturn(false);
     when(appointments.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-    when(customers.findById(any())).thenReturn(Optional.of(new Customer(TENANT, "Customer")));
-
     authorizedRescheduleService()
         .reschedule(
             new RescheduleAppointmentCommand(

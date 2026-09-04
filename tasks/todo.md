@@ -70,9 +70,10 @@
 
 - [x] Add an adapter contract test for existing-customer updates.
 - [x] Replace unscoped `findById` with `findByTenantIdAndId` in the JPA adapter.
-- [x] Keep the provider-neutral `CustomerRepository` port and existing mapper.
+- [x] Require tenant identity in the provider-neutral `CustomerRepository` port.
+- [x] Update clients and appointments callers to use the scoped lookup.
 - [x] Run the focused clients persistence test.
-- [ ] Audit customer reads and use-case contracts for tenant scope.
+- [x] Audit customer reads and use-case contracts for tenant scope.
 
 ### Plan working notes
 

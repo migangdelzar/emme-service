@@ -1216,8 +1216,10 @@ by another tenant while retaining the existing mapper and application port.
 - [x] Add an adapter test that rejects unscoped update lookup by contract.
 - [x] Add the tenant-scoped Spring Data query.
 - [x] Update customer save to use tenant and customer identity together.
+- [x] Update customer application reads and appointment callers to use the
+      tenant-qualified port.
 - [x] Run the focused clients persistence test.
-- [ ] Audit read/use-case ports for the same tenant-scope assumption.
+- [x] Audit customer read/use-case ports for the same tenant-scope assumption.
 
 - [ ] **Step 1: Write failing per-module persistence tests**
 

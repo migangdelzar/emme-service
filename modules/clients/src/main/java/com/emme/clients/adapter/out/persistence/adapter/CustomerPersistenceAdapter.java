@@ -35,8 +35,8 @@ public class CustomerPersistenceAdapter implements CustomerRepository {
   }
 
   @Override
-  public Optional<Customer> findById(UUID id) {
-    return repository.findById(id).map(mapper::toDomain);
+  public Optional<Customer> findByTenantIdAndId(UUID tenantId, UUID id) {
+    return repository.findByTenantIdAndId(tenantId, id).map(mapper::toDomain);
   }
 
   @Override

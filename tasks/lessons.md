@@ -30,6 +30,17 @@
 - Prevention rule: derived JPA update lookups must include tenant identity when
   the aggregate is tenant-owned; cover the lookup choice with an adapter test.
 
+## 2026-09-04 — Propagate shared port contract changes deliberately
+
+- Failure mode: tightening a shared customer repository port immediately
+  broke dependent appointment compilation because callers still used the old
+  unscoped method.
+- Detection signal: the Gradle dependency graph reported the exact downstream
+  call sites during compile before any tests could run.
+- Prevention rule: after changing a shared port, search all modules for the
+  old method, update each caller in the same vertical slice, and run the
+  affected module tests together.
+
 ## 2026-09-04 — Remove forwarding mappers only after contract coverage
 
 - Failure mode: A persistence mapper duplicated entity conversion methods and

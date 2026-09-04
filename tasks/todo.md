@@ -111,8 +111,8 @@
 
 - [ ] Finish Spring AI metadata-contract and hybrid-search measurements.
 - [ ] Complete LangGraph boundary simplification and checkpoint security tests.
-- [ ] Classify and migrate stable AI quote/trace CRUD to JPA where it reduces
-      code; retain atomic/JSONB/AGE/vector/checkpoint SQL as `JdbcClient`.
+- [x] Classify stable AI quote/trace persistence; retain `JdbcClient` where atomic,
+      JSONB, idempotency, or versioned SQL is simpler than JPA.
 - [x] Evaluate design-image metadata CRUD; retain `JdbcClient` because JPA adds indirection without reducing code.
 - [x] Evaluate conversation workflow review audit; retain `JdbcClient` because one append-only JSONB insert is simpler.
 - [x] Evaluate quote artifact persistence; retain `JdbcClient` for atomic JSONB upserts and FK ordering.

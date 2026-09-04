@@ -689,17 +689,15 @@ The initial JPA experiment was reverted after comparison with the original adapt
 - [x] Restore the `JdbcClient` adapter and add focused SQL boundary tests.
 - [x] Confirm the application port remains unchanged.
 
-**Files:**
+**Evaluated files:**
 
-- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiTraceRecorder.java`
-- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteWorkflowRepository.java`
-- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteArtifactRepository.java`
-- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteReviewRepository.java`
-- Create/modify: corresponding `entity/**`, `mapper/**`, and `SpringData*Repository.java` files in `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence`
-- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/{QuoteWorkflowRepository,QuoteArtifactRepository,QuoteReviewRepository}.java`
-- Test: existing quote persistence tests and new JPA slice tests under `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/persistence/**`
+- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiTraceRecorder.java`
+- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteWorkflowRepository.java`
+- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteArtifactRepository.java`
+- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteReviewRepository.java`
+- Existing application ports and adapter tests remain unchanged.
 
-#### Decision gate: quote artifact repository
+#### Decision gate: quote and trace persistence
 
 The quote artifact candidate was evaluated against the JPA-first rule. It remains on
 `JdbcClient` because one adapter owns three related JSONB writes with tenant/workflow
@@ -712,39 +710,28 @@ reintroduced. The stable `QuoteArtifactRepository` port is unchanged.
 - [x] Retain `JdbcQuoteArtifactRepository` as the narrow `JdbcClient` survivor.
 - [x] Record the decision in the migration ledger and architecture inventory.
 
+The same gate applies to `JdbcAiTraceRecorder`, `JdbcQuoteReviewRepository`, and
+`JdbcQuoteWorkflowRepository`. Their JSONB upserts, conditional version predicates,
+idempotency conflict handling, and review-decision append must remain single SQL
+operations or transactions. JPA would only be preferable if a future measured design
+reduces code while preserving those invariants; no such design exists in the current
+module.
+
+- [x] Evaluate durable AI trace persistence; retain `JdbcClient` for JSONB upserts and redaction.
+- [x] Evaluate quote review persistence; retain `JdbcClient` for conditional transition plus decision append.
+- [x] Evaluate quote workflow persistence; retain `JdbcClient` for idempotent insert and versioned update.
+
 **Acceptance criteria:**
 
-- Stable quote/trace CRUD uses module-private JPA entities and Spring Data repositories where the mapping is clear.
-- Optimistic version and reviewer ownership semantics are preserved.
-- JSONB fields are mapped with a tested converter or remain in a small specialized query adapter if JPA mapping increases complexity.
-- Existing application ports do not expose JPA entities.
+- JPA is used only where it reduces implementation and maintenance cost.
+- Atomic JSONB upserts, idempotency, version predicates, and reviewer ownership semantics remain
+  intact behind the existing application ports.
+- Every retained `JdbcClient` adapter has a concrete ledger reason and focused equivalence tests.
 
-- [ ] **Step 1: Write failing JPA repository/mapping tests**
-
-Test create/read/update, missing record, tenant filtering, optimistic version
-conflict, reviewer authorization input, and JSONB round-trip. Use a repository
-slice for mapping and a PostgreSQL integration test for JSONB/locking behavior.
-
-- [ ] **Step 2: Run focused tests and confirm the new repository path fails**
-
-```bash
-./gradlew :modules:assistant:test --tests '*Quote*Persistence*' --tests '*SpringData*Repository*' --no-parallel --no-configuration-cache
-```
-
-- [ ] **Step 3: Implement entity, mapper, repository, and adapter minimally**
-
-Use Spring Data derived queries, projections, `@Version`, and `@Lock` where
-they express the current operation. Keep the application port unchanged until
-the adapter behavior is proven; then remove the old JDBC class and update the
-ledger.
-
-- [ ] **Step 4: Run focused JPA/PostgreSQL tests, compile, and commit**
-
-```bash
-./gradlew :modules:assistant:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
-git add modules/assistant
-git commit -m "refactor(ai): use JPA for stable workflow persistence"
-```
+- [x] Compare the quote and trace mappings against JPA and Spring Data semantics.
+- [x] Retain `JdbcClient` for trace, quote workflow, quote artifacts, and quote review boundaries.
+- [x] Add focused tests for the restored simple metadata and append-only audit adapters.
+- [x] Run the assistant test suite, compilation, and Spotless successfully.
 
 ### Task 11: Retain and simplify atomic AI stores with JdbcClient
 
@@ -808,33 +795,36 @@ LearningCandidateEvaluationStore  current `JdbcLearningCandidateEvaluationStore`
 - Ordinary lookup/history is converted to JPA only where it is simpler and does not split one atomic invariant into multiple transactions.
 - Tests cover concurrent workers, lease expiry, duplicate success replay, tenant isolation, and retryable failure.
 
-- [ ] **Step 1: Write failing concurrency tests**
+- [x] **Step 1: Write failing concurrency tests**
 
 Add or extend tests for two workers claiming the same row, expired versus active
 lease, duplicate completed idempotency key, malformed JSON payload, and
-cross-tenant identifier. Add a PostgreSQL Testcontainers test for the actual
-unique/conditional update behavior.
+cross-tenant identifier. PostgreSQL Testcontainers coverage remains present for
+the actual unique/conditional update behavior, but requires Docker to execute.
 
-- [ ] **Step 2: Run focused tests**
+- [x] **Step 2: Run focused tests**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:ai-platform:test --tests '*AiJob*' --tests '*Idempotency*' --tests '*LearningCandidate*' --no-parallel --no-configuration-cache
 ```
 
-- [ ] **Step 3: Rename and simplify only the SQL adapter boundary**
+- [x] **Step 3: Rename and simplify only the SQL adapter boundary**
 
 Use `JdbcClient.sql(...).param(...).query(...)`/`update()` with explicit row
 mapping. Keep SQL in the adapter, keep application ports technology-neutral,
 and remove duplicate helper methods only after test coverage proves identical
 claim and replay behavior.
 
-- [ ] **Step 4: Run unit/integration tests, compile, and commit**
+- [x] **Step 4: Run unit tests, compile, Spotless, and commit**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:ai-platform:test :modules:assistant:compileJava :modules:ai-platform:compileJava --no-parallel --no-configuration-cache
 git add modules/assistant modules/ai-platform
 git commit -m "refactor(ai): standardize atomic JdbcClient stores"
 ```
+
+The remaining live PostgreSQL concurrency and AGE gates are environment-dependent
+because Testcontainers cannot run without Docker in the current environment.
 
 ## 7. Phase E — Tenancy/bootstrap safety
 

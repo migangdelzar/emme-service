@@ -2922,3 +2922,21 @@ appointment mutation tools are registered.
 - Container-backed integration is blocked by the unavailable Docker daemon and
   local PostgreSQL (`localhost:5432` refused). Deployed E2E is blocked because
   `EMME_E2E_BASE_URL` is not configured. The tests remain strict and unchanged.
+
+## AI platform activation follow-up — 2026-09-04
+
+- [ ] Make workflow response ownership explicit so an enabled LangGraph workflow
+      cannot execute a second chat-model request after producing a response.
+- [ ] Fail fast when the LangGraph feature is enabled without real conversation
+      capability wiring; retain defaults only for isolated graph tests.
+- [ ] Define the bounded model/tool-agent policy before considering the optional
+      `langgraph4j-spring-ai` bridge.
+- [ ] Run focused feedback after each slice; defer the full enterprise gate,
+      container startup, and deployed E2E checks to the final phase.
+
+### Working Notes
+
+- Existing uncommitted canonical-contract migration files are preserved and will
+  be staged separately from the workflow response slice.
+- LangGraph4j core remains the durable outer workflow owner. Spring AI remains
+  the model, retrieval, and tool-mechanics owner.

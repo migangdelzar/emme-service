@@ -534,11 +534,11 @@ git commit -m "refactor(ai): simplify LangGraph workflow composition"
 - Each survivor has a concrete reason: dynamic identifier, atomic claim, JSONB, pgvector/FTS/RRF, AGE, LangGraph checkpoint, RLS/session lifecycle, or measured lower complexity.
 - No implementation is changed in this task; the classification is reviewable and complete before migration.
 
-- [ ] **Step 1: Write a failing classification test**
+- [x] **Step 1: Write a failing classification test**
 
 Add `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/persistence/AiJdbcMigrationClassificationTest.java` and `modules/ai-platform/src/test/java/com/emme/ai/platform/learning/LearningJdbcMigrationClassificationTest.java`. Each test asserts that the ledger contains the class name and one allowed reason.
 
-- [ ] **Step 2: Run the tests**
+- [x] **Step 2: Run the tests**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:ai-platform:test --tests '*MigrationClassificationTest' --no-parallel --no-configuration-cache
@@ -546,7 +546,7 @@ Add `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/persisten
 
 Expected result: FAIL until all current JDBC stores are recorded.
 
-- [ ] **Step 3: Complete the ledger from caller and schema searches**
+- [x] **Step 3: Complete the ledger from caller and schema searches**
 
 For each class, record its tables, transaction assumptions, result shape,
 concurrency behavior, tenant predicate/session behavior, proposed target name,
@@ -554,7 +554,7 @@ and the test that proves equivalence. Use `Postgres*Store` for retained
 technology-specific implementations and `*Repository` only for JPA repository
 contracts.
 
-- [ ] **Step 4: Run tests and commit the classification**
+- [x] **Step 4: Run tests and commit the classification**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:ai-platform:test --tests '*MigrationClassificationTest' --no-parallel --no-configuration-cache

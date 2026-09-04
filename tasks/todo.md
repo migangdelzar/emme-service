@@ -11,7 +11,7 @@
 - [x] Execute Phase A baseline/architecture guardrails — Tasks 1–2 complete; Phase B pending.
 - [ ] Execute Phase B AI contracts and Spring AI consolidation — Task 3 canonical contract slice complete; Tasks 4–6 pending.
 - [ ] Execute Phase C LangGraph4j boundary.
-- [ ] Execute Phase D AI persistence with JPA-first decisions.
+- [ ] Execute Phase D AI persistence with JPA-first decisions (Task 9 classification complete; Tasks 10–11 pending).
 - [x] Execute Phase E tenancy/bootstrap safety — membership/subscription policy and bootstrap boundary slices complete; remaining repository waves pending.
 - [ ] Execute Phase F provider HTTP migration.
 - [ ] Execute Phase G domain persistence waves.

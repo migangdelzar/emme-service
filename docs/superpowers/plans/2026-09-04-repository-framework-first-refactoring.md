@@ -704,6 +704,19 @@ Completed in this slice:
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/{QuoteWorkflowRepository,QuoteArtifactRepository,QuoteReviewRepository}.java`
 - Test: existing quote persistence tests and new JPA slice tests under `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/persistence/**`
 
+#### Decision gate: quote artifact repository
+
+The quote artifact candidate was evaluated against the JPA-first rule. It remains on
+`JdbcClient` because one adapter owns three related JSONB writes with tenant/workflow
+natural-key upserts and foreign-key ordering. Replacing those statements with JPA would
+require three entities, three repositories, read-before-write upsert logic, and an explicit
+concurrency strategy; that is more code and would be less atomic unless custom SQL were
+reintroduced. The stable `QuoteArtifactRepository` port is unchanged.
+
+- [x] Compare JPA mapping and Spring Data natural-key upserts against the existing adapter.
+- [x] Retain `JdbcQuoteArtifactRepository` as the narrow `JdbcClient` survivor.
+- [x] Record the decision in the migration ledger and architecture inventory.
+
 **Acceptance criteria:**
 
 - Stable quote/trace CRUD uses module-private JPA entities and Spring Data repositories where the mapping is clear.

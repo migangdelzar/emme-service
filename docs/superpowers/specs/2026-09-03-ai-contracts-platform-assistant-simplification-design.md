@@ -222,7 +222,7 @@ focused tests, integration tests, and architecture tests.
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiTraceRecorder.java` | Review | Keep only durable/redacted persistence not supplied by observations |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteWorkflowRepository.java` | Review JPA first | Convert to JPA if aggregate mapping is simpler; retain SQL for atomic transitions |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteReviewRepository.java` | Review JPA first | Same rule |
-| `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteArtifactRepository.java` | Review JPA first | Same rule |
+| `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteArtifactRepository.java` | Keep `JdbcClient` | Three related JSONB upserts with FK ordering and conflict semantics are shorter and safer as parameterized SQL; revisit only with a measured JPA mapping that preserves atomicity |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JpaDesignImageMetadataRepository.java` | Migrated | Stable entity CRUD now uses a module-private JPA entity and Spring Data repository behind the unchanged port |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JpaConversationWorkflowReviewAuditAdapter.java` | Migrated | Append-only review audit now uses a module-private JPA entity and Spring Data repository with JSONB mapping |
 | `src/main/java/com/emme/assistant/ai/adapter/out/graph/JdbcAgeGraphClient.java` | Keep/refactor | Callers use the stable graph port; AGE-specific SQL remains inside the current adapter and is not renamed solely for the database provider |

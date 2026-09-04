@@ -70,6 +70,7 @@ spring-boot-data-jpa-test = { module = "org.springframework.boot:spring-boot-dat
 spring-ai-commons = { module = "org.springframework.ai:spring-ai-commons" }
 spring-ai-model = { module = "org.springframework.ai:spring-ai-model" }
 spring-ai-client-chat = { module = "org.springframework.ai:spring-ai-client-chat" }
+spring-ai-autoconfigure-model-chat-client = { module = "org.springframework.ai:spring-ai-autoconfigure-model-chat-client" }
 spring-ai-rag = { module = "org.springframework.ai:spring-ai-rag" }
 spring-ai-vector-store = { module = "org.springframework.ai:spring-ai-vector-store" }
 spring-ai-vector-store-advisor = { module = "org.springframework.ai:spring-ai-vector-store-advisor" }

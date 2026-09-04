@@ -3,28 +3,50 @@ package com.emme.assistant.ai.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
-import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
+import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.model.chat.client.autoconfigure.ChatClientBuilderConfigurer;
 import org.springframework.ai.tool.ToolCallbackProvider;
 
 class SpringAiChatConfigurationTest {
+
+  @Test
+  void createsNamedClientsThroughTheSpringAiBuilderConfigurer() {
+    SpringAiChatConfiguration configuration = new SpringAiChatConfiguration();
+    ChatModel model = mock(ChatModel.class);
+    ChatClientBuilderConfigurer configurer = mock(ChatClientBuilderConfigurer.class);
+    ChatClient.Builder configuredBuilder = mock(ChatClient.Builder.class);
+    ChatClient expectedClient = mock(ChatClient.class);
+    when(configurer.configure(any(ChatClient.Builder.class))).thenReturn(configuredBuilder);
+    when(configuredBuilder.build()).thenReturn(expectedClient);
+
+    ChatClient client = configuration.ollamaChatClient(model, mock(), configurer);
+
+    assertThat(client).isSameAs(expectedClient);
+    verify(configurer).configure(any(ChatClient.Builder.class));
+    verify(configuredBuilder).build();
+  }
 
   @Test
   void treatsMissingProviderCredentialsAsUnavailableSoTheSelectorCanFallback() {
@@ -79,26 +101,24 @@ class SpringAiChatConfigurationTest {
 
   @Test
   void buildsAnOrderedModelSelectorFromNamedChatClients() {
-    SpringAiChatConfiguration configuration = new SpringAiChatConfiguration();
     SpringAiChatProperties properties =
         new SpringAiChatProperties(
             true,
             List.of(
                 new SpringAiChatProperties.Provider("localChatClient", "local", "ollama-v1"),
                 new SpringAiChatProperties.Provider("cloudChatClient", "cloud", "cloud-v1")));
+    SpringAiChatProviderRegistry registry =
+        new SpringAiChatProviderRegistry(
+            Map.of(
+                "localChatClient", mock(ChatClient.class),
+                "cloudChatClient", mock(ChatClient.class)),
+            properties,
+            List.of(new TenantSecurityAdvisor(), new PromptVersionAdvisor("chat-v1")),
+            mock(AiTraceRecorder.class));
 
-    ChatCompletionPort port =
-        configuration.chatCompletionPort(
-            configuration.chatProviderRegistry(
-                Map.of(
-                    "localChatClient",
-                    mock(ChatClient.class),
-                    "cloudChatClient",
-                    mock(ChatClient.class)),
-                properties,
-                new TenantSecurityAdvisor(),
-                new PromptVersionAdvisor("chat-v1"),
-                mock(AiTraceRecorder.class)));
+    IdentifiedChatCompletionPort port =
+        new SpringAiChatConfiguration()
+            .chatCompletionPort(registry, Optional.empty(), new AiExecutorProperties(2, 1, 1));
 
     assertThat(port).isInstanceOf(ChatModelSelector.class);
   }
@@ -123,7 +143,12 @@ class SpringAiChatConfigurationTest {
 
     assertThat(
             AiExecutionContextScope.call(
-                context(), () -> configuration.chatCompletionPort(registry).complete("", "hello")))
+                context(),
+                () ->
+                    configuration
+                        .chatCompletionPort(
+                            registry, Optional.empty(), new AiExecutorProperties(2, 1, 1))
+                        .complete("", "hello")))
         .isEqualTo("hola");
     var invocationOrder = inOrder(local, cloud);
     invocationOrder.verify(local).prompt();
@@ -160,18 +185,16 @@ class SpringAiChatConfigurationTest {
 
   @Test
   void rejectsAConfiguredClientThatIsMissing() {
-    SpringAiChatConfiguration configuration = new SpringAiChatConfiguration();
     SpringAiChatProperties properties =
         new SpringAiChatProperties(
             true, List.of(new SpringAiChatProperties.Provider("missing", "local", "ollama-v1")));
 
     org.assertj.core.api.Assertions.assertThatThrownBy(
             () ->
-                configuration.chatProviderRegistry(
+                new SpringAiChatProviderRegistry(
                     Map.of(),
                     properties,
-                    new TenantSecurityAdvisor(),
-                    new PromptVersionAdvisor("chat-v1")))
+                    List.of(new TenantSecurityAdvisor(), new PromptVersionAdvisor("chat-v1"))))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("No Spring AI chat client bean configured for provider 'local'");
   }
@@ -184,21 +207,21 @@ class SpringAiChatConfigurationTest {
             true,
             List.of(new SpringAiChatProperties.Provider("localChatClient", "local", "ollama-v1")));
     SpringAiChatProviderRegistry registry =
-        configuration.chatProviderRegistry(
+        new SpringAiChatProviderRegistry(
             Map.of("localChatClient", mock(ChatClient.class)),
             properties,
-            new TenantSecurityAdvisor(),
-            new PromptVersionAdvisor("chat-v1"));
+            List.of(new TenantSecurityAdvisor(), new PromptVersionAdvisor("chat-v1")));
 
     assertThat(
             configuration.chatCompletionPort(
-                registry, mock(ModelExecutionScheduler.class), new AiExecutorProperties(2, 1, 1)))
+                registry,
+                Optional.of(mock(ModelExecutionScheduler.class)),
+                new AiExecutorProperties(2, 1, 1)))
         .isInstanceOf(ChatModelSelector.class);
   }
 
   @Test
   void passesTheBackendApprovedToolProviderToNamedChatClients() {
-    SpringAiChatConfiguration configuration = new SpringAiChatConfiguration();
     SpringAiChatProperties properties =
         new SpringAiChatProperties(
             true,
@@ -206,11 +229,10 @@ class SpringAiChatConfigurationTest {
     ToolCallbackProvider toolProvider = org.mockito.Mockito.mock(ToolCallbackProvider.class);
 
     SpringAiChatProviderRegistry registry =
-        configuration.chatProviderRegistry(
+        new SpringAiChatProviderRegistry(
             Map.of("localChatClient", mock(ChatClient.class)),
             properties,
-            new TenantSecurityAdvisor(),
-            new PromptVersionAdvisor("chat-v1"),
+            List.of(new TenantSecurityAdvisor(), new PromptVersionAdvisor("chat-v1")),
             mock(AiTraceRecorder.class),
             toolProvider);
 

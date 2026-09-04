@@ -244,8 +244,8 @@ removed after caller migration.
 
 | Existing area | Current code | Classification | Target implementation |
 |---|---|---|---|
-| Chat transport | `modules/ai-platform/.../SpringAiChatModel.java`, `SpringAiModelProvider.java`, `modules/assistant/.../SpringAiChatConfiguration.java` | REVIEW → REPLACE mechanics | Configure provider `ChatModel` beans once; use `ChatClient` as the application-facing orchestration edge. Retain a small `ChatCompletionPort` only if it carries admission, fallback, tenant policy, or provider identity that `ChatClient` does not represent. |
-| Provider registry | `SpringAiChatProviderRegistry`, `ChatModelSelector`, `IdentifiedChatCompletionPort` | KEEP policy, simplify construction | Rename selector to `AiChatClientRouter` if it selects named `ChatClient`s; move provider map/property parsing into configuration. The router owns model admission/fallback, not prompt transport. |
+| Chat transport | `modules/ai-platform/.../SpringAiChatModel.java`, `SpringAiModelProvider.java`, `modules/assistant/.../SpringAiChatConfiguration.java` | REVIEW → REPLACE mechanics | Configure provider `ChatModel` beans once; use `ChatClient` at the Spring AI adapter edge. Retain a small `ChatCompletionPort` only if it carries admission, fallback, tenant policy, or provider identity that `ChatClient` does not represent. |
+| Provider registry | `SpringAiChatProviderRegistry`, `ChatModelSelector`, `IdentifiedChatCompletionPort` | KEEP policy, simplify construction | Keep `ChatModelSelector` as the provider-neutral selection/admission/fallback policy. Keep named-client mapping in configuration and do not duplicate the selection policy with a framework-named application router. |
 | Prompt and tenant policy | `PromptVersionAdvisor`, `TenantSecurityAdvisor` | KEEP | Keep as ordered Spring AI advisors. Make order explicit, fail closed when tenant/principal context is absent, and test that retrieval and tools receive the same policy context. |
 | Tool invocation | `SpringAiToolCallbackProvider`, `AuthorizedAiToolGateway`, tool handlers | REPLACE registration mechanics; KEEP authorization | Expose Spring AI `ToolCallback`/`ToolCallbackProvider` from existing definitions. Keep `AuthorizedAiToolGateway` as the policy gate, idempotency boundary, audit, and result authority check. Do not expose raw business services as LLM tools. |
 | Tool search | `ToolSearchToolCallingAdvisor`, `VectorToolIndex`, Redis tool vector store | REVIEW | Prefer Spring AI's tool-search advisor when tool count or semantic discovery justifies it. Keep explicit allow-lists and authorization before invocation. Disable vector tool search for small stable tool sets because direct callback registration is simpler and faster. |
@@ -304,8 +304,8 @@ fixtures that inject collaborators directly.
 
 | File | Current issue | Target change |
 |---|---|---|
-| `modules/assistant/.../configuration/SpringAiChatConfiguration.java` | Repeated overloads for registry and completion construction; manual `ChatClient` map assembly | Keep one bean method per production bean. Extract `AiChatProperties`/`AiExecutionProperties` records. Build named `ChatClient`s once, then pass an immutable ordered advisor list to `AiChatClientRouter`. Test with direct constructors rather than package-private overloads. |
-| `modules/assistant/.../configuration/SpringAiRagConfiguration.java` | Rebuilds a provider registry and completion chain separate from chat configuration | Inject the canonical `AiChatClientRouter`/chat capability. Build only the retrieval advisor and RAG policy bean here. Do not create a second provider selection path. |
+| `modules/assistant/.../configuration/SpringAiChatConfiguration.java` | Repeated overloads for registry and completion construction; manual `ChatClient` map assembly | Keep one bean method per production bean. Extract `AiChatProperties`/`AiExecutionProperties` records. Build named `ChatClient`s once, then adapt them to the existing provider-neutral `ChatModelSelector` through an immutable ordered advisor list. Test with direct constructors rather than package-private overloads. |
+| `modules/assistant/.../configuration/SpringAiRagConfiguration.java` | Rebuilds a provider registry and completion chain separate from chat configuration | Inject the canonical provider-neutral chat capability. Build only the retrieval advisor and RAG policy bean here. Do not create a second provider selection path. |
 | `modules/assistant/.../configuration/SpringAiToolConfiguration.java` | Overloaded gateway/idempotency factory and direct JDBC optionality | Keep one gateway bean. Model idempotency as an explicit `AiToolIdempotencyStore`; provide a no-op only for a documented local/test profile. Move `JdbcClient` construction into a named persistence adapter configuration. |
 | `modules/assistant/.../configuration/SpringAiRedisSemanticConfiguration.java` | Direct Jedis client plus Spring AI Redis vector store and custom hot-store plumbing | Prefer Boot/Spring Data Redis connection configuration. Keep a direct Redis client only if a required atomic primitive has no clean template/connection API. Separate vector-store projection from key/value hot cache. |
 | `modules/assistant/.../configuration/SpringAiLangGraphConfiguration.java` | Multiple graph beans, generic `CompiledGraph<AgentState>` qualifiers, and direct JDBC checkpoint wiring | Keep one opt-in workflow configuration. Name beans by capability (`conversationWorkflowGraph`, `quoteWorkflowGraph`, `workflowCheckpointStore`). Keep LangGraph types inside this configuration and adapter package. |
@@ -323,7 +323,7 @@ Spring AI ChatModel / EmbeddingModel beans
         ↓
 named ChatClient beans (one per admitted provider)
         ↓
-AiChatClientRouter
+ChatModelSelector (provider-neutral selection/admission/fallback policy)
   ├─ model admission / timeout / fallback policy
   └─ selected ordered advisors
        1. TenantSecurityAdvisor
@@ -532,7 +532,7 @@ The following naming rules remove ambiguity:
 | `JdbcSemanticReferenceSearchAdapter` | `SemanticReferenceSearchPort` plus the current adapter | Expose retrieval intent; retain `JdbcClient` only while the measured PostgreSQL query is needed |
 | `JdbcAiJobStatusStore` | `AiJobStatusStore` port plus the current adapter | Contract states capability; the mechanism remains replaceable behind the port |
 | `JdbcLangGraphCheckpointSaver` | `WorkflowCheckpointStore` port plus the current adapter | Keep the library interface hidden from application packages without prescribing a provider |
-| `SpringAiModelProvider` | capability-specific `SpringAiChatClientAdapter`, `SpringAiEmbeddingAdapter`, `SpringAiVisionAdapter` | Avoid one composite type that forces unrelated capabilities together |
+| `SpringAiModelProvider` | capability-specific adapters behind stable capability ports | Avoid one composite type that forces unrelated capabilities together; adapter/provider names remain implementation details |
 
 ### 9.2 JPA-first review procedure for every JDBC class
 

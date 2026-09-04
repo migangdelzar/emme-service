@@ -8,7 +8,6 @@ import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurit
 import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
-import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import io.micrometer.observation.ObservationRegistry;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +17,10 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.client.advisor.toolsearch.ToolSearchToolCallingAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.model.chat.client.autoconfigure.ChatClientBuilderConfigurer;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
-import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,10 +33,6 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "app.ai.spring-chat", name = "enabled", havingValue = "true")
 public class SpringAiChatConfiguration {
 
-  ChatModel ollamaChatModel(AiProviderProperties aiProperties) {
-    return ollamaChatModel(aiProperties, ObservationRegistry.NOOP);
-  }
-
   @Bean(name = "ollamaChatModel")
   @ConditionalOnMissingBean(name = "ollamaChatModel")
   ChatModel ollamaChatModel(
@@ -49,14 +44,15 @@ public class SpringAiChatConfiguration {
         .build();
   }
 
-  ChatClient ollamaChatClient(ChatModel ollamaChatModel) {
-    return ollamaChatClient(ollamaChatModel, ObservationRegistry.NOOP);
-  }
-
   @Bean(name = "ollamaChatClient")
   @ConditionalOnMissingBean(name = "ollamaChatClient")
-  ChatClient ollamaChatClient(ChatModel ollamaChatModel, ObservationRegistry observationRegistry) {
-    return ChatClient.create(ollamaChatModel, observationRegistry);
+  ChatClient ollamaChatClient(
+      ChatModel ollamaChatModel,
+      ObservationRegistry observationRegistry,
+      ChatClientBuilderConfigurer builderConfigurer) {
+    return builderConfigurer
+        .configure(ChatClient.builder(ollamaChatModel, observationRegistry, null, null))
+        .build();
   }
 
   @Bean
@@ -70,70 +66,14 @@ public class SpringAiChatConfiguration {
       Optional<ToolSearchToolCallingAdvisor> toolSearchAdvisor) {
     List<Advisor> configuredAdvisors =
         new ArrayList<>(List.of(tenantSecurityAdvisor, promptVersionAdvisor));
-    if (toolCallbackProvider.isPresent()) {
-      toolSearchAdvisor.ifPresent(configuredAdvisors::add);
-      return chatProviderRegistry(
-          chatClients, properties, configuredAdvisors, traceRecorder, toolCallbackProvider.get());
-    }
-    return chatProviderRegistry(chatClients, properties, configuredAdvisors, traceRecorder);
-  }
-
-  SpringAiChatProviderRegistry chatProviderRegistry(
-      Map<String, ChatClient> chatClients,
-      SpringAiChatProperties properties,
-      TenantSecurityAdvisor tenantSecurityAdvisor,
-      PromptVersionAdvisor promptVersionAdvisor) {
+    toolCallbackProvider.ifPresent(
+        provider -> toolSearchAdvisor.ifPresent(configuredAdvisors::add));
     return new SpringAiChatProviderRegistry(
         chatClients,
         properties,
-        List.of(tenantSecurityAdvisor, promptVersionAdvisor),
-        NoopAiTraceRecorder.INSTANCE);
-  }
-
-  SpringAiChatProviderRegistry chatProviderRegistry(
-      Map<String, ChatClient> chatClients,
-      SpringAiChatProperties properties,
-      TenantSecurityAdvisor tenantSecurityAdvisor,
-      PromptVersionAdvisor promptVersionAdvisor,
-      AiTraceRecorder traceRecorder) {
-    return new SpringAiChatProviderRegistry(
-        chatClients,
-        properties,
-        List.of(tenantSecurityAdvisor, promptVersionAdvisor),
-        traceRecorder);
-  }
-
-  SpringAiChatProviderRegistry chatProviderRegistry(
-      Map<String, ChatClient> chatClients,
-      SpringAiChatProperties properties,
-      TenantSecurityAdvisor tenantSecurityAdvisor,
-      PromptVersionAdvisor promptVersionAdvisor,
-      AiTraceRecorder traceRecorder,
-      ToolCallbackProvider toolCallbackProvider) {
-    return new SpringAiChatProviderRegistry(
-        chatClients,
-        properties,
-        List.of(tenantSecurityAdvisor, promptVersionAdvisor),
+        configuredAdvisors,
         traceRecorder,
-        toolCallbackProvider);
-  }
-
-  SpringAiChatProviderRegistry chatProviderRegistry(
-      Map<String, ChatClient> chatClients,
-      SpringAiChatProperties properties,
-      List<? extends Advisor> advisors,
-      AiTraceRecorder traceRecorder) {
-    return new SpringAiChatProviderRegistry(chatClients, properties, advisors, traceRecorder);
-  }
-
-  SpringAiChatProviderRegistry chatProviderRegistry(
-      Map<String, ChatClient> chatClients,
-      SpringAiChatProperties properties,
-      List<? extends Advisor> advisors,
-      AiTraceRecorder traceRecorder,
-      ToolCallbackProvider toolCallbackProvider) {
-    return new SpringAiChatProviderRegistry(
-        chatClients, properties, advisors, traceRecorder, toolCallbackProvider);
+        toolCallbackProvider.orElse(null));
   }
 
   @Bean(name = "aiChatCompletion")
@@ -142,20 +82,10 @@ public class SpringAiChatConfiguration {
       SpringAiChatProviderRegistry registry,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {
-    return scheduler
-        .map(admission -> chatCompletionPort(registry, admission, executionProperties))
-        .orElseGet(() -> new ChatModelSelector(registry.providers()));
-  }
-
-  IdentifiedChatCompletionPort chatCompletionPort(
-      SpringAiChatProviderRegistry registry,
-      ModelExecutionScheduler scheduler,
-      AiExecutorProperties executionProperties) {
+    if (scheduler.isEmpty()) {
+      return new ChatModelSelector(registry.providers());
+    }
     return new ChatModelSelector(
-        registry.providers(), scheduler, executionProperties.modelAdmissionTimeout());
-  }
-
-  IdentifiedChatCompletionPort chatCompletionPort(SpringAiChatProviderRegistry registry) {
-    return new ChatModelSelector(registry.providers());
+        registry.providers(), scheduler.orElseThrow(), executionProperties.modelAdmissionTimeout());
   }
 }

@@ -2,6 +2,22 @@
 
 ## Repository framework-first refactoring plan — 2026-09-04
 
+### Current slice — Task 4 chat composition
+
+- [x] Confirm interface-first boundary: retain `ChatModelSelector`; do not add a `ChatClient`-named application router.
+- [x] Write failing tests for the single Spring AI `ChatClient.Builder`/customizer path.
+- [x] Simplify the production chat configuration overloads; retain registry convenience constructors until the RAG path is migrated.
+- [x] Verify focused tests, compilation, Spotless, and update the execution plan.
+
+#### Current-slice notes
+
+- `ChatClientBuilderConfigurer` now owns Spring AI customizer/observation-aware
+  client construction in the opt-in chat configuration.
+- `ChatModelSelector` remains the stable application policy boundary for
+  provider order, admission, identity, and unavailable-provider fallback.
+- `AiProviderConfiguration` and structured-extraction `ChatClient.create` are
+  intentionally retained as compatibility paths for later migration tasks.
+
 - [x] Complete repository-wide framework-first design and file inventory.
 - [x] Create executable gradual implementation plan for AI contracts,
       `ai-platform`, assistant, tenancy, providers, domain modules, build,
@@ -9,7 +25,7 @@
 - [x] Define subagent-driven execution protocol for independent slices.
 - [ ] Review and approve `docs/superpowers/plans/2026-09-04-repository-framework-first-refactoring.md`.
 - [x] Execute Phase A baseline/architecture guardrails — Tasks 1–2 complete; Phase B pending.
-- [ ] Execute Phase B AI contracts and Spring AI consolidation — Task 3 canonical contract slice complete; Tasks 4–6 pending.
+- [ ] Execute Phase B AI contracts and Spring AI consolidation — Tasks 3 and 4 opt-in chat composition slice complete; Tasks 5–6 and legacy compatibility cleanup pending.
 - [ ] Execute Phase C LangGraph4j boundary.
 - [ ] Execute Phase D AI persistence with JPA-first decisions (Task 9 classification complete; Tasks 10–11 pending).
 - [x] Execute Phase E tenancy/bootstrap safety — membership/subscription policy and bootstrap boundary slices complete; remaining repository waves pending.

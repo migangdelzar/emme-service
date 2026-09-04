@@ -259,7 +259,7 @@ git add libraries/ai-contracts modules/ai-platform modules/assistant
 git commit -m "refactor(ai): consolidate capability contracts"
 ```
 
-### Task 4: Collapse Spring AI chat composition to one path
+### Task 4: Collapse opt-in Spring AI chat composition to one path
 
 **Files:**
 
@@ -268,7 +268,6 @@ git commit -m "refactor(ai): consolidate capability contracts"
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/ChatModelSelector.java`
 - Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java`
 - Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiChatModel.java`
-- Create or modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/AiChatClientRouter.java`
 - Test: `modules/assistant/src/test/java/com/emme/assistant/ai/configuration/SpringAiChatConfigurationTest.java`
 - Test: `modules/assistant/src/test/java/com/emme/assistant/ai/configuration/SpringAiAdapterConsolidationArchitectureTest.java`
 - Test: `modules/assistant/src/test/java/com/emme/assistant/ai/application/provider/ChatModelSelectorTest.java`
@@ -277,44 +276,56 @@ git commit -m "refactor(ai): consolidate capability contracts"
 
 ```text
 ChatModel beans → ChatClient.Builder/Configurer → named ChatClient beans
-               → AiChatClientRouter(provider selection/admission/fallback)
+               → ChatModelSelector(provider-neutral selection/admission/fallback)
                → ordered advisors → application chat capability
 ```
 
 **Acceptance criteria:**
 
-- One production construction path exists for chat clients and router.
+- One production construction path exists for named chat clients and the
+  provider-neutral selector within the opt-in Spring AI chat configuration.
 - Multiple provider clients retain Spring AI observability/customizers and use explicit qualifiers/primary selection.
 - Fallback occurs only for the existing provider-unavailable error; security, validation, and persistence errors propagate.
 - `SpringAiModelProvider` is deleted once caller search is clean; it is not retained as a permanent composite wrapper.
 
-- [ ] **Step 1: Write failing configuration and routing tests**
+The legacy `AiProviderConfiguration` and the structured-extraction
+`ChatClient` path remain compatibility paths until their capability migrations
+are executed. They are tracked by the later contract, tools/extraction, and
+compatibility-cleanup tasks; this slice does not delete them prematurely.
+
+- [x] **Step 1: Write failing configuration and routing tests**
 
 Cover disabled optional provider, named provider order, selected client,
 provider-unavailable fallback, non-retryable error propagation, advisor order,
 and scheduler admission. Assert that `ChatClientBuilderConfigurer` is used for
 custom clients so observations/customizers are not bypassed.
 
-- [ ] **Step 2: Run the focused tests and capture failure**
+- [x] **Step 2: Run the focused tests and capture failure**
 
 ```bash
 ./gradlew :modules:assistant:test --tests '*SpringAiChatConfigurationTest' --tests '*ChatModelSelectorTest' --tests '*SpringAiAdapterConsolidationArchitectureTest' --no-parallel --no-configuration-cache
 ```
 
-- [ ] **Step 3: Implement the minimum composition change**
+- [x] **Step 3: Implement the minimum composition change**
 
-Remove package-private production overloads used only to construct test
-variants. Inject collaborators into tests. Use one immutable advisor list and
-one router; keep admission/fallback policy in the router and prompt/tool/RAG
-mechanics in Spring AI.
+- Remove package-private production overloads used only to construct test
+  variants. Inject collaborators into tests. Use one immutable advisor list and
+  the existing provider-neutral selector; keep admission/fallback policy in the
+  selector and prompt/tool/RAG mechanics in Spring AI.
 
-- [ ] **Step 4: Run focused tests, compile, and commit**
+- [x] **Step 4: Run focused tests, compile, and commit**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:ai-platform:test :modules:assistant:compileJava :modules:ai-platform:compileJava --no-parallel --no-configuration-cache
 git add modules/assistant modules/ai-platform
 git commit -m "refactor(ai): consolidate Spring AI chat composition"
 ```
+
+**Current slice result:** The opt-in chat configuration now has one named
+`ChatClient` construction path through `ChatClientBuilderConfigurer`, one
+provider-neutral `ChatModelSelector` construction path, and no test-only
+configuration overloads. The legacy provider composite and extraction client
+remain intentionally pending their later migration tasks.
 
 ### Task 5: Use Spring AI advanced features for tools and structured extraction
 

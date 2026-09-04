@@ -3,7 +3,7 @@
 | Field | Detail |
 |---|---|
 | Date | 2026-09-03 |
-| Scope | `libraries:ai-contracts`, `modules:ai-platform`, `modules:assistant`, and required cross-module persistence/event integration points |
+| Scope | Entire repository: all `modules/*`, `libraries/*`, applications, database, platform, tools, build logic, infrastructure, scripts, tests, and documentation |
 | Status | Design approved in principle; pending written-spec review |
 | Primary goal | Reduce custom code by delegating mechanics to existing Spring and provider capabilities while preserving Emme policy and enterprise guarantees |
 | Current platform baseline | Spring Boot `4.1.0`, Spring Modulith `2.1.0`, Spring AI `2.0.1`, Java 25-compatible Gradle build |
@@ -285,7 +285,72 @@ must be checked before changing shared tenant/JDBC contracts:
 | `modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/TenantRealmProvisioningListener.java` | Provisioning event and membership timing dependency |
 | `modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/messaging/consumer/*.java` | Modulith event ordering and retry compatibility |
 
+### 6.7 Repository-wide inventory beyond the first AI wave
+
+The AI contracts/platform/assistant files above remain the first implementation
+wave. The same audit applies to every repository project. The table is the
+complete project-level inventory; each project's Java/Kotlin source, tests,
+configuration, migrations, and build file are included unless explicitly
+excluded. Files are changed only when the audit identifies duplicated policy,
+framework mechanics, unclear ownership, or avoidable maintenance cost.
+
+| Project/path | Audit and likely simplification targets | Default technology direction |
+|---|---|---|
+| `modules/tenancy` | Tenant registry, schema provisioning, Hibernate routing, bootstrap JDBC, membership services, listeners | JPA for registry/membership; `JdbcClient` plus Liquibase for dynamic schemas and bootstrap-only operations |
+| `modules/identity` | Keycloak clients, current-user lookup, realm provisioning, authorization context | Spring Security and Keycloak adapter capabilities; keep provider-specific code at the edge |
+| `modules/clients` | Customer/provider aggregates, search, external client APIs, validation | Spring Data JPA repositories and projections; provider SDKs only in adapters |
+| `modules/staffing` | Staff/workforce persistence, availability, authorization | JPA aggregate repositories; database queries only for measured projections or atomic scheduling rules |
+| `modules/services` | Service catalog CRUD, pricing, lifecycle, validation | JPA repositories, derived queries, specifications, and Bean Validation |
+| `modules/appointments` | Appointment commands, mutation authorization, scheduling conflicts, persistence | JPA for aggregate lifecycle; `JdbcClient` only for atomic conflict/claim SQL if JPA cannot express it safely |
+| `modules/salon` | Salon configuration and tenant-scoped catalog data | JPA and Modulith events; remove hand-written CRUD wrappers |
+| `modules/subscriptions` | Subscription state, entitlement policy, tenant provisioning listener | JPA for durable subscription state; `JdbcClient` only for dynamic-schema provisioning boundary |
+| `modules/documents` | Document metadata, ingestion state, content storage, search integration | JPA for metadata; Spring AI `VectorStore` for embeddings/search; object storage adapter for blobs |
+| `modules/catalog` | Catalog items, design images, service catalog composition | JPA for entity CRUD; Spring AI image/vector capabilities where applicable |
+| `modules/booking` | Booking workflow and cross-module orchestration | JPA for durable booking state; Modulith events for internal coordination; LangGraph only for genuinely resumable workflows |
+| `modules/calendar` | Calendar synchronization and availability projections | JPA for durable synchronization state; provider SDKs in adapters; Redis only for temporary coordination |
+| `modules/notification` | Notification commands, templates, delivery state, provider integrations | JPA for durable delivery state; Modulith internal events and Kafka only for external boundaries |
+| `modules/payment` | Payment intents, transaction state, provider webhooks, idempotency | JPA for state and audit; provider SDKs/webhook adapters; `JdbcClient` only for atomic idempotency claims if simpler |
+| `modules/audit` | Audit records, append-only persistence, event listeners | JPA if entity mapping remains clear; direct SQL only for append-only/high-volume measured paths |
+| `modules/shared` | Shared persistence, web, security, tenant, time, and utility abstractions | Reduce shared surface; keep only stable cross-module policies and infrastructure ports |
+| `modules/ai-platform` | Provider composition, model admission, learning persistence, observations | Spring AI delegation; JPA where learning entities are clear; retain narrow SQL adapters for JSONB/RLS/claims |
+| `modules/assistant` | Conversation, RAG, tools, workflows, semantic cache, AI jobs | Spring AI `ChatClient`, advisors, tools, `VectorStore`; JPA durable state; Redis temporary state; Modulith internal events |
+| `libraries/ai-contracts` | Duplicate ports, provider composites, framework leakage, capability naming | One framework-neutral contract per capability; no Spring/database/provider imports |
+| `libraries/kernel` | Cross-cutting domain primitives, errors, identifiers, policies | Keep small and dependency-light; move feature-specific helpers into owning modules |
+| `libraries/functional` | Result/functional helpers and repeated transformations | Keep only broadly reused, tested primitives; delete one-use wrappers |
+| `libraries/observability-support` | Custom tracing/metrics wrappers and duplicate observation fields | Delegate transport observations to Micrometer/Spring AI/Spring Boot; retain redaction and business dimensions |
+| `libraries/testing` | Repeated fixtures, architecture rules, test containers, fake infrastructure | Centralize reusable test builders and gates without hiding behavior in giant fixtures |
+| `libraries/test-containers` | PostgreSQL, Redis, Kafka, provider test infrastructure | Keep deterministic container modules; standardize lifecycle and reuse configuration |
+| `database` | Liquibase migrations, PostgreSQL extensions, RLS, pgvector, AGE, indexes | Keep database-specific capabilities explicit; add migration contract tests and remove duplicate schema logic |
+| `applications/emme-platform` | Composition root, module boundaries, runtime configuration, startup gates | One explicit composition root; Spring Modulith verification; no business logic in application wiring |
+| `platform` | Platform-wide dependency/configuration conventions and deployment-facing beans | Centralize supported versions and defaults; avoid hidden module coupling |
+| `tools/e2e-provisioner` | Tenant/bootstrap provisioning and test environment setup | Reuse application provisioning contracts; retain direct database access only for environment bootstrap |
+| `tools/ai-evaluation` | Evaluation datasets, provider calls, reports, duplicated AI client code | Reuse `ai-contracts` and Spring AI-compatible adapters; keep evaluation-only orchestration isolated |
+| `build-logic`, `build-logic-settings`, `gradle` | Repeated Gradle conventions, dependency versions, quality tasks | One convention per concern; version catalog as source of truth; avoid project-specific task duplication |
+| `config/checkstyle`, `.github/workflows`, `.githooks` | Quality gates, CI duplication, inconsistent task ordering | Standardize fast slice gates, phase gates, and final enterprise gate |
+| `deployment`, `infra`, `database/docker`, `performance`, `scripts` | Runtime manifests, environment defaults, migration scripts, load tests, operational drift | Keep deployment declarative and versioned; align health, metrics, database, Redis, Kafka, and provider settings |
+| `docs`, `tasks` | Architecture decisions, migration records, runbooks, inventory, lessons | Update ADRs and migration ledgers per wave; record rejected alternatives and rollback evidence |
+
+#### Repository-wide classification rules
+
+Every source file is classified during its wave as one of:
+
+- `Keep`: clear ownership and no duplicated framework capability.
+- `Refactor`: behavior remains, but naming, boundary, persistence, or wiring is simplified.
+- `Delegate`: custom mechanics are replaced by an existing Spring/provider capability.
+- `Move`: code is relocated to the module or adapter that owns the policy.
+- `Merge`: duplicate contracts/services/configuration become one canonical component.
+- `Delete after verification`: unreachable or superseded code removed only after caller search, tests, compilation, and architecture evidence.
+- `Document`: intentional database/provider-specific behavior receives a rationale and operational constraints.
+
+No project is exempt because it is not AI-related. The implementation order is
+risk- and dependency-driven, not a change in the architectural standard.
+
 ## 7. Migration phases
+
+The refactor is gradual. Each wave produces a working repository state and can
+be independently reviewed, tested, deployed, and rolled back. No wave performs
+a repository-wide rename or persistence migration without a compatibility
+period and evidence from the owning module.
 
 ### Phase 0 — Baseline
 
@@ -326,7 +391,40 @@ must be checked before changing shared tenant/JDBC contracts:
 - Restrict LangGraph4j to complex durable workflows and AGE to optional
   recommendation queries.
 
-### Phase 6 — Safe deletion and final verification
+### Phase 6 — Core domain modules
+
+- Refactor `tenancy`, `identity`, `clients`, `staffing`, `services`, `salon`,
+  `appointments`, and `subscriptions` in dependency order.
+- Move direct database access out of application services into repositories or
+  narrowly named persistence ports.
+- Convert entity-backed CRUD to Spring Data JPA where mappings, transactions,
+  locking, and projections remain clear.
+- Preserve explicit JDBC boundaries for tenant schema creation, Hibernate
+  bootstrap, dynamic identifiers, and atomic PostgreSQL operations.
+- Replace cross-module service calls with stable Modulith events where the
+  interaction is asynchronous and durable publication is required.
+
+### Phase 7 — Supporting domain modules
+
+- Refactor `documents`, `catalog`, `booking`, `calendar`, `notification`,
+  `payment`, and `audit` using the same ownership and persistence rules.
+- Standardize provider SDK adapters, webhook idempotency, delivery retries,
+  document/vector boundaries, and durable audit behavior.
+- Remove generic managers, helper facades, duplicate validators, and one-use
+  abstractions only after behavior and caller coverage are proven.
+
+### Phase 8 — Libraries and platform foundations
+
+- Reduce `kernel` to stable primitives, keep `functional` intentionally small,
+  and consolidate observability/testing utilities.
+- Standardize Testcontainers, architecture tests, dependency injection,
+  version-catalog ownership, Gradle conventions, and application composition.
+- Align `platform`, `database`, deployment manifests, infrastructure, scripts,
+  performance tests, and CI gates with the new module boundaries.
+- Ensure shared libraries do not become a back door for feature-specific
+  dependencies or framework leakage.
+
+### Phase 9 — Safe deletion and final verification
 
 - Delete duplicate contracts, raw providers, redundant wrappers, and unused
   dependencies only after all replacement evidence passes.
@@ -378,6 +476,11 @@ must be checked before changing shared tenant/JDBC contracts:
 
 ## 10. Definition of done
 
+- Every repository project has an explicit inventory classification and an
+  owning migration wave; no module, library, tool, or infrastructure area is
+  silently outside the refactor.
+- Each wave is independently buildable, testable, reviewable, deployable, and
+  reversible before the next wave begins.
 - One canonical application-facing contract exists per AI capability.
 - Names clearly express capability, policy, or technology boundary.
 - Spring AI owns supported model, tool, advisor, RAG, and vector mechanics.

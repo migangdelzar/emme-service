@@ -202,8 +202,9 @@ deployed E2E gates remain environment-limited below.
 
 - [x] Replace production placeholder capabilities with an explicit activation contract.
 - [x] Fail startup when LangGraph is enabled without real capability wiring.
-- [x] Keep test-only defaults available without making them a production fallback.
-- [x] Add focused configuration coverage and commit the slice (`1d155e27`).
+- [x] Move minimal workflow fixtures into test sources; no production default factory remains.
+- [x] Remove the package-private test graph factory from the production configuration.
+- [x] Add focused configuration coverage and commit the slices (`1d155e27`, `fea4b4b6`).
 
 ## Task 13: Bounded model/tool-agent policy
 

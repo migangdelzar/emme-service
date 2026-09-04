@@ -407,7 +407,9 @@ reasons to weaken the tests or alter the production boundaries.
 
 The durable LangGraph workflow now owns its response, preventing a second chat-model request.
 Enabling LangGraph without real conversation capability wiring fails fast rather than silently
-installing placeholder behavior. The bounded Spring AI model/tool loop remains the only agent
+installing placeholder behavior. Minimal workflow capabilities and the package-private graph
+factory used by isolated tests are no longer present in production types; tests construct their
+own explicit fixture capabilities. The bounded Spring AI model/tool loop remains the only agent
 loop; `langgraph4j-spring-ai` is not added because the current use case does not require its
 bridge abstractions. Generic workflow activation remains disabled until production capability
 adapters are supplied.

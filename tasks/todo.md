@@ -2928,7 +2928,9 @@ appointment mutation tools are registered.
 - [x] Make workflow response ownership explicit so an enabled LangGraph workflow
       cannot execute a second chat-model request after producing a response.
 - [x] Fail fast when the LangGraph feature is enabled without real conversation
-      capability wiring; retain defaults only for isolated graph tests.
+      capability wiring; keep placeholder capabilities out of production types.
+- [x] Move minimal workflow fixtures into test sources and remove the package-private
+      production graph factory (`fea4b4b6`).
 - [x] Define the bounded model/tool-agent policy before considering the optional
       `langgraph4j-spring-ai` bridge.
 - [x] Run focused feedback after each slice; defer the full enterprise gate,
@@ -2944,7 +2946,10 @@ appointment mutation tools are registered.
   the model, retrieval, and tool-mechanics owner.
 - `b353e906` makes the durable workflow response authoritative and prevents a
   second chat-model execution. `1d155e27` makes incomplete enabled workflow
-  wiring fail fast.
+  wiring fail fast. `fea4b4b6` removes production placeholder capabilities and
+  keeps explicit minimal capabilities in test sources only.
+- Concurrent identity, tenancy, and subscriptions migration files remain
+  unstaged and were not included in the AI workflow commit.
 - The final enterprise gate passed on 2026-09-04. Docker-backed integration,
   local PostgreSQL startup, and deployed E2E remain blocked only by unavailable
   environment services/configuration.

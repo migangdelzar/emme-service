@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-09-04 — Keep workflow test fixtures out of production APIs
+
+- Failure mode: A generic workflow capability record exposed a default factory
+  intended only to make isolated graph tests easy, leaving a placeholder path
+  visible from production code.
+- Detection signal: A production-boundary test found `defaults()` and a
+  package-private graph factory even though enabled runtime wiring already failed
+  fast without real capabilities.
+- Prevention rule: Keep test-only capability builders under test sources and make
+  production configuration accept explicit capability wiring only.
+
 ## 2026-09-04 — Keep one composition root per AI tool
 
 - Failure mode: Moving an assistant tool configuration into the canonical

@@ -1,5 +1,17 @@
 # Engineering lessons
 
+## 2026-09-04 — Keep provider substitution at the port boundary
+
+- Failure mode: A naming proposal treated every PostgreSQL/JDBC adapter as a
+  candidate for a `Postgres...` rename, which could imply provider coupling even
+  though the application already depends on stable capability ports.
+- Detection signal: The proposed implementation names were being evaluated as
+  if they were public contracts instead of infrastructure details.
+- Prevention rule: Name domain/application ports by capability, keep accurate
+  adapter mechanism names when they are useful, and use provider names only for
+  intentionally provider-locked implementations. Never add a rename or wrapper
+  that weakens provider substitution merely for stylistic consistency.
+
 ## 2026-09-04 — Reuse one qualified client per data source
 
 - Failure mode: A specialized AGE configuration introduced a second

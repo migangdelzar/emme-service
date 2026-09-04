@@ -12,9 +12,11 @@
 
 The repository will use responsibility-first names and one qualified JDBC client
 per data source. Application ports and domain models remain provider-neutral.
-PostgreSQL-specific adapters may expose `JdbcClient` internally, but their
-class names should describe the actual boundary (`Postgres...`) rather than the
-mechanism (`Jdbc...`) once each adapter is migrated and verified.
+Infrastructure adapters may expose `JdbcClient` internally, but application
+ports and domain code must not expose it. Adapter names are not public
+contracts: keep a useful existing mechanism name when it is accurate, and use
+a provider name only when the implementation is intentionally locked to that
+provider (for example, Apache AGE on PostgreSQL).
 
 Vector data is a derived projection, not business authority. The authoritative
 transaction publishes a semantic projection event. An asynchronous,
@@ -33,7 +35,7 @@ multi-writer boundary. They are not the primary v1 projection mechanism.
 | Current name | Target name | Reason |
 |---|---|---|
 | `aiTenantJdbcClient` | `tenantJdbcClient` | The bean is identified by the data source it wraps; it is already shared by multiple AI adapters. |
-| `SpringAiTenantJdbcConfiguration` | `TenantJdbcClientConfiguration` | Removes framework branding from a data-source composition root. |
+| `SpringAiTenantJdbcConfiguration` | `TenantJdbcClientConfiguration` | Optional composition-root cleanup; does not affect any application port. |
 | `coreJdbcClient` | `coreJdbcClient` | Already concise and unambiguous because it is qualified to `coreDataSource`. |
 | `SpringAiAgeConfiguration` | `AgeGraphConfiguration` | Names the capability rather than the framework that happens to wire it. |
 
@@ -42,31 +44,27 @@ Bean names are technical composition details. They must not appear in
 Every client injection uses an explicit qualifier when more than one data
 source exists.
 
-### 2.2 PostgreSQL-specific adapters
+### 2.2 Ports first, adapters second
 
-Rename only as each adapter is migrated and its callers/tests are updated in
-one atomic slice:
+The stable names are the capability ports, not their implementations:
 
-| Current name | Target name |
-|---|---|
-| `JdbcAgeGraphClient` | `PostgresAgeGraphClient` |
-| `JdbcAiJobStatusStore` | `PostgresAiJobStatusStore` |
-| `JdbcAiToolIdempotencyStore` | `PostgresAiToolIdempotencyStore` |
-| `JdbcLangGraphCheckpointSaver` | `PostgresLangGraphCheckpointSaver` |
-| `JdbcSemanticCacheAdapter` | `PostgresSemanticCacheAdapter` |
-| `JdbcSemanticReferenceSearchAdapter` | `PostgresSemanticReferenceSearchAdapter` |
-| `JdbcQuoteWorkflowRepository` | `PostgresQuoteWorkflowRepository` if it remains a JDBC survivor |
-| `JdbcQuoteReviewRepository` | `PostgresQuoteReviewRepository` if it remains a JDBC survivor |
-| `JdbcQuoteArtifactRepository` | `PostgresQuoteArtifactRepository` if it remains a JDBC survivor |
-| `HybridSearch` | `PostgresHybridSearch` |
+| Layer | Example name | Naming rule |
+|---|---|---|
+| Domain/application port | `SemanticReferenceStore`, `QuoteWorkflowRepository`, `AgeGraphClient` | Describe the business capability; no Spring, JDBC, PostgreSQL, Redis, Kafka, or vendor SDK types. |
+| SQL implementation | `JdbcAiJobStatusStore`, `JdbcSemanticCacheAdapter` | Keep when the mechanism is an intentional implementation detail and provider substitution remains behind the port. |
+| Provider-locked implementation | `PostgresAgeGraphClient`, `PgVectorSemanticReferenceStore` | Use only when the SQL/extension contract cannot be implemented by another provider. |
+| Framework implementation | `SpringDataQuoteWorkflowRepository` | Use only for a concrete JPA/Spring Data adapter, never for the application port. |
 
-Stable CRUD that moves to JPA receives names such as
-`SpringDataQuoteWorkflowRepository` only inside the adapter package; the
-application port remains `QuoteWorkflowRepository`. `JdbcDesignImageMetadataRepository`
-is a JPA candidate and will be evaluated before a name-only migration.
+Therefore there is no mandatory bulk rename from `Jdbc...` to `Postgres...`.
+`JdbcAgeGraphClient` may remain because it accurately describes a JDBC adapter
+behind `AgeGraphClient`; `PostgresAgeGraphClient` is justified only if the
+class is deliberately treated as an Apache AGE/PostgreSQL lock-in. The same
+rule applies to job, idempotency, checkpoint, semantic, quote, and search
+adapters.
 
-Do not add compatibility classes solely for renaming. If a class is not public
-outside its module, rename it directly after caller and configuration searches.
+`JdbcDesignImageMetadataRepository` remains a JPA candidate and will be
+evaluated by behavior and maintenance cost, not by naming preference. Do not
+add compatibility classes solely for renaming.
 
 ## 3. Vector projection model
 
@@ -170,9 +168,11 @@ sanitized semantic projection consumer
 PostgreSQL/pgvector + Redis invalidation
 ```
 
-The CDC consumer must publish or transform into the same internal
-`SemanticProjectionRequested` contract used by application events. It must not
-create a second vector-ingestion implementation.
+The CDC consumer must publish or transform into the same provider-neutral
+internal `SemanticProjectionRequested` contract used by application events. It
+must not create a second vector-ingestion implementation. The application
+must depend on a `SemanticProjectionTrigger` port; concrete implementations may
+be a Modulith event listener or a Debezium/Kafka consumer.
 
 ## 6. Alternatives and trade-offs
 
@@ -201,9 +201,12 @@ create a second vector-ingestion implementation.
 
 ### Wave 1 — naming and composition
 
-- Rename `aiTenantJdbcClient` to `tenantJdbcClient` and the configuration class.
+- Simplify `aiTenantJdbcClient` to `tenantJdbcClient` as a technical bean name
+  and optionally rename its configuration class; do not change application
+  ports.
 - Add architecture tests for one qualified client per data source.
-- Rename only the AGE and already-migrated atomic survivors.
+- Keep existing adapter names unless a name is misleading; introduce
+  provider-specific names only at intentional provider-locked boundaries.
 - Update the migration ledger and all affected tests.
 
 ### Wave 2 — projection contract

@@ -2931,7 +2931,7 @@ appointment mutation tools are registered.
       capability wiring; retain defaults only for isolated graph tests.
 - [x] Define the bounded model/tool-agent policy before considering the optional
       `langgraph4j-spring-ai` bridge.
-- [ ] Run focused feedback after each slice; defer the full enterprise gate,
+- [x] Run focused feedback after each slice; defer the full enterprise gate,
       container startup, and deployed E2E checks to the final phase.
 
 ### Working Notes

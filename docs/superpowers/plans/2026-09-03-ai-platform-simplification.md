@@ -218,7 +218,7 @@ and deployed E2E gates remain environment-limited below.
 
 - [ ] Run provider-offline startup and Docker/PostgreSQL-backed workflow checks when services are available.
 - [ ] Run authenticated API/webhook/Playwright E2E checks when a deployed base URL is configured.
-- [ ] Reconcile implementation-plan, blueprint, ADR, and FCR statuses with the actual activation state.
+- [x] Reconcile implementation-plan, blueprint, ADR, and FCR statuses with the actual activation state.
 - [ ] Run the final enterprise gate and push the completed branch.
 
 ### Final validation results — 2026-09-03

@@ -384,6 +384,17 @@ client retains Spring AI builder customizers/observability.
 
 ### Task 6: Consolidate Spring AI RAG, advisors, cache, and vector boundaries
 
+#### Current slice 6A — RAG ownership and semantic-cache construction
+
+Completed in this slice:
+
+- The opt-in Spring AI RAG path no longer performs application retrieval before invoking the completion pipeline.
+- `RetrievalAugmentationAdvisor` is the single retrieval augmentation owner; its default contextual augmenter remains fail-closed for empty context.
+- `RagAnswerProviderChain` was replaced by the clearer `RagAnswerPolicy`, which validates backend context and question input and delegates completion with an empty conversation context.
+- `SemanticChatCache` now exposes one production constructor; test defaults are confined to test helpers and the Spring configuration has no test-only overloads.
+
+Remaining Task 6 work is tracked by the steps below: Redis outage/eviction behavior, vector/cache ranking and metadata contracts, advisor-order coverage, and the measured `HybridSearch` decision.
+
 **Files:**
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiRagConfiguration.java`

@@ -1,10 +1,8 @@
 package com.emme.assistant.ai.application.semantic;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
-import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
-import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
@@ -13,7 +11,6 @@ import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
 import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
-import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -55,152 +52,6 @@ public final class SemanticChatCache implements SemanticResponseCache {
   private final String locale;
   private final String quoteTemplateVersion;
   private final AiTraceRecorder traceRecorder;
-
-  public SemanticChatCache(
-      EmbeddingModelPort embeddings,
-      SemanticCacheResolver resolver,
-      SemanticCachePort cache,
-      SemanticCachePayloadCodec codec,
-      Clock clock,
-      String promptVersion,
-      Duration ttl) {
-    this(embeddings, resolver, cache, codec, clock, promptVersion, ttl, Optional.empty());
-  }
-
-  public SemanticChatCache(
-      EmbeddingModelPort embeddings,
-      SemanticCacheResolver resolver,
-      SemanticCachePort cache,
-      SemanticCachePayloadCodec codec,
-      Clock clock,
-      String promptVersion,
-      Duration ttl,
-      Optional<SemanticCacheHotStore> hotStore) {
-    this(
-        embeddings,
-        resolver,
-        cache,
-        codec,
-        clock,
-        promptVersion,
-        ttl,
-        hotStore,
-        NoopSemanticMetrics.INSTANCE,
-        new EmbeddingModelConfiguration(EmbeddingModelDefaults.MODEL_NAME, "legacy", 1),
-        SemanticCacheIdentity.legacy());
-  }
-
-  public SemanticChatCache(
-      EmbeddingModelPort embeddings,
-      SemanticCacheResolver resolver,
-      SemanticCachePort cache,
-      SemanticCachePayloadCodec codec,
-      Clock clock,
-      String promptVersion,
-      Duration ttl,
-      Optional<SemanticCacheHotStore> hotStore,
-      SemanticMetrics metrics) {
-    this(
-        embeddings,
-        resolver,
-        cache,
-        codec,
-        clock,
-        promptVersion,
-        ttl,
-        hotStore,
-        metrics,
-        new EmbeddingModelConfiguration(EmbeddingModelDefaults.MODEL_NAME, "legacy", 1),
-        SemanticCacheIdentity.legacy());
-  }
-
-  public SemanticChatCache(
-      EmbeddingModelPort embeddings,
-      SemanticCacheResolver resolver,
-      SemanticCachePort cache,
-      SemanticCachePayloadCodec codec,
-      Clock clock,
-      String promptVersion,
-      Duration ttl,
-      Optional<SemanticCacheHotStore> hotStore,
-      SemanticMetrics metrics,
-      EmbeddingModelConfiguration embeddingModelConfiguration) {
-    this(
-        embeddings,
-        resolver,
-        cache,
-        codec,
-        clock,
-        promptVersion,
-        ttl,
-        hotStore,
-        metrics,
-        embeddingModelConfiguration,
-        SemanticCacheIdentity.legacy(),
-        "es-MX",
-        "quote-template-v1",
-        NoopAiTraceRecorder.INSTANCE);
-  }
-
-  public SemanticChatCache(
-      EmbeddingModelPort embeddings,
-      SemanticCacheResolver resolver,
-      SemanticCachePort cache,
-      SemanticCachePayloadCodec codec,
-      Clock clock,
-      String promptVersion,
-      Duration ttl,
-      Optional<SemanticCacheHotStore> hotStore,
-      SemanticMetrics metrics,
-      EmbeddingModelConfiguration embeddingModelConfiguration,
-      SemanticCacheIdentity identity) {
-    this(
-        embeddings,
-        resolver,
-        cache,
-        codec,
-        clock,
-        promptVersion,
-        ttl,
-        hotStore,
-        metrics,
-        embeddingModelConfiguration,
-        identity,
-        "es-MX",
-        "quote-template-v1",
-        NoopAiTraceRecorder.INSTANCE);
-  }
-
-  public SemanticChatCache(
-      EmbeddingModelPort embeddings,
-      SemanticCacheResolver resolver,
-      SemanticCachePort cache,
-      SemanticCachePayloadCodec codec,
-      Clock clock,
-      String promptVersion,
-      Duration ttl,
-      Optional<SemanticCacheHotStore> hotStore,
-      SemanticMetrics metrics,
-      EmbeddingModelConfiguration embeddingModelConfiguration,
-      SemanticCacheIdentity identity,
-      String locale,
-      String quoteTemplateVersion) {
-    this(
-        embeddings,
-        resolver,
-        cache,
-        codec,
-        clock,
-        promptVersion,
-        ttl,
-        hotStore,
-        metrics,
-        embeddingModelConfiguration,
-        identity,
-        locale,
-        quoteTemplateVersion,
-        NoopAiTraceRecorder.INSTANCE);
-  }
 
   public SemanticChatCache(
       EmbeddingModelPort embeddings,

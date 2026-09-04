@@ -5,7 +5,6 @@ import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.in.messaging.SemanticCacheInvalidationListener;
 import com.emme.assistant.ai.adapter.out.persistence.JacksonSemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
-import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
@@ -49,11 +48,6 @@ public class SpringAiSemanticCacheConfiguration {
       SemanticMetrics metrics,
       AiTraceRecorder traceRecorder) {
     return new SemanticCacheResolver(cache, semanticCachePolicy, metrics, traceRecorder);
-  }
-
-  SemanticCacheResolver semanticCacheResolver(
-      SemanticCachePort cache, SemanticCachePolicy semanticCachePolicy) {
-    return new SemanticCacheResolver(cache, semanticCachePolicy, NoopSemanticMetrics.INSTANCE);
   }
 
   @Bean
@@ -123,24 +117,5 @@ public class SpringAiSemanticCacheConfiguration {
         properties.locale(),
         properties.quoteTemplateVersion(),
         traceRecorder);
-  }
-
-  SemanticResponseCache semanticChatCache(
-      EmbeddingModelPort embeddings,
-      SemanticCacheResolver resolver,
-      SemanticCachePort cache,
-      SemanticCachePayloadCodec codec,
-      Clock clock,
-      SemanticCacheProperties properties,
-      Optional<SemanticCacheHotStore> hotStore) {
-    return new SemanticChatCache(
-        embeddings,
-        resolver,
-        cache,
-        codec,
-        clock,
-        properties.promptVersion(),
-        properties.ttl(),
-        hotStore);
   }
 }

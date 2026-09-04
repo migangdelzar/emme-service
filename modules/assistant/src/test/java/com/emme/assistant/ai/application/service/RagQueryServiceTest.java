@@ -15,7 +15,7 @@ import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
-import com.emme.assistant.ai.application.provider.RagAnswerProviderChain;
+import com.emme.assistant.ai.application.provider.RagAnswerPolicy;
 import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -262,25 +262,19 @@ class RagQueryServiceTest {
   }
 
   @Test
-  void executesTheConfiguredRagCompositionWithOneGroundedRetrieval() {
+  void executesTheConfiguredRagCompositionThroughTheSpringAiAdvisor() {
     UUID tenantId = UUID.randomUUID();
     ChatCompletionPort chat = mock(ChatCompletionPort.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    RagAnswerPort ragAnswer = new RagAnswerProviderChain(chat, retrieval);
+    RagAnswerPort ragAnswer = new RagAnswerPolicy(chat);
     RagQueryService service =
         new RagQueryService(realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
-    when(retrieval.search(any(), any()))
-        .thenReturn(
-            List.of(
-                new RetrievedDocument(
-                    "source-1", "The premium is monthly.", java.util.Map.of(), 0.91)));
-    when(chat.complete("The premium is monthly.", "What is the premium?"))
-        .thenReturn("It is monthly.");
+    when(chat.complete("", "What is the premium?")).thenReturn("It is monthly.");
 
     assertThat(inContext(tenantId, () -> service.query("What is the premium?")))
         .isEqualTo("It is monthly.");
-    verify(retrieval).search(any(), any());
-    verify(chat).complete("The premium is monthly.", "What is the premium?");
+    verifyNoInteractions(retrieval);
+    verify(chat).complete("", "What is the premium?");
   }
 
   @Test

@@ -32,7 +32,7 @@
 - [x] Define subagent-driven execution protocol for independent slices.
 - [ ] Review and approve `docs/superpowers/plans/2026-09-04-repository-framework-first-refactoring.md`.
 - [x] Execute Phase A baseline/architecture guardrails — Tasks 1–2 complete; Phase B pending.
-- [ ] Execute Phase B AI contracts and Spring AI consolidation — Tasks 3–5 framework-first slices complete; Task 6 and legacy compatibility cleanup pending.
+- [ ] Execute Phase B AI contracts and Spring AI consolidation — Tasks 3–5 and Task 6A framework-first slices complete; Task 6 Redis/vector hardening and legacy compatibility cleanup pending.
 - [ ] Execute Phase C LangGraph4j boundary.
 - [ ] Execute Phase D AI persistence with JPA-first decisions (Task 9 classification complete; Tasks 10–11 pending).
 - [x] Execute Phase E tenancy/bootstrap safety — membership/subscription policy and bootstrap boundary slices complete; remaining repository waves pending.
@@ -48,6 +48,13 @@
   changes remain sequential; independent assistant/provider/test-fixture slices
   may use fresh-context subagents after the contract checkpoint.
 - No implementation code is changed by creating this plan.
+
+### Current slice — Task 6A RAG ownership and semantic-cache construction
+
+- [x] Confirm Spring AI owns retrieval augmentation and fail-closed empty-context behavior.
+- [x] Remove duplicate manual retrieval from the opt-in Spring AI RAG answer path.
+- [x] Collapse `SemanticChatCache` and semantic-cache configuration to one production construction path.
+- [x] Verify focused RAG/semantic tests and record the remaining Redis/vector work.
 
 ## Task 6 semantic capability hardening — 2026-08-31
 

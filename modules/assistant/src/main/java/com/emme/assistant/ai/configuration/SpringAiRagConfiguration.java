@@ -9,7 +9,7 @@ import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
-import com.emme.assistant.ai.application.provider.RagAnswerProviderChain;
+import com.emme.assistant.ai.application.provider.RagAnswerPolicy;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
@@ -74,7 +74,6 @@ public class SpringAiRagConfiguration {
       TenantSecurityAdvisor tenantSecurityAdvisor,
       PromptVersionAdvisor promptVersionAdvisor,
       RetrievalAugmentationAdvisor retrievalAugmentationAdvisor,
-      KnowledgeRetriever retrieval,
       AiTraceRecorder traceRecorder,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {
@@ -92,6 +91,6 @@ public class SpringAiRagConfiguration {
                             admission,
                             executionProperties.modelAdmissionTimeout()))
             .orElseGet(() -> new ChatModelSelector(registry.providers()));
-    return new RagAnswerProviderChain(completions, retrieval);
+    return new RagAnswerPolicy(completions);
   }
 }

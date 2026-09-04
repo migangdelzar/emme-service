@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
+import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
@@ -21,6 +22,7 @@ import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
 import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.context.Channel;
@@ -50,7 +52,7 @@ class SemanticChatCacheTest {
     when(cache.recordHit(cacheId)).thenReturn(true);
     when(codec.decodeText("payload")).thenReturn(Optional.of("Keep nails dry for 24 hours."));
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             new SemanticCacheResolver(cache, new SemanticCachePolicy(0.95)),
             cache,
@@ -70,7 +72,7 @@ class SemanticChatCacheTest {
     EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
     SemanticCachePort cache = mock(SemanticCachePort.class);
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             cache,
@@ -96,7 +98,7 @@ class SemanticChatCacheTest {
     when(cache.put(any())).thenReturn(cacheId);
     Clock clock = Clock.fixed(Instant.parse("2026-08-28T12:00:00Z"), ZoneOffset.UTC);
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             cache,
@@ -123,7 +125,7 @@ class SemanticChatCacheTest {
     when(codec.encodeText(any())).thenReturn("payload");
     when(cache.put(any())).thenReturn(UUID.randomUUID());
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             cache,
@@ -138,7 +140,7 @@ class SemanticChatCacheTest {
 
     semanticCache.store("", "What are your hours?", "We are open.");
     SemanticChatCache otherModelCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             cache,
@@ -170,7 +172,7 @@ class SemanticChatCacheTest {
         new SemanticCacheIdentity(
             "ollama", "gemma4:e4b-mlx", "knowledge-v7", "policy-v3", "source-v9");
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             cache,
@@ -201,7 +203,7 @@ class SemanticChatCacheTest {
     UUID cacheId = UUID.randomUUID();
     when(cache.put(any())).thenReturn(cacheId);
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             cache,
@@ -263,7 +265,7 @@ class SemanticChatCacheTest {
     when(codec.encodeText(any())).thenReturn("payload");
     when(cache.put(any())).thenReturn(UUID.randomUUID());
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             cache,
@@ -294,7 +296,7 @@ class SemanticChatCacheTest {
     when(durableCache.recordHit(cacheId)).thenReturn(true);
     when(codec.decodeText("payload")).thenReturn(Optional.of("We are open from 9 to 6."));
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             new SemanticCacheResolver(durableCache, new SemanticCachePolicy(0.95)),
             durableCache,
@@ -322,7 +324,7 @@ class SemanticChatCacheTest {
     when(codec.encodeText("We are open.")).thenReturn("{\"text\":\"We are open.\"}");
     when(durableCache.put(any())).thenReturn(cacheId);
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             durableCache,
@@ -343,7 +345,7 @@ class SemanticChatCacheTest {
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             durableCache,
@@ -371,7 +373,7 @@ class SemanticChatCacheTest {
     when(codec.decodeText("payload"))
         .thenReturn(Optional.of("Contact client@example.com for your private details."));
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             new SemanticCacheResolver(durableCache, new SemanticCachePolicy(0.95)),
             durableCache,
@@ -391,7 +393,7 @@ class SemanticChatCacheTest {
     when(embeddings.embed("What are your hours?"))
         .thenThrow(new EmbeddingProviderUnavailableException("embedding unavailable"));
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             durableCache,
@@ -412,7 +414,7 @@ class SemanticChatCacheTest {
     when(embeddings.embed("What are your hours?"))
         .thenThrow(new EmbeddingProviderUnavailableException("embedding unavailable"));
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             mock(SemanticCacheResolver.class),
             durableCache,
@@ -442,7 +444,7 @@ class SemanticChatCacheTest {
     when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
     when(durableCache.find(any(), anyInt())).thenThrow(new IllegalStateException("database down"));
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             embeddings,
             new SemanticCacheResolver(durableCache, new SemanticCachePolicy(0.95, 0.05)),
             durableCache,
@@ -458,7 +460,7 @@ class SemanticChatCacheTest {
   void invalidatesOnlyTheCurrentPrincipalDurableCacheScope() {
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     SemanticChatCache semanticCache =
-        new SemanticChatCache(
+        cache(
             mock(EmbeddingModelPort.class),
             mock(SemanticCacheResolver.class),
             durableCache,
@@ -470,6 +472,179 @@ class SemanticChatCacheTest {
     AiExecutionContextScope.run(context(), semanticCache::invalidate);
 
     org.mockito.Mockito.verify(durableCache).invalidate("CHAT_INFORMATIONAL");
+  }
+
+  private static SemanticChatCache cache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort durableCache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      java.time.Duration ttl) {
+    return cache(
+        embeddings,
+        resolver,
+        durableCache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        Optional.empty(),
+        NoopSemanticMetrics.INSTANCE,
+        new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration(
+            "embedding", "embedding-v1", 2),
+        SemanticCacheIdentity.legacy(),
+        "es-MX",
+        "quote-template-v1",
+        NoopAiTraceRecorder.INSTANCE);
+  }
+
+  private static SemanticChatCache cache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort durableCache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      java.time.Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore) {
+    return cache(
+        embeddings,
+        resolver,
+        durableCache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        hotStore,
+        NoopSemanticMetrics.INSTANCE,
+        new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration(
+            "embedding", "embedding-v1", 2),
+        SemanticCacheIdentity.legacy(),
+        "es-MX",
+        "quote-template-v1",
+        NoopAiTraceRecorder.INSTANCE);
+  }
+
+  private static SemanticChatCache cache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort durableCache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      java.time.Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore,
+      com.emme.assistant.ai.application.port.out.SemanticMetrics metrics,
+      com.emme.ai.contracts.semantic.EmbeddingModelConfiguration embeddingConfiguration) {
+    return cache(
+        embeddings,
+        resolver,
+        durableCache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        hotStore,
+        metrics,
+        embeddingConfiguration,
+        SemanticCacheIdentity.legacy(),
+        "es-MX",
+        "quote-template-v1",
+        NoopAiTraceRecorder.INSTANCE);
+  }
+
+  private static SemanticChatCache cache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort durableCache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      java.time.Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore,
+      com.emme.assistant.ai.application.port.out.SemanticMetrics metrics,
+      com.emme.ai.contracts.semantic.EmbeddingModelConfiguration embeddingConfiguration,
+      SemanticCacheIdentity identity) {
+    return cache(
+        embeddings,
+        resolver,
+        durableCache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        hotStore,
+        metrics,
+        embeddingConfiguration,
+        identity,
+        "es-MX",
+        "quote-template-v1",
+        NoopAiTraceRecorder.INSTANCE);
+  }
+
+  private static SemanticChatCache cache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort durableCache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      java.time.Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore,
+      com.emme.assistant.ai.application.port.out.SemanticMetrics metrics,
+      com.emme.ai.contracts.semantic.EmbeddingModelConfiguration embeddingConfiguration,
+      SemanticCacheIdentity identity,
+      String locale,
+      String quoteTemplateVersion) {
+    return cache(
+        embeddings,
+        resolver,
+        durableCache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        hotStore,
+        metrics,
+        embeddingConfiguration,
+        identity,
+        locale,
+        quoteTemplateVersion,
+        NoopAiTraceRecorder.INSTANCE);
+  }
+
+  private static SemanticChatCache cache(
+      EmbeddingModelPort embeddings,
+      SemanticCacheResolver resolver,
+      SemanticCachePort durableCache,
+      SemanticCachePayloadCodec codec,
+      Clock clock,
+      String promptVersion,
+      java.time.Duration ttl,
+      Optional<SemanticCacheHotStore> hotStore,
+      com.emme.assistant.ai.application.port.out.SemanticMetrics metrics,
+      com.emme.ai.contracts.semantic.EmbeddingModelConfiguration embeddingConfiguration,
+      SemanticCacheIdentity identity,
+      String locale,
+      String quoteTemplateVersion,
+      AiTraceRecorder traceRecorder) {
+    return new SemanticChatCache(
+        embeddings,
+        resolver,
+        durableCache,
+        codec,
+        clock,
+        promptVersion,
+        ttl,
+        hotStore,
+        metrics,
+        embeddingConfiguration,
+        identity,
+        locale,
+        quoteTemplateVersion,
+        traceRecorder);
   }
 
   private static com.emme.kernel.context.AiExecutionContext context() {

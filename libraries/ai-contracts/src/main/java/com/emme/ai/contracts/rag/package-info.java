@@ -1,2 +1,2 @@
-/** Tenant-scoped unstructured knowledge retrieval contracts centered on {@link KnowledgeSearch}. */
+/** Tenant-scoped retrieval and answer-policy contracts. */
 package com.emme.ai.contracts.rag;

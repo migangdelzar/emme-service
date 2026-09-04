@@ -15,8 +15,6 @@ import com.emme.ai.contracts.routing.RouteRequest;
 import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.ai.contracts.semantic.SemanticCacheEntry;
-import com.emme.ai.contracts.tool.ToolExecutionContext;
-import com.emme.ai.contracts.tool.ToolExecutionRequest;
 import com.emme.ai.contracts.tool.ToolRisk;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
 import com.emme.kernel.context.AiExecutionContext;
@@ -190,29 +188,6 @@ class PlatformContractTest {
     assertThat(route.margin()).isEqualTo(0.19);
     assertThat(route.abstained()).isTrue();
     assertThat(route.abstainReason()).contains("missing design slot");
-  }
-
-  @Test
-  void toolRequestRejectsModelControlledSecurityArguments() {
-    assertThatIllegalArgumentException()
-        .isThrownBy(
-            () ->
-                new ToolExecutionRequest(
-                    "createAppointment",
-                    Map.of("tenantId", "foreign-tenant", "date", "2026-09-01"),
-                    false,
-                    "idem-1"));
-
-    var context =
-        new ToolExecutionContext(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            Set.of("CLIENT"),
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            "trace-1",
-            "idem-1");
-    assertThat(context.tenantId()).isNotNull();
   }
 
   @Test

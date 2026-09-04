@@ -225,7 +225,7 @@ QuoteWorkflow           application quote workflow capability
 - Contracts contain records/enums/interfaces only and remain framework-neutral.
 - Serialized event/workflow names remain compatible or have an explicit migration test.
 
-- [ ] **Step 1: Write failing contract tests**
+- [x] **Step 1: Write failing contract tests**
 
 Add one test per canonical capability asserting the method signature and one
 architecture test asserting that Spring/JPA/Redis/LangGraph types are absent.
@@ -233,7 +233,7 @@ For example, the chat capability test must compile a request containing
 message, tenant context, provider policy, and return a response containing
 content plus provider metadata without importing `ChatClient`.
 
-- [ ] **Step 2: Run focused tests and record the duplicate failure**
+- [x] **Step 2: Run focused tests and record the duplicate failure**
 
 ```bash
 ./gradlew :libraries:ai-contracts:test :modules:ai-platform:test :modules:assistant:test --tests '*Contract*' --no-parallel --no-configuration-cache
@@ -241,14 +241,14 @@ content plus provider metadata without importing `ChatClient`.
 
 Expected result: FAIL where duplicate contracts or old callers still exist.
 
-- [ ] **Step 3: Migrate one capability at a time**
+- [x] **Step 3: Migrate one capability at a time**
 
 Update imports/callers in this order: embedding, chat, tools, retrieval/RAG,
 semantic cache, workflow. Keep a deprecated forwarding alias only while a
 remaining caller is migrated; record the alias and deletion condition in the
 ledger. Do not add a new generic `AiProvider` interface.
 
-- [ ] **Step 4: Run tests, refactor names, and commit**
+- [x] **Step 4: Run tests, refactor names, and commit**
 
 Run the focused command again, then `./gradlew :libraries:ai-contracts:compileJava :modules:ai-platform:compileJava :modules:assistant:compileJava --no-parallel --no-configuration-cache`.
 Commit:

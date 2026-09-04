@@ -12,12 +12,12 @@ import org.junit.jupiter.api.Test;
 class RagContractTest {
 
   @Test
-  void knowledgeSearchAcceptsQueryAndExecutionContextAndReturnsRetrievedDocuments() {
+  void knowledgeRetrieverAcceptsQueryAndExecutionContextAndReturnsRetrievedDocuments() {
     var query = new KnowledgeQuery("nail care", "en-US", 5);
     var context = executionContext();
     var document = new RetrievedDocument("source-1", "Use cuticle oil.", Map.of(), 0.91);
-    KnowledgeSearch search =
-        new KnowledgeSearch() {
+    KnowledgeRetriever retriever =
+        new KnowledgeRetriever() {
           @Override
           public List<RetrievedDocument> search(
               KnowledgeQuery receivedQuery, AiExecutionContext receivedContext) {
@@ -27,7 +27,7 @@ class RagContractTest {
           }
         };
 
-    assertThat(search.search(query, context)).containsExactly(document);
+    assertThat(retriever.search(query, context)).containsExactly(document);
   }
 
   private static AiExecutionContext executionContext() {

@@ -69,7 +69,8 @@ class CatalogPackageConventionTest {
     assertThat(imageService).contains("com.emme.ai.contracts.image.CaptionImageUseCase");
     assertThat(imageService).doesNotContain("com.emme.assistant.ai.application");
     assertThat(matchService).contains("com.emme.ai.contracts.image.CaptionImageUseCase");
-    assertThat(matchService).contains("com.emme.ai.contracts.embedding.EmbedTextUseCase");
+    assertThat(matchService).contains("com.emme.ai.contracts.embedding.EmbeddingService");
+    assertThat(matchService).doesNotContain("EmbedTextUseCase");
     assertThat(matchService).doesNotContain("com.emme.assistant.ai.application");
   }
 

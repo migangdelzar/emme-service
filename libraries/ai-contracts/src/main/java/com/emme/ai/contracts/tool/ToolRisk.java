@@ -1,6 +1,11 @@
 package com.emme.ai.contracts.tool;
 
-/** Risk class used to govern automatic and confirmed tool execution. */
+/**
+ * Compatibility risk value retained only for intent-definition callers.
+ *
+ * @deprecated assistant-owned tool execution uses {@code AiToolRisk}
+ */
+@Deprecated
 public enum ToolRisk {
   READ_ONLY,
   MUTATION

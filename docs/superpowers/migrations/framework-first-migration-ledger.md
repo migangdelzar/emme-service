@@ -138,6 +138,18 @@ boundary, even when they do not execute SQL themselves.
 | Workflow/graph | `libraries/ai-contracts/.../{workflow,graph}/**`, assistant workflow ports | Keep business workflow ports; hide LangGraph types in adapters |
 | Semantic cache | library semantic contracts plus assistant semantic ports | Keep separate durable/hot ports only when durability differs |
 
+### 4.2.1 Canonical contract migration status
+
+| Compatibility name | Canonical replacement | Current callers / deletion condition |
+|---|---|---|
+| `embedding.EmbedTextUseCase` | `embedding.EmbeddingService` | No callers remain after the catalog and AI-platform embedding migration; deleted in Task 3 |
+| `model.ChatModel` | `model.AiChatCompletion` for policy-facing use; Spring AI `ChatModel` remains provider-internal | Keep until Task 4 moves assistant callers behind the `ChatClient` router |
+| `assistant.application.port.out.ChatCompletionPort` | `model.AiChatCompletion` | Keep until Task 4 migrates selector/composition callers and fallback tests |
+| `assistant.application.port.out.EmbeddingModelPort` | `embedding.EmbeddingService` for raw embedding use; retain metadata-bearing semantic value internally until Task 6 | Keep until semantic callers are migrated without losing model/version/dimension checks |
+| `rag.KnowledgeSearch` | `rag.KnowledgeRetriever` | Keep until Task 6 migrates retrieval adapters/configuration and tests |
+| `tool.*` contracts in `libraries:ai-contracts` | assistant-owned `AiToolDefinition`, `AiToolGateway`, `AiToolInvocation`, and `AiToolResult` | Removed in Task 3 after repository caller search found no production callers |
+| `workflow.WorkflowRuntime` | `ConversationWorkflow` and `QuoteWorkflow` | Removed in Task 3 after repository caller search found no production callers |
+
 ### 4.3 Build and fixture candidates
 
 | Candidate | Current location | Target |

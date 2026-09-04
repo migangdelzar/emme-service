@@ -2,7 +2,13 @@ package com.emme.assistant.ai.application.port.out;
 
 import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 
-/** Provider-neutral port for creating embeddings used by semantic application services. */
+/**
+ * Compatibility port retained while assistant semantic values migrate to the shared embedding
+ * contract.
+ *
+ * @deprecated migrate callers to {@code com.emme.ai.contracts.embedding.EmbeddingService}
+ */
+@Deprecated
 public interface EmbeddingModelPort {
 
   /**

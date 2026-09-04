@@ -1,6 +1,6 @@
 package com.emme.catalog.application.service;
 
-import com.emme.ai.contracts.embedding.EmbedTextUseCase;
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.catalog.api.query.MatchCatalogItemsQuery;
 import com.emme.catalog.api.result.CatalogMatchDetails;
@@ -34,19 +34,19 @@ public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
   private static final int BRANCH_K = 10;
 
   private final CaptionImageUseCase captionImageUseCase;
-  private final EmbedTextUseCase embedTextUseCase;
+  private final EmbeddingService embeddingService;
   private final CatalogSearchPort searchPort;
   private final CatalogItemRepository itemRepository;
   private final CatalogItemImageRepository imageRepository;
 
   public MatchCatalogItemsService(
       CaptionImageUseCase captionImageUseCase,
-      EmbedTextUseCase embedTextUseCase,
+      EmbeddingService embeddingService,
       CatalogSearchPort searchPort,
       CatalogItemRepository itemRepository,
       CatalogItemImageRepository imageRepository) {
     this.captionImageUseCase = captionImageUseCase;
-    this.embedTextUseCase = embedTextUseCase;
+    this.embeddingService = embeddingService;
     this.searchPort = searchPort;
     this.itemRepository = itemRepository;
     this.imageRepository = imageRepository;
@@ -65,7 +65,7 @@ public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
     }
 
     // 2. Embed the combined query
-    List<Float> queryVec = embedTextUseCase.embed(queryText);
+    List<Float> queryVec = embeddingService.embed(queryText);
 
     // 3. Hybrid search over catalog items
     List<CatalogSearchHit> itemHits =

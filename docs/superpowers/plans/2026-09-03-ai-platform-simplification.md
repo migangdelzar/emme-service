@@ -187,10 +187,10 @@ and deployed E2E gates remain environment-limited below.
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/service/ProcessConversationService.java`
 - Test: `modules/assistant/src/test/java/com/emme/assistant/ai/application/service/ProcessConversationServiceWorkflowTest.java`
 
-- [ ] Write a failing test proving an authoritative workflow response is returned without a second chat-model execution.
-- [ ] Add the minimal response-ownership contract and fail closed when an authoritative workflow omits its response.
-- [ ] Preserve the legacy direct-chat fallback for the disabled-workflow composition path.
-- [ ] Run the focused workflow service tests and commit the slice.
+- [x] Write a failing test proving an authoritative workflow response is returned without a second chat-model execution.
+- [x] Add the minimal response-ownership contract and fail closed when an authoritative workflow omits its response.
+- [x] Preserve the legacy direct-chat fallback for the disabled-workflow composition path.
+- [x] Run the focused workflow service tests and commit the slice (`b353e906`).
 
 ## Task 12: Enabled-workflow capability activation boundary
 
@@ -199,10 +199,10 @@ and deployed E2E gates remain environment-limited below.
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/ConversationWorkflowCapabilities.java`
 - Test: workflow configuration and capability wiring tests
 
-- [ ] Replace production placeholder capabilities with an explicit activation contract.
-- [ ] Fail startup when LangGraph is enabled without real capability wiring.
-- [ ] Keep test-only defaults available without making them a production fallback.
-- [ ] Add focused configuration coverage.
+- [x] Replace production placeholder capabilities with an explicit activation contract.
+- [x] Fail startup when LangGraph is enabled without real capability wiring.
+- [x] Keep test-only defaults available without making them a production fallback.
+- [x] Add focused configuration coverage and commit the slice (`1d155e27`).
 
 ## Task 13: Bounded model/tool-agent policy
 
@@ -210,9 +210,9 @@ and deployed E2E gates remain environment-limited below.
 - Modify: assistant Spring AI tool/agent composition only after Task 12 contracts are active.
 - Test: bounded agent policy and tool authorization tests.
 
-- [ ] Specify and enforce the narrow agent scope, allowed tools, iteration bound, and one-loop owner.
-- [ ] Keep `langgraph4j-spring-ai` out of the runtime graph unless a concrete bounded agent use case requires it.
-- [ ] Add a compatibility spike before introducing the bridge dependency.
+- [x] Specify and enforce the narrow agent scope, allowed tools, iteration bound, and one-loop owner through the existing authorized gateway, Spring AI callback provider, and Spring AI tool-calling manager.
+- [x] Keep `langgraph4j-spring-ai` out of the runtime graph unless a concrete bounded agent use case requires it.
+- [x] Record the compatibility baseline before introducing the bridge dependency.
 
 ## Task 14: Runtime certification and documentation closure
 

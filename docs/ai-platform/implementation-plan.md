@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Phases 0, 1, 2, and 5 plus the initial Phase 4 semantic and Phase 7 quote slices complete; remaining platform phases are in progress |
+| Status | Core phases and safety boundaries implemented; real generic conversation capability wiring and runtime certification remain |
 | Technical specification | [TSPEC](technical-specification.md) |
 | Requirements | [Requirements](requirements.md) |
 | Verification | [Evaluation specification](evaluation-specification.md) |
@@ -26,10 +26,10 @@
 | 3 | `ai-contracts`, `ai-platform`, and Spring AI providers | Provider/embedding/chat contract tests | In progress — contracts, provider adapters, embedding, and ordered chat boundaries complete |
 | 4 | pgvector intent/tool/cache indexes | Tenant-filtered vector integration tests | In progress — semantic intent/tool routing and safe chat cache complete; Redis hot projection and tool-search index are opt-in; real pgvector JDBC/runtime coverage now passes |
 | 5 | LangGraph4j graph and checkpoints | Workflow persistence/resume tests | Complete |
-| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors, read-only controlled gateway, opt-in Redis progressive tool search, durable mutation idempotency with stale-claim recovery complete; concrete appointment mutation handlers pending |
+| 6 | Spring AI advisors and controlled tools | Advisor/tool policy integration tests | In progress — tenant/prompt advisors, read-only controlled gateway, opt-in Redis progressive tool search, durable mutation idempotency with stale-claim recovery, and concrete appointment mutation handlers complete; runtime integration remains |
 | 7 | Design extraction, deterministic quote, HITL | Quote, optimistic-lock, endpoint, and resume tests | In progress — durable quote workflow, secured staff review endpoint, and LangGraph resume adapter complete |
 | 8 | Online enrichment and evaluation | Candidate/promotion safety tests | In progress — durable candidate capture, redaction boundary, and offline promotion gates complete; evaluator/index promotion pending |
-| 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events, workflow metrics, and durable model/tool traces complete |
+| 9 | Channels, operations, and hardening | E2E, failure, and observability tests | In progress — Redis status/locks/events, workflow metrics, durable model/tool traces, authoritative workflow responses, and fail-fast activation boundary complete |
 
 ## 3. Phase 0 — Java 25
 

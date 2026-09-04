@@ -1,5 +1,8 @@
 # FCR-003: LangGraph4j Workflow and HITL
 
+**Status:** Core workflow and HITL implementation complete; generic conversation
+capability activation and runtime certification pending.
+
 ## Change requested
 
 Add a durable LangGraph4j workflow for conversation, quote extraction,

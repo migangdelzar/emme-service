@@ -2925,11 +2925,11 @@ appointment mutation tools are registered.
 
 ## AI platform activation follow-up — 2026-09-04
 
-- [ ] Make workflow response ownership explicit so an enabled LangGraph workflow
+- [x] Make workflow response ownership explicit so an enabled LangGraph workflow
       cannot execute a second chat-model request after producing a response.
-- [ ] Fail fast when the LangGraph feature is enabled without real conversation
+- [x] Fail fast when the LangGraph feature is enabled without real conversation
       capability wiring; retain defaults only for isolated graph tests.
-- [ ] Define the bounded model/tool-agent policy before considering the optional
+- [x] Define the bounded model/tool-agent policy before considering the optional
       `langgraph4j-spring-ai` bridge.
 - [ ] Run focused feedback after each slice; defer the full enterprise gate,
       container startup, and deployed E2E checks to the final phase.
@@ -2940,3 +2940,6 @@ appointment mutation tools are registered.
   be staged separately from the workflow response slice.
 - LangGraph4j core remains the durable outer workflow owner. Spring AI remains
   the model, retrieval, and tool-mechanics owner.
+- `b353e906` makes the durable workflow response authoritative and prevents a
+  second chat-model execution. `1d155e27` makes incomplete enabled workflow
+  wiring fail fast.

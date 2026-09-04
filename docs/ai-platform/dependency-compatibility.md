@@ -25,6 +25,25 @@ appropriate only when graph nodes need its Spring AI-specific agent/tool
 services; adding it now would create a second tool-loop owner and increase
 coupling without providing a required capability.
 
+## Tool-loop boundary
+
+The current bounded-agent path is Spring AI's `ToolCallingAdvisor`. Emme's
+`AuthorizedAiToolGateway.agentEligibleToolDefinitions()` is the allow-list
+boundary: it exposes only backend-authorized, read-only tools that require
+neither user confirmation nor staff approval. The Spring AI callback provider
+uses that set directly, so mutation tools never enter the model's tool schema.
+
+Spring AI `2.0.1` supplies the single recursive tool loop. Its default
+`DefaultToolCallingManager` limits a tool to 40 calls and a turn to 150 total
+calls, and its default resolution fallback is disabled; requests can execute
+only callbacks attached to that request. These limits are a bounded safety
+default, not a license to expose unrestricted tools. If Emme needs tighter
+limits or a generic ReAct sub-agent later, configure them at this boundary and
+keep the sub-agent read-only and isolated from the durable business workflow.
+
+References: [Spring AI tool calling](https://docs.spring.io/spring-ai/reference/api/tools.html),
+[Spring AI ToolCallingAdvisor](https://docs.spring.io/spring-ai/reference/api/tools/tool-calling-advisor.html).
+
 ## Provider posture
 
 Spring AI supports multiple model implementations in one application. Emme

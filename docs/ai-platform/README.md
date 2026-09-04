@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Repository | `emme-service` |
-| Status | Implementation in progress |
+| Status | Core implementation in progress; generic workflow activation and runtime certification pending |
 | Runtime | Java 25, Spring Boot/Spring Modulith |
 | Deployable boundary | One backend application |
 | Durable store | PostgreSQL and pgvector |

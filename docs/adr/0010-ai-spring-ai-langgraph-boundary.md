@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Date
 
@@ -31,3 +31,7 @@ create two competing tool loops or duplicate memory/state.
 - The graph can complete common requests without an LLM.
 - Tool authorization remains in application use cases.
 - LangGraph4j and Spring AI versions require an explicit compatibility spike.
+- Enabling the durable conversation graph without real capability adapters fails
+  at startup; placeholder defaults are limited to isolated graph tests.
+- A successful durable workflow owns and returns the final response, preventing
+  a second chat-model execution in the application service.

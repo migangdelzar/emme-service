@@ -669,13 +669,19 @@ The AGE adapter remains a deliberate `JdbcClient` survivor because Apache AGE
 requires PostgreSQL extension commands, `ag_catalog.cypher`, graph-name
 allow-listing, and transaction-local search-path control. The adapter no longer
 accepts the legacy `JdbcOperations` abstraction and no longer converts it
-internally. `SpringAiAgeConfiguration` now supplies a qualified
-`tenantScopedJdbcClient`, while the integration test keeps `JdbcTemplate` only
-for test-database setup statements. This removes a production legacy JDBC
-boundary without pretending AGE traversal is a JPA concern.
+internally. `SpringAiAgeConfiguration` now reuses the canonical qualified
+`aiTenantJdbcClient` already shared by the learning, semantic, and tool
+adapters, while the integration test keeps `JdbcTemplate` only for test-
+database setup statements. This removes a duplicate client composition root
+without pretending AGE traversal is a JPA concern.
 
 Verification: the AGE configuration test, assistant compilation, and Spotless
 pass. The live AGE Testcontainers gate remains environment-dependent on Docker.
+
+The canonical tenant JDBC client is now `aiTenantJdbcClient`; AGE no longer
+creates a second `tenantScopedJdbcClient` bean. This keeps all tenant-scoped
+AI SQL adapters on one Spring composition root and avoids ambiguous or
+duplicated `JdbcClient` lifecycle configuration.
 
 **Files:**
 

@@ -30,18 +30,11 @@ public class SpringAiAgeConfiguration {
   @ConditionalOnMissingBean
   AgeGraphClient ageGraphClient(
       @Qualifier("tenantScopedDataSource") DataSource tenantDataSource,
-      @Qualifier("tenantScopedJdbcClient") JdbcClient tenantJdbc,
+      @Qualifier("aiTenantJdbcClient") JdbcClient tenantJdbc,
       ObjectMapper objectMapper) {
     TransactionOperations transactions =
         new TransactionTemplate(new DataSourceTransactionManager(tenantDataSource));
     return new JdbcAgeGraphClient(tenantJdbc, objectMapper, transactions);
-  }
-
-  @Bean("tenantScopedJdbcClient")
-  @ConditionalOnMissingBean(name = "tenantScopedJdbcClient")
-  JdbcClient tenantScopedJdbcClient(
-      @Qualifier("tenantScopedDataSource") DataSource tenantDataSource) {
-    return JdbcClient.create(tenantDataSource);
   }
 
   @Bean

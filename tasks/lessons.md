@@ -1,5 +1,17 @@
 # Engineering lessons
 
+## 2026-09-04 — Reuse one qualified client per data source
+
+- Failure mode: A specialized AGE configuration introduced a second
+  `JdbcClient` bean for a tenant data source that already had the canonical AI
+  tenant client.
+- Detection signal: Composition-root inspection found two bean names wrapping
+  the same `tenantScopedDataSource`.
+- Prevention rule: Before adding a framework client in a feature configuration,
+  search existing bean qualifiers for the same data source and reuse one
+  canonical client unless different transaction or connection settings are
+  proven necessary.
+
 ## 2026-09-04 — Keep test and composition-root signatures synchronized
 
 - Failure mode: A focused wiring test was changed to require a `JdbcClient`

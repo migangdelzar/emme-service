@@ -77,13 +77,34 @@
 
 ### Current slice — Task 11B AGE graph JDBC boundary
 
-- [x] Add a failing configuration test requiring a qualified tenant `JdbcClient`.
+- [x] Add a failing configuration test requiring the canonical qualified tenant
+      `JdbcClient`.
 - [x] Remove `JdbcOperations` from the AGE production adapter boundary.
 - [x] Keep AGE-specific SQL, transaction-local search path, and graph traversal
       in the specialized `JdbcClient` adapter.
+- [x] Reuse `aiTenantJdbcClient` instead of creating a second AGE-specific bean.
 - [x] Keep `JdbcTemplate` only in AGE integration-test database setup.
 - [x] Run focused configuration tests, compilation, and Spotless.
 - [ ] Re-run the live AGE Testcontainers integration with Docker available.
+
+### Remaining repository-wide framework-first work
+
+- [ ] Finish Spring AI advisor-order, metadata-contract, and hybrid-search
+      measurements.
+- [ ] Complete LangGraph boundary simplification and checkpoint security tests.
+- [ ] Classify and migrate stable AI quote/trace CRUD to JPA where it reduces
+      code; retain atomic/JSONB/AGE/vector/checkpoint SQL as `JdbcClient`.
+- [ ] Complete AI idempotency, learning-candidate, and evaluation concurrency
+      integration gates with Docker.
+- [ ] Finish tenancy/bootstrap waves and verify tenant provisioning under real
+      PostgreSQL/RLS/Liquibase conditions.
+- [ ] Migrate external provider gateways to typed Spring HTTP clients or
+      justified official SDKs.
+- [ ] Apply JPA-first repository waves across business modules.
+- [ ] Consolidate Modulith/Kafka boundaries, Redis wiring, shared fixtures,
+      Gradle conventions, migrations, deployment, and final cleanup.
+- [ ] Run final Java, integration, startup, security, coverage, performance,
+      Redis/Kafka/Testcontainers, and E2E gates in a Docker-enabled environment.
 
 ## Task 6 semantic capability hardening — 2026-08-31
 

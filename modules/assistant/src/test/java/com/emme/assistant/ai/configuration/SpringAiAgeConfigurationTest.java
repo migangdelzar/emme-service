@@ -7,8 +7,11 @@ import com.emme.assistant.ai.adapter.out.graph.AgeGraphAdapter;
 import com.emme.assistant.ai.adapter.out.graph.AgeGraphClient;
 import com.emme.assistant.ai.adapter.out.graph.JdbcAgeGraphClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.lang.reflect.Method;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.simple.JdbcClient;
 
 class SpringAiAgeConfigurationTest {
 
@@ -27,11 +30,26 @@ class SpringAiAgeConfigurationTest {
     DataSource dataSource = mock(DataSource.class);
     AgeGraphClient client =
         configuration.ageGraphClient(
-            dataSource, configuration.tenantScopedJdbcClient(dataSource), new ObjectMapper());
+            dataSource,
+            new SpringAiTenantJdbcConfiguration().aiTenantJdbcClient(dataSource),
+            new ObjectMapper());
     AgeGraphAdapter adapter =
         configuration.ageGraphAdapter(client, new SpringAiAgeProperties(true, "emme_ai_graph_", 5));
 
     assertThat(client).isInstanceOf(JdbcAgeGraphClient.class);
     assertThat(adapter).isNotNull();
+  }
+
+  @Test
+  void reusesTheCanonicalTenantJdbcClientBean() throws Exception {
+    Method method =
+        SpringAiAgeConfiguration.class.getDeclaredMethod(
+            "ageGraphClient", DataSource.class, JdbcClient.class, ObjectMapper.class);
+
+    assertThat(method.getParameters()[1].getAnnotation(Qualifier.class).value())
+        .isEqualTo("aiTenantJdbcClient");
+    assertThat(SpringAiAgeConfiguration.class.getDeclaredMethods())
+        .extracting(Method::getName)
+        .doesNotContain("tenantScopedJdbcClient");
   }
 }

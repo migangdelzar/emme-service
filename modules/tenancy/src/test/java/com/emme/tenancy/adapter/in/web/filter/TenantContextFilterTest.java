@@ -2,6 +2,8 @@ package com.emme.tenancy.adapter.in.web.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.kernel.context.TenantContext;
@@ -70,7 +72,6 @@ class TenantContextFilterTest {
 
     var filter = new TenantContextFilter(tenantRepository);
     var request = new MockHttpServletRequest("GET", "/api/ai/chat");
-    request.addHeader("X-Tenant-Slug", "another-tenant");
     var response = new MockHttpServletResponse();
     var chain =
         (jakarta.servlet.FilterChain)
@@ -90,7 +91,7 @@ class TenantContextFilterTest {
   }
 
   @Test
-  void doesNotFallBackToAHeaderWhenTheAuthenticatedTenantRealmIsUnknown() throws Exception {
+  void rejectsAnAuthenticatedTenantRealmThatCannotBeResolved() {
     TenantRepository tenantRepository = mock(TenantRepository.class);
     when(tenantRepository.findByIdentityRealm("emme-missing-salon")).thenReturn(Optional.empty());
 
@@ -107,14 +108,141 @@ class TenantContextFilterTest {
 
     var filter = new TenantContextFilter(tenantRepository);
     var request = new MockHttpServletRequest("GET", "/api/ai/chat");
-    request.addHeader("X-Tenant-Slug", "e2e-studio");
-    var response = new MockHttpServletResponse();
-    var chain =
-        (jakarta.servlet.FilterChain)
-            (ignoredRequest, ignoredResponse) ->
-                assertThat(TenantContext.getCurrentTenantId()).isNull();
+    assertThat(
+            org.assertj.core.api.Assertions.catchThrowable(
+                () ->
+                    filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain())))
+        .isInstanceOf(AccessDeniedException.class)
+        .hasMessage("Authenticated tenant could not be resolved");
+  }
 
-    filter.doFilter(request, response, chain);
+  @Test
+  void rejectsAnAuthenticatedTenantClaimThatIsMalformed() {
+    TenantRepository tenantRepository = mock(TenantRepository.class);
+    Jwt jwt =
+        Jwt.withTokenValue("token")
+            .header("alg", "none")
+            .issuer("https://identity.example/realms/emme-core")
+            .subject("owner")
+            .claim("tenant_id", "not-a-uuid")
+            .issuedAt(Instant.now())
+            .expiresAt(Instant.now().plusSeconds(300))
+            .build();
+    SecurityContextHolder.getContext()
+        .setAuthentication(new UsernamePasswordAuthenticationToken(jwt, null));
+
+    var filter = new TenantContextFilter(tenantRepository);
+
+    assertThat(
+            org.assertj.core.api.Assertions.catchThrowable(
+                () ->
+                    filter.doFilter(
+                        new MockHttpServletRequest("GET", "/api/ai/chat"),
+                        new MockHttpServletResponse(),
+                        new MockFilterChain())))
+        .isInstanceOf(AccessDeniedException.class)
+        .hasMessage("Authenticated tenant could not be resolved");
+  }
+
+  @Test
+  void failsClosedWhenDedicatedDatabaseLookupFails() throws Exception {
+    TenantRepository tenantRepository = mock(TenantRepository.class);
+    UUID tenantId = UUID.randomUUID();
+    Tenant tenant =
+        Tenant.rehydrate(
+            tenantId,
+            "studio",
+            "Studio",
+            TenantStatus.ACTIVE,
+            null,
+            "emme-studio",
+            Instant.now(),
+            Instant.now());
+    when(tenantRepository.findByIdentityRealm("emme-studio")).thenReturn(Optional.of(tenant));
+    when(tenantRepository.findDatabaseIdByTenantId(tenantId))
+        .thenThrow(new IllegalStateException("database registry unavailable"));
+
+    Jwt jwt =
+        Jwt.withTokenValue("token")
+            .header("alg", "none")
+            .issuer("https://identity.example/realms/emme-studio")
+            .subject("owner")
+            .issuedAt(Instant.now())
+            .expiresAt(Instant.now().plusSeconds(300))
+            .build();
+    SecurityContextHolder.getContext()
+        .setAuthentication(new UsernamePasswordAuthenticationToken(jwt, null));
+
+    var filter = new TenantContextFilter(tenantRepository);
+    var chain = mock(jakarta.servlet.FilterChain.class);
+
+    assertThat(
+            org.assertj.core.api.Assertions.catchThrowable(
+                () ->
+                    filter.doFilter(
+                        new MockHttpServletRequest("GET", "/api/ai/chat"),
+                        new MockHttpServletResponse(),
+                        chain)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("database registry unavailable");
+    verify(chain, never())
+        .doFilter(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+  }
+
+  @Test
+  void rejectsAnUnknownTenantSelectorBeforeSelectingATenant() {
+    TenantRepository tenantRepository = mock(TenantRepository.class);
+    when(tenantRepository.findBySlug("missing")).thenReturn(Optional.empty());
+    var filter = new TenantContextFilter(tenantRepository);
+    var request = new MockHttpServletRequest("GET", "/api/ai/chat");
+    request.addHeader("X-Tenant-Slug", " missing ");
+
+    assertThat(
+            org.assertj.core.api.Assertions.catchThrowable(
+                () ->
+                    filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain())))
+        .isInstanceOf(AccessDeniedException.class)
+        .hasMessage("Unknown tenant selector");
+  }
+
+  @Test
+  void rejectsDisagreeingTenantSelectorsBeforeSelectingATenant() {
+    TenantRepository tenantRepository = mock(TenantRepository.class);
+    UUID firstId = UUID.randomUUID();
+    UUID secondId = UUID.randomUUID();
+    Tenant first =
+        Tenant.rehydrate(
+            firstId,
+            "first",
+            "First",
+            TenantStatus.ACTIVE,
+            null,
+            "realm-first",
+            Instant.now(),
+            Instant.now());
+    Tenant second =
+        Tenant.rehydrate(
+            secondId,
+            "second",
+            "Second",
+            TenantStatus.ACTIVE,
+            null,
+            "realm-second",
+            Instant.now(),
+            Instant.now());
+    when(tenantRepository.findBySlug("first")).thenReturn(Optional.of(first));
+    when(tenantRepository.findBySlug("second")).thenReturn(Optional.of(second));
+    var filter = new TenantContextFilter(tenantRepository);
+    var request = new MockHttpServletRequest("GET", "/api/ai/chat");
+    request.addHeader("X-Tenant-Slug", " first ");
+    request.setParameter("tenant", "second");
+
+    assertThat(
+            org.assertj.core.api.Assertions.catchThrowable(
+                () ->
+                    filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain())))
+        .isInstanceOf(AccessDeniedException.class)
+        .hasMessage("Tenant selectors disagree");
   }
 
   @Test
@@ -161,8 +289,10 @@ class TenantContextFilterTest {
     var request = new MockHttpServletRequest("GET", "/api/ai/chat");
     request.addHeader("X-Tenant-Slug", "requested-salon");
 
-    assertThat(org.assertj.core.api.Assertions.catchThrowable(
-            () -> filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain())))
+    assertThat(
+            org.assertj.core.api.Assertions.catchThrowable(
+                () ->
+                    filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain())))
         .isInstanceOf(AccessDeniedException.class)
         .hasMessage("Tenant selector conflicts with authenticated tenant");
   }

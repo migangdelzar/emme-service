@@ -34,11 +34,15 @@ public class TenantActivationListener {
     provisioningRepository.markActive(event.tenantId());
 
     String schemaName = provisioningRepository.findSchemaName(event.tenantId());
-    TenantActivated activated = new TenantActivated(
-        UUID.randomUUID(), event.tenantId(), event.slug(), schemaName, event.keycloakRealm());
+    TenantActivated activated =
+        new TenantActivated(
+            UUID.randomUUID(), event.tenantId(), event.slug(), schemaName, event.keycloakRealm());
     eventPublisher.publishEvent(activated);
 
-    log.info("Tenant {} activated. Schema={}, Realm={}",
-        event.tenantId(), schemaName, event.keycloakRealm());
+    log.info(
+        "Tenant {} activated. Schema={}, Realm={}",
+        event.tenantId(),
+        schemaName,
+        event.keycloakRealm());
   }
 }

@@ -2,10 +2,10 @@ package com.emme.assistant.ai.adapter.in.web.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.context.Channel;
-import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
 import com.emme.kernel.context.TenantContextHolder;
 import java.util.List;
 import java.util.Set;

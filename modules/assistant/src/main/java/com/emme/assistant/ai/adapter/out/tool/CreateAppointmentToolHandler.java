@@ -1,11 +1,15 @@
 package com.emme.assistant.ai.adapter.out.tool;
 
-import com.emme.appointments.api.command.*;
-import com.emme.appointments.api.usecase.*;
-import com.emme.assistant.ai.application.tool.*;
+import com.emme.appointments.api.command.CreateAppointmentCommand;
+import com.emme.appointments.api.type.AppointmentActor;
+import com.emme.appointments.api.usecase.BookAppointmentUseCase;
+import com.emme.assistant.ai.application.tool.AiToolExecutionContext;
+import com.emme.assistant.ai.application.tool.AiToolHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 public final class CreateAppointmentToolHandler implements AiToolHandler {
   private final BookAppointmentUseCase u;

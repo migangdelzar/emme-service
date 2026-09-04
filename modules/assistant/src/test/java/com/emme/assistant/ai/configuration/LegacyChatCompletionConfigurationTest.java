@@ -15,13 +15,13 @@ import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import io.micrometer.observation.ObservationRegistry;
 import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
-import io.micrometer.observation.ObservationRegistry;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 class LegacyChatCompletionConfigurationTest {
@@ -33,19 +33,19 @@ class LegacyChatCompletionConfigurationTest {
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
     when(provider.name()).thenReturn("mock");
     when(provider.chat("", "hello")).thenReturn("response");
-    LegacyChatCompletionConfiguration configuration =
-        new LegacyChatCompletionConfiguration();
+    LegacyChatCompletionConfiguration configuration = new LegacyChatCompletionConfiguration();
 
     IdentifiedChatCompletionPort port =
         configuration.legacyChatCompletion(
             provider, scheduler, new AiExecutorProperties(2, 1, 1), recorder);
 
     var result =
-        AiExecutionContextScope.call(
-            context(), () -> port.completeWithIdentity("", "hello"));
+        AiExecutionContextScope.call(context(), () -> port.completeWithIdentity("", "hello"));
 
-    assertThat(result).isEqualTo(new IdentifiedChatCompletionPort.ChatCompletionResult(
-        "response", "mock", "legacy-model"));
+    assertThat(result)
+        .isEqualTo(
+            new IdentifiedChatCompletionPort.ChatCompletionResult(
+                "response", "mock", "legacy-model"));
     verify(provider).chat("", "hello");
     verify(recorder).recordModelExecution(org.mockito.ArgumentMatchers.any());
   }
@@ -88,8 +88,7 @@ class LegacyChatCompletionConfigurationTest {
             "app.ai.spring-chat.providers[0].bean-name=ollamaChatClient",
             "app.ai.spring-chat.providers[0].key=local",
             "app.ai.spring-chat.providers[0].model-version=ollama-v1")
-        .withBean(
-            "ollamaChatClient", ChatClient.class, () -> mock(ChatClient.class))
+        .withBean("ollamaChatClient", ChatClient.class, () -> mock(ChatClient.class))
         .withBean(ObservationRegistry.class, () -> ObservationRegistry.NOOP)
         .withBean(AiExecutorProperties.class, () -> new AiExecutorProperties(2, 1, 1))
         .withBean(

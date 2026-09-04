@@ -501,8 +501,7 @@ class IdentityPackageConventionTest {
         sourcePath(
             "modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/TenantRealmProvisioningListener.java");
 
-    assertThat(Files.readString(listener))
-        .doesNotContain("com.emme.tenancy.api.usecase.TenantApi");
+    assertThat(Files.readString(listener)).doesNotContain("com.emme.tenancy.api.usecase.TenantApi");
   }
 
   @Test

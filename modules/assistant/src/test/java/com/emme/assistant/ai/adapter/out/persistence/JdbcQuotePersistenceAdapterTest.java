@@ -117,6 +117,36 @@ class JdbcQuotePersistenceAdapterTest {
   }
 
   @Test
+  void rejectsAnIdempotentWorkflowOwnedByAnotherPrincipal() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
+    JdbcClient.MappedQuerySpec<QuoteWorkflow> result = mock(JdbcClient.MappedQuerySpec.class);
+    stubQuery(jdbc, statement, result);
+    QuoteWorkflow existing =
+        new QuoteWorkflow(
+            UUID.randomUUID(),
+            TENANT_ID,
+            UUID.randomUUID(),
+            CONVERSATION_ID,
+            com.emme.assistant.ai.domain.workflow.QuoteWorkflowState.WAITING_FOR_STAFF,
+            "idem-1",
+            4);
+    when(result.single()).thenReturn(existing);
+    JdbcQuoteWorkflowRepository repository = new JdbcQuoteWorkflowRepository(jdbc);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context(),
+                    () ->
+                        repository.save(
+                            QuoteWorkflow.received(
+                                WORKFLOW_ID, TENANT_ID, PRINCIPAL_ID, CONVERSATION_ID, "idem-1"))))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("idempotency key belongs to another principal");
+  }
+
+  @Test
   void savesExtractionUsingTenantWorkflowAndModelVersionMetadata() {
     JdbcClient jdbc = mock(JdbcClient.class);
     JdbcClient.StatementSpec statement = mock(JdbcClient.StatementSpec.class);
@@ -260,7 +290,9 @@ class JdbcQuotePersistenceAdapterTest {
     when(result.single()).thenReturn(clientOwnedWorkflow);
     JdbcQuoteWorkflowRepository repository = new JdbcQuoteWorkflowRepository(jdbc);
 
-    assertThat(AiExecutionContextScope.call(context(), () -> repository.save(clientOwnedWorkflow)))
+    assertThat(
+            AiExecutionContextScope.call(
+                staffContext(), () -> repository.save(clientOwnedWorkflow)))
         .isEqualTo(clientOwnedWorkflow);
   }
 
@@ -344,6 +376,17 @@ class JdbcQuotePersistenceAdapterTest {
         workflowId,
         "trace-1",
         "idem-1");
+  }
+
+  private static AiExecutionContext staffContext() {
+    return new AiExecutionContext(
+        TENANT_ID,
+        UUID.randomUUID(),
+        Set.of("ROLE_tenant_staff"),
+        CONVERSATION_ID,
+        WORKFLOW_ID,
+        "trace-staff",
+        "idem-staff");
   }
 
   private static void stubQuery(

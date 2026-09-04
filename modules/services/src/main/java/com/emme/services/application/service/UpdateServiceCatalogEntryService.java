@@ -8,7 +8,9 @@ import com.emme.services.application.mapper.ServiceCatalogApplicationMapper;
 import com.emme.services.application.port.out.ServiceRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +20,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateServiceCatalogEntryService implements UpdateServiceCatalogEntryUseCase {
 
   private final ServiceRepository serviceRepository;
-  private final SemanticCacheDependencyPublisher cacheDependencies;
+  private final Optional<SemanticCacheDependencyPublisher> cacheDependencies;
+
+  public UpdateServiceCatalogEntryService(ServiceRepository serviceRepository) {
+    this(serviceRepository, Optional.empty());
+  }
 
   public UpdateServiceCatalogEntryService(
       ServiceRepository serviceRepository, SemanticCacheDependencyPublisher cacheDependencies) {
+    this(serviceRepository, Optional.of(cacheDependencies));
+  }
+
+  @Autowired
+  public UpdateServiceCatalogEntryService(
+      ServiceRepository serviceRepository,
+      Optional<SemanticCacheDependencyPublisher> cacheDependencies) {
     this.serviceRepository = serviceRepository;
     this.cacheDependencies = cacheDependencies;
   }
@@ -63,8 +76,15 @@ public class UpdateServiceCatalogEntryService implements UpdateServiceCatalogEnt
 
   private void publish(
       UUID resourceId, UUID tenantId, SemanticCacheDependencyChanged.Dependency dependency) {
-    cacheDependencies.publish(
-        new SemanticCacheDependencyChanged(
-            UUID.randomUUID(), tenantId, null, dependency, resourceId.toString(), Instant.now()));
+    cacheDependencies.ifPresent(
+        publisher ->
+            publisher.publish(
+                new SemanticCacheDependencyChanged(
+                    UUID.randomUUID(),
+                    tenantId,
+                    null,
+                    dependency,
+                    resourceId.toString(),
+                    Instant.now())));
   }
 }

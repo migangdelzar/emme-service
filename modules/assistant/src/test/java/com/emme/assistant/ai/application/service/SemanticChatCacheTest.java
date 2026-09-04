@@ -21,8 +21,8 @@ import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
 import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
-import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.context.Channel;
 import java.time.Clock;
 import java.time.Instant;
@@ -238,7 +238,9 @@ class SemanticChatCacheTest {
         context,
         () ->
             semanticCache.store(
-                "", "What are your hours?", "We are open.",
+                "",
+                "What are your hours?",
+                "We are open.",
                 new SemanticCacheIdentity(
                     "ollama", "gemma4:e4b-mlx", "knowledge-v7", "policy-v3", "source-v9")));
 

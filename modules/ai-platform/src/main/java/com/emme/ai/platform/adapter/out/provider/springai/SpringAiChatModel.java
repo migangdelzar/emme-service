@@ -76,6 +76,7 @@ public final class SpringAiChatModel implements ChatModel {
   }
 
   public String complete(String conversationContext, String userMessage) {
+    AiExecutionContextScope.requireCurrent();
     if (userMessage == null || userMessage.isBlank()) {
       throw new IllegalArgumentException("userMessage must not be blank");
     }

@@ -7,12 +7,25 @@ import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /** PostgreSQL adapter for tenant-scoped quote workflow state and optimistic updates. */
 @Component
 public final class JdbcQuoteWorkflowRepository implements QuoteWorkflowRepository {
+
+  private static final Set<String> STAFF_ROLES =
+      Set.of(
+          "tenant_staff",
+          "tenant_owner",
+          "ROLE_tenant_staff",
+          "ROLE_tenant_owner",
+          "ROLE_STAFF",
+          "ROLE_OWNER",
+          "ROLE_ADMIN",
+          "ROLE_admin",
+          "admin");
 
   private final JdbcClient jdbc;
 
@@ -72,6 +85,9 @@ public final class JdbcQuoteWorkflowRepository implements QuoteWorkflowRepositor
     if (!context.conversationId().equals(workflow.conversationId())) {
       throw new IllegalArgumentException("conversationId does not match AI execution context");
     }
+    if (!context.principalId().equals(workflow.principalId()) && !isStaff(context)) {
+      throw new IllegalStateException("principalId does not match AI execution context");
+    }
     if (!context.workflowId().equals(workflow.id())) {
       throw new IllegalArgumentException("workflowId does not match AI execution context");
     }
@@ -88,7 +104,19 @@ public final class JdbcQuoteWorkflowRepository implements QuoteWorkflowRepositor
     if (workflow.version() > 0) {
       statement = statement.param("expectedVersion", workflow.version() - 1);
     }
-    return statement.query((resultSet, rowNumber) -> workflowFromRow(resultSet)).single();
+    QuoteWorkflow saved =
+        statement.query((resultSet, rowNumber) -> workflowFromRow(resultSet)).single();
+    if (!context.conversationId().equals(saved.conversationId())) {
+      throw new IllegalStateException("idempotency key belongs to another conversation");
+    }
+    if (!context.principalId().equals(saved.principalId()) && !isStaff(context)) {
+      throw new IllegalStateException("idempotency key belongs to another principal");
+    }
+    return saved;
+  }
+
+  private static boolean isStaff(AiExecutionContext context) {
+    return context.roles().stream().anyMatch(STAFF_ROLES::contains);
   }
 
   private static String insertSql() {

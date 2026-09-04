@@ -20,12 +20,16 @@ class SemanticToolSelectorTraceTest {
     AiTraceRecorder traces = mock(AiTraceRecorder.class);
     SemanticToolSelector selector =
         new SemanticToolSelector(
-            mock(SemanticReferenceSearchPort.class), new SemanticMatchPolicy(0.9, 0.1), mock(SemanticMetrics.class), traces);
+            mock(SemanticReferenceSearchPort.class),
+            new SemanticMatchPolicy(0.9, 0.1),
+            mock(SemanticMetrics.class),
+            traces);
 
     assertThat(selector.select("es-MX", new EmbeddingVector("v1", List.of(1.0f)), Set.of()))
         .isEqualTo(new SemanticDecision(java.util.Optional.empty(), 0.0, 0.0, 0.0, false));
 
-    ArgumentCaptor<AiSemanticExecutionTrace> trace = ArgumentCaptor.forClass(AiSemanticExecutionTrace.class);
+    ArgumentCaptor<AiSemanticExecutionTrace> trace =
+        ArgumentCaptor.forClass(AiSemanticExecutionTrace.class);
     org.mockito.Mockito.verify(traces).recordSemanticOutcome(trace.capture());
     assertThat(trace.getValue().outcome()).isEqualTo("no_authorized_tools");
   }
@@ -34,7 +38,8 @@ class SemanticToolSelectorTraceTest {
   void recordsSemanticSearchFailuresBeforeRethrowingThem() {
     SemanticReferenceSearchPort search = mock(SemanticReferenceSearchPort.class);
     RuntimeException failure = new IllegalStateException("vector store unavailable");
-    when(search.searchTools("es-MX", new EmbeddingVector("v1", List.of(1.0f)), Set.of("getServices"), 2))
+    when(search.searchTools(
+            "es-MX", new EmbeddingVector("v1", List.of(1.0f)), Set.of("getServices"), 2))
         .thenThrow(failure);
     AiTraceRecorder traces = mock(AiTraceRecorder.class);
     SemanticToolSelector selector =
@@ -42,10 +47,13 @@ class SemanticToolSelectorTraceTest {
             search, new SemanticMatchPolicy(0.9, 0.1), mock(SemanticMetrics.class), traces);
 
     org.assertj.core.api.Assertions.assertThatThrownBy(
-            () -> selector.select("es-MX", new EmbeddingVector("v1", List.of(1.0f)), Set.of("getServices")))
+            () ->
+                selector.select(
+                    "es-MX", new EmbeddingVector("v1", List.of(1.0f)), Set.of("getServices")))
         .isSameAs(failure);
 
-    ArgumentCaptor<AiSemanticExecutionTrace> trace = ArgumentCaptor.forClass(AiSemanticExecutionTrace.class);
+    ArgumentCaptor<AiSemanticExecutionTrace> trace =
+        ArgumentCaptor.forClass(AiSemanticExecutionTrace.class);
     org.mockito.Mockito.verify(traces).recordSemanticOutcome(trace.capture());
     assertThat(trace.getValue().outcome()).isEqualTo("failed");
   }

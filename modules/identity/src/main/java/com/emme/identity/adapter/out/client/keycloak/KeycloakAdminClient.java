@@ -76,10 +76,14 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
 
   static Map<String, Object> realmRepresentation(String realmName, String displayName) {
     return Map.of(
-        "realm", realmName,
-        "enabled", true,
-        "displayName", displayName,
-        "accessTokenLifespan", 3_600);
+        "realm",
+        realmName,
+        "enabled",
+        true,
+        "displayName",
+        displayName,
+        "accessTokenLifespan",
+        3_600);
   }
 
   /** Create an OAuth2 client in the given realm. */

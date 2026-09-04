@@ -1,7 +1,8 @@
 package com.emme.tenancy.adapter.in.messaging.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.emme.tenancy.api.event.TenantActivated;
 import com.emme.tenancy.api.event.TenantRealmReady;

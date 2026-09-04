@@ -215,8 +215,7 @@ class SemanticRoutingServiceTest {
         .when(traces)
         .recordSemanticOutcome(any(AiSemanticExecutionTrace.class));
     SemanticIntentClassifier classifier =
-        new SemanticIntentClassifier(
-            search, new SemanticMatchPolicy(0.90, 0.10), metrics, traces);
+        new SemanticIntentClassifier(search, new SemanticMatchPolicy(0.90, 0.10), metrics, traces);
 
     classifier.classify("es-MX", QUERY);
 

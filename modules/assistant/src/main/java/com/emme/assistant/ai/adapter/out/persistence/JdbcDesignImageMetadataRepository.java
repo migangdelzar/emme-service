@@ -19,9 +19,9 @@ public final class JdbcDesignImageMetadataRepository implements DesignImageMetad
       UUID tenantId, UUID workflowId, String storageKey, String mediaType, long sizeBytes) {
     jdbc.sql(
             """
-            INSERT INTO ai_design_image (tenant_id, workflow_id, storage_key, media_type, size_bytes)
-        VALUES (:tenantId, :workflowId, :storageKey, :mediaType, :sizeBytes)
-        """)
+                INSERT INTO ai_design_image (tenant_id, workflow_id, storage_key, media_type, size_bytes)
+            VALUES (:tenantId, :workflowId, :storageKey, :mediaType, :sizeBytes)
+            """)
         .param("tenantId", tenantId)
         .param("workflowId", workflowId)
         .param("storageKey", storageKey)
@@ -33,7 +33,8 @@ public final class JdbcDesignImageMetadataRepository implements DesignImageMetad
   @Override
   public void delete(UUID tenantId, UUID workflowId, String storageKey) {
     jdbc.sql(
-            "DELETE FROM ai_design_image WHERE tenant_id = :tenantId AND workflow_id = :workflowId AND storage_key = :storageKey")
+            "DELETE FROM ai_design_image WHERE tenant_id = :tenantId AND workflow_id = :workflowId"
+                + " AND storage_key = :storageKey")
         .param("tenantId", tenantId)
         .param("workflowId", workflowId)
         .param("storageKey", storageKey)

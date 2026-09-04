@@ -59,8 +59,7 @@ class IdentityJwtTrustPolicyTest {
 
   @Test
   void usesTheCustomerAudienceForTheDedicatedCustomerRealm() {
-    Jwt customerJwt =
-        jwt("https://identity.example/realms/emme-customers", List.of("client-app"));
+    Jwt customerJwt = jwt("https://identity.example/realms/emme-customers", List.of("client-app"));
 
     assertThat(
             policy

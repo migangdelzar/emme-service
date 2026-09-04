@@ -48,7 +48,7 @@ class SpringAiEmbeddingConfigurationTest {
             aiProperties(2));
     EmbeddingModelPort embeddingModel = configuration.embeddingModel(registry);
 
-    assertThat(embeddingModel.embed("faq"))
+    assertThat(AiExecutionContextScope.call(context(), () -> embeddingModel.embed("faq")))
         .isEqualTo(new EmbeddingVector("ollama-embeddinggemma:300m", List.of(0.2f, 0.8f)));
     var invocationOrder = inOrder(local, cloud);
     invocationOrder.verify(local).embed("faq");
@@ -86,7 +86,8 @@ class SpringAiEmbeddingConfigurationTest {
             configuration.providerRegistry(
                 Map.of("ollamaEmbeddingModel", local), properties, aiProperties(2)));
 
-    assertThatThrownBy(() -> embeddingModel.embed("faq"))
+    assertThatThrownBy(
+            () -> AiExecutionContextScope.call(context(), () -> embeddingModel.embed("faq")))
         .isInstanceOf(EmbeddingProviderUnavailableException.class);
   }
 
@@ -108,10 +109,12 @@ class SpringAiEmbeddingConfigurationTest {
     EmbeddingModelPort embeddingModel =
         configuration.embeddingModel(
             configuration.providerRegistry(
-                Map.of("ollamaEmbeddingModel", local, "openAiEmbeddingModel", cloud), properties,
+                Map.of("ollamaEmbeddingModel", local, "openAiEmbeddingModel", cloud),
+                properties,
                 aiProperties(2)));
 
-    assertThatThrownBy(() -> embeddingModel.embed("faq"))
+    assertThatThrownBy(
+            () -> AiExecutionContextScope.call(context(), () -> embeddingModel.embed("faq")))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Embedding dimension 1 does not match configured dimension 2");
     verifyNoInteractions(cloud);

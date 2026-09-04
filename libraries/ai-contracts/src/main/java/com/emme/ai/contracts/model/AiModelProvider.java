@@ -1,5 +1,6 @@
 package com.emme.ai.contracts.model;
 
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 
 /**
@@ -10,10 +11,16 @@ import java.util.List;
  * Spring, HTTP-client, provider SDK, tenant-resolution, or persistence types.
  *
  * @deprecated use {@link ChatModel}, {@link EmbeddingModel}, and the image capability contract
- * independently. This composite remains only as a compatibility boundary for existing wiring.
+ *     independently. This composite remains only as a compatibility boundary for existing wiring.
  */
 @Deprecated
 public interface AiModelProvider extends ChatModel, EmbeddingModel {
+
+  @Override
+  default String complete(String conversationContext, String userMessage) {
+    AiExecutionContextScope.requireCurrent();
+    return chat(conversationContext, userMessage);
+  }
 
   /** Stable provider identifier used for telemetry and configuration diagnostics. */
   String name();

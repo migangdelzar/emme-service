@@ -1,9 +1,9 @@
 package com.emme.assistant.ai.adapter.in.web.security;
 
+import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.Channel;
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Set;
@@ -21,12 +21,17 @@ public final class AiWebExecutionContextFactory {
   }
 
   public AiWebExecutionContextFactory(AiAuthorizationContextResolver authorizationResolver) {
-    this(java.util.Optional.of(java.util.Objects.requireNonNull(authorizationResolver, "authorizationResolver must not be null")));
+    this(
+        java.util.Optional.of(
+            java.util.Objects.requireNonNull(
+                authorizationResolver, "authorizationResolver must not be null")));
   }
 
   public AiWebExecutionContextFactory(
       java.util.Optional<AiAuthorizationContextResolver> authorizationResolver) {
-    this.authorizationResolver = java.util.Objects.requireNonNull(authorizationResolver, "authorizationResolver must not be null");
+    this.authorizationResolver =
+        java.util.Objects.requireNonNull(
+            authorizationResolver, "authorizationResolver must not be null");
   }
 
   public AiExecutionContext forReadOnly(

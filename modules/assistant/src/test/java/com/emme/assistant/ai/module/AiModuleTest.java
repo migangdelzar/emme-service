@@ -82,7 +82,8 @@ class AiModuleTest extends BaseSpringModuleTest {
                 .with(tenantJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
-                    "{\"userMessage\":\"Great, thanks!\",\"conversationContext\":\"Previous: user asked about nail services\"}"))
+                    "{\"userMessage\":\"Great, thanks!\",\"conversationContext\":\"Previous: user"
+                        + " asked about nail services\"}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.response").exists());
   }

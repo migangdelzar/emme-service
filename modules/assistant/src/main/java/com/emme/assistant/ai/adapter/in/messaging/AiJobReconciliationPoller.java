@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.adapter.in.messaging;
 
+import com.emme.assistant.ai.application.job.AiJobWorker;
 import com.emme.assistant.ai.application.port.out.AiJobMetrics;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
 import com.emme.assistant.ai.configuration.AiJobProperties;
@@ -12,11 +13,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /** Reconciles durable jobs whose event delivery was lost. Redis/live events remain optional. */
 @Component
+@ConditionalOnBean(AiJobWorker.class)
 public final class AiJobReconciliationPoller {
   private static final UUID SYSTEM_ID = new UUID(0, 0);
 

@@ -26,10 +26,14 @@ class TenantIdentifierResolverTest {
     JdbcTemplate jdbc = mock(JdbcTemplate.class);
     ApplicationContext applicationContext = mock(ApplicationContext.class);
     when(applicationContext.getBean("bootstrapJdbcTemplate", JdbcTemplate.class)).thenReturn(jdbc);
-    when(jdbc.queryForObject(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.eq(String.class), org.mockito.ArgumentMatchers.any()))
+    when(jdbc.queryForObject(
+            org.mockito.ArgumentMatchers.anyString(),
+            org.mockito.ArgumentMatchers.eq(String.class),
+            org.mockito.ArgumentMatchers.any()))
         .thenThrow(new IllegalStateException("database unavailable"));
 
-    try (MockedStatic<ApplicationContextProvider> provider = mockStatic(ApplicationContextProvider.class)) {
+    try (MockedStatic<ApplicationContextProvider> provider =
+        mockStatic(ApplicationContextProvider.class)) {
       provider.when(ApplicationContextProvider::get).thenReturn(applicationContext);
       TenantContext.setCurrentTenant(tenantId);
 

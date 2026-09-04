@@ -8,7 +8,6 @@ import com.emme.tenancy.configuration.TenantDatabaseConnectionProperties;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.stereotype.Component;
 

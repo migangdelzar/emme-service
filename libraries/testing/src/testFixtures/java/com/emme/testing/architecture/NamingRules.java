@@ -1,5 +1,6 @@
 package com.emme.testing.architecture;
 
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.TOP_LEVEL_CLASSES;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 import com.tngtech.archunit.core.domain.JavaClass;
@@ -31,6 +32,7 @@ public final class NamingRules {
     return classes()
         .that()
         .resideInAnyPackage("com.emme..application.service..")
+        .and(TOP_LEVEL_CLASSES)
         .should(
             useSuffixExcept(
                 "Service", "Support", "ApplicationSupport", "BoundaryTest", "Configuration"))

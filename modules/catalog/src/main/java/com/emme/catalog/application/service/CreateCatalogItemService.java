@@ -9,7 +9,9 @@ import com.emme.catalog.application.mapper.CatalogApplicationMapper;
 import com.emme.catalog.application.port.out.CatalogItemRepository;
 import com.emme.catalog.domain.model.CatalogItem;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +21,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateCatalogItemService implements CreateCatalogItemUseCase {
 
   private final CatalogItemRepository itemRepository;
-  private final SemanticCacheDependencyPublisher cacheDependencies;
+  private final Optional<SemanticCacheDependencyPublisher> cacheDependencies;
+
+  public CreateCatalogItemService(CatalogItemRepository itemRepository) {
+    this(itemRepository, Optional.empty());
+  }
 
   public CreateCatalogItemService(
       CatalogItemRepository itemRepository, SemanticCacheDependencyPublisher cacheDependencies) {
+    this(itemRepository, Optional.of(cacheDependencies));
+  }
+
+  @Autowired
+  public CreateCatalogItemService(
+      CatalogItemRepository itemRepository,
+      Optional<SemanticCacheDependencyPublisher> cacheDependencies) {
     this.itemRepository = itemRepository;
     this.cacheDependencies = cacheDependencies;
   }
@@ -41,14 +54,16 @@ public class CreateCatalogItemService implements CreateCatalogItemUseCase {
             command.durationMinutes(),
             command.materials());
     CatalogItemDetails details = CatalogApplicationMapper.toResult(itemRepository.save(item));
-    cacheDependencies.publish(
-        new SemanticCacheDependencyChanged(
-            UUID.randomUUID(),
-            command.tenantId(),
-            null,
-            SemanticCacheDependencyChanged.Dependency.PRICE,
-            details.id().toString(),
-            Instant.now()));
+    cacheDependencies.ifPresent(
+        publisher ->
+            publisher.publish(
+                new SemanticCacheDependencyChanged(
+                    UUID.randomUUID(),
+                    command.tenantId(),
+                    null,
+                    SemanticCacheDependencyChanged.Dependency.PRICE,
+                    details.id().toString(),
+                    Instant.now())));
     return details;
   }
 }

@@ -34,10 +34,11 @@ public class SpringAiEmbeddingConfiguration {
       AiProviderProperties aiProperties, ObservationRegistry observationRegistry) {
     OllamaEmbeddingModel model =
         OllamaEmbeddingModel.builder()
-        .ollamaApi(OllamaApi.builder().baseUrl(aiProperties.embedding().baseUrl()).build())
-        .options(OllamaEmbeddingOptions.builder().model(aiProperties.embedding().model()).build())
-        .observationRegistry(observationRegistry)
-        .build();
+            .ollamaApi(OllamaApi.builder().baseUrl(aiProperties.embedding().baseUrl()).build())
+            .options(
+                OllamaEmbeddingOptions.builder().model(aiProperties.embedding().model()).build())
+            .observationRegistry(observationRegistry)
+            .build();
     model.setObservationConvention(
         SpringAiObservationConventions.embeddingModel(aiProperties.embedding().model()));
     return model;

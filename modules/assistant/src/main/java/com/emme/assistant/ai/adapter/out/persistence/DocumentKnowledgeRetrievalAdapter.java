@@ -13,6 +13,7 @@ import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /** Adapts the tenant-safe document use case to the application retrieval port. */
@@ -35,6 +36,7 @@ public final class DocumentKnowledgeRetrievalAdapter implements KnowledgeSearch 
         new AiProviderProperties(null, null, null, false));
   }
 
+  @Autowired
   public DocumentKnowledgeRetrievalAdapter(
       AiModelProvider legacyModel,
       SearchDocumentChunksUseCase searchDocuments,

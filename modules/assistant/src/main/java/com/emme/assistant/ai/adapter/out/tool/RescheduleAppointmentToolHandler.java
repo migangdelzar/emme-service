@@ -1,11 +1,14 @@
 package com.emme.assistant.ai.adapter.out.tool;
 
-import com.emme.appointments.api.command.*;
-import com.emme.appointments.api.usecase.*;
-import com.emme.assistant.ai.application.tool.*;
+import com.emme.appointments.api.command.RescheduleAppointmentCommand;
+import com.emme.appointments.api.type.AppointmentActor;
+import com.emme.appointments.api.usecase.RescheduleAuthorizedAppointmentUseCase;
+import com.emme.assistant.ai.application.tool.AiToolExecutionContext;
+import com.emme.assistant.ai.application.tool.AiToolHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
-import java.util.*;
+import java.util.Map;
+import java.util.UUID;
 
 public final class RescheduleAppointmentToolHandler implements AiToolHandler {
   private final RescheduleAuthorizedAppointmentUseCase u;

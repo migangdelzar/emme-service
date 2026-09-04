@@ -1,10 +1,9 @@
-package com.emme.subscriptions.domain.service;
+package com.emme.subscriptions.api;
 
 import com.emme.subscriptions.api.type.PlanType;
-import com.emme.subscriptions.domain.exception.EntitlementViolationException;
 import java.util.Set;
 
-/** Pure subscription policy for plan-gated capabilities. */
+/** Public, pure capability policy used by modules that build authorization envelopes. */
 public final class SubscriptionEntitlementPolicy {
   private SubscriptionEntitlementPolicy() {}
 
@@ -33,11 +32,5 @@ public final class SubscriptionEntitlementPolicy {
               "analytics:export",
               "calendar:sync");
     };
-  }
-
-  public static void enforce(PlanType plan, String entitlement) {
-    if (!getEntitlements(plan).contains(entitlement)) {
-      throw new EntitlementViolationException(plan, entitlement);
-    }
   }
 }

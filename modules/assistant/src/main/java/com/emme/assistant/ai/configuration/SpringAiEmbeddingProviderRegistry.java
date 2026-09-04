@@ -2,12 +2,12 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
+import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
 import com.emme.assistant.ai.application.provider.TracingEmbeddingModelPort;
+import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
-import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

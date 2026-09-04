@@ -1,10 +1,13 @@
 package com.emme.assistant.ai.adapter.out.tool;
 
-import com.emme.appointments.api.command.*;
-import com.emme.appointments.api.usecase.*;
-import com.emme.assistant.ai.application.tool.*;
+import com.emme.appointments.api.command.CancelAppointmentCommand;
+import com.emme.appointments.api.type.AppointmentActor;
+import com.emme.appointments.api.usecase.CancelAuthorizedAppointmentUseCase;
+import com.emme.assistant.ai.application.tool.AiToolExecutionContext;
+import com.emme.assistant.ai.application.tool.AiToolHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.*;
+import java.util.Map;
+import java.util.UUID;
 
 public final class CancelAppointmentToolHandler implements AiToolHandler {
   private final CancelAuthorizedAppointmentUseCase u;

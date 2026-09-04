@@ -8,6 +8,8 @@ public interface TenantImageReader {
   Optional<StoredImage> read(UUID tenantId, String storageKey);
 
   record StoredImage(byte[] bytes, String mediaType, String checksum) {
-    public StoredImage(byte[] bytes, String mediaType) { this(bytes, mediaType, ""); }
+    public StoredImage(byte[] bytes, String mediaType) {
+      this(bytes, mediaType, "");
+    }
   }
 }

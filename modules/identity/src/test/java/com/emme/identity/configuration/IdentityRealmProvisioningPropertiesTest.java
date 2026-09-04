@@ -20,8 +20,7 @@ class IdentityRealmProvisioningPropertiesTest {
     assertThat(properties.initialOwnerUsername()).isEqualTo("owner");
     assertThat(properties.initialOwnerPassword()).isBlank();
     assertThat(properties.initialOwnerRole()).isEqualTo("tenant_owner");
-    assertThat(properties.defaultRoles())
-        .containsExactly("tenant_owner", "tenant_staff");
+    assertThat(properties.defaultRoles()).containsExactly("tenant_owner", "tenant_staff");
     assertThat(properties.maxAttempts()).isEqualTo(3);
     assertThat(properties.retryDelayMillis()).isEqualTo(2_000L);
   }

@@ -82,7 +82,7 @@ class JdbcLearningCandidateEvaluationStoreTest {
     assertThat(sql.getValue())
         .contains("FROM ai_learning_candidate")
         .contains("tenant_id = :tenantId")
-        .contains("candidate_id = :candidateId");
+        .contains("id = :candidateId");
   }
 
   private static LearningCandidateEvaluationReport report() {

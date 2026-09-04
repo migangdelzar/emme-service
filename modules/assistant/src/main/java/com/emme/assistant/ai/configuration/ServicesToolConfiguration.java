@@ -1,5 +1,6 @@
-package com.emme.assistant.ai.adapter.out.tool;
+package com.emme.assistant.ai.configuration;
 
+import com.emme.assistant.ai.adapter.out.tool.ServicesToolHandler;
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
 import com.emme.assistant.ai.application.tool.AiToolRisk;
 import com.emme.kernel.context.Channel;

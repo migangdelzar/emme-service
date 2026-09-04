@@ -86,7 +86,8 @@ class JdbcLangGraphCheckpointSaverTest {
                     .contains("workflow_namespace")
                     .contains("next_node_name")
                     .contains(
-                        "ON CONFLICT (tenant_id, workflow_id, workflow_namespace, node_name, node_execution_key)")
+                        "ON CONFLICT (tenant_id, workflow_id, workflow_namespace, node_name,"
+                            + " node_execution_key)")
                     .contains("RETURNING node_execution_key"));
     verify(statement, atLeast(1)).param("tenantId", TENANT_ID);
     verify(statement, atLeast(1)).param("workflowId", WORKFLOW_ID);

@@ -3,7 +3,6 @@ package com.emme.appointments.application.service;
 import com.emme.appointments.api.command.CreateAppointmentCommand;
 import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.appointments.api.result.AppointmentDetails;
-import com.emme.appointments.api.usecase.BookAppointmentUseCase;
 import com.emme.appointments.api.usecase.CreateAppointmentUseCase;
 import com.emme.appointments.application.port.out.AppointmentCollisionPort;
 import com.emme.appointments.application.port.out.AppointmentEventPublisher;
@@ -20,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 /** Application service for appointment creation. */
 @Service
 @Transactional
-public class CreateAppointmentService implements CreateAppointmentUseCase, BookAppointmentUseCase {
+public class CreateAppointmentService implements CreateAppointmentUseCase {
 
   private final AppointmentRepository repository;
   private final AppointmentEventPublisher eventPublisher;
@@ -40,8 +39,7 @@ public class CreateAppointmentService implements CreateAppointmentUseCase, BookA
             repository, collisionPort, customerRepository, serviceRepository, artistRepository);
   }
 
-  @Override
-  public AppointmentDetails book(CreateAppointmentCommand command) {
+  AppointmentDetails bookWithAuthorization(CreateAppointmentCommand command) {
     support.ensureActorCanBook(command.actor(), command.customerId(), command.confirmed());
     return create(
         command.actor().tenantId(),

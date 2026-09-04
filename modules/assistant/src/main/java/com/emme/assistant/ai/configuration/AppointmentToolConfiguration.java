@@ -1,13 +1,21 @@
-package com.emme.assistant.ai.adapter.out.tool;
+package com.emme.assistant.ai.configuration;
 
-import com.emme.appointments.api.usecase.*;
-import com.emme.assistant.ai.application.tool.*;
+import com.emme.appointments.api.usecase.BookAppointmentUseCase;
+import com.emme.appointments.api.usecase.CancelAuthorizedAppointmentUseCase;
+import com.emme.appointments.api.usecase.RescheduleAuthorizedAppointmentUseCase;
+import com.emme.assistant.ai.adapter.out.tool.CancelAppointmentToolHandler;
+import com.emme.assistant.ai.adapter.out.tool.CreateAppointmentToolHandler;
+import com.emme.assistant.ai.adapter.out.tool.RescheduleAppointmentToolHandler;
+import com.emme.assistant.ai.application.tool.AiToolDefinition;
+import com.emme.assistant.ai.application.tool.AiToolRisk;
 import com.emme.kernel.context.Channel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Set;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
+/** Registers appointment mutation tools against the appointments API. */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnBean({
   BookAppointmentUseCase.class,

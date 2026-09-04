@@ -96,7 +96,8 @@ class ChatModelSelectorTest {
         new ChatModelSelector(List.of(new ChatModelSelector.Provider("local", local, "llama-3")));
 
     assertThat(chain.completeWithIdentity("", "hello"))
-        .isEqualTo(new IdentifiedChatCompletionPort.ChatCompletionResult("hola", "local", "llama-3"));
+        .isEqualTo(
+            new IdentifiedChatCompletionPort.ChatCompletionResult("hola", "local", "llama-3"));
   }
 
   @Test
@@ -140,8 +141,7 @@ class ChatModelSelectorTest {
                 new ChatModelSelector.Provider("local", primary),
                 new ChatModelSelector.Provider("cloud", fallback)));
 
-    assertThatThrownBy(() -> selector.complete("", "hello"))
-        .isSameAs(invalidRequest);
+    assertThatThrownBy(() -> selector.complete("", "hello")).isSameAs(invalidRequest);
     verifyNoInteractions(fallback);
   }
 

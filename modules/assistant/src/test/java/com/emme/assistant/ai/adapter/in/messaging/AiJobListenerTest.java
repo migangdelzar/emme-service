@@ -1,12 +1,16 @@
 package com.emme.assistant.ai.adapter.in.messaging;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import com.emme.ai.contracts.job.AiJobRequest;
 import com.emme.ai.contracts.job.AiJobType;
+import com.emme.assistant.ai.application.job.AiJobWorker;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
 import com.emme.assistant.ai.application.port.out.NoopAiJobMetrics;
-import com.emme.assistant.ai.application.service.AiJobWorkerService;
 import com.emme.kernel.context.AiExecutionContext;
 import java.time.Duration;
 import java.util.Set;
@@ -18,7 +22,7 @@ import org.junit.jupiter.api.Test;
 class AiJobListenerTest {
   @Test
   void rejectedSubmissionDoesNotRunWorkerSynchronously() {
-    AiJobWorkerService worker = mock(AiJobWorkerService.class);
+    AiJobWorker worker = mock(AiJobWorker.class);
     AiJobStatusStore store = mock(AiJobStatusStore.class);
     ExecutorService executor = mock(ExecutorService.class);
     doThrow(new RejectedExecutionException()).when(executor).execute(any());
@@ -31,7 +35,7 @@ class AiJobListenerTest {
 
   @Test
   void rejectedClaimedSubmissionDefersTheDurableClaim() {
-    AiJobWorkerService worker = mock(AiJobWorkerService.class);
+    AiJobWorker worker = mock(AiJobWorker.class);
     AiJobStatusStore store = mock(AiJobStatusStore.class);
     ExecutorService executor = mock(ExecutorService.class);
     doThrow(new RejectedExecutionException()).when(executor).execute(any());

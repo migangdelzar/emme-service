@@ -21,17 +21,24 @@ public class TenantProvisioningPersistenceAdapter implements TenantProvisioningR
 
   @Override
   public UUID requestProvisioning(UUID tenantId, String slug, String schemaName) {
-    repository.findBySlug(slug).ifPresentOrElse(
-        existing -> {},
-        () -> repository.save(new TenantRegistryEntity(tenantId, slug, schemaName, "PROVISIONING")));
+    repository
+        .findBySlug(slug)
+        .ifPresentOrElse(
+            existing -> {},
+            () ->
+                repository.save(
+                    new TenantRegistryEntity(tenantId, slug, schemaName, "PROVISIONING")));
     return tenantId;
   }
 
   @Override
   public TenantProvisioningStatus findStatus(UUID tenantId) {
-    return repository.findByTenantId(tenantId)
-        .map(e -> new TenantProvisioningStatus(
-            e.getStatus(), e.getSchemaName(), e.getLastMigratedAt(), e.getMigrationError()))
+    return repository
+        .findByTenantId(tenantId)
+        .map(
+            e ->
+                new TenantProvisioningStatus(
+                    e.getStatus(), e.getSchemaName(), e.getLastMigratedAt(), e.getMigrationError()))
         .orElseThrow(() -> new IllegalArgumentException("Tenant registry not found: " + tenantId));
   }
 
@@ -44,27 +51,34 @@ public class TenantProvisioningPersistenceAdapter implements TenantProvisioningR
 
   @Override
   public void markActive(UUID tenantId) {
-    repository.findByTenantId(tenantId).ifPresent(entity -> {
-      entity.setStatus("ACTIVE");
-      entity.setSchemaVersion("0.1.0");
-      entity.setLastMigratedAt(Instant.now());
-      entity.setMigrationError(null);
-      repository.save(entity);
-    });
+    repository
+        .findByTenantId(tenantId)
+        .ifPresent(
+            entity -> {
+              entity.setStatus("ACTIVE");
+              entity.setSchemaVersion("0.1.0");
+              entity.setLastMigratedAt(Instant.now());
+              entity.setMigrationError(null);
+              repository.save(entity);
+            });
   }
 
   @Override
   public void markFailed(UUID tenantId, String error) {
-    repository.findByTenantId(tenantId).ifPresent(entity -> {
-      entity.setStatus("FAILED");
-      entity.setMigrationError(error);
-      repository.save(entity);
-    });
+    repository
+        .findByTenantId(tenantId)
+        .ifPresent(
+            entity -> {
+              entity.setStatus("FAILED");
+              entity.setMigrationError(error);
+              repository.save(entity);
+            });
   }
 
   @Override
   public String findSchemaName(UUID tenantId) {
-    return repository.findByTenantId(tenantId)
+    return repository
+        .findByTenantId(tenantId)
         .map(TenantRegistryEntity::getSchemaName)
         .orElseThrow(() -> new IllegalArgumentException("Tenant registry not found: " + tenantId));
   }

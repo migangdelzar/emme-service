@@ -127,8 +127,7 @@ class SpringAiQuoteExtractionConfigurationTest {
   private static AiProviderProperties aiProperties() {
     return new AiProviderProperties(
         "mock",
-        new AiProviderProperties.ProviderConfig(
-            "gemma4:e4b-mlx", "http://localhost:11434", null),
+        new AiProviderProperties.ProviderConfig("gemma4:e4b-mlx", "http://localhost:11434", null),
         new AiProviderProperties.EmbeddingConfig(
             "embeddinggemma:300m", "http://localhost:11434", null, 768),
         true);

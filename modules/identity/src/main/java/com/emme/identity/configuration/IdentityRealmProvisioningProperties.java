@@ -35,8 +35,7 @@ public record IdentityRealmProvisioningProperties(
       @DefaultValue("owner") String initialOwnerUsername,
       @DefaultValue("") String initialOwnerPassword,
       @DefaultValue("tenant_owner") String initialOwnerRole,
-      @DefaultValue({"tenant_owner", "tenant_staff"})
-          List<String> defaultRoles,
+      @DefaultValue({"tenant_owner", "tenant_staff"}) List<String> defaultRoles,
       @DefaultValue("3") int maxAttempts,
       @DefaultValue("2000") long retryDelayMillis) {
     this.clientId = clientId;

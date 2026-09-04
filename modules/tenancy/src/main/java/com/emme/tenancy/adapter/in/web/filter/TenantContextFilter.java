@@ -11,6 +11,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,31 +54,13 @@ public class TenantContextFilter extends OncePerRequestFilter {
           TrustedTenantResolver.fromAuthentication(authentication, tenantRepository);
       tenantId = authenticationTenant.tenantId();
 
-      if (tenantId != null) {
-        rejectConflictingTenantSelectors(request, tenantId);
+      if (authenticationTenant.tenantBound() && tenantId == null) {
+        throw new AccessDeniedException("Authenticated tenant could not be resolved");
       }
 
-      if (tenantId == null && !authenticationTenant.tenantBound()) {
-        // Try X-Tenant-Slug header (or X-Emme-Tenant-Slug for E2E tests)
-        String headerSlug = request.getHeader("X-Tenant-Slug");
-        if (headerSlug == null || headerSlug.isBlank()) {
-          headerSlug = request.getHeader("X-Emme-Tenant-Slug");
-        }
-        if (headerSlug != null && !headerSlug.isBlank()) {
-          tenantId = TrustedTenantResolver.fromQueryParam(headerSlug.trim(), tenantRepository);
-          if (tenantId != null) log.debug("Tenant from X-Tenant-Slug header: {}", tenantId);
-        }
-      }
-
+      UUID selectedTenantId = resolveRequestTenantSelectors(request, tenantId);
       if (tenantId == null) {
-        tenantId =
-            TrustedTenantResolver.fromQueryParam(request.getParameter("tenant"), tenantRepository);
-        if (tenantId != null) log.debug("Tenant from ?tenant= param: {}", tenantId);
-      }
-
-      if (tenantId == null) {
-        tenantId = TrustedTenantResolver.fromHost(request.getServerName(), tenantRepository);
-        if (tenantId != null) log.debug("Tenant from hostname: {}", tenantId);
+        tenantId = selectedTenantId;
       }
 
       if (tenantId != null) {
@@ -84,12 +68,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
         MDC.put("tenantId", tenantId.toString());
       }
 
-      UUID databaseId = null;
-      try {
-        databaseId = TrustedTenantResolver.resolveDatabaseId(tenantId, tenantRepository);
-      } catch (Exception e) {
-        log.warn("Failed to resolve databaseId for tenant {}, using default pool", tenantId, e);
-      }
+      UUID databaseId = TrustedTenantResolver.resolveDatabaseId(tenantId, tenantRepository);
       TenantContext.setCurrentDatabaseId(databaseId);
 
       if (tenantId == null) {
@@ -135,26 +114,39 @@ public class TenantContextFilter extends OncePerRequestFilter {
     throw exception;
   }
 
-  private void rejectConflictingTenantSelectors(
+  private UUID resolveRequestTenantSelectors(
       HttpServletRequest request, UUID authenticatedTenantId) {
-    rejectIfDifferent(
-        TrustedTenantResolver.fromQueryParam(request.getHeader("X-Tenant-Slug"), tenantRepository),
-        authenticatedTenantId);
-    rejectIfDifferent(
-        TrustedTenantResolver.fromQueryParam(
-            request.getHeader("X-Emme-Tenant-Slug"), tenantRepository),
-        authenticatedTenantId);
-    rejectIfDifferent(
-        TrustedTenantResolver.fromQueryParam(request.getParameter("tenant"), tenantRepository),
-        authenticatedTenantId);
-    rejectIfDifferent(
-        TrustedTenantResolver.fromHost(request.getServerName(), tenantRepository),
-        authenticatedTenantId);
-  }
+    List<UUID> selectedTenantIds = new ArrayList<>();
+    addTenantSelector(selectedTenantIds, request.getHeader("X-Tenant-Slug"));
+    addTenantSelector(selectedTenantIds, request.getHeader("X-Emme-Tenant-Slug"));
+    addTenantSelector(selectedTenantIds, request.getParameter("tenant"));
 
-  private static void rejectIfDifferent(UUID selectedTenantId, UUID authenticatedTenantId) {
-    if (selectedTenantId != null && !authenticatedTenantId.equals(selectedTenantId)) {
+    String hostSlug = TrustedTenantResolver.slugFromHost(request.getServerName());
+    if (hostSlug != null) {
+      addTenantSelector(selectedTenantIds, hostSlug);
+    }
+
+    if (selectedTenantIds.stream().distinct().count() > 1) {
+      throw new AccessDeniedException("Tenant selectors disagree");
+    }
+
+    UUID selectedTenantId = selectedTenantIds.isEmpty() ? null : selectedTenantIds.getFirst();
+    if (authenticatedTenantId != null
+        && selectedTenantId != null
+        && !authenticatedTenantId.equals(selectedTenantId)) {
       throw new AccessDeniedException("Tenant selector conflicts with authenticated tenant");
     }
+    return selectedTenantId;
+  }
+
+  private void addTenantSelector(List<UUID> selectedTenantIds, String selector) {
+    if (selector == null || selector.isBlank()) {
+      return;
+    }
+    UUID tenantId = TrustedTenantResolver.fromQueryParam(selector, tenantRepository);
+    if (tenantId == null) {
+      throw new AccessDeniedException("Unknown tenant selector");
+    }
+    selectedTenantIds.add(tenantId);
   }
 }

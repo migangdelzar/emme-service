@@ -75,8 +75,7 @@ public class ConversationController {
   @PostMapping
   @Operation(summary = "Start a new conversation")
   public ResponseEntity<ConversationResponse> start(
-      @Valid @RequestBody StartConversationRequest request,
-      @AuthenticationPrincipal Jwt jwt) {
+      @Valid @RequestBody StartConversationRequest request, @AuthenticationPrincipal Jwt jwt) {
     return withCurrentTenant(
         tenantId -> {
           var owner =

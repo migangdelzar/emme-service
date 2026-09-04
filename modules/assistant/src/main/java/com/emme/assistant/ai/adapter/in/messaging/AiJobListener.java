@@ -1,23 +1,25 @@
 package com.emme.assistant.ai.adapter.in.messaging;
 
 import com.emme.ai.contracts.job.AiJobRequest;
+import com.emme.assistant.ai.application.job.AiJobWorker;
 import com.emme.assistant.ai.application.port.out.AiJobMetrics;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
-import com.emme.assistant.ai.application.service.AiJobWorkerService;
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnBean(AiJobWorker.class)
 public final class AiJobListener {
-  private final AiJobWorkerService worker;
+  private final AiJobWorker worker;
   private final ExecutorService executor;
   private final AiJobStatusStore store;
   private final AiJobMetrics metrics;
 
   public AiJobListener(
-      AiJobWorkerService worker,
+      AiJobWorker worker,
       ExecutorService aiJobExecutor,
       AiJobStatusStore store,
       AiJobMetrics metrics) {

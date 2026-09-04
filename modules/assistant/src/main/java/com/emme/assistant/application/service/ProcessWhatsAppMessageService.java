@@ -1,7 +1,7 @@
 package com.emme.assistant.application.service;
 
-import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
+import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.api.command.AddConversationEventCommand;
 import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
 import com.emme.assistant.api.command.StartConversationCommand;
@@ -111,7 +111,9 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
     this.webhookEvents = webhookEvents;
     this.replyPort = replyPort;
     this.eventPublisher = eventPublisher;
-    this.authorizationResolver = java.util.Objects.requireNonNull(authorizationResolver, "authorizationResolver must not be null");
+    this.authorizationResolver =
+        java.util.Objects.requireNonNull(
+            authorizationResolver, "authorizationResolver must not be null");
   }
 
   @Override

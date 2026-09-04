@@ -19,8 +19,9 @@ class TenantProvisioningPersistenceAdapterTest {
     UUID tenantId = UUID.randomUUID();
     when(repository.findBySlug("studio-a")).thenReturn(Optional.empty());
 
-    UUID result = new TenantProvisioningPersistenceAdapter(repository)
-        .requestProvisioning(tenantId, "studio-a", "studio_a");
+    UUID result =
+        new TenantProvisioningPersistenceAdapter(repository)
+            .requestProvisioning(tenantId, "studio-a", "studio_a");
 
     assertThat(result).isEqualTo(tenantId);
     verify(repository).save(org.mockito.ArgumentMatchers.any(TenantRegistryEntity.class));
@@ -30,11 +31,14 @@ class TenantProvisioningPersistenceAdapterTest {
   void requestProvisioning_skipsExistingSlug() {
     var repository = mock(SpringDataTenantRegistryRepository.class);
     UUID tenantId = UUID.randomUUID();
-    when(repository.findBySlug("studio-a")).thenReturn(
-        Optional.of(new TenantRegistryEntity(tenantId, "studio-a", "studio_a", "PROVISIONING")));
+    when(repository.findBySlug("studio-a"))
+        .thenReturn(
+            Optional.of(
+                new TenantRegistryEntity(tenantId, "studio-a", "studio_a", "PROVISIONING")));
 
-    UUID result = new TenantProvisioningPersistenceAdapter(repository)
-        .requestProvisioning(tenantId, "studio-a", "studio_a");
+    UUID result =
+        new TenantProvisioningPersistenceAdapter(repository)
+            .requestProvisioning(tenantId, "studio-a", "studio_a");
 
     assertThat(result).isEqualTo(tenantId);
     verify(repository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
@@ -44,8 +48,9 @@ class TenantProvisioningPersistenceAdapterTest {
   void findSchemaName_returnsSchemaName() {
     var repository = mock(SpringDataTenantRegistryRepository.class);
     UUID tenantId = UUID.randomUUID();
-    when(repository.findByTenantId(tenantId)).thenReturn(
-        Optional.of(new TenantRegistryEntity(tenantId, "slug", "schema_name", "ACTIVE")));
+    when(repository.findByTenantId(tenantId))
+        .thenReturn(
+            Optional.of(new TenantRegistryEntity(tenantId, "slug", "schema_name", "ACTIVE")));
 
     String result = new TenantProvisioningPersistenceAdapter(repository).findSchemaName(tenantId);
     assertThat(result).isEqualTo("schema_name");

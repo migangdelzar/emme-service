@@ -50,10 +50,12 @@ class ContractValidationTest {
 
   @Test
   void canonicalCapabilityContractsExposeOnlyTheirOwnOperation() throws IOException {
-    String chatModel = readSource(
-        "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatModel.java");
-    String embeddingModel = readSource(
-        "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/EmbeddingModel.java");
+    String chatModel =
+        readSource(
+            "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatModel.java");
+    String embeddingModel =
+        readSource(
+            "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/EmbeddingModel.java");
 
     assertThat(chatModel).contains("interface ChatModel").contains("complete(");
     assertThat(chatModel).doesNotContain("embed(").doesNotContain("routeIntent");

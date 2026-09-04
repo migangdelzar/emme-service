@@ -1,7 +1,10 @@
-package com.emme.assistant.ai.application.service;
+package com.emme.assistant.ai.application.job;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.job.AiJobRequest;
 import com.emme.ai.contracts.job.AiJobType;
@@ -17,7 +20,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
-class AiJobWorkerServiceTest {
+/** Verifies durable AI job claim and execution semantics. */
+class AiJobWorkerTest {
   private final AiExecutionContext context =
       new AiExecutionContext(
           UUID.randomUUID(),
@@ -31,9 +35,8 @@ class AiJobWorkerServiceTest {
   @Test
   void duplicateJobPublicationExecutesOnlyOnce() {
     AiJobStatusStore store = mock(AiJobStatusStore.class);
-    AiJobWorkerService worker =
-        new AiJobWorkerService(
-            store, mock(ModelExecutionScheduler.class), (request, ignored) -> {});
+    AiJobWorker worker =
+        new AiJobWorker(store, mock(ModelExecutionScheduler.class), (request, ignored) -> {});
     AiJobRequest request =
         new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
     AtomicBoolean firstClaim = new AtomicBoolean(true);
@@ -67,8 +70,8 @@ class AiJobWorkerServiceTest {
         .thenReturn(Optional.of(canonicalRequest));
     AtomicReference<AiJobRequest> executedRequest = new AtomicReference<>();
     AtomicReference<AiExecutionContext> executedContext = new AtomicReference<>();
-    AiJobWorkerService worker =
-        new AiJobWorkerService(
+    AiJobWorker worker =
+        new AiJobWorker(
             store,
             executingScheduler(),
             (request, executionContext) -> {
@@ -87,8 +90,8 @@ class AiJobWorkerServiceTest {
   @Test
   void retryableFailureIsFailedAndEventuallyDeadLettered() {
     AiJobStatusStore store = mock(AiJobStatusStore.class);
-    AiJobWorkerService worker =
-        new AiJobWorkerService(
+    AiJobWorker worker =
+        new AiJobWorker(
             store,
             executingScheduler(),
             (request, ignored) -> {
@@ -105,8 +108,7 @@ class AiJobWorkerServiceTest {
   @Test
   void executesAJobAlreadyClaimedByReconciliationWithoutClaimingItAgain() {
     AiJobStatusStore store = mock(AiJobStatusStore.class);
-    AiJobWorkerService worker =
-        new AiJobWorkerService(store, executingScheduler(), (request, ignored) -> {});
+    AiJobWorker worker = new AiJobWorker(store, executingScheduler(), (request, ignored) -> {});
     AiJobRequest request =
         new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
     when(store.loadClaimed(request.jobId(), context)).thenReturn(Optional.of(request));

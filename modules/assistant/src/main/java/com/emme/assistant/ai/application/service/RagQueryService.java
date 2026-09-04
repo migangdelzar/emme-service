@@ -65,7 +65,7 @@ public class RagQueryService implements RagQueryUseCase {
         }
       }
     } catch (ChatProviderUnavailableException unavailable) {
-      // Preserve the provider-neutral retrieval path as the compatibility fallback.
+      return "Retrieval unavailable.";
     }
     try {
       List<RetrievedDocument> documents =

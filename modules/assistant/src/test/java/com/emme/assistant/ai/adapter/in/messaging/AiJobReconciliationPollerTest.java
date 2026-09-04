@@ -1,15 +1,22 @@
 package com.emme.assistant.ai.adapter.in.messaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.job.AiJobRequest;
 import com.emme.ai.contracts.job.AiJobType;
+import com.emme.assistant.ai.application.job.AiJobWorker;
 import com.emme.assistant.ai.application.port.out.AiJobMetrics;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
 import com.emme.assistant.ai.application.port.out.NoopAiJobMetrics;
-import com.emme.assistant.ai.application.service.AiJobWorkerService;
 import com.emme.assistant.ai.configuration.AiJobProperties;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -95,8 +102,7 @@ class AiJobReconciliationPollerTest {
     ExecutorService executor = mock(ExecutorService.class);
     doThrow(new RejectedExecutionException()).when(executor).execute(any());
     AiJobListener listener =
-        new AiJobListener(
-            mock(AiJobWorkerService.class), executor, store, NoopAiJobMetrics.INSTANCE);
+        new AiJobListener(mock(AiJobWorker.class), executor, store, NoopAiJobMetrics.INSTANCE);
 
     new AiJobReconciliationPoller(
             store, listener, new AiJobProperties(1, 1, 3, 2), tenants, NoopAiJobMetrics.INSTANCE)
@@ -126,7 +132,7 @@ class AiJobReconciliationPollerTest {
     doThrow(new RejectedExecutionException()).when(saturatedExecutor).execute(any());
     AiJobListener listener =
         new AiJobListener(
-            mock(AiJobWorkerService.class), saturatedExecutor, store, NoopAiJobMetrics.INSTANCE);
+            mock(AiJobWorker.class), saturatedExecutor, store, NoopAiJobMetrics.INSTANCE);
     AiJobReconciliationPoller poller =
         new AiJobReconciliationPoller(
             store, listener, new AiJobProperties(1, 1, 3, 1), tenants, NoopAiJobMetrics.INSTANCE);

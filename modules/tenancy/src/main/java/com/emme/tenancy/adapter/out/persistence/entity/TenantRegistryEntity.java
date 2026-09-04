@@ -8,7 +8,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -52,7 +51,6 @@ public class TenantRegistryEntity {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-
   protected TenantRegistryEntity() {}
 
   public TenantRegistryEntity(UUID tenantId, String slug, String schemaName, String status) {
@@ -74,18 +72,51 @@ public class TenantRegistryEntity {
     updatedAt = ClockProvider.instant();
   }
 
-  public UUID getTenantId() { return tenantId; }
-  public String getSlug() { return slug; }
-  public String getSchemaName() { return schemaName; }
-  public String getStatus() { return status; }
-  public String getSchemaVersion() { return schemaVersion; }
-  public String getMigrationError() { return migrationError; }
-  public Instant getLastMigratedAt() { return lastMigratedAt; }
-  public UUID getDatabaseId() { return databaseId; }
+  public UUID getTenantId() {
+    return tenantId;
+  }
 
-  public void setStatus(String status) { this.status = status; }
-  public void setSchemaVersion(String schemaVersion) { this.schemaVersion = schemaVersion; }
-  public void setLastMigratedAt(Instant lastMigratedAt) { this.lastMigratedAt = lastMigratedAt; }
-  public void setMigrationError(String migrationError) { this.migrationError = migrationError; }
+  public String getSlug() {
+    return slug;
+  }
+
+  public String getSchemaName() {
+    return schemaName;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public String getSchemaVersion() {
+    return schemaVersion;
+  }
+
+  public String getMigrationError() {
+    return migrationError;
+  }
+
+  public Instant getLastMigratedAt() {
+    return lastMigratedAt;
+  }
+
+  public UUID getDatabaseId() {
+    return databaseId;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  public void setSchemaVersion(String schemaVersion) {
+    this.schemaVersion = schemaVersion;
+  }
+
+  public void setLastMigratedAt(Instant lastMigratedAt) {
+    this.lastMigratedAt = lastMigratedAt;
+  }
+
+  public void setMigrationError(String migrationError) {
+    this.migrationError = migrationError;
+  }
 }
-

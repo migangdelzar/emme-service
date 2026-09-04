@@ -7,8 +7,8 @@ import com.emme.assistant.ai.application.port.out.NailDesignExtractionRejectedEx
 import com.emme.assistant.ai.application.port.out.NailDesignExtractor;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
-import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.assistant.ai.domain.quote.NailDesignFeatures;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -25,8 +25,7 @@ import org.springframework.util.MimeTypeUtils;
 /** Spring AI structured-output adapter for text and securely loaded design images. */
 public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
 
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(SpringAiNailDesignExtractor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SpringAiNailDesignExtractor.class);
 
   private static final String SYSTEM_PROMPT =
       "You extract nail-design attributes for Emme. Return only the requested structured schema. "

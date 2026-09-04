@@ -2,6 +2,7 @@ package com.emme.ai.platform.adapter.out.provider.mock;
 
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.platform.configuration.AiProviderProperties;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -32,6 +33,7 @@ public class MockModelProvider implements AiModelProvider {
 
   @Override
   public String chat(String context, String userMessage) {
+    AiExecutionContextScope.requireCurrent();
     return "MOCK: I received your message: \""
         + userMessage
         + "\". "
@@ -45,6 +47,7 @@ public class MockModelProvider implements AiModelProvider {
    */
   @Override
   public List<Float> embed(String text) {
+    AiExecutionContextScope.requireCurrent();
     int dim = props.embeddingDimension();
     float[] v = new float[dim];
     for (String token : text.toLowerCase(Locale.ROOT).split("\\W+")) {

@@ -46,7 +46,8 @@ class AssistantPackageConventionTest {
     assertThat(build).contains("implementation(project(\":modules:documents\"))");
     assertThat(metadata).contains("documents-api");
     assertThat(ragService)
-        .contains("com.emme.documents.api")
+        .contains("com.emme.ai.contracts.rag.KnowledgeSearch")
+        .doesNotContain("com.emme.documents.")
         .doesNotContain("com.emme.documents.adapter")
         .doesNotContain("com.emme.documents.application")
         .doesNotContain("com.emme.documents.domain");
@@ -81,9 +82,7 @@ class AssistantPackageConventionTest {
 
     assertThat(Files.exists(contractsRoot.resolve("KnowledgeSearch.java"))).isTrue();
     assertThat(Files.exists(contractsRoot.resolve("KnowledgeRetriever.java"))).isFalse();
-    assertThat(
-            Files.exists(
-                ROOT.resolve("ai/application/port/out/KnowledgeRetrievalPort.java")))
+    assertThat(Files.exists(ROOT.resolve("ai/application/port/out/KnowledgeRetrievalPort.java")))
         .isFalse();
     assertThat(ragService).contains("import com.emme.ai.contracts.rag.KnowledgeSearch;");
 

@@ -140,7 +140,8 @@ public final class JdbcAgeGraphClient implements AgeGraphClient {
   private void ensureGraph(String graphName) {
     boolean exists =
         jdbc.sql(
-                "SELECT EXISTS (SELECT 1 FROM ag_catalog.ag_graph WHERE name = CAST(:graphName AS name))")
+                "SELECT EXISTS (SELECT 1 FROM ag_catalog.ag_graph WHERE name = CAST(:graphName AS"
+                    + " name))")
             .param("graphName", graphName)
             .query((resultSet, rowNumber) -> resultSet.getBoolean(1))
             .single();

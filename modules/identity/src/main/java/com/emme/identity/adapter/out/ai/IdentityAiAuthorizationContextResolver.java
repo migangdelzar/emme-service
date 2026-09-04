@@ -9,11 +9,11 @@ import com.emme.identity.application.authorization.FeatureFlagEvaluator;
 import com.emme.identity.application.port.out.CustomerMembershipRepository;
 import com.emme.identity.application.port.out.SubscriptionPlanPort;
 import com.emme.kernel.context.Channel;
-import com.emme.subscriptions.domain.service.SubscriptionEntitlementPolicy;
+import com.emme.subscriptions.api.SubscriptionEntitlementPolicy;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -34,9 +34,11 @@ public final class IdentityAiAuthorizationContextResolver
       FeatureFlagEvaluator features,
       CustomerMembershipRepository customerMemberships) {
     this.memberships = Objects.requireNonNull(memberships, "memberships must not be null");
-    this.subscriptionPlans = Objects.requireNonNull(subscriptionPlans, "subscriptionPlans must not be null");
+    this.subscriptionPlans =
+        Objects.requireNonNull(subscriptionPlans, "subscriptionPlans must not be null");
     this.features = Objects.requireNonNull(features, "features must not be null");
-    this.customerMemberships = Objects.requireNonNull(customerMemberships, "customerMemberships must not be null");
+    this.customerMemberships =
+        Objects.requireNonNull(customerMemberships, "customerMemberships must not be null");
   }
 
   @Override
@@ -47,12 +49,14 @@ public final class IdentityAiAuthorizationContextResolver
     if (principalReference == null || principalReference.isBlank()) {
       throw new IllegalArgumentException("principalReference must not be blank");
     }
-    Set<String> authenticated = authenticatedRoles == null ? Set.of() : Set.copyOf(authenticatedRoles);
-    Set<String> validRoles = switch (channel) {
-      case WEB -> webRoles(tenantId, principalReference, authenticated);
-      case WHATSAPP -> whatsappRoles(tenantId, principalReference, authenticated);
-      default -> Set.of();
-    };
+    Set<String> authenticated =
+        authenticatedRoles == null ? Set.of() : Set.copyOf(authenticatedRoles);
+    Set<String> validRoles =
+        switch (channel) {
+          case WEB -> webRoles(tenantId, principalReference, authenticated);
+          case WHATSAPP -> whatsappRoles(tenantId, principalReference, authenticated);
+          default -> Set.of();
+        };
     Set<String> capabilities = new HashSet<>();
     subscriptionPlans
         .findPlanForTenant(tenantId)
@@ -71,7 +75,8 @@ public final class IdentityAiAuthorizationContextResolver
     return new AiAuthorizationContext(validRoles, capabilities, enabledFeatures);
   }
 
-  private Set<String> webRoles(UUID tenantId, String principalReference, Set<String> authenticated) {
+  private Set<String> webRoles(
+      UUID tenantId, String principalReference, Set<String> authenticated) {
     Set<String> membershipsForTenant =
         memberships.getMemberships(new GetCurrentUserMembershipsQuery(principalReference)).stream()
             .filter(details -> tenantId.equals(details.tenantId()))
@@ -80,11 +85,15 @@ public final class IdentityAiAuthorizationContextResolver
             .map(IdentityAiAuthorizationContextResolver::canonicalRole)
             .collect(Collectors.toUnmodifiableSet());
     return authenticated.stream()
-        .filter(role -> canonicalRole(role).equals("admin") || membershipsForTenant.contains(canonicalRole(role)))
+        .filter(
+            role ->
+                canonicalRole(role).equals("admin")
+                    || membershipsForTenant.contains(canonicalRole(role)))
         .collect(Collectors.toUnmodifiableSet());
   }
 
-  private Set<String> whatsappRoles(UUID tenantId, String principalReference, Set<String> authenticated) {
+  private Set<String> whatsappRoles(
+      UUID tenantId, String principalReference, Set<String> authenticated) {
     UUID customerId;
     try {
       customerId = UUID.fromString(principalReference);

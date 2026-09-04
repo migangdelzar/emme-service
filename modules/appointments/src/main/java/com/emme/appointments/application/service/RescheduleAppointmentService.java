@@ -4,7 +4,6 @@ import com.emme.appointments.api.command.RescheduleAppointmentCommand;
 import com.emme.appointments.api.event.AppointmentRescheduled;
 import com.emme.appointments.api.result.AppointmentDetails;
 import com.emme.appointments.api.usecase.RescheduleAppointmentUseCase;
-import com.emme.appointments.api.usecase.RescheduleAuthorizedAppointmentUseCase;
 import com.emme.appointments.application.port.out.AppointmentCollisionPort;
 import com.emme.appointments.application.port.out.AppointmentEventPublisher;
 import com.emme.appointments.application.port.out.AppointmentRepository;
@@ -20,8 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 /** Application service for appointment rescheduling. */
 @Service
 @Transactional
-public class RescheduleAppointmentService
-    implements RescheduleAppointmentUseCase, RescheduleAuthorizedAppointmentUseCase {
+public class RescheduleAppointmentService implements RescheduleAppointmentUseCase {
 
   private final AppointmentRepository repository;
   private final AppointmentEventPublisher eventPublisher;
@@ -41,8 +39,7 @@ public class RescheduleAppointmentService
             repository, collisionPort, customerRepository, serviceRepository, artistRepository);
   }
 
-  @Override
-  public AppointmentDetails reschedule(RescheduleAppointmentCommand command) {
+  AppointmentDetails rescheduleWithAuthorization(RescheduleAppointmentCommand command) {
     if (!command.confirmed()) throw new SecurityException("User confirmation is required");
     Appointment appointment = support.authorize(command.actor(), command.appointmentId());
     support.ensureMutable(appointment);

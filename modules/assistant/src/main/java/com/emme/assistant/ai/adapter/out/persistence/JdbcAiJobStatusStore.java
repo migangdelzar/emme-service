@@ -15,10 +15,8 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionOperations;
 
-@Component
 public final class JdbcAiJobStatusStore implements AiJobStatusStore {
   private final JdbcTemplate jdbc;
   private final int maxAttempts;
@@ -56,7 +54,9 @@ public final class JdbcAiJobStatusStore implements AiJobStatusStore {
         request.context(),
         () -> {
           jdbc.update(
-              "INSERT INTO ai_job_state(job_id,tenant_id,principal_id,roles,conversation_id,workflow_id,trace_id,idempotency_key,job_type,payload,status) VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT (job_id) DO NOTHING",
+              "INSERT INTO"
+                  + " ai_job_state(job_id,tenant_id,principal_id,roles,conversation_id,workflow_id,trace_id,idempotency_key,job_type,payload,status)"
+                  + " VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT (job_id) DO NOTHING",
               request.jobId(),
               request.context().tenantId(),
               request.context().principalId(),
@@ -82,7 +82,14 @@ public final class JdbcAiJobStatusStore implements AiJobStatusStore {
                     () ->
                         jdbc
                             .query(
-                                "UPDATE ai_job_state SET status='CLAIMED', attempts=attempts+1, updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND tenant_id=? AND tenant_id=current_tenant_id() AND status IN ('QUEUED','RETRYING') AND available_at<=CURRENT_TIMESTAMP RETURNING job_id, tenant_id, principal_id, roles, conversation_id, workflow_id, trace_id, idempotency_key, job_type, payload, GREATEST(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - created_at)), 0) AS queue_lag_seconds",
+                                "UPDATE ai_job_state SET status='CLAIMED', attempts=attempts+1,"
+                                    + " updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND tenant_id=?"
+                                    + " AND tenant_id=current_tenant_id() AND status IN"
+                                    + " ('QUEUED','RETRYING') AND available_at<=CURRENT_TIMESTAMP"
+                                    + " RETURNING job_id, tenant_id, principal_id, roles,"
+                                    + " conversation_id, workflow_id, trace_id, idempotency_key,"
+                                    + " job_type, payload, GREATEST(EXTRACT(EPOCH FROM"
+                                    + " (CURRENT_TIMESTAMP - created_at)), 0) AS queue_lag_seconds",
                                 jobRequestRowMapper(metrics),
                                 jobId,
                                 context.tenantId())
@@ -99,7 +106,10 @@ public final class JdbcAiJobStatusStore implements AiJobStatusStore {
         () ->
             jdbc
                 .query(
-                    "SELECT job_id, tenant_id, principal_id, roles, conversation_id, workflow_id, trace_id, idempotency_key, job_type, payload FROM ai_job_state WHERE job_id=? AND tenant_id=? AND tenant_id=current_tenant_id() AND status='CLAIMED'",
+                    "SELECT job_id, tenant_id, principal_id, roles, conversation_id, workflow_id,"
+                        + " trace_id, idempotency_key, job_type, payload FROM ai_job_state WHERE"
+                        + " job_id=? AND tenant_id=? AND tenant_id=current_tenant_id() AND"
+                        + " status='CLAIMED'",
                     jobRequestRowMapper(),
                     jobId,
                     context.tenantId())
@@ -120,7 +130,9 @@ public final class JdbcAiJobStatusStore implements AiJobStatusStore {
         context,
         () -> {
           jdbc.update(
-              "UPDATE ai_job_state SET status='COMPLETED', updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND tenant_id=? AND tenant_id=current_tenant_id() AND status='CLAIMED'",
+              "UPDATE ai_job_state SET status='COMPLETED', updated_at=CURRENT_TIMESTAMP WHERE"
+                  + " job_id=? AND tenant_id=? AND tenant_id=current_tenant_id() AND"
+                  + " status='CLAIMED'",
               jobId,
               context.tenantId());
           return null;
@@ -134,7 +146,11 @@ public final class JdbcAiJobStatusStore implements AiJobStatusStore {
         () -> {
           List<String> statuses =
               jdbc.query(
-                  "UPDATE ai_job_state SET status=CASE WHEN attempts >= ? THEN 'DEAD_LETTER' ELSE 'RETRYING' END, available_at=CURRENT_TIMESTAMP + (power(2, GREATEST(attempts-1,0)) * INTERVAL '1 second'), last_error=?, updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND tenant_id=? AND tenant_id=current_tenant_id() AND status='CLAIMED' RETURNING status",
+                  "UPDATE ai_job_state SET status=CASE WHEN attempts >= ? THEN 'DEAD_LETTER' ELSE"
+                      + " 'RETRYING' END, available_at=CURRENT_TIMESTAMP + (power(2,"
+                      + " GREATEST(attempts-1,0)) * INTERVAL '1 second'), last_error=?,"
+                      + " updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND tenant_id=? AND"
+                      + " tenant_id=current_tenant_id() AND status='CLAIMED' RETURNING status",
                   (rs, rowNum) -> rs.getString("status"),
                   maxAttempts,
                   errorCode,
@@ -159,7 +175,10 @@ public final class JdbcAiJobStatusStore implements AiJobStatusStore {
         context,
         () -> {
           jdbc.query(
-              "UPDATE ai_job_state SET status='RETRYING', attempts=GREATEST(attempts - 1, 0), available_at=CURRENT_TIMESTAMP + (? * INTERVAL '1 second'), updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND tenant_id=? AND tenant_id=current_tenant_id() AND status='CLAIMED' RETURNING job_id",
+              "UPDATE ai_job_state SET status='RETRYING', attempts=GREATEST(attempts - 1, 0),"
+                  + " available_at=CURRENT_TIMESTAMP + (? * INTERVAL '1 second'),"
+                  + " updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND tenant_id=? AND"
+                  + " tenant_id=current_tenant_id() AND status='CLAIMED' RETURNING job_id",
               (rs, rowNum) -> rs.getObject("job_id", UUID.class),
               delay.toNanos() / 1_000_000_000.0,
               jobId,
@@ -179,12 +198,31 @@ public final class JdbcAiJobStatusStore implements AiJobStatusStore {
                 () -> {
                   int recoveredClaims =
                       jdbc.update(
-                          "UPDATE ai_job_state SET status='RETRYING', available_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE status='CLAIMED' AND updated_at < CURRENT_TIMESTAMP - INTERVAL '5 minutes' AND tenant_id=? AND tenant_id=current_tenant_id()",
+                          "UPDATE ai_job_state SET status='RETRYING',"
+                              + " available_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP"
+                              + " WHERE status='CLAIMED' AND updated_at < CURRENT_TIMESTAMP -"
+                              + " INTERVAL '5 minutes' AND tenant_id=? AND"
+                              + " tenant_id=current_tenant_id()",
                           context.tenantId());
                   for (int i = 0; i < recoveredClaims; i++) metrics.recordRetry();
                   List<AiJobRequest> claimed =
                       jdbc.query(
-                          "WITH candidates AS (SELECT job_id FROM ai_job_state WHERE tenant_id=? AND tenant_id=current_tenant_id() AND available_at<=CURRENT_TIMESTAMP AND status IN ('QUEUED','RETRYING') ORDER BY available_at, created_at, job_id FOR UPDATE SKIP LOCKED LIMIT ?), claimed AS (UPDATE ai_job_state job SET status='CLAIMED', attempts=job.attempts+1, updated_at=CURRENT_TIMESTAMP FROM candidates WHERE job.job_id=candidates.job_id RETURNING job.job_id, job.tenant_id, job.principal_id, job.roles, job.conversation_id, job.workflow_id, job.trace_id, job.idempotency_key, job.job_type, job.payload, job.created_at, job.available_at) SELECT job_id, tenant_id, principal_id, roles, conversation_id, workflow_id, trace_id, idempotency_key, job_type, payload, GREATEST(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - created_at)), 0) AS queue_lag_seconds FROM claimed ORDER BY available_at, created_at, job_id",
+                          "WITH candidates AS (SELECT job_id FROM ai_job_state WHERE tenant_id=?"
+                              + " AND tenant_id=current_tenant_id() AND"
+                              + " available_at<=CURRENT_TIMESTAMP AND status IN"
+                              + " ('QUEUED','RETRYING') ORDER BY available_at, created_at, job_id"
+                              + " FOR UPDATE SKIP LOCKED LIMIT ?), claimed AS (UPDATE ai_job_state"
+                              + " job SET status='CLAIMED', attempts=job.attempts+1,"
+                              + " updated_at=CURRENT_TIMESTAMP FROM candidates WHERE"
+                              + " job.job_id=candidates.job_id RETURNING job.job_id, job.tenant_id,"
+                              + " job.principal_id, job.roles, job.conversation_id,"
+                              + " job.workflow_id, job.trace_id, job.idempotency_key, job.job_type,"
+                              + " job.payload, job.created_at, job.available_at) SELECT job_id,"
+                              + " tenant_id, principal_id, roles, conversation_id, workflow_id,"
+                              + " trace_id, idempotency_key, job_type, payload,"
+                              + " GREATEST(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - created_at)), 0)"
+                              + " AS queue_lag_seconds FROM claimed ORDER BY available_at,"
+                              + " created_at, job_id",
                           jobRequestRowMapper(metrics),
                           context.tenantId(),
                           limit);

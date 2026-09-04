@@ -2,18 +2,24 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.adapter.out.event.SpringModulithAiJobPublisher;
+import com.emme.assistant.ai.adapter.out.persistence.JdbcAiJobStatusStore;
+import com.emme.assistant.ai.application.job.AiJobWorker;
 import com.emme.assistant.ai.application.port.out.AiJobMetrics;
 import com.emme.assistant.ai.application.port.out.AiJobStatusStore;
 import com.emme.assistant.ai.application.port.out.NoopAiJobMetrics;
-import com.emme.assistant.ai.application.service.AiJobWorkerService;
 import io.micrometer.core.instrument.MeterRegistry;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionOperations;
@@ -29,15 +35,17 @@ public class AiJobExecutorConfiguration {
   }
 
   @Bean
+  @ConditionalOnBean(name = "coreDataSource")
   SpringModulithAiJobPublisher aiJobPublisher(
       ApplicationEventPublisher events, AiJobStatusStore store) {
     return new SpringModulithAiJobPublisher(events, store);
   }
 
   @Bean
-  AiJobWorkerService aiJobWorker(
+  @ConditionalOnBean(name = "coreDataSource")
+  AiJobWorker aiJobWorker(
       AiJobStatusStore store, ModelExecutionScheduler scheduler, AiJobProperties properties) {
-    return new AiJobWorkerService(
+    return new AiJobWorker(
         store,
         scheduler,
         (request, context) -> {
@@ -46,17 +54,31 @@ public class AiJobExecutorConfiguration {
         properties.maxAttempts());
   }
 
+  @Bean
+  @ConditionalOnBean(name = "coreDataSource")
+  @ConditionalOnMissingBean(AiJobStatusStore.class)
+  JdbcAiJobStatusStore aiJobStatusStore(
+      @Qualifier("coreJdbcTemplate") JdbcTemplate jdbc,
+      AiJobProperties properties,
+      TransactionOperations transactions,
+      AiJobMetrics metrics) {
+    return new JdbcAiJobStatusStore(jdbc, properties.maxAttempts(), transactions, metrics);
+  }
+
   @Bean(name = "coreJdbcTemplate")
+  @ConditionalOnBean(name = "coreDataSource")
   JdbcTemplate coreJdbcTemplate(@Qualifier("coreDataSource") DataSource dataSource) {
     return new JdbcTemplate(dataSource);
   }
 
   @Bean
+  @ConditionalOnBean(name = "coreDataSource")
   TransactionOperations aiJobTransactions(@Qualifier("coreDataSource") DataSource dataSource) {
     return new TransactionTemplate(new DataSourceTransactionManager(dataSource));
   }
 
   @Bean(name = "aiJobExecutor", destroyMethod = "shutdown")
+  @ConditionalOnBean(name = "coreDataSource")
   ExecutorService aiJobExecutor(AiJobProperties p) {
     return new ThreadPoolExecutor(
         p.workerCount(),

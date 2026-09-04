@@ -39,8 +39,7 @@ class GetCurrentUserServiceTest {
                     "DEDICATED",
                     "emme-tenant"));
 
-    GetCurrentUserService service =
-        new GetCurrentUserService(memberships, permissions, tenants);
+    GetCurrentUserService service = new GetCurrentUserService(memberships, permissions, tenants);
 
     CurrentUserDetails result =
         service.get(new GetCurrentUserQuery("user-1", "user@example.com", "User", tenantId));

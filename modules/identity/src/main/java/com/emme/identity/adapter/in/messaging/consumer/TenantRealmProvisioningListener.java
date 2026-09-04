@@ -95,5 +95,4 @@ public class TenantRealmProvisioningListener {
       throw new RuntimeException("Failed to provision realm for tenant " + event.slug(), e);
     }
   }
-
 }

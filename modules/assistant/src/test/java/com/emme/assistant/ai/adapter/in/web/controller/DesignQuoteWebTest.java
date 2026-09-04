@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.emme.ai.contracts.image.TenantImageWriter;
 import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
 import com.emme.assistant.adapter.in.web.request.StartConversationRequest;
-import com.emme.assistant.ai.adapter.in.web.security.AiPrincipalIdentity;
 import com.emme.assistant.ai.adapter.in.web.security.AiWebExecutionContextFactory;
 import com.emme.assistant.ai.api.result.QuoteWorkflowResult;
 import com.emme.assistant.ai.api.usecase.ProcessDesignQuoteUseCase;
@@ -48,26 +47,26 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.support.StaticMessageSource;
+import org.springframework.core.MethodParameter;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextPersistenceFilter;
-import org.springframework.web.accept.ApiVersionStrategy;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.context.support.StaticMessageSource;
-import org.springframework.core.MethodParameter;
+import org.springframework.web.accept.ApiVersionStrategy;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 @SuppressWarnings("deprecation")
@@ -90,13 +89,11 @@ class DesignQuoteWebTest {
     context.refresh();
     var source = new StaticMessageSource();
     mockMvc =
-        MockMvcBuilders.standaloneSetup(
-                context.getBean(DesignQuoteController.class))
+        MockMvcBuilders.standaloneSetup(context.getBean(DesignQuoteController.class))
             .setControllerAdvice(
                 new GlobalExceptionHandler(new ProblemDetailFactory(new MessageResolver(source))))
             .setCustomArgumentResolvers(
-                new AuthenticationPrincipalArgumentResolver(),
-                new ImageArgumentResolver())
+                new AuthenticationPrincipalArgumentResolver(), new ImageArgumentResolver())
             .setApiVersionStrategy(apiVersionStrategy())
             .addFilters(
                 new SecurityContextPersistenceFilter(new HttpSessionSecurityContextRepository()))
@@ -169,8 +166,11 @@ class DesignQuoteWebTest {
             "create-" + subject,
             () ->
                 context
-                    .getBean(com.emme.assistant.adapter.in.web.controller.ConversationController.class)
-                    .start(new StartConversationRequest(UUID.randomUUID(), ChannelType.WEB_CHAT), jwt(subject))
+                    .getBean(
+                        com.emme.assistant.adapter.in.web.controller.ConversationController.class)
+                    .start(
+                        new StartConversationRequest(UUID.randomUUID(), ChannelType.WEB_CHAT),
+                        jwt(subject))
                     .getBody());
     state.tenant = tenant;
     return response.id();
@@ -352,7 +352,8 @@ class DesignQuoteWebTest {
     private final Map<UUID, ConversationDetails> conversations = new HashMap<>();
     private final TenantImageWriter storage = mock(TenantImageWriter.class);
     private final ProcessDesignQuoteUseCase quote = mock(ProcessDesignQuoteUseCase.class);
-    private final DesignImageMetadataRepository metadata = mock(DesignImageMetadataRepository.class);
+    private final DesignImageMetadataRepository metadata =
+        mock(DesignImageMetadataRepository.class);
     private final FeatureFlagGate featureFlag = new FeatureFlagGate();
     private Set<String> capabilities = Set.of("ai:basic");
     private UUID tenant;

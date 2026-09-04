@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import com.emme.assistant.ai.application.port.out.AiToolIdempotencyStore;
-import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
-import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.AiToolCallTrace;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Map;
@@ -65,8 +65,13 @@ class AuthorizedAiToolGatewayIdempotencyTest {
         new AuthorizedAiToolGateway(
             Set.of(
                 new AiToolDefinition(
-                    "createAppointment", "Create an appointment", Set.of("client"), AiToolRisk.MUTATION,
-                    true, false, (context, arguments) -> "created")),
+                    "createAppointment",
+                    "Create an appointment",
+                    Set.of("client"),
+                    AiToolRisk.MUTATION,
+                    true,
+                    false,
+                    (context, arguments) -> "created")),
             traces,
             store);
     AiExecutionContext context = context();
@@ -74,8 +79,10 @@ class AuthorizedAiToolGatewayIdempotencyTest {
     AiExecutionContextScope.call(context, () -> gateway.execute(invocation));
     AiExecutionContextScope.call(context, () -> gateway.execute(invocation));
 
-    org.mockito.ArgumentCaptor<AiToolCallTrace> trace = org.mockito.ArgumentCaptor.forClass(AiToolCallTrace.class);
-    org.mockito.Mockito.verify(traces, org.mockito.Mockito.times(2)).recordToolCall(trace.capture());
+    org.mockito.ArgumentCaptor<AiToolCallTrace> trace =
+        org.mockito.ArgumentCaptor.forClass(AiToolCallTrace.class);
+    org.mockito.Mockito.verify(traces, org.mockito.Mockito.times(2))
+        .recordToolCall(trace.capture());
     assertThat(trace.getAllValues().get(1).errorCode()).isEqualTo("IDEMPOTENT_REPLAY");
   }
 

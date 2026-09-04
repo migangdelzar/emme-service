@@ -8,8 +8,7 @@ import org.hibernate.service.UnknownUnwrapTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SchemaMultiTenantConnectionProvider
-    implements MultiTenantConnectionProvider<String> {
+public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectionProvider<String> {
 
   private static final Logger log =
       LoggerFactory.getLogger(SchemaMultiTenantConnectionProvider.class);

@@ -1,20 +1,26 @@
 package com.emme.assistant.ai.adapter.in.web.controller;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.image.TenantImageWriter;
-import com.emme.assistant.ai.adapter.in.web.security.AiWebExecutionContextFactory;
+import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
 import com.emme.assistant.ai.adapter.in.web.security.AiPrincipalIdentity;
-import com.emme.assistant.api.query.GetConversationQuery;
+import com.emme.assistant.ai.adapter.in.web.security.AiWebExecutionContextFactory;
 import com.emme.assistant.ai.api.result.QuoteWorkflowResult;
 import com.emme.assistant.ai.api.usecase.ProcessDesignQuoteUseCase;
 import com.emme.assistant.ai.application.port.out.DesignImageMetadataRepository;
 import com.emme.assistant.ai.domain.workflow.QuoteWorkflowState;
+import com.emme.assistant.api.query.GetConversationQuery;
 import com.emme.assistant.api.result.ConversationDetails;
 import com.emme.assistant.api.type.ConversationStatus;
 import com.emme.assistant.api.usecase.GetConversationUseCase;
-import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.type.ChannelType;
 import java.time.Instant;
@@ -132,13 +138,7 @@ class DesignQuoteControllerTest {
             assertThatThrownBy(
                     () ->
                         controller.submit(
-                            image,
-                            conversation,
-                            "base",
-                            null,
-                            "idem",
-                            jwt,
-                            authentication))
+                            image, conversation, "base", null, "idem", jwt, authentication))
                 .isInstanceOf(java.io.UncheckedIOException.class)
                 .hasCauseInstanceOf(java.io.IOException.class));
     verify(storage).delete(tenant, "tenant/image.img");
@@ -173,23 +173,19 @@ class DesignQuoteControllerTest {
     var tenant = UUID.randomUUID();
     var conversation = UUID.randomUUID();
     when(conversations.get(new GetConversationQuery(tenant, conversation)))
-        .thenReturn(Optional.of(new ConversationDetails(
-            conversation,
-            tenant,
-            UUID.randomUUID(),
-            ChannelType.WEB_CHAT,
-            ConversationStatus.ACTIVE,
-            Instant.now())));
+        .thenReturn(
+            Optional.of(
+                new ConversationDetails(
+                    conversation,
+                    tenant,
+                    UUID.randomUUID(),
+                    ChannelType.WEB_CHAT,
+                    ConversationStatus.ACTIVE,
+                    Instant.now())));
     var controller = controller(storage, quote, metadata, conversations, authorizedResolver());
 
     assertThatThrownBy(
-            () ->
-                submit(
-                    controller,
-                    tenant,
-                    conversation,
-                    jwt,
-                    clientAuthentication(jwt)))
+            () -> submit(controller, tenant, conversation, jwt, clientAuthentication(jwt)))
         .isInstanceOf(AccessDeniedException.class)
         .hasMessage("Conversation access denied");
 
@@ -210,13 +206,7 @@ class DesignQuoteControllerTest {
     var controller = controller(storage, quote, metadata, conversations, authorizedResolver());
 
     assertThatThrownBy(
-            () ->
-                submit(
-                    controller,
-                    tenant,
-                    conversation,
-                    jwt,
-                    clientAuthentication(jwt)))
+            () -> submit(controller, tenant, conversation, jwt, clientAuthentication(jwt)))
         .isInstanceOf(AccessDeniedException.class)
         .hasMessage("Conversation access denied");
 
@@ -289,11 +279,7 @@ class DesignQuoteControllerTest {
       GetConversationUseCase conversations,
       AiAuthorizationContextResolver resolver) {
     return new DesignQuoteController(
-        storage,
-        quote,
-        new AiWebExecutionContextFactory(resolver),
-        metadata,
-        conversations);
+        storage, quote, new AiWebExecutionContextFactory(resolver), metadata, conversations);
   }
 
   private static AiAuthorizationContextResolver authorizedResolver() {
@@ -303,8 +289,7 @@ class DesignQuoteControllerTest {
   private static AiAuthorizationContextResolver resolver(
       Set<String> roles, Set<String> capabilities, Set<String> features) {
     return (tenantId, subject, authenticatedRoles, channel) ->
-        new AiAuthorizationContextResolver.AiAuthorizationContext(
-            roles, capabilities, features);
+        new AiAuthorizationContextResolver.AiAuthorizationContext(roles, capabilities, features);
   }
 
   private static void submit(
@@ -328,8 +313,7 @@ class DesignQuoteControllerTest {
                 authentication));
   }
 
-  private static ConversationDetails ownedConversation(
-      UUID tenant, UUID conversation, Jwt jwt) {
+  private static ConversationDetails ownedConversation(UUID tenant, UUID conversation, Jwt jwt) {
     return new ConversationDetails(
         conversation,
         tenant,

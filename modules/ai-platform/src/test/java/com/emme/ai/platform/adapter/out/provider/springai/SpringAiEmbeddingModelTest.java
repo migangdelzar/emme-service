@@ -5,6 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.embedding.EmbeddingModel;
 
@@ -17,7 +21,8 @@ class SpringAiEmbeddingModelTest {
     SpringAiEmbeddingModel model =
         new SpringAiEmbeddingModel(delegate, "ollama", "embedding-v1", 2);
 
-    assertThat(model.embed("faq")).containsExactly(0.25f, 0.75f);
+    assertThat(AiExecutionContextScope.call(context(), () -> model.embed("faq")))
+        .containsExactly(0.25f, 0.75f);
     assertThat(model.provider()).isEqualTo("ollama");
     assertThat(model.modelVersion()).isEqualTo("embedding-v1");
   }
@@ -30,7 +35,8 @@ class SpringAiEmbeddingModelTest {
     SpringAiEmbeddingModel model =
         new SpringAiEmbeddingModel(delegate, "ollama", "embedding-v1", 2);
 
-    assertThatThrownBy(() -> model.embed("faq")).isSameAs(failure);
+    assertThatThrownBy(() -> AiExecutionContextScope.call(context(), () -> model.embed("faq")))
+        .isSameAs(failure);
   }
 
   @Test
@@ -40,8 +46,30 @@ class SpringAiEmbeddingModelTest {
     SpringAiEmbeddingModel model =
         new SpringAiEmbeddingModel(delegate, "ollama", "embedding-v1", 2);
 
-    assertThatThrownBy(() -> model.embed("faq"))
+    assertThatThrownBy(() -> AiExecutionContextScope.call(context(), () -> model.embed("faq")))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Embedding dimension 1 does not match configured dimension 2");
+  }
+
+  @Test
+  void rejectsEmbeddingWhenTheBackendAiContextIsMissing() {
+    EmbeddingModel delegate = mock(EmbeddingModel.class);
+    SpringAiEmbeddingModel model =
+        new SpringAiEmbeddingModel(delegate, "ollama", "embedding-v1", 2);
+
+    assertThatThrownBy(() -> model.embed("faq"))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("No AI execution context");
+  }
+
+  private static AiExecutionContext context() {
+    return new AiExecutionContext(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        Set.of("CLIENT"),
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        "trace-1",
+        "idempotency-1");
   }
 }

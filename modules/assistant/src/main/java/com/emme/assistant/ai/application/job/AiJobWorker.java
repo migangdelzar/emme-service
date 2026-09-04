@@ -1,4 +1,4 @@
-package com.emme.assistant.ai.application.service;
+package com.emme.assistant.ai.application.job;
 
 import com.emme.ai.contracts.job.AiJobRequest;
 import com.emme.ai.contracts.model.ModelCapability;
@@ -10,7 +10,8 @@ import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
 import java.util.Objects;
 
-public final class AiJobWorkerService {
+/** Executes claimed durable AI jobs within their canonical tenant and model context. */
+public final class AiJobWorker {
   @FunctionalInterface
   public interface JobHandler {
     void run(AiJobRequest request, AiExecutionContext context);
@@ -22,12 +23,12 @@ public final class AiJobWorkerService {
   private final int maxAttempts;
   private Duration lastBackoff = Duration.ZERO;
 
-  public AiJobWorkerService(
+  public AiJobWorker(
       AiJobStatusStore store, ModelExecutionScheduler scheduler, JobHandler handler) {
     this(store, scheduler, handler, 3);
   }
 
-  public AiJobWorkerService(
+  public AiJobWorker(
       AiJobStatusStore store,
       ModelExecutionScheduler scheduler,
       JobHandler handler,

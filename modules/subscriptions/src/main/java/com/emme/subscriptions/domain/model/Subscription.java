@@ -1,7 +1,8 @@
 package com.emme.subscriptions.domain.model;
 
+import com.emme.subscriptions.api.SubscriptionEntitlementPolicy;
 import com.emme.subscriptions.api.type.PlanType;
-import com.emme.subscriptions.domain.service.SubscriptionEntitlementPolicy;
+import com.emme.subscriptions.domain.exception.EntitlementViolationException;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -77,6 +78,8 @@ public final class Subscription {
   }
 
   public void enforce(String entitlement) {
-    SubscriptionEntitlementPolicy.enforce(plan, entitlement);
+    if (!SubscriptionEntitlementPolicy.getEntitlements(plan).contains(entitlement)) {
+      throw new EntitlementViolationException(plan, entitlement);
+    }
   }
 }

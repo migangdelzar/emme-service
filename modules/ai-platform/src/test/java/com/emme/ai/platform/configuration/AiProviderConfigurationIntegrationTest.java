@@ -3,9 +3,13 @@ package com.emme.ai.platform.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.kernel.context.AiExecutionContext;
+import com.emme.kernel.context.AiExecutionContextScope;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationHandler;
 import io.micrometer.observation.ObservationRegistry;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import okhttp3.mockwebserver.MockResponse;
@@ -47,11 +51,11 @@ class AiProviderConfigurationIntegrationTest {
 
     AiModelProvider provider =
         configuration.groqModelProvider(configuration.groqChatClient(properties), properties);
-    String response = provider.chat("", "hello");
+    String response = AiExecutionContextScope.call(context(), () -> provider.chat("", "hello"));
 
     assertThat(response).isEqualTo("Hola desde Groq");
     assertThat(provider.name()).isEqualTo("groq");
-    assertThat(provider.embed("faq")).isEmpty();
+    assertThat(AiExecutionContextScope.call(context(), () -> provider.embed("faq"))).isEmpty();
     RecordedRequest request = server.takeRequest(5, TimeUnit.SECONDS);
     assertThat(request).isNotNull();
     assertThat(request.getPath()).isEqualTo("/openai/v1/chat/completions");
@@ -181,5 +185,11 @@ class AiProviderConfigurationIntegrationTest {
         new AiProviderProperties.EmbeddingConfig(
             "embeddinggemma:300m", baseUrl, null, 768, "embeddinggemma-300m-v1"),
         false);
+  }
+
+  private static AiExecutionContext context() {
+    UUID id = UUID.randomUUID();
+    return new AiExecutionContext(
+        UUID.randomUUID(), UUID.randomUUID(), Set.of("ROLE_CLIENT"), id, id, "trace-1", "idem-1");
   }
 }

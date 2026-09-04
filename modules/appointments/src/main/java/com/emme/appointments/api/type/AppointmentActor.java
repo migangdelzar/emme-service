@@ -1,8 +1,9 @@
-package com.emme.appointments.api.command;
+package com.emme.appointments.api.type;
 
 import java.util.Set;
 import java.util.UUID;
 
+/** Trusted principal identity used when an appointment command is authorized. */
 public record AppointmentActor(
     UUID tenantId, UUID principalId, Set<String> roles, String idempotencyKey) {
   public AppointmentActor {

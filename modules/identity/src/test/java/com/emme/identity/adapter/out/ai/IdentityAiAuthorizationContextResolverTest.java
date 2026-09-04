@@ -25,7 +25,10 @@ class IdentityAiAuthorizationContextResolverTest {
     UUID tenantId = UUID.randomUUID();
     GetCurrentUserMembershipsUseCase memberships = mock(GetCurrentUserMembershipsUseCase.class);
     when(memberships.getMemberships(new GetCurrentUserMembershipsQuery("user-1")))
-        .thenReturn(List.of(new MembershipDetails(UUID.randomUUID(), tenantId, "Salon", "tenant_staff", "ACTIVE")));
+        .thenReturn(
+            List.of(
+                new MembershipDetails(
+                    UUID.randomUUID(), tenantId, "Salon", "tenant_staff", "ACTIVE")));
     SubscriptionPlanPort plans = mock(SubscriptionPlanPort.class);
     when(plans.findPlanForTenant(tenantId)).thenReturn(java.util.Optional.of(PlanType.PRO));
     FeatureFlagEvaluator features = mock(FeatureFlagEvaluator.class);
@@ -36,13 +39,11 @@ class IdentityAiAuthorizationContextResolverTest {
 
     var result =
         resolver.resolve(
-            tenantId,
-            "user-1",
-            Set.of("ROLE_tenant_staff", "ROLE_tenant_owner"),
-            Channel.WEB);
+            tenantId, "user-1", Set.of("ROLE_tenant_staff", "ROLE_tenant_owner"), Channel.WEB);
 
     assertThat(result.roles()).containsExactly("ROLE_tenant_staff");
-    assertThat(result.tenantCapabilities()).contains("appointments:write", "ai:basic", "service_catalog", "appointments");
+    assertThat(result.tenantCapabilities())
+        .contains("appointments:write", "ai:basic", "service_catalog", "appointments");
     assertThat(result.enabledFeatures()).containsExactly("ai_chat");
   }
 
@@ -61,7 +62,8 @@ class IdentityAiAuthorizationContextResolverTest {
             features,
             customerMemberships);
 
-    var result = resolver.resolve(tenantId, customerId.toString(), Set.of("client"), Channel.WHATSAPP);
+    var result =
+        resolver.resolve(tenantId, customerId.toString(), Set.of("client"), Channel.WHATSAPP);
 
     assertThat(result.roles()).containsExactly("client");
     assertThat(result.tenantCapabilities()).contains("appointments:read");

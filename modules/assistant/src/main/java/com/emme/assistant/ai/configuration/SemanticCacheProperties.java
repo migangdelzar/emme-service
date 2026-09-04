@@ -2,6 +2,7 @@ package com.emme.assistant.ai.configuration;
 
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
 /** Configuration for the optional PostgreSQL semantic response cache. */
 @ConfigurationProperties("app.ai.semantic-cache")
@@ -28,9 +29,20 @@ public record SemanticCacheProperties(
       Double minimumMargin,
       Duration ttl,
       String promptVersion) {
-    this(enabled, minimumSimilarity, minimumMargin, ttl, promptVersion, null, null, null, null, null);
+    this(
+        enabled,
+        minimumSimilarity,
+        minimumMargin,
+        ttl,
+        promptVersion,
+        null,
+        null,
+        null,
+        null,
+        null);
   }
 
+  @ConstructorBinding
   public SemanticCacheProperties {
     minimumSimilarity = minimumSimilarity == null ? 0.95 : minimumSimilarity;
     minimumMargin = minimumMargin == null ? 0.05 : minimumMargin;
@@ -40,7 +52,8 @@ public record SemanticCacheProperties(
     policyVersion = policyVersion == null ? "policy-v1" : policyVersion;
     sourceVersion = sourceVersion == null ? "source-v1" : sourceVersion;
     locale = locale == null ? "es-MX" : locale;
-    quoteTemplateVersion = quoteTemplateVersion == null ? "quote-template-v1" : quoteTemplateVersion;
+    quoteTemplateVersion =
+        quoteTemplateVersion == null ? "quote-template-v1" : quoteTemplateVersion;
     if (!Double.isFinite(minimumSimilarity)
         || minimumSimilarity < -1.0
         || minimumSimilarity > 1.0) {

@@ -15,6 +15,7 @@ import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
+import com.emme.assistant.ai.application.provider.RagAnswerProviderChain;
 import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -181,6 +182,23 @@ class RagQueryServiceTest {
   }
 
   @Test
+  void doesNotReenterRetrievalWhenTheConfiguredRagProviderIsUnavailable() {
+    UUID tenantId = UUID.randomUUID();
+    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    RagAnswerPort ragAnswer = mock(RagAnswerPort.class);
+    KnowledgeSearch retrieval = mock(KnowledgeSearch.class);
+    RagQueryService service =
+        new RagQueryService(realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
+    when(ragAnswer.answer("hello"))
+        .thenThrow(new ChatProviderUnavailableException("all providers unavailable"));
+
+    assertThat(inContext(tenantId, () -> service.query("hello")))
+        .isEqualTo("Retrieval unavailable.");
+    verify(ragAnswer).answer("hello");
+    verifyNoInteractions(retrieval, chat);
+  }
+
+  @Test
   void returnsExplicitRetrievalUnavailableWhenVectorEmbeddingFails() {
     UUID tenantId = UUID.randomUUID();
     KnowledgeSearch retrieval = mock(KnowledgeSearch.class);
@@ -233,8 +251,7 @@ class RagQueryServiceTest {
     RagAnswerPort ragAnswer = mock(RagAnswerPort.class);
     KnowledgeSearch retrieval = mock(KnowledgeSearch.class);
     RagQueryService service =
-        new RagQueryService(
-            realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
+        new RagQueryService(realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
     when(ragAnswer.answer("Which cancellation rules apply?"))
         .thenReturn("The salon requires 24 hours.");
 
@@ -245,14 +262,35 @@ class RagQueryServiceTest {
   }
 
   @Test
+  void executesTheConfiguredRagCompositionWithOneGroundedRetrieval() {
+    UUID tenantId = UUID.randomUUID();
+    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    KnowledgeSearch retrieval = mock(KnowledgeSearch.class);
+    RagAnswerPort ragAnswer = new RagAnswerProviderChain(chat, retrieval);
+    RagQueryService service =
+        new RagQueryService(realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
+    when(retrieval.search(any(), any()))
+        .thenReturn(
+            List.of(
+                new RetrievedDocument(
+                    "source-1", "The premium is monthly.", java.util.Map.of(), 0.91)));
+    when(chat.complete("The premium is monthly.", "What is the premium?"))
+        .thenReturn("It is monthly.");
+
+    assertThat(inContext(tenantId, () -> service.query("What is the premium?")))
+        .isEqualTo("It is monthly.");
+    verify(retrieval).search(any(), any());
+    verify(chat).complete("The premium is monthly.", "What is the premium?");
+  }
+
+  @Test
   void returnsExplicitRetrievalUnavailableWhenTheConfiguredRagAnswerPortCannotRetrieve() {
     UUID tenantId = UUID.randomUUID();
     ChatCompletionPort chat = mock(ChatCompletionPort.class);
     RagAnswerPort ragAnswer = mock(RagAnswerPort.class);
     KnowledgeSearch retrieval = mock(KnowledgeSearch.class);
     RagQueryService service =
-        new RagQueryService(
-            realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
+        new RagQueryService(realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
     when(ragAnswer.answer("hello")).thenThrow(new RetrievalUnavailableException());
 
     assertThat(inContext(tenantId, () -> service.query("hello")))

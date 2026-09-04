@@ -1,6 +1,7 @@
 package com.emme.ai.platform.adapter.out.provider.springai;
 
 import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,11 +34,13 @@ public final class SpringAiModelProvider implements AiModelProvider {
 
   @Override
   public String chat(String conversationContext, String userMessage) {
+    AiExecutionContextScope.requireCurrent();
     return chatModel.complete(conversationContext, userMessage);
   }
 
   @Override
   public List<Float> embed(String text) {
+    AiExecutionContextScope.requireCurrent();
     return embeddingModel.map(model -> model.embed(text)).orElseGet(List::of);
   }
 

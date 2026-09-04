@@ -8,8 +8,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class ApplicationContextProvider
-    implements ApplicationContextAware, PriorityOrdered {
+public final class ApplicationContextProvider implements ApplicationContextAware, PriorityOrdered {
 
   private static volatile ApplicationContext context;
 

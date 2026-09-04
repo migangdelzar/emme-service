@@ -4,8 +4,8 @@ import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
 import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
-import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.time.Duration;
 import java.util.List;
@@ -70,8 +70,7 @@ public final class SemanticIntentClassifier {
     }
   }
 
-  private void recordTrace(
-      SemanticDecision decision, List<SemanticMatch> matches, String outcome) {
+  private void recordTrace(SemanticDecision decision, List<SemanticMatch> matches, String outcome) {
     try {
       traceRecorder.recordSemanticOutcome(
           new AiSemanticExecutionTrace(

@@ -11,8 +11,8 @@ import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
 import com.emme.assistant.ai.application.trace.AiSemanticExecutionTrace;
-import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
+import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
@@ -490,7 +490,9 @@ public final class SemanticChatCache implements SemanticResponseCache {
   private SemanticCacheIdentity mergeContextIdentity(SemanticCacheIdentity producingIdentity) {
     Objects.requireNonNull(producingIdentity, "producingIdentity must not be null");
     String channel =
-        AiExecutionContextScope.current().map(context -> context.channel().name()).orElse(producingIdentity.channel());
+        AiExecutionContextScope.current()
+            .map(context -> context.channel().name())
+            .orElse(producingIdentity.channel());
     return new SemanticCacheIdentity(
         producingIdentity.responseProvider(),
         producingIdentity.responseModel(),

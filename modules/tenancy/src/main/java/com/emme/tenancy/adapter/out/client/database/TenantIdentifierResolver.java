@@ -9,8 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class TenantIdentifierResolver
-    implements CurrentTenantIdentifierResolver<String> {
+public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver<String> {
 
   private static final Logger log = LoggerFactory.getLogger(TenantIdentifierResolver.class);
   private static final String CORE_SCHEMA = "emme_core";
@@ -32,9 +31,12 @@ public class TenantIdentifierResolver
 
   private String lookupSchemaName(UUID tenantId) {
     try {
-      String schemaName = bootstrapJdbc().queryForObject(
-          "SELECT schema_name FROM emme_core.tenant_registry WHERE tenant_id = ?::uuid",
-          String.class, tenantId.toString());
+      String schemaName =
+          bootstrapJdbc()
+              .queryForObject(
+                  "SELECT schema_name FROM emme_core.tenant_registry WHERE tenant_id = ?::uuid",
+                  String.class,
+                  tenantId.toString());
       if (schemaName != null) {
         return TenantSchemaName.requireValid(schemaName);
       }

@@ -7,7 +7,9 @@ import com.emme.services.api.usecase.RetireServiceCatalogEntryUseCase;
 import com.emme.services.application.mapper.ServiceCatalogApplicationMapper;
 import com.emme.services.application.port.out.ServiceRepository;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +19,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class RetireServiceCatalogEntryService implements RetireServiceCatalogEntryUseCase {
 
   private final ServiceRepository serviceRepository;
-  private final SemanticCacheDependencyPublisher cacheDependencies;
+  private final Optional<SemanticCacheDependencyPublisher> cacheDependencies;
+
+  public RetireServiceCatalogEntryService(ServiceRepository serviceRepository) {
+    this(serviceRepository, Optional.empty());
+  }
 
   public RetireServiceCatalogEntryService(
       ServiceRepository serviceRepository, SemanticCacheDependencyPublisher cacheDependencies) {
+    this(serviceRepository, Optional.of(cacheDependencies));
+  }
+
+  @Autowired
+  public RetireServiceCatalogEntryService(
+      ServiceRepository serviceRepository,
+      Optional<SemanticCacheDependencyPublisher> cacheDependencies) {
     this.serviceRepository = serviceRepository;
     this.cacheDependencies = cacheDependencies;
   }
@@ -34,14 +47,16 @@ public class RetireServiceCatalogEntryService implements RetireServiceCatalogEnt
     service.retire();
     ServiceDetails details =
         ServiceCatalogApplicationMapper.toDetails(serviceRepository.save(service));
-    cacheDependencies.publish(
-        new SemanticCacheDependencyChanged(
-            UUID.randomUUID(),
-            service.getTenantId(),
-            null,
-            SemanticCacheDependencyChanged.Dependency.SERVICE,
-            details.id().toString(),
-            Instant.now()));
+    cacheDependencies.ifPresent(
+        publisher ->
+            publisher.publish(
+                new SemanticCacheDependencyChanged(
+                    UUID.randomUUID(),
+                    service.getTenantId(),
+                    null,
+                    SemanticCacheDependencyChanged.Dependency.SERVICE,
+                    details.id().toString(),
+                    Instant.now())));
     return details;
   }
 }

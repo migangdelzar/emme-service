@@ -1,7 +1,10 @@
 package com.emme.tenancy.adapter.in.messaging.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.tenancy.api.event.TenantSchemaReady;
@@ -28,8 +31,7 @@ class TenantSchemaProvisioningListenerTest {
   void onTenantCreated_publishesSchemaReady() {
     UUID tenantId = UUID.randomUUID();
     TenantCreated event =
-        new TenantCreated(
-            UUID.randomUUID(), tenantId, "test-studio", "Test Studio");
+        new TenantCreated(UUID.randomUUID(), tenantId, "test-studio", "Test Studio");
     when(schemaMigrationPort.migrate(tenantId, "test-studio")).thenReturn("test_studio");
 
     listener.onTenantCreated(event);
@@ -45,8 +47,7 @@ class TenantSchemaProvisioningListenerTest {
   @Test
   void onTenantCreated_marksFailedAndRethrows_onException() {
     UUID tenantId = UUID.randomUUID();
-    TenantCreated event =
-        new TenantCreated(UUID.randomUUID(), tenantId, "test", "Test");
+    TenantCreated event = new TenantCreated(UUID.randomUUID(), tenantId, "test", "Test");
     RuntimeException ex = new RuntimeException("DB down");
     when(schemaMigrationPort.migrate(tenantId, "test")).thenThrow(ex);
 

@@ -1,7 +1,7 @@
 package com.emme.appointments.application.service;
 
-import com.emme.appointments.api.command.AppointmentActor;
 import com.emme.appointments.api.result.AppointmentDetails;
+import com.emme.appointments.api.type.AppointmentActor;
 import com.emme.appointments.application.mapper.AppointmentApplicationMapper;
 import com.emme.appointments.application.port.out.AppointmentCollisionPort;
 import com.emme.appointments.application.port.out.AppointmentRepository;

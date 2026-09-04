@@ -21,7 +21,7 @@ class SpringAiTenantJdbcConfigurationTest {
     assertThat(method.getAnnotation(Bean.class).name()).containsExactly("aiTenantJdbcClient");
     assertThat(method.getAnnotation(Primary.class)).isNotNull();
     assertThat(method.getParameters()[0].getAnnotation(Qualifier.class).value())
-        .isEqualTo("tenantRoutingDataSource");
+        .isEqualTo("tenantScopedDataSource");
     assertThat(new SpringAiTenantJdbcConfiguration().aiTenantJdbcClient(mock(DataSource.class)))
         .isNotNull();
   }

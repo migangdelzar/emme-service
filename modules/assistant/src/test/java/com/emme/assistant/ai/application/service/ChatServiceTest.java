@@ -87,12 +87,7 @@ class ChatServiceTest {
     when(cache.lookup("", "What are your hours?"))
         .thenThrow(new IllegalStateException("database unavailable"));
     when(model.complete("", "What are your hours?")).thenReturn("Open today.");
-    ChatService service =
-        new ChatService(
-            model,
-            Optional.of(cache),
-            Optional.empty(),
-            metrics);
+    ChatService service = new ChatService(model, Optional.of(cache), Optional.empty(), metrics);
 
     assertThat(inContext(() -> service.chat("", "What are your hours?"))).isEqualTo("Open today.");
 
@@ -132,8 +127,7 @@ class ChatServiceTest {
     ProactiveToolRouter router = mock(ProactiveToolRouter.class);
     when(router.route("what services do you have?"))
         .thenReturn(Optional.of(new AiToolResult("getSalonServices", "services", true)));
-    ChatService service =
-        new ChatService(model, Optional.of(cache), Optional.of(router));
+    ChatService service = new ChatService(model, Optional.of(cache), Optional.of(router));
 
     assertThat(inContext(() -> service.chat("", "what services do you have?")))
         .isEqualTo("services");

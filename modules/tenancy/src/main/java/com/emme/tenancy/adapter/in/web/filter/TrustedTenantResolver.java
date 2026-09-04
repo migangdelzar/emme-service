@@ -47,8 +47,10 @@ public final class TrustedTenantResolver {
       return new AuthenticationTenantResolution(tenantId.orElse(null), true);
     }
 
+    String tenantClaim = jwt.getClaimAsString("tenant_id");
     UUID tenantId = fromAuthentication(authentication);
-    return new AuthenticationTenantResolution(tenantId, tenantId != null);
+    boolean tenantClaimPresent = tenantClaim != null && !tenantClaim.isBlank();
+    return new AuthenticationTenantResolution(tenantId, tenantId != null || tenantClaimPresent);
   }
 
   static String identityRealmFromIssuer(String issuer) {

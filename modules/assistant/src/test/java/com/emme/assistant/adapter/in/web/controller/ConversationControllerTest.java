@@ -46,7 +46,9 @@ class ConversationControllerTest {
 
     TenantContextHolder.withTenantOverride(
         tenant,
-        () -> controller.start(new StartConversationRequest(UUID.randomUUID(), ChannelType.WEB_CHAT), jwt));
+        () ->
+            controller.start(
+                new StartConversationRequest(UUID.randomUUID(), ChannelType.WEB_CHAT), jwt));
 
     verify(start)
         .start(

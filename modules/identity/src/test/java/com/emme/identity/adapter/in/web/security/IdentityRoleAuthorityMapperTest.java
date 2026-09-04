@@ -13,8 +13,7 @@ class IdentityRoleAuthorityMapperTest {
   @Test
   void mapsStringRealmRolesToPrefixedAuthorities() {
     var authorities =
-        mapper.fromClaims(
-            Map.of("realm_access", Map.of("roles", List.of("admin", "staff"))));
+        mapper.fromClaims(Map.of("realm_access", Map.of("roles", List.of("admin", "staff"))));
 
     assertThat(authorities)
         .extracting(authority -> authority.getAuthority())

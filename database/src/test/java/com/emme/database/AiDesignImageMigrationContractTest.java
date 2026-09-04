@@ -11,7 +11,8 @@ class AiDesignImageMigrationContractTest {
   @Test
   void definesTenantScopedDurableImageMetadata() throws IOException {
     String sql = resource("db/emme-studio/releases/0.1.0/027-ai-design-images.sql");
-    assertThat(sql).contains("CREATE TABLE IF NOT EXISTS ai_design_image")
+    assertThat(sql)
+        .contains("CREATE TABLE IF NOT EXISTS ai_design_image")
         .contains("tenant_id UUID NOT NULL")
         .contains("storage_key VARCHAR(1000) NOT NULL")
         .contains("ALTER TABLE ai_design_image ENABLE ROW LEVEL SECURITY")
@@ -26,7 +27,8 @@ class AiDesignImageMigrationContractTest {
   }
 
   private static String resource(String path) throws IOException {
-    try (InputStream stream = AiDesignImageMigrationContractTest.class.getClassLoader().getResourceAsStream(path)) {
+    try (InputStream stream =
+        AiDesignImageMigrationContractTest.class.getClassLoader().getResourceAsStream(path)) {
       if (stream == null) throw new IOException("Missing migration resource: " + path);
       return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
     }

@@ -55,8 +55,7 @@ public class SpringAiChatConfiguration {
 
   @Bean(name = "ollamaChatClient")
   @ConditionalOnMissingBean(name = "ollamaChatClient")
-  ChatClient ollamaChatClient(
-      ChatModel ollamaChatModel, ObservationRegistry observationRegistry) {
+  ChatClient ollamaChatClient(ChatModel ollamaChatModel, ObservationRegistry observationRegistry) {
     return ChatClient.create(ollamaChatModel, observationRegistry);
   }
 

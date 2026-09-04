@@ -106,7 +106,7 @@ public class AiProviderConfiguration {
                 embeddingModel,
                 properties.provider(),
                 properties.embedding().modelVersion(),
-                properties.embedding().dimension()),
+                properties.embedding().dimension())),
         Optional.of(new SpringAiVisionModel(chatClient)));
   }
 

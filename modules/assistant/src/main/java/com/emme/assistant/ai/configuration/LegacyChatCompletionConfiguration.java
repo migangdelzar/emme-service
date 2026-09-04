@@ -17,7 +17,10 @@ import org.springframework.context.annotation.Configuration;
 /** Keeps the pre-Spring-chat provider available through the canonical chat boundary. */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(
-    prefix = "app.ai.spring-chat", name = "enabled", havingValue = "false", matchIfMissing = true)
+    prefix = "app.ai.spring-chat",
+    name = "enabled",
+    havingValue = "false",
+    matchIfMissing = true)
 public class LegacyChatCompletionConfiguration {
 
   @Bean(name = "aiLegacyChatCompletion")
@@ -37,11 +40,7 @@ public class LegacyChatCompletionConfiguration {
         };
     ChatCompletionPort tracedModel =
         new TracingChatCompletionPort(
-            legacyModel,
-            provider.name(),
-            "legacy-model",
-            "chat-v1",
-            traceRecorder);
+            legacyModel, provider.name(), "legacy-model", "chat-v1", traceRecorder);
     return new ChatModelSelector(
         List.of(new ChatModelSelector.Provider(provider.name(), tracedModel, "legacy-model")),
         scheduler,

@@ -1,13 +1,13 @@
 package com.emme.ai.platform.adapter.out.provider.springai;
 
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import org.springframework.ai.embedding.EmbeddingModel;
 
 /** Thin provider-identified adapter over a Spring AI {@link EmbeddingModel}. */
-public final class SpringAiEmbeddingModel
-    implements com.emme.ai.contracts.model.EmbeddingModel {
+public final class SpringAiEmbeddingModel implements com.emme.ai.contracts.model.EmbeddingModel {
 
   private final EmbeddingModel model;
   private final String provider;
@@ -38,6 +38,7 @@ public final class SpringAiEmbeddingModel
   }
 
   public List<Float> embed(String text) {
+    AiExecutionContextScope.requireCurrent();
     if (text == null || text.isBlank()) {
       throw new IllegalArgumentException("Embedding text must not be blank");
     }

@@ -3,10 +3,15 @@ package com.emme.assistant.ai.adapter.out.tool;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
-import com.emme.appointments.api.command.*;
-import com.emme.appointments.api.usecase.*;
+import com.emme.appointments.api.command.CreateAppointmentCommand;
+import com.emme.appointments.api.usecase.BookAppointmentUseCase;
+import com.emme.appointments.api.usecase.CancelAuthorizedAppointmentUseCase;
+import com.emme.appointments.api.usecase.RescheduleAuthorizedAppointmentUseCase;
 import com.emme.assistant.ai.application.tool.AiToolExecutionContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
@@ -134,6 +139,8 @@ class AppointmentToolHandlerTest {
   }
 
   private static final class CollisionFailure extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
     private CollisionFailure(String message) {
       super(message);
     }

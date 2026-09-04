@@ -25,22 +25,14 @@ public class ChatService implements ChatUseCase {
 
   public ChatService(
       ChatCompletionPort chatCompletion, Optional<SemanticResponseCache> semanticCache) {
-    this(
-        chatCompletion,
-        semanticCache,
-        Optional.empty(),
-        NoopSemanticMetrics.INSTANCE);
+    this(chatCompletion, semanticCache, Optional.empty(), NoopSemanticMetrics.INSTANCE);
   }
 
   public ChatService(
       ChatCompletionPort chatCompletion,
       Optional<SemanticResponseCache> semanticCache,
       Optional<ProactiveToolRouter> proactiveToolRouter) {
-    this(
-        chatCompletion,
-        semanticCache,
-        proactiveToolRouter,
-        NoopSemanticMetrics.INSTANCE);
+    this(chatCompletion, semanticCache, proactiveToolRouter, NoopSemanticMetrics.INSTANCE);
   }
 
   @Autowired
@@ -49,10 +41,8 @@ public class ChatService implements ChatUseCase {
       Optional<SemanticResponseCache> semanticCache,
       Optional<ProactiveToolRouter> proactiveToolRouter,
       SemanticMetrics metrics) {
-    this.chatCompletion =
-        Objects.requireNonNull(chatCompletion, "chatCompletion must not be null");
-    this.semanticCache =
-        Objects.requireNonNull(semanticCache, "semanticCache must not be null");
+    this.chatCompletion = Objects.requireNonNull(chatCompletion, "chatCompletion must not be null");
+    this.semanticCache = Objects.requireNonNull(semanticCache, "semanticCache must not be null");
     this.proactiveToolRouter =
         Objects.requireNonNull(proactiveToolRouter, "proactiveToolRouter must not be null");
     this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");

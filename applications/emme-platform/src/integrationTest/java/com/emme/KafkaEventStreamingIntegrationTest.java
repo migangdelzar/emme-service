@@ -118,11 +118,7 @@ class KafkaEventStreamingIntegrationTest {
         List.of(
             new EventExpectation(
                 new TenantCreated(
-                    UUID.randomUUID(),
-                    tenantId,
-                    "streaming-salon",
-                    "Streaming Salon",
-                    "owner@test"),
+                    UUID.randomUUID(), tenantId, "streaming-salon", "Streaming Salon"),
                 "emme.tenancy.tenant-created",
                 tenantId.toString(),
                 "streaming-salon"),

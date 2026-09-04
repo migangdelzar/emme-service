@@ -63,6 +63,18 @@ class TenantAwareCheckpointSaverTest {
         .hasMessage("Checkpoint thread does not match AI workflow context");
   }
 
+  @Test
+  void rejectsMalformedCheckpointNamespacesBeforeCallingTheProvider() {
+    MemorySaver delegate = new MemorySaver();
+    TenantAwareCheckpointSaver saver = new TenantAwareCheckpointSaver(delegate);
+    RunnableConfig malformedConfig =
+        RunnableConfig.builder().threadId(WORKFLOW_ID + ":invalid:namespace").build();
+
+    assertThatThrownBy(() -> runWithContext(() -> saver.get(malformedConfig)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Checkpoint thread namespace must not contain ':'");
+  }
+
   private static RunnableConfig configFor(UUID workflowId) {
     return RunnableConfig.builder().threadId(workflowId.toString()).build();
   }

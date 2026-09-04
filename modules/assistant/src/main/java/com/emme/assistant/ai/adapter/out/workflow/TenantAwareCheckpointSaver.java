@@ -57,6 +57,17 @@ public final class TenantAwareCheckpointSaver implements BaseCheckpointSaver {
         .isEmpty()) {
       throw new IllegalArgumentException("Checkpoint thread does not match AI workflow context");
     }
+    String threadId = config.threadId().orElseThrow();
+    int separator = threadId.indexOf(':');
+    if (separator >= 0) {
+      String namespace = threadId.substring(separator + 1);
+      if (namespace.isBlank()) {
+        throw new IllegalArgumentException("Checkpoint thread namespace must not be blank");
+      }
+      if (namespace.indexOf(':') >= 0) {
+        throw new IllegalArgumentException("Checkpoint thread namespace must not contain ':'");
+      }
+    }
     return config;
   }
 }

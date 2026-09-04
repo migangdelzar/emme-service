@@ -538,8 +538,9 @@ tests remain green.
 Completed in this slice:
 
 - Added regression coverage for a thread ID with an empty namespace.
-- The PostgreSQL checkpoint adapter now rejects empty or nested namespaces
-  before any database access, preserving the tenant/workflow boundary.
+- The shared tenant-aware checkpoint boundary now rejects empty or nested
+  namespaces before delegating to any provider adapter, preserving the
+  tenant/workflow boundary for replaceable checkpoint implementations.
 - Focused LangGraph, checkpoint, and compilation tests pass.
 
 **Files:**

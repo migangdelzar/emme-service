@@ -296,12 +296,6 @@ public final class JdbcLangGraphCheckpointSaver implements BaseCheckpointSaver {
     int separator = threadId.indexOf(':');
     String workflowId = separator < 0 ? threadId : threadId.substring(0, separator);
     String namespace = separator < 0 ? "default" : threadId.substring(separator + 1);
-    if (namespace.isBlank()) {
-      throw new IllegalArgumentException("Checkpoint thread namespace must not be blank");
-    }
-    if (namespace.indexOf(':') >= 0) {
-      throw new IllegalArgumentException("Checkpoint thread namespace must not contain ':'");
-    }
     try {
       return new WorkflowThread(UUID.fromString(workflowId), namespace);
     } catch (IllegalArgumentException exception) {

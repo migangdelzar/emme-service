@@ -102,6 +102,8 @@
 - [x] Rename the composition-root bean/method to `workflowCheckpointStore`.
 - [x] Update both graph consumers and focused configuration tests.
 - [x] Reject empty checkpoint namespaces before database access.
+- [x] Centralize namespace validation in the provider-neutral tenant-aware
+      checkpoint boundary.
 - [ ] Complete remaining checkpoint security and malformed-thread integration gates.
 
 ### Remaining repository-wide framework-first work

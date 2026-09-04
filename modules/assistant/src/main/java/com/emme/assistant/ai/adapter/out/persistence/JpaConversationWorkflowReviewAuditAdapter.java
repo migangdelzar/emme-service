@@ -1,5 +1,7 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
+import com.emme.assistant.ai.adapter.out.persistence.entity.ConversationWorkflowReviewDecisionEntity;
+import com.emme.assistant.ai.adapter.out.persistence.repository.SpringDataConversationWorkflowReviewDecisionRepository;
 import com.emme.assistant.ai.api.command.ResumeConversationWorkflowCommand;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowReviewAuditPort;
 import com.emme.assistant.ai.domain.workflow.ConversationWorkflowSnapshot;
@@ -7,19 +9,20 @@ import com.emme.kernel.context.AiExecutionContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Objects;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-/** Persists every authorized human decision that resumes a durable conversation workflow. */
+/** JPA adapter for the append-only conversation workflow review audit. */
 @Component
-public final class JdbcConversationWorkflowReviewAuditAdapter
+public final class JpaConversationWorkflowReviewAuditAdapter
     implements ConversationWorkflowReviewAuditPort {
 
-  private final JdbcClient jdbc;
+  private final SpringDataConversationWorkflowReviewDecisionRepository repository;
   private final ObjectMapper objectMapper;
 
-  public JdbcConversationWorkflowReviewAuditAdapter(JdbcClient jdbc, ObjectMapper objectMapper) {
-    this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
+  public JpaConversationWorkflowReviewAuditAdapter(
+      SpringDataConversationWorkflowReviewDecisionRepository repository,
+      ObjectMapper objectMapper) {
+    this.repository = Objects.requireNonNull(repository, "repository must not be null");
     this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper must not be null");
   }
 
@@ -33,23 +36,14 @@ public final class JdbcConversationWorkflowReviewAuditAdapter
         || !command.conversationId().equals(workflow.conversationId())) {
       throw new SecurityException("Workflow review audit does not match the authenticated context");
     }
-    jdbc.sql(
-            """
-            INSERT INTO ai_conversation_workflow_review_decision (
-                tenant_id, workflow_id, conversation_id, reviewer_id, decision, clarification
-            )
-            VALUES (
-                :tenantId, :workflowId, :conversationId, :reviewerId, :decision,
-                CAST(:clarification AS jsonb)
-            )
-            """)
-        .param("tenantId", reviewerContext.tenantId())
-        .param("workflowId", workflow.workflowId())
-        .param("conversationId", workflow.conversationId())
-        .param("reviewerId", reviewerContext.principalId())
-        .param("decision", command.decision().name())
-        .param("clarification", serialize(command))
-        .update();
+    repository.save(
+        new ConversationWorkflowReviewDecisionEntity(
+            reviewerContext.tenantId(),
+            workflow.workflowId(),
+            workflow.conversationId(),
+            reviewerContext.principalId(),
+            command.decision().name(),
+            serialize(command)));
   }
 
   private String serialize(ResumeConversationWorkflowCommand command) {

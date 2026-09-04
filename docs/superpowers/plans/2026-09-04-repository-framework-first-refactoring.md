@@ -678,6 +678,22 @@ Completed in this slice:
 - [x] Run the assistant suite and compilation successfully.
 - [ ] Add a live PostgreSQL JPA mapping/concurrency gate before migrating the next aggregate.
 
+#### Current slice 10B — Conversation workflow review audit
+
+Completed in this slice:
+
+- Replaced `JdbcConversationWorkflowReviewAuditAdapter` with
+  `JpaConversationWorkflowReviewAuditAdapter`.
+- Added a module-private Spring Data repository and JSONB-backed audit entity.
+- Preserved the authenticated tenant/workflow/conversation checks and unchanged application port.
+- Kept workflow state transitions and checkpoint persistence on `JdbcClient` because they retain
+  atomic/versioned invariants.
+
+- [x] Write the failing JPA adapter test before implementation.
+- [x] Implement the entity, repository, JSONB mapping, and adapter.
+- [x] Run the full assistant test suite successfully.
+- [ ] Add a live PostgreSQL JSONB round-trip gate before migrating the next aggregate.
+
 **Files:**
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiTraceRecorder.java`

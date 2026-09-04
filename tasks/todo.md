@@ -114,6 +114,7 @@
 - [ ] Classify and migrate stable AI quote/trace CRUD to JPA where it reduces
       code; retain atomic/JSONB/AGE/vector/checkpoint SQL as `JdbcClient`.
 - [x] Migrate design-image metadata CRUD to JPA behind the existing port.
+- [x] Migrate conversation workflow review audit persistence to JPA behind the existing port.
 - [ ] Add a live PostgreSQL JPA mapping gate before the next AI aggregate wave.
 - [ ] Complete AI idempotency, learning-candidate, and evaluation concurrency
       integration gates with Docker.

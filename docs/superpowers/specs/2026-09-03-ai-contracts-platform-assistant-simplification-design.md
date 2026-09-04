@@ -224,7 +224,7 @@ focused tests, integration tests, and architecture tests.
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteReviewRepository.java` | Review JPA first | Same rule |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteArtifactRepository.java` | Review JPA first | Same rule |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JpaDesignImageMetadataRepository.java` | Migrated | Stable entity CRUD now uses a module-private JPA entity and Spring Data repository behind the unchanged port |
-| `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcConversationWorkflowReviewAuditAdapter.java` | Review | JPA or append-only `JdbcClient` based on actual schema/query complexity |
+| `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JpaConversationWorkflowReviewAuditAdapter.java` | Migrated | Append-only review audit now uses a module-private JPA entity and Spring Data repository with JSONB mapping |
 | `src/main/java/com/emme/assistant/ai/adapter/out/graph/JdbcAgeGraphClient.java` | Keep/refactor | Callers use the stable graph port; AGE-specific SQL remains inside the current adapter and is not renamed solely for the database provider |
 | `src/main/java/com/emme/assistant/ai/adapter/out/graph/AgeGraphAdapter.java` | Keep/refactor | Optional recommendation boundary |
 | `src/main/java/com/emme/assistant/ai/adapter/out/workflow/JdbcLangGraphCheckpointSaver.java` | Review | Keep SQL if checkpoint claims/versioning are simpler than JPA |

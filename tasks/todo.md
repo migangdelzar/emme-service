@@ -8,7 +8,7 @@
       database, and operations.
 - [x] Define subagent-driven execution protocol for independent slices.
 - [ ] Review and approve `docs/superpowers/plans/2026-09-04-repository-framework-first-refactoring.md`.
-- [ ] Execute Phase A baseline/architecture guardrails.
+- [x] Execute Phase A baseline/architecture guardrails — Task 1 inventory ledger complete; Task 2 pending.
 - [ ] Execute Phase B AI contracts and Spring AI consolidation.
 - [ ] Execute Phase C LangGraph4j boundary.
 - [ ] Execute Phase D AI persistence with JPA-first decisions.

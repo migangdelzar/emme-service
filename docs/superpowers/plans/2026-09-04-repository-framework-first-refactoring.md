@@ -103,11 +103,11 @@ libraries/testing  generic test infrastructure, not feature fixtures
 - The baseline records current version pins, focused test commands, full compile command, and known environment limitations.
 - No source code changes are included in this task.
 
-- [ ] **Step 1: Write the failing ledger validation test**
+- [x] **Step 1: Write the failing ledger validation test**
 
 Create `applications/emme-platform/src/test/java/com/emme/RepositoryFrameworkFirstInventoryTest.java` that loads the repository project list and asserts that the ledger contains each included Gradle project name and each production JDBC-related path returned by the repository inventory script.
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run:
 
@@ -117,18 +117,18 @@ Run:
 
 Expected result: FAIL because the ledger and validation test do not yet exist.
 
-- [ ] **Step 3: Write the minimum ledger and test implementation**
+- [x] **Step 3: Write the minimum ledger and test implementation**
 
 Add the ledger tables and make the test use fixed expected project names plus
 the exact inventory paths from the design. Do not make the test depend on
 network, Docker, or provider availability.
 
-- [ ] **Step 4: Run the focused test and refactor**
+- [x] **Step 4: Run the focused test and refactor**
 
 Run the command again. Expected result: PASS. Refactor only for readable
 inventory grouping, then run `git diff --check`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add docs/superpowers/migrations/framework-first-migration-ledger.md tasks/todo.md applications/emme-platform/src/test/java/com/emme/RepositoryFrameworkFirstInventoryTest.java

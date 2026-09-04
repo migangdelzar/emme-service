@@ -32,7 +32,7 @@ class AiJdbcMigrationClassificationTest {
     assertThat(classification)
         .as("AI migration ledger must include the operational classification table")
         .contains(
-            "| File | Category | Data shape | Concurrency / transaction | Tenant / security behavior | Proposed name | Equivalence test |");
+            "| File | Category | Data shape | Concurrency / transaction | Tenant / security behavior | Stable port / current adapter | Equivalence test |");
     Path adapterRoot =
         repositoryFile("modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out");
 

@@ -1178,3 +1178,9 @@
 - **Failure mode:** An explicit broad test run overlapped with the repository-wide Gradle hook started by `git push`, creating duplicate Gradle workers and making completion status harder to attribute.
 - **Detection signal:** Two Gradle wrapper processes and workers for the same repository were visible simultaneously.
 - **Prevention rule:** After a commit, let the push hook finish before starting another Gradle command; use `jps -lv` to confirm the previous invocation has exited.
+
+## 2026-09-04 — Keep provider substitution behind ports
+
+- **Failure mode:** A gradual persistence refactor started prescribing `Postgres*` classes as canonical implementation names.
+- **Detection signal:** The active design, plan, ledger, and configuration-test references named a concrete provider instead of only the application capability.
+- **Prevention rule:** Define and test the stable application port first; keep JPA, `JdbcClient`, Redis, Spring AI, LangGraph, and provider implementations behind that port and select them at the composition root.

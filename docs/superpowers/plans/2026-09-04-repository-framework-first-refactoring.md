@@ -19,6 +19,7 @@
 - Spring AI owns model transport, `ChatClient`, structured output, advisors, tool callback mechanics, retrieval augmentation, vector-store mechanics, and observations; Emme code owns tenant/security/admission/idempotency/audit policy.
 - LangGraph4j owns only graph topology, checkpointed interruption, and resume; it does not own authorization, repositories, payments, or generic event delivery.
 - PostgreSQL remains the durable source of truth; Redis is disposable cache/live/coordination state; Kafka is not an aggregate database.
+- Stable application ports and cross-module contracts are canonical. Provider and mechanism implementations remain replaceable behind those ports; do not make PostgreSQL, Redis, Kafka, JPA, Spring AI, or vendor-specific types part of use cases, domain code, public APIs, or event contracts. Configuration exposes ports, and provider selection stays in the composition root.
 - Every implementation task writes the failing test first, runs the focused test, implements the minimum, refactors only after green, and commits one logical slice.
 - Do not edit deployed Liquibase migrations in place; add forward migrations and migration-contract coverage.
 - Do not combine dependency upgrades with behavioral refactors. Upgrade to the latest compatible stable patch in a separate platform task.
@@ -373,7 +374,7 @@ git commit -m "refactor(ai): delegate tools and extraction to Spring AI"
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiRedisSemanticConfiguration.java`
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcSemanticCacheAdapter.java`
 - Modify: `modules/shared/src/main/java/com/emme/shared/search/HybridSearch.java`
-- Create/rename: `modules/shared/src/main/java/com/emme/shared/search/PostgresHybridKnowledgeRetriever.java`
+- Modify/retain: `modules/shared/src/main/java/com/emme/shared/search/HybridSearch.java` behind the stable `KnowledgeRetriever` port
 - Test: existing RAG, semantic, Redis, pgvector, and migration contract tests under `modules/assistant`, `modules/shared`, and `database`
 
 **Acceptance criteria:**
@@ -473,11 +474,11 @@ git commit -m "test(ai): lock LangGraph workflow boundary"
 - Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow/JdbcLangGraphCheckpointSaverTest.java`
 - Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow/TenantAwareCheckpointSaverTest.java`
 
-**Canonical names:**
+**Stable port and adapter boundaries:**
 
 ```text
 workflowCheckpointStore       application-neutral checkpoint port
-PostgresLangGraphCheckpointStore  PostgreSQL/LangGraph4j adapter
+JdbcLangGraphCheckpointSaver  current mechanism adapter behind the application-neutral checkpoint port
 LangGraphConversationWorkflow     conversation adapter
 LangGraphQuoteWorkflow            quote adapter
 ```
@@ -549,10 +550,10 @@ Expected result: FAIL until all current JDBC stores are recorded.
 - [x] **Step 3: Complete the ledger from caller and schema searches**
 
 For each class, record its tables, transaction assumptions, result shape,
-concurrency behavior, tenant predicate/session behavior, proposed target name,
-and the test that proves equivalence. Use `Postgres*Store` for retained
-technology-specific implementations and `*Repository` only for JPA repository
-contracts.
+concurrency behavior, tenant predicate/session behavior, stable port, current
+adapter, and the test that proves equivalence. Keep mechanism/provider names
+inside adapters and configuration only; never make them the application
+contract.
 
 - [x] **Step 4: Run tests and commit the classification**
 
@@ -618,16 +619,18 @@ git commit -m "refactor(ai): use JPA for stable workflow persistence"
 - Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/learning/JdbcLearningCandidateStateStore.java`
 - Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/learning/JdbcLearningCandidateEvaluationStore.java`
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/AiJobExecutorConfiguration.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/configuration/AiJobCoreJdbcConfigurationTest.java`
+- Test: `modules/assistant/src/integrationTest/java/com/emme/assistant/ai/AiJobReconciliationClaimIntegrationTest.java`
 - Test: existing store unit tests and PostgreSQL concurrency integration tests under assistant/ai-platform integration test trees
 
-**Canonical names:**
+**Stable port and adapter boundaries:**
 
 ```text
-PostgresAiJobStateStore
-PostgresAiToolIdempotencyStore
-PostgresLearningCandidateStore
-PostgresLearningCandidateStateStore
-PostgresLearningCandidateEvaluationStore
+AiJobStatusStore          current `JdbcAiJobStatusStore` adapter behind the port
+AiToolIdempotencyStore    current `JdbcAiToolIdempotencyStore` adapter behind the port
+LearningCandidateStore    current `JdbcLearningCandidateStore` adapter behind the port
+LearningCandidateStateStore       current `JdbcLearningCandidateStateStore` adapter behind the port
+LearningCandidateEvaluationStore  current `JdbcLearningCandidateEvaluationStore` adapter behind the port
 ```
 
 **Acceptance criteria:**

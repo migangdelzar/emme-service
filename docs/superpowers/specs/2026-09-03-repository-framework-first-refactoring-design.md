@@ -146,7 +146,24 @@ incidental technology in an application port. A technology name is appropriate
 at an infrastructure boundary (`JdbcTenantSchemaMigrationAdapter`), not as a
 generic domain service name.
 
-### 4.4 Preserve module boundaries
+### 4.4 Keep provider substitution behind stable ports
+
+Application ports and cross-module contracts are canonical. They name the
+capability being requested, such as `AiJobStatusStore`,
+`AiToolIdempotencyStore`, `KnowledgeRetriever`, or
+`WorkflowCheckpointStore`; they do not name PostgreSQL, Redis, Kafka, JPA,
+Spring AI, or a provider vendor. Concrete mechanism adapters may retain a
+`Jdbc`, `Jpa`, `Redis`, `SpringAi`, or library-specific name inside an adapter or
+configuration package when that detail is useful for wiring, but it is never a
+required application-facing type. Provider selection belongs in the
+composition root. Replacing an adapter or adding a second implementation must
+not require changes to use cases, domain code, public APIs, or event contracts.
+
+Do not rename an adapter merely to advertise the current provider. Rename it
+only when the capability or responsibility is genuinely unclear, and keep the
+stable port unchanged.
+
+### 4.5 Preserve module boundaries
 
 Do not collapse every JPA entity, repository, or mapper into a shared package.
 The existing rule that entities and repositories are module-private is useful:
@@ -154,7 +171,7 @@ it prevents persistence coupling and makes future storage changes local. A
 thin adapter is acceptable when it protects that boundary; it is a deletion
 candidate only when the port adds no policy or module isolation value.
 
-### 4.5 No compatibility layer without an exit condition
+### 4.6 No compatibility layer without an exit condition
 
 Compatibility aliases are temporary migration tools. Each must record callers,
 replacement, deprecation milestone, deletion condition, and owner. A wrapper
@@ -387,7 +404,7 @@ authorize users. Preserve that separation.
 | `modules/assistant/.../workflow/LangGraphConversationWorkflowAdapter.java` | Rename to `LangGraphConversationWorkflow` if it is the sole adapter | Keep boundary translation, identity validation, resume authorization, and error mapping. Remove duplicate exception wrapping only when it loses no context. |
 | `modules/assistant/.../workflow/LangGraphQuoteWorkflowCapability.java` | `KEEP` as `LangGraphQuoteWorkflow` | It is the capability adapter that invokes the quote graph; retain only if the application port is still needed. |
 | `modules/assistant/.../workflow/LangGraphQuoteWorkflowResumeAdapter.java` | Merge into the workflow adapter if it shares no independent policy | Avoid two classes for one graph lifecycle; keep separate only when start and resume have different ownership or deployment boundaries. |
-| `modules/assistant/.../workflow/JdbcLangGraphCheckpointSaver.java` | Keep as `PostgresLangGraphCheckpointStore` or `JdbcLangGraphCheckpointStore` | JPA is not suitable for LangGraph's checkpoint contract, JSONB state, atomic upsert, graph keys, and tenant-aware security predicates. `JdbcClient` is the correct narrow boundary. |
+| `modules/assistant/.../workflow/JdbcLangGraphCheckpointSaver.java` | Keep the current adapter behind `WorkflowCheckpointStore` | JPA is not suitable for LangGraph's checkpoint contract, JSONB state, atomic upsert, graph keys, and tenant-aware security predicates. `JdbcClient` is the correct narrow boundary until an equivalent implementation is proven. |
 | `modules/assistant/.../workflow/TenantAwareCheckpointSaver.java` | Keep as policy decorator; consider merging validation with store only if tests remain clearer | It enforces tenant/context identity before library execution. Framework/library code cannot infer Emme authorization. |
 | `modules/assistant/.../configuration/SpringAiLangGraphConfiguration.java` | Simplify to one opt-in configuration | Prevent duplicate graph construction and bean ambiguity. Keep `app.ai.langgraph.enabled` and quote feature gating. |
 
@@ -511,10 +528,10 @@ The following naming rules remove ambiguity:
 | `*HttpClient` with raw OkHttp calls | `StripePaymentGateway`, `GoogleCalendarGateway`, `TwilioSmsSender`, etc. | Application code depends on capability; provider transport stays in the named adapter |
 | `JdbcConnectionExecutor` used everywhere | `BootstrapConnectionExecutor` | Make the exceptional lifecycle purpose visible and prevent general reuse |
 | `EnsureTenantMembershipService` injecting bootstrap JDBC | `TenantMembershipService` + `TenantMembershipRepository` | Application service expresses membership policy; persistence adapter owns SQL/JPA |
-| `JdbcAgeGraphClient` | `PostgresAgeGraphStore` | Name it as the graph storage boundary and keep AGE-specific SQL local |
-| `JdbcSemanticReferenceSearchAdapter` | `PostgresHybridKnowledgeRetriever` | Expose hybrid retrieval intent; retain `JdbcClient` internally because operators are PostgreSQL-specific |
-| `JdbcAiJobStatusStore` | `AiJobStateStore` with `PostgresAiJobStateStore` implementation | Contract states capability; adapter states technology |
-| `JdbcLangGraphCheckpointSaver` | `PostgresLangGraphCheckpointStore` | Keep library interface hidden from application packages |
+| `JdbcAgeGraphClient` | `AgeGraphStore` port plus the current adapter | Keep AGE-specific SQL local; do not rename solely because the current database is PostgreSQL |
+| `JdbcSemanticReferenceSearchAdapter` | `SemanticReferenceSearchPort` plus the current adapter | Expose retrieval intent; retain `JdbcClient` only while the measured PostgreSQL query is needed |
+| `JdbcAiJobStatusStore` | `AiJobStatusStore` port plus the current adapter | Contract states capability; the mechanism remains replaceable behind the port |
+| `JdbcLangGraphCheckpointSaver` | `WorkflowCheckpointStore` port plus the current adapter | Keep the library interface hidden from application packages without prescribing a provider |
 | `SpringAiModelProvider` | capability-specific `SpringAiChatClientAdapter`, `SpringAiEmbeddingAdapter`, `SpringAiVisionAdapter` | Avoid one composite type that forces unrelated capabilities together |
 
 ### 9.2 JPA-first review procedure for every JDBC class
@@ -547,13 +564,13 @@ JDBC boundaries. The design baseline expects these categories to survive:
 
 | Current path | First target | Why this is the right first experiment |
 |---|---|---|
-| `modules/assistant/.../JdbcAiJobStatusStore.java` | `PostgresAiJobStateStore` using `JdbcClient` only for atomic claim/state transitions; JPA candidate for ordinary lookup/history | Job claiming is concurrency-sensitive; a read-then-write JPA rewrite could create duplicate work. Split the operation by semantics rather than by technology preference. |
-| `modules/assistant/.../JdbcAiToolIdempotencyStore.java` | Keep `PostgresAiToolIdempotencyStore` with `JdbcClient`; use JPA for non-atomic history if present | Idempotency requires one unique/conditional operation and authoritative replay behavior. |
-| `modules/assistant/.../JdbcAiTraceRecorder.java` | JPA `AiTraceRepository` if trace records are stable entities; `JdbcClient` only for bulk/JSONB append if measured | Durable trace rows are likely entity-backed; do not retain JDBC just because the payload is AI-related. |
-| `modules/assistant/.../JdbcQuote*Repository.java` | JPA for quote workflow/artifact/review aggregates after mapping review; retain SQL for JSONB document payloads only where projection is materially simpler | Quote lifecycle, versioning, and reviewer ownership benefit from entity state and repository locking. |
-| `modules/assistant/.../JdbcSemanticCacheAdapter.java` | JPA for durable metadata/authorization; Spring AI `VectorStore`/Redis for hot similarity lookup; retain specialized SQL for hybrid query | Separates durable facts from retrieval optimization. |
-| `modules/ai-platform/.../JdbcLearningCandidate*Store.java` | JPA for candidate/evaluation records; retain `JdbcClient` for atomic claim/update if required | Candidate state resembles an aggregate, but worker concurrency may require a single SQL transition. |
-| `modules/shared/search/HybridSearch.java` | `PostgresHybridKnowledgeRetriever` | Spring AI `VectorStore` does not automatically reproduce Spanish FTS + pgvector + reciprocal-rank fusion and tenant filters. Keep the optimized query until a measured equivalent exists. |
+| `modules/assistant/.../JdbcAiJobStatusStore.java` | Keep `AiJobStatusStore` as the stable port; retain the current adapter with `JdbcClient` only for atomic claim/state transitions; assess JPA for ordinary lookup/history | Job claiming is concurrency-sensitive; a read-then-write JPA rewrite could create duplicate work. Split the operation by semantics rather than by provider name. |
+| `modules/assistant/.../JdbcAiToolIdempotencyStore.java` | Keep `AiToolIdempotencyStore` as the stable port; retain the current adapter with `JdbcClient` for the atomic transition; assess JPA for non-atomic history if present | Idempotency requires one unique/conditional operation and authoritative replay behavior. |
+| `modules/assistant/.../JdbcAiTraceRecorder.java` | Keep `AiTraceRecorder` as the stable port; assess a module-private JPA adapter if trace records are stable entities; retain `JdbcClient` only for measured bulk/JSONB append | Durable trace rows are likely entity-backed; do not retain JDBC just because the payload is AI-related. |
+| `modules/assistant/.../JdbcQuote*Repository.java` | Keep quote workflow/artifact/review ports stable; assess JPA adapters after mapping review; retain SQL for JSONB document payloads only where projection is materially simpler | Quote lifecycle, versioning, and reviewer ownership benefit from entity state and repository locking. |
+| `modules/assistant/.../JdbcSemanticCacheAdapter.java` | Keep `SemanticCachePort` stable; assess JPA for durable metadata and Spring AI/Redis for hot similarity lookup; retain specialized SQL for the measured hybrid query | Separates durable facts from retrieval optimization without coupling callers to a store. |
+| `modules/ai-platform/.../JdbcLearningCandidate*Store.java` | Keep learning ports stable; assess JPA for candidate/evaluation records and retain `JdbcClient` only for atomic claim/update if required | Candidate state resembles an aggregate, but worker concurrency may require a single SQL transition. |
+| `modules/shared/search/HybridSearch.java` | Keep the `KnowledgeRetriever` port stable and retain `HybridSearch` as the specialized adapter until an equivalent is proven | Spring AI `VectorStore` does not automatically reproduce Spanish FTS + pgvector + reciprocal-rank fusion and tenant filters. |
 | `modules/tenancy/.../EnsureTenantMembershipService.java` | `TenantMembershipRepository` backed by JPA or a tenancy-owned `JdbcClient` adapter | Removes database mechanics from application policy and makes new-tenant failure behavior testable. |
 | `modules/tenancy/.../DatabaseRegistryAdapter.java` | JPA registry repository only after bootstrap/entity-manager cycle test; otherwise named bootstrap adapter | The current connection executor exists to break a real initialization cycle. Verify before removing it. |
 | `modules/tenancy/.../LiquibaseTenantSchemaMigrationAdapter.java` | Keep `JdbcTenantSchemaMigrator` | Liquibase and dynamic schemas are infrastructure boundaries; JPA cannot replace them. |
@@ -581,7 +598,7 @@ preserving duplicated DTO/error logic.
 
 ### 10.2 Exact provider mappings
 
-| Existing path | Proposed name/shape | Decision |
+| Existing path | Stable port / adapter shape | Decision |
 |---|---|---|
 | `modules/payment/.../PaymentHttpClient.java` | Delete after callers move to provider-specific `*PaymentGateway` + typed API | It is a generic OkHttp forwarding wrapper with little policy value. |
 | `modules/notification/.../NotificationHttpClient.java` | Delete after callers move to `SendGridEmailSender`, `TwilioSmsSender`, `VonageSmsSender`, etc. | Keep a shared request policy component only if it centralizes timeout/metrics without hiding provider DTOs. |
@@ -844,7 +861,8 @@ Before implementation planning begins, the user and implementer should agree
 that:
 
 - every repository area in section 8 has an owner and migration disposition;
-- names in sections 6.2 and 9.1 are the canonical target vocabulary;
+- stable ports in sections 6.2 and 9.1 are the canonical application vocabulary;
+  adapter names are implementation details and must remain replaceable;
 - JPA-first and JdbcClient-exception rules in section 9 are mandatory review
   gates, not automatic rewrites;
 - Spring AI owns supported AI mechanics while Emme owns policy;

@@ -83,11 +83,16 @@ Names expose capability and intent, not historical implementation details.
 | Framework-neutral capability | Capability noun | `ChatModel`, `EmbeddingModel`, `KnowledgeSearch`, `GraphSearch` |
 | Application policy | Policy name | `SemanticRouter`, `AuthorizedToolGateway`, `ModelAdmissionPolicy` |
 | Spring AI adapter | `SpringAi` + capability | `SpringAiChatModel`, `SpringAiEmbeddingModel`, `SpringAiKnowledgeSearch` |
-| PostgreSQL-specific adapter | `Postgres`/`Jdbc` + capability | `PostgresQuoteWorkflowRepository`, `JdbcAiJobStore` |
+| Mechanism adapter | capability-specific adapter behind a stable port | `JdbcQuoteWorkflowRepository`, `JdbcAiJobStatusStore` |
 | Redis adapter | `Redis` + capability | `RedisSemanticCache`, `RedisLiveEventPublisher` |
 | Modulith adapter | `SpringModulith` + capability | `SpringModulithAiJobPublisher` |
 | Configuration | Capability + `Configuration` | `AiModelConfiguration`, `AiRagConfiguration`, `AiPersistenceConfiguration` |
 | Avoid | Generic or duplicated nouns | `Helper`, `Manager`, `Utils`, `ProviderProvider`, `AdapterAdapter` |
+
+Ports are the canonical names used by application code and cross-module
+contracts. Adapter names are internal mechanism details and may identify JDBC,
+JPA, Redis, Spring AI, or a library only when that is useful for composition
+and diagnostics. Replacing an adapter must not require callers to change.
 
 ## 5. Persistence selection matrix
 
@@ -204,23 +209,23 @@ focused tests, integration tests, and architecture tests.
 
 | File/group | Action | Decision |
 |---|---|---|
-| `src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiNailDesignExtractor.java` | Rename/refactor | `SpringAiDesignExtractor`; use structured output |
-| `src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiEmbeddingModelAdapter.java` | Refactor/delete | Keep only one embedding translation layer |
+| `src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiNailDesignExtractor.java` | Refactor/retain | Callers use the stable `DesignExtractor` port; keep the Spring AI adapter name internal and use structured output |
+| `src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiEmbeddingModelAdapter.java` | Refactor/delete | Callers use the stable `EmbeddingModel` port; keep only one embedding translation layer |
 | `src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/TenantScopedDocumentRetriever.java` | Keep/reduce | Spring AI detail with trusted tenant context |
 | `src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiToolCallbackProvider.java` | Keep/refactor | Thin adapter from authorized gateway to Spring AI callbacks |
 | `src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/advisor/*.java` | Keep/refactor | Tenant/security/prompt policy advisors only |
-| `src/main/java/com/emme/assistant/ai/adapter/out/persistence/DocumentKnowledgeRetrievalAdapter.java` | Rename/refactor | `SpringAiKnowledgeSearch` or direct VectorStore adapter |
+| `src/main/java/com/emme/assistant/ai/adapter/out/persistence/DocumentKnowledgeRetrievalAdapter.java` | Refactor/retain | Callers use the stable `KnowledgeSearch` port; delegate standard retrieval to Spring AI `VectorStore` where equivalent |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcSemanticReferenceSearchAdapter.java` | Review | Replace mechanics with VectorStore where possible |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcSemanticCacheAdapter.java` | Review | Keep PostgreSQL authority; simplify query/mapping |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiJobStatusStore.java` | Review | Use `JdbcClient` for claims; remove unnecessary template/transaction duplication |
-| `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiToolIdempotencyStore.java` | Review | Keep atomic claim semantics; standardize name to `JdbcToolIdempotencyStore` |
+| `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiToolIdempotencyStore.java` | Review | Keep `AiToolIdempotencyStore` as the stable port; retain or replace the current adapter only after atomic semantics are proven |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiTraceRecorder.java` | Review | Keep only durable/redacted persistence not supplied by observations |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteWorkflowRepository.java` | Review JPA first | Convert to JPA if aggregate mapping is simpler; retain SQL for atomic transitions |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteReviewRepository.java` | Review JPA first | Same rule |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteArtifactRepository.java` | Review JPA first | Same rule |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcDesignImageMetadataRepository.java` | Review JPA first | Entity CRUD likely candidate for JPA |
 | `src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcConversationWorkflowReviewAuditAdapter.java` | Review | JPA or append-only `JdbcClient` based on actual schema/query complexity |
-| `src/main/java/com/emme/assistant/ai/adapter/out/graph/JdbcAgeGraphClient.java` | Keep/refactor | AGE is PostgreSQL-specific; rename only for clarity |
+| `src/main/java/com/emme/assistant/ai/adapter/out/graph/JdbcAgeGraphClient.java` | Keep/refactor | Callers use the stable graph port; AGE-specific SQL remains inside the current adapter and is not renamed solely for the database provider |
 | `src/main/java/com/emme/assistant/ai/adapter/out/graph/AgeGraphAdapter.java` | Keep/refactor | Optional recommendation boundary |
 | `src/main/java/com/emme/assistant/ai/adapter/out/workflow/JdbcLangGraphCheckpointSaver.java` | Review | Keep SQL if checkpoint claims/versioning are simpler than JPA |
 | `src/main/java/com/emme/assistant/ai/adapter/out/workflow/TenantAwareCheckpointSaver.java` | Keep/refactor | Security and tenant binding boundary |

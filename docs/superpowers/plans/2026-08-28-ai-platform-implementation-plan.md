@@ -121,7 +121,7 @@ modules/ai-platform/
     rag/PgVectorKnowledgeRetriever.java
     rag/TenantRetrievalFilter.java
     workflow/LangGraphWorkflowRuntime.java
-    workflow/PostgresCheckpointRepository.java
+    workflow/CheckpointStore.java
     redis/RedisOperationalStateStore.java
     redis/RedisWorkflowLock.java
     redis/RedisLiveEventPublisher.java
@@ -401,7 +401,7 @@ Do not execute a mutating tool from similarity alone; require the use-case confi
 
 ### Task 10 — Implement the generic LangGraph4j workflow runtime
 
-**Files:** add `LangGraphWorkflowRuntime.java`, `PostgresCheckpointRepository.java`, workflow state/command adapters, retry/terminal-state policies, and tests under `modules/ai-platform`.
+**Files:** add `LangGraphWorkflowRuntime.java`, the framework-neutral `CheckpointStore` port, a persistence adapter selected after the JPA/`JdbcClient` equivalence gate, workflow state/command adapters, retry/terminal-state policies, and tests under `modules/ai-platform`.
 
 **Test first:** Verify conditional edges, bounded retry behavior, independent subtask execution with structured concurrency, all terminal states, durable checkpoint save/load, idempotent resume, version conflict handling, interrupt/pause, and restart recovery.
 

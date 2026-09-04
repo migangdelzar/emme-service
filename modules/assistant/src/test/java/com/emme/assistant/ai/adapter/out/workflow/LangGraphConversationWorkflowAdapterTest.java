@@ -25,6 +25,11 @@ class LangGraphConversationWorkflowAdapterTest {
   private static final UUID WORKFLOW_ID = UUID.randomUUID();
 
   @Test
+  void marksTheDurableWorkflowAsTheResponseOwner() throws Exception {
+    assertThat(adapter().ownsResponse()).isTrue();
+  }
+
+  @Test
   void startsATrustedWorkflowAndReturnsTheCompletedSnapshot() throws Exception {
     LangGraphConversationWorkflowAdapter adapter = adapter();
     AiExecutionContext context = context();

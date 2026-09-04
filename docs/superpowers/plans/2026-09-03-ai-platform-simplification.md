@@ -1,9 +1,10 @@
 # AI Platform Simplification Implementation Plan
 
-**Implementation status:** Core simplification is implemented; workflow
-activation and response-ownership closure are in progress. Local unit,
-architecture, style, and compilation gates pass. Container-backed integration
-and deployed E2E gates remain environment-limited below.
+**Implementation status:** Core simplification and response-ownership closure are
+implemented. Generic workflow activation remains intentionally gated until real
+conversation capabilities are wired. Local unit, architecture, style,
+compilation, and full regression gates pass. Container-backed integration and
+deployed E2E gates remain environment-limited below.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -219,13 +220,15 @@ and deployed E2E gates remain environment-limited below.
 - [ ] Run provider-offline startup and Docker/PostgreSQL-backed workflow checks when services are available.
 - [ ] Run authenticated API/webhook/Playwright E2E checks when a deployed base URL is configured.
 - [x] Reconcile implementation-plan, blueprint, ADR, and FCR statuses with the actual activation state.
-- [ ] Run the final enterprise gate and push the completed branch.
+- [x] Run the final enterprise gate and push the completed branch.
 
-### Final validation results — 2026-09-03
+### Final validation results — 2026-09-04
 
 - `./gradlew check --no-parallel --no-configuration-cache`: **PASS** (251 tasks).
 - `./gradlew :modules:tenancy:check --no-parallel --no-configuration-cache`: **PASS**.
 - `git diff --check`: **PASS**.
+- Branch `feat/ai-platform-foundation` is clean and synchronized with
+  `origin/feat/ai-platform-foundation`.
 - `./gradlew :modules:assistant:integrationTest --tests 'com.emme.assistant.ai.QuoteWorkflowIdempotencyIntegrationTest' --no-parallel --no-configuration-cache`: **BLOCKED** by Testcontainers (`Could not find a valid Docker environment`).
 - `./gradlew :applications:emme-platform:integrationTest --no-parallel --no-configuration-cache`: **BLOCKED** by unavailable local PostgreSQL (`localhost:5432 refused`) after the duplicate tool bean was removed.
 - `./gradlew :applications:emme-platform:e2eTest --no-parallel --no-configuration-cache`: **BLOCKED** because `EMME_E2E_BASE_URL`/`emme.e2e.base-url` is not configured; no deployed target is available.

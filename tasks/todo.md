@@ -2933,6 +2933,8 @@ appointment mutation tools are registered.
       `langgraph4j-spring-ai` bridge.
 - [x] Run focused feedback after each slice; defer the full enterprise gate,
       container startup, and deployed E2E checks to the final phase.
+- [x] Run the final enterprise gate after implementation; `./gradlew check
+      --no-parallel --no-configuration-cache` passes with 251 tasks.
 
 ### Working Notes
 
@@ -2943,3 +2945,6 @@ appointment mutation tools are registered.
 - `b353e906` makes the durable workflow response authoritative and prevents a
   second chat-model execution. `1d155e27` makes incomplete enabled workflow
   wiring fail fast.
+- The final enterprise gate passed on 2026-09-04. Docker-backed integration,
+  local PostgreSQL startup, and deployed E2E remain blocked only by unavailable
+  environment services/configuration.

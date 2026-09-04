@@ -1,7 +1,7 @@
 # Emme AI Platform Simplification Blueprint
 
 **Date:** 2026-09-01  
-**Status:** Implementation complete; validation recorded below
+**Status:** Core implementation complete; generic workflow activation pending; validation recorded below
 
 This document consolidates the assistant channel/payment design and AI contract simplification design. It is the source of truth for reducing custom code by delegating capabilities to frameworks already present in the repository.
 
@@ -402,3 +402,18 @@ idempotency integration test therefore stops at Testcontainers startup, the plat
 integration test stops when `localhost:5432` refuses the core database connection, and the
 deployed E2E suite requires `EMME_E2E_BASE_URL`. These are recorded environment gates, not
 reasons to weaken the tests or alter the production boundaries.
+
+## Activation closure — 2026-09-04
+
+The durable LangGraph workflow now owns its response, preventing a second chat-model request.
+Enabling LangGraph without real conversation capability wiring fails fast rather than silently
+installing placeholder behavior. The bounded Spring AI model/tool loop remains the only agent
+loop; `langgraph4j-spring-ai` is not added because the current use case does not require its
+bridge abstractions. Generic workflow activation remains disabled until production capability
+adapters are supplied.
+
+The final local enterprise gate also passes:
+
+- `./gradlew check --no-parallel --no-configuration-cache`: **PASS** (251 tasks).
+- `git diff --check`: **PASS**.
+- Branch `feat/ai-platform-foundation` is clean and synchronized with its remote.

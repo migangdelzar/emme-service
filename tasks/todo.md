@@ -58,6 +58,14 @@
 - [x] Run the focused document test slice.
 - [ ] Continue the same JPA-first review across the remaining entity modules.
 
+### Current slice — Task 18B subscription persistence simplification
+
+- [x] Add an adapter contract test for subscription rehydration.
+- [x] Remove the zero-value `SubscriptionPersistenceMapper` component.
+- [x] Preserve the provider-neutral `SubscriptionRepository` port and tenant scope.
+- [x] Run the subscriptions test, compile, and Spotless gates.
+- [ ] Continue the same JPA-first review across the remaining entity modules.
+
 ### Plan working notes
 
 - User requested subagent-driven execution when work can be safely parallelized.

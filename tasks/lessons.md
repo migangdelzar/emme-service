@@ -11,6 +11,17 @@
   remove forwarding mappers only when the application port and tenant scope
   remain unchanged.
 
+## 2026-09-04 — Assert rehydrated domain contracts, not object identity
+
+- Failure mode: A persistence adapter test compared a rehydrated domain object
+  with the original instance even though the aggregate intentionally has no
+  value-based equality.
+- Detection signal: The adapter returned the correct fields but AssertJ
+  reported different object identities.
+- Prevention rule: Persistence tests must assert identity and business fields
+  explicitly unless the domain type defines value equality as part of its
+  contract.
+
 ## 2026-09-04 — Keep provider substitution at the port boundary
 
 - Failure mode: A naming proposal treated every PostgreSQL/JDBC adapter as a

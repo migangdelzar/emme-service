@@ -1192,6 +1192,19 @@ unchanged and the adapter still owns all JPA repository access.
       delete/flush/write sequence unchanged.
 - [ ] Extend the same evidence-based review to the remaining entity modules.
 
+#### Current slice 18B — Remove zero-value subscription persistence mapper
+
+`SubscriptionEntity` already provides the complete aggregate conversion and
+the subscription application port is provider-neutral. The mapper component
+only delegated to those entity methods, so the adapter now depends directly on
+the Spring Data repository and the entity mapping while preserving tenant-aware
+lookup and update semantics.
+
+- [x] Add adapter contract coverage for subscription rehydration.
+- [x] Remove the redundant mapper component and package metadata.
+- [x] Preserve the `SubscriptionRepository` port and tenant-scoped update lookup.
+- [ ] Extend the same evidence-based review to the remaining entity modules.
+
 - [ ] **Step 1: Write failing per-module persistence tests**
 
 Use the same create/find/list/update/not-found/tenant/version/idempotency matrix

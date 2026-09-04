@@ -149,7 +149,7 @@ git commit -m "docs: add framework-first migration ledger"
 - Application/domain packages cannot import `JdbcTemplate`, `NamedParameterJdbcTemplate`, or raw provider HTTP clients.
 - Existing valid bootstrap, specialized search, graph, and checkpoint boundaries are allow-listed by package and class name, not by broad module exclusion.
 
-- [ ] **Step 1: Write failing ArchUnit tests**
+- [x] **Step 1: Write failing ArchUnit tests**
 
 Add tests that import the production packages and assert the forbidden package
 dependencies and class locations. The allowed JDBC classes must be exactly:
@@ -163,7 +163,7 @@ com.emme.assistant.ai.adapter.out.graph.JdbcAgeGraphClient
 com.emme.shared.search.HybridSearch
 ```
 
-- [ ] **Step 2: Run the tests to verify current violations are visible**
+- [x] **Step 2: Run the tests to verify current violations are visible**
 
 Run:
 
@@ -174,12 +174,12 @@ Run:
 Expected result: FAIL with the current direct imports/leakage, or compile
 failure if the test classes are not yet present.
 
-- [ ] **Step 3: Implement the minimum rule and source moves required by the test**
+- [x] **Step 3: Implement the minimum rule and source moves required by the test**
 
 Do not migrate production classes in this task. Encode the rules and current
 allow-list so later tasks get a precise failure when they introduce leakage.
 
-- [ ] **Step 4: Run focused architecture tests and commit**
+- [x] **Step 4: Run focused architecture tests and commit**
 
 Expected result: PASS for the baseline allow-list. Commit:
 

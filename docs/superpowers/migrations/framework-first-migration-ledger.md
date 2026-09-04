@@ -134,9 +134,9 @@ boundary, even when they do not execute SQL themselves.
 | `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/in/messaging/consumer/SubscriptionProvisioningListener.java` | Replacement tested | Calls `EnsureTenantSubscriptionUseCase` under `TenantContextHolder`; JPA repository owns duplicate check and operational failures propagate |
 | `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/DatabaseRegistryAdapter.java` | Keep/Classified | Verify entity-manager cycle; retain bootstrap connection only if JPA cannot initialize safely |
 | `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java` | Keep | Dynamic schema/Liquibase boundary; JPA is not applicable |
-| `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantIdentifierResolver.java` | Keep | Hibernate bootstrap resolver may execute before normal JPA routing |
+| `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantIdentifierResolver.java` | JdbcClient boundary | Hibernate bootstrap resolver may execute before normal JPA routing; its scalar registry lookup uses the bootstrap-scoped `JdbcClient` |
 | `modules/tenancy/src/main/java/com/emme/tenancy/application/service/EnsureTenantMembershipService.java` | Deleted | Duplicate removed; Identity owns the existing role/membership JPA model and now implements the tenancy provisioning use case |
-| `modules/tenancy/src/main/java/com/emme/tenancy/configuration/BootstrapJdbcConfiguration.java` | Keep | Dedicated bootstrap data source; no general feature access |
+| `modules/tenancy/src/main/java/com/emme/tenancy/configuration/BootstrapJdbcConfiguration.java` | Keep | Dedicated bootstrap data source exposes `JdbcClient` for scalar lookups and `JdbcTemplate` only for the managed raw-connection callback |
 
 ## 3.4 Detailed AI persistence classification
 

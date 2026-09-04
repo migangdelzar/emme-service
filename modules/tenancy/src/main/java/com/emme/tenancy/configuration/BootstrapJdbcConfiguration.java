@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /** Composition-root wiring for the registry bootstrap connection boundary. */
@@ -30,5 +31,10 @@ public class BootstrapJdbcConfiguration {
   @Bean(name = "bootstrapJdbcTemplate")
   JdbcTemplate bootstrapJdbcTemplate(@Qualifier("bootstrapJdbcDataSource") DataSource dataSource) {
     return new JdbcTemplate(dataSource);
+  }
+
+  @Bean(name = "bootstrapJdbcClient")
+  JdbcClient bootstrapJdbcClient(@Qualifier("bootstrapJdbcDataSource") DataSource dataSource) {
+    return JdbcClient.create(dataSource);
   }
 }

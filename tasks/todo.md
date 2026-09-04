@@ -121,6 +121,9 @@
       integration gates with Docker.
 - [ ] Finish tenancy/bootstrap waves and verify tenant provisioning under real
       PostgreSQL/RLS/Liquibase conditions.
+- [x] Move `TenantIdentifierResolver` scalar registry lookup to bootstrap
+      `JdbcClient`; retain `JdbcTemplate` only for raw `ConnectionCallback`
+      execution.
 - [ ] Migrate external provider gateways to typed Spring HTTP clients or
       justified official SDKs.
 - [ ] Apply JPA-first repository waves across business modules.

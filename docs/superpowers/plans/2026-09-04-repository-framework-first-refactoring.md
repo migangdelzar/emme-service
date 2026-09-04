@@ -922,6 +922,23 @@ git add modules/tenancy modules/shared
 git commit -m "refactor(tenancy): narrow bootstrap JDBC boundary"
 ```
 
+#### Task 13A: Use `JdbcClient` for the scalar bootstrap lookup
+
+The Hibernate tenant resolver now uses the named `bootstrapJdbcClient` bean for
+its single schema-name query. This keeps the resolver independent from the
+tenant-routed entity manager while using the current fluent Spring JDBC API.
+The `bootstrapJdbcTemplate` bean remains intentionally limited to
+`BootstrapConnectionExecutor`, whose callers require Spring's managed
+`ConnectionCallback` boundary for session setup and lifecycle work. Both beans
+are composed from the same dedicated bootstrap `DataSource`; this change does
+not alter transaction propagation, database isolation, or tenant/RLS policy.
+
+- [x] Add a success-path test that verifies the resolver obtains and uses
+      `bootstrapJdbcClient`.
+- [x] Migrate the scalar registry lookup from `JdbcTemplate` to `JdbcClient`.
+- [x] Keep `JdbcTemplate` only for the raw managed connection callback.
+- [x] Run the focused resolver test and tenancy formatting checks.
+
 ## 8. Phase F — External provider clients
 
 ### Task 14: Establish the typed HTTP client convention

@@ -1218,3 +1218,14 @@
 - **Failure mode:** A gradual persistence refactor started prescribing `Postgres*` classes as canonical implementation names.
 - **Detection signal:** The active design, plan, ledger, and configuration-test references named a concrete provider instead of only the application capability.
 - **Prevention rule:** Define and test the stable application port first; keep JPA, `JdbcClient`, Redis, Spring AI, LangGraph, and provider implementations behind that port and select them at the composition root.
+
+## 2026-09-04 — Assert successful dependency-path behavior, not only failures
+
+- **Failure mode:** A boundary test for replacing `JdbcTemplate` with
+  `JdbcClient` passed because both the intended and old dependency paths
+  produced the same failure.
+- **Detection signal:** The failure test did not assert the selected bean/client
+  or a successful returned value.
+- **Prevention rule:** Every dependency-boundary replacement test must include a
+  successful behavior assertion and verify the new dependency path; failure
+  tests alone are insufficient.

@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 
 public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver<String> {
 
@@ -16,8 +16,8 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
 
   private final Map<UUID, String> schemaCache = new ConcurrentHashMap<>();
 
-  private JdbcTemplate bootstrapJdbc() {
-    return ApplicationContextProvider.get().getBean("bootstrapJdbcTemplate", JdbcTemplate.class);
+  private JdbcClient bootstrapJdbc() {
+    return ApplicationContextProvider.get().getBean("bootstrapJdbcClient", JdbcClient.class);
   }
 
   @Override
@@ -33,10 +33,12 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
     try {
       String schemaName =
           bootstrapJdbc()
-              .queryForObject(
-                  "SELECT schema_name FROM emme_core.tenant_registry WHERE tenant_id = ?::uuid",
-                  String.class,
-                  tenantId.toString());
+              .sql(
+                  "SELECT schema_name FROM emme_core.tenant_registry "
+                      + "WHERE tenant_id = CAST(:tenantId AS uuid)")
+              .param("tenantId", tenantId)
+              .query(String.class)
+              .single();
       if (schemaName != null) {
         return TenantSchemaName.requireValid(schemaName);
       }

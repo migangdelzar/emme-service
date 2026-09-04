@@ -95,3 +95,6 @@ databaseChangeLog:
   - include:
       file: releases/0.1.0/032-ai-semantic-cache-full-response-identity.sql
       relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/033-appointment-overlap-constraint.sql
+      relativeToChangelogFile: true

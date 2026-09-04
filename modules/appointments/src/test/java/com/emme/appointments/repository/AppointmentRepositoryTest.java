@@ -86,14 +86,14 @@ class AppointmentRepositoryTest extends BaseRepositoryTest {
             tenantId, customer.getId(), service.getId(), artist.getId(), start2, end2));
 
     List<AppointmentEntity> results =
-        appointmentRepo.findByArtistIdAndStartsAtBetween(
-            artist.getId(), now, now.plus(5, ChronoUnit.HOURS));
+        appointmentRepo.findByTenantIdAndStartsAtBetween(
+            tenantId, now, now.plus(5, ChronoUnit.HOURS));
 
     assertThat(results).hasSize(2);
   }
 
   @Test
-  void shouldFindAppointmentsThatOverlapAtEitherBoundary() {
+  void shouldFindActiveCollisionAtOverlapBoundary() {
     Instant now = Instant.now().plus(3, ChronoUnit.DAYS).truncatedTo(ChronoUnit.MICROS);
     appointmentRepo.save(
         new AppointmentEntity(
@@ -105,12 +105,152 @@ class AppointmentRepositoryTest extends BaseRepositoryTest {
             now.plus(2, ChronoUnit.HOURS)));
 
     assertThat(
-            appointmentRepo.findByArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(
-                artist.getId(), now.plus(3, ChronoUnit.HOURS), now.plus(1, ChronoUnit.HOURS)))
-        .hasSize(1);
+            appointmentRepo
+                .existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusIn(
+                    tenantId,
+                    artist.getId(),
+                    now.plus(3, ChronoUnit.HOURS),
+                    now.plus(1, ChronoUnit.HOURS),
+                    List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS)))
+        .isTrue();
     assertThat(
-            appointmentRepo.findByArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(
-                artist.getId(), now, now.minus(1, ChronoUnit.HOURS)))
-        .hasSize(0);
+            appointmentRepo
+                .existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusIn(
+                    tenantId,
+                    artist.getId(),
+                    now,
+                    now.minus(1, ChronoUnit.HOURS),
+                    List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS)))
+        .isFalse();
+  }
+
+  @Test
+  void shouldFindOnlyActiveCollisionsWithoutLoadingEntities() {
+    UUID artistId = artist.getId();
+    Instant start = Instant.parse("2030-01-01T10:00:00Z");
+    Instant end = Instant.parse("2030-01-01T11:00:00Z");
+    appointmentRepo.save(
+        appointment(
+            start.minusSeconds(900), end.minusSeconds(900), artistId, AppointmentStatus.CANCELLED));
+    AppointmentEntity active =
+        appointmentRepo.save(
+            appointment(
+                start.plusSeconds(900),
+                end.plusSeconds(900),
+                artistId,
+                AppointmentStatus.CONFIRMED));
+
+    assertThat(
+            appointmentRepo
+                .existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusIn(
+                    tenantId,
+                    artistId,
+                    end,
+                    start,
+                    List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS)))
+        .isTrue();
+    assertThat(
+            appointmentRepo
+                .existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusInAndIdNot(
+                    tenantId,
+                    artistId,
+                    end,
+                    start,
+                    List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS),
+                    active.getId()))
+        .isFalse();
+  }
+
+  @Test
+  void cancelledAppointmentDoesNotCauseCollision() {
+    UUID artistId = artist.getId();
+    Instant start = Instant.parse("2030-01-01T10:00:00Z");
+    Instant end = Instant.parse("2030-01-01T11:00:00Z");
+    appointmentRepo.save(appointment(start, end, artistId, AppointmentStatus.CANCELLED));
+
+    assertThat(
+            appointmentRepo
+                .existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusIn(
+                    tenantId,
+                    artistId,
+                    end,
+                    start,
+                    List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS)))
+        .isFalse();
+  }
+
+  @Test
+  void appointmentForAnotherTenantDoesNotCauseCollision() {
+    UUID otherTenantId = UUID.randomUUID();
+    UUID artistId = artist.getId();
+    Instant start = Instant.parse("2030-01-01T10:00:00Z");
+    Instant end = Instant.parse("2030-01-01T11:00:00Z");
+    appointmentRepo.save(
+        appointment(otherTenantId, start, end, artistId, AppointmentStatus.CONFIRMED));
+
+    assertThat(
+            appointmentRepo
+                .existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusIn(
+                    tenantId,
+                    artistId,
+                    end,
+                    start,
+                    List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS)))
+        .isFalse();
+  }
+
+  @Test
+  void appointmentForAnotherArtistDoesNotCauseCollision() {
+    ArtistEntity otherArtist = artistRepo.save(new ArtistEntity(tenantId, "Other Artist"));
+    Instant start = Instant.parse("2030-01-01T10:00:00Z");
+    Instant end = Instant.parse("2030-01-01T11:00:00Z");
+    appointmentRepo.save(
+        appointment(tenantId, start, end, otherArtist.getId(), AppointmentStatus.CONFIRMED));
+
+    assertThat(
+            appointmentRepo
+                .existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusIn(
+                    tenantId,
+                    artist.getId(),
+                    end,
+                    start,
+                    List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS)))
+        .isFalse();
+  }
+
+  @Test
+  void adjacentAppointmentsDoNotCollide() {
+    UUID artistId = artist.getId();
+    Instant start = Instant.parse("2030-01-01T10:00:00Z");
+    Instant end = Instant.parse("2030-01-01T11:00:00Z");
+    appointmentRepo.save(appointment(start, end, artistId, AppointmentStatus.CONFIRMED));
+
+    assertThat(
+            appointmentRepo
+                .existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusIn(
+                    tenantId,
+                    artistId,
+                    end.plusSeconds(3600),
+                    end,
+                    List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS)))
+        .isFalse();
+  }
+
+  private AppointmentEntity appointment(
+      Instant startsAt, Instant endsAt, UUID artistId, AppointmentStatus status) {
+    return appointment(tenantId, startsAt, endsAt, artistId, status);
+  }
+
+  private AppointmentEntity appointment(
+      UUID appointmentTenantId,
+      Instant startsAt,
+      Instant endsAt,
+      UUID artistId,
+      AppointmentStatus status) {
+    AppointmentEntity appointment =
+        new AppointmentEntity(
+            appointmentTenantId, customer.getId(), service.getId(), artistId, startsAt, endsAt);
+    appointment.setStatus(status);
+    return appointment;
   }
 }

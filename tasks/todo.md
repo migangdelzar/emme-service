@@ -41,6 +41,14 @@
 - [ ] Execute Phase H events, Redis, libraries, and build foundations.
 - [ ] Execute Phase I database, deployment, and final cleanup.
 
+### Current slice — Task 17A appointment collision safety
+
+- [x] Replace appointment collision entity-list loading with a tenant-scoped JPA existence query.
+- [x] Remove unused non-tenant collision overloads and persistence list-query methods.
+- [x] Add the PostgreSQL active-appointment exclusion migration and migration contract test.
+- [x] Add a Testcontainers concurrency test requiring one successful insert and one `23P01` failure.
+- [ ] Run the live concurrency gate with Docker available and verify the deployed Liquibase path.
+
 ### Plan working notes
 
 - User requested subagent-driven execution when work can be safely parallelized.

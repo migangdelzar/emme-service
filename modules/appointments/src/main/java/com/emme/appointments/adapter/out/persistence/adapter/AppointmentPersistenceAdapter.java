@@ -5,15 +5,20 @@ import com.emme.appointments.adapter.out.persistence.mapper.AppointmentPersisten
 import com.emme.appointments.adapter.out.persistence.repository.SpringDataAppointmentRepository;
 import com.emme.appointments.application.port.out.AppointmentRepository;
 import com.emme.appointments.domain.model.Appointment;
+import com.emme.appointments.domain.model.AppointmentStatus;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /** Implements the appointment persistence port using Spring Data JPA. */
 @Component
 public class AppointmentPersistenceAdapter implements AppointmentRepository {
+
+  private static final Set<AppointmentStatus> ACTIVE_STATUSES =
+      Set.of(AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS);
 
   private final SpringDataAppointmentRepository repository;
   private final AppointmentPersistenceMapper mapper;
@@ -56,32 +61,15 @@ public class AppointmentPersistenceAdapter implements AppointmentRepository {
   }
 
   @Override
-  public List<Appointment> findByArtistIdAndStartsAtBetween(
-      UUID artistId, Instant startsAt, Instant endsAt) {
+  public boolean existsActiveCollision(
+      UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId) {
+    if (excludedAppointmentId == null) {
+      return repository
+          .existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusIn(
+              tenantId, artistId, endsAt, startsAt, ACTIVE_STATUSES);
+    }
     return repository
-        .findByArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(artistId, endsAt, startsAt)
-        .stream()
-        .map(mapper::toDomain)
-        .toList();
-  }
-
-  public List<Appointment> findByArtistIdAndOverlappingInterval(
-      UUID artistId, Instant startsAt, Instant endsAt) {
-    return repository
-        .findByArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(artistId, endsAt, startsAt)
-        .stream()
-        .map(mapper::toDomain)
-        .toList();
-  }
-
-  @Override
-  public List<Appointment> findByTenantIdAndArtistIdAndOverlappingInterval(
-      UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt) {
-    return repository
-        .findByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThan(
-            tenantId, artistId, endsAt, startsAt)
-        .stream()
-        .map(mapper::toDomain)
-        .toList();
+        .existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusInAndIdNot(
+            tenantId, artistId, endsAt, startsAt, ACTIVE_STATUSES, excludedAppointmentId);
   }
 }

@@ -1240,3 +1240,15 @@
 - **Prevention rule:** When adding a new architectural classification reason,
   update the executable vocabulary test and the plan’s reason list in the same
   change.
+
+## 2026-09-04 — Verify the active branch before applying restored work
+
+- **Failure mode:** Restored appointment files were applied while the workspace was on an unrelated branch whose tracked source tree did not contain the appointment module.
+- **Detection signal:** The module compiler reported missing appointment packages and Git showed an active branch change with untracked appointment paths.
+- **Prevention rule:** Before resuming preserved work, verify branch, merge state, and tracked source layout; preserve restored files temporarily, switch to the intended feature branch, and only then apply changes.
+
+## 2026-09-04 — Keep collision pre-checks separate from concurrency enforcement
+
+- **Failure mode:** A bounded JPA existence query could be mistaken for a complete concurrent-booking fix even though two transactions can pass the pre-check.
+- **Detection signal:** The optimized query improved allocation, but no PostgreSQL constraint and live concurrent-write assertion existed.
+- **Prevention rule:** Treat query optimization and database invariant enforcement as separate plan gates; do not mark collision safety complete until a real PostgreSQL concurrency test proves the invariant.

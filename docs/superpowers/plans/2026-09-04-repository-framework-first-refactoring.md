@@ -1118,25 +1118,37 @@ git commit -m "refactor(domain): standardize foundational JPA persistence"
 - JPA is attempted first for query/projection/locking; direct SQL or PostgreSQL exclusion/range constraints are retained only when the concurrency test proves they are required.
 - User/tenant authorization remains in the application service.
 
-- [ ] **Step 1: Write failing collision and concurrency tests**
+**Current slice 17A — Tenant-scoped JPA pre-check and PostgreSQL invariant:**
+
+- [x] Replace entity-list collision loading with a Spring Data `existsBy...` query filtered to `CONFIRMED` and `IN_PROGRESS`.
+- [x] Keep collision ports tenant-scoped and remove unused non-tenant overloads/list-query methods.
+- [x] Add a forward Liquibase migration with a PostgreSQL GiST exclusion constraint and active-appointment preflight.
+- [x] Add migration contract coverage and a Testcontainers concurrency test asserting one commit and one `23P01` exclusion violation.
+- [ ] Run the Testcontainers concurrency test with Docker available and verify it against the deployed migration path.
+
+- [x] **Step 1: Write failing collision and concurrency tests**
 
 Cover adjacent intervals, exact overlap, different staff/resource, different
 tenant, cancellation freeing a slot, and two concurrent writes against the
 same interval.
 
-- [ ] **Step 2: Run the focused tests**
+- [x] **Step 2: Run the focused unit/repository tests**
 
 ```bash
 ./gradlew :modules:appointments:test :modules:appointments:integrationTest --tests '*Collision*' --tests '*AppointmentRepository*' --no-parallel --no-configuration-cache
 ```
 
-- [ ] **Step 3: Implement the smallest query/constraint change**
+- [x] **Step 3: Implement the smallest query/constraint change**
 
 Prefer a Spring Data existence/projection query and transaction lock. Add a
 PostgreSQL migration only if a database exclusion/range invariant is necessary;
 never rely on a Java pre-check alone for concurrent booking.
 
 - [ ] **Step 4: Run unit/integration tests, compile, and commit**
+
+The unit and H2 repository tests pass. The live PostgreSQL concurrency gate is
+written but could not start because Docker is unavailable in the current
+environment; Task 17 remains open until that gate runs successfully.
 
 ```bash
 ./gradlew :modules:appointments:test :modules:appointments:compileJava --no-parallel --no-configuration-cache

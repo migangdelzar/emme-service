@@ -18,14 +18,6 @@ public interface AppointmentRepository {
   List<Appointment> findByTenantIdAndStartsAtBetween(
       UUID tenantId, Instant startsAt, Instant endsAt);
 
-  List<Appointment> findByArtistIdAndStartsAtBetween(
-      UUID artistId, Instant startsAt, Instant endsAt);
-
-  List<Appointment> findByArtistIdAndOverlappingInterval(
-      UUID artistId, Instant startsAt, Instant endsAt);
-
-  default List<Appointment> findByTenantIdAndArtistIdAndOverlappingInterval(
-      UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt) {
-    return findByArtistIdAndOverlappingInterval(artistId, startsAt, endsAt);
-  }
+  boolean existsActiveCollision(
+      UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId);
 }

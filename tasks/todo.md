@@ -1,5 +1,31 @@
 # Service architecture migration checklist
 
+## Repository framework-first refactoring plan — 2026-09-04
+
+- [x] Complete repository-wide framework-first design and file inventory.
+- [x] Create executable gradual implementation plan for AI contracts,
+      `ai-platform`, assistant, tenancy, providers, domain modules, build,
+      database, and operations.
+- [x] Define subagent-driven execution protocol for independent slices.
+- [ ] Review and approve `docs/superpowers/plans/2026-09-04-repository-framework-first-refactoring.md`.
+- [ ] Execute Phase A baseline/architecture guardrails.
+- [ ] Execute Phase B AI contracts and Spring AI consolidation.
+- [ ] Execute Phase C LangGraph4j boundary.
+- [ ] Execute Phase D AI persistence with JPA-first decisions.
+- [ ] Execute Phase E tenancy/bootstrap safety.
+- [ ] Execute Phase F provider HTTP migration.
+- [ ] Execute Phase G domain persistence waves.
+- [ ] Execute Phase H events, Redis, libraries, and build foundations.
+- [ ] Execute Phase I database, deployment, and final cleanup.
+
+### Plan working notes
+
+- User requested subagent-driven execution when work can be safely parallelized.
+- Shared contracts, Liquibase migrations, version catalog, and composition-root
+  changes remain sequential; independent assistant/provider/test-fixture slices
+  may use fresh-context subagents after the contract checkpoint.
+- No implementation code is changed by creating this plan.
+
 ## Task 6 semantic capability hardening — 2026-08-31
 
 - [ ] Remediate review findings with strict red→green→refactor slices.

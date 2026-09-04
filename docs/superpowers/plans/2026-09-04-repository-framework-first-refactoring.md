@@ -1,0 +1,1428 @@
+# Repository Framework-first Refactoring Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Every task uses checkbox tracking and strict Red → Green → Refactor TDD.
+
+**Goal:** Gradually reduce repository-specific mechanics by using Spring, PostgreSQL, Redis, Kafka, Spring AI, LangGraph4j, and provider capabilities wherever they are simpler and behaviorally safe, while preserving tenant isolation and enterprise guarantees.
+
+**Architecture:** Keep the modular monolith and module-private domain persistence boundaries. Use Spring Data JPA for stable entity-backed operations, `JdbcClient` only for bootstrap, atomic, dynamic-schema, JSONB, vector, FTS, RRF, AGE, and other proven PostgreSQL-specific work. Use Spring AI for model/RAG/tool mechanics, LangGraph4j only for complex resumable workflows, Spring Modulith for internal durable events, and Kafka only for selected external event boundaries.
+
+**Tech Stack:** Java 25, Gradle, Spring Boot 4.1.x, Spring AI 2.0.x, Spring Modulith 2.1.x, Spring Data JPA, Spring JDBC `JdbcClient`, PostgreSQL/Liquibase/pgvector/AGE, Spring Data Redis, Kafka, LangGraph4j, JUnit 5, AssertJ, Mockito, ArchUnit, Testcontainers, Spotless, Checkstyle, JaCoCo, and the existing E2E/load-test tooling.
+
+## Global Constraints
+
+- The canonical design is [`2026-09-03-repository-framework-first-refactoring-design.md`](../specs/2026-09-03-repository-framework-first-refactoring-design.md); do not implement behavior outside its decision matrix.
+- The first execution wave is `libraries:ai-contracts`, `modules:ai-platform`, and `modules:assistant`; later waves use the same rules across every repository project.
+- JPA is the default for stable module-owned entity CRUD, projections, transactions, and locking.
+- `JdbcClient` is retained only for dynamic tenant identifiers, bootstrap/entity-manager lifecycle constraints, atomic claims/idempotency, JSONB, pgvector, FTS/RRF, AGE, LangGraph checkpoints, or a measured simpler SQL operation.
+- No direct `JdbcTemplate` remains in feature/application code after the relevant wave; lower-level JDBC is limited to the named bootstrap/connection boundary.
+- `libraries:ai-contracts` remains free of Spring, Spring AI, JPA, Redis, JDBC, LangGraph4j, and provider SDK types.
+- Spring AI owns model transport, `ChatClient`, structured output, advisors, tool callback mechanics, retrieval augmentation, vector-store mechanics, and observations; Emme code owns tenant/security/admission/idempotency/audit policy.
+- LangGraph4j owns only graph topology, checkpointed interruption, and resume; it does not own authorization, repositories, payments, or generic event delivery.
+- PostgreSQL remains the durable source of truth; Redis is disposable cache/live/coordination state; Kafka is not an aggregate database.
+- Every implementation task writes the failing test first, runs the focused test, implements the minimum, refactors only after green, and commits one logical slice.
+- Do not edit deployed Liquibase migrations in place; add forward migrations and migration-contract coverage.
+- Do not combine dependency upgrades with behavioral refactors. Upgrade to the latest compatible stable patch in a separate platform task.
+- Preserve unrelated worktree changes and stage only files belonging to the current task.
+- Final repository-wide Spotless, Checkstyle, compilation, coverage, integration, startup, E2E, security, and performance gates run after the gradual waves; affected-module gates run before each slice commit.
+
+## 1. Scope and execution strategy
+
+This plan is the executable companion to the repository-wide design. It is
+intentionally divided into a first wave and later waves. The first wave removes
+the highest-risk duplication around AI contracts, Spring AI composition,
+LangGraph boundaries, AI persistence, and tenant-safe context. The later waves
+apply the same proven patterns to domain persistence and provider integrations.
+
+The existing repository already contains substantial AI functionality and
+earlier implementation plans. Before changing a class, the implementer must
+search callers and compare current behavior with the design. A task marked
+“consolidate” means migrate callers and then remove a duplicate; it does not
+mean introducing a second compatibility abstraction.
+
+### 1.1 Existing files deliberately preserved initially
+
+These are not automatic deletion targets:
+
+- `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/JdbcConnectionExecutor.java`
+  because Liquibase/bootstrap operations require managed connection access;
+- `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java`
+  because dynamic schema creation is not JPA CRUD;
+- `modules/shared/src/main/java/com/emme/shared/search/HybridSearch.java`
+  because its PostgreSQL FTS/pgvector/RRF query is specialized;
+- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow/JdbcLangGraphCheckpointSaver.java`
+  because LangGraph checkpoint state is JSONB/upsert/tenant-specific;
+- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/graph/JdbcAgeGraphClient.java`
+  because AGE traversal is a specialized database boundary;
+- `libraries/kernel/src/main/java/com/emme/kernel/context/TenantExecutionContextScope.java`,
+  `AiExecutionContextScope.java`, and `StructuredParallelTaskRunner.java`
+  because context propagation and structured concurrency are cross-cutting
+  primitives, not duplicate business mechanics.
+
+### 1.2 File ownership rule
+
+The implementer must keep the following ownership after every task:
+
+```text
+ai-contracts       framework-neutral cross-module values and narrow contracts
+ai-platform        provider adapters, model admission, and AI infrastructure
+assistant          AI use cases, tenant policy, tools, RAG, and workflows
+business modules   authoritative domain state and application services
+shared             truly cross-module infrastructure only
+application        composition root and deployment wiring
+database           PostgreSQL schema, RLS, extensions, indexes, migrations
+libraries/testing  generic test infrastructure, not feature fixtures
+```
+
+## 2. File map before implementation
+
+| Responsibility | Current files | First target |
+|---|---|---|
+| Cross-module AI contracts | `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/{model,embedding,rag,tool,workflow,graph,semantic}/**` | One capability contract per operation; no framework types |
+| Spring AI provider infrastructure | `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/**`, `configuration/**` | Capability-specific model adapters and one provider composition path |
+| Spring AI chat/RAG/tools | `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAi*Configuration.java`, `adapter/out/provider/springai/**` | One `ChatClient` composition path with ordered advisors and controlled callbacks |
+| AI workflow | `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow/**` | Keep graph only for resumable complexity; hide LangGraph types behind ports |
+| AI JDBC persistence | `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/Jdbc*.java`, `modules/ai-platform/src/main/java/com/emme/ai/platform/learning/Jdbc*.java` | JPA for stable aggregates; named `Postgres*Store`/`Postgres*Repository` for survivors |
+| Tenant bootstrap | `modules/tenancy/src/main/java/com/emme/tenancy/{configuration,adapter,out,application}/**` | One tenancy-owned bootstrap/provisioning boundary |
+| Provider HTTP | `modules/{payment,notification,calendar,identity}/**/*HttpClient.java`, provider classes | Typed `RestClient`/HTTP interfaces or justified official SDK |
+| Shared test infrastructure | `libraries/testing/src/testFixtures/java/**`, module test fixtures | Generic fixtures only; feature fixtures stay with owners |
+| Build conventions | `build-logic/src/main/kotlin/**`, `platform/build.gradle.kts`, module `build.gradle.kts` | Capability-specific conventions and no duplicate declarations |
+
+## 3. Phase A — Baseline, ledger, and architecture guardrails
+
+### Task 1: Create the migration ledger and baseline report
+
+**Files:**
+
+- Create: `docs/superpowers/migrations/framework-first-migration-ledger.md`
+- Modify: `tasks/todo.md`
+- Inspect: `settings.gradle.kts`, `gradle/libs.versions.toml`, `build-logic/src/main/kotlin/**`, all module build files
+
+**Acceptance criteria:**
+
+- The ledger lists every project from `settings.gradle.kts`, each JDBC/HTTP/Spring AI/LangGraph/Redis/Kafka hotspot, its owner, target technology, reason, rollback, and deletion condition.
+- The baseline records current version pins, focused test commands, full compile command, and known environment limitations.
+- No source code changes are included in this task.
+
+- [ ] **Step 1: Write the failing ledger validation test**
+
+Create `applications/emme-platform/src/test/java/com/emme/RepositoryFrameworkFirstInventoryTest.java` that loads the repository project list and asserts that the ledger contains each included Gradle project name and each production JDBC-related path returned by the repository inventory script.
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run:
+
+```bash
+./gradlew :applications:emme-platform:test --tests com.emme.RepositoryFrameworkFirstInventoryTest --no-parallel --no-configuration-cache
+```
+
+Expected result: FAIL because the ledger and validation test do not yet exist.
+
+- [ ] **Step 3: Write the minimum ledger and test implementation**
+
+Add the ledger tables and make the test use fixed expected project names plus
+the exact inventory paths from the design. Do not make the test depend on
+network, Docker, or provider availability.
+
+- [ ] **Step 4: Run the focused test and refactor**
+
+Run the command again. Expected result: PASS. Refactor only for readable
+inventory grouping, then run `git diff --check`.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add docs/superpowers/migrations/framework-first-migration-ledger.md tasks/todo.md applications/emme-platform/src/test/java/com/emme/RepositoryFrameworkFirstInventoryTest.java
+git commit -m "docs: add framework-first migration ledger"
+```
+
+### Task 2: Enforce framework leakage and direct JDBC boundaries
+
+**Files:**
+
+- Create: `applications/emme-platform/src/test/java/com/emme/RepositoryFrameworkBoundaryArchitectureTest.java`
+- Modify: `modules/assistant/src/test/java/com/emme/assistant/AssistantPackageConventionTest.java`
+- Modify: existing module package convention tests only when a rule is missing
+
+**Acceptance criteria:**
+
+- `libraries:ai-contracts` cannot import Spring, Spring AI, JPA, JDBC, Redis, Kafka, LangGraph4j, OkHttp, or provider SDK packages.
+- Application/domain packages cannot import `JdbcTemplate`, `NamedParameterJdbcTemplate`, or raw provider HTTP clients.
+- Existing valid bootstrap, specialized search, graph, and checkpoint boundaries are allow-listed by package and class name, not by broad module exclusion.
+
+- [ ] **Step 1: Write failing ArchUnit tests**
+
+Add tests that import the production packages and assert the forbidden package
+dependencies and class locations. The allowed JDBC classes must be exactly:
+
+```text
+com.emme.shared.persistence.jdbc.JdbcConnectionExecutor
+com.emme.tenancy.configuration.BootstrapJdbcConfiguration
+com.emme.tenancy.adapter.out.client.database.*
+com.emme.assistant.ai.adapter.out.workflow.JdbcLangGraphCheckpointSaver
+com.emme.assistant.ai.adapter.out.graph.JdbcAgeGraphClient
+com.emme.shared.search.HybridSearch
+```
+
+- [ ] **Step 2: Run the tests to verify current violations are visible**
+
+Run:
+
+```bash
+./gradlew :applications:emme-platform:test --tests com.emme.RepositoryFrameworkBoundaryArchitectureTest --no-parallel --no-configuration-cache
+```
+
+Expected result: FAIL with the current direct imports/leakage, or compile
+failure if the test classes are not yet present.
+
+- [ ] **Step 3: Implement the minimum rule and source moves required by the test**
+
+Do not migrate production classes in this task. Encode the rules and current
+allow-list so later tasks get a precise failure when they introduce leakage.
+
+- [ ] **Step 4: Run focused architecture tests and commit**
+
+Expected result: PASS for the baseline allow-list. Commit:
+
+```bash
+git add applications/emme-platform/src/test/java/com/emme/RepositoryFrameworkBoundaryArchitectureTest.java modules/assistant/src/test/java/com/emme/assistant/AssistantPackageConventionTest.java
+git commit -m "test: guard framework ownership boundaries"
+```
+
+## 4. Phase B — AI contract and Spring AI consolidation
+
+### Task 3: Select and lock canonical AI contracts
+
+**Files:**
+
+- Modify: `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatModel.java`
+- Modify: `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatCompletionPort.java`
+- Modify: `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/EmbeddingModel.java`
+- Modify: `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/EmbeddingPort.java`
+- Modify: `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/embedding/EmbedTextUseCase.java`
+- Modify: `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/tool/**`
+- Modify: `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/rag/**`
+- Modify: `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/workflow/**`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/ChatCompletionPort.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/EmbeddingModelPort.java`
+- Test: matching contract tests in `libraries/ai-contracts/src/test/**`, `modules/ai-platform/src/test/**`, and `modules/assistant/src/test/**`
+
+**Canonical outputs:**
+
+```text
+AiChatCompletion       one application chat capability with provider/result metadata
+EmbeddingPort           one outbound embedding capability, or EmbeddingService if caller search proves it is a use case
+AiToolDefinition        one tool metadata record
+AiToolGateway           one authorization/idempotency gateway
+KnowledgeRetriever      retrieval only
+RagAnswerService        answer policy only
+ConversationWorkflow    application workflow capability
+QuoteWorkflow           application quote workflow capability
+```
+
+**Acceptance criteria:**
+
+- No duplicate interface with identical behavior remains after caller migration.
+- Contracts contain records/enums/interfaces only and remain framework-neutral.
+- Serialized event/workflow names remain compatible or have an explicit migration test.
+
+- [ ] **Step 1: Write failing contract tests**
+
+Add one test per canonical capability asserting the method signature and one
+architecture test asserting that Spring/JPA/Redis/LangGraph types are absent.
+For example, the chat capability test must compile a request containing
+message, tenant context, provider policy, and return a response containing
+content plus provider metadata without importing `ChatClient`.
+
+- [ ] **Step 2: Run focused tests and record the duplicate failure**
+
+```bash
+./gradlew :libraries:ai-contracts:test :modules:ai-platform:test :modules:assistant:test --tests '*Contract*' --no-parallel --no-configuration-cache
+```
+
+Expected result: FAIL where duplicate contracts or old callers still exist.
+
+- [ ] **Step 3: Migrate one capability at a time**
+
+Update imports/callers in this order: embedding, chat, tools, retrieval/RAG,
+semantic cache, workflow. Keep a deprecated forwarding alias only while a
+remaining caller is migrated; record the alias and deletion condition in the
+ledger. Do not add a new generic `AiProvider` interface.
+
+- [ ] **Step 4: Run tests, refactor names, and commit**
+
+Run the focused command again, then `./gradlew :libraries:ai-contracts:compileJava :modules:ai-platform:compileJava :modules:assistant:compileJava --no-parallel --no-configuration-cache`.
+Commit:
+
+```bash
+git add libraries/ai-contracts modules/ai-platform modules/assistant
+git commit -m "refactor(ai): consolidate capability contracts"
+```
+
+### Task 4: Collapse Spring AI chat composition to one path
+
+**Files:**
+
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiChatConfiguration.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiChatProviderRegistry.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/ChatModelSelector.java`
+- Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java`
+- Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiChatModel.java`
+- Create or modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/AiChatClientRouter.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/configuration/SpringAiChatConfigurationTest.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/configuration/SpringAiAdapterConsolidationArchitectureTest.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/application/provider/ChatModelSelectorTest.java`
+
+**Target behavior:**
+
+```text
+ChatModel beans → ChatClient.Builder/Configurer → named ChatClient beans
+               → AiChatClientRouter(provider selection/admission/fallback)
+               → ordered advisors → application chat capability
+```
+
+**Acceptance criteria:**
+
+- One production construction path exists for chat clients and router.
+- Multiple provider clients retain Spring AI observability/customizers and use explicit qualifiers/primary selection.
+- Fallback occurs only for the existing provider-unavailable error; security, validation, and persistence errors propagate.
+- `SpringAiModelProvider` is deleted once caller search is clean; it is not retained as a permanent composite wrapper.
+
+- [ ] **Step 1: Write failing configuration and routing tests**
+
+Cover disabled optional provider, named provider order, selected client,
+provider-unavailable fallback, non-retryable error propagation, advisor order,
+and scheduler admission. Assert that `ChatClientBuilderConfigurer` is used for
+custom clients so observations/customizers are not bypassed.
+
+- [ ] **Step 2: Run the focused tests and capture failure**
+
+```bash
+./gradlew :modules:assistant:test --tests '*SpringAiChatConfigurationTest' --tests '*ChatModelSelectorTest' --tests '*SpringAiAdapterConsolidationArchitectureTest' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Implement the minimum composition change**
+
+Remove package-private production overloads used only to construct test
+variants. Inject collaborators into tests. Use one immutable advisor list and
+one router; keep admission/fallback policy in the router and prompt/tool/RAG
+mechanics in Spring AI.
+
+- [ ] **Step 4: Run focused tests, compile, and commit**
+
+```bash
+./gradlew :modules:assistant:test :modules:ai-platform:test :modules:assistant:compileJava :modules:ai-platform:compileJava --no-parallel --no-configuration-cache
+git add modules/assistant modules/ai-platform
+git commit -m "refactor(ai): consolidate Spring AI chat composition"
+```
+
+### Task 5: Use Spring AI advanced features for tools and structured extraction
+
+**Files:**
+
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiToolConfiguration.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiToolCallbackProvider.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/tool/AuthorizedAiToolGateway.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiNailDesignExtractor.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiQuoteExtractionConfiguration.java`
+- Test: tool gateway/callback tests under `modules/assistant/src/test/java/com/emme/assistant/ai/application/tool/**`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiNailDesignExtractorTest.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/configuration/SpringAiToolConfigurationTest.java`
+
+**Acceptance criteria:**
+
+- Stable tool catalog uses Spring AI `ToolCallback`/`ToolCallbackProvider`; no custom model/tool loop is maintained.
+- `AuthorizedAiToolGateway` remains the authorization, risk, confirmation, idempotency, trace, and authoritative-result gate.
+- Structured extraction uses `ChatClient` entity mapping with schema/provider validation where supported, followed by domain validation and abstention.
+- Semantic tool search is opt-in and used only when the configured tool catalog justifies vector-index cost and latency.
+
+- [ ] **Step 1: Write failing tests**
+
+Test unauthorized role, confirmation-required tool, duplicate idempotency key,
+authoritative versus informational result, callback argument conversion,
+structured-output invalid schema, domain-invalid enum, and model unavailable.
+
+- [ ] **Step 2: Run tests to verify current custom mechanics fail the target contract**
+
+```bash
+./gradlew :modules:assistant:test --tests '*Tool*' --tests '*NailDesignExtractorTest' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Implement the minimum framework delegation**
+
+Expose callbacks from existing definitions, delegate loop execution to Spring
+AI, and keep the gateway as the callback body. Replace manual extraction
+serialization with `ChatClient...call().entity(...)`, retaining explicit
+validation and safe rejection.
+
+- [ ] **Step 4: Run focused tests and commit**
+
+```bash
+./gradlew :modules:assistant:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
+git add modules/assistant
+git commit -m "refactor(ai): delegate tools and extraction to Spring AI"
+```
+
+### Task 6: Consolidate Spring AI RAG, advisors, cache, and vector boundaries
+
+**Files:**
+
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiRagConfiguration.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/TenantScopedDocumentRetriever.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/RagAnswerProviderChain.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/semantic/SemanticChatCache.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiRedisSemanticConfiguration.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcSemanticCacheAdapter.java`
+- Modify: `modules/shared/src/main/java/com/emme/shared/search/HybridSearch.java`
+- Create/rename: `modules/shared/src/main/java/com/emme/shared/search/PostgresHybridKnowledgeRetriever.java`
+- Test: existing RAG, semantic, Redis, pgvector, and migration contract tests under `modules/assistant`, `modules/shared`, and `database`
+
+**Acceptance criteria:**
+
+- Standard RAG uses `RetrievalAugmentationAdvisor` and one canonical chat router.
+- `TenantScopedDocumentRetriever` enforces tenant/principal authorization and bounded retrieval; it does not duplicate generic retrieval mechanics.
+- `RagAnswerProviderChain` is deleted if it only forwards calls; otherwise it becomes `RagAnswerPolicy` and contains only fallback/abstention policy.
+- PostgreSQL remains authoritative for durable cache metadata/hits; Redis remains an evictable hot projection.
+- `HybridSearch` remains direct SQL until an equivalent Spring AI/vector-store path reproduces FTS, pgvector, RRF, model identity, and tenant filtering with equal or better measured behavior.
+
+- [ ] **Step 1: Write failing tests**
+
+Cover advisor order, retrieved-document tenant filter, empty retrieval,
+provider fallback, unsafe answer abstention, top-1 threshold and margin,
+embedding model/version/dimension mismatch, Redis safe miss, durable cache
+hit confirmation, and hybrid search ranking.
+
+- [ ] **Step 2: Run focused tests**
+
+```bash
+./gradlew :modules:assistant:test :modules:shared:test :database:test --tests '*Rag*' --tests '*Semantic*' --tests '*HybridSearch*' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Implement the minimum consolidation**
+
+Build one advisor list per use case, inject the canonical router, simplify the
+cache constructor to one production path, and keep policy-specific code only
+where the framework cannot express tenant/security/abstention rules.
+
+- [ ] **Step 4: Run focused tests, integration contracts, and commit**
+
+```bash
+./gradlew :modules:assistant:test :modules:shared:test :database:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
+git add modules/assistant modules/shared
+git commit -m "refactor(ai): consolidate Spring AI RAG and semantic paths"
+```
+
+## 5. Phase C — LangGraph4j and AI workflow boundary
+
+### Task 7: Prove graph versus simple state-machine scope
+
+**Files:**
+
+- Modify: `docs/superpowers/migrations/framework-first-migration-ledger.md`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow/ConversationWorkflowGraphTest.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow/QuoteWorkflowGraphTest.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow/LangGraphConversationWorkflowAdapterTest.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow/LangGraphQuoteWorkflowResumeAdapterTest.java`
+
+**Acceptance criteria:**
+
+- Conversation and quote workflows have a written complexity record showing the branch, interrupt, checkpoint, and resume behavior that requires LangGraph4j.
+- Linear operations that only change a status and publish an event are marked for application state plus Modulith, not a graph.
+- Graph nodes do not perform authorization, repository access, payment transitions, or direct HTTP calls.
+
+- [ ] **Step 1: Write failing topology and boundary tests**
+
+Assert conversation and quote graph node/edge topology, approval/clarification
+interrupt points, resume behavior, and absence of direct domain repository
+dependencies from graph definitions.
+
+- [ ] **Step 2: Run focused workflow tests**
+
+```bash
+./gradlew :modules:assistant:test --tests '*WorkflowGraphTest' --tests '*LangGraph*Test' --no-parallel --no-configuration-cache
+```
+
+Expected result: tests expose any graph behavior that is not represented by the
+current workflow contract or any accidental direct dependency.
+
+- [ ] **Step 3: Record the decisions and implement only boundary corrections**
+
+Keep `ConversationWorkflowGraph` and `QuoteWorkflowGraph` when their interrupt
+and checkpoint behavior is proven. Rename to `ConversationWorkflowDefinition`
+or `QuoteWorkflowDefinition` only if the name removes ambiguity and all callers
+are migrated in the same slice. Do not introduce a generic graph facade.
+
+- [ ] **Step 4: Run tests and commit**
+
+```bash
+./gradlew :modules:assistant:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
+git add docs/superpowers/migrations/framework-first-migration-ledger.md modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow
+git commit -m "test(ai): lock LangGraph workflow boundary"
+```
+
+### Task 8: Simplify LangGraph composition and checkpoint naming
+
+**Files:**
+
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiLangGraphConfiguration.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow/JdbcLangGraphCheckpointSaver.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow/TenantAwareCheckpointSaver.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow/LangGraphConversationWorkflowAdapter.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow/LangGraphQuoteWorkflowCapability.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow/LangGraphQuoteWorkflowResumeAdapter.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/configuration/SpringAiLangGraphConfigurationTest.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow/JdbcLangGraphCheckpointSaverTest.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow/TenantAwareCheckpointSaverTest.java`
+
+**Canonical names:**
+
+```text
+workflowCheckpointStore       application-neutral checkpoint port
+PostgresLangGraphCheckpointStore  PostgreSQL/LangGraph4j adapter
+LangGraphConversationWorkflow     conversation adapter
+LangGraphQuoteWorkflow            quote adapter
+```
+
+**Acceptance criteria:**
+
+- One opt-in LangGraph configuration creates each graph once and does not create ambiguous generic `CompiledGraph<AgentState>` beans.
+- Checkpoint reads/writes enforce tenant, conversation, principal/actor, workflow, and namespace identity.
+- Checkpoint upsert, JSONB state, and next-node semantics remain unchanged.
+- JPA is explicitly rejected for this checkpoint adapter because the library contract and PostgreSQL-specific state/upsert behavior are clearer in `JdbcClient`.
+
+- [ ] **Step 1: Write failing configuration/security tests**
+
+Test disabled graph startup, one graph bean per capability, unauthorized
+checkpoint read, cross-tenant workflow ID, duplicate checkpoint update,
+malformed thread ID, resume without checkpoint, and authorized staff resume.
+
+- [ ] **Step 2: Run tests to verify the current behavior**
+
+```bash
+./gradlew :modules:assistant:test --tests '*LangGraph*' --tests '*Checkpoint*' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Implement the minimum composition/name cleanup**
+
+Keep `JdbcClient` and the tenant-aware decorator. Move generic library types
+behind the adapter, remove duplicate resume adapter logic only when the tests
+prove no separate policy is lost, and use capability-qualified bean names.
+
+- [ ] **Step 4: Run tests, compile, and commit**
+
+```bash
+./gradlew :modules:assistant:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
+git add modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiLangGraphConfiguration.java modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow modules/assistant/src/test/java/com/emme/assistant/ai/configuration/SpringAiLangGraphConfigurationTest.java modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow
+git commit -m "refactor(ai): simplify LangGraph workflow composition"
+```
+
+## 6. Phase D — AI persistence with JPA-first decisions
+
+### Task 9: Classify every AI JDBC adapter before changing implementation
+
+**Files:**
+
+- Modify: `docs/superpowers/migrations/framework-first-migration-ledger.md`
+- Inspect: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/Jdbc*.java`
+- Inspect: `modules/ai-platform/src/main/java/com/emme/ai/platform/learning/Jdbc*.java`
+- Inspect: `database/src/main/resources/db/changelog/**`
+- Test: existing adapter tests under `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/persistence/**`
+- Test: existing learning store tests under `modules/ai-platform/src/test/java/com/emme/ai/platform/learning/**`
+
+**Acceptance criteria:**
+
+- Every production JDBC adapter is classified as JPA candidate, `JdbcClient` survivor, or lower-level connection boundary.
+- Each survivor has a concrete reason: dynamic identifier, atomic claim, JSONB, pgvector/FTS/RRF, AGE, LangGraph checkpoint, RLS/session lifecycle, or measured lower complexity.
+- No implementation is changed in this task; the classification is reviewable and complete before migration.
+
+- [ ] **Step 1: Write a failing classification test**
+
+Add `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/persistence/AiJdbcMigrationClassificationTest.java` and `modules/ai-platform/src/test/java/com/emme/ai/platform/learning/LearningJdbcMigrationClassificationTest.java`. Each test asserts that the ledger contains the class name and one allowed reason.
+
+- [ ] **Step 2: Run the tests**
+
+```bash
+./gradlew :modules:assistant:test :modules:ai-platform:test --tests '*MigrationClassificationTest' --no-parallel --no-configuration-cache
+```
+
+Expected result: FAIL until all current JDBC stores are recorded.
+
+- [ ] **Step 3: Complete the ledger from caller and schema searches**
+
+For each class, record its tables, transaction assumptions, result shape,
+concurrency behavior, tenant predicate/session behavior, proposed target name,
+and the test that proves equivalence. Use `Postgres*Store` for retained
+technology-specific implementations and `*Repository` only for JPA repository
+contracts.
+
+- [ ] **Step 4: Run tests and commit the classification**
+
+```bash
+./gradlew :modules:assistant:test :modules:ai-platform:test --tests '*MigrationClassificationTest' --no-parallel --no-configuration-cache
+git add docs/superpowers/migrations/framework-first-migration-ledger.md modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/persistence/AiJdbcMigrationClassificationTest.java modules/ai-platform/src/test/java/com/emme/ai/platform/learning/LearningJdbcMigrationClassificationTest.java
+git commit -m "docs(ai): classify JDBC persistence boundaries"
+```
+
+### Task 10: Convert stable AI aggregate CRUD to JPA
+
+**Files:**
+
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiTraceRecorder.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteWorkflowRepository.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteArtifactRepository.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcQuoteReviewRepository.java`
+- Create/modify: corresponding `entity/**`, `mapper/**`, and `SpringData*Repository.java` files in `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/{QuoteWorkflowRepository,QuoteArtifactRepository,QuoteReviewRepository}.java`
+- Test: existing quote persistence tests and new JPA slice tests under `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/persistence/**`
+
+**Acceptance criteria:**
+
+- Stable quote/trace CRUD uses module-private JPA entities and Spring Data repositories where the mapping is clear.
+- Optimistic version and reviewer ownership semantics are preserved.
+- JSONB fields are mapped with a tested converter or remain in a small specialized query adapter if JPA mapping increases complexity.
+- Existing application ports do not expose JPA entities.
+
+- [ ] **Step 1: Write failing JPA repository/mapping tests**
+
+Test create/read/update, missing record, tenant filtering, optimistic version
+conflict, reviewer authorization input, and JSONB round-trip. Use a repository
+slice for mapping and a PostgreSQL integration test for JSONB/locking behavior.
+
+- [ ] **Step 2: Run focused tests and confirm the new repository path fails**
+
+```bash
+./gradlew :modules:assistant:test --tests '*Quote*Persistence*' --tests '*SpringData*Repository*' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Implement entity, mapper, repository, and adapter minimally**
+
+Use Spring Data derived queries, projections, `@Version`, and `@Lock` where
+they express the current operation. Keep the application port unchanged until
+the adapter behavior is proven; then remove the old JDBC class and update the
+ledger.
+
+- [ ] **Step 4: Run focused JPA/PostgreSQL tests, compile, and commit**
+
+```bash
+./gradlew :modules:assistant:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
+git add modules/assistant
+git commit -m "refactor(ai): use JPA for stable workflow persistence"
+```
+
+### Task 11: Retain and simplify atomic AI stores with JdbcClient
+
+**Files:**
+
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiJobStatusStore.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcAiToolIdempotencyStore.java`
+- Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/learning/JdbcLearningCandidateStore.java`
+- Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/learning/JdbcLearningCandidateStateStore.java`
+- Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/learning/JdbcLearningCandidateEvaluationStore.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/AiJobExecutorConfiguration.java`
+- Test: existing store unit tests and PostgreSQL concurrency integration tests under assistant/ai-platform integration test trees
+
+**Canonical names:**
+
+```text
+PostgresAiJobStateStore
+PostgresAiToolIdempotencyStore
+PostgresLearningCandidateStore
+PostgresLearningCandidateStateStore
+PostgresLearningCandidateEvaluationStore
+```
+
+**Acceptance criteria:**
+
+- Each retained SQL operation is a named, parameterized, tenant-scoped `JdbcClient` adapter.
+- Claims/leases/idempotency use one atomic SQL transition and never overwrite a successful result.
+- Ordinary lookup/history is converted to JPA only where it is simpler and does not split one atomic invariant into multiple transactions.
+- Tests cover concurrent workers, lease expiry, duplicate success replay, tenant isolation, and retryable failure.
+
+- [ ] **Step 1: Write failing concurrency tests**
+
+Add or extend tests for two workers claiming the same row, expired versus active
+lease, duplicate completed idempotency key, malformed JSON payload, and
+cross-tenant identifier. Add a PostgreSQL Testcontainers test for the actual
+unique/conditional update behavior.
+
+- [ ] **Step 2: Run focused tests**
+
+```bash
+./gradlew :modules:assistant:test :modules:ai-platform:test --tests '*AiJob*' --tests '*Idempotency*' --tests '*LearningCandidate*' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Rename and simplify only the SQL adapter boundary**
+
+Use `JdbcClient.sql(...).param(...).query(...)`/`update()` with explicit row
+mapping. Keep SQL in the adapter, keep application ports technology-neutral,
+and remove duplicate helper methods only after test coverage proves identical
+claim and replay behavior.
+
+- [ ] **Step 4: Run unit/integration tests, compile, and commit**
+
+```bash
+./gradlew :modules:assistant:test :modules:ai-platform:test :modules:assistant:compileJava :modules:ai-platform:compileJava --no-parallel --no-configuration-cache
+git add modules/assistant modules/ai-platform
+git commit -m "refactor(ai): standardize atomic JdbcClient stores"
+```
+
+## 7. Phase E — Tenancy/bootstrap safety
+
+### Task 12: Move tenant membership policy off bootstrap JDBC
+
+**Files:**
+
+- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/application/service/EnsureTenantMembershipService.java`
+- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/TenantPersistenceAdapter.java`
+- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/TenantProvisioningPersistenceAdapter.java`
+- Modify/create: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/repository/SpringDataTenantRepository.java`
+- Modify/create: `modules/tenancy/src/main/java/com/emme/tenancy/application/port/out/TenantMembershipRepository.java`
+- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/configuration/BootstrapJdbcConfiguration.java`
+- Modify: `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/in/messaging/consumer/SubscriptionProvisioningListener.java`
+- Test: existing tenancy membership/provisioning tests and `modules/subscriptions/src/test/**`
+
+**Acceptance criteria:**
+
+- Application services express membership/provisioning policy and do not inject `JdbcTemplate` or bootstrap `JdbcClient`.
+- Stable tenant registry/membership CRUD uses JPA where the entity-manager lifecycle is available.
+- Subscription provisioning calls a tenancy-owned typed port/event and does not interpolate unvalidated schema names.
+- Duplicate provisioning is a no-op only when the database confirms the duplicate; operational failures remain visible and retryable.
+
+- [ ] **Step 1: Write failing service/listener tests**
+
+Test membership creation, duplicate membership, tenant context mismatch,
+subscription provisioning duplicate, invalid schema name, and migration
+failure propagation. Assert no application service depends on bootstrap JDBC.
+
+- [ ] **Step 2: Run the focused tests**
+
+```bash
+./gradlew :modules:tenancy:test :modules:subscriptions:test --tests '*Membership*' --tests '*Provisioning*' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Implement the smallest JPA/port move**
+
+Create a tenancy-owned repository/port with explicit membership methods. Keep
+`BootstrapJdbcConfiguration` only for bootstrap consumers and keep raw
+connection/Liquibase classes unchanged. Replace broad exception swallowing in
+the listener with duplicate classification plus propagated failure.
+
+- [ ] **Step 4: Run tests, compile, and commit**
+
+```bash
+./gradlew :modules:tenancy:test :modules:subscriptions:test :modules:tenancy:compileJava :modules:subscriptions:compileJava --no-parallel --no-configuration-cache
+git add modules/tenancy modules/subscriptions
+git commit -m "refactor(tenancy): isolate bootstrap persistence"
+```
+
+### Task 13: Verify the unavoidable tenant JDBC boundary
+
+**Files:**
+
+- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/DatabaseRegistryAdapter.java`
+- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java`
+- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantIdentifierResolver.java`
+- Modify: `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/JdbcConnectionExecutor.java`
+- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/configuration/BootstrapJdbcConfiguration.java`
+- Test: `modules/tenancy/src/test/java/com/emme/tenancy/adapter/out/client/database/**`
+- Test: `modules/shared/src/test/java/com/emme/shared/persistence/jdbc/JdbcConnectionExecutorTest.java`
+
+**Acceptance criteria:**
+
+- The remaining lower-level JDBC code is limited to dynamic schema, Liquibase, resolver, registry-cycle, and session/RLS concerns.
+- `JdbcConnectionExecutor` is renamed to `BootstrapConnectionExecutor` only if all callers are bootstrap/lifecycle callers.
+- Every dynamic schema identifier is validated against the trusted tenant registry and cannot be supplied as an untrusted SQL value.
+
+- [ ] **Step 1: Write failing boundary tests**
+
+Cover dynamic schema validation, bootstrap connection closure, resolver before
+entity-manager initialization, Liquibase failure, registry-cycle behavior,
+tenant session setup, and cross-tenant access rejection.
+
+- [ ] **Step 2: Run focused tenancy/shared tests**
+
+```bash
+./gradlew :modules:tenancy:test :modules:shared:test --tests '*DatabaseRegistry*' --tests '*LiquibaseTenant*' --tests '*TenantIdentifier*' --tests '*JdbcConnectionExecutor*' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Rename only if the verified purpose is bootstrap-only**
+
+Keep the lower-level connection callback because Spring documents that advanced
+JDBC operations may need it. Do not replace it with JPA. Move any accidental
+feature caller to a typed repository or `JdbcClient` adapter.
+
+- [ ] **Step 4: Run tests, compile, and commit**
+
+```bash
+./gradlew :modules:tenancy:test :modules:shared:test :modules:tenancy:compileJava :modules:shared:compileJava --no-parallel --no-configuration-cache
+git add modules/tenancy modules/shared
+git commit -m "refactor(tenancy): narrow bootstrap JDBC boundary"
+```
+
+## 8. Phase F — External provider clients
+
+### Task 14: Establish the typed HTTP client convention
+
+**Files:**
+
+- Modify: `modules/identity/src/main/java/com/emme/identity/configuration/IdentityClientConfiguration.java`
+- Modify: `modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleClientConfiguration.java`
+- Modify: `modules/notification/src/main/java/com/emme/notification/configuration/NotificationClientConfiguration.java`
+- Modify: `modules/payment/src/main/java/com/emme/payment/configuration/PaymentClientConfiguration.java`
+- Create: one representative typed API interface under `modules/notification/src/main/java/com/emme/notification/adapter/out/provider/http/ProviderHttpClient.java` only if the existing stack cannot share Spring's interface pattern directly
+- Test: configuration tests under each listed module
+
+**Acceptance criteria:**
+
+- Timeout, base URL, authentication, observation, and error classification are configured through Spring-managed clients.
+- Provider-specific request/response DTOs remain in provider packages.
+- No new universal `HttpClient` abstraction hides provider semantics.
+
+- [ ] **Step 1: Write failing configuration tests**
+
+Test that each provider client has the configured base URL/timeout, does not
+create a client per request, propagates correlation/tenant-safe headers, and
+maps transport failures to the module's retryable error contract.
+
+- [ ] **Step 2: Run the configuration tests**
+
+```bash
+./gradlew :modules:identity:test :modules:calendar:test :modules:notification:test :modules:payment:test --tests '*ClientConfiguration*' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Implement one provider channel at a time using `RestClient` or `@HttpExchange`**
+
+Use Spring's managed builder/configurer. Keep official SDK evaluation separate
+for Keycloak and Google where signing/authentication may materially reduce risk.
+Do not change payment state transitions in this task.
+
+- [ ] **Step 4: Run tests and commit the convention slice**
+
+```bash
+./gradlew :modules:identity:test :modules:calendar:test :modules:notification:test :modules:payment:test --no-parallel --no-configuration-cache
+git add modules/identity modules/calendar modules/notification modules/payment
+git commit -m "refactor(integrations): standardize Spring HTTP clients"
+```
+
+### Task 15: Replace zero-value HTTP wrappers with named gateways
+
+**Files:**
+
+- Delete after caller migration: `modules/payment/src/main/java/com/emme/payment/configuration/PaymentHttpClient.java`
+- Delete after caller migration: `modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java`
+- Delete after caller migration: `modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleHttpClient.java`
+- Delete after caller migration: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/AiHttpClient.java`
+- Modify: provider classes under `modules/payment/src/main/java/com/emme/payment/adapter/out/provider/**`
+- Modify: provider classes under `modules/notification/src/main/java/com/emme/notification/adapter/out/provider/**`
+- Modify: Google clients under `modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/client/**`
+- Modify: Keycloak client under `modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/KeycloakAdminClient.java`
+- Test: existing provider contract tests plus MockWebServer/RestClient contract tests in each owning module
+
+**Acceptance criteria:**
+
+- Application ports use names such as `StripePaymentGateway`, `TwilioSmsSender`, `GoogleCalendarGateway`, and `KeycloakIdentityGateway`.
+- Raw OkHttp request creation is removed from ordinary provider calls.
+- Provider-specific idempotency, webhook signature, error, and retry semantics remain covered.
+- Payment `authorize` and `capture` behavior is audited and tested before deletion of any wrapper.
+
+- [ ] **Step 1: Write failing provider contract tests**
+
+Cover successful request mapping, malformed provider response, 4xx validation,
+401/403 configuration, 409 idempotent replay, 429 rate limit, timeout, 5xx,
+and webhook signature failure. For Google/Keycloak, cover token expiry and
+realm/calendar scope behavior.
+
+- [ ] **Step 2: Run the provider tests**
+
+```bash
+./gradlew :modules:payment:test :modules:notification:test :modules:calendar:test :modules:identity:test --tests '*ProviderContractTest' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Migrate callers and delete only zero-value wrappers**
+
+Move request mapping to typed provider APIs, retain provider gateways as the
+capability boundary, and delete each wrapper only when `rg` finds no callers,
+configuration bean, test, or build dependency.
+
+- [ ] **Step 4: Run tests, compile, and commit each provider group separately**
+
+```bash
+./gradlew :modules:payment:test :modules:notification:test :modules:calendar:test :modules:identity:test --no-parallel --no-configuration-cache
+git add modules/payment modules/notification modules/calendar modules/identity
+git commit -m "refactor(integrations): remove duplicate provider wrappers"
+```
+
+## 9. Phase G — Domain persistence waves
+
+### Task 16: Standardize JPA aggregate persistence in foundational modules
+
+**Files:**
+
+- Modify: `modules/clients/src/main/java/com/emme/clients/adapter/out/persistence/**`
+- Modify: `modules/services/src/main/java/com/emme/services/adapter/out/persistence/**`
+- Modify: `modules/salon/src/main/java/com/emme/salon/adapter/out/persistence/**`
+- Modify: `modules/clients/src/main/java/com/emme/clients/application/port/out/**`
+- Modify: `modules/services/src/main/java/com/emme/services/application/port/out/**`
+- Modify: `modules/salon/src/main/java/com/emme/salon/application/port/out/**`
+- Test: corresponding repository, mapper, adapter, and application-service tests in each module
+
+**Acceptance criteria:**
+
+- Stable entity-backed CRUD uses Spring Data JPA repositories, projections, transaction boundaries, and optimistic locking where applicable.
+- Mapping remains module-private and domain models remain framework-free.
+- Pass-through helpers are removed only when the application port still communicates a meaningful module boundary or is intentionally replaced by a module service.
+- Query count and N+1 behavior are covered for list/detail paths.
+
+- [ ] **Step 1: Write failing repository and adapter tests**
+
+For each aggregate, cover create, find, list, update, not-found, tenant filter,
+version conflict, and read projection. Add a query-count assertion for list
+operations that previously loaded entities one by one.
+
+- [ ] **Step 2: Run the affected module tests**
+
+```bash
+./gradlew :modules:clients:test :modules:services:test :modules:salon:test --tests '*RepositoryTest' --tests '*PersistenceAdapterTest' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Apply the standard entity/repository/mapper shape**
+
+Use `SpringData<Aggregate>Repository`, JPA projections, `@Version`, and
+`@Lock` where required. Keep application ports free of entity types and delete
+only helpers whose behavior is fully represented by the repository/service.
+
+- [ ] **Step 4: Run tests, architecture tests, compile, and commit each module group**
+
+```bash
+./gradlew :modules:clients:test :modules:services:test :modules:salon:test :modules:clients:compileJava :modules:services:compileJava :modules:salon:compileJava --no-parallel --no-configuration-cache
+git add modules/clients modules/services modules/salon
+git commit -m "refactor(domain): standardize foundational JPA persistence"
+```
+
+### Task 17: Make appointment collision handling concurrency-safe
+
+**Files:**
+
+- Modify: `modules/appointments/src/main/java/com/emme/appointments/adapter/out/persistence/adapter/AppointmentCollisionAdapter.java`
+- Modify: `modules/appointments/src/main/java/com/emme/appointments/adapter/out/persistence/repository/SpringDataAppointmentRepository.java`
+- Modify: `modules/appointments/src/main/java/com/emme/appointments/adapter/out/persistence/adapter/AppointmentPersistenceAdapter.java`
+- Modify: appointment application mutation services under `modules/appointments/src/main/java/com/emme/appointments/application/service/**`
+- Modify/create: appointment Liquibase migration under `database/src/main/resources/db/changelog/**`
+- Test: `modules/appointments/src/test/java/com/emme/appointments/adapter/out/persistence/adapter/AppointmentCollisionAdapterTest.java`
+- Test: `modules/appointments/src/test/java/com/emme/appointments/repository/AppointmentRepositoryTest.java`
+- Test: `modules/appointments/src/integrationTest/**`
+
+**Acceptance criteria:**
+
+- Collision lookup uses a bounded indexed existence query or a database constraint appropriate to the scheduling invariant.
+- Concurrent create/reschedule cannot both succeed when they overlap.
+- JPA is attempted first for query/projection/locking; direct SQL or PostgreSQL exclusion/range constraints are retained only when the concurrency test proves they are required.
+- User/tenant authorization remains in the application service.
+
+- [ ] **Step 1: Write failing collision and concurrency tests**
+
+Cover adjacent intervals, exact overlap, different staff/resource, different
+tenant, cancellation freeing a slot, and two concurrent writes against the
+same interval.
+
+- [ ] **Step 2: Run the focused tests**
+
+```bash
+./gradlew :modules:appointments:test :modules:appointments:integrationTest --tests '*Collision*' --tests '*AppointmentRepository*' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Implement the smallest query/constraint change**
+
+Prefer a Spring Data existence/projection query and transaction lock. Add a
+PostgreSQL migration only if a database exclusion/range invariant is necessary;
+never rely on a Java pre-check alone for concurrent booking.
+
+- [ ] **Step 4: Run unit/integration tests, compile, and commit**
+
+```bash
+./gradlew :modules:appointments:test :modules:appointments:compileJava --no-parallel --no-configuration-cache
+git add modules/appointments database/src/main/resources/db/changelog
+git commit -m "fix(appointments): enforce collision invariant"
+```
+
+### Task 18: Standardize remaining entity modules
+
+**Files:**
+
+- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/**`
+- Modify: `modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/**`
+- Modify: `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/out/persistence/**`
+- Modify: `modules/documents/src/main/java/com/emme/documents/adapter/out/persistence/**`
+- Modify: `modules/catalog/src/main/java/com/emme/catalog/adapter/out/persistence/**`
+- Modify: `modules/calendar/src/main/java/com/emme/calendar/adapter/out/persistence/**`
+- Modify: `modules/notification/src/main/java/com/emme/notification/adapter/out/persistence/**`
+- Modify: `modules/payment/src/main/java/com/emme/payment/adapter/out/persistence/**`
+- Test: corresponding `SpringData*RepositoryTest`, `*PersistenceAdapterTest`, and application-service tests
+
+**Acceptance criteria:**
+
+- Each stable aggregate has one module-private JPA repository and one clear mapping adapter where the port boundary is needed.
+- Webhook, event, and payment idempotency state preserves unique constraints and atomic transitions.
+- Document/catalog vector indexing remains a projection boundary; metadata CRUD is JPA-first.
+- No module imports another module's entity or repository.
+
+- [ ] **Step 1: Write failing per-module persistence tests**
+
+Use the same create/find/list/update/not-found/tenant/version/idempotency matrix
+for each aggregate, adding webhook signature and duplicate-delivery cases to
+notification/payment and projection rebuild cases to documents/catalog.
+
+- [ ] **Step 2: Run each module group separately**
+
+```bash
+./gradlew :modules:tenancy:test :modules:identity:test :modules:subscriptions:test :modules:documents:test :modules:catalog:test :modules:calendar:test :modules:notification:test :modules:payment:test --tests '*RepositoryTest' --tests '*PersistenceAdapterTest' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Convert only the proven JPA candidates**
+
+Use projections and locking before custom SQL. Keep specialized vector,
+generated-FTS, webhook, and atomic state-transition SQL in named adapters when
+the ledger says JPA is less clear or unsafe.
+
+- [ ] **Step 4: Run tests, architecture checks, compile, and commit in two groups**
+
+```bash
+./gradlew :modules:tenancy:test :modules:identity:test :modules:subscriptions:test :modules:documents:test :modules:catalog:test :modules:calendar:test :modules:notification:test :modules:payment:test --no-parallel --no-configuration-cache
+git add modules/tenancy modules/identity modules/subscriptions modules/documents modules/catalog modules/calendar modules/notification modules/payment
+git commit -m "refactor(domain): standardize remaining JPA persistence"
+```
+
+## 10. Phase H — Events, Redis, libraries, and build foundations
+
+### Task 19: Standardize Modulith events and Kafka boundaries
+
+**Files:**
+
+- Modify: event publishers/listeners under `modules/assistant/src/main/java/com/emme/assistant/**`
+- Modify: `modules/appointments/src/main/java/com/emme/appointments/adapter/out/messaging/publisher/SpringAppointmentEventPublisher.java`
+- Modify: `modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/**`
+- Modify: `modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/messaging/consumer/**`
+- Modify: `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/in/messaging/consumer/SubscriptionProvisioningListener.java`
+- Modify: `applications/emme-platform/src/test/java/com/emme/KafkaEventStreamingIntegrationTest.java`
+- Test: module event publication/listener tests and integration tests under `applications/emme-platform/src/integrationTest/**`
+
+**Acceptance criteria:**
+
+- In-process module interactions use typed Spring Modulith events and the publication registry.
+- Kafka is used only for events that need external consumers, independent replay, partitioning, or delivery boundaries.
+- Listeners are idempotent, classify duplicate/no-op versus operational failure, and preserve tenant/correlation context.
+- No custom publication/retry table duplicates the Modulith registry.
+
+- [ ] **Step 1: Write failing publication/listener tests**
+
+Test publication inside the business transaction, listener retry, duplicate
+delivery, tenant context reconstruction, Kafka partition key, and failed
+publication recovery.
+
+- [ ] **Step 2: Run focused event tests**
+
+```bash
+./gradlew :modules:assistant:test :modules:appointments:test :modules:identity:test :modules:tenancy:test :modules:subscriptions:test --tests '*Event*' --tests '*Listener*' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Remove duplicated mechanics**
+
+Replace custom in-process queues/retry bookkeeping with Modulith publication
+configuration. Keep typed event contracts and business listener policy. Add
+Kafka externalization only for existing selected external event boundaries.
+
+- [ ] **Step 4: Run tests, integration checks, and commit**
+
+```bash
+./gradlew :modules:assistant:test :applications:emme-platform:test --tests '*KafkaEventStreamingIntegrationTest' --no-parallel --no-configuration-cache
+git add modules applications/emme-platform/src/test/java/com/emme/KafkaEventStreamingIntegrationTest.java
+git commit -m "refactor(events): standardize Modulith event boundaries"
+```
+
+### Task 20: Simplify Redis and semantic hot-state wiring
+
+**Files:**
+
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiRedisConfiguration.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiRedisSemanticConfiguration.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/redis/RedisAiOperationalStateAdapter.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/RedisSemanticCacheHotStore.java`
+- Modify: `modules/identity/src/main/java/com/emme/identity/adapter/out/ratelimit/RedisLoginAttemptRateLimiter.java`
+- Test: Redis unit/integration tests under assistant and identity
+
+**Acceptance criteria:**
+
+- Boot/Spring Data Redis manages the connection and serialization path where possible.
+- Redis keys are tenant/principal scoped where data is personalized and include version/model identity where semantic data requires it.
+- Cache/vector eviction and Redis outages produce safe misses or documented rate-limit behavior; durable state is never lost.
+- Native Redis/Jedis use remains only for a tested atomic primitive unavailable or materially less clear through Spring abstractions.
+
+- [ ] **Step 1: Write failing Redis tests**
+
+Cover TTL, eviction, tenant-key isolation, Redis unavailable, atomic compare and
+delete, rate limit boundary, vector metadata filter, embedding contract, and
+durable fallback.
+
+- [ ] **Step 2: Run focused Redis tests**
+
+```bash
+./gradlew :modules:assistant:test :modules:identity:test --tests '*Redis*' --tests '*Semantic*' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Implement managed wiring and narrow native access**
+
+Replace direct client construction with Spring-managed connection factories
+where behavior is equivalent. Keep custom cache policy/admission and direct
+atomic operations only in named adapters.
+
+- [ ] **Step 4: Run tests and commit**
+
+```bash
+./gradlew :modules:assistant:test :modules:identity:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
+git add modules/assistant modules/identity
+git commit -m "refactor(redis): simplify hot-state infrastructure"
+```
+
+### Task 21: Split generic and feature-specific test fixtures
+
+**Files:**
+
+- Modify: `libraries/testing/build.gradle.kts`
+- Modify: `libraries/testing/src/testFixtures/java/com/emme/testing/BaseSpringModuleTest.java`
+- Modify: `libraries/testing/src/testFixtures/java/com/emme/testing/BaseWebTest.java`
+- Modify: `libraries/testing/src/testFixtures/java/com/emme/testing/MockKeycloakAdminClientConfig.java`
+- Modify: `libraries/testing/src/testFixtures/java/com/emme/testing/TestBootstrapJdbcConfig.java`
+- Modify: `libraries/testing/src/testFixtures/java/com/emme/testing/TestSecurityConfig.java`
+- Create/modify: feature fixtures under `modules/identity/src/testFixtures/**`, `modules/tenancy/src/testFixtures/**`, `modules/salon/src/testFixtures/**`, and `modules/subscriptions/src/testFixtures/**`
+- Test: fixture-consuming module tests across `modules/*/src/test/**`
+
+**Acceptance criteria:**
+
+- Generic testing library no longer depends on concrete identity, salon, subscription, or tenancy production types.
+- Concrete Keycloak subclassing and broad infrastructure mocks are replaced by protocol fakes or module-owned test configuration.
+- Bootstrap JDBC test configuration is consumed only by bootstrap tests.
+- Modules compile with only the fixtures they use.
+
+- [ ] **Step 1: Write failing fixture dependency/architecture test**
+
+Add `libraries/testing/src/testFixtures/java/com/emme/testing/TestingFixtureDependencyTest.java` to assert generic fixtures do not reference feature package names, concrete provider clients, or feature-specific repositories.
+
+- [ ] **Step 2: Run the test and compile affected fixtures**
+
+```bash
+./gradlew :libraries:testing:test :libraries:testing:compileTestFixturesJava --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Move only feature fixtures to owning modules**
+
+Keep generic JWT, web, Spring context, and container helpers in
+`libraries/testing`. Create module test fixtures with protocol fakes and move
+feature imports/tests one module at a time.
+
+- [ ] **Step 4: Run representative module tests and commit**
+
+```bash
+./gradlew :libraries:testing:test :modules:identity:test :modules:tenancy:test :modules:assistant:test --no-parallel --no-configuration-cache
+git add libraries/testing modules/identity modules/tenancy modules/salon modules/subscriptions modules/assistant
+git commit -m "refactor(testing): isolate feature fixtures"
+```
+
+### Task 22: Remove duplicate Gradle capabilities and dependencies
+
+**Files:**
+
+- Modify: `modules/booking/build.gradle.kts`
+- Modify: `modules/catalog/build.gradle.kts`
+- Modify: `modules/assistant/build.gradle.kts`
+- Modify: `applications/emme-platform/build.gradle.kts`
+- Modify: all modules that explicitly reapply `emme.testing`
+- Modify: `build-logic/src/main/kotlin/emme.persistence.gradle.kts`
+- Modify: `build-logic/src/main/kotlin/emme.testing.gradle.kts`
+- Modify: `build-logic/src/main/kotlin/emme.messaging.gradle.kts`
+- Modify: `platform/build.gradle.kts`
+- Test: build-logic tests under `build-logic/src/test/**`; compile and dependency-analysis tasks
+
+**Acceptance criteria:**
+
+- `modules/booking` contains one `kernel` dependency and no unused persistence/web/integration plugin for its placeholder boundary.
+- `modules/catalog` contains one `kernel` dependency and only source-used capabilities.
+- `modules/assistant` contains one security-test dependency.
+- Conventions are applied once through the plugin chain; application-level Modulith is not duplicated.
+- Platform constraints use the narrowest safe scope after dependency analysis.
+
+- [ ] **Step 1: Write failing convention/dependency tests**
+
+Add build-logic tests that apply representative convention plugins to a
+temporary project and assert plugin application counts and expected
+configuration names. Add a repository check for duplicate dependency notation
+in the known module build files.
+
+- [ ] **Step 2: Run build-logic tests and dependency analysis**
+
+```bash
+./gradlew :build-logic:test :dependencyAnalysis --no-parallel --no-configuration-cache
+```
+
+Expected result: the duplicate declarations and over-provisioned placeholder
+capabilities are reported before cleanup.
+
+- [ ] **Step 3: Remove duplicate declarations and split conventions only where measured**
+
+Remove repeated lines and redundant plugins first. Split persistence/testing
+conventions only when the source/dependency report shows a real capability
+overprovisioning benefit that outweighs new convention names.
+
+- [ ] **Step 4: Run compile and build checks, then commit**
+
+```bash
+./gradlew compileJava dependencyAnalysis --no-parallel --no-configuration-cache
+git add build-logic platform modules applications
+git commit -m "build: remove duplicate framework capabilities"
+```
+
+## 11. Phase I — Database, deployment, and final cleanup
+
+### Task 23: Add database ownership and migration contract checks
+
+**Files:**
+
+- Modify: `database/src/main/resources/db/changelog/db.changelog-master.yaml`
+- Modify: `database/src/main/resources/db/changelog/**` only with new forward migrations
+- Create/modify: `database/src/test/java/com/emme/database/*MigrationContractTest.java`
+- Modify: `database/docker/run-migrations.sh`
+- Test: existing database tests and PostgreSQL Testcontainers migration tests
+
+**Acceptance criteria:**
+
+- Every module-owned durable table has documented owner and migration location.
+- RLS policies enforce tenant isolation for tenant-scoped durable tables.
+- Required pgvector, generated FTS, HNSW, AGE, unique, and version constraints are present.
+- Migration scripts validate slugs/schema identifiers and return non-zero on partial failure.
+- Deployed migrations are never edited in place.
+
+- [ ] **Step 1: Write failing migration contract tests**
+
+Test table ownership metadata, RLS enabled/policies, unique idempotency keys,
+version columns, vector dimensions/indexes, generated `tsvector`, and tenant
+schema provisioning state. Test invalid tenant slug/schema input in the shell
+script with a disposable PostgreSQL environment.
+
+- [ ] **Step 2: Run the database contract suite**
+
+```bash
+./gradlew :database:test --tests '*MigrationContractTest' --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Add only required forward migrations and script fixes**
+
+Use Liquibase for schema changes and keep SQL-specific behavior in the
+database. Align runtime and script validation through tests rather than copying
+unsafe SQL interpolation into application code.
+
+- [ ] **Step 4: Run migration tests and commit**
+
+```bash
+./gradlew :database:test :database:compileJava --no-parallel --no-configuration-cache
+git add database
+git commit -m "test(database): enforce framework-first persistence contracts"
+```
+
+### Task 24: Standardize deployment, health, and CI gates
+
+**Files:**
+
+- Modify: `.github/workflows/ci-backend.yml`
+- Modify: `.github/workflows/**` affected by duplicate build/security checks
+- Modify: `deployment/compose/**`
+- Modify: `infra/kubernetes/**`
+- Delete after validation: `deployment/compose/compose.environment-e2e.yaml.bak`
+- Modify: `gradle/environments/**`
+- Test: compose/Kubernetes smoke scripts and CI configuration validation
+
+**Acceptance criteria:**
+
+- Fast affected-module checks run before expensive integration gates.
+- Full integration, security, dependency, startup, and E2E gates remain available at phase/release boundaries.
+- Migration jobs, application health probes, Redis/Kafka/PostgreSQL dependencies, and secrets have one documented source per environment.
+- Stale `.bak` configuration is deleted only after the active E2E overlay is proven equivalent.
+
+- [ ] **Step 1: Write failing configuration checks**
+
+Validate every referenced environment variable, health URL, compose profile,
+Kubernetes probe, migration job dependency, and CI Gradle task. Assert the
+final quality command includes compile, tests, Spotless, Checkstyle, coverage,
+security/dependency analysis, and architecture tests.
+
+- [ ] **Step 2: Run configuration validation**
+
+```bash
+./gradlew tasks appConfig --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Simplify duplicate operational wiring**
+
+Keep environment-specific overrides explicit. Remove only duplicate profiles,
+stale files, and repeated CI task definitions proven by the configuration tests.
+
+- [ ] **Step 4: Run smoke checks and commit**
+
+```bash
+./gradlew check --no-parallel --no-configuration-cache
+git add .github deployment infra gradle
+git commit -m "chore(ops): standardize repository verification gates"
+```
+
+### Task 25: Remove verified compatibility classes and dependencies
+
+**Files:**
+
+- Delete: duplicate AI contracts and provider wrappers listed in the migration ledger
+- Delete: `modules/payment/.../PaymentHttpClient.java`, `modules/notification/.../NotificationHttpClient.java`, `modules/calendar/.../GoogleHttpClient.java`, and `modules/assistant/.../AiHttpClient.java` only after Task 15
+- Delete: `modules/ai-platform/.../SpringAiModelProvider.java` only after Task 4
+- Modify: `gradle/libs.versions.toml`, `platform/build.gradle.kts`, and owning build files
+- Modify: package-info and architecture tests with stale module names
+- Test: all affected module tests and architecture/dependency checks
+
+**Acceptance criteria:**
+
+- `rg` finds no caller, bean, import, test, or dependency for each deleted class.
+- Replacement integration tests pass for every deleted capability.
+- No serialized event/workflow contract changes occur without compatibility coverage.
+- Unused provider/JDBC/HTTP dependencies are removed from the narrowest owning scope.
+
+- [ ] **Step 1: Write failing deletion-candidate tests**
+
+Add a repository inventory test that fails when a ledger item marked ready for
+deletion still has a source caller, bean declaration, import, or build
+dependency.
+
+- [ ] **Step 2: Run caller and dependency searches**
+
+```bash
+rg -n 'SpringAiModelProvider|PaymentHttpClient|NotificationHttpClient|GoogleHttpClient|AiHttpClient|JdbcTemplate|NamedParameterJdbcTemplate' modules libraries applications tools
+./gradlew dependencyAnalysis --no-parallel --no-configuration-cache
+```
+
+- [ ] **Step 3: Delete one compatibility family at a time**
+
+Delete only after its ledger condition, focused tests, architecture tests, and
+compilation pass. Update names and documentation in the same logical family;
+do not mix unrelated formatting changes.
+
+- [ ] **Step 4: Run affected tests and commit each family**
+
+```bash
+./gradlew :modules:assistant:test :modules:ai-platform:test :modules:payment:test :modules:notification:test :modules:calendar:test --no-parallel --no-configuration-cache
+git add modules libraries platform gradle
+git commit -m "refactor: remove verified compatibility layers"
+```
+
+## 12. Subagent-driven execution protocol
+
+Subagents are the default for independent work, as requested. The coordinator
+must keep shared contracts, database migrations, and composition-root changes
+sequential.
+
+### 12.1 Safe parallel assignments
+
+After Tasks 1–4 establish the ledger and canonical contracts, dispatch fresh
+contexts for:
+
+| Subagent | Isolated assignment | Required output |
+|---|---|---|
+| A | Spring AI tools/structured extraction (Task 5) | Tests, implementation, commit SHA, behavior notes |
+| B | RAG/vector/cache review (Task 6) | Tests, implementation, SQL retention rationale, commit SHA |
+| C | LangGraph boundary (Tasks 7–8) | Topology/security tests, workflow changes, commit SHA |
+| D | AI persistence classification (Task 9) | Completed ledger and classification tests, no unapproved broad rewrite |
+| E | Provider HTTP inventory and one provider migration (Tasks 14–15) | Provider contract tests, typed client change, commit SHA |
+| F | Test fixture split (Task 21) | Fixture dependency test, moved fixtures, commit SHA |
+
+Do not parallelize tasks that edit the same contract files, version catalog,
+Liquibase master/changelog, shared build convention, or application composition
+root. Rebase/merge one reviewed commit at a time and run the checkpoint gate
+before dispatching the next dependent group.
+
+### 12.2 Required subagent handoff
+
+Each subagent reports:
+
+1. files changed and files deliberately not changed;
+2. failing test observed before implementation;
+3. focused tests and compilation results;
+4. remaining risk or environment limitation;
+5. commit SHA and clean scoped diff.
+
+The coordinator reviews the diff against the design and runs the task's
+checkpoint tests before accepting the commit. A subagent must not delete a
+compatibility class or alter a database migration without the ledger condition
+and replacement evidence.
+
+## 13. Checkpoints and verification commands
+
+### Checkpoint A — after Tasks 1–6
+
+- [ ] AI contracts have one canonical capability per operation.
+- [ ] `ai-contracts` has no framework/provider imports.
+- [ ] Spring AI chat/tools/RAG construction has one production path.
+- [ ] Focused assistant, ai-platform, shared, and database tests pass.
+- [ ] Affected compilation and architecture tests pass.
+
+```bash
+./gradlew :libraries:ai-contracts:test :modules:ai-platform:test :modules:assistant:test :modules:shared:test :database:test --no-parallel --no-configuration-cache
+```
+
+### Checkpoint B — after Tasks 7–13
+
+- [ ] LangGraph is limited to proven resumable complexity.
+- [ ] AI JDBC stores are classified and stable CRUD has a tested JPA path.
+- [ ] Remaining `JdbcClient` code is named and justified.
+- [ ] Tenant bootstrap JDBC is isolated from application policy.
+- [ ] Tenant provisioning duplicate/failure behavior is integration-tested.
+
+```bash
+./gradlew :modules:assistant:test :modules:ai-platform:test :modules:tenancy:test :modules:subscriptions:test :modules:shared:test --no-parallel --no-configuration-cache
+```
+
+### Checkpoint C — after Tasks 14–22
+
+- [ ] Provider gateways use typed Spring HTTP clients or justified official SDKs.
+- [ ] Redis and Modulith behavior is safe under outage/retry/duplicate delivery.
+- [ ] Generic test fixtures no longer depend on feature modules.
+- [ ] Duplicate Gradle declarations and unused placeholder capabilities are removed.
+
+```bash
+./gradlew test compileJava dependencyAnalysis --no-parallel --no-configuration-cache
+```
+
+### Final repository gate — after Tasks 23–25
+
+- [ ] Full Java compilation and all unit/integration suites pass with zero failures/skips.
+- [ ] PostgreSQL/RLS/Liquibase/pgvector/AGE migration contracts pass.
+- [ ] Redis/Kafka/Testcontainers integration passes in an environment with Docker.
+- [ ] Application startup, migration jobs, health probes, authenticated API, webhook, and E2E flows pass.
+- [ ] Spotless, Checkstyle, JaCoCo threshold, Sonar/dependency/security checks pass.
+- [ ] Load-test baseline shows no regression in JPA queries, JDBC claims, vector search, Redis hit/miss, provider calls, or workflow latency.
+- [ ] `git diff --check` passes and all generated artifacts are committed/pushed.
+
+```bash
+./gradlew check integrationTest e2eTest --no-parallel --no-configuration-cache
+./gradlew spotlessCheck checkstyleMain jacocoTestCoverageVerification dependencyAnalysis --no-parallel --no-configuration-cache
+```
+
+## 14. Definition of done
+
+- [ ] Every task has a failing test or explicit inventory/architecture test before implementation.
+- [ ] Every task leaves the repository compilable and its focused tests green.
+- [ ] Every remaining custom adapter has a recorded reason, owner, test category, and rollback.
+- [ ] Every deleted class has no remaining caller/configuration/dependency and replacement evidence.
+- [ ] Spring AI, JPA, Redis, Modulith, Kafka, and LangGraph4j are used only for responsibilities they simplify or uniquely provide.
+- [ ] Tenant isolation, authorization, idempotency, audit, observability, and payment authority are preserved.
+- [ ] Names communicate capability and ownership without unnecessary implementation leakage.
+- [ ] The final quality gates and operational checks pass, or exact environment blockers are recorded in the migration ledger.
+- [ ] Changes are committed atomically, pushed to `feat/ai-platform-foundation`, and the remote tip is verified.
+
+## 15. Plan review gaps to resolve before execution
+
+- The exact canonical embedding name (`EmbeddingPort` versus `EmbeddingService`) must be selected by caller search in Task 3; the plan intentionally prevents two identical contracts but does not invent a public API name without usage evidence.
+- Keycloak and Google provider SDK adoption requires a protocol/auth/error comparison in Task 14; Spring HTTP interfaces remain the default.
+- Appointment exclusion/range constraints require PostgreSQL concurrency evidence in Task 17; a JPA existence query is the default first attempt.
+- The current platform patch upgrade to the latest compatible stable version is a separate maintenance change and is not part of the first refactoring commits.

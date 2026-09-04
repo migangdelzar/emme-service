@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
 import org.junit.jupiter.api.Test;
@@ -18,5 +19,10 @@ class CanonicalAiProviderContractTest {
   @Test
   void existingEmbeddingAdapterRemainsCompatibleWithTheSelectedEmbeddingService() {
     assertThat(EmbeddingService.class.isAssignableFrom(SpringAiEmbeddingModel.class)).isTrue();
+  }
+
+  @Test
+  void legacyCompositeProviderDoesNotBecomeAnEmbeddingServiceBean() {
+    assertThat(EmbeddingService.class.isAssignableFrom(AiModelProvider.class)).isFalse();
   }
 }

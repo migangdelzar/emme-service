@@ -120,6 +120,14 @@
 - [x] Keep chunk bulk/replace operations for their dedicated audit.
 - [x] Run document tests, compilation, Checkstyle, and Spotless.
 
+### Current slice — Task 18H notification/payment ID lookups
+
+- [x] Add notification and payment tests for ID-based aggregate loading.
+- [x] Remove redundant tenant-qualified ID methods from both JPA repositories.
+- [x] Simplify notification/payment mutation helpers and callers.
+- [x] Preserve provider-reference, webhook, and list tenant filters.
+- [x] Run notification/payment tests, Checkstyle, and Spotless.
+
 ### Plan working notes
 
 ### Current slice — Task 19A tenant event boundary

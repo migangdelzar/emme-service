@@ -27,14 +27,14 @@ class NotificationPackageConventionTest {
   }
 
   @Test
-  void allNotificationMutationLookupsAreTenantScoped() throws Exception {
+  void notificationCrudUsesTheTenantScopedConnection() throws Exception {
     String repository =
         Files.readString(ROOT.resolve("application/port/out/NotificationRepository.java"));
     String support =
         Files.readString(ROOT.resolve("application/service/NotificationServiceSupport.java"));
 
-    assertThat(repository).doesNotContain("findById(UUID notificationId)");
-    assertThat(support).doesNotContain("findById(notificationId)");
+    assertThat(repository).contains("findById(UUID notificationId)");
+    assertThat(support).contains("findById(notificationId)");
     assertThat(Files.readString(ROOT.resolve("api/command/CancelNotificationCommand.java")))
         .contains("UUID tenantId");
     assertThat(Files.readString(ROOT.resolve("api/command/DeliverNotificationCommand.java")))

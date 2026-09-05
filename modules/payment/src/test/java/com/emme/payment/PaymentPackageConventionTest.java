@@ -30,13 +30,13 @@ class PaymentPackageConventionTest {
   }
 
   @Test
-  void paymentMutationsAndReadsAreTenantScoped() throws Exception {
+  void paymentCrudUsesTheTenantScopedConnection() throws Exception {
     String repository =
         Files.readString(ROOT.resolve("application/port/out/PaymentRepository.java"));
     String controller =
         Files.readString(ROOT.resolve("adapter/in/web/controller/PaymentController.java"));
 
-    assertThat(repository).doesNotContain("findById(UUID paymentId)");
+    assertThat(repository).contains("findById(UUID paymentId)");
     assertThat(Files.readString(ROOT.resolve("api/query/GetPaymentQuery.java")))
         .contains("UUID tenantId");
     assertThat(Files.readString(ROOT.resolve("api/command/RefundPaymentCommand.java")))

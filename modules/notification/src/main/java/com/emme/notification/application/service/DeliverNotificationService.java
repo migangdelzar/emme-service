@@ -41,7 +41,7 @@ public class DeliverNotificationService implements DeliverNotificationUseCase {
   @Override
   public NotificationDetails deliver(DeliverNotificationCommand command) {
     Notification notification =
-        NotificationServiceSupport.load(repository, command.tenantId(), command.notificationId());
+        NotificationServiceSupport.load(repository, command.notificationId());
     if (notification.status() == com.emme.notification.domain.model.NotificationStatus.DELIVERED) {
       return NotificationApplicationMapper.toResult(notification);
     }

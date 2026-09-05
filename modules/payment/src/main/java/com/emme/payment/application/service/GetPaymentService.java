@@ -20,8 +20,6 @@ public class GetPaymentService implements GetPaymentUseCase {
 
   @Override
   public Optional<PaymentDetails> get(GetPaymentQuery query) {
-    return repository
-        .findByTenantIdAndId(query.tenantId(), query.paymentId())
-        .map(PaymentApplicationMapper::toResult);
+    return repository.findById(query.paymentId()).map(PaymentApplicationMapper::toResult);
   }
 }

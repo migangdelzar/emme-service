@@ -9,9 +9,9 @@ import java.util.UUID;
 final class PaymentServiceSupport {
   private PaymentServiceSupport() {}
 
-  static Payment load(PaymentRepository repository, UUID tenantId, UUID paymentId) {
+  static Payment load(PaymentRepository repository, UUID paymentId) {
     return repository
-        .findByTenantIdAndId(tenantId, paymentId)
+        .findById(paymentId)
         .orElseThrow(() -> new PaymentNotFoundException(paymentId));
   }
 

@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface NotificationRepository {
-  Optional<Notification> findByTenantIdAndId(UUID tenantId, UUID notificationId);
+  Optional<Notification> findById(UUID notificationId);
 
   List<Notification> findByTenantId(UUID tenantId);
 

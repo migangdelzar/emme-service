@@ -22,8 +22,8 @@ public class NotificationPersistenceAdapter implements NotificationRepository {
   }
 
   @Override
-  public Optional<Notification> findByTenantIdAndId(UUID tenantId, UUID notificationId) {
-    return repository.findByTenantIdAndId(tenantId, notificationId).map(mapper::toDomain);
+  public Optional<Notification> findById(UUID notificationId) {
+    return repository.findById(notificationId).map(mapper::toDomain);
   }
 
   @Override

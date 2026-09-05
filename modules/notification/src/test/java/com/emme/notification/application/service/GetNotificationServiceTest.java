@@ -14,16 +14,15 @@ import org.junit.jupiter.api.Test;
 class GetNotificationServiceTest {
 
   @Test
-  void onlyReturnsARecordBelongingToTheRequestedTenant() {
+  void loadsANotificationByIdFromTheTenantScopedConnection() {
     UUID recordTenant = UUID.randomUUID();
-    UUID requestedTenant = UUID.randomUUID();
     Notification notification =
         new Notification(recordTenant, NotificationChannel.EMAIL, "recipient", "body");
     GetNotificationService service = new GetNotificationService(new Repository(notification));
 
-    Optional<?> result = service.get(new GetNotificationQuery(requestedTenant, notification.id()));
+    Optional<?> result = service.get(new GetNotificationQuery(recordTenant, notification.id()));
 
-    assertThat(result).isEmpty();
+    assertThat(result).isPresent();
   }
 
   private static final class Repository implements NotificationRepository {
@@ -34,8 +33,8 @@ class GetNotificationServiceTest {
     }
 
     @Override
-    public Optional<Notification> findByTenantIdAndId(UUID tenantId, UUID notificationId) {
-      return notification.tenantId().equals(tenantId) && notification.id().equals(notificationId)
+    public Optional<Notification> findById(UUID notificationId) {
+      return notification.id().equals(notificationId)
           ? Optional.of(notification)
           : Optional.empty();
     }

@@ -7,7 +7,7 @@ import java.util.UUID;
 
 /** Persistence capability required by Payment application services. */
 public interface PaymentRepository {
-  Optional<Payment> findByTenantIdAndId(UUID tenantId, UUID paymentId);
+  Optional<Payment> findById(UUID paymentId);
 
   Optional<Payment> findByTenantIdAndProviderReference(UUID tenantId, String providerReference);
 

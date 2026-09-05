@@ -1275,6 +1275,20 @@ because their tenant filters and replacement boundaries need an explicit audit.
 - [x] Keep chunk bulk/replace operations unchanged for their dedicated audit.
 - [x] Run document tests, compilation, Checkstyle, and Spotless.
 
+#### Current slice 18H — Use ID-only notification and payment CRUD lookups
+
+Notification delivery/cancellation and payment state transitions operate inside
+the tenant-scoped connection. Their application ports and Spring Data adapters
+now use standard `findById` for aggregate identity, while provider-reference,
+list, webhook-claim, and other operation-specific lookups retain explicit
+tenant/business-key semantics.
+
+- [x] Add notification and payment tests for ID-based aggregate loading.
+- [x] Remove redundant tenant-qualified ID methods from both JPA repositories.
+- [x] Simplify notification/payment mutation helpers and callers.
+- [x] Preserve tenant-qualified provider-reference and list operations.
+- [x] Run notification/payment tests, Checkstyle, and Spotless.
+
 #### Tenant isolation boundary correction
 
 `TenantDatabasePoolProvider` caches pools by `databaseId`, not by tenant schema.

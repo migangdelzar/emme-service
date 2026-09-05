@@ -8,9 +8,9 @@ import java.util.UUID;
 final class NotificationServiceSupport {
   private NotificationServiceSupport() {}
 
-  static Notification load(NotificationRepository repository, UUID tenantId, UUID notificationId) {
+  static Notification load(NotificationRepository repository, UUID notificationId) {
     return repository
-        .findByTenantIdAndId(tenantId, notificationId)
+        .findById(notificationId)
         .orElseThrow(() -> new NotificationNotFoundException(notificationId));
   }
 }

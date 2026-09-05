@@ -39,8 +39,7 @@ class NotificationDeliveryBoundaryTest {
     SmsSender smsSender = mock(SmsSender.class);
     PushSender pushSender = mock(PushSender.class);
     NotificationEventPublisher events = mock(NotificationEventPublisher.class);
-    when(repository.findByTenantIdAndId(tenantId, notificationId))
-        .thenReturn(Optional.of(notification));
+    when(repository.findById(notificationId)).thenReturn(Optional.of(notification));
 
     var result =
         new DeliverNotificationService(repository, emailSender, smsSender, pushSender, events)
@@ -51,11 +50,11 @@ class NotificationDeliveryBoundaryTest {
   }
 
   @Test
-  void doesNotAllowCancellationToLoadAnotherTenantNotification() {
+  void rejectsCancellationWhenNotificationIsMissing() {
     UUID tenantId = UUID.randomUUID();
     UUID notificationId = UUID.randomUUID();
     NotificationRepository repository = mock(NotificationRepository.class);
-    when(repository.findByTenantIdAndId(tenantId, notificationId)).thenReturn(Optional.empty());
+    when(repository.findById(notificationId)).thenReturn(Optional.empty());
 
     var service = new CancelNotificationService(repository);
 
@@ -85,8 +84,7 @@ class NotificationDeliveryBoundaryTest {
     SmsSender smsSender = mock(SmsSender.class);
     PushSender pushSender = mock(PushSender.class);
     NotificationEventPublisher events = mock(NotificationEventPublisher.class);
-    when(repository.findByTenantIdAndId(tenantId, notificationId))
-        .thenReturn(Optional.of(notification));
+    when(repository.findById(notificationId)).thenReturn(Optional.of(notification));
     when(repository.save(notification)).thenReturn(notification);
 
     var result =

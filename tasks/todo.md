@@ -14,6 +14,16 @@
 - [x] Add and run the isolated RAG quality integration test.
 - [ ] Run the Docker-backed RAG quality phase checkpoint when infrastructure is available.
 
+## Current slice — Assistant context regression — 2026-09-05
+
+- [x] Reproduce the full Assistant phase-checkpoint failure caused by two
+      `@Autowired` constructors on `RagQueryService`.
+- [x] Add a focused constructor-selection regression test.
+- [x] Remove the duplicate Spring autowiring annotation without changing the
+      public test constructors.
+- [x] Verify `RagQueryServiceTest`, `ConversationWebTest`, and the Assistant
+      unit test checkpoint.
+
 ## Current execution checkpoint — framework-first plan / durable Task 1 — 2026-09-05
 
 - [x] Synchronize `feat/ai-platform-foundation` with its remote branch.

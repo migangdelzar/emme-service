@@ -37,7 +37,6 @@ public class RagQueryService implements RagQueryUseCase {
     this(properties, retrieval, chatCompletion, Optional.empty(), Optional.empty());
   }
 
-  @Autowired
   public RagQueryService(
       AiProviderProperties properties,
       KnowledgeRetriever retrieval,

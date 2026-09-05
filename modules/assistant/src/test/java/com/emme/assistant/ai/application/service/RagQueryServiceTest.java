@@ -28,8 +28,17 @@ import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class RagQueryServiceTest {
+
+  @Test
+  void exposesOnlyOneSpringAutowiredConstructor() {
+    assertThat(
+            java.util.Arrays.stream(RagQueryService.class.getDeclaredConstructors())
+                .filter(constructor -> constructor.isAnnotationPresent(Autowired.class)))
+        .hasSize(1);
+  }
 
   @Test
   void queriesThroughTheCanonicalKnowledgeRetrieverPort() {

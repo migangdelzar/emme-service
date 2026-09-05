@@ -1546,3 +1546,14 @@
 - **Prevention rule:** Always run the exact new test before implementation and
   inspect the mocked branch when it passes unexpectedly; revise the test to
   represent the uncovered behavior before changing production code.
+
+## 2026-09-05 — Keep one Spring constructor autowired
+
+- **Failure mode:** Adding a new optional dependency path left two
+  `RagQueryService` constructors annotated with `@Autowired`, preventing every
+  web application context from starting.
+- **Detection signal:** The full Assistant checkpoint failed with Spring's
+  `Invalid autowire-marked constructor` error before any web test executed.
+- **Prevention rule:** When retaining convenience constructors for unit tests,
+  annotate only the single composition-root constructor and add a reflection
+  guard for constructor selection.

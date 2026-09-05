@@ -2,58 +2,65 @@ package com.emme.notification.adapter.out.provider.sms;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.client.MockRestServiceServer.bindTo;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
-import com.emme.notification.configuration.NotificationHttpClient;
-import okhttp3.OkHttpClient;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
 
 class TwilioSmsProviderContractTest {
-  private MockWebServer server;
+  private MockRestServiceServer server;
   private TwilioSmsProvider provider;
 
   @BeforeEach
-  void setUp() throws Exception {
-    server = new MockWebServer();
-    server.start();
+  void setUp() {
+    RestClient.Builder builder = RestClient.builder();
+    server = bindTo(builder).build();
     provider =
         new TwilioSmsProvider(
-            new NotificationHttpClient(new OkHttpClient()),
-            baseUrl(),
-            "AC123",
-            "token123",
-            "+5215550000000");
-  }
-
-  @AfterEach
-  void tearDown() throws Exception {
-    server.shutdown();
+            builder.build(), "https://twilio.test", "AC123", "token123", "+5215550000000");
   }
 
   @Test
-  void sendsSmsUsingTwilioBasicAuthenticationAndFormContract() throws Exception {
-    server.enqueue(new MockResponse().setResponseCode(201).setBody("{\"sid\":\"SM123\"}"));
+  void sendsSmsUsingTwilioBasicAuthenticationAndFormContract() {
+    server
+        .expect(requestTo("https://twilio.test/Accounts/AC123/Messages.json"))
+        .andExpect(method(HttpMethod.POST))
+        .andExpect(header("Authorization", "Basic QUMxMjM6dG9rZW4xMjM="))
+        .andExpect(content().formData(formData()))
+        .andRespond(withStatus(HttpStatus.CREATED).body("{\"sid\":\"SM123\"}"));
 
     assertThat(provider.send("+5215551111111", "Hello")).isEqualTo("twilio-SM123");
-    var request = server.takeRequest();
-    assertThat(request.getHeader("Authorization")).startsWith("Basic ");
-    assertThat(request.getBody().readUtf8())
-        .contains("To=%2B5215551111111", "From=%2B5215550000000", "Body=Hello");
+    server.verify();
   }
 
   @Test
   void throwsTypedProviderFailureWhenTwilioRejectsTheMessage() {
-    server.enqueue(new MockResponse().setResponseCode(429).setBody("rate limited"));
+    server
+        .expect(requestTo("https://twilio.test/Accounts/AC123/Messages.json"))
+        .andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS).body("rate limited"));
 
     assertThatThrownBy(() -> provider.send("+5215551111111", "Hello"))
         .isInstanceOf(SmsProviderException.class)
         .hasMessage("Twilio send failed: HTTP 429");
+    server.verify();
   }
 
-  private String baseUrl() {
-    return server.url("/").toString().replaceFirst("/$", "");
+  private static MultiValueMap<String, String> formData() {
+    MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+    form.add("To", "+5215551111111");
+    form.add("From", "+5215550000000");
+    form.add("Body", "Hello");
+    return form;
   }
 }

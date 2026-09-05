@@ -1,16 +1,19 @@
 package com.emme.notification.adapter.out.provider.sms;
 
-import com.emme.notification.configuration.NotificationHttpClient;
 import com.emme.notification.configuration.NotificationProperties;
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import okhttp3.FormBody;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * Twilio SMS provider via REST API.
@@ -30,10 +33,11 @@ public class TwilioSmsProvider implements com.emme.notification.application.port
   private final String accountSid;
   private final String authToken;
   private final String fromNumber;
-  private final NotificationHttpClient client;
+  private final RestClient client;
   private final String apiBase;
 
-  public TwilioSmsProvider(NotificationProperties properties, NotificationHttpClient client) {
+  public TwilioSmsProvider(
+      NotificationProperties properties, @Qualifier("notificationRestClient") RestClient client) {
     this(
         client,
         PRODUCTION_API_BASE,
@@ -44,11 +48,7 @@ public class TwilioSmsProvider implements com.emme.notification.application.port
 
   /** Package-private constructor for testing with custom API base, HTTP client, and credentials. */
   public TwilioSmsProvider(
-      NotificationHttpClient client,
-      String apiBase,
-      String accountSid,
-      String authToken,
-      String fromNumber) {
+      RestClient client, String apiBase, String accountSid, String authToken, String fromNumber) {
     this.accountSid = notBlank(accountSid) ? accountSid : null;
     this.authToken = notBlank(authToken) ? authToken : null;
     this.fromNumber = notBlank(fromNumber) ? fromNumber : null;
@@ -87,26 +87,35 @@ public class TwilioSmsProvider implements com.emme.notification.application.port
 
     try {
       String credentials = accountSid + ":" + authToken;
-      String basicAuth = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+      String basicAuth =
+          "Basic "
+              + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
 
-      FormBody body =
-          new FormBody.Builder().add("To", to).add("From", fromNumber).add("Body", message).build();
+      MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+      body.add("To", to);
+      body.add("From", fromNumber);
+      body.add("Body", message);
 
       String url = apiBase + "/Accounts/" + accountSid + "/Messages.json";
-      Request request =
-          new Request.Builder().url(url).header("Authorization", basicAuth).post(body).build();
-
-      try (Response response = client.newCall(request).execute()) {
-        String responseBody = response.body() != null ? response.body().string() : "";
-        if (!response.isSuccessful()) {
-          log.warn("Twilio API error: status={}, body={}", response.code(), responseBody);
-          throw new SmsProviderException("Twilio send failed: HTTP " + response.code());
-        }
-        String sid = extractSid(responseBody);
-        log.info("Twilio SMS sent — sid: {}, to: {}", sid, to);
-        return "twilio-" + sid;
-      }
-    } catch (IOException e) {
+      String responseBody =
+          client
+              .post()
+              .uri(url)
+              .header("Authorization", basicAuth)
+              .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+              .body(body)
+              .retrieve()
+              .body(String.class);
+      String sid = extractSid(responseBody == null ? "" : responseBody);
+      log.info("Twilio SMS sent — sid: {}, to: {}", sid, to);
+      return "twilio-" + sid;
+    } catch (RestClientResponseException e) {
+      log.warn(
+          "Twilio API error: status={}, body={}",
+          e.getStatusCode().value(),
+          e.getResponseBodyAsString());
+      throw new SmsProviderException("Twilio send failed: HTTP " + e.getStatusCode().value());
+    } catch (RestClientException e) {
       log.error("Twilio SMS send failed", e);
       throw new SmsProviderException("Twilio send failed: " + e.getMessage(), e);
     }

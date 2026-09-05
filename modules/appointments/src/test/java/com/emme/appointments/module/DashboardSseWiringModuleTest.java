@@ -6,7 +6,7 @@ import static org.mockito.Mockito.verify;
 
 import com.emme.appointments.adapter.in.web.sse.DashboardBroadcaster;
 import com.emme.notification.api.event.NotificationDelivered;
-import com.emme.testing.BaseSpringModuleTest;
+import com.emme.tenancy.testing.BaseTenantModuleTest;
 import java.io.IOException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  * through the application context reaches {@link DashboardBroadcaster} subscribers via its
  * {@code @EventListener}, replacing the former direct cross-module call.
  */
-class DashboardSseWiringModuleTest extends BaseSpringModuleTest {
+class DashboardSseWiringModuleTest extends BaseTenantModuleTest {
 
   @Autowired private ApplicationEventPublisher events;
   @Autowired private DashboardBroadcaster broadcaster;

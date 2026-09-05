@@ -16,6 +16,7 @@ dependencies {
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
   implementation(libs.jackson.databind)
   testImplementation(testFixtures(project(":libraries:testing")))
+  testImplementation(testFixtures(project(":modules:tenancy")))
   testRuntimeOnly(project(":modules:ai-platform"))
   testImplementation(libs.spring.boot.webmvc.test)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))

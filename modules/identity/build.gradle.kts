@@ -3,9 +3,11 @@ plugins {
   id("emme.integration-testing")
   id("emme.spring-web")
   id("emme.persistence")
+  id("emme.test-fixtures")
 }
 
 dependencies {
+  testFixturesImplementation(libs.spring.boot.starter.test)
   implementation(project(":modules:shared"))
   implementation(project(":libraries:kernel"))
   implementation(project(":libraries:ai-contracts"))
@@ -26,6 +28,7 @@ dependencies {
 
   testImplementation(libs.spring.security.test)
   testImplementation(testFixtures(project(":libraries:testing")))
+  testImplementation(testFixtures(project(":modules:tenancy")))
   testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(libs.spring.boot.resttestclient)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))

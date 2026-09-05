@@ -14,4 +14,5 @@ dependencies {
   implementation(libs.spring.boot.starter.validation)
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
   testImplementation(testFixtures(project(":libraries:testing")))
+  testImplementation(testFixtures(project(":modules:tenancy")))
 }

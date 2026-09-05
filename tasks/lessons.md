@@ -1413,3 +1413,14 @@
 - **Prevention rule:** When replacing service-locator construction with Spring
   DI, search for all direct constructions and inject the managed component
   through every composition root before committing.
+
+## 2026-09-05 — Keep feature setup in feature-owned test fixtures
+
+- **Failure mode:** A generic testing fixture accumulated tenant, subscription,
+  salon, and identity production dependencies to support full-context tests.
+- **Detection signal:** The fixture dependency graph showed feature setup in
+  `libraries/testing`, and a concrete Keycloak adapter subclass was used as a
+  test double.
+- **Prevention rule:** Keep generic MockMvc/security/repository helpers in the
+  shared testing library; move tenant-aware setup to tenancy fixtures and
+  provider fakes to the owning provider module, consuming only stable ports.

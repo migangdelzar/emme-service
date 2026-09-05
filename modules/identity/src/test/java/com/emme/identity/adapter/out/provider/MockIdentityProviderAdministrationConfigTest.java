@@ -3,7 +3,7 @@ package com.emme.identity.adapter.out.provider;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
-import com.emme.testing.MockIdentityProviderAdministrationConfig;
+import com.emme.identity.testing.MockIdentityProviderAdministrationConfig;
 import org.junit.jupiter.api.Test;
 
 class MockIdentityProviderAdministrationConfigTest {

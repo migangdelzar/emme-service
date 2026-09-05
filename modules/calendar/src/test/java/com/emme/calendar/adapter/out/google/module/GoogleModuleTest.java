@@ -4,7 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.testing.BaseSpringModuleTest;
+import com.emme.tenancy.testing.BaseTenantModuleTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
@@ -16,7 +16,7 @@ import org.springframework.test.context.TestPropertySource;
       "app.google.oauth.redirect-uri=http://localhost:8080/api/google/oauth/callback",
       "app.google.oauth.encryption-key=12345678901234567890123456789012" // 32 bytes for AES-256
     })
-class GoogleModuleTest extends BaseSpringModuleTest {
+class GoogleModuleTest extends BaseTenantModuleTest {
 
   @BeforeEach
   void setUp() {

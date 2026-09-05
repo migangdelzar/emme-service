@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/** Supplies H2-safe bootstrap boundaries for module tests. */
+/** Supplies H2-safe bootstrap boundaries for tenancy-owned module tests. */
 @TestConfiguration
 public class TestBootstrapJdbcConfig {
 

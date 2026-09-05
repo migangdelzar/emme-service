@@ -5,7 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.testing.BaseSpringModuleTest;
+import com.emme.tenancy.testing.BaseTenantModuleTest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-class AppointmentModuleTest extends BaseSpringModuleTest {
+class AppointmentModuleTest extends BaseTenantModuleTest {
 
   private UUID artistId;
   private UUID customerId;

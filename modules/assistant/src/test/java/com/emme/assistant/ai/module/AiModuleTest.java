@@ -4,12 +4,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.testing.BaseSpringModuleTest;
+import com.emme.tenancy.testing.BaseTenantModuleTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-class AiModuleTest extends BaseSpringModuleTest {
+class AiModuleTest extends BaseTenantModuleTest {
 
   @BeforeEach
   void setUp() {

@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-@Import({TestSecurityConfig.class, TestBootstrapJdbcConfig.class})
+@Import(TestSecurityConfig.class)
 @ActiveProfiles("web")
 public abstract class BaseWebTest {
 

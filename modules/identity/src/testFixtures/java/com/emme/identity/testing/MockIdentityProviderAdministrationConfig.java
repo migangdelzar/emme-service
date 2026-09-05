@@ -1,4 +1,4 @@
-package com.emme.testing;
+package com.emme.identity.testing;
 
 import com.emme.identity.application.port.out.IdentityProviderAdministrationPort;
 import java.io.IOException;

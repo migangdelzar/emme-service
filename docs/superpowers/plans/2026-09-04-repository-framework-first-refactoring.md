@@ -1580,10 +1580,10 @@ git commit -m "refactor(redis): simplify hot-state infrastructure"
 **Files:**
 
 - Modify: `libraries/testing/build.gradle.kts`
-- Modify: `libraries/testing/src/testFixtures/java/com/emme/testing/BaseSpringModuleTest.java`
+- Modify: `modules/tenancy/src/testFixtures/java/com/emme/tenancy/testing/BaseTenantModuleTest.java`
 - Modify: `libraries/testing/src/testFixtures/java/com/emme/testing/BaseWebTest.java`
-- Modify: `libraries/testing/src/testFixtures/java/com/emme/testing/MockKeycloakAdminClientConfig.java`
-- Modify: `libraries/testing/src/testFixtures/java/com/emme/testing/TestBootstrapJdbcConfig.java`
+- Modify: `modules/identity/src/testFixtures/java/com/emme/identity/testing/MockIdentityProviderAdministrationConfig.java`
+- Modify: `modules/tenancy/src/testFixtures/java/com/emme/testing/TestBootstrapJdbcConfig.java`
 - Modify: `libraries/testing/src/testFixtures/java/com/emme/testing/TestSecurityConfig.java`
 - Create/modify: feature fixtures under `modules/identity/src/testFixtures/**`, `modules/tenancy/src/testFixtures/**`, `modules/salon/src/testFixtures/**`, and `modules/subscriptions/src/testFixtures/**`
 - Test: fixture-consuming module tests across `modules/*/src/test/**`
@@ -1648,6 +1648,25 @@ boundary as the application listener.
 - [x] Run focused identity tests and affected fixture compilation.
 - [ ] Remove remaining feature-specific setup from `BaseSpringModuleTest` in a
       dependency-safe follow-up slice.
+
+#### Current slice 21D — Move tenant-aware full-context setup to tenancy fixtures
+
+The full-context base class and H2 bootstrap configuration are now owned by
+the tenancy test-fixture artifact. Generic `libraries/testing` retains only
+shared web, repository, security, and container helpers. All module consumers
+that need tenant provisioning use `BaseTenantModuleTest`; tenant web tests
+receive the bootstrap override through the tenancy-owned `TenantWebTest`.
+
+- [x] Add a failing fixture-boundary architecture test.
+- [x] Move `BaseSpringModuleTest` to
+      `modules/tenancy/.../BaseTenantModuleTest.java`.
+- [x] Move `TestBootstrapJdbcConfig` to tenancy test fixtures.
+- [x] Migrate full-context module tests and fixture dependencies.
+- [x] Remove feature-module dependencies from `libraries/testing`.
+- [x] Run all affected test compilation and style checks.
+- [ ] Split the remaining identity, salon, and subscription setup from
+      `BaseTenantModuleTest` only after a dependency-safe fixture design is
+      established.
 
 ### Task 22: Remove duplicate Gradle capabilities and dependencies
 
@@ -1907,10 +1926,11 @@ Completed in this slice:
 
 Completed in this slice:
 
-- The shared `TestBootstrapJdbcConfig` now supplies a primary no-op
+- The tenancy-owned `TestBootstrapJdbcConfig` now supplies a primary no-op
   `TenantSchemaMigrationPort` for H2 module tests.
 - Generic test fixtures no longer pull the database module just to expose
   PostgreSQL Liquibase resources.
+- Generic web fixtures no longer import tenant bootstrap configuration.
 - PostgreSQL tenant schema migration remains covered by the real adapter and
   is reserved for the Testcontainers/integration source set.
 

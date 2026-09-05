@@ -1,7 +1,8 @@
-package com.emme.testing;
+package com.emme.tenancy.testing;
 
 import com.emme.identity.adapter.out.persistence.entity.FeatureFlagEntity;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataFeatureFlagRepository;
+import com.emme.identity.testing.MockIdentityProviderAdministrationConfig;
 import com.emme.salon.adapter.out.persistence.repository.SpringDataBusinessProfileRepository;
 import com.emme.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
 import com.emme.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
@@ -11,12 +12,13 @@ import com.emme.tenancy.api.query.GetTenantQuery;
 import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.CreateTenantUseCase;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
+import com.emme.testing.TestBootstrapJdbcConfig;
+import com.emme.testing.TestSecurityConfig;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -28,14 +30,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-/**
- * Base class for L4 module tests (full Spring context with H2, no Docker). Provides MockMvc, tenant
- * setup, JWT auth, and cleanup.
- *
- * <p>Runs in {@code src/test} on every build. No Docker required.
- *
- * <p>Usage: {@code class SalonApiTest extends BaseSpringModuleTest}
- */
+/** Base class for full-context module tests that need tenant-owned setup. */
 @SpringBootTest(
     classes = com.emme.TestApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -46,7 +41,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
   MockIdentityProviderAdministrationConfig.class
 })
 @ActiveProfiles("test")
-public abstract class BaseSpringModuleTest {
+public abstract class BaseTenantModuleTest {
 
   @Autowired protected MockMvc mockMvc;
   @Autowired protected CreateTenantUseCase createTenantUseCase;
@@ -124,10 +119,5 @@ public abstract class BaseSpringModuleTest {
             List.of(roles).stream()
                 .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
                 .toArray(org.springframework.security.core.GrantedAuthority[]::new));
-  }
-
-  @AfterEach
-  protected void baseTearDown() {
-    /* override in subclass */
   }
 }

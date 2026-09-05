@@ -211,6 +211,17 @@
 - [ ] Run real Liquibase tenant provisioning against PostgreSQL/Testcontainers
       when Docker is available.
 
+### Current slice — Task 21D tenant-aware full-context fixture ownership
+
+- [x] Add a failing fixture-boundary architecture test.
+- [x] Move `BaseSpringModuleTest` to tenancy-owned `BaseTenantModuleTest`.
+- [x] Move `TestBootstrapJdbcConfig` to tenancy test fixtures.
+- [x] Migrate full-context module tests and fixture dependencies.
+- [x] Remove feature-module dependencies from `libraries/testing`.
+- [x] Run all affected test compilation and style checks.
+- [ ] Split remaining identity, salon, and subscription setup after a
+      dependency-safe fixture design is established.
+
 ### Current slice — Task 21A tenant web fixture ownership
 
 - [x] Add a failing architecture test for tenancy-free `BaseWebTest`.

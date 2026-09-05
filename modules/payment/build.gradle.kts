@@ -15,6 +15,7 @@ dependencies {
   implementation(libs.okhttp)
   implementation(libs.jackson.databind)
   testImplementation(testFixtures(project(":libraries:testing")))
+  testImplementation(testFixtures(project(":modules:tenancy")))
   testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(libs.okhttp.mockwebserver)
 

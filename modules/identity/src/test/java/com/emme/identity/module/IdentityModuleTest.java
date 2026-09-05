@@ -18,14 +18,14 @@ import com.emme.identity.adapter.out.persistence.repository.RolePermissionReposi
 import com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository;
 import com.emme.identity.domain.model.MembershipStatus;
 import com.emme.identity.domain.model.RoleScope;
-import com.emme.testing.BaseSpringModuleTest;
+import com.emme.tenancy.testing.BaseTenantModuleTest;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /** L3 module tests for identity endpoints (memberships CRUD, current user, permissions). */
-class IdentityModuleTest extends BaseSpringModuleTest {
+class IdentityModuleTest extends BaseTenantModuleTest {
 
   private static final String PERMISSIONS_TEST_USER = "auth0|permissions-test-user";
 

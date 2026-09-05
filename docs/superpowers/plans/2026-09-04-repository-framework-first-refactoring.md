@@ -1684,9 +1684,25 @@ collapsed into ordinary schema-local reads.
       reads.
 - [x] Replace tenant-qualified conversation event methods with
       `findLatestByConversationId` and `findByConversationId`.
-- [x] Replace the tenant-qualified active-action method with
-      `findByConversationIdAndStatus`.
+- [x] Replace the tenant-qualified active-action method with a schema-local
+      status query ordered by creation time and ID.
 - [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
+
+#### Current slice 18AC — Order Assistant pending actions deterministically
+
+Active pending actions are already schema-local, but the previous Spring Data
+method did not specify an order. Database row order is not a contract, so a
+conversation with multiple pending actions could produce an unstable API order
+across plans, indexes, or PostgreSQL versions. The adapter now delegates to a
+derived JPA query ordered by `created_at` and the inherited UUID `id`, preserving
+the provider-neutral application port while making the read deterministic.
+
+- [x] Add a failing adapter test for the ordered repository method.
+- [x] Add the Spring Data `createdAt`/`id` ordering contract.
+- [x] Preserve the existing application port and status filter.
+- [x] Run the focused Assistant test.
+- [ ] Add a measured composite index if production query plans show the sort is
+      material; do not add speculative indexing in this slice.
 
 #### Tenant isolation boundary correction
 

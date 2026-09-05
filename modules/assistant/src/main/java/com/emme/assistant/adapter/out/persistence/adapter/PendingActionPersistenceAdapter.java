@@ -31,7 +31,9 @@ public class PendingActionPersistenceAdapter implements PendingActionRepository 
   @Override
   public List<PendingAction> findByConversationIdAndStatus(
       UUID conversationId, ActionStatus status) {
-    return repository.findByConversationIdAndStatus(conversationId, status).stream()
+    return repository
+        .findByConversationIdAndStatusOrderByCreatedAtAscIdAsc(conversationId, status)
+        .stream()
         .map(mapper::toDomain)
         .toList();
   }

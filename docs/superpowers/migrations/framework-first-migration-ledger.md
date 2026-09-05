@@ -203,7 +203,7 @@ lookup should become a schema-local `findByChannel` contract.
 
 | Boundary | Status | Decision |
 |---|---|---|
-| Assistant conversation and pending-action aggregate reads | Replacement tested | Use connection-scoped `findById`; retain tenant IDs in commands/domain state and explicit child/list operations. |
+| Assistant conversation and pending-action aggregate reads | Replacement tested | Use connection-scoped `findById`; retain tenant IDs in commands/domain state and explicit child/list operations. Active pending actions use a schema-local status query ordered by `created_at, id` so API ordering is deterministic. |
 | Subscription existing aggregate save | Replacement tested | Use connection-scoped `findById`; retain tenant-keyed singleton lookup for provisioning and reads. |
 | Identity membership | Keep explicit scope | Shared `emme_core` persistence and cross-tenant authorization require `tenant_id` in the lookup contract. |
 | Calendar event links by appointment | Replacement tested | Use schema-local `findByAppointmentIdAndProvider`; tenant is selected at connection checkout and the forward `034-calendar-event-link-cardinality.sql` migration enforces one row per tenant/appointment/provider. Keep `findByAppointmentId` for operations that intentionally handle multiple providers. |
@@ -337,3 +337,16 @@ The application port returns one Calendar event link for an appointment and
 provider. The new forward migration protects that contract while still allowing
 one link for each future provider. A duplicate preflight fails deployment with
 an actionable error instead of silently selecting an arbitrary row.
+
+## Assistant pending-action ordering slice — 2026-09-05
+
+- [x] Add adapter coverage for deterministic active-action ordering.
+- [x] Use Spring Data derived ordering by inherited `createdAt` and `id`.
+- [x] Keep the application port provider-neutral and unchanged.
+- [x] Run the focused Assistant persistence test.
+- [ ] Add a composite index only after a production query-plan measurement.
+
+The previous status query left row order unspecified. The ordered derived query
+removes that future failure mode without introducing SQL or changing the domain
+contract; expiration scans remain separate because they are operational claims,
+not user-facing ordered history.

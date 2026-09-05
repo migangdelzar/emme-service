@@ -31,7 +31,8 @@ class PendingActionPersistenceAdapterTest {
             ActionType.BOOK,
             "booking details",
             Instant.parse("2026-09-06T00:00:00Z"));
-    when(repository.findByConversationIdAndStatus(conversationId, ActionStatus.PENDING))
+    when(repository.findByConversationIdAndStatusOrderByCreatedAtAscIdAsc(
+            conversationId, ActionStatus.PENDING))
         .thenReturn(List.of(entity));
 
     var found = adapter.findByConversationIdAndStatus(conversationId, ActionStatus.PENDING);

@@ -538,6 +538,15 @@
 - [ ] Run the migration against PostgreSQL/Testcontainers and verify existing
       deployment data has no duplicate appointment/provider links.
 
+### Current slice — Task 18AC Assistant pending-action ordering
+
+- [x] Add a failing adapter test for the ordered repository method.
+- [x] Add the Spring Data `createdAt`/`id` ordering contract.
+- [x] Preserve the provider-neutral application port and status filter.
+- [x] Run the focused Assistant test.
+- [ ] Add a measured composite index if production query plans show the sort is
+      material; do not add speculative indexing in this slice.
+
 
 - User requested subagent-driven execution when work can be safely parallelized.
 - Shared contracts, Liquibase migrations, version catalog, and composition-root

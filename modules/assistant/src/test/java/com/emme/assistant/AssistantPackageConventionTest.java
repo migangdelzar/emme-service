@@ -138,7 +138,9 @@ class AssistantPackageConventionTest {
     assertThat(actionPort).doesNotContain("findByTenantIdAndConversationId");
     assertThat(actionPort).doesNotContain("findByTenantIdAndId(");
     assertThat(actionAdapter).contains("repository.findById(");
-    assertThat(actionAdapter).contains("repository.findByConversationIdAndStatus");
+    assertThat(actionAdapter)
+        .contains("findByConversationIdAndStatusOrderByCreatedAtAscIdAsc")
+        .doesNotContain("repository.findByConversationIdAndStatus(");
     assertThat(actionAdapter).doesNotContain("repository.findByTenantIdAndConversationId");
     assertThat(actionAdapter).doesNotContain("findByTenantIdAndId(");
     assertThat(controller).contains("withCurrentTenant");

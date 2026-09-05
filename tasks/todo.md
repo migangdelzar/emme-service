@@ -205,7 +205,7 @@
   `IdentityProviderAdministrationPort` implementation.
 - [x] Rename the fixture to `MockIdentityProviderAdministrationConfig`.
 - [x] Run focused identity tests and affected fixture compilation.
-- [ ] Continue separating feature-specific setup from `BaseSpringModuleTest`.
+- [ ] Continue separating feature-specific setup from `BaseTenantModuleTest`.
 - [x] Run tenancy fixture/module tests and confirm no async PostgreSQL DDL
       errors are emitted by H2 contexts.
 - [ ] Run real Liquibase tenant provisioning against PostgreSQL/Testcontainers
@@ -230,7 +230,7 @@
 - [x] Migrate representative tenant-provisioning web tests and their fixture
       dependencies.
 - [x] Compile affected fixtures and run representative web tests.
-- [ ] Split the remaining feature-specific `BaseSpringModuleTest` setup.
+- [ ] Split the remaining feature-specific `BaseTenantModuleTest` setup.
 
 ### Current slice — Task 18G document ID lookups
 

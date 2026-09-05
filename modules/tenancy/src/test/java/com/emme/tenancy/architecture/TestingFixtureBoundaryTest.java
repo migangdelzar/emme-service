@@ -15,6 +15,8 @@ class TestingFixtureBoundaryTest {
   private static final Path TENANCY_BOOTSTRAP_FIXTURE =
       sourcePath(
           "modules/tenancy/src/testFixtures/java/com/emme/testing/TestBootstrapJdbcConfig.java");
+  private static final Path TENANCY_WEB_TEST =
+      sourcePath("modules/tenancy/src/test/java/com/emme/tenancy/web/TenantWebTest.java");
 
   @Test
   void genericWebFixtureDoesNotOwnTenantProvisioning() throws Exception {
@@ -24,6 +26,8 @@ class TestingFixtureBoundaryTest {
     assertThat(TESTING_FIXTURE_ROOT.resolve("TestBootstrapJdbcConfig.java")).doesNotExist();
     assertThat(TENANCY_FIXTURE_ROOT.resolve("BaseTenantModuleTest.java")).exists();
     assertThat(TENANCY_BOOTSTRAP_FIXTURE).exists();
+    assertThat(Files.readString(TENANCY_WEB_TEST))
+        .contains("@Import(TestBootstrapJdbcConfig.class)");
   }
 
   private static Path sourcePath(String relativePath) {

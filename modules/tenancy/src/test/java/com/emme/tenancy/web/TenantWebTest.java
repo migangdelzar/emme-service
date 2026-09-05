@@ -7,9 +7,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.emme.testing.BaseWebTest;
+import com.emme.testing.TestBootstrapJdbcConfig;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 
 /**
@@ -17,6 +19,7 @@ import org.springframework.http.MediaType;
  * MockMvc with full Spring Security. Uses H2 database via the "web" profile.
  */
 @DisplayName("Tenant Web")
+@Import(TestBootstrapJdbcConfig.class)
 class TenantWebTest extends BaseWebTest {
 
   @Test

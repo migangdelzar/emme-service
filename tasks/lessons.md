@@ -1424,3 +1424,15 @@
 - **Prevention rule:** Keep generic MockMvc/security/repository helpers in the
   shared testing library; move tenant-aware setup to tenancy fixtures and
   provider fakes to the owning provider module, consuming only stable ports.
+
+## 2026-09-05 — Explicitly import feature fixtures for direct consumers
+
+- **Failure mode:** Removing tenant bootstrap configuration from the generic
+  web fixture left a tenancy-owned web test with asynchronous Liquibase
+  failures.
+- **Detection signal:** The full verification hook logged a missing
+  `db/emme-studio/changelog.yaml` while the direct `TenantWebTest` still
+  extended only the generic web base.
+- **Prevention rule:** Every direct feature-specific test must import its
+  owning fixture explicitly; generic test bases must not carry feature
+  configuration implicitly.

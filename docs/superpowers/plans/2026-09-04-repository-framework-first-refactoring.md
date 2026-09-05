@@ -1663,6 +1663,7 @@ receive the bootstrap override through the tenancy-owned `TenantWebTest`.
 - [x] Move `TestBootstrapJdbcConfig` to tenancy test fixtures.
 - [x] Migrate full-context module tests and fixture dependencies.
 - [x] Remove feature-module dependencies from `libraries/testing`.
+- [x] Make the direct tenancy web test import its tenancy bootstrap fixture explicitly.
 - [x] Run all affected test compilation and style checks.
 - [ ] Split the remaining identity, salon, and subscription setup from
       `BaseTenantModuleTest` only after a dependency-safe fixture design is

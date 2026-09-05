@@ -170,6 +170,22 @@ class RepositoryFrameworkFirstInventoryTest {
         .doesNotContain("testFixturesImplementation(project(\":modules:shared\"))");
   }
 
+  @Test
+  void aiPlatformExcludesLegacySwaggerAnnotationsFromTheOpenAiClient() throws IOException {
+    String build = Files.readString(sourcePath("modules/ai-platform/build.gradle.kts"));
+
+    assertThat(build)
+        .contains("implementation(libs.spring.ai.openai) {")
+        .contains("exclude(group = \"io.swagger.core.v3\", module = \"swagger-annotations\")");
+  }
+
+  @Test
+  void aiPlatformDoesNotDependOnTheAggregateSpringBootStarter() throws IOException {
+    String build = Files.readString(sourcePath("modules/ai-platform/build.gradle.kts"));
+
+    assertThat(build).doesNotContain("implementation(libs.spring.boot.starter)");
+  }
+
   private boolean containsJdbcReference(Path path) {
     try {
       String source = Files.readString(path);

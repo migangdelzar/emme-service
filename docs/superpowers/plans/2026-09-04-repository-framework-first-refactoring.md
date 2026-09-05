@@ -2095,8 +2095,9 @@ source set.
 
 The repository check and representative dependency-analysis tasks pass. The
 analysis output remains a review artifact: framework-owned and transitive
-recommendations are not bulk-applied, and the remaining duplicate-class warning
-in assistant is tracked for an isolated Swagger dependency review.
+recommendations are not bulk-applied. The assistant duplicate-class warning was
+resolved by excluding the legacy non-Jakarta Swagger annotation artifact from
+the Spring AI OpenAI dependency.
 
 #### Current slice 22A — Remove duplicate module dependency declarations
 
@@ -2120,6 +2121,8 @@ splits remain gated on dependency-analysis evidence.
       duplication from returning.
 - [x] Upgrade dependency analysis to `3.18.0`, regenerate verification metadata,
       and run representative advice tasks on the configured Java toolchain.
+- [x] Review the assistant duplicate-class advice and remove the proven
+      conflicting legacy Swagger annotation artifact.
 - [ ] Review remaining generated advice module by module before changing any
       additional dependency or convention declaration.
 
@@ -2154,6 +2157,22 @@ through `emme.testing`; integration-test fixture dependencies remain explicit.
       library's main and fixture configurations.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
+
+#### Current slice 22C — Remove the proven Swagger duplicate
+
+Dependency insight showed that Spring AI's OpenAI client brought
+`io.swagger.core.v3:swagger-annotations:2.2.31`, while Springdoc brought the
+Jakarta artifact `swagger-annotations-jakarta:2.2.38`. Both publish overlapping
+annotation classes, so the runtime classpath emitted duplicate-class advice.
+The scoped exclusion is attached only to `spring-ai-openai`; Springdoc's
+Jakarta artifact remains the single runtime provider. AI Platform and Assistant
+tests, compilation, dependency insight, and dependency advice pass after the
+change.
+
+- [x] Add a failing repository guard for the scoped exclusion.
+- [x] Add the exclusion to the Spring AI OpenAI dependency.
+- [x] Verify only `swagger-annotations-jakarta` remains on Assistant runtime.
+- [x] Run AI Platform/Assistant tests and dependency-analysis tasks.
 
 ## 11. Phase I — Database, deployment, and final cleanup
 

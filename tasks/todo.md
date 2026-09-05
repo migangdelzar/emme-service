@@ -473,6 +473,8 @@
       dependency verification metadata for the new artifact graph.
 - [x] Run representative assistant, booking, and catalog advice tasks on the
       Java 25 toolchain; bytecode analysis and advice generation succeed.
+- [x] Resolve the measured Assistant duplicate Swagger classes by excluding
+      the legacy non-Jakarta artifact from `spring-ai-openai`.
 - [ ] Review remaining generated advice module by module before changing any
       additional dependency or convention declaration.
 

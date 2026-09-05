@@ -2174,6 +2174,16 @@ change.
 - [x] Verify only `swagger-annotations-jakarta` remains on Assistant runtime.
 - [x] Run AI Platform/Assistant tests and dependency-analysis tasks.
 
+The same analysis also identified the aggregate `spring-boot-starter` as
+unused in `ai-platform`; that library consumes the specific Spring Boot APIs
+provided by its existing framework dependencies and the deployable application
+owns the aggregate starter. The direct aggregate dependency was removed and
+AI Platform/Assistant compilation and tests remained green.
+
+- [x] Add a failing repository guard for the unused aggregate starter.
+- [x] Remove the aggregate starter from `modules/ai-platform`.
+- [x] Re-run AI Platform/Assistant compilation, tests, and dependency advice.
+
 ## 11. Phase I — Database, deployment, and final cleanup
 
 ### Task 23: Add database ownership and migration contract checks

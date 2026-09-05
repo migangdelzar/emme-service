@@ -259,6 +259,7 @@ lookup should become a schema-local `findByChannel` contract.
 | Feature fixture coupling | `libraries/testing/build.gradle.kts` and `src/testFixtures/java/**` | Move feature fixtures to owning modules |
 | Dependency-analysis Java 25 compatibility | `gradle/libs.versions.toml`, `gradle/verification-metadata.xml` | Upgraded the analysis plugin to `3.18.0`; representative assistant/booking/catalog bytecode and advice tasks now pass |
 | Spring AI OpenAI Swagger duplicate | `modules/ai-platform/build.gradle.kts` | Excluded legacy `swagger-annotations` from Spring AI OpenAI; Springdoc's Jakarta annotation artifact is now the sole runtime provider |
+| Unused AI Platform aggregate starter | `modules/ai-platform/build.gradle.kts` | Removed the broad `spring-boot-starter` from the reusable library; deployable applications own the aggregate starter and AI Platform keeps specific APIs |
 | Spring AI PgVectorStore versus hybrid ranking | `modules/shared/src/main/java/com/emme/shared/search/postgres/PostgresHybridSearch.java` | Retain the provider-neutral `HybridSearch` port and specialized SQL adapter; Spring AI covers vector KNN/metadata filters but not the required single-query FTS + pgvector + RRF projection |
 
 ## 5. Baseline verification commands

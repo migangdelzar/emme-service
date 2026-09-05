@@ -475,6 +475,8 @@
       Java 25 toolchain; bytecode analysis and advice generation succeed.
 - [x] Resolve the measured Assistant duplicate Swagger classes by excluding
       the legacy non-Jakarta artifact from `spring-ai-openai`.
+- [x] Remove the unused aggregate `spring-boot-starter` from `ai-platform`;
+      keep the aggregate starter at deployable application boundaries.
 - [ ] Review remaining generated advice module by module before changing any
       additional dependency or convention declaration.
 

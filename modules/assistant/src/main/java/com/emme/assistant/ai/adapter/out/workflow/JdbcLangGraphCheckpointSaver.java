@@ -230,24 +230,20 @@ public final class JdbcLangGraphCheckpointSaver implements BaseCheckpointSaver {
     if (matchingRun != null && matchingRun == 1) {
       return true;
     }
-    Integer existingRun =
+    Integer existingWorkflowRun =
         jdbc.sql(
                 """
                 SELECT COUNT(*)
                 FROM ai_workflow_run
                 WHERE id = :workflowId
-                  AND tenant_id = :tenantId
-                  AND conversation_id = :conversationId
                 """)
             .param("workflowId", workflowId)
-            .param("tenantId", context.tenantId())
-            .param("conversationId", context.conversationId())
             .query(Integer.class)
             .single();
-    if (existingRun == null || existingRun == 0) {
-      return false;
+    if (existingWorkflowRun != null && existingWorkflowRun > 0) {
+      throw new SecurityException("Workflow run is not accessible for the authenticated context");
     }
-    throw new SecurityException("Workflow run is not accessible for the authenticated context");
+    return false;
   }
 
   private void updateWorkflowRun(

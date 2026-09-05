@@ -1535,3 +1535,14 @@
   documents despite configuring an empty retrieval result.
 - **Prevention rule:** Reset mutable Mockito beans in `@BeforeEach` when a
   `SpringJUnitConfig` context is cached across test methods.
+
+## 2026-09-05 — Verify the regression test is genuinely red
+
+- **Failure mode:** The first proposed checkpoint authorization test passed
+  before the production change because that branch already rejected
+  same-tenant but unauthorized runs.
+- **Detection signal:** The focused test command was green before any
+  production edit, contradicting the required Red phase.
+- **Prevention rule:** Always run the exact new test before implementation and
+  inspect the mocked branch when it passes unexpectedly; revise the test to
+  represent the uncovered behavior before changing production code.

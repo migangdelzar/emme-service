@@ -695,6 +695,18 @@ LangGraphQuoteWorkflow            quote adapter
 - Checkpoint upsert, JSONB state, and next-node semantics remain unchanged.
 - JPA is explicitly rejected for this checkpoint adapter because the library contract and PostgreSQL-specific state/upsert behavior are clearer in `JdbcClient`.
 
+#### Current slice 8D — Cross-tenant checkpoint rejection
+
+The checkpoint saver now distinguishes a genuinely new workflow from an
+existing workflow ID that is not accessible to the authenticated tenant,
+conversation, or principal. The latter is rejected instead of being returned
+as an empty checkpoint history. The live PostgreSQL proof remains Docker-gated.
+
+- [x] Add focused regression coverage for an inaccessible existing workflow ID.
+- [x] Reject cross-tenant workflow IDs before returning checkpoint history.
+- [x] Run focused LangGraph/checkpoint tests, compilation, and Spotless.
+- [ ] Run the live PostgreSQL checkpoint security/resume coverage when Docker is available.
+
 - [ ] **Step 1: Write failing configuration/security tests**
 
 Test disabled graph startup, one graph bean per capability, unauthorized

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -156,6 +157,30 @@ class JdbcLangGraphCheckpointSaverTest {
             () -> AiExecutionContextScope.call(context(), () -> saver.list(malformedConfig)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Checkpoint thread namespace must not be blank");
+  }
+
+  @Test
+  void rejectsCheckpointReadForACrossTenantWorkflowRun() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    JdbcClient.StatementSpec accessibleStatement = mock(JdbcClient.StatementSpec.class);
+    JdbcClient.StatementSpec globalStatement = mock(JdbcClient.StatementSpec.class);
+    JdbcClient.MappedQuerySpec<Integer> accessibleCount = mock(JdbcClient.MappedQuerySpec.class);
+    JdbcClient.MappedQuerySpec<Integer> globalCount = mock(JdbcClient.MappedQuerySpec.class);
+    when(jdbc.sql(argThat(sql -> sql != null && sql.contains("tenant_id"))))
+        .thenReturn(accessibleStatement);
+    when(jdbc.sql(argThat(sql -> sql != null && !sql.contains("tenant_id"))))
+        .thenReturn(globalStatement);
+    when(accessibleStatement.param(anyString(), any())).thenReturn(accessibleStatement);
+    when(globalStatement.param(anyString(), any())).thenReturn(globalStatement);
+    when(accessibleStatement.query(Integer.class)).thenReturn(accessibleCount);
+    when(globalStatement.query(Integer.class)).thenReturn(globalCount);
+    when(accessibleCount.single()).thenReturn(0);
+    when(globalCount.single()).thenReturn(1);
+    JdbcLangGraphCheckpointSaver saver = new JdbcLangGraphCheckpointSaver(jdbc, new ObjectMapper());
+
+    assertThatThrownBy(() -> AiExecutionContextScope.call(context(), () -> saver.list(config())))
+        .isInstanceOf(SecurityException.class)
+        .hasMessage("Workflow run is not accessible for the authenticated context");
   }
 
   private static RunnableConfig config() {

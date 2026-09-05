@@ -715,6 +715,15 @@
 - [x] Verify focused LangGraph tests and the DDD/hexagonal architecture test.
 - [ ] Complete live PostgreSQL checkpoint security/resume coverage with Docker.
 
+### Current slice — Task 8D cross-tenant checkpoint rejection
+
+- [x] Add a failing JDBC checkpoint test for a workflow ID belonging to another
+      tenant.
+- [x] Reject an existing but inaccessible workflow ID instead of treating it as
+      a new workflow with no checkpoints.
+- [x] Run focused LangGraph/checkpoint tests, compilation, and Spotless.
+- [ ] Re-run the live PostgreSQL checkpoint security/resume coverage with Docker.
+
 ### Remaining repository-wide framework-first work
 
 - [x] Finish Spring AI metadata-contract and hybrid-search capability

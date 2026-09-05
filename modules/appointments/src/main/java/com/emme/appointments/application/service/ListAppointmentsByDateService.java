@@ -40,7 +40,7 @@ public class ListAppointmentsByDateService implements ListAppointmentsByDateUseC
   public List<AppointmentDetails> list(UUID tenantId, LocalDate date) {
     var dayStart = ZonedDateTime.of(date.atStartOfDay(), STUDIO_ZONE).toInstant();
     var dayEnd = ZonedDateTime.of(date.plusDays(1).atStartOfDay(), STUDIO_ZONE).toInstant();
-    return repository.findByTenantIdAndStartsAtBetween(tenantId, dayStart, dayEnd).stream()
+    return repository.findByStartsAtBetween(dayStart, dayEnd).stream()
         .map(support::toDetails)
         .toList();
   }

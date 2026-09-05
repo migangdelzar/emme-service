@@ -1388,6 +1388,20 @@ adapter still queries tenant-keyed vector/full-text data.
 - [x] Run Catalog tests, compilation, and Spotless.
 - [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
 
+#### Current slice 18P — Remove tenant predicates from Appointment schema-local reads
+
+Appointment list and date-window queries execute after tenant schema selection,
+so their JPA predicates no longer need to repeat `tenantId`. The port keeps
+the operation's business filters and ordering, while collision/exclusion
+queries retain explicit tenant keys because they enforce a shared database
+invariant and are backed by PostgreSQL concurrency protections.
+
+- [x] Add adapter contract coverage for ordered and date-window reads.
+- [x] Replace tenant-qualified list/date Spring Data methods with schema-local methods.
+- [x] Update appointment application consumers and repository integration coverage.
+- [x] Run Appointments tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
+
 #### Current slice 18E — Use ID-only service-catalog updates
 
 Artist and service CRUD is already expressed cleanly with Spring Data JPA. The

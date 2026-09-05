@@ -13,10 +13,9 @@ public interface AppointmentRepository {
 
   Optional<Appointment> findById(UUID id);
 
-  List<Appointment> findByTenantIdOrderByStartsAtDesc(UUID tenantId);
+  List<Appointment> findAllOrderByStartsAtDesc();
 
-  List<Appointment> findByTenantIdAndStartsAtBetween(
-      UUID tenantId, Instant startsAt, Instant endsAt);
+  List<Appointment> findByStartsAtBetween(Instant startsAt, Instant endsAt);
 
   boolean existsActiveCollision(
       UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt, UUID excludedAppointmentId);

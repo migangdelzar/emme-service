@@ -46,16 +46,13 @@ public class AppointmentPersistenceAdapter implements AppointmentRepository {
   }
 
   @Override
-  public List<Appointment> findByTenantIdOrderByStartsAtDesc(UUID tenantId) {
-    return repository.findByTenantIdOrderByStartsAtDesc(tenantId).stream()
-        .map(mapper::toDomain)
-        .toList();
+  public List<Appointment> findAllOrderByStartsAtDesc() {
+    return repository.findAllByOrderByStartsAtDesc().stream().map(mapper::toDomain).toList();
   }
 
   @Override
-  public List<Appointment> findByTenantIdAndStartsAtBetween(
-      UUID tenantId, Instant startsAt, Instant endsAt) {
-    return repository.findByTenantIdAndStartsAtBetween(tenantId, startsAt, endsAt).stream()
+  public List<Appointment> findByStartsAtBetween(Instant startsAt, Instant endsAt) {
+    return repository.findByStartsAtBetween(startsAt, endsAt).stream()
         .map(mapper::toDomain)
         .toList();
   }

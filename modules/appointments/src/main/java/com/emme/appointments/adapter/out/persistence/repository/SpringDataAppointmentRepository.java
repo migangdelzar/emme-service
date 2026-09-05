@@ -11,9 +11,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SpringDataAppointmentRepository extends JpaRepository<AppointmentEntity, UUID> {
-  List<AppointmentEntity> findByTenantId(UUID tenantId);
-
-  List<AppointmentEntity> findByTenantIdOrderByStartsAtDesc(UUID tenantId);
+  List<AppointmentEntity> findAllByOrderByStartsAtDesc();
 
   boolean existsByTenantIdAndArtistIdAndStartsAtLessThanAndEndsAtGreaterThanAndStatusIn(
       UUID tenantId,
@@ -30,8 +28,7 @@ public interface SpringDataAppointmentRepository extends JpaRepository<Appointme
       Collection<AppointmentStatus> statuses,
       UUID excludedId);
 
-  List<AppointmentEntity> findByTenantIdAndStartsAtBetween(
-      UUID tenantId, Instant start, Instant end);
+  List<AppointmentEntity> findByStartsAtBetween(Instant start, Instant end);
 
   List<AppointmentEntity> findByCustomerId(UUID customerId);
 }

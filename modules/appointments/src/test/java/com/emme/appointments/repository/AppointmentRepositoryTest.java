@@ -86,8 +86,7 @@ class AppointmentRepositoryTest extends BaseRepositoryTest {
             tenantId, customer.getId(), service.getId(), artist.getId(), start2, end2));
 
     List<AppointmentEntity> results =
-        appointmentRepo.findByTenantIdAndStartsAtBetween(
-            tenantId, now, now.plus(5, ChronoUnit.HOURS));
+        appointmentRepo.findByStartsAtBetween(now, now.plus(5, ChronoUnit.HOURS));
 
     assertThat(results).hasSize(2);
   }

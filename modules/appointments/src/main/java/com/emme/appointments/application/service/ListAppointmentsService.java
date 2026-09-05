@@ -36,7 +36,7 @@ public class ListAppointmentsService implements ListAppointmentsUseCase {
 
   @Override
   public List<AppointmentSummary> listAppointments(UUID tenantId) {
-    return appointmentRepository.findByTenantIdOrderByStartsAtDesc(tenantId).stream()
+    return appointmentRepository.findAllOrderByStartsAtDesc().stream()
         .map(this::toAppointmentSummary)
         .toList();
   }

@@ -170,6 +170,15 @@
 - [x] Run Catalog tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue reviewing remaining tenant-schema list/search methods.
 
+### Current slice — Task 18P Appointment schema-local reads
+
+- [x] Add adapter tests for ordered and date-window reads.
+- [x] Replace tenant-qualified appointment list/date methods with schema-local
+      JPA methods.
+- [x] Preserve explicit tenant predicates for collision/exclusion invariants.
+- [x] Run Appointments tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue reviewing remaining tenant-schema list/search methods.
+
 ### Tenant schema routing decision
 
 - [x] Apply tenant schema and session configuration when a connection is taken

@@ -1971,13 +1971,15 @@ receive the bootstrap override through the tenancy-owned `TenantWebTest`.
 #### Current slice 21E — Remove the unused salon repository from the tenant fixture
 
 `BaseTenantModuleTest` no longer autowires the unused
-`SpringDataBusinessProfileRepository` or `SpringDataMembershipRepository`.
-The fixture still owns only the subscription, feature-flag, and role collaborators that have
-active test consumers; the broader feature-setup split remains deferred until
+`SpringDataBusinessProfileRepository`, `SpringDataMembershipRepository`, or
+`SpringDataRoleRepository`. The fixture still owns only the subscription and
+feature-flag collaborators that have active cross-module consumers; the
+Identity module owns its role and membership repositories. The broader feature-setup split remains deferred until
 its fixture dependency graph is designed.
 
 - [x] Add a failing fixture-boundary test for the unused salon repository.
 - [x] Remove the unused salon and membership repository fields from `BaseTenantModuleTest`.
+- [x] Move the Identity-only role repository injection to `IdentityModuleTest`.
 - [x] Remove the now-unneeded direct Salon dependency from the tenancy fixture artifact.
 - [x] Run the tenancy fixture boundary test and affected fixture compilation.
 - [ ] Split the remaining feature-specific setup without widening fixture dependencies.

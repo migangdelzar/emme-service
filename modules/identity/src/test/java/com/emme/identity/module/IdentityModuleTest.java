@@ -16,6 +16,7 @@ import com.emme.identity.adapter.out.persistence.entity.RolePermissionEntity;
 import com.emme.identity.adapter.out.persistence.repository.PermissionRepository;
 import com.emme.identity.adapter.out.persistence.repository.RolePermissionRepository;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository;
+import com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository;
 import com.emme.identity.domain.model.MembershipStatus;
 import com.emme.identity.domain.model.RoleScope;
 import com.emme.tenancy.testing.BaseTenantModuleTest;
@@ -30,6 +31,7 @@ class IdentityModuleTest extends BaseTenantModuleTest {
   private static final String PERMISSIONS_TEST_USER = "auth0|permissions-test-user";
 
   @Autowired private SpringDataMembershipRepository membershipRepo;
+  @Autowired private SpringDataRoleRepository roleRepo;
   @Autowired private PermissionRepository permissionRepo;
   @Autowired private RolePermissionRepository rolePermissionRepo;
 

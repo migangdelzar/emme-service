@@ -403,6 +403,7 @@
 
 - [x] Add a failing fixture-boundary test for the unused salon repository.
 - [x] Remove `profileRepo`, `membershipRepo`, and their unused repository imports from `BaseTenantModuleTest`.
+- [x] Move the Identity-only `roleRepo` injection to `IdentityModuleTest`.
 - [x] Remove the now-unneeded direct Salon dependency from the tenancy fixture artifact.
 - [x] Run the tenancy fixture boundary test and fixture compilation.
 - [ ] Split remaining feature-specific setup after a dependency-safe design.

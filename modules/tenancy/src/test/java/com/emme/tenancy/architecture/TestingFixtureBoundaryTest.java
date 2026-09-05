@@ -37,7 +37,9 @@ class TestingFixtureBoundaryTest {
         .doesNotContain("SpringDataBusinessProfileRepository")
         .doesNotContain("profileRepo")
         .doesNotContain("SpringDataMembershipRepository")
-        .doesNotContain("membershipRepo");
+        .doesNotContain("membershipRepo")
+        .doesNotContain("SpringDataRoleRepository")
+        .doesNotContain("roleRepo");
     assertThat(Files.readString(TENANCY_BUILD_FILE))
         .doesNotContain("testFixturesImplementation(project(\":modules:salon\"))");
   }

@@ -22,11 +22,10 @@ public class MarkCalendarEventLinkSyncedService implements MarkCalendarEventLink
   }
 
   @Override
-  public CalendarEventLinkDetails markSynced(
-      UUID appointmentId, CalendarProvider provider, String etag) {
+  public CalendarEventLinkDetails markSynced(UUID appointmentId, String provider, String etag) {
     CalendarEventLink link =
         repository
-            .findByAppointmentIdAndProvider(appointmentId, provider)
+            .findByAppointmentIdAndProvider(appointmentId, CalendarProvider.valueOf(provider))
             .orElseThrow(() -> new IllegalArgumentException("No link found for " + appointmentId));
     link.markSynced(etag);
     return CalendarEventLinkApplicationMapper.toResult(repository.save(link));

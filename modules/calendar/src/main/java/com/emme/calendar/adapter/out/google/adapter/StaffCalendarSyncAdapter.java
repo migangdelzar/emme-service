@@ -120,7 +120,8 @@ public class StaffCalendarSyncAdapter {
 
   private void createEvent(CalendarSyncRequested e) throws Exception {
     // Check for existing link to avoid duplicates
-    var existing = findCalendarEventLink.find(e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR);
+    var existing =
+        findCalendarEventLink.find(e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR.name());
     if (existing.isPresent()) {
       log.info(
           "Appointment {} already linked to event {} — skipping CREATE",
@@ -172,7 +173,7 @@ public class StaffCalendarSyncAdapter {
 
       createCalendarEventLink.create(e.tenantId(), e.appointmentId(), "GOOGLE_CALENDAR", eventId);
       markCalendarEventLinkSynced.markSynced(
-          e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR, etag);
+          e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR.name(), etag);
       log.info("Created Google Calendar event {} for appointment {}", eventId, e.appointmentId());
     }
   }
@@ -186,7 +187,7 @@ public class StaffCalendarSyncAdapter {
     if (externalEventId == null || externalEventId.isBlank()) {
       // Try to find existing link
       var existing =
-          findCalendarEventLink.find(e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR);
+          findCalendarEventLink.find(e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR.name());
       if (existing.isPresent()) {
         externalEventId = existing.get().externalEventId();
       } else {
@@ -244,7 +245,7 @@ public class StaffCalendarSyncAdapter {
 
       if (etag != null) {
         markCalendarEventLinkSynced.markSynced(
-            e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR, etag);
+            e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR.name(), etag);
       }
       log.info(
           "Updated Google Calendar event {} for appointment {}",

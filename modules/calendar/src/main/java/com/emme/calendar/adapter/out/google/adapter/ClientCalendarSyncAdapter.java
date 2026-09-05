@@ -99,7 +99,7 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
 
     // Check for existing link to avoid duplicates
     Optional<CalendarEventLinkDetails> existing =
-        findCalendarEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR);
+        findCalendarEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR.name());
     if (existing.isPresent()) {
       log.info(
           "Appointment {} already linked to event {} — reusing",
@@ -149,7 +149,7 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
 
         createCalendarEventLink.create(tenantId, appointmentId, "GOOGLE_CALENDAR", eventId);
         markCalendarEventLinkSynced.markSynced(
-            appointmentId, CalendarProvider.GOOGLE_CALENDAR, etag);
+            appointmentId, CalendarProvider.GOOGLE_CALENDAR.name(), etag);
 
         log.info(
             "Created Google Calendar event {} for client appointment {}", eventId, appointmentId);
@@ -178,7 +178,7 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
         userId);
 
     Optional<CalendarEventLinkDetails> existing =
-        findCalendarEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR);
+        findCalendarEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR.name());
     if (existing.isEmpty()) {
       log.warn(
           "No calendar event link found for appointment {} — nothing to unsync", appointmentId);

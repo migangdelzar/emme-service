@@ -22,9 +22,9 @@ public class FindCalendarEventLinkService implements FindCalendarEventLinkUseCas
   }
 
   @Override
-  public Optional<CalendarEventLinkDetails> find(UUID appointmentId, CalendarProvider provider) {
+  public Optional<CalendarEventLinkDetails> find(UUID appointmentId, String provider) {
     return repository
-        .findByAppointmentIdAndProvider(appointmentId, provider)
+        .findByAppointmentIdAndProvider(appointmentId, CalendarProvider.valueOf(provider))
         .map(CalendarEventLinkApplicationMapper::toResult);
   }
 }

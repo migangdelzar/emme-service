@@ -30,7 +30,7 @@ class StaffCalendarSyncAdapterTest {
     UUID tenantId = UUID.randomUUID();
     UUID appointmentId = UUID.randomUUID();
     FindCalendarEventLinkUseCase findEventLink = mock(FindCalendarEventLinkUseCase.class);
-    when(findEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR))
+    when(findEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR.name()))
         .thenAnswer(
             invocation -> {
               assertThat(TenantContextHolder.currentTenantOptional()).contains(tenantId);

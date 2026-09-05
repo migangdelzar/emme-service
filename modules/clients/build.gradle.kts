@@ -2,7 +2,6 @@ plugins {
   id("emme.spring-module")
   id("emme.spring-web")
   id("emme.persistence")
-  id("emme.testing")
 }
 dependencies {
   implementation(project(":modules:shared"))

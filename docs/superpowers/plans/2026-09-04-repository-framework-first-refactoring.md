@@ -2052,8 +2052,9 @@ The known duplicate declarations were limited to redundant Gradle notation:
 `modules/booking` declared `libraries:kernel` six times, `modules/catalog`
 declared it three times, and `modules/assistant` declared the Spring Security
 test dependency twice. A repository inventory test now guards one declaration
-per dependency, and only the redundant lines were removed. Plugin/convention
-changes remain separate until dependency analysis demonstrates a real benefit.
+per dependency, and only the redundant lines were removed. The convention
+ownership cleanup is covered by the follow-up 22B slice; deeper convention
+splits remain gated on dependency-analysis evidence.
 
 - [x] Add a failing repository dependency-duplication test.
 - [x] Remove redundant `libraries:kernel` declarations from booking and catalog.
@@ -2080,6 +2081,10 @@ inventory test now enforces this ownership rule.
 - [x] Add a failing repository test for convention-owned shared fixtures.
 - [x] Remove the nine redundant test-suite fixture declarations.
 - [x] Compile every affected module's test sources and run the inventory test.
+- [x] Remove explicit `emme.testing` applications from seven modules already
+      covered by `emme.spring-module` → `emme.java-library`.
+- [x] Extend the repository inventory guard to prevent duplicate convention
+      application from returning.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
 

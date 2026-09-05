@@ -97,8 +97,28 @@ class RepositoryFrameworkFirstInventoryTest {
       String build = Files.readString(sourcePath(module + "/build.gradle.kts"));
       assertThat(build)
           .as("the emme.testing convention owns the shared test fixture for %s", module)
-          .contains("id(\"emme.testing\")")
           .doesNotContain("testImplementation(testFixtures(project(\":libraries:testing\")))");
+    }
+  }
+
+  @Test
+  void springModulesDoNotReapplyTestingConvention() throws IOException {
+    List<String> modules =
+        List.of(
+            "modules/appointments",
+            "modules/booking",
+            "modules/clients",
+            "modules/documents",
+            "modules/salon",
+            "modules/services",
+            "modules/subscriptions");
+
+    for (String module : modules) {
+      String build = Files.readString(sourcePath(module + "/build.gradle.kts"));
+      assertThat(build)
+          .as("the spring-module convention already applies emme.testing for %s", module)
+          .contains("id(\"emme.spring-module\")")
+          .doesNotContain("id(\"emme.testing\")");
     }
   }
 

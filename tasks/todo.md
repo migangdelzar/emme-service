@@ -565,6 +565,9 @@
 - [x] Keep integration-test fixture dependencies explicit for their separate
       source set.
 - [x] Run the inventory test and affected test-source compilation.
+- [x] Remove explicit `emme.testing` applications from Spring modules because
+      `emme.spring-module` already owns that capability.
+- [x] Add a repository guard for duplicate convention application.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
 

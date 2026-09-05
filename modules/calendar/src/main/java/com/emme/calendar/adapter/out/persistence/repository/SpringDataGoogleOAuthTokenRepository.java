@@ -3,7 +3,6 @@ package com.emme.calendar.adapter.out.persistence.repository;
 import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.calendar.adapter.out.persistence.entity.GoogleOAuthTokenEntity;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,8 +16,6 @@ public interface SpringDataGoogleOAuthTokenRepository
 
   Optional<GoogleOAuthTokenEntity> findByTenantIdAndUserIdAndPersonaType(
       UUID tenantId, String userId, PersonaType personaType);
-
-  List<GoogleOAuthTokenEntity> findByTenantId(UUID tenantId);
 
   /** Delete tokens whose expiry hasn't been updated since the cutoff date. */
   @Modifying

@@ -2177,6 +2177,27 @@ Completed in this slice:
 - [ ] Run the real Liquibase migration against PostgreSQL/Testcontainers when
       Docker is available.
 
+#### Current slice 18Y — Restore tenant context for Calendar event processing
+
+Completed in this slice:
+
+- `StaffCalendarSyncAdapter` now restores the tenant from each durable
+  `CalendarSyncRequested` event before invoking tenant-scoped JPA use cases.
+- Staff-token enumeration uses schema-local JPA `findAll()` instead of a
+  redundant `findByTenantId` predicate; the connection-selected tenant schema
+  is now the isolation boundary.
+- Interactive OAuth credential selection remains explicitly keyed by tenant,
+  user, and persona because those fields define the provider/business lookup,
+  not an ordinary schema-local list.
+- Failure handling remains inside the restored context so status updates also
+  use the correct tenant connection.
+
+- [x] Add a failing listener regression test for tenant-context restoration.
+- [x] Convert the staff-token list to schema-local `findAll()`.
+- [x] Run focused Calendar listener and OAuth repository tests.
+- [ ] Continue the Calendar event-link provider-cardinality audit before
+      changing appointment/provider lookups.
+
 ## 12. Subagent-driven execution protocol
 
 Subagents are the default for independent work, as requested. The coordinator

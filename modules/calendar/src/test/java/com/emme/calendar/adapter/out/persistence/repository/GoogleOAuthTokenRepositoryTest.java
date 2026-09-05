@@ -65,7 +65,10 @@ class GoogleOAuthTokenRepositoryTest extends BaseRepositoryTest {
         new GoogleOAuthTokenEntity(
             TENANT_ID, "user-2", PersonaType.CLIENT, "at2", "rt2", "scopes", expires));
 
-    List<GoogleOAuthTokenEntity> tokens = tokenRepo.findByTenantId(TENANT_ID);
+    List<GoogleOAuthTokenEntity> tokens =
+        tokenRepo.findAll().stream()
+            .filter(token -> token.getTenantId().equals(TENANT_ID))
+            .toList();
     assertThat(tokens).hasSize(2);
   }
 

@@ -13,6 +13,7 @@ import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
 import com.emme.calendar.configuration.CalendarProperties;
 import com.emme.calendar.configuration.GoogleHttpClient;
+import com.emme.kernel.context.TenantContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.time.ZoneOffset;
@@ -92,14 +93,22 @@ public class StaffCalendarSyncAdapter {
         event.appointmentId(),
         event.tenantId());
     try {
+      TenantContextHolder.withTenantOverride(event.tenantId(), () -> process(event));
+    } catch (RuntimeException e) {
+      log.error("Calendar sync failed for appointment {}", event.appointmentId(), e);
+    }
+  }
+
+  private void process(CalendarSyncRequested event) {
+    try {
       switch (event.action()) {
         case "CREATE" -> createEvent(event);
         case "UPDATE" -> updateEvent(event);
         case "DELETE" -> deleteEvent(event);
         default -> log.warn("Unknown calendar sync action: {}", event.action());
       }
-    } catch (Exception e) {
-      log.error("Calendar sync failed for appointment {}", event.appointmentId(), e);
+    } catch (Exception exception) {
+      log.error("Calendar sync failed for appointment {}", event.appointmentId(), exception);
       markCalendarEventLinksFailed.markFailed(event.tenantId(), event.appointmentId());
     }
   }
@@ -301,7 +310,7 @@ public class StaffCalendarSyncAdapter {
    * and refreshing if necessary.
    */
   private String resolveAccessToken(UUID tenantId) {
-    List<GoogleOAuthTokenEntity> tokens = tokenRepo.findByTenantId(tenantId);
+    List<GoogleOAuthTokenEntity> tokens = tokenRepo.findAll();
     for (GoogleOAuthTokenEntity token : tokens) {
       if (token.getPersonaType() == PersonaType.STAFF) {
         try {

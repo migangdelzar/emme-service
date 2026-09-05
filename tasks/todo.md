@@ -257,6 +257,19 @@
 - [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue auditing claim/resume semantics and Calendar provider queries.
 
+### Current slice — Task 18Y Calendar event tenant context
+
+- [x] Add a regression test proving durable calendar events restore tenant
+      context before tenant-scoped persistence is accessed.
+- [x] Wrap staff calendar event processing in the event tenant context.
+- [x] Replace the redundant tenant token list query with schema-local JPA
+      `findAll()`.
+- [x] Preserve explicit tenant/business-key OAuth lookup semantics used by the
+      interactive OAuth lifecycle.
+- [x] Run Calendar focused tests and repository tests.
+- [ ] Continue auditing Calendar event-link provider cardinality and Assistant
+      claim/resume semantics.
+
 ### Push-gate correction — stable contract source scan
 
 - [x] Diagnose the `KafkaEventContractTest` race with Spring Modulith docs.

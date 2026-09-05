@@ -33,8 +33,16 @@
       MockWebServer/OkHttp exceptions in the migration ledger.
 - [x] Establish the named Notification `RestClient` boundary without
       migrating provider callers yet.
+- [x] Migrate Twilio with form encoding and Basic authentication coverage.
+- [x] Migrate MessageBird and Vonage with provider-specific JSON/error
+      contracts.
+- [x] Migrate FCM OAuth-token/send sequencing and SendGrid message-ID
+      extraction.
+- [x] Migrate APNs JWT/header handling and SES byte-preserving SigV4 signing.
 - [ ] Migrate the remaining Identity, Calendar, Notification, and Payment
       provider callers one focused contract slice at a time.
+- [ ] Keep the Notification wrapper until HTTP-13 proves all callers and
+      production dependencies are gone.
 - [ ] Run live provider transport tests when Docker/infrastructure is available.
 
 ## Current execution checkpoint — framework-first plan / durable Task 1 — 2026-09-05

@@ -1,14 +1,14 @@
 package com.emme.payment.configuration;
 
-import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 /** Composition-root wiring for payment provider transport dependencies. */
 @Configuration
 public class PaymentClientConfiguration {
-  @Bean
-  public PaymentHttpClient paymentHttpClient() {
-    return new PaymentHttpClient(new OkHttpClient());
+  @Bean(name = "paymentRestClient")
+  public RestClient paymentRestClient(RestClient.Builder builder) {
+    return builder.build();
   }
 }

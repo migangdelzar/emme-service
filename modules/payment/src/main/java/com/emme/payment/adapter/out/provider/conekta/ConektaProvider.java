@@ -2,19 +2,19 @@ package com.emme.payment.adapter.out.provider.conekta;
 
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
-import com.emme.payment.configuration.PaymentHttpClient;
 import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Base64;
 import java.util.Map;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * Conekta payment provider — Mexican fintech (https://api.conekta.io).
@@ -29,17 +29,27 @@ import org.springframework.stereotype.Component;
 public class ConektaProvider implements PaymentProvider {
 
   private final String privateKey;
-  private final PaymentHttpClient client;
+  private final RestClient client;
   private final ObjectMapper mapper;
   private String apiBase;
 
   /** Production constructor — receives typed credentials from application configuration. */
   public ConektaProvider(
-      PaymentProperties properties, PaymentHttpClient client, ObjectMapper mapper) {
+      PaymentProperties properties,
+      @Qualifier("paymentRestClient") RestClient client,
+      ObjectMapper mapper) {
     this.privateKey = properties.conekta().privateKey();
     this.client = client;
     this.mapper = mapper;
     this.apiBase = "https://api.conekta.io";
+  }
+
+  public ConektaProvider(
+      RestClient client, ObjectMapper mapper, String privateKey, String apiBase) {
+    this.privateKey = privateKey;
+    this.client = client;
+    this.mapper = mapper;
+    this.apiBase = apiBase;
   }
 
   @Override
@@ -51,7 +61,9 @@ public class ConektaProvider implements PaymentProvider {
     if (privateKey == null || privateKey.isBlank()) {
       throw new PaymentProviderException("app.payment.conekta.private-key not configured");
     }
-    return "Basic " + Base64.getEncoder().encodeToString((privateKey + ":").getBytes());
+    return "Basic "
+        + Base64.getEncoder()
+            .encodeToString((privateKey + ":").getBytes(java.nio.charset.StandardCharsets.UTF_8));
   }
 
   @Override
@@ -65,29 +77,29 @@ public class ConektaProvider implements PaymentProvider {
               "currency", currency,
               "reference_id", idempotencyKey);
 
-      Request req =
-          new Request.Builder()
-              .url(apiBase + "/charges")
+      String responseBody =
+          client
+              .post()
+              .uri(apiBase + "/charges")
               .header("Authorization", authHeader())
-              .header("Content-Type", "application/json")
               .header("Accept", "application/vnd.conekta-v2.0.0+json")
-              .post(
-                  RequestBody.create(
-                      mapper.writeValueAsString(body), MediaType.get("application/json")))
-              .build();
-
-      try (Response res = client.newCall(req).execute()) {
-        String responseBody = res.body() != null ? res.body().string() : "{}";
-        if (!res.isSuccessful()) {
-          throw new PaymentProviderException(
-              "Conekta initiate failed: HTTP " + res.code() + " — " + responseBody);
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> result = mapper.readValue(responseBody, Map.class);
-        String chargeId = (String) result.get("id");
-        return new PaymentResult(chargeId, "PENDING", Map.of());
-      }
-    } catch (IOException e) {
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(body)
+              .retrieve()
+              .body(String.class);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> result =
+          mapper.readValue(responseBody == null ? "{}" : responseBody, Map.class);
+      String chargeId = (String) result.get("id");
+      return new PaymentResult(chargeId, "PENDING", Map.of());
+    } catch (RestClientResponseException e) {
+      throw new PaymentProviderException(
+          "Conekta initiate failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (IOException | RestClientException e) {
       throw new PaymentProviderException("Conekta initiate failed: " + e.getMessage(), e);
     }
   }
@@ -110,31 +122,29 @@ public class ConektaProvider implements PaymentProvider {
     try {
       Map<String, Object> body = Map.of("reason", reason);
 
-      Request req =
-          new Request.Builder()
-              .url(apiBase + "/charges/" + providerTransactionId + "/refund")
+      String responseBody =
+          client
+              .post()
+              .uri(apiBase + "/charges/" + providerTransactionId + "/refund")
               .header("Authorization", authHeader())
-              .header("Content-Type", "application/json")
               .header("Accept", "application/vnd.conekta-v2.0.0+json")
-              .post(
-                  RequestBody.create(
-                      mapper.writeValueAsString(body), MediaType.get("application/json")))
-              .build();
-
-      try (Response res = client.newCall(req).execute()) {
-        String responseBody = res.body() != null ? res.body().string() : "{}";
-        if (!res.isSuccessful()) {
-          throw new PaymentProviderException(
-              "Conekta refund failed: HTTP " + res.code() + " — " + responseBody);
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> result = mapper.readValue(responseBody, Map.class);
-        return new PaymentResult(
-            providerTransactionId,
-            "REFUNDED",
-            Map.of("refund_id", String.valueOf(result.get("id"))));
-      }
-    } catch (IOException e) {
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(body)
+              .retrieve()
+              .body(String.class);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> result =
+          mapper.readValue(responseBody == null ? "{}" : responseBody, Map.class);
+      return new PaymentResult(
+          providerTransactionId, "REFUNDED", Map.of("refund_id", String.valueOf(result.get("id"))));
+    } catch (RestClientResponseException e) {
+      throw new PaymentProviderException(
+          "Conekta refund failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (IOException | RestClientException e) {
       throw new PaymentProviderException("Conekta refund failed: " + e.getMessage(), e);
     }
   }

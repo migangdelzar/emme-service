@@ -11,6 +11,7 @@ dependencies {
   implementation(project(":modules:tenancy"))
 
   implementation(libs.spring.boot.starter.web)
+  implementation(libs.spring.boot.restclient)
   implementation(libs.spring.boot.starter.validation)
   implementation(libs.okhttp)
   implementation(libs.jackson.databind)

@@ -2,19 +2,19 @@ package com.emme.payment.adapter.out.provider.mercadopago;
 
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
-import com.emme.payment.configuration.PaymentHttpClient;
 import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * MercadoPago Checkout API integration via REST.
@@ -32,18 +32,29 @@ public class MercadoPagoProvider implements PaymentProvider {
 
   private final String accessToken;
   private final String publicKey;
-  private final PaymentHttpClient client;
+  private final RestClient client;
   private final ObjectMapper mapper;
   private String apiBase;
 
   /** Production constructor — receives typed credentials from application configuration. */
   public MercadoPagoProvider(
-      PaymentProperties properties, PaymentHttpClient client, ObjectMapper mapper) {
+      PaymentProperties properties,
+      @Qualifier("paymentRestClient") RestClient client,
+      ObjectMapper mapper) {
     this.accessToken = properties.mercadopago().accessToken();
     this.publicKey = properties.mercadopago().publicKey();
     this.client = client;
     this.mapper = mapper;
     this.apiBase = "https://api.mercadopago.com";
+  }
+
+  public MercadoPagoProvider(
+      RestClient client, ObjectMapper mapper, String accessToken, String apiBase) {
+    this.accessToken = accessToken;
+    this.publicKey = null;
+    this.client = client;
+    this.mapper = mapper;
+    this.apiBase = apiBase;
   }
 
   @Override
@@ -83,31 +94,31 @@ public class MercadoPagoProvider implements PaymentProvider {
               "notification_url",
               "https://emme.app/api/callbacks/payments");
 
-      Request req =
-          new Request.Builder()
-              .url(apiBase + "/checkout/preferences")
+      String responseBody =
+          client
+              .post()
+              .uri(apiBase + "/checkout/preferences")
               .header("Authorization", "Bearer " + accessToken)
-              .header("Content-Type", "application/json")
               .header("X-Idempotency-Key", idempotencyKey)
-              .post(
-                  RequestBody.create(
-                      mapper.writeValueAsString(body), MediaType.get("application/json")))
-              .build();
-
-      try (Response res = client.newCall(req).execute()) {
-        String responseBody = res.body() != null ? res.body().string() : "{}";
-        if (!res.isSuccessful()) {
-          throw new PaymentProviderException(
-              "MercadoPago initiate failed: HTTP " + res.code() + " — " + responseBody);
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> result = mapper.readValue(responseBody, Map.class);
-        String preferenceId = (String) result.get("id");
-        String initPoint = (String) result.get("init_point");
-        return new PaymentResult(
-            preferenceId, "PENDING", Map.of("init_point", initPoint != null ? initPoint : ""));
-      }
-    } catch (IOException e) {
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(body)
+              .retrieve()
+              .body(String.class);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> result =
+          mapper.readValue(responseBody == null ? "{}" : responseBody, Map.class);
+      String preferenceId = (String) result.get("id");
+      String initPoint = (String) result.get("init_point");
+      return new PaymentResult(
+          preferenceId, "PENDING", Map.of("init_point", initPoint != null ? initPoint : ""));
+    } catch (RestClientResponseException e) {
+      throw new PaymentProviderException(
+          "MercadoPago initiate failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (IOException | RestClientException e) {
       throw new PaymentProviderException("MercadoPago initiate failed: " + e.getMessage(), e);
     }
   }
@@ -135,30 +146,28 @@ public class MercadoPagoProvider implements PaymentProvider {
     try {
       Map<String, Object> body = Map.of("amount", amount.doubleValue());
 
-      Request req =
-          new Request.Builder()
-              .url(apiBase + "/v1/payments/" + providerTransactionId + "/refunds")
+      String responseBody =
+          client
+              .post()
+              .uri(apiBase + "/v1/payments/" + providerTransactionId + "/refunds")
               .header("Authorization", "Bearer " + accessToken)
-              .header("Content-Type", "application/json")
-              .post(
-                  RequestBody.create(
-                      mapper.writeValueAsString(body), MediaType.get("application/json")))
-              .build();
-
-      try (Response res = client.newCall(req).execute()) {
-        String responseBody = res.body() != null ? res.body().string() : "{}";
-        if (!res.isSuccessful()) {
-          throw new PaymentProviderException(
-              "MercadoPago refund failed: HTTP " + res.code() + " — " + responseBody);
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> result = mapper.readValue(responseBody, Map.class);
-        return new PaymentResult(
-            providerTransactionId,
-            "REFUNDED",
-            Map.of("refund_id", String.valueOf(result.get("id"))));
-      }
-    } catch (IOException e) {
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(body)
+              .retrieve()
+              .body(String.class);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> result =
+          mapper.readValue(responseBody == null ? "{}" : responseBody, Map.class);
+      return new PaymentResult(
+          providerTransactionId, "REFUNDED", Map.of("refund_id", String.valueOf(result.get("id"))));
+    } catch (RestClientResponseException e) {
+      throw new PaymentProviderException(
+          "MercadoPago refund failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (IOException | RestClientException e) {
       throw new PaymentProviderException("MercadoPago refund failed: " + e.getMessage(), e);
     }
   }

@@ -49,6 +49,10 @@ appointment aggregate is not used as an unconfirmed payment placeholder.
 - Make consequential conversations durable across application restarts and delayed
   customer or provider responses.
 - Control every graph node's model, tools, memory, timeout, and interruption policy.
+- Guard every untrusted input, retrieved context, tool invocation, model response, and
+  customer-visible output with deterministic, observable policies.
+- Reuse one versioned embedding capability for RAG, semantic tool routing, semantic
+  cache lookup, and other vector decisions; do not create one embedding flow per feature.
 - Keep tenant identity and authorization backend-derived and fail closed.
 - Use typed contracts between the router, workflows, tools, and business modules.
 - Preserve an implementation seam for a future workflow engine without changing
@@ -150,6 +154,81 @@ UNSUPPORTED
 Confirmation, rejection, clarification, payment callbacks, and staff decisions are
 resolved from trusted workflow context before any model fallback.
 
+### 6.1 Shared semantic path and fallback boundaries
+
+RAG, semantic tool selection, semantic intent routing, and semantic response-cache lookup
+use the same application embedding capability and model-version contract. The provider
+selector may try configured embedding providers in order, but it must preserve the
+embedding model version and dimension expected by the index. This prevents one feature
+from silently writing or searching vectors that another feature cannot interpret.
+
+The fallback meanings are deliberately separate:
+
+| Situation | Allowed fallback | Not allowed |
+|---|---|---|
+| Embedding provider is unavailable | Try the next configured embedding provider; then use the compatibility embedding capability or disable the semantic shortcut according to route policy | Treating a chat completion as an embedding, fabricating a zero vector, or bypassing tenant filters |
+| Embedding search returns low confidence | Run the bounded query-improvement ladder, then clarify or fail closed | Calling the answer model and presenting an ungrounded tenant-knowledge answer as factual |
+| Semantic tool/cache decision abstains | Continue to the normal router or chat path; semantic cache miss proceeds to model completion | Executing a tool or returning a cache hit below its score and margin policy |
+| Semantic classifier is unavailable | Use the explicitly configured structured/model route fallback only for non-authorizing classification | Allowing a model fallback to authorize a mutation |
+
+An LLM fallback therefore means a bounded model call for classification, query
+transformation, or response composition. It does not mean that a chat model replaces an
+embedding model or overrides a retrieval-quality gate. The current compatibility path
+uses `AiModelProvider.embed` only when no application `EmbeddingModelPort` is present;
+that is an embedding-capability fallback, not a chat fallback.
+
+### 6.2 Embedding-first semantic fast path
+
+Embedding-first is the recommended default for known semantic decisions because it avoids
+an unnecessary chat-model call for tool selection, cache lookup, intent routing, and the
+first RAG retrieval. The vector result is a candidate signal, not an authority:
+
+```text
+input guard
+  → normalize once and reuse the turn embedding when compatible
+  → filter by backend authorization and route policy
+  → embed and retrieve candidates
+  → apply top-score, margin, freshness, and eligibility gates
+  → take a deterministic shortcut only when the gate accepts
+  → otherwise continue to the bounded model or clarification path
+```
+
+| Capability | Accepted embedding decision | Abstention behavior |
+|---|---|---|
+| Tool routing | Select an authorized, read-only tool whose score and margin pass policy | Continue to normal conversation handling; mutation tools require the durable workflow and confirmation regardless of score |
+| Semantic cache | Return only an eligible, fresh, version-compatible, principal-scoped response whose high threshold and margin pass policy | Miss the cache and call the normal answer model; cache failure never makes chat unavailable |
+| Intent routing | Select a route only when its score and margin pass the route policy | Use structured/model classification only where allowed, otherwise return `GENERAL` or ask for clarification |
+| RAG | Accept context only after the retrieval-quality gate passes | Run the bounded query-improvement ladder, then clarify or produce a grounded no-answer |
+
+The embedding is usually cheaper and more predictable than a chat completion, but it is
+still an AI provider call with latency, capacity, and failure modes. The implementation
+must therefore apply admission limits, provider failover, metrics, and request-scoped
+deduplication. A compatible embedding computed for one normalized turn may be reused by
+tool and cache checks; a rewritten or expanded RAG query must receive a new embedding.
+
+This fast path must not become a hidden semantic agent. It cannot invent tool arguments,
+grant authorization, approve a payment, or return a cache entry without checking current
+policy and identity. A model call is the controlled fallback for ambiguity or query
+transformation, not the default selector for every request.
+
+### 6.3 Current repository behavior and migration gap
+
+The repository already follows this pattern in several paths, with one important
+qualification:
+
+| Path | Current behavior | Target change |
+|---|---|---|
+| Intent | `SemanticIntentRouter` embeds the message and `SemanticIntentClassifier` applies top-one similarity and margin; `DetectIntentService` returns `GENERAL` or `unavailable` when the semantic path abstains or is transiently unavailable | Add the explicit structured/model fallback policy at the workflow boundary without allowing it to authorize mutations |
+| Tools | `SemanticProactiveToolRouter` embeds first, filters to backend-authorized keys, and invokes only an accepted semantic tool decision | Reuse the turn embedding and make low-confidence behavior an explicit route to normal handling; keep mutation tools outside this shortcut |
+| Semantic cache | `SemanticChatCache` embeds before hot/durable lookup and `ChatService` calls normal chat completion after a miss or semantic failure | Preserve the existing cache safety, identity, freshness, and version gates while making the shared embedding and fallback contract explicit |
+| RAG | `DocumentKnowledgeRetrievalAdapter` uses `EmbeddingModelPort` when available and the legacy provider's `embed` capability otherwise; generation then uses the answer model. The optional Spring AI path wraps this with `RetrievalAugmentationAdvisor` | Preserve search scores, add `RetrievalQualityGate`, and run bounded query improvement before grounded generation |
+| Embedding failover | `EmbeddingModelSelector` tries configured providers in order only for provider-unavailable failures | Keep this provider failover separate from low-relevance query improvement and from chat-model fallback |
+
+Therefore, the answer to “embeddings first, then LLM” is yes for the semantic shortcuts,
+but the LLM is currently the next step for cache-miss response generation and a future
+explicit fallback for route classification. It is not currently a universal fallback for
+every failed embedding operation. The migration must preserve that distinction.
+
 ## 7. Spring AI responsibilities
 
 ### 7.1 Model profiles
@@ -237,6 +316,66 @@ workflow edge; Spring AI does not become the owner of business routing.
 
 Prices, appointment availability, payment state, refund eligibility, and permissions
 are never sourced from RAG.
+
+The knowledge path uses a bounded quality-and-improvement loop:
+
+```text
+validate input and trusted context
+  → embed original query
+  → tenant-filtered hybrid/vector retrieval
+  → evaluate score, margin, support count, freshness, and route policy
+  → if sufficient: rerank, deduplicate, aggregate, and answer with context
+  → if insufficient: compress/rewrite/translate/expand the query within a fixed budget
+  → re-embed and retrieve
+  → if still insufficient: ask a clarifying question or return a grounded no-answer
+```
+
+`RetrievalQualityGate` is deterministic and route-specific. It evaluates the top result
+and score margin, the number of independently supporting chunks, lexical/semantic
+agreement when hybrid search is used, document freshness, and whether the source type is
+allowed for the route. Thresholds are calibrated from representative evaluation data;
+there is no universal similarity threshold that is safe for every tenant, language, or
+knowledge collection.
+
+`QueryImprovementPolicy` limits the number of attempts, transformed-query length, query
+variants, token budget, and total latency. It records which transformation improved or
+failed retrieval. It may use a low-temperature `routeModel` or `answerModel` for
+rewriting, but it cannot alter the tenant filter, source policy, answer policy, or
+business route. Live conversations produce evaluation candidates and telemetry; they do
+not automatically rewrite production prompts, thresholds, or tenant knowledge without a
+controlled promotion process.
+
+The retrieval contract must preserve the authoritative search score and source metadata
+from the Documents module into `RetrievedDocument`. The current adapter returns a score of
+`0.0` after `DocumentChunkDetails` loses the search-hit score, so score-aware gating is a
+planned implementation task rather than an existing guarantee.
+
+### 7.4 Guardrails
+
+Guardrails are layered and fail closed. A model cannot disable or weaken a guardrail by
+returning a different instruction, tool argument, or output format. Each decision is
+typed, bounded, and traced with redacted evidence:
+
+| Boundary | Required controls | Safe outcomes |
+|---|---|---|
+| Input admission | Authentication, tenant binding, content type, size and token limits, Unicode normalization, attachment limits, rate/cost budget, and idempotency validation | `ALLOW`, `REJECT`, `CLARIFY` |
+| Input safety | Prompt-injection and instruction-boundary detection, abuse/safety classification, PII/payment-secret handling, and channel-specific policy | `ALLOW`, `REDACT`, `BLOCK`, `ESCALATE` |
+| Context assembly | Tenant/principal filter, source allow-list, document freshness, injection scanning on retrieved text, context-size budget, and provenance preservation | `ALLOW`, `DROP_CONTEXT`, `CLARIFY`, `NO_ANSWER` |
+| Tool invocation | Typed schema validation, tool allow-list, role/tenant authorization, confirmation, idempotency, timeout, call count, and response-size limits | `ALLOW`, `DENY`, `WAIT_FOR_CONFIRMATION`, `ESCALATE` |
+| Model output | Structured schema validation, secret/PII leakage checks, content-safety classification, citation/provenance checks for RAG, and business-claim validation | `ALLOW`, `REDACT`, `REGENERATE`, `BLOCK`, `ESCALATE` |
+| Delivery | Final response policy, channel encoding, length limits, safe streaming, and durable audit event | `DELIVER`, `TRUNCATE`, `BLOCK`, `ESCALATE` |
+
+The named implementation boundaries are `InputGuard`, `ContextGuard`, `ToolGuard`,
+`OutputGuard`, and `GroundingGuard`. They are protocol-based and injected into direct
+Spring AI calls and LangGraph nodes. Spring AI advisors provide the request/response
+interception mechanism; graph edges own durable pause, retry, escalation, and
+regeneration decisions. For streaming responses, output is buffered until the applicable
+checks pass, or emitted only through a policy that can revoke/stop delivery safely.
+
+Safety moderation is an optional provider capability, never the only guardrail. If a
+moderation provider is unavailable, the route-specific policy chooses a safe deterministic
+fallback; it must not silently allow an unsafe response. Mutation workflows additionally
+require typed application validation after any model output and before a state change.
 
 ## 8. Node, assistant, tool, and memory control
 
@@ -460,6 +599,8 @@ version-specific behavior.
 | `assistant` workflows | `AppointmentBookingWorkflow`, `AppointmentRescheduleWorkflow`, `AppointmentCancellationWorkflow`, `AppointmentPaymentWorkflow` |
 | `assistant` node policy | `NodeProfile`, `NodeMemoryPolicy`, `NodeToolPolicy`, `NodeContext` |
 | `assistant` tools | `AuthorizedAiToolGateway`, read-only tool adapters, mutation workflow adapters |
+| `assistant` semantic | `EmbeddingService`, `EmbeddingModelSelector`, `RetrievalQualityGate`, `QueryImprovementPolicy` |
+| `assistant` guardrails | `InputGuard`, `ContextGuard`, `ToolGuard`, `OutputGuard`, `GroundingGuard` |
 | `assistant` RAG | `KnowledgeRetriever`, `KnowledgeAnswerService`, Spring AI RAG adapter |
 | `appointments` | `AppointmentHoldService`, hold repository/expiry policy, authorized lifecycle contracts |
 | `payment` | `PaymentLinkService`, business-reference correlation, webhook resume event, refund/retry policy |
@@ -479,6 +620,9 @@ source of truth where an existing clear name already exists, such as
   backend; never trust model-supplied identity fields.
 - Filter every tool, vector query, semantic cache lookup, checkpoint, and workflow resume
   through the current `AiExecutionContext`.
+- Apply input, context, tool, output, grounding, and delivery guardrails before the next
+  model or business operation; guardrail failure must not be converted into provider
+  failover.
 - Do not expose mutation tools to the normal Spring AI tool loop.
 - Do not store card details, provider access tokens, webhook secrets, or payment
   credentials in prompts, memory, traces, or checkpoints.
@@ -487,18 +631,28 @@ source of truth where an existing clear name already exists, such as
   refunds, and price differences.
 - Redact PII, payment metadata, image bytes, vectors, and raw tool arguments from traces
   by default.
+- Do not treat retrieved text as trusted instructions; retrieved content is data and is
+  isolated from system/developer policy before it reaches a model.
+- Do not deliver an answer as grounded when `RetrievalQualityGate` has not accepted the
+  context; use clarification, a bounded safe response, or staff escalation.
 
 ## 14. Testing strategy
 
 ### Unit tests
 
 - Router precedence, confidence, unsupported and ambiguous intents.
+- Input/output/context/tool/grounding guardrail decisions, fail-closed behavior, and
+  prompt-injection or secret-leakage rejection.
 - Node profile tool allow-lists, memory projections, timeouts, and call limits.
 - State serialization, version checks, and bounded state patches.
 - Booking, reschedule, cancellation, and payment state transitions.
 - Hold expiry, ownership, collision, and idempotency.
 - Payment-link normalization and webhook correlation.
 - Retry classification and compensation decisions.
+- Shared embedding model-version/dimension enforcement across RAG, tools, intent
+  routing, and semantic cache.
+- Retrieval threshold, score-margin, support-count, freshness, and hybrid-agreement
+  decisions, including the bounded query-improvement ladder and exhausted-budget path.
 
 ### Integration tests
 
@@ -511,6 +665,10 @@ source of truth where an existing clear name already exists, such as
 - Notification and calendar event publication after committed mutations.
 - Spring AI structured extraction, tool limits, dynamic tenant RAG filters, and
   observability customizers.
+- End-to-end retrieval score preservation from document search through Spring AI RAG,
+  threshold filtering, reranking, and grounded answer generation.
+- Embedding-provider outage, compatibility embedding fallback, low-confidence retrieval,
+  query rewrite retry, and no-ungrounded-answer behavior.
 
 ### End-to-end tests
 
@@ -533,17 +691,20 @@ startup, webhooks, and deployed E2E checks.
 1. Add framework-neutral route, workflow, hold, payment-link, and resume contracts.
 2. Add `ConversationRouter` and direct-path bypass for simple requests.
 3. Add `NodeProfile` tool and memory policy boundaries.
-4. Consolidate Spring AI multi-client composition, tool governance, observations,
-   moderation, and current modular RAG.
-5. Implement typed booking workflow and explicit confirmation.
-6. Implement appointment holds, expiry, collision protection, and release.
-7. Implement payment-link creation, provider correlation, webhook resume, and recovery.
-8. Implement reschedule and cancellation workflows with refund policy.
-9. Add multi-intent decomposition, fan-out/fan-in read branches, and staff escalation.
-10. Integrate notifications, calendar events, operational traces, and replay safeguards.
-11. Add checkpoint/state versioning and compatibility checks.
-12. Remove duplicate agents, tools, wrappers, and obsolete abstractions.
-13. Run phase-level integration validation and the final enterprise gate.
+4. Consolidate Spring AI multi-client composition, shared embeddings, tool governance,
+   input/output/context/grounding guards, observations, moderation, and current modular
+   RAG.
+5. Add retrieval score preservation, `RetrievalQualityGate`, and the bounded
+   `QueryImprovementPolicy` for RAG, semantic tools, intent routing, and cache policies.
+6. Implement typed booking workflow and explicit confirmation.
+7. Implement appointment holds, expiry, collision protection, and release.
+8. Implement payment-link creation, provider correlation, webhook resume, and recovery.
+9. Implement reschedule and cancellation workflows with refund policy.
+10. Add multi-intent decomposition, fan-out/fan-in read branches, and staff escalation.
+11. Integrate notifications, calendar events, operational traces, and replay safeguards.
+12. Add checkpoint/state versioning and compatibility checks.
+13. Remove duplicate agents, tools, wrappers, and obsolete abstractions.
+14. Run phase-level integration validation and the final enterprise gate.
 
 ## 16. Acceptance criteria
 
@@ -558,6 +719,13 @@ startup, webhooks, and deployed E2E checks.
 - Verified payment callbacks resume only the matching tenant/workflow and are idempotent.
 - RAG is tenant-scoped and cannot answer authoritative appointment, pricing, or payment
   questions from unstructured knowledge alone.
+- Every model request and response passes the applicable typed input, context, tool,
+  output, grounding, and delivery guardrails; unsafe or invalid results fail closed.
+- RAG evaluates retrieval sufficiency using preserved scores and route-specific thresholds
+  before answer generation, and performs only a bounded, observable query-improvement
+  loop when the first retrieval is insufficient.
+- RAG, semantic tool routing, semantic intent routing, and semantic cache use the same
+  versioned embedding contract and explicit provider/compatibility fallback policy.
 - Parallel execution is limited to independent reads and never to business mutations.
 - State, traces, tool arguments, and model prompts exclude secrets and sensitive payment
   data.
@@ -571,7 +739,11 @@ startup, webhooks, and deployed E2E checks.
 - [Spring AI ChatClient and multiple models](https://docs.spring.io/spring-ai/reference/api/chatclient.html)
 - [Spring AI tool calling and tool limits](https://docs.spring.io/spring-ai/reference/api/tools.html)
 - [Spring AI tool search](https://docs.spring.io/spring-ai/reference/api/tools/tool-search-tool.html)
+- [Spring AI advisors and content-safety advisor](https://docs.spring.io/spring-ai/reference/api/advisors.html)
+- [Spring AI moderation](https://docs.spring.io/spring-ai/reference/api/moderation.html)
 - [Spring AI modular RAG](https://docs.spring.io/spring-ai/reference/api/retrieval-augmented-generation.html)
+- [Spring AI vector similarity thresholds](https://docs.spring.io/spring-ai/reference/api/vectordbs.html)
+- [Spring AI evaluation](https://docs.spring.io/spring-ai/reference/api/testing.html)
 - [Spring AI chat memory](https://docs.spring.io/spring-ai/reference/api/chat-memory.html)
 - [Spring AI observability](https://docs.spring.io/spring-ai/reference/observability/index.html)
 - [LangGraph4j state, threads, and checkpoints](https://github.com/langgraph4j/langgraph4j/blob/main/langgraph4j-core/src/site/markdown/concepts/low_level.md)

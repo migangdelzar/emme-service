@@ -14,6 +14,7 @@ dependencies {
   implementation(project(":modules:identity"))
 
   implementation(libs.spring.boot.starter.web)
+  implementation(libs.spring.boot.restclient)
   implementation(libs.spring.boot.starter.validation)
   implementation(libs.spring.boot.starter.oauth2.client)
   implementation(libs.spring.boot.starter.data.redis)

@@ -44,8 +44,14 @@
 - [x] Establish the Payment `RestClient` boundary and migrate Conekta,
       Mercado Pago, Stripe, and PayPal while preserving idempotency and
       provider operation semantics.
-- [ ] Migrate the remaining Calendar
-      provider callers one focused contract slice at a time.
+- [x] Establish the named Calendar `googleRestClient` boundary and migrate
+      Google OAuth form/token calls with contract coverage.
+- [ ] Migrate Google Calendar and Sheets resource clients with contract
+      coverage.
+- [ ] Remove the obsolete Google wrapper dependency from Calendar sync
+      adapters with tenant/event behavior coverage.
+- [ ] Delete provider HTTP wrappers only in HTTP-13 after caller and
+      dependency searches prove they are unused.
 - [ ] Keep the Notification wrapper until HTTP-13 proves all callers and
       production dependencies are gone.
 - [ ] Run live provider transport tests when Docker/infrastructure is available.

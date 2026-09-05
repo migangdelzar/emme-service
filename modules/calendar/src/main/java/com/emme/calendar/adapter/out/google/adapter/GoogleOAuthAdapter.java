@@ -7,7 +7,6 @@ import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleOAut
 import com.emme.calendar.api.type.GoogleOAuthPersona;
 import com.emme.calendar.application.port.out.GoogleOAuthPort;
 import com.emme.calendar.application.port.out.GoogleOAuthTokens;
-import com.emme.calendar.configuration.GoogleHttpClient;
 import com.emme.calendar.configuration.GoogleOAuthProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,15 +15,18 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import okhttp3.FormBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * Core OAuth lifecycle for Google service accounts. Handles authorization URL construction, code
@@ -49,7 +51,7 @@ public class GoogleOAuthAdapter implements GoogleOAuthPort {
   private final GoogleOAuthProperties properties;
   private final TokenEncryptionService encryption;
   private final SpringDataGoogleOAuthTokenRepository tokenRepo;
-  private final GoogleHttpClient httpClient;
+  private final RestClient httpClient;
   private final ObjectMapper mapper;
 
   public GoogleOAuthAdapter(
@@ -57,7 +59,7 @@ public class GoogleOAuthAdapter implements GoogleOAuthPort {
       TokenEncryptionService encryption,
       SpringDataGoogleOAuthTokenRepository tokenRepo,
       ObjectMapper mapper,
-      GoogleHttpClient httpClient) {
+      @Qualifier("googleRestClient") RestClient httpClient) {
     this.properties = properties;
     this.encryption = encryption;
     this.tokenRepo = tokenRepo;
@@ -100,14 +102,12 @@ public class GoogleOAuthAdapter implements GoogleOAuthPort {
    */
   @Override
   public GoogleOAuthTokens exchangeCode(String code) {
-    RequestBody body =
-        new FormBody.Builder()
-            .add("code", code)
-            .add("client_id", properties.clientId())
-            .add("client_secret", properties.clientSecret())
-            .add("redirect_uri", properties.redirectUri())
-            .add("grant_type", "authorization_code")
-            .build();
+    MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+    body.add("code", code);
+    body.add("client_id", properties.clientId());
+    body.add("client_secret", properties.clientSecret());
+    body.add("redirect_uri", properties.redirectUri());
+    body.add("grant_type", "authorization_code");
 
     return toGoogleOAuthTokens(postTokenRequest(body));
   }
@@ -122,13 +122,11 @@ public class GoogleOAuthAdapter implements GoogleOAuthPort {
   public TokenResponse refreshAccessToken(String encryptedRefreshToken) {
     String refreshToken = encryption.decrypt(encryptedRefreshToken);
 
-    RequestBody body =
-        new FormBody.Builder()
-            .add("refresh_token", refreshToken)
-            .add("client_id", properties.clientId())
-            .add("client_secret", properties.clientSecret())
-            .add("grant_type", "refresh_token")
-            .build();
+    MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+    body.add("refresh_token", refreshToken);
+    body.add("client_id", properties.clientId());
+    body.add("client_secret", properties.clientSecret());
+    body.add("grant_type", "refresh_token");
 
     return postTokenRequest(body);
   }
@@ -264,23 +262,16 @@ public class GoogleOAuthAdapter implements GoogleOAuthPort {
       try {
         String decryptedRefresh = encryption.decrypt(token.getRefreshToken());
         String revokeUrl = REVOKE_URL + "?token=" + urlEncode(decryptedRefresh);
-        Request request =
-            new Request.Builder()
-                .url(revokeUrl)
-                .post(RequestBody.create(new byte[0], null))
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-          if (response.isSuccessful()) {
-            log.info("Revoked Google token for userId={} persona={}", userId, personaType);
-          } else {
-            log.warn(
-                "Google revoke returned {} for userId={} persona={}: {}",
-                response.code(),
-                userId,
-                personaType,
-                response.body() != null ? response.body().string() : "");
-          }
+        var response =
+            httpClient.post().uri(revokeUrl).body(new byte[0]).retrieve().toBodilessEntity();
+        if (response.getStatusCode().is2xxSuccessful()) {
+          log.info("Revoked Google token for userId={} persona={}", userId, personaType);
+        } else {
+          log.warn(
+              "Google revoke returned {} for userId={} persona={}",
+              response.getStatusCode().value(),
+              userId,
+              personaType);
         }
       } catch (Exception e) {
         log.warn(
@@ -325,25 +316,26 @@ public class GoogleOAuthAdapter implements GoogleOAuthPort {
   // ---------------------------------------------------------------------------
 
   /** Execute a POST to Google's token endpoint and parse the JSON response. */
-  private TokenResponse postTokenRequest(RequestBody body) {
-    Request request =
-        new Request.Builder()
-            .url(TOKEN_URL)
-            .post(body)
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .build();
-
-    try (Response response = httpClient.newCall(request).execute()) {
-      if (!response.isSuccessful()) {
-        String errorBody = response.body() != null ? response.body().string() : "";
-        throw new RuntimeException(
-            "Google token endpoint returned HTTP " + response.code() + ": " + errorBody);
-      }
-
-      String json = response.body() != null ? response.body().string() : "";
-      return parseTokenResponse(json);
-    } catch (RuntimeException e) {
-      throw e;
+  private TokenResponse postTokenRequest(MultiValueMap<String, String> body) {
+    try {
+      String json =
+          httpClient
+              .post()
+              .uri(TOKEN_URL)
+              .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+              .body(body)
+              .retrieve()
+              .body(String.class);
+      return parseTokenResponse(json == null ? "" : json);
+    } catch (RestClientResponseException e) {
+      throw new RuntimeException(
+          "Google token endpoint returned HTTP "
+              + e.getStatusCode().value()
+              + ": "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (RestClientException e) {
+      throw new RuntimeException("Failed to communicate with Google token endpoint", e);
     } catch (Exception e) {
       throw new RuntimeException("Failed to communicate with Google token endpoint", e);
     }

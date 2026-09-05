@@ -10,6 +10,8 @@ import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.provider.RagAnswerPolicy;
+import com.emme.assistant.ai.application.rag.DeterministicRetrievalQualityGate;
+import com.emme.assistant.ai.application.rag.RetrievalQualityGate;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
@@ -53,6 +55,12 @@ public class SpringAiRagConfiguration {
   TenantScopedDocumentRetriever tenantScopedDocumentRetriever(
       KnowledgeRetriever retrieval, SpringAiRagProperties properties) {
     return new TenantScopedDocumentRetriever(retrieval, properties.retrievalLimit());
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  RetrievalQualityGate retrievalQualityGate() {
+    return new DeterministicRetrievalQualityGate();
   }
 
   @Bean(name = "aiRetrievalAugmentationAdvisor")

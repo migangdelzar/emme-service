@@ -448,11 +448,11 @@ public interface RetrievalQualityGate {
 similarity scale used by the configured index. Policies are route-specific and calibrated
 from evaluation data rather than copied from one universal threshold.
 
-- [ ] **Step 1: Write failing tests.** Cover empty results, one result without margin, top score below threshold, insufficient independent support, stale documents, lexical disagreement, and an accepted result with finite scores.
-- [ ] **Step 2: Run the focused test.** Run `./gradlew :modules:assistant:test --tests '*RetrievalQualityGateTest'`; expected failure is the missing gate and policy.
-- [ ] **Step 3: Implement the deterministic gate.** Sort by score, inspect only bounded metadata fields such as source type and effective date, calculate top-two margin and support count, and return a reason code for every rejection.
-- [ ] **Step 4: Add typed configuration.** Add explicit per-route settings under `app.ai.spring-rag.quality`, enforce finite ranges and positive limits, and preserve the existing retrieval-limit default.
-- [ ] **Step 5: Run, refactor, and commit.**
+- [x] **Step 1: Write failing tests.** Cover empty results, one result without margin, top score below threshold, insufficient independent support, stale documents, lexical disagreement, and an accepted result with finite scores.
+- [x] **Step 2: Run the focused test.** Run `./gradlew :modules:assistant:test --tests '*RetrievalQualityGateTest'`; expected failure is the missing gate and policy.
+- [x] **Step 3: Implement the deterministic gate.** Sort by score, inspect only bounded metadata fields such as source type and effective date, calculate top-two margin and support count, and return a reason code for every rejection.
+- [x] **Step 4: Add typed configuration.** Add explicit per-route settings under `app.ai.spring-rag.quality`, enforce finite ranges and positive limits, and preserve the existing retrieval-limit default.
+- [x] **Step 5: Run, refactor, and commit.**
 
   ```bash
   ./gradlew :modules:assistant:test --tests '*RetrievalQualityGateTest' \

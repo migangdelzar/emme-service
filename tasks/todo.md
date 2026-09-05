@@ -1,13 +1,13 @@
 # Service architecture migration checklist
 
-## Current execution checkpoint — framework-first plan / durable Task 3 — 2026-09-05
+## Current execution checkpoint — framework-first plan / durable Task 4 — 2026-09-05
 
-- [x] Synchronize the shared-turn semantic design with the provider-neutral application ports.
-- [x] Write the failing test for one embedding shared by tool routing and semantic cache lookup.
-- [x] Add `SemanticQuery` and `SemanticQueryFactory` at the operation boundary.
-- [x] Route semantic tools and cache operations through the prepared query.
-- [x] Preserve deprecated string compatibility until the planned compatibility-cleanup task.
+- [x] Complete Task 3 shared-turn semantic query migration and push commit `edd8eb38`.
+- [x] Write the failing retrieval-quality gate and route-configuration tests.
+- [x] Add deterministic score, margin, support, freshness, and lexical-agreement gating.
+- [x] Add typed per-route Spring RAG quality configuration and composition-root wiring.
 - [x] Run focused tests, full Assistant tests, integration-test compilation, and Spotless.
+- [ ] Begin durable Task 5 bounded query improvement.
 
 ## Current execution checkpoint — framework-first plan / durable Task 1 — 2026-09-05
 

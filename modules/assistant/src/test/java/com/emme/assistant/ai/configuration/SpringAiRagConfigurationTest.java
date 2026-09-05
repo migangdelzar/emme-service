@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import com.emme.assistant.ai.adapter.out.provider.springai.TenantScopedDocumentRetriever;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RagAnswerPolicy;
+import com.emme.assistant.ai.application.rag.DeterministicRetrievalQualityGate;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -57,6 +58,14 @@ class SpringAiRagConfigurationTest {
         configuration.retrievalAugmentationAdvisor(retriever, Runnable::run);
 
     assertThat(advisor).isNotNull();
+  }
+
+  @Test
+  void exposesTheProviderNeutralDeterministicRetrievalQualityGate() {
+    SpringAiRagConfiguration configuration = new SpringAiRagConfiguration();
+
+    assertThat(configuration.retrievalQualityGate())
+        .isInstanceOf(DeterministicRetrievalQualityGate.class);
   }
 
   @Test

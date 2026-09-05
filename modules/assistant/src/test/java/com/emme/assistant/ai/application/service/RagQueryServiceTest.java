@@ -17,6 +17,10 @@ import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableExcepti
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RagAnswerPolicy;
 import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
+import com.emme.assistant.ai.application.rag.GroundedAnswer;
+import com.emme.assistant.ai.application.rag.KnowledgeAnswerService;
+import com.emme.assistant.ai.application.rag.KnowledgeRoute;
+import com.emme.assistant.ai.application.rag.RetrievalQualityDecision;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
@@ -293,18 +297,49 @@ class RagQueryServiceTest {
     verifyNoInteractions(chat, retrieval);
   }
 
+  @Test
+  void prefersTheBoundedKnowledgeAnswerServiceWhenConfigured() {
+    UUID tenantId = UUID.randomUUID();
+    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
+    KnowledgeAnswerService knowledgeAnswer = mock(KnowledgeAnswerService.class);
+    AiExecutionContext context = context(tenantId);
+    KnowledgeQuery query = new KnowledgeQuery("Which cancellation rules apply?", "es-MX", 5);
+    GroundedAnswer grounded =
+        new GroundedAnswer(
+            "The salon requires 24 hours.",
+            KnowledgeRoute.GENERAL,
+            new RetrievalQualityDecision(true, 0.92, 0.80, 0.12, 2, 2, true, "ACCEPTED"),
+            true);
+    when(knowledgeAnswer.answer(query, KnowledgeRoute.GENERAL, context)).thenReturn(grounded);
+    RagQueryService service =
+        new RagQueryService(
+            realProperties(),
+            retrieval,
+            chat,
+            java.util.Optional.empty(),
+            java.util.Optional.of(knowledgeAnswer));
+
+    assertThat(AiExecutionContextScope.call(context, () -> service.query(query.text())))
+        .isEqualTo(grounded.text());
+    verify(knowledgeAnswer).answer(query, KnowledgeRoute.GENERAL, context);
+    verifyNoInteractions(chat, retrieval);
+  }
+
   private static <T> T inContext(UUID tenantId, java.util.function.Supplier<T> action) {
+    return AiExecutionContextScope.call(context(tenantId), action::get);
+  }
+
+  private static AiExecutionContext context(UUID tenantId) {
     UUID resourceId = UUID.randomUUID();
-    return AiExecutionContextScope.call(
-        new AiExecutionContext(
-            tenantId,
-            UUID.randomUUID(),
-            Set.of("ROLE_tenant_client"),
-            resourceId,
-            resourceId,
-            "trace-rag",
-            "idempotency-rag"),
-        action::get);
+    return new AiExecutionContext(
+        tenantId,
+        UUID.randomUUID(),
+        Set.of("ROLE_tenant_client"),
+        resourceId,
+        resourceId,
+        "trace-rag",
+        "idempotency-rag");
   }
 
   private static AiProviderProperties realProperties() {

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.emme.assistant.ai.application.rag.KnowledgeRoute;
+import com.emme.assistant.ai.application.rag.QueryImprovementPolicy;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +34,20 @@ class SpringAiRagPropertiesTest {
     assertThat(properties.quality().policy(KnowledgeRoute.FAQ).minimumTopScore()).isEqualTo(0.80);
     assertThat(properties.quality().policy(KnowledgeRoute.POLICY).minimumTopScore())
         .isEqualTo(0.70);
+  }
+
+  @Test
+  void exposesBoundedQueryImprovementDefaults() {
+    QueryImprovementPolicy policy = new SpringAiRagProperties(true, 5).improvement().toPolicy();
+
+    assertThat(policy.maximumAttempts()).isEqualTo(3);
+    assertThat(policy.maximumVariants()).isEqualTo(2);
+    assertThat(policy.maximumQueryCharacters()).isEqualTo(200);
+    assertThat(policy.maximumDuration()).isEqualTo(Duration.ofSeconds(1));
+    assertThat(policy.allowCompression()).isTrue();
+    assertThat(policy.allowRewrite()).isTrue();
+    assertThat(policy.allowTranslation()).isFalse();
+    assertThat(policy.allowExpansion()).isTrue();
   }
 
   @Test

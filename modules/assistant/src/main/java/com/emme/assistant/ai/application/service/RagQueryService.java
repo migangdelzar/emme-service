@@ -9,6 +9,8 @@ import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
+import com.emme.assistant.ai.application.rag.KnowledgeAnswerService;
+import com.emme.assistant.ai.application.rag.KnowledgeRoute;
 import com.emme.assistant.ai.application.semantic.SemanticFailurePolicy;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
@@ -25,12 +27,13 @@ public class RagQueryService implements RagQueryUseCase {
   private final KnowledgeRetriever retrieval;
   private final ChatCompletionPort chatCompletion;
   private final Optional<RagAnswerPort> ragAnswer;
+  private final Optional<KnowledgeAnswerService> knowledgeAnswer;
 
   public RagQueryService(
       AiProviderProperties properties,
       KnowledgeRetriever retrieval,
       ChatCompletionPort chatCompletion) {
-    this(properties, retrieval, chatCompletion, Optional.empty());
+    this(properties, retrieval, chatCompletion, Optional.empty(), Optional.empty());
   }
 
   @Autowired
@@ -39,10 +42,21 @@ public class RagQueryService implements RagQueryUseCase {
       KnowledgeRetriever retrieval,
       ChatCompletionPort chatCompletion,
       Optional<RagAnswerPort> ragAnswer) {
+    this(properties, retrieval, chatCompletion, ragAnswer, Optional.empty());
+  }
+
+  @Autowired
+  public RagQueryService(
+      AiProviderProperties properties,
+      KnowledgeRetriever retrieval,
+      ChatCompletionPort chatCompletion,
+      Optional<RagAnswerPort> ragAnswer,
+      Optional<KnowledgeAnswerService> knowledgeAnswer) {
     this.properties = properties;
     this.retrieval = retrieval;
     this.chatCompletion = chatCompletion;
     this.ragAnswer = ragAnswer;
+    this.knowledgeAnswer = knowledgeAnswer;
   }
 
   @Override
@@ -55,6 +69,26 @@ public class RagQueryService implements RagQueryUseCase {
       return "MOCK RAG: Based on your documents, the answer to your question about '"
           + question
           + "' is that you should contact the salon for specific details.";
+    }
+    if (knowledgeAnswer.isPresent()) {
+      try {
+        return
+            knowledgeAnswer
+                .orElseThrow()
+                .answer(
+                    new KnowledgeQuery(question, DEFAULT_LOCALE, 5),
+                    KnowledgeRoute.GENERAL,
+                    executionContext)
+                .text();
+      } catch (RuntimeException failure) {
+        SemanticFailurePolicy.rethrowSecurityFailure(failure);
+        if (failure instanceof ChatProviderUnavailableException
+            || failure instanceof RetrievalUnavailableException
+            || SemanticFailurePolicy.isTransientVectorOrProviderFailure(failure)) {
+          return "Retrieval unavailable.";
+        }
+        throw failure;
+      }
     }
     try {
       if (ragAnswer.isPresent()) {

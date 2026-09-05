@@ -1,13 +1,17 @@
 # Service architecture migration checklist
 
-## Current execution checkpoint — framework-first plan / durable Task 4 — 2026-09-05
+## Current execution checkpoint — framework-first plan / durable Task 5 — 2026-09-05
 
 - [x] Complete Task 3 shared-turn semantic query migration and push commit `edd8eb38`.
 - [x] Write the failing retrieval-quality gate and route-configuration tests.
 - [x] Add deterministic score, margin, support, freshness, and lexical-agreement gating.
 - [x] Add typed per-route Spring RAG quality configuration and composition-root wiring.
 - [x] Run focused tests, full Assistant tests, integration-test compilation, and Spotless.
-- [ ] Begin durable Task 5 bounded query improvement.
+- [x] Add bounded query-improvement policy, provider adapter, and grounded answer service.
+- [x] Route `RagQueryService` through the bounded answer service when configured.
+- [x] Add focused service, adapter, policy, and grounded-answer contract coverage.
+- [ ] Wire Spring AI transformers and the bounded service composition root.
+- [ ] Add the RAG quality integration test and run the phase checkpoint.
 
 ## Current execution checkpoint — framework-first plan / durable Task 1 — 2026-09-05
 

@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.assistant.ai.application.rag.KnowledgeRoute;
+import com.emme.assistant.ai.application.rag.QueryImprovementPolicy;
 import com.emme.assistant.ai.application.rag.RetrievalQualityPolicy;
 import java.time.Duration;
 import java.util.Objects;
@@ -9,10 +10,15 @@ import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
 /** Explicit settings for the optional Spring AI retrieval-augmented answer path. */
 @ConfigurationProperties("app.ai.spring-rag")
-public record SpringAiRagProperties(boolean enabled, int retrievalLimit, Quality quality) {
+public record SpringAiRagProperties(
+    boolean enabled, int retrievalLimit, Quality quality, Improvement improvement) {
 
   public SpringAiRagProperties(boolean enabled, int retrievalLimit) {
-    this(enabled, retrievalLimit, Quality.defaults());
+    this(enabled, retrievalLimit, Quality.defaults(), Improvement.defaults());
+  }
+
+  public SpringAiRagProperties(boolean enabled, int retrievalLimit, Quality quality) {
+    this(enabled, retrievalLimit, quality, Improvement.defaults());
   }
 
   @ConstructorBinding
@@ -24,6 +30,46 @@ public record SpringAiRagProperties(boolean enabled, int retrievalLimit, Quality
       throw new IllegalArgumentException("retrievalLimit must be between 1 and 20");
     }
     quality = quality == null ? Quality.defaults() : quality;
+    improvement = improvement == null ? Improvement.defaults() : improvement;
+  }
+
+  public record Improvement(
+      int maximumAttempts,
+      int maximumVariants,
+      int maximumQueryCharacters,
+      Duration maximumDuration,
+      boolean allowCompression,
+      boolean allowRewrite,
+      boolean allowTranslation,
+      boolean allowExpansion) {
+
+    public Improvement {
+      new QueryImprovementPolicy(
+          maximumAttempts,
+          maximumVariants,
+          maximumQueryCharacters,
+          maximumDuration,
+          allowCompression,
+          allowRewrite,
+          allowTranslation,
+          allowExpansion);
+    }
+
+    public static Improvement defaults() {
+      return new Improvement(3, 2, 200, Duration.ofSeconds(1), true, true, false, true);
+    }
+
+    public QueryImprovementPolicy toPolicy() {
+      return new QueryImprovementPolicy(
+          maximumAttempts,
+          maximumVariants,
+          maximumQueryCharacters,
+          maximumDuration,
+          allowCompression,
+          allowRewrite,
+          allowTranslation,
+          allowExpansion);
+    }
   }
 
   public record Quality(

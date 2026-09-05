@@ -9,11 +9,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SpringDataCustomerRepository extends JpaRepository<CustomerEntity, UUID> {
-  List<CustomerEntity> findByTenantId(UUID tenantId);
+  Optional<CustomerEntity> findByEmail(String email);
 
-  Optional<CustomerEntity> findByTenantIdAndPhone(UUID tenantId, String phone);
-
-  Optional<CustomerEntity> findByTenantIdAndEmail(UUID tenantId, String email);
-
-  List<CustomerEntity> findByTenantIdAndNameContainingIgnoreCase(UUID tenantId, String name);
+  List<CustomerEntity> findByNameContainingIgnoreCase(String name);
 }

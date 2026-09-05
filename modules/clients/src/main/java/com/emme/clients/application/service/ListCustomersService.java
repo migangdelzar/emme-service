@@ -21,7 +21,7 @@ public class ListCustomersService implements ListCustomersUseCase {
 
   @Override
   public List<CustomerSummary> listCustomers(UUID tenantId) {
-    return customerRepository.findByTenantId(tenantId).stream()
+    return customerRepository.findAll().stream()
         .map(c -> new CustomerSummary(c.getId(), c.getName(), c.getPhone(), c.getEmail()))
         .toList();
   }

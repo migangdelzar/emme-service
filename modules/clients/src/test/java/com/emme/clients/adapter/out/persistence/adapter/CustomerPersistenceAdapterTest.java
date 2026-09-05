@@ -7,11 +7,38 @@ import static org.mockito.Mockito.when;
 import com.emme.clients.adapter.out.persistence.entity.CustomerEntity;
 import com.emme.clients.adapter.out.persistence.repository.SpringDataCustomerRepository;
 import com.emme.clients.domain.model.Customer;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class CustomerPersistenceAdapterTest {
+
+  @Test
+  void listsCustomersFromTheCurrentTenantSchema() {
+    SpringDataCustomerRepository repository = org.mockito.Mockito.mock();
+    CustomerPersistenceAdapter adapter = new CustomerPersistenceAdapter(repository);
+    CustomerEntity entity = new CustomerEntity(UUID.randomUUID(), "Ada");
+    when(repository.findAll()).thenReturn(List.of(entity));
+
+    List<Customer> customers = adapter.findAll();
+
+    verify(repository).findAll();
+    assertThat(customers).hasSize(1);
+  }
+
+  @Test
+  void searchesCustomersByNameInTheCurrentTenantSchema() {
+    SpringDataCustomerRepository repository = org.mockito.Mockito.mock();
+    CustomerPersistenceAdapter adapter = new CustomerPersistenceAdapter(repository);
+    CustomerEntity entity = new CustomerEntity(UUID.randomUUID(), "Ada");
+    when(repository.findByNameContainingIgnoreCase("ad")).thenReturn(List.of(entity));
+
+    List<Customer> customers = adapter.searchByName("ad");
+
+    verify(repository).findByNameContainingIgnoreCase("ad");
+    assertThat(customers).hasSize(1);
+  }
 
   @Test
   void updatesAnExistingCustomerByIdWithinTheTenantScopedConnection() {

@@ -41,8 +41,7 @@ class CustomerRepositoryTest extends BaseRepositoryTest {
     customer.setEmail("unique@example.com");
     customerRepo.save(customer);
 
-    Optional<CustomerEntity> found =
-        customerRepo.findByTenantIdAndEmail(TENANT_ID, "unique@example.com");
+    Optional<CustomerEntity> found = customerRepo.findByEmail("unique@example.com");
     assertThat(found).isPresent();
     assertThat(found.get().getName()).isEqualTo("Email Customer");
   }

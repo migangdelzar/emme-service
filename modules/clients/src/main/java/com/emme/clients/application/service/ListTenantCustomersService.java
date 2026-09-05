@@ -22,8 +22,6 @@ public class ListTenantCustomersService implements ListTenantCustomersUseCase {
 
   @Override
   public List<CustomerDetails> list(UUID tenantId) {
-    return customerRepository.findByTenantId(tenantId).stream()
-        .map(CustomerApplicationMapper::toDetails)
-        .toList();
+    return customerRepository.findAll().stream().map(CustomerApplicationMapper::toDetails).toList();
   }
 }

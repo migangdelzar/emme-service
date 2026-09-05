@@ -38,14 +38,12 @@ public class CustomerPersistenceAdapter implements CustomerRepository {
   }
 
   @Override
-  public List<Customer> findByTenantId(UUID tenantId) {
-    return repository.findByTenantId(tenantId).stream().map(mapper::toDomain).toList();
+  public List<Customer> findAll() {
+    return repository.findAll().stream().map(mapper::toDomain).toList();
   }
 
   @Override
-  public List<Customer> searchByName(UUID tenantId, String name) {
-    return repository.findByTenantIdAndNameContainingIgnoreCase(tenantId, name).stream()
-        .map(mapper::toDomain)
-        .toList();
+  public List<Customer> searchByName(String name) {
+    return repository.findByNameContainingIgnoreCase(name).stream().map(mapper::toDomain).toList();
   }
 }

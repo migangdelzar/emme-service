@@ -503,6 +503,18 @@ authoritative fields.
 - [x] Run the focused adapter test and compilation.
 - [ ] Complete measured hybrid-search and legacy compatibility cleanup slices.
 
+#### Current slice 6D — Remove the orphaned local RAG document type
+
+The assistant-local `KnowledgeDocument` had no production or test callers;
+the shared `ai-contracts` `RetrievedDocument` is the canonical provider-neutral
+value returned by `KnowledgeRetriever`. The local duplicate is removed and an
+architecture test prevents it from being reintroduced.
+
+- [x] Add a failing package-convention test for the duplicate type.
+- [x] Remove `modules/assistant/.../application/port/out/KnowledgeDocument.java`.
+- [x] Verify the canonical shared RAG contract remains the only assistant RAG document type.
+- [ ] Complete measured hybrid-search and legacy compatibility cleanup slices.
+
 ## 5. Phase C — LangGraph4j and AI workflow boundary
 
 ### Task 7: Prove graph versus simple state-machine scope

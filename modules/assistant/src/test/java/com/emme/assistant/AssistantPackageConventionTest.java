@@ -82,6 +82,8 @@ class AssistantPackageConventionTest {
 
     assertThat(Files.exists(contractsRoot.resolve("KnowledgeRetriever.java"))).isTrue();
     assertThat(Files.exists(contractsRoot.resolve("KnowledgeSearch.java"))).isFalse();
+    assertThat(Files.exists(ROOT.resolve("ai/application/port/out/KnowledgeDocument.java")))
+        .isFalse();
     assertThat(Files.exists(ROOT.resolve("ai/application/port/out/KnowledgeRetrievalPort.java")))
         .isFalse();
     assertThat(ragService).contains("import com.emme.ai.contracts.rag.KnowledgeRetriever;");

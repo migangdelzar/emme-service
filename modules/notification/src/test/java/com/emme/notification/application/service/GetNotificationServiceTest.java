@@ -40,7 +40,7 @@ class GetNotificationServiceTest {
     }
 
     @Override
-    public List<Notification> findByTenantId(UUID tenantId) {
+    public List<Notification> findAll() {
       return List.of();
     }
 

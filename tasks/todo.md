@@ -152,6 +152,15 @@
 - [x] Run Services and appointments tests, compilation, and Spotless.
 - [ ] Continue reviewing remaining tenant-schema list/search methods.
 
+### Current slice — Task 18N Notification schema-local lists
+
+- [x] Add an adapter test for listing notifications from the tenant-selected schema.
+- [x] Replace tenant-qualified JPA list methods with inherited `findAll()`.
+- [x] Preserve tenant IDs at request/callback boundaries where they select or
+      authorize a tenant.
+- [x] Run Notification focused tests, compilation, and Spotless.
+- [ ] Continue reviewing remaining tenant-schema list/search methods.
+
 ### Tenant schema routing decision
 
 - [x] Apply tenant schema and session configuration when a connection is taken

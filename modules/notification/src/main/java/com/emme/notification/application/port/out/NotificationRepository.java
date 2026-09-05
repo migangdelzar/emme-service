@@ -8,7 +8,7 @@ import java.util.UUID;
 public interface NotificationRepository {
   Optional<Notification> findById(UUID notificationId);
 
-  List<Notification> findByTenantId(UUID tenantId);
+  List<Notification> findAll();
 
   Notification save(Notification notification);
 }

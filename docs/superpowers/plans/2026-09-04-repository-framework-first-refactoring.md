@@ -1358,6 +1358,21 @@ uses it for actor/reference policy rather than repeating it in JPA predicates.
 - [x] Run Services and appointment tests plus Spotless.
 - [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
 
+#### Current slice 18N — Remove tenant predicates from Notification schema-local lists
+
+Notification listing runs through the tenant-selected JPA connection. The
+application query still carries the tenant ID as request and authorization
+context, but the persistence port uses the standard `findAll()` operation so
+the selected schema is the isolation boundary rather than a duplicated query
+predicate. Provider-reference and callback operations remain explicit because
+they may resolve a tenant before a tenant-scoped connection exists.
+
+- [x] Add adapter contract coverage for schema-local notification listing.
+- [x] Replace tenant-qualified Spring Data list methods with inherited `findAll()`.
+- [x] Update the notification application list service and test fakes.
+- [x] Run Notification tests, compilation, and Spotless.
+- [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
+
 #### Current slice 18E — Use ID-only service-catalog updates
 
 Artist and service CRUD is already expressed cleanly with Spring Data JPA. The

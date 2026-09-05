@@ -20,8 +20,6 @@ public class ListNotificationsService implements ListNotificationsUseCase {
 
   @Override
   public List<NotificationDetails> list(ListNotificationsQuery query) {
-    return repository.findByTenantId(query.tenantId()).stream()
-        .map(NotificationApplicationMapper::toResult)
-        .toList();
+    return repository.findAll().stream().map(NotificationApplicationMapper::toResult).toList();
   }
 }

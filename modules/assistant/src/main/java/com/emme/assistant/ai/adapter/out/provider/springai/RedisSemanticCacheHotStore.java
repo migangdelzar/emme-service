@@ -71,57 +71,86 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
     FilterExpressionBuilder filters = new FilterExpressionBuilder();
     var tenantAndPrincipal =
         filters.and(
-            filters.eq("tenantId", encodeTagValue(context.tenantId().toString())),
-            filters.eq("principalId", encodeTagValue(context.principalId().toString())));
+            filters.eq(
+                RedisSemanticCacheMetadata.TENANT_ID,
+                encodeTagValue(context.tenantId().toString())),
+            filters.eq(
+                RedisSemanticCacheMetadata.PRINCIPAL_ID,
+                encodeTagValue(context.principalId().toString())));
     var kindAndContext =
         filters.and(
-            filters.eq("cacheKind", encodeTagValue(lookup.cacheKind())),
-            filters.eq("contextFingerprint", encodeTagValue(lookup.contextFingerprint())));
+            filters.eq(RedisSemanticCacheMetadata.CACHE_KIND, encodeTagValue(lookup.cacheKind())),
+            filters.eq(
+                RedisSemanticCacheMetadata.CONTEXT_FINGERPRINT,
+                encodeTagValue(lookup.contextFingerprint())));
     var versions =
         filters.and(
-            filters.eq("promptVersion", encodeTagValue(lookup.promptVersion())),
+            filters.eq(
+                RedisSemanticCacheMetadata.PROMPT_VERSION, encodeTagValue(lookup.promptVersion())),
             filters.and(
-                filters.eq("embeddingModelName", encodeTagValue(embeddingModelName)),
                 filters.eq(
-                    "embeddingModelVersion", encodeTagValue(lookup.query().modelVersion()))));
+                    RedisSemanticCacheMetadata.EMBEDDING_MODEL_NAME,
+                    encodeTagValue(embeddingModelName)),
+                filters.eq(
+                    RedisSemanticCacheMetadata.EMBEDDING_MODEL_VERSION,
+                    encodeTagValue(lookup.query().modelVersion()))));
     var responseIdentity =
-        filters.eq("responseProvider", encodeTagValue(lookup.identity().responseProvider()));
-    responseIdentity =
-        filters.and(
-            responseIdentity,
-            filters.eq("responseModel", encodeTagValue(lookup.identity().responseModel())));
-    responseIdentity =
-        filters.and(
-            responseIdentity,
-            filters.eq("knowledgeVersion", encodeTagValue(lookup.identity().knowledgeVersion())));
-    responseIdentity =
-        filters.and(
-            responseIdentity,
-            filters.eq("policyVersion", encodeTagValue(lookup.identity().policyVersion())));
-    responseIdentity =
-        filters.and(
-            responseIdentity,
-            filters.eq("sourceVersion", encodeTagValue(lookup.identity().sourceVersion())));
-    responseIdentity =
-        filters.and(
-            responseIdentity,
-            filters.eq("responseChannel", encodeTagValue(lookup.identity().channel())));
-    responseIdentity =
-        filters.and(
-            responseIdentity,
-            filters.eq("responseLocale", encodeTagValue(lookup.identity().locale())));
+        filters.eq(
+            RedisSemanticCacheMetadata.RESPONSE_PROVIDER,
+            encodeTagValue(lookup.identity().responseProvider()));
     responseIdentity =
         filters.and(
             responseIdentity,
             filters.eq(
-                "responseQuoteTemplateVersion",
+                RedisSemanticCacheMetadata.RESPONSE_MODEL,
+                encodeTagValue(lookup.identity().responseModel())));
+    responseIdentity =
+        filters.and(
+            responseIdentity,
+            filters.eq(
+                RedisSemanticCacheMetadata.KNOWLEDGE_VERSION,
+                encodeTagValue(lookup.identity().knowledgeVersion())));
+    responseIdentity =
+        filters.and(
+            responseIdentity,
+            filters.eq(
+                RedisSemanticCacheMetadata.POLICY_VERSION,
+                encodeTagValue(lookup.identity().policyVersion())));
+    responseIdentity =
+        filters.and(
+            responseIdentity,
+            filters.eq(
+                RedisSemanticCacheMetadata.SOURCE_VERSION,
+                encodeTagValue(lookup.identity().sourceVersion())));
+    responseIdentity =
+        filters.and(
+            responseIdentity,
+            filters.eq(
+                RedisSemanticCacheMetadata.RESPONSE_CHANNEL,
+                encodeTagValue(lookup.identity().channel())));
+    responseIdentity =
+        filters.and(
+            responseIdentity,
+            filters.eq(
+                RedisSemanticCacheMetadata.RESPONSE_LOCALE,
+                encodeTagValue(lookup.identity().locale())));
+    responseIdentity =
+        filters.and(
+            responseIdentity,
+            filters.eq(
+                RedisSemanticCacheMetadata.RESPONSE_QUOTE_TEMPLATE_VERSION,
                 encodeTagValue(lookup.identity().quoteTemplateVersion())));
     var identity =
         filters.and(
             filters.and(tenantAndPrincipal, kindAndContext),
             filters.and(versions, responseIdentity));
     var filter =
-        filters.and(identity, filters.gt("expiresAt", Instant.now(clock).getEpochSecond())).build();
+        filters
+            .and(
+                identity,
+                filters.gt(
+                    RedisSemanticCacheMetadata.EXPIRES_AT, Instant.now(clock).getEpochSecond()))
+            .build();
 
     return vectorStore
         .similaritySearch(
@@ -150,26 +179,51 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
 
     Map<String, Object> metadata =
         Map.ofEntries(
-            Map.entry("tenantId", encodeTagValue(context.tenantId().toString())),
-            Map.entry("principalId", encodeTagValue(context.principalId().toString())),
-            Map.entry("durableCacheId", durableCacheId.toString()),
-            Map.entry("cacheKind", encodeTagValue(write.cacheKind())),
-            Map.entry("contextFingerprint", encodeTagValue(write.contextFingerprint())),
-            Map.entry("promptVersion", encodeTagValue(write.promptVersion())),
-            Map.entry("embeddingModelName", encodeTagValue(embeddingModelName)),
-            Map.entry("embeddingModelVersion", encodeTagValue(write.query().modelVersion())),
-            Map.entry("responseProvider", encodeTagValue(write.identity().responseProvider())),
-            Map.entry("responseModel", encodeTagValue(write.identity().responseModel())),
-            Map.entry("knowledgeVersion", encodeTagValue(write.identity().knowledgeVersion())),
-            Map.entry("policyVersion", encodeTagValue(write.identity().policyVersion())),
-            Map.entry("sourceVersion", encodeTagValue(write.identity().sourceVersion())),
-            Map.entry("responseChannel", encodeTagValue(write.identity().channel())),
-            Map.entry("responseLocale", encodeTagValue(write.identity().locale())),
             Map.entry(
-                "responseQuoteTemplateVersion",
+                RedisSemanticCacheMetadata.TENANT_ID,
+                encodeTagValue(context.tenantId().toString())),
+            Map.entry(
+                RedisSemanticCacheMetadata.PRINCIPAL_ID,
+                encodeTagValue(context.principalId().toString())),
+            Map.entry(RedisSemanticCacheMetadata.DURABLE_CACHE_ID, durableCacheId.toString()),
+            Map.entry(RedisSemanticCacheMetadata.CACHE_KIND, encodeTagValue(write.cacheKind())),
+            Map.entry(
+                RedisSemanticCacheMetadata.CONTEXT_FINGERPRINT,
+                encodeTagValue(write.contextFingerprint())),
+            Map.entry(
+                RedisSemanticCacheMetadata.PROMPT_VERSION, encodeTagValue(write.promptVersion())),
+            Map.entry(
+                RedisSemanticCacheMetadata.EMBEDDING_MODEL_NAME,
+                encodeTagValue(embeddingModelName)),
+            Map.entry(
+                RedisSemanticCacheMetadata.EMBEDDING_MODEL_VERSION,
+                encodeTagValue(write.query().modelVersion())),
+            Map.entry(
+                RedisSemanticCacheMetadata.RESPONSE_PROVIDER,
+                encodeTagValue(write.identity().responseProvider())),
+            Map.entry(
+                RedisSemanticCacheMetadata.RESPONSE_MODEL,
+                encodeTagValue(write.identity().responseModel())),
+            Map.entry(
+                RedisSemanticCacheMetadata.KNOWLEDGE_VERSION,
+                encodeTagValue(write.identity().knowledgeVersion())),
+            Map.entry(
+                RedisSemanticCacheMetadata.POLICY_VERSION,
+                encodeTagValue(write.identity().policyVersion())),
+            Map.entry(
+                RedisSemanticCacheMetadata.SOURCE_VERSION,
+                encodeTagValue(write.identity().sourceVersion())),
+            Map.entry(
+                RedisSemanticCacheMetadata.RESPONSE_CHANNEL,
+                encodeTagValue(write.identity().channel())),
+            Map.entry(
+                RedisSemanticCacheMetadata.RESPONSE_LOCALE,
+                encodeTagValue(write.identity().locale())),
+            Map.entry(
+                RedisSemanticCacheMetadata.RESPONSE_QUOTE_TEMPLATE_VERSION,
                 encodeTagValue(write.identity().quoteTemplateVersion())),
-            Map.entry("responsePayload", write.responsePayload()),
-            Map.entry("expiresAt", write.expiresAt().getEpochSecond()));
+            Map.entry(RedisSemanticCacheMetadata.RESPONSE_PAYLOAD, write.responsePayload()),
+            Map.entry(RedisSemanticCacheMetadata.EXPIRES_AT, write.expiresAt().getEpochSecond()));
     vectorStore.add(
         List.of(
             Document.builder()
@@ -249,8 +303,11 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
   private static SemanticCachePort.Candidate candidate(Document document) {
     try {
       UUID durableId =
-          UUID.fromString(String.valueOf(document.getMetadata().get("durableCacheId")));
-      String responsePayload = String.valueOf(document.getMetadata().get("responsePayload"));
+          UUID.fromString(
+              String.valueOf(
+                  document.getMetadata().get(RedisSemanticCacheMetadata.DURABLE_CACHE_ID)));
+      String responsePayload =
+          String.valueOf(document.getMetadata().get(RedisSemanticCacheMetadata.RESPONSE_PAYLOAD));
       Double score = document.getScore();
       if (score == null) {
         return null;

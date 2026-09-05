@@ -189,6 +189,7 @@ lookup should become a schema-local `findByChannel` contract.
 | Tenancy HTTP rate-limit interceptor | Replacement tested | Use Spring Data `StringRedisTemplate` as the project standard for string keys/values, counters, TTLs, and simple Redis scripts. The previous broad `RedisTemplate<String, String>` accepted incompatible serializer configurations and was inconsistent with the other Redis adapters. | 2026-09-05 |
 | AI operational state, live events, and login-attempt limiter | Classified | Keep `StringRedisTemplate`; Spring manages connection and serialization, while adapter ports keep providers replaceable from application code. | 2026-09-05 |
 | Spring AI semantic vector store and hot projection | Classified | Keep the isolated, Spring-managed Jedis `RedisClient` because the official Spring AI `RedisVectorStore` and native set/index invalidation require it. Do not introduce a second generic template solely for standardization. | 2026-09-05 |
+| Spring AI semantic-cache metadata contract | Replacement tested | Centralize Redis metadata names and vector field types in `RedisSemanticCacheMetadata`; both the vector-store composition root and hot-store adapter consume the same contract. Provider-neutral cache ports remain free of Spring AI and Redis types. | 2026-09-05 |
 
 ### 4.0.3 LangGraph persistence wiring
 

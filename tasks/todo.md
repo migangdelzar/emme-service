@@ -528,7 +528,15 @@
 - [x] Run focused semantic/RAG/Redis tests and Spotless.
 - [x] Centralize Spring AI advisor ordering and verify security → prompt → retrieval precedence.
 - [x] Put hybrid PostgreSQL SQL behind the provider-neutral `HybridSearch` port.
-- [ ] Complete metadata-contract and measured hybrid-search follow-up slices.
+- [x] Centralize the Redis semantic-cache metadata names and vector field types.
+- [ ] Complete the measured hybrid-search follow-up slice.
+
+### Current slice — Task 6E Redis semantic-cache metadata contract
+
+- [x] Add a failing contract test for the complete Redis semantic-cache metadata key set.
+- [x] Reuse one metadata contract in Spring AI Redis vector-store configuration and hot-store filters/writes.
+- [x] Verify focused Redis semantic-cache and Spring AI configuration tests.
+- [ ] Measure the Spring AI/vector-store alternative for hybrid PostgreSQL search.
 
 ### Current slice — Task 22A duplicate dependency declarations
 

@@ -406,6 +406,21 @@ Completed in this slice:
 
 The remaining Task 6 work is intentionally not collapsed into this slice: advisor-order assertions, complete metadata/model contract coverage, and measured `HybridSearch` alternatives still require separate evidence.
 
+#### Current slice 6E — Centralize Redis semantic-cache metadata
+
+The Redis semantic-cache vector index and hot-store adapter now share one
+metadata contract. Field names and Redis index types are defined by
+`RedisSemanticCacheMetadata`; the configuration consumes its vector-store
+fields and the hot-store filters/writes consume the same constants. This
+removes a drift risk without moving Spring AI types into the provider-neutral
+semantic-cache port.
+
+- [x] Add a failing metadata-contract test covering all cache projection keys.
+- [x] Centralize metadata names and Redis field types in the Spring AI adapter boundary.
+- [x] Use the shared contract for vector-store configuration and hot-store reads/writes.
+- [x] Run focused Redis semantic-cache and configuration tests.
+- [ ] Measure the remaining `HybridSearch` alternative before replacing direct SQL.
+
 #### Current slice 6D — Hybrid search capability boundary
 
 Completed in this slice:

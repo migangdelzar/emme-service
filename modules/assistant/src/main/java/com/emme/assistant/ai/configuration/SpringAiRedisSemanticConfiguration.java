@@ -2,6 +2,7 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.provider.springai.RedisSemanticCacheHotStore;
+import com.emme.assistant.ai.adapter.out.provider.springai.RedisSemanticCacheMetadata;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiEmbeddingModelAdapter;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
@@ -45,25 +46,7 @@ public class SpringAiRedisSemanticConfiguration {
         .indexName(properties.indexName())
         .prefix(properties.prefix())
         .initializeSchema(properties.initializeSchema())
-        .metadataFields(
-            RedisVectorStore.MetadataField.tag("tenantId"),
-            RedisVectorStore.MetadataField.tag("principalId"),
-            RedisVectorStore.MetadataField.tag("durableCacheId"),
-            RedisVectorStore.MetadataField.tag("cacheKind"),
-            RedisVectorStore.MetadataField.tag("contextFingerprint"),
-            RedisVectorStore.MetadataField.tag("promptVersion"),
-            RedisVectorStore.MetadataField.tag("embeddingModelName"),
-            RedisVectorStore.MetadataField.tag("embeddingModelVersion"),
-            RedisVectorStore.MetadataField.tag("responseProvider"),
-            RedisVectorStore.MetadataField.tag("responseModel"),
-            RedisVectorStore.MetadataField.tag("knowledgeVersion"),
-            RedisVectorStore.MetadataField.tag("policyVersion"),
-            RedisVectorStore.MetadataField.tag("sourceVersion"),
-            RedisVectorStore.MetadataField.tag("responseChannel"),
-            RedisVectorStore.MetadataField.tag("responseLocale"),
-            RedisVectorStore.MetadataField.tag("responseQuoteTemplateVersion"),
-            RedisVectorStore.MetadataField.text("responsePayload"),
-            RedisVectorStore.MetadataField.numeric("expiresAt"))
+        .metadataFields(RedisSemanticCacheMetadata.vectorStoreFields())
         .build();
   }
 

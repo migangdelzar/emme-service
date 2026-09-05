@@ -419,7 +419,9 @@ semantic-cache port.
 - [x] Centralize metadata names and Redis field types in the Spring AI adapter boundary.
 - [x] Use the shared contract for vector-store configuration and hot-store reads/writes.
 - [x] Run focused Redis semantic-cache and configuration tests.
-- [ ] Measure the remaining `HybridSearch` alternative before replacing direct SQL.
+- [x] Measure the remaining `HybridSearch` alternative before replacing direct SQL;
+      retain the PostgreSQL adapter because the Spring AI vector-store contract
+      does not cover the required combined FTS/pgvector/RRF projection.
 
 #### Current slice 6D — Hybrid search capability boundary
 
@@ -436,7 +438,34 @@ Completed in this slice:
 - [x] Add a failing ownership test requiring an interface contract and separate PostgreSQL adapter.
 - [x] Move the existing SQL implementation behind `HybridSearch` without changing its API.
 - [x] Verify shared, Catalog, Documents, and Spotless checks.
-- [ ] Measure a future Spring AI/vector-store alternative before considering replacement.
+- [x] Measure a future Spring AI/vector-store alternative before considering
+      replacement; retain direct SQL for the combined ranking contract.
+
+#### Current slice 6F — Evaluate Spring AI PgVectorStore for hybrid search
+
+The Spring AI PgVectorStore alternative was evaluated against the existing
+`HybridSearch` contract. Spring AI provides portable vector similarity search,
+top-k/threshold controls, and metadata filtering through `VectorStore`; it is
+appropriate for a pure vector retrieval capability. The current repository
+capability additionally requires one PostgreSQL statement that combines:
+
+- weighted PostgreSQL full-text ranking over generated `tsvector` columns;
+- pgvector cosine ranking;
+- reciprocal-rank fusion with stable result IDs and scores;
+- tenant-scoped projection and bounded hydration of domain records.
+
+Replacing this with PgVectorStore would either drop lexical ranking or require
+two provider calls plus a new application-side fusion implementation. That
+would add latency, duplicate ranking mechanics, and make tenant/security
+filtering less explicit. The decision is therefore to keep `HybridSearch` as
+the provider-neutral port and `PostgresHybridSearch` as its specialized
+adapter. Spring AI remains the preferred framework path for pure vector
+retrieval and Redis hot projections. A runtime benchmark remains a future
+optimization gate when Docker-backed PostgreSQL data is available; it is not a
+precondition for this functional capability decision.
+
+Reference: [Spring AI PGvector reference](https://docs.spring.io/spring-ai/reference/api/vectordbs/pgvector.html)
+and [Spring AI vector-store API](https://docs.spring.io/spring-ai/reference/api/vectordbs.html).
 
 #### Current slice 6C — Advisor precedence centralization
 

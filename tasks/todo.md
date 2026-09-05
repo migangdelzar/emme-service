@@ -640,7 +640,11 @@
 
 ### Remaining repository-wide framework-first work
 
-- [ ] Finish Spring AI metadata-contract and hybrid-search measurements.
+- [x] Finish Spring AI metadata-contract and hybrid-search capability
+      measurements; retain direct PostgreSQL FTS/pgvector/RRF SQL where the
+      Spring AI PgVectorStore API does not preserve the combined contract.
+- [ ] Run a runtime hybrid-search benchmark with Docker-backed PostgreSQL data
+      before changing the ranking implementation or storage layout.
 - [ ] Complete LangGraph boundary simplification and checkpoint security tests.
 - [x] Classify stable AI quote/trace persistence; retain `JdbcClient` where atomic,
       JSONB, idempotency, or versioned SQL is simpler than JPA.

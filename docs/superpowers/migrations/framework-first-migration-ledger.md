@@ -167,6 +167,16 @@ connection lifecycle APIs that are not CRUD repositories.
 
 ## 4. Other framework-first inventories
 
+### 4.0 Tenant-qualified lookup decisions
+
+| Boundary | Status | Decision |
+|---|---|---|
+| Assistant conversation and pending-action aggregate reads | Replacement tested | Use connection-scoped `findById`; retain tenant IDs in commands/domain state and explicit child/list operations. |
+| Subscription existing aggregate save | Replacement tested | Use connection-scoped `findById`; retain tenant-keyed singleton lookup for provisioning and reads. |
+| Identity membership | Keep explicit scope | Shared `emme_core` persistence and cross-tenant authorization require `tenant_id` in the lookup contract. |
+| Calendar event links by appointment | Classified/deferred | Appointment is a foreign business key and multiple provider links are allowed; redesign cardinality/idempotency before changing the query. |
+| Calendar OAuth tokens and spreadsheet links | Keep explicit scope | Tenant/user/persona or tenant/spreadsheet business keys select external credentials/resources. |
+
 ### 4.1 Provider HTTP candidates
 
 | Candidate family | Current paths | Target |

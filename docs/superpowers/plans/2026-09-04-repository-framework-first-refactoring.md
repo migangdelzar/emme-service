@@ -1202,7 +1202,7 @@ lookup and update semantics.
 
 - [x] Add adapter contract coverage for subscription rehydration.
 - [x] Remove the redundant mapper component and package metadata.
-- [x] Preserve the `SubscriptionRepository` port and tenant-scoped update lookup.
+- [x] Preserve the `SubscriptionRepository` port and tenant-keyed singleton lookup.
 - [ ] Extend the same evidence-based review to the remaining entity modules.
 
 #### Current slice 18C — Use ID-only customer lookups inside the tenant connection
@@ -1331,6 +1331,16 @@ The next repository audit will classify operations as: ID-only tenant-schema
 CRUD; explicit tenant filters for shared/control-plane or cross-tenant jobs; and
 named `JdbcClient` operations for atomic transitions, vectors/full-text, or
 dynamic provisioning. The application ports remain provider-neutral throughout.
+
+### Remaining tenant-qualified lookup audit
+
+| Boundary | Decision | Reason / next action |
+|---|---|---|
+| Identity membership `findByIdAndTenantId` | Keep | `membership` is stored in the shared `emme_core` schema and supports authorization across tenant contexts; the explicit tenant predicate is part of the security contract. |
+| Calendar event link `findByTenantIdAndAppointmentId` | Defer and redesign | `appointment_id` is not the event-link aggregate ID, the table permits multiple providers/links, and the current `Optional` contract has a cardinality risk. Add a provider-aware or list-based contract and a uniqueness/idempotency decision before changing it. |
+| Calendar OAuth token `findByTenantIdAndUserIdAndPersonaType` | Keep | This is a tenant/user/persona business-key lookup, not aggregate identity; tenant and persona are required to select credentials safely. |
+| Assistant conversation events and pending-action lists | Keep | History, child collections, expiration, and status queries are operation-specific; explicit filters remain until their ordering/claim semantics are separately audited. |
+| Documents chunks and catalog/search projections | Keep | Bulk IDs, replacement boundaries, vector/full-text projections, and search allowlists are not ordinary aggregate CRUD. |
 
 - [ ] **Step 1: Write failing per-module persistence tests**
 

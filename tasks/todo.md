@@ -147,6 +147,17 @@
 - [x] Preserve tenant-keyed singleton lookup for provisioning and reads.
 - [x] Run subscription tests, compilation, Checkstyle, and Spotless.
 
+### Remaining tenant-qualified lookup audit
+
+- [x] Keep Identity membership tenant-qualified because it is shared
+      `emme_core` authorization state.
+- [x] Keep Calendar OAuth and spreadsheet lookups tenant/business-key scoped.
+- [x] Defer Calendar event-link lookup redesign until provider multiplicity and
+      database uniqueness/idempotency are specified; do not substitute
+      `findById` for an appointment foreign key.
+- [x] Keep Assistant event/history, expiration, chunk, and search operations
+      explicit until their separate ordering/claim contracts are audited.
+
 ### Plan working notes
 
 ### Current slice — Task 19A tenant event boundary

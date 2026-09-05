@@ -569,6 +569,17 @@
 - [x] Run representative dependency analysis after upgrading the plugin.
 - [ ] Review remaining generated advice before any additional build changes.
 
+### Verification checkpoint — 2026-09-05
+
+- [x] Run the full repository unit-test gate: `./gradlew test` — build
+      successful, 121 actionable tasks.
+- [x] Run the full repository quality gate: `./gradlew check` — build
+      successful, 255 actionable tasks, including Checkstyle and Spotless.
+- [x] Confirm the representative dependency-analysis rerun succeeds after the
+      fixture cleanup and Java 25-compatible plugin upgrade.
+- [ ] Run PostgreSQL, Redis, Kafka, AGE, and concurrency integration gates when
+      Docker is available.
+
 ### Current slice — Task 22B convention-owned test fixtures
 
 - [x] Add a failing repository guard for duplicate shared test fixtures.

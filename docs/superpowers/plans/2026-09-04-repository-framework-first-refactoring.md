@@ -2085,13 +2085,18 @@ applications, and eight remaining unit-test fixture redeclarations; integration
 test fixture declarations remain explicit because they belong to a separate
 source set.
 
-- [ ] **Step 4: Run compile and build checks, then commit**
+- [x] **Step 4: Run compile and build checks, then commit**
 
 ```bash
-./gradlew compileJava dependencyAnalysis --no-parallel --no-configuration-cache
-git add build-logic platform modules applications
-git commit -m "build: remove duplicate framework capabilities"
+./gradlew check --no-daemon --no-parallel --no-configuration-cache
+./gradlew :modules:assistant:computeAdvice :modules:booking:computeAdvice :modules:catalog:computeAdvice \
+  --no-daemon --no-parallel --no-configuration-cache
 ```
+
+The repository check and representative dependency-analysis tasks pass. The
+analysis output remains a review artifact: framework-owned and transitive
+recommendations are not bulk-applied, and the remaining duplicate-class warning
+in assistant is tracked for an isolated Swagger dependency review.
 
 #### Current slice 22A — Remove duplicate module dependency declarations
 

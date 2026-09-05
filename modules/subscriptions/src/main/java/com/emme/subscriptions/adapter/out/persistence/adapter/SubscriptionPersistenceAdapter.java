@@ -5,7 +5,6 @@ import com.emme.subscriptions.adapter.out.persistence.repository.SpringDataSubsc
 import com.emme.subscriptions.application.port.out.SubscriptionRepository;
 import com.emme.subscriptions.domain.model.Subscription;
 import java.util.Optional;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,8 +16,8 @@ public class SubscriptionPersistenceAdapter implements SubscriptionRepository {
   }
 
   @Override
-  public Optional<Subscription> findByTenantId(UUID tenantId) {
-    return repository.findByTenantId(tenantId).map(SubscriptionEntity::toDomain);
+  public Optional<Subscription> find() {
+    return repository.findFirstByOrderByCreatedAtAsc().map(SubscriptionEntity::toDomain);
   }
 
   @Override

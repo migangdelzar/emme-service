@@ -26,7 +26,7 @@ class EnsureTenantSubscriptionServiceTest {
   @Test
   void provisionsOnlyWhenTheTenantHasNoSubscription() {
     UUID tenantId = UUID.randomUUID();
-    when(repository.findByTenantId(tenantId)).thenReturn(Optional.empty());
+    when(repository.find()).thenReturn(Optional.empty());
 
     new EnsureTenantSubscriptionService(repository).ensure(tenantId);
 
@@ -43,7 +43,7 @@ class EnsureTenantSubscriptionServiceTest {
   @Test
   void treatsAnExistingSubscriptionAsAnIdempotentSuccess() {
     UUID tenantId = UUID.randomUUID();
-    when(repository.findByTenantId(tenantId))
+    when(repository.find())
         .thenReturn(
             Optional.of(
                 new Subscription(

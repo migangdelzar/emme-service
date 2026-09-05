@@ -6,5 +6,5 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SpringDataSubscriptionRepository extends JpaRepository<SubscriptionEntity, UUID> {
-  Optional<SubscriptionEntity> findByTenantId(UUID tenantId);
+  Optional<SubscriptionEntity> findFirstByOrderByCreatedAtAsc();
 }

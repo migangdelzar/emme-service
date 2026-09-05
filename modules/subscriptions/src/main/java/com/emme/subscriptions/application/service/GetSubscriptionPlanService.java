@@ -19,6 +19,6 @@ public class GetSubscriptionPlanService implements GetSubscriptionPlanUseCase {
 
   @Override
   public Optional<PlanType> getPlan(GetSubscriptionPlanQuery query) {
-    return repository.findByTenantId(query.tenantId()).map(subscription -> subscription.plan());
+    return repository.find().map(subscription -> subscription.plan());
   }
 }

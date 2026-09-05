@@ -1543,16 +1543,36 @@ of conversation history, participant, expiration, or list operations.
 
 #### Current slice 18J — Use ID-only subscription aggregate saves
 
-Subscription is a tenant-owned JPA aggregate. Provisioning and public tenant
-operations already establish the tenant-scoped connection, while the
-tenant-keyed lookup remains necessary to locate the singleton subscription.
-Once that aggregate has been materialized, an existing save uses the standard
-`JpaRepository.findById`; the redundant tenant-plus-ID derived query is removed.
+Subscription is a tenant-owned JPA aggregate. Provisioning runs after
+`TenantActivated` and explicitly installs tenant context; public operations
+also require the current tenant before entering the application service. The
+aggregate is unique per tenant schema, so its lookup now follows the same
+schema-local singleton pattern as Salon profiles and policies.
 
 - [x] Add contract coverage for existing subscription saves.
 - [x] Replace the redundant tenant-plus-ID save lookup with `findById`.
-- [x] Preserve the tenant-keyed singleton lookup used by provisioning and reads.
+- [x] Replace the tenant-keyed singleton lookup with provider-neutral `find()`
+      backed by JPA `findFirstByOrderByCreatedAtAsc()`.
+- [x] Update the H2 full-context fixture to avoid cross-tenant test leakage
+      without adding a production tenant predicate.
 - [x] Run subscription tests, compilation, Checkstyle, and Spotless.
+
+#### Current slice 18U — Use schema-local Subscription singleton reads
+
+The Subscription lookup is now schema-local for all production callers. The
+database schema guarantees one row per tenant (`UNIQUE (tenant_id)`), while
+connection checkout selects the tenant schema and session. The application
+port therefore exposes `find()` rather than repeating a tenant ID that the
+connection has already applied. API query/command tenant IDs remain at the
+authorization and domain boundaries.
+
+- [x] Add adapter coverage for schema-local singleton rehydration.
+- [x] Update all Subscription services and the provisioning listener path to
+      use the context-selected `find()` operation.
+- [x] Keep `findById` for existing aggregate saves.
+- [x] Isolate the H2 full-context module test because it cannot emulate one
+      physical schema per tenant in a shared in-memory database.
+- [x] Run the Subscription module test, compilation, Checkstyle, and Spotless.
 
 #### Tenant isolation boundary correction
 
@@ -1574,6 +1594,7 @@ dynamic provisioning. The application ports remain provider-neutral throughout.
 | Identity membership `findByIdAndTenantId` | Keep | `membership` is stored in the shared `emme_core` schema and supports authorization across tenant contexts; the explicit tenant predicate is part of the security contract. |
 | Calendar event link `findByTenantIdAndAppointmentId` | Defer and redesign | `appointment_id` is not the event-link aggregate ID, the table permits multiple providers/links, and the current `Optional` contract has a cardinality risk. Add a provider-aware or list-based contract and a uniqueness/idempotency decision before changing it. |
 | Calendar OAuth token `findByTenantIdAndUserIdAndPersonaType` | Keep | This is a tenant/user/persona business-key lookup, not aggregate identity; tenant and persona are required to select credentials safely. |
+| Subscription singleton lookup | Converted | `TenantActivated` and web boundaries establish tenant context before access; schema-local JPA `findFirstByOrderByCreatedAtAsc()` replaces the redundant tenant predicate. |
 | Assistant conversation aggregate listing | Converted | Generic conversation listing now uses schema-local JPA `findAll()`; event history, pending-action claims, expiration, and provider-channel lookups remain explicit and require a separate ordering/claim audit. |
 | Documents metadata and chunks | Converted | Document listing, chunk-by-document, chunk-by-ID, and replacement delete now use schema-local JPA methods; the document search projection still keeps explicit tenant scope. |
 | Catalog item metadata and ranked hydration | Converted | Catalog listing uses `findAll()` and ranked hydration uses `findAllById(...)`; shared vector/full-text search remains explicitly tenant-scoped. |

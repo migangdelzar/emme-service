@@ -20,6 +20,6 @@ public class GetSubscriptionService implements GetSubscriptionUseCase {
 
   @Override
   public Optional<SubscriptionDetails> get(GetSubscriptionQuery query) {
-    return repository.findByTenantId(query.tenantId()).map(SubscriptionApplicationMapper::toResult);
+    return repository.find().map(SubscriptionApplicationMapper::toResult);
   }
 }

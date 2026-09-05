@@ -22,7 +22,7 @@ public class ChangeSubscriptionPlanService implements ChangeSubscriptionPlanUseC
   public SubscriptionDetails change(ChangeSubscriptionPlanCommand command) {
     Subscription subscription =
         repository
-            .findByTenantId(command.tenantId())
+            .find()
             .orElseThrow(() -> new IllegalArgumentException("No subscription for tenant"));
     subscription.changePlan(command.plan());
     return SubscriptionApplicationMapper.toResult(repository.save(subscription));

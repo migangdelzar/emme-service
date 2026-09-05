@@ -18,7 +18,7 @@ public class EnforceEntitlementService implements EnforceEntitlementUseCase {
   @Override
   public void enforce(EnforceEntitlementCommand command) {
     repository
-        .findByTenantId(command.tenantId())
+        .find()
         .orElseThrow(
             () -> new IllegalArgumentException("No subscription for tenant: " + command.tenantId()))
         .enforce(command.entitlement());

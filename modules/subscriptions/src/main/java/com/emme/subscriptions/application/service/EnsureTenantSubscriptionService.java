@@ -25,7 +25,7 @@ public class EnsureTenantSubscriptionService implements EnsureTenantSubscription
 
   @Override
   public void ensure(UUID tenantId) {
-    if (repository.findByTenantId(tenantId).isEmpty()) {
+    if (repository.find().isEmpty()) {
       repository.save(
           Subscription.provisioned(tenantId, PlanType.PRO, Instant.now().plus(INITIAL_PERIOD)));
     }

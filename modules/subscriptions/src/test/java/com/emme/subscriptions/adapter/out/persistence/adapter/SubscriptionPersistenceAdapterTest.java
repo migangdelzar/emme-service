@@ -18,14 +18,14 @@ class SubscriptionPersistenceAdapterTest {
       new SubscriptionPersistenceAdapter(repository);
 
   @Test
-  void findsSubscriptionThroughTheExistingJpaEntityMapping() {
+  void findsTheSchemaLocalSubscriptionThroughTheExistingJpaEntityMapping() {
     UUID tenantId = UUID.randomUUID();
     Subscription subscription =
         new Subscription(tenantId, PlanType.STARTER, Instant.parse("2026-09-04T00:00:00Z"));
     SubscriptionEntity entity = SubscriptionEntity.from(subscription);
-    when(repository.findByTenantId(tenantId)).thenReturn(java.util.Optional.of(entity));
+    when(repository.findFirstByOrderByCreatedAtAsc()).thenReturn(java.util.Optional.of(entity));
 
-    var found = adapter.findByTenantId(tenantId);
+    var found = adapter.find();
 
     assertThat(found).isPresent();
     assertThat(found.orElseThrow().id()).isEqualTo(subscription.id());

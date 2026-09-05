@@ -67,7 +67,8 @@ public abstract class BaseTenantModuleTest {
     UUID tid = tenant.id();
     tenantId = tid;
 
-    if (subscriptionRepo.findByTenantId(tid).isEmpty()) {
+    if (subscriptionRepo.findAll().stream()
+        .noneMatch(subscription -> tid.equals(subscription.getTenantId()))) {
       subscriptionRepo.save(
           new SubscriptionEntity(
               tid, PlanType.ENTERPRISE, Instant.now().plus(365, ChronoUnit.DAYS)));

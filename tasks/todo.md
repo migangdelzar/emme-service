@@ -212,12 +212,25 @@
 - [x] Run Calendar tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue reviewing remaining tenant-schema list/search methods.
 
+### Current slice — Task 18U Subscription schema-local singleton
+
+- [x] Add adapter and provisioning tests for a schema-local singleton lookup.
+- [x] Replace the tenant-qualified subscription lookup with JPA
+      `findFirstByOrderByCreatedAtAsc()` behind the provider-neutral `find()` port.
+- [x] Confirm tenant context is installed by activation listeners and web
+      boundaries before subscription access.
+- [x] Update the H2 full-context fixture to keep test setup tenant-specific
+      without reintroducing a production tenant predicate.
+- [x] Run Subscription tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue reviewing Calendar provider-facing and Assistant specialized
+      queries.
+
 ### Push-gate correction — stable contract source scan
 
 - [x] Diagnose the `KafkaEventContractTest` race with Spring Modulith docs.
 - [x] Scan stable source/build-script roots instead of mutable build output.
 - [x] Run focused Kafka/Modulith tests and Spotless.
-- [ ] Confirm the corrected full push gate succeeds.
+- [x] Confirm the corrected full push gate succeeds.
 
 ### Tenant schema routing decision
 
@@ -240,9 +253,8 @@
       AI atomic claims, and appointment collision invariants.
 - [ ] Audit Calendar event-link cardinality and OAuth/sync connection routing
       before changing provider-facing tenant/business-key methods.
-- [ ] Audit Subscription singleton provisioning to determine whether every
-      caller is inside tenant schema routing before replacing its tenant-keyed
-      lookup.
+- [x] Audit Subscription singleton provisioning and replace its tenant-keyed
+      lookup after confirming activation/web context routing.
 - [ ] Audit Assistant event/pending-action query ordering, claim semantics, and
       resumability before removing tenant predicates.
 

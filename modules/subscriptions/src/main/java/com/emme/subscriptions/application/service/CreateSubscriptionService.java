@@ -21,7 +21,7 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
 
   @Override
   public SubscriptionDetails create(CreateSubscriptionCommand command) {
-    if (repository.findByTenantId(command.tenantId()).isPresent()) {
+    if (repository.find().isPresent()) {
       throw new IllegalArgumentException(
           "Subscription already exists for tenant: " + command.tenantId());
     }

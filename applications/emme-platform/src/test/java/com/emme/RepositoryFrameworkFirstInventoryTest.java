@@ -153,6 +153,15 @@ class RepositoryFrameworkFirstInventoryTest {
     }
   }
 
+  @Test
+  void genericTestingLibraryDoesNotDependOnSharedModuleWithoutSourceUsage() throws IOException {
+    String build = Files.readString(sourcePath("libraries/testing/build.gradle.kts"));
+
+    assertThat(build)
+        .doesNotContain("implementation(project(\":modules:shared\"))")
+        .doesNotContain("testFixturesImplementation(project(\":modules:shared\"))");
+  }
+
   private boolean containsJdbcReference(Path path) {
     try {
       String source = Files.readString(path);

@@ -252,6 +252,7 @@ lookup should become a schema-local `findByChannel` contract.
 | Repeated `emme.testing` plugin application | Seven Spring modules | `emme.spring-module` → `emme.java-library` already applies the testing convention |
 | Empty `emme.test-fixtures` application | `modules/subscriptions/build.gradle.kts` | Removed; the module has no fixture sources or consumers |
 | Repeated Spring Boot test dependency | `modules/ai-platform/build.gradle.kts`, `modules/shared/build.gradle.kts` | Removed; `emme.testing` owns the standard test dependency |
+| Unused shared dependency in generic testing | `libraries/testing/build.gradle.kts` | Removed from main and test-fixture configurations; no source usage exists |
 | Repeated Modulith application | `applications/emme-platform/build.gradle.kts` | Removed; `emme.spring-application` owns Modulith and its test convention |
 | Over-provisioned persistence plugin | `build-logic/src/main/kotlin/emme.persistence.gradle.kts` and placeholder modules | Split only if dependency analysis proves benefit |
 | Feature fixture coupling | `libraries/testing/build.gradle.kts` and `src/testFixtures/java/**` | Move feature fixtures to owning modules |

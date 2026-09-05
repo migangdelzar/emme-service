@@ -574,6 +574,7 @@
       retaining Identity's consumed fixture.
 - [x] Remove redundant `spring-boot-starter-test` declarations from
       `ai-platform` and `shared`.
+- [x] Remove the unused `modules:shared` dependency from generic testing.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
 

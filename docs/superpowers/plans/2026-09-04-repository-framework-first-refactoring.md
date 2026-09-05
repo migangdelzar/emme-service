@@ -2091,6 +2091,8 @@ inventory test now enforces this ownership rule.
       Identity's fixture remains because tenancy consumes it.
 - [x] Remove redundant `spring-boot-starter-test` declarations from
       `ai-platform` and `shared`, which inherit it from `emme.testing`.
+- [x] Remove the unused `modules:shared` dependency from the generic testing
+      library's main and fixture configurations.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
 

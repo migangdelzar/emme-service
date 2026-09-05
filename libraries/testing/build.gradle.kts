@@ -5,8 +5,7 @@ plugins {
 group = "com.emme"
 
 dependencies {
-  implementation(platform(project(":platform")))
-  implementation(project(":modules:shared"))
+implementation(platform(project(":platform")))
   testFixturesImplementation(platform(project(":platform")))
   testFixturesImplementation(libs.spring.boot.starter.test)
   testFixturesImplementation(libs.spring.boot.starter.web)
@@ -23,5 +22,4 @@ dependencies {
   testFixturesImplementation(libs.okhttp)
   testFixturesImplementation(libs.spring.modulith.starter.jpa)
 
-  testFixturesImplementation(project(":modules:shared"))
 }

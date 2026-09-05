@@ -2,15 +2,20 @@ package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
+import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiQueryImprover;
 import com.emme.assistant.ai.adapter.out.provider.springai.TenantScopedDocumentRetriever;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.provider.RagAnswerPolicy;
 import com.emme.assistant.ai.application.rag.DeterministicRetrievalQualityGate;
+import com.emme.assistant.ai.application.rag.KnowledgeAnswerService;
+import com.emme.assistant.ai.application.rag.KnowledgeRoute;
+import com.emme.assistant.ai.application.rag.QueryImprover;
 import com.emme.assistant.ai.application.rag.RetrievalQualityGate;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -21,6 +26,11 @@ import java.util.concurrent.ExecutorService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.rag.preretrieval.query.expansion.MultiQueryExpander;
+import org.springframework.ai.rag.preretrieval.query.transformation.CompressionQueryTransformer;
+import org.springframework.ai.rag.preretrieval.query.transformation.QueryTransformer;
+import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
+import org.springframework.ai.rag.preretrieval.query.transformation.TranslationQueryTransformer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -63,6 +73,51 @@ public class SpringAiRagConfiguration {
     return new DeterministicRetrievalQualityGate();
   }
 
+  @Bean
+  @ConditionalOnMissingBean
+  QueryImprover queryImprover(
+      Map<String, ChatClient> chatClients,
+      SpringAiChatProperties chatProperties,
+      SpringAiRagProperties ragProperties) {
+    ChatClient.Builder builder = configuredChatClient(chatClients, chatProperties).mutate();
+    QueryTransformer compression =
+        CompressionQueryTransformer.builder().chatClientBuilder(builder.clone()).build();
+    QueryTransformer rewrite =
+        RewriteQueryTransformer.builder()
+            .chatClientBuilder(builder.clone())
+            .targetSearchSystem("tenant knowledge documents")
+            .build();
+    QueryTransformer translation =
+        TranslationQueryTransformer.builder()
+            .chatClientBuilder(builder.clone())
+            .targetLanguage("Spanish")
+            .build();
+    MultiQueryExpander expansion =
+        MultiQueryExpander.builder()
+            .chatClientBuilder(builder.clone())
+            .includeOriginal(false)
+            .numberOfQueries(ragProperties.improvement().maximumVariants())
+            .build();
+    return new SpringAiQueryImprover(compression, rewrite, translation, expansion);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  KnowledgeAnswerService knowledgeAnswerService(
+      KnowledgeRetriever retrieval,
+      RetrievalQualityGate qualityGate,
+      QueryImprover queryImprover,
+      @Qualifier("aiGroundedRagAnswer") RagAnswerPort answer,
+      SpringAiRagProperties properties) {
+    return new KnowledgeAnswerService(
+        retrieval,
+        qualityGate,
+        queryImprover,
+        answer,
+        properties.quality().policy(KnowledgeRoute.GENERAL),
+        properties.improvement().toPolicy());
+  }
+
   @Bean(name = "aiRetrievalAugmentationAdvisor")
   @ConditionalOnMissingBean(name = "aiRetrievalAugmentationAdvisor")
   RetrievalAugmentationAdvisor retrievalAugmentationAdvisor(
@@ -101,5 +156,24 @@ public class SpringAiRagConfiguration {
                             executionProperties.modelAdmissionTimeout()))
             .orElseGet(() -> new ChatModelSelector(registry.providers()));
     return new RagAnswerPolicy(completions);
+  }
+
+  @Bean(name = "aiGroundedRagAnswer")
+  @ConditionalOnMissingBean(name = "aiGroundedRagAnswer")
+  RagAnswerPort groundedRagAnswerPort(IdentifiedChatCompletionPort chatCompletion) {
+    return new RagAnswerPolicy(chatCompletion);
+  }
+
+  private static ChatClient configuredChatClient(
+      Map<String, ChatClient> chatClients, SpringAiChatProperties properties) {
+    if (properties.providers().isEmpty()) {
+      throw new IllegalArgumentException("At least one Spring AI chat provider is required");
+    }
+    String beanName = properties.providers().get(0).beanName();
+    ChatClient client = chatClients.get(beanName);
+    if (client == null) {
+      throw new IllegalStateException("No Spring AI chat client bean configured for provider");
+    }
+    return client;
   }
 }

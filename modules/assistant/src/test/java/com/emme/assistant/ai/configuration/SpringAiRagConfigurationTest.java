@@ -7,6 +7,9 @@ import com.emme.assistant.ai.adapter.out.provider.springai.TenantScopedDocumentR
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RagAnswerPolicy;
 import com.emme.assistant.ai.application.rag.DeterministicRetrievalQualityGate;
+import com.emme.assistant.ai.application.rag.KnowledgeAnswerService;
+import com.emme.assistant.ai.application.rag.QueryImprover;
+import com.emme.assistant.ai.application.rag.RetrievalQualityGate;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -66,6 +69,39 @@ class SpringAiRagConfigurationTest {
 
     assertThat(configuration.retrievalQualityGate())
         .isInstanceOf(DeterministicRetrievalQualityGate.class);
+  }
+
+  @Test
+  void wiresBoundedSpringAiQueryImprovementFromTheConfiguredChatClient() {
+    SpringAiRagConfiguration configuration = new SpringAiRagConfiguration();
+    ChatClient client = mock(ChatClient.class);
+    ChatClient.Builder builder = mock(ChatClient.Builder.class);
+    org.mockito.Mockito.when(client.mutate()).thenReturn(builder);
+    org.mockito.Mockito.when(builder.clone()).thenReturn(builder);
+    SpringAiChatProperties properties =
+        new SpringAiChatProperties(
+            true, List.of(new SpringAiChatProperties.Provider("local", "local", "gemma4-v1")));
+
+    QueryImprover queryImprover =
+        configuration.queryImprover(
+            Map.of("local", client), properties, new SpringAiRagProperties(true, 5));
+
+    assertThat(queryImprover).isNotNull();
+  }
+
+  @Test
+  void wiresKnowledgeAnswerServiceWithTheBoundedPolicies() {
+    SpringAiRagConfiguration configuration = new SpringAiRagConfiguration();
+    var retrieval = mock(com.emme.ai.contracts.rag.KnowledgeRetriever.class);
+    RetrievalQualityGate gate = mock(RetrievalQualityGate.class);
+    QueryImprover improver = mock(QueryImprover.class);
+    RagAnswerPort answer = mock(RagAnswerPort.class);
+    SpringAiRagProperties properties = new SpringAiRagProperties(true, 5);
+
+    KnowledgeAnswerService service =
+        configuration.knowledgeAnswerService(retrieval, gate, improver, answer, properties);
+
+    assertThat(service).isNotNull();
   }
 
   @Test

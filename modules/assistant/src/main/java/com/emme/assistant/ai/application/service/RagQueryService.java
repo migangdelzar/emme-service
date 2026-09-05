@@ -16,6 +16,7 @@ import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -50,7 +51,7 @@ public class RagQueryService implements RagQueryUseCase {
       AiProviderProperties properties,
       KnowledgeRetriever retrieval,
       ChatCompletionPort chatCompletion,
-      Optional<RagAnswerPort> ragAnswer,
+      @Qualifier("aiGroundedRagAnswer") Optional<RagAnswerPort> ragAnswer,
       Optional<KnowledgeAnswerService> knowledgeAnswer) {
     this.properties = properties;
     this.retrieval = retrieval;
@@ -72,14 +73,13 @@ public class RagQueryService implements RagQueryUseCase {
     }
     if (knowledgeAnswer.isPresent()) {
       try {
-        return
-            knowledgeAnswer
-                .orElseThrow()
-                .answer(
-                    new KnowledgeQuery(question, DEFAULT_LOCALE, 5),
-                    KnowledgeRoute.GENERAL,
-                    executionContext)
-                .text();
+        return knowledgeAnswer
+            .orElseThrow()
+            .answer(
+                new KnowledgeQuery(question, DEFAULT_LOCALE, 5),
+                KnowledgeRoute.GENERAL,
+                executionContext)
+            .text();
       } catch (RuntimeException failure) {
         SemanticFailurePolicy.rethrowSecurityFailure(failure);
         if (failure instanceof ChatProviderUnavailableException

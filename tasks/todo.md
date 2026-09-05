@@ -10,8 +10,9 @@
 - [x] Add bounded query-improvement policy, provider adapter, and grounded answer service.
 - [x] Route `RagQueryService` through the bounded answer service when configured.
 - [x] Add focused service, adapter, policy, and grounded-answer contract coverage.
-- [ ] Wire Spring AI transformers and the bounded service composition root.
-- [ ] Add the RAG quality integration test and run the phase checkpoint.
+- [x] Wire Spring AI transformers and the bounded service composition root.
+- [x] Add and run the isolated RAG quality integration test.
+- [ ] Run the Docker-backed RAG quality phase checkpoint when infrastructure is available.
 
 ## Current execution checkpoint — framework-first plan / durable Task 1 — 2026-09-05
 

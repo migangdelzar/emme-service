@@ -523,11 +523,11 @@ the answer model with rejected tenant knowledge. Spring AI's low-temperature que
 transformers and document post-processors remain inside `SpringAiQueryImprover` and the
 RAG adapter; the application service owns loop limits and route policy.
 
-- [ ] **Step 1: Write failing tests.** Verify accepted first retrieval uses one embedding and one answer call; low confidence triggers at most `maximumAttempts`; a successful rewrite stops further attempts; exhausted attempts never generate an ungrounded answer; provider-unavailable embeddings use provider fallback without entering the rewrite loop.
-- [ ] **Step 2: Run focused tests.** Run `./gradlew :modules:assistant:test --tests '*KnowledgeAnswerServiceTest' --tests '*SpringAiQueryImproverTest'`; expected failure is the missing bounded orchestration.
-- [ ] **Step 3: Implement the query-improvement loop.** Use the existing `KnowledgeRetriever`, shared embedding service, quality gate, and answer port. Preserve query provenance, attempt number, reason code, and score metrics without persisting raw query variants in traces.
-- [ ] **Step 4: Wire Spring AI transformers.** Configure low-temperature `routeModel`/`answerModel` transformer clients, use `ContextualQueryAugmenter` only with accepted documents, and keep empty-context behavior fail closed.
-- [ ] **Step 5: Run focused tests and commit.**
+- [x] **Step 1: Write failing tests.** Verify accepted first retrieval uses one embedding and one answer call; low confidence triggers at most `maximumAttempts`; a successful rewrite stops further attempts; exhausted attempts never generate an ungrounded answer; provider-unavailable embeddings use provider fallback without entering the rewrite loop.
+- [x] **Step 2: Run focused tests.** Run `./gradlew :modules:assistant:test --tests '*KnowledgeAnswerServiceTest' --tests '*SpringAiQueryImproverTest'`; expected failure is the missing bounded orchestration.
+- [x] **Step 3: Implement the query-improvement loop.** Use the existing `KnowledgeRetriever`, shared embedding service, quality gate, and answer port. Preserve query provenance, attempt number, reason code, and score metrics without persisting raw query variants in traces.
+- [x] **Step 4: Wire Spring AI transformers.** Configure bounded transformer clients from the configured Spring AI chat client, use the grounded answer boundary only with accepted documents, and keep empty-context behavior fail closed.
+- [x] **Step 5: Run focused tests and commit.**
 
   ```bash
   ./gradlew :modules:assistant:test --tests '*KnowledgeAnswerServiceTest' \

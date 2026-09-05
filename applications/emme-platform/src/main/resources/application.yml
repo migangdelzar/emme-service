@@ -191,6 +191,15 @@ app:
       # Requires the named Spring AI chat and embedding integrations above.
       enabled: ${EMME_SPRING_AI_RAG_ENABLED:false}
       retrieval-limit: ${EMME_SPRING_AI_RAG_RETRIEVAL_LIMIT:5}
+      improvement:
+        maximum-attempts: ${EMME_SPRING_AI_RAG_MAX_ATTEMPTS:3}
+        maximum-variants: ${EMME_SPRING_AI_RAG_MAX_VARIANTS:2}
+        maximum-query-characters: ${EMME_SPRING_AI_RAG_MAX_QUERY_CHARACTERS:200}
+        maximum-duration: ${EMME_SPRING_AI_RAG_MAX_DURATION:1s}
+        allow-compression: ${EMME_SPRING_AI_RAG_ALLOW_COMPRESSION:true}
+        allow-rewrite: ${EMME_SPRING_AI_RAG_ALLOW_REWRITE:true}
+        allow-translation: ${EMME_SPRING_AI_RAG_ALLOW_TRANSLATION:false}
+        allow-expansion: ${EMME_SPRING_AI_RAG_ALLOW_EXPANSION:true}
       quality:
         faq:
           minimum-top-score: ${EMME_SPRING_AI_RAG_FAQ_MIN_TOP_SCORE:0.75}

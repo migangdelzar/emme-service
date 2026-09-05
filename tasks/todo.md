@@ -572,6 +572,8 @@
       fixture owned by `emme.spring-application`.
 - [x] Remove the unused empty test-fixture convention from subscriptions while
       retaining Identity's consumed fixture.
+- [x] Remove redundant `spring-boot-starter-test` declarations from
+      `ai-platform` and `shared`.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
 

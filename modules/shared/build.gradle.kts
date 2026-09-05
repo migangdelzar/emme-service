@@ -16,7 +16,6 @@ dependencies {
   implementation(libs.spring.security.core)
   implementation(libs.java.uuid.generator)
 
-  testImplementation(libs.spring.boot.starter.test)
   testImplementation(libs.spring.boot.starter.data.redis)
   testImplementation(libs.spring.boot.starter.security)
   testImplementation(libs.spring.boot.starter.oauth2.resource.server)

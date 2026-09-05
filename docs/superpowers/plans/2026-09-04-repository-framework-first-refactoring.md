@@ -2089,6 +2089,8 @@ inventory test now enforces this ownership rule.
       the application already covered by `emme.spring-application`.
 - [x] Remove the empty `emme.test-fixtures` convention from subscriptions;
       Identity's fixture remains because tenancy consumes it.
+- [x] Remove redundant `spring-boot-starter-test` declarations from
+      `ai-platform` and `shared`, which inherit it from `emme.testing`.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
 

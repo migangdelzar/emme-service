@@ -141,6 +141,18 @@ class RepositoryFrameworkFirstInventoryTest {
         .doesNotContain("id(\"emme.test-fixtures\")");
   }
 
+  @Test
+  void modulesUsingTestingConventionDoNotRedeclareSpringBootTest() throws IOException {
+    List<String> modules = List.of("modules/ai-platform", "modules/shared");
+
+    for (String module : modules) {
+      String build = Files.readString(sourcePath(module + "/build.gradle.kts"));
+      assertThat(build)
+          .as("the testing convention owns spring-boot-starter-test for %s", module)
+          .doesNotContain("testImplementation(libs.spring.boot.starter.test)");
+    }
+  }
+
   private boolean containsJdbcReference(Path path) {
     try {
       String source = Files.readString(path);

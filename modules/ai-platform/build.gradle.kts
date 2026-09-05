@@ -15,6 +15,5 @@ dependencies {
   implementation(libs.spring.ai.openai)
   implementation(libs.spring.ai.tool.search.advisor)
 
-  testImplementation(libs.spring.boot.starter.test)
   testImplementation(libs.okhttp.mockwebserver)
 }

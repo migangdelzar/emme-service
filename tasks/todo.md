@@ -215,6 +215,22 @@
       tenant-schema CRUD, shared/control-plane access, cross-tenant jobs, or
       atomic/specialized SQL.
 
+### Remaining tenant-qualified method classification — 2026-09-05
+
+- [x] Convert ordinary schema-local lists/CRUD in Salon, Clients, Services,
+      Notification, Catalog, Appointments, Documents, Payment, and Assistant
+      conversations to standard JPA methods.
+- [x] Keep explicit tenant scope for shared identity/tenancy control-plane
+      queries, payment/provider callbacks, shared vector/full-text projections,
+      AI atomic claims, and appointment collision invariants.
+- [ ] Audit Calendar event-link cardinality and OAuth/sync connection routing
+      before changing provider-facing tenant/business-key methods.
+- [ ] Audit Subscription singleton provisioning to determine whether every
+      caller is inside tenant schema routing before replacing its tenant-keyed
+      lookup.
+- [ ] Audit Assistant event/pending-action query ordering, claim semantics, and
+      resumability before removing tenant predicates.
+
 ### Current slice — Task 13A shared tenant JDBC naming
 
 - [x] Confirm the tenant-scoped pool is shared beyond Assistant AI adapters.

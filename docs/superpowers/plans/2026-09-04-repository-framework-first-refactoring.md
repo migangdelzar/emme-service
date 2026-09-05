@@ -1548,10 +1548,20 @@ dynamic provisioning. The application ports remain provider-neutral throughout.
 | Identity membership `findByIdAndTenantId` | Keep | `membership` is stored in the shared `emme_core` schema and supports authorization across tenant contexts; the explicit tenant predicate is part of the security contract. |
 | Calendar event link `findByTenantIdAndAppointmentId` | Defer and redesign | `appointment_id` is not the event-link aggregate ID, the table permits multiple providers/links, and the current `Optional` contract has a cardinality risk. Add a provider-aware or list-based contract and a uniqueness/idempotency decision before changing it. |
 | Calendar OAuth token `findByTenantIdAndUserIdAndPersonaType` | Keep | This is a tenant/user/persona business-key lookup, not aggregate identity; tenant and persona are required to select credentials safely. |
-| Assistant conversation events and pending-action lists | Keep | History, child collections, expiration, and status queries are operation-specific; explicit filters remain until their ordering/claim semantics are separately audited. |
-| Documents chunks and catalog/search projections | Keep | Bulk IDs, replacement boundaries, vector/full-text projections, and search allowlists are not ordinary aggregate CRUD. |
+| Assistant conversation aggregate listing | Converted | Generic conversation listing now uses schema-local JPA `findAll()`; event history, pending-action claims, expiration, and provider-channel lookups remain explicit and require a separate ordering/claim audit. |
+| Documents metadata and chunks | Converted | Document listing, chunk-by-document, chunk-by-ID, and replacement delete now use schema-local JPA methods; the document search projection still keeps explicit tenant scope. |
+| Catalog item metadata and ranked hydration | Converted | Catalog listing uses `findAll()` and ranked hydration uses `findAllById(...)`; shared vector/full-text search remains explicitly tenant-scoped. |
+| Notification and payment history listing | Converted | Ordinary tenant-schema lists use JPA `findAll()`; notification/payment provider-reference and callback operations retain explicit tenant/business-key scope. |
+| Shared vector/full-text projections and AI atomic stores | Keep | `JdbcClient` remains justified for pgvector/FTS/RRF, dynamic projection tables, atomic claims/idempotency, JSONB, and cross-tenant jobs; each adapter remains behind a provider-neutral port. |
 
-- [ ] **Step 1: Write failing per-module persistence tests**
+- [x] **Step 1: Write failing per-module persistence tests for completed slices**
+
+Completed slices 18K–18S cover schema-local reads in Salon, Clients, Services,
+Notification, Catalog, Appointments, Documents, Payment, and Assistant. Each
+slice was test-first and preserves the explicit tenant boundary for specialized
+operations. Remaining module matrices still need to cover Calendar,
+Subscriptions provisioning, Identity/control-plane access, and AI specialized
+stores.
 
 Use the same create/find/list/update/not-found/tenant/version/idempotency matrix
 for each aggregate, adding webhook signature and duplicate-delivery cases to

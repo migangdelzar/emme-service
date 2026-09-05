@@ -1,6 +1,6 @@
 package com.emme.assistant.ai.application.port.out;
 
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import java.util.List;
 import java.util.Set;

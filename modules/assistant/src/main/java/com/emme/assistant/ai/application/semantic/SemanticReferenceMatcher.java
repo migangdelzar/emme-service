@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.application.semantic;
 
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -44,11 +45,11 @@ public final class SemanticReferenceMatcher {
   }
 
   private static double cosine(EmbeddingVector query, EmbeddingVector reference) {
-    if (!query.modelVersion().equals(reference.modelVersion())) {
-      throw new IllegalArgumentException("Embedding model version mismatch");
-    }
     if (query.values().size() != reference.values().size()) {
       throw new IllegalArgumentException("Embedding dimensions must match");
+    }
+    if (!query.model().equals(reference.model())) {
+      throw new IllegalArgumentException("Embedding model version mismatch");
     }
 
     double dot = 0.0;

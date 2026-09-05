@@ -1,14 +1,15 @@
 package com.emme.assistant.ai.application.tool;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import com.emme.assistant.ai.application.semantic.SemanticMatchPolicy;
 import com.emme.assistant.ai.application.semantic.SemanticToolSelector;
@@ -22,8 +23,7 @@ import org.junit.jupiter.api.Test;
 
 class SemanticProactiveToolRouterTest {
 
-  private static final EmbeddingVector QUERY =
-      new EmbeddingVector("embedding-v1", List.of(1.0f, 0.0f));
+  private static final EmbeddingVector QUERY = testEmbedding("embedding-v1", List.of(1.0f, 0.0f));
 
   @Test
   void invokesTheSelectedReadOnlyToolWhenSimilarityAndAuthorizationPass() {

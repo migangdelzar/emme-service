@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.inOrder;
@@ -10,7 +11,6 @@ import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.advisor.toolsearch.ToolSearchToolCallingAdvisor;
@@ -94,7 +94,7 @@ class SpringAiRedisSemanticConfigurationTest {
     when(primary.embed("faq"))
         .thenThrow(new EmbeddingProviderUnavailableException("primary unavailable"));
     when(fallback.embed("faq"))
-        .thenReturn(new EmbeddingVector("ollama-embeddinggemma:300m", List.of(0.2f, 0.8f)));
+        .thenReturn(testEmbedding("ollama-embeddinggemma:300m", List.of(0.2f, 0.8f)));
     EmbeddingModelPort selector =
         new EmbeddingModelSelector(
             List.of(

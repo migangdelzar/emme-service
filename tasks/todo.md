@@ -8,10 +8,10 @@
 - [x] Write the failing canonical versioned-embedding contract test.
 - [x] Implement the shared `EmbeddingService` result and platform adapter identity.
 - [x] Verify focused AI-contract, AI-platform, Assistant compilation, and Catalog compilation.
-- [ ] Migrate Assistant semantic consumers and remove the duplicate local vector type.
+- [x] Migrate Assistant semantic consumers and remove the duplicate local vector type.
 - [x] Preserve ranked document scores across the Documents → Assistant RAG boundary.
 - [x] Verify focused Documents/Assistant tests, compilation, and Spotless for the score slice.
-- [ ] Complete the Task 1 Assistant compatibility migration and then close its focused matrix.
+- [x] Complete the Task 1 Assistant compatibility migration and close its focused matrix.
 
 ## Current slice — Durable conversational workflows design — 2026-09-04
 

@@ -1,10 +1,11 @@
 package com.emme.assistant.ai.application.service;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.data.Offset.offset;
 
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticDecision;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import com.emme.assistant.ai.application.semantic.SemanticMatchPolicy;
@@ -145,6 +146,6 @@ class SemanticReferenceMatcherTest {
     for (float value : values) {
       components.add(value);
     }
-    return new EmbeddingVector(modelVersion, components);
+    return testEmbedding(modelVersion, components);
   }
 }

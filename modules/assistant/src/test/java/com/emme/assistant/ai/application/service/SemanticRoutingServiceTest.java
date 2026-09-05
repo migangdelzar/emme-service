@@ -1,14 +1,15 @@
 package com.emme.assistant.ai.application.service;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticDecision;
@@ -25,8 +26,7 @@ import org.junit.jupiter.api.Test;
 
 class SemanticRoutingServiceTest {
 
-  private static final EmbeddingVector QUERY =
-      new EmbeddingVector("embedding-v1", List.of(1.0f, 0.0f));
+  private static final EmbeddingVector QUERY = testEmbedding("embedding-v1", List.of(1.0f, 0.0f));
 
   @Test
   void classifiesIntentOnlyWhenScoreAndMarginPass() {

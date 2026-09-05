@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.application.service;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -9,13 +10,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
@@ -37,8 +38,7 @@ import org.junit.jupiter.api.Test;
 
 class SemanticChatCacheTest {
 
-  private static final EmbeddingVector QUERY =
-      new EmbeddingVector("embedding-v1", List.of(1.0f, 0.0f));
+  private static final EmbeddingVector QUERY = testEmbedding("embedding-v1", List.of(1.0f, 0.0f));
 
   @Test
   void returnsAValidatedCachedInformationalAnswer() {
@@ -261,7 +261,7 @@ class SemanticChatCacheTest {
     SemanticCachePort cache = mock(SemanticCachePort.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
     when(embeddings.embed("What are your hours?"))
-        .thenReturn(QUERY, new EmbeddingVector("embedding-v2", List.of(1.0f, 0.0f, 0.0f)));
+        .thenReturn(QUERY, testEmbedding("embedding-v2", List.of(1.0f, 0.0f, 0.0f)));
     when(codec.encodeText(any())).thenReturn("payload");
     when(cache.put(any())).thenReturn(UUID.randomUUID());
     SemanticChatCache semanticCache =

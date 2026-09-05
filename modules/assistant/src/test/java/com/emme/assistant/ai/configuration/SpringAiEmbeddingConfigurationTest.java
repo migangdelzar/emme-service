@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.inOrder;
@@ -11,7 +12,6 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -49,7 +49,9 @@ class SpringAiEmbeddingConfigurationTest {
     EmbeddingModelPort embeddingModel = configuration.embeddingModel(registry);
 
     assertThat(AiExecutionContextScope.call(context(), () -> embeddingModel.embed("faq")))
-        .isEqualTo(new EmbeddingVector("ollama-embeddinggemma:300m", List.of(0.2f, 0.8f)));
+        .isEqualTo(
+            testEmbedding(
+                "embeddinggemma:300m", "ollama-embeddinggemma:300m", List.of(0.2f, 0.8f)));
     var invocationOrder = inOrder(local, cloud);
     invocationOrder.verify(local).embed("faq");
     invocationOrder.verify(cloud).embed("faq");

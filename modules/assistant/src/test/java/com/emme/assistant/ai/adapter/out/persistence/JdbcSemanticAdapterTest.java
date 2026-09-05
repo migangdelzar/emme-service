@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,9 +10,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import com.emme.kernel.context.AiExecutionContext;
@@ -34,8 +35,7 @@ class JdbcSemanticAdapterTest {
   private static final UUID CONVERSATION_ID = UUID.randomUUID();
   private static final UUID WORKFLOW_ID = UUID.randomUUID();
   private static final EmbeddingVector QUERY =
-      new EmbeddingVector(
-          EmbeddingModelDefaults.MODEL_VERSION, java.util.Collections.nCopies(768, 0.0f));
+      testEmbedding(EmbeddingModelDefaults.MODEL_VERSION, java.util.Collections.nCopies(768, 0.0f));
 
   @Test
   void referenceSearchUsesAuthenticatedTenantAndEmbeddingVersion() throws Exception {
@@ -262,8 +262,7 @@ class JdbcSemanticAdapterTest {
                     () ->
                         adapter.searchIntents(
                             "es-MX",
-                            new EmbeddingVector(
-                                "other-model", java.util.Collections.nCopies(768, 0.0f)),
+                            testEmbedding("other-model", java.util.Collections.nCopies(768, 0.0f)),
                             2)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Embedding model version must match configured model");
@@ -281,7 +280,7 @@ class JdbcSemanticAdapterTest {
             "prompt-v2",
             "{\"answer\":\"We are open\"}",
             Instant.parse("2030-01-01T00:00:00Z"),
-            new EmbeddingVector("other-model", java.util.Collections.nCopies(768, 0.0f)),
+            testEmbedding("other-model", java.util.Collections.nCopies(768, 0.0f)),
             "cache-write-2");
 
     assertThatThrownBy(() -> AiExecutionContextScope.call(context(), () -> adapter.put(write)))

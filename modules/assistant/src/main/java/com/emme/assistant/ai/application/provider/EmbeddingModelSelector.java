@@ -2,9 +2,9 @@ package com.emme.assistant.ai.application.provider;
 
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
 import java.util.List;

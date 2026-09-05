@@ -1,14 +1,15 @@
 package com.emme.assistant.ai;
 
+import static com.emme.assistant.ai.EmbeddingIntegrationTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelDefaults;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcAiToolIdempotencyStore;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticCacheAdapter;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticReferenceSearchAdapter;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.tool.AiToolResult;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -177,7 +178,7 @@ class PgVectorSemanticIntegrationTest {
   @Test
   @DisplayName("searches pgvector with the authenticated tenant predicate")
   void searchesOnlyTheCurrentTenant() {
-    EmbeddingVector query = new EmbeddingVector(MODEL_VERSION, vector(1.0f, 0.0f, 0.0f));
+    EmbeddingVector query = testEmbedding(MODEL_VERSION, vector(1.0f, 0.0f, 0.0f));
     AiExecutionContext context =
         new AiExecutionContext(
             TENANT_ID,
@@ -199,7 +200,7 @@ class PgVectorSemanticIntegrationTest {
   @Test
   @DisplayName("writes and reads a durable semantic cache entry in pgvector")
   void persistsAndCountsSemanticCacheHits() {
-    EmbeddingVector query = new EmbeddingVector(MODEL_VERSION, vector(1.0f, 0.0f, 0.0f));
+    EmbeddingVector query = testEmbedding(MODEL_VERSION, vector(1.0f, 0.0f, 0.0f));
     SemanticCachePort.Put write =
         new SemanticCachePort.Put(
             "FAQ",

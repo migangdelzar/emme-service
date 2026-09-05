@@ -1,5 +1,6 @@
 package com.emme.assistant.ai;
 
+import static com.emme.assistant.ai.EmbeddingIntegrationTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -8,9 +9,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.adapter.out.provider.springai.RedisSemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -47,7 +48,7 @@ class RedisSemanticIntegrationTest {
   private static final UUID PRINCIPAL_ID = UUID.randomUUID();
   private static final UUID CONVERSATION_ID = UUID.randomUUID();
   private static final UUID WORKFLOW_ID = UUID.randomUUID();
-  private static final EmbeddingVector QUERY = new EmbeddingVector(MODEL_VERSION, vector());
+  private static final EmbeddingVector QUERY = testEmbedding(MODEL_VERSION, vector());
 
   @Container
   static final GenericContainer<?> REDIS =

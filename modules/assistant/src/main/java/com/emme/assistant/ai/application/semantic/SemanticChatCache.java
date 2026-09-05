@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.application.semantic;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
@@ -319,7 +320,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
     String embeddingIdentity =
         embeddingModelConfiguration.modelName()
             + "@"
-            + query.modelVersion()
+            + query.model().version()
             + "#"
             + query.values().size();
     return promptVersion

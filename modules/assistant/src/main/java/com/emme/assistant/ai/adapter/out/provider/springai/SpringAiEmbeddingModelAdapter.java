@@ -1,8 +1,8 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -57,7 +57,7 @@ public final class SpringAiEmbeddingModelAdapter implements EmbeddingModel {
   }
 
   private float[] values(EmbeddingVector embedding) {
-    if (!configuration.modelVersion().equals(embedding.modelVersion())) {
+    if (!configuration.modelVersion().equals(embedding.model().version())) {
       throw new IllegalArgumentException("Embedding model version must match configured model");
     }
     if (embedding.values().size() != configuration.dimension()) {

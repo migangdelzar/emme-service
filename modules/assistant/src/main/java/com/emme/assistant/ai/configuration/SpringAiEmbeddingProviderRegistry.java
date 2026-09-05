@@ -7,7 +7,6 @@ import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
 import com.emme.assistant.ai.application.provider.TracingEmbeddingModelPort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.HashSet;
@@ -117,7 +116,7 @@ public final class SpringAiEmbeddingProviderRegistry {
       SpringAiEmbeddingModel model, String providerKey) {
     return text -> {
       try {
-        return new EmbeddingVector(model.modelVersion(), model.embed(text).values());
+        return model.embed(text);
       } catch (IllegalArgumentException invalidInput) {
         throw invalidInput;
       } catch (EmbeddingProviderUnavailableException unavailable) {

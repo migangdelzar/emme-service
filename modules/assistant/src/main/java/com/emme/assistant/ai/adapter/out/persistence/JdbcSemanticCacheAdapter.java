@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
@@ -72,7 +73,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .param("contextFingerprint", lookup.contextFingerprint())
         .param("embeddingModelName", embeddingModelName)
         .param("promptVersion", lookup.promptVersion())
-        .param("embeddingModelVersion", lookup.query().modelVersion())
+        .param("embeddingModelVersion", lookup.query().model().version())
         .param("responseProvider", lookup.identity().responseProvider())
         .param("responseModel", lookup.identity().responseModel())
         .param("knowledgeVersion", lookup.identity().knowledgeVersion())
@@ -177,7 +178,7 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .param("contextFingerprint", write.contextFingerprint())
         .param("queryEmbedding", write.query().values().toString())
         .param("embeddingModelName", embeddingModelName)
-        .param("embeddingModelVersion", write.query().modelVersion())
+        .param("embeddingModelVersion", write.query().model().version())
         .param("promptVersion", write.promptVersion())
         .param("responseProvider", write.identity().responseProvider())
         .param("responseModel", write.identity().responseModel())
@@ -238,12 +239,11 @@ public final class JdbcSemanticCacheAdapter implements SemanticCachePort {
         .update();
   }
 
-  private void validateEmbedding(
-      com.emme.assistant.ai.application.semantic.EmbeddingVector embedding) {
+  private void validateEmbedding(EmbeddingVector embedding) {
     if (embedding.values().size() != embeddingDimensions) {
       throw new IllegalArgumentException("Embedding dimensions must match pgvector schema");
     }
-    if (!embeddingModelVersion.equals(embedding.modelVersion())) {
+    if (!embeddingModelVersion.equals(embedding.model().version())) {
       throw new IllegalArgumentException("Embedding model version must match configured model");
     }
   }

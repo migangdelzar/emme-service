@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -8,9 +9,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
 import com.emme.kernel.context.AiExecutionContext;
@@ -38,7 +39,7 @@ class RedisSemanticCacheHotStoreTest {
   private static final UUID CONVERSATION_ID = UUID.randomUUID();
   private static final UUID WORKFLOW_ID = UUID.randomUUID();
   private static final EmbeddingVector QUERY =
-      new EmbeddingVector("embeddinggemma-v1", List.of(1.0f, 0.0f));
+      testEmbedding("embeddinggemma-v1", List.of(1.0f, 0.0f));
 
   @Test
   void exposesOneCanonicalConstructionPath() {

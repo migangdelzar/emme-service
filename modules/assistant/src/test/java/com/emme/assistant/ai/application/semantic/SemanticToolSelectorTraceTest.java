@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.application.semantic;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -25,7 +26,7 @@ class SemanticToolSelectorTraceTest {
             mock(SemanticMetrics.class),
             traces);
 
-    assertThat(selector.select("es-MX", new EmbeddingVector("v1", List.of(1.0f)), Set.of()))
+    assertThat(selector.select("es-MX", testEmbedding("v1", List.of(1.0f)), Set.of()))
         .isEqualTo(new SemanticDecision(java.util.Optional.empty(), 0.0, 0.0, 0.0, false));
 
     ArgumentCaptor<AiSemanticExecutionTrace> trace =
@@ -38,8 +39,7 @@ class SemanticToolSelectorTraceTest {
   void recordsSemanticSearchFailuresBeforeRethrowingThem() {
     SemanticReferenceSearchPort search = mock(SemanticReferenceSearchPort.class);
     RuntimeException failure = new IllegalStateException("vector store unavailable");
-    when(search.searchTools(
-            "es-MX", new EmbeddingVector("v1", List.of(1.0f)), Set.of("getServices"), 2))
+    when(search.searchTools("es-MX", testEmbedding("v1", List.of(1.0f)), Set.of("getServices"), 2))
         .thenThrow(failure);
     AiTraceRecorder traces = mock(AiTraceRecorder.class);
     SemanticToolSelector selector =
@@ -48,8 +48,7 @@ class SemanticToolSelectorTraceTest {
 
     org.assertj.core.api.Assertions.assertThatThrownBy(
             () ->
-                selector.select(
-                    "es-MX", new EmbeddingVector("v1", List.of(1.0f)), Set.of("getServices")))
+                selector.select("es-MX", testEmbedding("v1", List.of(1.0f)), Set.of("getServices")))
         .isSameAs(failure);
 
     ArgumentCaptor<AiSemanticExecutionTrace> trace =

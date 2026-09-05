@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.application.provider;
 
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;

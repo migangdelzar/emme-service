@@ -1,9 +1,9 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -93,7 +93,7 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
                     encodeTagValue(embeddingModelName)),
                 filters.eq(
                     RedisSemanticCacheMetadata.EMBEDDING_MODEL_VERSION,
-                    encodeTagValue(lookup.query().modelVersion()))));
+                    encodeTagValue(lookup.query().model().version()))));
     var responseIdentity =
         filters.eq(
             RedisSemanticCacheMetadata.RESPONSE_PROVIDER,
@@ -197,7 +197,7 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
                 encodeTagValue(embeddingModelName)),
             Map.entry(
                 RedisSemanticCacheMetadata.EMBEDDING_MODEL_VERSION,
-                encodeTagValue(write.query().modelVersion())),
+                encodeTagValue(write.query().model().version())),
             Map.entry(
                 RedisSemanticCacheMetadata.RESPONSE_PROVIDER,
                 encodeTagValue(write.identity().responseProvider())),
@@ -295,7 +295,7 @@ public final class RedisSemanticCacheHotStore implements SemanticCacheHotStore {
     if (embedding.values().size() != embeddingDimensions) {
       throw new IllegalArgumentException("Embedding dimensions must match Redis vector schema");
     }
-    if (!embeddingModelVersion.equals(embedding.modelVersion())) {
+    if (!embeddingModelVersion.equals(embedding.model().version())) {
       throw new IllegalArgumentException("Embedding model version must match Redis vector schema");
     }
   }

@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.application.semantic;
 
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import java.util.Objects;
 
 /** Indexed reference text for deterministic intent, tool, or cache matching. */

@@ -2,6 +2,7 @@ package com.emme.assistant.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
@@ -18,6 +19,7 @@ class CanonicalAiApplicationContractsTest {
   void legacyChatAndEmbeddingPortsDeclareTheirTemporaryCompatibilityStatus() {
     assertThat(ChatCompletionPort.class).hasAnnotation(Deprecated.class);
     assertThat(EmbeddingModelPort.class).hasAnnotation(Deprecated.class);
+    assertThat(EmbeddingService.class).isAssignableFrom(EmbeddingModelPort.class);
   }
 
   @Test

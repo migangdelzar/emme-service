@@ -1,14 +1,15 @@
 package com.emme.assistant.ai.application.provider;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
@@ -26,7 +27,7 @@ class TracingEmbeddingModelPortTest {
   void recordsSuccessfulEmbeddingAttemptsWithoutPersistingVectorValues() {
     EmbeddingModelPort delegate = mock(EmbeddingModelPort.class);
     when(delegate.embed("faq ana@example.com"))
-        .thenReturn(new EmbeddingVector("bge-v1", List.of(0.2f, 0.8f)));
+        .thenReturn(testEmbedding("bge-v1", List.of(0.2f, 0.8f)));
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
     TracingEmbeddingModelPort port =
         new TracingEmbeddingModelPort(delegate, "local-ollama", "bge-v1", "embedding-v1", recorder);

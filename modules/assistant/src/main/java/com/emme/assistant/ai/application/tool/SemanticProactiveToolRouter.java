@@ -1,8 +1,8 @@
 package com.emme.assistant.ai.application.tool;
 
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.ProactiveToolRouter;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticDecision;
 import com.emme.assistant.ai.application.semantic.SemanticToolSelector;
 import java.util.Map;

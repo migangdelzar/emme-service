@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.application.service;
 
+import static com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.inOrder;
@@ -9,10 +10,10 @@ import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
@@ -25,9 +26,9 @@ import org.junit.jupiter.api.Test;
 class EmbeddingModelSelectorTest {
 
   private static final EmbeddingVector LOCAL_VECTOR =
-      new EmbeddingVector("local-embeddinggemma:300m", List.of(0.1f, 0.9f));
+      testEmbedding("local-embeddinggemma:300m", List.of(0.1f, 0.9f));
   private static final EmbeddingVector CLOUD_VECTOR =
-      new EmbeddingVector("cloud-text-embedding", List.of(0.2f, 0.8f));
+      testEmbedding("cloud-text-embedding", List.of(0.2f, 0.8f));
 
   @Test
   void returnsThePrimaryProviderResultWithoutCallingFallbacks() {

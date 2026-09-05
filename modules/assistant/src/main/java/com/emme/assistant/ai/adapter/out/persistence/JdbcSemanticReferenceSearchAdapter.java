@@ -1,8 +1,8 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
-import com.emme.assistant.ai.application.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
@@ -71,7 +71,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
             .param("locale", locale)
             .param("queryEmbedding", vectorLiteral(query))
             .param("embeddingModelName", embeddingModelName)
-            .param("embeddingModelVersion", query.modelVersion())
+            .param("embeddingModelVersion", query.model().version())
             .param("embeddingDimension", query.values().size())
             .param("limit", limit);
     for (int index = 0; index < authorized.size(); index++) {
@@ -96,7 +96,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
         .param("locale", locale)
         .param("queryEmbedding", vectorLiteral(query))
         .param("embeddingModelName", embeddingModelName)
-        .param("embeddingModelVersion", query.modelVersion())
+        .param("embeddingModelVersion", query.model().version())
         .param("embeddingDimension", query.values().size())
         .param("limit", limit)
         .query(
@@ -137,7 +137,7 @@ public final class JdbcSemanticReferenceSearchAdapter implements SemanticReferen
     if (query.values().size() != embeddingDimensions) {
       throw new IllegalArgumentException("Embedding dimensions must match pgvector schema");
     }
-    if (!embeddingModelVersion.equals(query.modelVersion())) {
+    if (!embeddingModelVersion.equals(query.model().version())) {
       throw new IllegalArgumentException("Embedding model version must match configured model");
     }
     if (limit <= 0) {

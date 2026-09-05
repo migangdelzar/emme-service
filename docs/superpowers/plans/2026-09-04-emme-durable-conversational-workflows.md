@@ -268,8 +268,8 @@ three-field `EmbeddingModelConfiguration` remains the provider/index configurati
 it is not expanded into a second identity type. A provider result with the wrong dimension
 or model identity throws before search, cache, or persistence.
 
-- [ ] **Step 1: Write the failing contract tests.** Add tests proving the service returns the vector and exact model identity, rejects a dimension mismatch, and prevents a legacy composite provider from being registered as the canonical embedding service.
-- [ ] **Step 2: Run the focused tests.** Run:
+- [x] **Step 1: Write the failing contract tests.** Add tests proving the service returns the vector and exact model identity, rejects a dimension mismatch, and prevents a legacy composite provider from being registered as the canonical embedding service.
+- [x] **Step 2: Run the focused tests.** Run:
 
   ```bash
   ./gradlew :libraries:ai-contracts:test --tests '*CanonicalAiContractsTest' \
@@ -278,9 +278,9 @@ or model identity throws before search, cache, or persistence.
   ```
 
   Expected result: compilation or assertion failures identify the raw `List<Float>` contract and duplicate assistant vector type.
-- [ ] **Step 3: Implement the minimum contract migration.** Make `EmbeddingService` return the shared `EmbeddingVector`; make Spring AI and selector adapters construct that value; migrate catalog to call `.values()`; migrate assistant semantic, cache, and RAG classes to the shared vector. Keep `EmbeddingModel` and `EmbeddingModelPort` as deprecated adapters until Task 13.
-- [ ] **Step 4: Run the focused tests.** The contract, provider, selector, catalog, and assistant tests pass with no fabricated zero vectors and with provider-unavailable failover unchanged.
-- [ ] **Step 5: Refactor and commit.** Remove duplicated conversion code, retain clear names, run `git diff --check`, and commit:
+- [x] **Step 3: Implement the minimum contract migration.** Make `EmbeddingService` return the shared `EmbeddingVector`; make Spring AI and selector adapters construct that value; migrate catalog to call `.values()`; migrate assistant semantic, cache, and RAG classes to the shared vector. Keep `EmbeddingModel` and `EmbeddingModelPort` as deprecated adapters until Task 13.
+- [x] **Step 4: Run the focused tests.** The contract, provider, selector, catalog, and assistant tests pass with no fabricated zero vectors and with provider-unavailable failover unchanged.
+- [x] **Step 5: Refactor and commit.** Remove duplicated conversion code, retain clear names, run `git diff --check`, and commit:
 
   ```bash
   git add libraries/ai-contracts modules/ai-platform modules/assistant modules/catalog

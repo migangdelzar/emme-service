@@ -46,4 +46,30 @@ class CalendarPersistenceAdapterTest {
     assertThat(saved.id()).isEqualTo(link.id());
     assertThat(saved.externalEventId()).isEqualTo("event-1");
   }
+
+  @Test
+  void findsOneSchemaLocalLinkByAppointmentAndProvider() {
+    CalendarEventLink link =
+        CalendarEventLink.pending(
+            UUID.randomUUID(), UUID.randomUUID(), CalendarProvider.GOOGLE_CALENDAR, "event-1");
+    CalendarEventLinkEntity entity =
+        CalendarEventLinkEntity.restore(
+            link.id(),
+            link.tenantId(),
+            link.appointmentId(),
+            link.provider(),
+            link.externalEventId(),
+            link.etag(),
+            link.status());
+    when(eventLinks.findByAppointmentIdAndProvider(
+            link.appointmentId(), CalendarProvider.GOOGLE_CALENDAR))
+        .thenReturn(Optional.of(entity));
+
+    assertThat(
+            adapter.findByAppointmentIdAndProvider(
+                link.appointmentId(), CalendarProvider.GOOGLE_CALENDAR))
+        .get()
+        .extracting(CalendarEventLink::appointmentId, CalendarEventLink::provider)
+        .containsExactly(link.appointmentId(), link.provider());
+  }
 }

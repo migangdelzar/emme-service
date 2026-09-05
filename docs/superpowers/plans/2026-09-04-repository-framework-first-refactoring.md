@@ -732,6 +732,19 @@ missing-checkpoint cause; no state mutation is attempted.
 - [x] Run the focused quote resume test suite.
 - [ ] Run live LangGraph checkpoint/resume coverage when Docker is available.
 
+#### Current slice 8G — LangGraph context composition coverage
+
+Spring context coverage now proves that disabled LangGraph startup creates no
+checkpoint or compiled-graph beans, while enabling conversation and quote
+capabilities creates exactly one named compiled graph for each capability.
+This locks the opt-in composition boundary without adding provider types to
+application ports.
+
+- [x] Verify disabled LangGraph startup.
+- [x] Verify one named compiled graph per enabled capability.
+- [x] Run the focused LangGraph configuration test suite.
+- [ ] Run live startup and checkpoint coverage when Docker is available.
+
 - [ ] **Step 1: Write failing configuration/security tests**
 
 Test disabled graph startup, one graph bean per capability, unauthorized

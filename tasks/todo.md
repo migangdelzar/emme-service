@@ -742,6 +742,15 @@
 - [x] Run the focused quote resume test suite.
 - [ ] Run live LangGraph checkpoint/resume coverage with Docker.
 
+### Current slice — Task 8G LangGraph context composition coverage
+
+- [x] Verify disabled LangGraph startup creates no checkpoint or compiled-graph
+      beans.
+- [x] Verify enabled conversation and quote capabilities expose exactly one
+      named compiled graph each.
+- [x] Run the focused LangGraph configuration test suite.
+- [ ] Run live startup and checkpoint coverage with Docker.
+
 ### Remaining repository-wide framework-first work
 
 - [x] Finish Spring AI metadata-contract and hybrid-search capability

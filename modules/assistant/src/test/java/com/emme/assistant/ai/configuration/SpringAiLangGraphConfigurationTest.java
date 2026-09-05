@@ -20,6 +20,7 @@ import org.bsc.langgraph4j.state.AgentState;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 class SpringAiLangGraphConfigurationTest {
@@ -122,6 +123,39 @@ class SpringAiLangGraphConfigurationTest {
               assertThat(condition.prefix()).isEqualTo("app.ai.quote");
               assertThat(condition.name()).containsExactly("enabled");
               assertThat(condition.havingValue()).isEqualTo("true");
+            });
+  }
+
+  @Test
+  void doesNotStartLangGraphBeansWhenTheFeatureIsDisabled() {
+    new ApplicationContextRunner()
+        .withUserConfiguration(SpringAiLangGraphConfiguration.class)
+        .withPropertyValues("app.ai.langgraph.enabled=false", "app.ai.quote.enabled=true")
+        .run(
+            context -> {
+              assertThat(context).hasNotFailed();
+              assertThat(context).doesNotHaveBean("workflowCheckpointStore");
+              assertThat(context).doesNotHaveBean("aiConversationWorkflowCompiledGraph");
+              assertThat(context).doesNotHaveBean("aiQuoteWorkflowCompiledGraph");
+            });
+  }
+
+  @Test
+  void exposesOneNamedCompiledGraphPerEnabledCapability() {
+    new ApplicationContextRunner()
+        .withUserConfiguration(SpringAiLangGraphConfiguration.class)
+        .withPropertyValues("app.ai.langgraph.enabled=true", "app.ai.quote.enabled=true")
+        .withBean("tenantJdbcClient", JdbcClient.class, () -> mock(JdbcClient.class))
+        .withBean(ObjectMapper.class, ObjectMapper::new)
+        .withBean(
+            com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.class,
+            () -> WorkflowTestCapabilities.basic())
+        .run(
+            context -> {
+              assertThat(context).hasNotFailed();
+              assertThat(context).hasBean("aiConversationWorkflowCompiledGraph");
+              assertThat(context).hasBean("aiQuoteWorkflowCompiledGraph");
+              assertThat(context.getBeansOfType(CompiledGraph.class)).hasSize(2);
             });
   }
 }

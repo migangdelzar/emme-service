@@ -578,7 +578,9 @@
 - [x] Confirm the representative dependency-analysis rerun succeeds after the
       fixture cleanup and Java 25-compatible plugin upgrade.
 - [ ] Run PostgreSQL, Redis, Kafka, AGE, and concurrency integration gates when
-      Docker is available.
+      Docker is available. Current environment: `docker info` cannot connect
+      to `unix:///Users/miguelangeldelgadillozarate/.colima/default/docker.sock`
+      and `colima status` reports that Colima is not running.
 
 ### Current slice — Task 22B convention-owned test fixtures
 

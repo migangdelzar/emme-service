@@ -3652,3 +3652,19 @@ appointment mutation tools are registered.
 - Still open: Docker-backed PostgreSQL/RLS/Liquibase/Redis/Kafka/AGE tests,
   deployed E2E, per-module dependency-advice review, and the provider HTTP
   migration explicitly deferred to a separate session.
+
+## Redis outage safety slice — 2026-09-05
+
+- [x] Add a failing contract test for the Redis login limiter when the
+      distributed store cannot be reached.
+- [x] Implement fail-closed handling for `RedisConnectionFailureException`.
+- [x] Run the identity Redis test and the assistant Redis/semantic test matrix.
+- [ ] Run live Redis outage, eviction, and recovery tests with Docker.
+
+### Results
+
+- `RedisLoginAttemptRateLimiter` now returns `false` for a Redis connection
+  failure, preventing login attempts from bypassing the distributed control.
+- The provider-neutral rate-limit port is unchanged; no provider-specific
+  abstraction leaked into the identity application layer.
+- The full repository `check` passes after the slice (`255 actionable tasks`).

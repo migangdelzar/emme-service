@@ -1878,19 +1878,23 @@ Cover TTL, eviction, tenant-key isolation, Redis unavailable, atomic compare and
 delete, rate limit boundary, vector metadata filter, embedding contract, and
 durable fallback.
 
-- [ ] **Step 2: Run focused Redis tests**
+- [x] **Step 2: Run focused Redis tests**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:identity:test --tests '*Redis*' --tests '*Semantic*' --no-parallel --no-configuration-cache
 ```
 
-- [ ] **Step 3: Implement managed wiring and narrow native access**
+The focused Redis/semantic suites pass. The identity Redis limiter now has a
+fail-closed contract for `RedisConnectionFailureException`; live outage,
+eviction, and vector metadata behavior remain Docker-gated.
+
+- [x] **Step 3: Implement managed wiring and narrow native access**
 
 Replace direct client construction with Spring-managed connection factories
 where behavior is equivalent. Keep custom cache policy/admission and direct
 atomic operations only in named adapters.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:identity:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
@@ -1921,6 +1925,19 @@ operations that are not smaller through `StringRedisTemplate`.
       tests.
 - [ ] Continue Redis outage/eviction and semantic metadata integration gates
       with Docker-enabled Redis.
+
+#### Current slice 20B — Fail closed when the distributed login limiter is unavailable
+
+The Redis-backed login-attempt limiter now returns `false` when Spring Data
+Redis reports a connection failure. This keeps the security boundary fail
+closed during an outage while preserving the existing process-local fallback
+for deployments that do not configure Redis. The provider-neutral
+`LoginAttemptRateLimiter` port and atomic Lua counter remain unchanged.
+
+- [x] Add a failing Redis outage test.
+- [x] Return a rejected decision for `RedisConnectionFailureException`.
+- [x] Run the identity Redis test and the assistant Redis/semantic matrix.
+- [ ] Run live Redis outage and recovery behavior with Docker.
 
 ### Task 21: Split generic and feature-specific test fixtures
 

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 
@@ -26,6 +27,14 @@ class RedisLoginAttemptRateLimiterTest {
   @Test
   void rejectsAnAttemptWhenAtomicRedisCountExceedsTheLimit() {
     when(redis.execute(anyScript(), eq(List.of("identity:login")), eq("60000"))).thenReturn(6L);
+
+    assertThat(limiter.tryAcquire("identity:login", 5, 60_000L)).isFalse();
+  }
+
+  @Test
+  void rejectsAnAttemptWhenRedisIsUnavailable() {
+    when(redis.execute(anyScript(), eq(List.of("identity:login")), eq("60000")))
+        .thenThrow(new RedisConnectionFailureException("Redis unavailable"));
 
     assertThat(limiter.tryAcquire("identity:login", 5, 60_000L)).isFalse();
   }

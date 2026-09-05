@@ -112,6 +112,14 @@
       tenant-schema CRUD, shared/control-plane access, cross-tenant jobs, or
       atomic/specialized SQL.
 
+### Current slice — Task 18G document ID lookups
+
+- [x] Add document service and adapter coverage for ID-based loading.
+- [x] Remove the redundant tenant-qualified document aggregate lookup.
+- [x] Update document lifecycle callers to use `findById`.
+- [x] Keep chunk bulk/replace operations for their dedicated audit.
+- [x] Run document tests, compilation, Checkstyle, and Spotless.
+
 ### Plan working notes
 
 ### Current slice — Task 19A tenant event boundary

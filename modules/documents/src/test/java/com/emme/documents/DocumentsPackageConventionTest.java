@@ -56,15 +56,15 @@ class DocumentsPackageConventionTest {
   }
 
   @Test
-  void requiresTenantScopeForEveryDocumentPersistenceLookup() throws IOException {
+  void usesIdLookupInsideTheTenantScopedPersistenceBoundary() throws IOException {
     String port = Files.readString(ROOT.resolve("application/port/out/DocumentRepository.java"));
     String adapter =
         Files.readString(
             ROOT.resolve("adapter/out/persistence/adapter/DocumentPersistenceAdapter.java"));
 
-    assertThat(port).doesNotContain("findById(UUID documentId)");
-    assertThat(adapter).doesNotContain("documents.findById(");
-    assertThat(adapter).contains("documents.findByTenantIdAndId(");
+    assertThat(port).contains("findById(UUID documentId)");
+    assertThat(adapter).contains("documents.findById(");
+    assertThat(adapter).doesNotContain("documents.findByTenantIdAndId(");
   }
 
   @Test

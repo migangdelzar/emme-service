@@ -28,7 +28,7 @@ public class FailDocumentService implements FailDocumentUseCase {
   public DocumentDetails fail(FailDocumentCommand command) {
     Document document =
         documentRepository
-            .findByTenantIdAndId(command.tenantId(), command.documentId())
+            .findById(command.documentId())
             .orElseThrow(() -> new DocumentNotFoundException(command.documentId()));
     document.markFailed();
     log.warn("Document {} failed: {}", command.documentId(), command.error());

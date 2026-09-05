@@ -1261,6 +1261,20 @@ individually.
 - [x] Update the adapter to use `findById`.
 - [x] Run the appointments module tests, compilation, Checkstyle, and Spotless.
 
+#### Current slice 18G — Use ID-only document aggregate lookups
+
+Document lifecycle operations and ordinary aggregate saves now use the standard
+`findById` JPA operation inside the tenant-scoped connection. The document
+application port no longer exposes a redundant tenant-plus-ID lookup. Chunk
+replacement, bulk chunk reads, and hybrid search remain separate operations
+because their tenant filters and replacement boundaries need an explicit audit.
+
+- [x] Add a document service/adapter contract test for ID-based loading.
+- [x] Remove the redundant tenant-qualified document aggregate lookup.
+- [x] Update document lifecycle callers to use `findById`.
+- [x] Keep chunk bulk/replace operations unchanged for their dedicated audit.
+- [x] Run document tests, compilation, Checkstyle, and Spotless.
+
 #### Tenant isolation boundary correction
 
 `TenantDatabasePoolProvider` caches pools by `databaseId`, not by tenant schema.

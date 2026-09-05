@@ -1,8 +1,7 @@
 package com.emme.documents.application.service;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.documents.api.exception.DocumentNotFoundException;
 import com.emme.documents.api.query.GetDocumentQuery;
 import com.emme.documents.application.port.out.DocumentRepository;
 import com.emme.documents.domain.model.Document;
@@ -14,14 +13,13 @@ import org.junit.jupiter.api.Test;
 class GetDocumentServiceTest {
 
   @Test
-  void rejectsADocumentFromAnotherTenant() {
+  void loadsADocumentByIdFromTheTenantScopedConnection() {
     UUID owner = UUID.randomUUID();
-    UUID caller = UUID.randomUUID();
     Document document = new Document(owner, "policy.pdf", "PDF");
     GetDocumentService service = new GetDocumentService(new Repository(document));
 
-    assertThatThrownBy(() -> service.get(new GetDocumentQuery(caller, document.id())))
-        .isInstanceOf(DocumentNotFoundException.class);
+    assertThat(service.get(new GetDocumentQuery(owner, document.id())).id())
+        .isEqualTo(document.id());
   }
 
   private static final class Repository implements DocumentRepository {
@@ -32,10 +30,8 @@ class GetDocumentServiceTest {
     }
 
     @Override
-    public Optional<Document> findByTenantIdAndId(UUID tenantId, UUID documentId) {
-      return document.tenantId().equals(tenantId) && document.id().equals(documentId)
-          ? Optional.of(document)
-          : Optional.empty();
+    public Optional<Document> findById(UUID documentId) {
+      return document.id().equals(documentId) ? Optional.of(document) : Optional.empty();
     }
 
     @Override

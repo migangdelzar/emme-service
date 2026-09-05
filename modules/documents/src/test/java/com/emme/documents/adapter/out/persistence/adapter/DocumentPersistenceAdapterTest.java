@@ -29,7 +29,7 @@ class DocumentPersistenceAdapterTest {
     DocumentEntity entity = new DocumentEntity(tenantId, "old-name", "UPLOAD");
     entity.onCreate();
 
-    when(documents.findByTenantIdAndId(tenantId, document.id())).thenReturn(Optional.of(entity));
+    when(documents.findById(document.id())).thenReturn(Optional.of(entity));
     when(documents.save(entity)).thenReturn(entity);
 
     Document saved = adapter.save(document);

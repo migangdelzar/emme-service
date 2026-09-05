@@ -1594,14 +1594,23 @@ temporary project and assert plugin application counts and expected
 configuration names. Add a repository check for duplicate dependency notation
 in the known module build files.
 
-- [ ] **Step 2: Run build-logic tests and dependency analysis**
+- [x] **Step 2: Run build-logic tests and dependency analysis**
 
 ```bash
-./gradlew :build-logic:test :dependencyAnalysis --no-parallel --no-configuration-cache
+./gradlew :build-logic:test --no-parallel --no-configuration-cache
+./gradlew :modules:assistant:computeActualUsageMain :modules:assistant:computeAdvice \
+  :modules:booking:computeActualUsageMain :modules:booking:computeAdvice \
+  :modules:catalog:computeActualUsageMain :modules:catalog:computeAdvice \
+  --no-daemon --no-parallel --no-configuration-cache
 ```
 
-Expected result: the duplicate declarations and over-provisioned placeholder
-capabilities are reported before cleanup.
+The repository has no root `dependencyAnalysis` task. The dependency-analysis
+plugin exposes per-project `computeActualUsage*` and `computeAdvice` tasks, but
+the first representative run is currently blocked by the plugin's ASM parser:
+the Gradle daemon runs on Java 25 and the plugin fails on class-file major
+version 69 before producing advice. Keep the source-level duplicate-declaration
+test as the deterministic guard until the plugin/toolchain compatibility is
+resolved; do not mark dependency advice as complete from a failed run.
 
 - [ ] **Step 3: Remove duplicate declarations and split conventions only where measured**
 
@@ -1630,7 +1639,10 @@ changes remain separate until dependency analysis demonstrates a real benefit.
 - [x] Remove redundant `libraries:kernel` declarations from booking and catalog.
 - [x] Remove the duplicate Spring Security test dependency from assistant.
 - [x] Run the repository inventory test, affected compilation, and Spotless.
-- [ ] Complete convention-plugin and dependency-analysis follow-up slices.
+- [x] Record the actual per-project dependency-analysis task names and Java 25
+      class-file compatibility blocker.
+- [ ] Complete convention-plugin and dependency-analysis follow-up slices once
+      the analysis plugin supports the configured Java toolchain.
 
 ## 11. Phase I — Database, deployment, and final cleanup
 

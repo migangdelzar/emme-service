@@ -175,6 +175,16 @@
 
 ### Plan working notes
 
+### Current slice — Task 22 dependency-analysis gate
+
+- [x] Confirm the build exposes per-project dependency-analysis tasks rather
+      than a root `dependencyAnalysis` task.
+- [x] Attempt representative `computeActualUsageMain`/`computeAdvice` tasks.
+- [x] Record the Java 25 / class-file major 69 incompatibility and preserve the
+      source-level duplicate-declaration guard.
+- [ ] Re-run dependency advice after the plugin supports the configured Java
+      toolchain; do not remove dependencies from the failed report.
+
 ### Current slice — Task 19A tenant event boundary
 
 - [x] Add a service test for provider-neutral tenant event publication.

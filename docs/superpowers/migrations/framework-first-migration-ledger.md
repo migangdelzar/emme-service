@@ -230,9 +230,21 @@ the task report:
 ./gradlew :applications:emme-platform:test --tests com.emme.RepositoryFrameworkFirstInventoryTest --no-parallel --no-configuration-cache
 ./gradlew compileJava --no-parallel --no-configuration-cache
 ./gradlew test --no-parallel --no-configuration-cache
-./gradlew dependencyAnalysis --no-parallel --no-configuration-cache
+./gradlew :modules:assistant:computeActualUsageMain :modules:assistant:computeAdvice \
+  :modules:booking:computeActualUsageMain :modules:booking:computeAdvice \
+  :modules:catalog:computeActualUsageMain :modules:catalog:computeAdvice \
+  --no-daemon --no-parallel --no-configuration-cache
 git diff --check
 ```
+
+There is no root `dependencyAnalysis` task in this Gradle build. The
+dependency-analysis plugin provides per-project `computeActualUsage*` and
+`computeAdvice` tasks. The representative command currently fails before
+advice generation because its ASM parser does not support the Java 25 class
+files produced by the configured toolchain (major version 69). This is an
+environment/tooling gate, not evidence that a dependency is unused; source
+inventory tests remain the deterministic duplicate-declaration guard until the
+plugin or Gradle JDK is made compatible.
 
 Container-backed PostgreSQL/Redis/Kafka tests require a working Docker
 environment. Provider-offline startup and E2E tests require their configured

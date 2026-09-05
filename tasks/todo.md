@@ -3817,6 +3817,8 @@ Completed in this slice:
 ### Results
 
 - Catalog persistence tests and `:modules:catalog:check` pass.
+- Repository-wide `./gradlew check --no-daemon --no-parallel
+  --no-configuration-cache` passes with 255 actionable tasks.
 - No application port or provider-specific dependency was changed.
 - Docker-backed PostgreSQL verification remains open because the local Colima
   Docker daemon is unavailable.

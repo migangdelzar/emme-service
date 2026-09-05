@@ -372,6 +372,7 @@ superclass and keeping JPA types out of the application contract.
 - [x] Keep new aggregate IDs null until JPA persistence assigns them.
 - [x] Update managed JPA entities instead of rebuilding existing versioned rows.
 - [x] Run both affected module checks, including Spotless and Checkstyle.
+- [x] Re-run the repository-wide `check` with all managed-update slices applied.
 - [ ] Run live PostgreSQL optimistic-lock conflict coverage when Docker is
       available.
 
@@ -387,6 +388,7 @@ adopted by Assistant aggregates; no JPA types cross the application ports.
 - [x] Keep new CatalogItem IDs null until JPA persistence assigns them.
 - [x] Load existing items by ID and mutate the managed entity before saving.
 - [x] Run the full Catalog check, including Spotless and Checkstyle.
+- [x] Re-run the repository-wide `check` with all managed-update slices applied.
 - [ ] Run live PostgreSQL optimistic-lock conflict coverage when Docker is
       available.
 

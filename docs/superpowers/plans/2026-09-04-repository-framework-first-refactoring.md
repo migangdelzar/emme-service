@@ -2709,6 +2709,7 @@ managed entity. The application ports remain unchanged and provider-neutral.
       JPA/version state.
 - [x] Run focused tests and `:modules:notification:check` plus
       `:modules:payment:check`.
+- [x] Re-run the repository-wide `check` after the slice.
 - [ ] Run PostgreSQL optimistic-lock conflict coverage when Docker is available.
 
 This follows the established Conversation and PendingAction persistence pattern:
@@ -2728,6 +2729,7 @@ JPA; existing items are loaded by ID and only their mutable status is applied.
 - [x] Conditionally restore entity identity and update status on the managed
       entity.
 - [x] Run the focused Catalog persistence test and full Catalog check.
+- [x] Re-run the repository-wide `check` after the slice.
 - [ ] Run PostgreSQL optimistic-lock conflict coverage when Docker is available.
 
 CatalogItemImage remains unchanged because its current contract is create and

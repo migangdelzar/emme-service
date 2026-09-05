@@ -577,6 +577,13 @@
       checkpoint boundary.
 - [ ] Complete remaining checkpoint security and malformed-thread integration gates.
 
+### Current slice — Task 8C LangGraph JDBC binding
+
+- [x] Add a failing configuration test for the checkpoint JDBC dependency.
+- [x] Qualify LangGraph checkpoint persistence with `tenantJdbcClient`.
+- [x] Verify focused LangGraph tests and the DDD/hexagonal architecture test.
+- [ ] Complete live PostgreSQL checkpoint security/resume coverage with Docker.
+
 ### Remaining repository-wide framework-first work
 
 - [ ] Finish Spring AI metadata-contract and hybrid-search measurements.

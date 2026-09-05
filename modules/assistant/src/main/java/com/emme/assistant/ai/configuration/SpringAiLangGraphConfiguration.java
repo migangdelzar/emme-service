@@ -29,7 +29,8 @@ public class SpringAiLangGraphConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  JdbcLangGraphCheckpointSaver jdbcCheckpointSaver(JdbcClient jdbc, ObjectMapper objectMapper) {
+  JdbcLangGraphCheckpointSaver jdbcCheckpointSaver(
+      @Qualifier("tenantJdbcClient") JdbcClient jdbc, ObjectMapper objectMapper) {
     return new JdbcLangGraphCheckpointSaver(jdbc, objectMapper);
   }
 

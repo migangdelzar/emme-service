@@ -75,6 +75,16 @@ class SpringAiLangGraphConfigurationTest {
   }
 
   @Test
+  void selectsTheTenantScopedJdbcClientForCheckpoints() throws Exception {
+    var method =
+        SpringAiLangGraphConfiguration.class.getDeclaredMethod(
+            "jdbcCheckpointSaver", JdbcClient.class, ObjectMapper.class);
+
+    assertThat(method.getParameters()[0].getAnnotation(Qualifier.class).value())
+        .isEqualTo("tenantJdbcClient");
+  }
+
+  @Test
   void selectsTheNamedCompiledGraphForEachWorkflowAdapter() throws Exception {
     var conversationMethod =
         SpringAiLangGraphConfiguration.class.getDeclaredMethod(

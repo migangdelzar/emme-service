@@ -587,6 +587,20 @@ Completed in this slice:
   tenant/workflow boundary for replaceable checkpoint implementations.
 - Focused LangGraph, checkpoint, and compilation tests pass.
 
+#### Current slice 8C — Bind checkpoints to the tenant JDBC client
+
+The opt-in LangGraph composition root now qualifies its checkpoint persistence
+dependency as `tenantJdbcClient`. The previous unqualified `JdbcClient` was
+ambiguous once the AI job composition root exposed `coreJdbcClient`, and could
+have selected the control-plane connection instead of the tenant-schema
+connection. The LangGraph library types remain confined to the adapter and
+composition-root edge; application workflow ports are unchanged.
+
+- [x] Add a failing configuration test for the tenant JDBC qualifier.
+- [x] Bind `jdbcCheckpointSaver` to `tenantJdbcClient`.
+- [x] Run focused LangGraph tests and the application DDD/hexagonal architecture test.
+- [ ] Complete live PostgreSQL checkpoint security/resume coverage with Docker.
+
 #### Current slice 13A — Name the shared tenant JDBC boundary
 
 The tenant-scoped connection pool is shared by AI learning, tools, and AGE

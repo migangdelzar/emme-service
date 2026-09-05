@@ -190,6 +190,12 @@ lookup should become a schema-local `findByChannel` contract.
 | AI operational state, live events, and login-attempt limiter | Classified | Keep `StringRedisTemplate`; Spring manages connection and serialization, while adapter ports keep providers replaceable from application code. | 2026-09-05 |
 | Spring AI semantic vector store and hot projection | Classified | Keep the isolated, Spring-managed Jedis `RedisClient` because the official Spring AI `RedisVectorStore` and native set/index invalidation require it. Do not introduce a second generic template solely for standardization. | 2026-09-05 |
 
+### 4.0.3 LangGraph persistence wiring
+
+| Boundary | Status | Decision and reason | Date |
+|---|---|---|---|
+| LangGraph checkpoint saver | Replacement tested | Qualify the composition-root dependency as `tenantJdbcClient`. Checkpoints are tenant-schema state and must not resolve ambiguously against the control-plane `coreJdbcClient`; the provider-neutral workflow ports remain unchanged. | 2026-09-05 |
+
 ### 4.0 Tenant-qualified lookup decisions
 
 | Boundary | Status | Decision |

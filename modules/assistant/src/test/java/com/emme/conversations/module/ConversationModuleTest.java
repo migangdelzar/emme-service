@@ -5,13 +5,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.tenancy.testing.BaseTenantModuleTest;
+import com.emme.tenancy.testing.EntitledTenantModuleTest;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-class ConversationModuleTest extends BaseTenantModuleTest {
+class ConversationModuleTest extends EntitledTenantModuleTest {
 
   @BeforeEach
   void setUp() {

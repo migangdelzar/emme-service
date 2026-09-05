@@ -3,11 +3,11 @@ package com.emme.salon.module;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.tenancy.testing.BaseTenantModuleTest;
+import com.emme.tenancy.testing.EntitledTenantModuleTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SalonAuthModuleTest extends BaseTenantModuleTest {
+class SalonAuthModuleTest extends EntitledTenantModuleTest {
 
   @BeforeEach
   void setUp() {

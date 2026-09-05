@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.emme.tenancy.api.result.TenantDetails;
-import com.emme.tenancy.testing.BaseTenantModuleTest;
+import com.emme.tenancy.testing.EntitledTenantModuleTest;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +20,7 @@ import org.springframework.http.MediaType;
  * independently managed and the tenant context is properly enforced from JWT claims.
  */
 @DisplayName("Tenant Isolation")
-class TenantIsolationModuleTest extends BaseTenantModuleTest {
+class TenantIsolationModuleTest extends EntitledTenantModuleTest {
 
   private TenantDetails tenantA;
   private TenantDetails tenantB;

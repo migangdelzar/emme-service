@@ -6,12 +6,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.tenancy.testing.BaseTenantModuleTest;
+import com.emme.tenancy.testing.EntitledTenantModuleTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /** L3 module tests for feature flag endpoints (admin CRUD, tenant overrides, auth gating). */
-class FeatureFlagModuleTest extends BaseTenantModuleTest {
+class FeatureFlagModuleTest extends EntitledTenantModuleTest {
 
   @BeforeEach
   void setUp() {

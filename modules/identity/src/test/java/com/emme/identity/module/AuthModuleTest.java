@@ -5,7 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.emme.tenancy.testing.BaseTenantModuleTest;
+import com.emme.tenancy.testing.EntitledTenantModuleTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  * L3 module tests for auth flows (login, current user, unauthenticated access). Tests the full
  * Spring context with H2, MockMvc, and JWT auth.
  */
-class AuthModuleTest extends BaseTenantModuleTest {
+class AuthModuleTest extends EntitledTenantModuleTest {
 
   @BeforeEach
   void setUp() {

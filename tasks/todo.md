@@ -386,8 +386,8 @@
 - [x] Migrate full-context module tests and fixture dependencies.
 - [x] Remove feature-module dependencies from `libraries/testing`.
 - [x] Run all affected test compilation and style checks.
-- [ ] Split remaining identity, salon, and subscription setup after a
-      dependency-safe fixture design is established.
+- [x] Split remaining identity, salon, and subscription setup through a
+      tenancy-owned entitled fixture.
 
 ### Current slice — Task 21A tenant web fixture ownership
 
@@ -397,16 +397,18 @@
 - [x] Migrate representative tenant-provisioning web tests and their fixture
       dependencies.
 - [x] Compile affected fixtures and run representative web tests.
-- [ ] Split the remaining feature-specific `BaseTenantModuleTest` setup.
+- [x] Split the remaining feature-specific `BaseTenantModuleTest` setup into
+      `EntitledTenantModuleTest` and migrate all `fullSetup()` consumers.
 
-### Current slice — Task 21E remove unused tenant-fixture repository
+### Current slice — Task 21E split tenant entitlement fixture
 
 - [x] Add a failing fixture-boundary test for the unused salon repository.
 - [x] Remove `profileRepo`, `membershipRepo`, and their unused repository imports from `BaseTenantModuleTest`.
 - [x] Move the Identity-only `roleRepo` injection to `IdentityModuleTest`.
 - [x] Remove the now-unneeded direct Salon dependency from the tenancy fixture artifact.
-- [x] Run the tenancy fixture boundary test and fixture compilation.
-- [ ] Split remaining feature-specific setup after a dependency-safe design.
+- [x] Move subscription and feature-flag setup to `EntitledTenantModuleTest`.
+- [x] Migrate all full-context `fullSetup()` consumers to the entitled fixture.
+- [x] Run the tenancy boundary, representative full-context, and fixture compilation checks.
 
 ### Current slice — Task 18G document ID lookups
 

@@ -1964,25 +1964,25 @@ receive the bootstrap override through the tenancy-owned `TenantWebTest`.
 - [x] Remove feature-module dependencies from `libraries/testing`.
 - [x] Make the direct tenancy web test import its tenancy bootstrap fixture explicitly.
 - [x] Run all affected test compilation and style checks.
-- [ ] Split the remaining identity, salon, and subscription setup from
-      `BaseTenantModuleTest` only after a dependency-safe fixture design is
-      established.
+- [x] Split the remaining identity, salon, and subscription setup from
+      `BaseTenantModuleTest` through a tenancy-owned entitlement fixture.
 
-#### Current slice 21E — Remove the unused salon repository from the tenant fixture
+#### Current slice 21E — Split tenant entitlement setup from the generic fixture
 
 `BaseTenantModuleTest` no longer autowires the unused
 `SpringDataBusinessProfileRepository`, `SpringDataMembershipRepository`, or
-`SpringDataRoleRepository`. The fixture still owns only the subscription and
-feature-flag collaborators that have active cross-module consumers; the
-Identity module owns its role and membership repositories. The broader feature-setup split remains deferred until
-its fixture dependency graph is designed.
+`SpringDataRoleRepository`. Subscription and feature-flag setup now lives in
+the tenancy-owned `EntitledTenantModuleTest`, and Identity tests own their role
+and membership repositories. The generic base therefore contains only tenant
+creation, request, and JWT mechanics.
 
 - [x] Add a failing fixture-boundary test for the unused salon repository.
 - [x] Remove the unused salon and membership repository fields from `BaseTenantModuleTest`.
 - [x] Move the Identity-only role repository injection to `IdentityModuleTest`.
 - [x] Remove the now-unneeded direct Salon dependency from the tenancy fixture artifact.
-- [x] Run the tenancy fixture boundary test and affected fixture compilation.
-- [ ] Split the remaining feature-specific setup without widening fixture dependencies.
+- [x] Add `EntitledTenantModuleTest` for subscription and feature-flag setup.
+- [x] Migrate all `fullSetup()` consumers to the entitled fixture.
+- [x] Run the tenancy boundary, representative full-context, and affected fixture compilation checks.
 
 ### Task 22: Remove duplicate Gradle capabilities and dependencies
 

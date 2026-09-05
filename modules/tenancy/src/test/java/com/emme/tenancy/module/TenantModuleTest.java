@@ -11,17 +11,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.emme.tenancy.api.result.TenantDetails;
-import com.emme.tenancy.testing.BaseTenantModuleTest;
+import com.emme.tenancy.testing.EntitledTenantModuleTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 /**
- * L3 module tests for Tenant CRUD via HTTP layer. Extends {@link BaseTenantModuleTest} — provides
- * MockMvc, full Spring context, H2 database.
+ * L3 module tests for Tenant CRUD via HTTP layer. Extends {@link EntitledTenantModuleTest} —
+ * provides MockMvc, full Spring context, H2 database.
  */
 @DisplayName("Tenant Module")
-class TenantModuleTest extends BaseTenantModuleTest {
+class TenantModuleTest extends EntitledTenantModuleTest {
 
   @Test
   @DisplayName("POST /api/tenants → 201 with location header and tenant fields")

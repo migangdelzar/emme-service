@@ -12,6 +12,10 @@ class TestingFixtureBoundaryTest {
       sourcePath("libraries/testing/src/testFixtures/java/com/emme/testing");
   private static final Path TENANCY_FIXTURE_ROOT =
       sourcePath("modules/tenancy/src/testFixtures/java/com/emme/tenancy/testing");
+  private static final Path TENANT_BASE_FIXTURE =
+      TENANCY_FIXTURE_ROOT.resolve("BaseTenantModuleTest.java");
+  private static final Path ENTITLED_TENANT_FIXTURE =
+      TENANCY_FIXTURE_ROOT.resolve("EntitledTenantModuleTest.java");
   private static final Path TENANCY_BUILD_FILE = sourcePath("modules/tenancy/build.gradle.kts");
   private static final Path TENANCY_BOOTSTRAP_FIXTURE =
       sourcePath(
@@ -33,7 +37,7 @@ class TestingFixtureBoundaryTest {
 
   @Test
   void tenantFixtureDoesNotExposeUnusedSalonRepositories() throws Exception {
-    assertThat(Files.readString(TENANCY_FIXTURE_ROOT.resolve("BaseTenantModuleTest.java")))
+    assertThat(Files.readString(TENANT_BASE_FIXTURE))
         .doesNotContain("SpringDataBusinessProfileRepository")
         .doesNotContain("profileRepo")
         .doesNotContain("SpringDataMembershipRepository")
@@ -42,6 +46,16 @@ class TestingFixtureBoundaryTest {
         .doesNotContain("roleRepo");
     assertThat(Files.readString(TENANCY_BUILD_FILE))
         .doesNotContain("testFixturesImplementation(project(\":modules:salon\"))");
+  }
+
+  @Test
+  void keepsEntitlementSetupOutOfTheGenericTenantFixture() throws Exception {
+    assertThat(Files.readString(TENANT_BASE_FIXTURE))
+        .doesNotContain("SpringDataSubscriptionRepository")
+        .doesNotContain("SpringDataFeatureFlagRepository")
+        .doesNotContain("fullSetup");
+    assertThat(ENTITLED_TENANT_FIXTURE).exists();
+    assertThat(Files.readString(ENTITLED_TENANT_FIXTURE)).contains("fullSetup");
   }
 
   private static Path sourcePath(String relativePath) {

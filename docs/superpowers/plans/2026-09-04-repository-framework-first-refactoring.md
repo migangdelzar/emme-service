@@ -1704,6 +1704,22 @@ the provider-neutral application port while making the read deterministic.
 - [ ] Add a measured composite index if production query plans show the sort is
       material; do not add speculative indexing in this slice.
 
+#### Current slice 18AD — Persist Assistant JPA updates through managed entities
+
+Assistant `Conversation` and `PendingAction` updates previously reconstructed
+entities and passed them to `save`. Because their domain models did not carry
+the inherited JPA version, this could classify an existing row as new and
+undermine optimistic locking. New aggregates now use null IDs so JPA assigns
+identity on persist; existing updates load by ID, mutate the managed entity,
+and save it. Domain and application ports remain framework-free.
+
+- [x] Add failing adapter tests for existing conversation and pending-action
+      updates.
+- [x] Use managed-entity update paths with inherited `@Version` support.
+- [x] Preserve immutable aggregate fields during updates.
+- [x] Run focused Assistant tests and the full Assistant check.
+- [ ] Run the live PostgreSQL update/conflict test when Docker is available.
+
 #### Tenant isolation boundary correction
 
 `TenantDatabasePoolProvider` caches pools by `databaseId`, not by tenant schema.

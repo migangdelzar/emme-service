@@ -15,13 +15,7 @@ public final class Conversation {
   private ConversationStatus status;
 
   public Conversation(UUID tenantId, UUID participantId, ChannelType channel) {
-    this(
-        UUID.randomUUID(),
-        tenantId,
-        participantId,
-        channel,
-        ConversationStatus.ACTIVE,
-        Instant.now());
+    this(null, tenantId, participantId, channel, ConversationStatus.ACTIVE, Instant.now());
   }
 
   private Conversation(
@@ -31,7 +25,7 @@ public final class Conversation {
       ChannelType channel,
       ConversationStatus status,
       Instant startedAt) {
-    this.id = Objects.requireNonNull(id);
+    this.id = id;
     this.tenantId = Objects.requireNonNull(tenantId);
     this.participantId = Objects.requireNonNull(participantId);
     this.channel = Objects.requireNonNull(channel);
@@ -46,7 +40,13 @@ public final class Conversation {
       ChannelType channel,
       ConversationStatus status,
       Instant startedAt) {
-    return new Conversation(id, tenantId, participantId, channel, status, startedAt);
+    return new Conversation(
+        Objects.requireNonNull(id, "id must not be null"),
+        tenantId,
+        participantId,
+        channel,
+        status,
+        startedAt);
   }
 
   public UUID id() {

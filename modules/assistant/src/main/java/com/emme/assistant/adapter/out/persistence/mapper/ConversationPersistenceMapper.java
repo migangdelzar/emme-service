@@ -20,8 +20,14 @@ public class ConversationPersistenceMapper {
     ConversationEntity entity =
         new ConversationEntity(
             conversation.tenantId(), conversation.participantId(), conversation.channel());
-    entity.restoreIdentity(conversation.id(), conversation.startedAt());
-    entity.setStatus(conversation.status());
+    if (conversation.id() != null) {
+      entity.restoreIdentity(conversation.id(), conversation.startedAt());
+    }
+    updateEntity(conversation, entity);
     return entity;
+  }
+
+  public void updateEntity(Conversation conversation, ConversationEntity entity) {
+    entity.setStatus(conversation.status());
   }
 }

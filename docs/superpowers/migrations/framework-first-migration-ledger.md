@@ -203,7 +203,7 @@ lookup should become a schema-local `findByChannel` contract.
 
 | Boundary | Status | Decision |
 |---|---|---|
-| Assistant conversation and pending-action aggregate reads | Replacement tested | Use connection-scoped `findById`; retain tenant IDs in commands/domain state and explicit child/list operations. Active pending actions use a schema-local status query ordered by `created_at, id` so API ordering is deterministic. |
+| Assistant conversation and pending-action aggregate reads | Replacement tested | Use connection-scoped `findById`; retain tenant IDs in commands/domain state and explicit child/list operations. Active pending actions use a schema-local status query ordered by `created_at, id` so API ordering is deterministic. Existing updates load managed JPA entities so inherited `@Version` remains effective. |
 | Subscription existing aggregate save | Replacement tested | Use connection-scoped `findById`; retain tenant-keyed singleton lookup for provisioning and reads. |
 | Identity membership | Keep explicit scope | Shared `emme_core` persistence and cross-tenant authorization require `tenant_id` in the lookup contract. |
 | Calendar event links by appointment | Replacement tested | Use schema-local `findByAppointmentIdAndProvider`; tenant is selected at connection checkout and the forward `034-calendar-event-link-cardinality.sql` migration enforces one row per tenant/appointment/provider. Keep `findByAppointmentId` for operations that intentionally handle multiple providers. |
@@ -350,3 +350,18 @@ The previous status query left row order unspecified. The ordered derived query
 removes that future failure mode without introducing SQL or changing the domain
 contract; expiration scans remain separate because they are operational claims,
 not user-facing ordered history.
+
+## Assistant managed-update slice — 2026-09-05
+
+- [x] Add adapter coverage for existing Conversation and PendingAction updates.
+- [x] Load existing records by ID and mutate managed JPA entities.
+- [x] Keep new aggregate IDs null until JPA persist, matching the foundational
+      JPA aggregate pattern.
+- [x] Run the focused Assistant tests and full module check.
+- [ ] Run live PostgreSQL optimistic-lock conflict coverage when Docker is
+      available.
+
+Rebuilding an existing versioned entity from a domain object without carrying
+the persistence version can make Spring Data treat it as new. The managed update
+path avoids that failure while keeping optimistic locking in the shared mapped
+superclass and keeping JPA types out of the application contract.

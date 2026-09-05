@@ -47,7 +47,12 @@ public class PendingActionPersistenceAdapter implements PendingActionRepository 
 
   @Override
   public PendingAction save(PendingAction action) {
-    PendingActionEntity saved = repository.save(mapper.toEntity(action));
+    PendingActionEntity entity =
+        action.id() == null
+            ? mapper.toEntity(action)
+            : repository.findById(action.id()).orElseThrow();
+    mapper.updateEntity(action, entity);
+    PendingActionEntity saved = repository.save(entity);
     return mapper.toDomain(saved);
   }
 }

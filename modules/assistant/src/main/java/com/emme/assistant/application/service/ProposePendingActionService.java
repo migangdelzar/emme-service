@@ -8,7 +8,6 @@ import com.emme.assistant.application.port.out.ConversationRepository;
 import com.emme.assistant.application.port.out.PendingActionRepository;
 import com.emme.assistant.domain.model.ActionType;
 import com.emme.assistant.domain.model.PendingAction;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +30,7 @@ public class ProposePendingActionService implements ProposePendingActionUseCase 
     return AssistantApplicationMapper.toResult(
         actions.save(
             new PendingAction(
-                UUID.randomUUID(),
+                null,
                 command.tenantId(),
                 command.conversationId(),
                 ActionType.valueOf(command.actionType().name()),

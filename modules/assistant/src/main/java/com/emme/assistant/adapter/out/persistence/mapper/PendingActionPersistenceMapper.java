@@ -26,8 +26,16 @@ public class PendingActionPersistenceMapper {
             action.actionType(),
             action.details(),
             action.expiresAt());
-    entity.restoreIdentity(action.id(), action.createdAt());
-    entity.setStatus(action.status());
+    if (action.id() != null) {
+      entity.restoreIdentity(action.id(), action.createdAt());
+    }
+    updateEntity(action, entity);
     return entity;
+  }
+
+  public void updateEntity(PendingAction action, PendingActionEntity entity) {
+    entity.setStatus(action.status());
+    entity.setDetails(action.details());
+    entity.setExpiresAt(action.expiresAt());
   }
 }

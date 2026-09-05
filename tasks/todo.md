@@ -547,6 +547,15 @@
 - [ ] Add a measured composite index if production query plans show the sort is
       material; do not add speculative indexing in this slice.
 
+### Current slice — Task 18AD Assistant managed JPA updates
+
+- [x] Add failing adapter tests for existing conversation and pending-action
+      updates.
+- [x] Use managed-entity update paths with inherited `@Version` support.
+- [x] Preserve immutable aggregate fields during updates.
+- [x] Run focused Assistant tests and the full Assistant check.
+- [ ] Run the live PostgreSQL update/conflict test when Docker is available.
+
 
 - User requested subagent-driven execution when work can be safely parallelized.
 - Shared contracts, Liquibase migrations, version catalog, and composition-root

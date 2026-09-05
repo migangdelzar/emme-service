@@ -33,7 +33,12 @@ public class ConversationPersistenceAdapter implements ConversationRepository {
 
   @Override
   public Conversation save(Conversation conversation) {
-    ConversationEntity saved = repository.save(mapper.toEntity(conversation));
+    ConversationEntity entity =
+        conversation.id() == null
+            ? mapper.toEntity(conversation)
+            : repository.findById(conversation.id()).orElseThrow();
+    mapper.updateEntity(conversation, entity);
+    ConversationEntity saved = repository.save(entity);
     return mapper.toDomain(saved);
   }
 }

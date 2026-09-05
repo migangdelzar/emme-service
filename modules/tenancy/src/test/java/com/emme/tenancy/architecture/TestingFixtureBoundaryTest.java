@@ -35,7 +35,9 @@ class TestingFixtureBoundaryTest {
   void tenantFixtureDoesNotExposeUnusedSalonRepositories() throws Exception {
     assertThat(Files.readString(TENANCY_FIXTURE_ROOT.resolve("BaseTenantModuleTest.java")))
         .doesNotContain("SpringDataBusinessProfileRepository")
-        .doesNotContain("profileRepo");
+        .doesNotContain("profileRepo")
+        .doesNotContain("SpringDataMembershipRepository")
+        .doesNotContain("membershipRepo");
     assertThat(Files.readString(TENANCY_BUILD_FILE))
         .doesNotContain("testFixturesImplementation(project(\":modules:salon\"))");
   }

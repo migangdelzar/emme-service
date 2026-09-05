@@ -49,10 +49,6 @@ public abstract class BaseTenantModuleTest {
   @Autowired protected SpringDataFeatureFlagRepository featureFlagRepo;
 
   @Autowired
-  protected com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository
-      membershipRepo;
-
-  @Autowired
   protected com.emme.identity.adapter.out.persistence.repository.SpringDataRoleRepository roleRepo;
 
   protected static final String TEST_USER_SUB = "auth0|test-user-123";

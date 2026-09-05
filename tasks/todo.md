@@ -402,7 +402,7 @@
 ### Current slice — Task 21E remove unused tenant-fixture repository
 
 - [x] Add a failing fixture-boundary test for the unused salon repository.
-- [x] Remove `profileRepo` and its salon repository import from `BaseTenantModuleTest`.
+- [x] Remove `profileRepo`, `membershipRepo`, and their unused repository imports from `BaseTenantModuleTest`.
 - [x] Remove the now-unneeded direct Salon dependency from the tenancy fixture artifact.
 - [x] Run the tenancy fixture boundary test and fixture compilation.
 - [ ] Split remaining feature-specific setup after a dependency-safe design.

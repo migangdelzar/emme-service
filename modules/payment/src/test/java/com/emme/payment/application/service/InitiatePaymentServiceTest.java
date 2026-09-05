@@ -70,8 +70,8 @@ class InitiatePaymentServiceTest {
     }
 
     @Override
-    public List<Payment> findByTenantId(UUID tenantId) {
-      return payments.stream().filter(payment -> payment.tenantId().equals(tenantId)).toList();
+    public List<Payment> findAll() {
+      return List.copyOf(payments);
     }
 
     @Override

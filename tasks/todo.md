@@ -188,6 +188,14 @@
 - [x] Run Documents tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue reviewing remaining tenant-schema list/search methods.
 
+### Current slice — Task 18R Payment history listing
+
+- [x] Add an adapter test for schema-local payment listing.
+- [x] Replace tenant-qualified payment history with JPA `findAll()`.
+- [x] Preserve tenant-qualified provider-reference callback resolution.
+- [x] Run Payment tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue reviewing remaining tenant-schema list/search methods.
+
 ### Tenant schema routing decision
 
 - [x] Apply tenant schema and session configuration when a connection is taken

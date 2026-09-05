@@ -11,7 +11,7 @@ public interface PaymentRepository {
 
   Optional<Payment> findByTenantIdAndProviderReference(UUID tenantId, String providerReference);
 
-  List<Payment> findByTenantId(UUID tenantId);
+  List<Payment> findAll();
 
   Payment save(Payment payment);
 }

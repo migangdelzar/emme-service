@@ -1416,6 +1416,20 @@ still carries its tenant identity for persistence and mapping.
 - [x] Run Documents tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
 
+#### Current slice 18R — Remove tenant predicates from Payment history listing
+
+Payment history is read from the tenant-selected schema and now uses inherited
+JPA `findAll()`. Provider-reference resolution remains tenant-qualified because
+callback processing can identify the tenant before the tenant-scoped connection
+is established; payment authority, webhook idempotency, and state transitions
+are unchanged.
+
+- [x] Add adapter contract coverage for schema-local payment listing.
+- [x] Replace the tenant-qualified history query with inherited `findAll()`.
+- [x] Update list service and in-memory test repositories.
+- [x] Run Payment tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
+
 #### Current slice 18E — Use ID-only service-catalog updates
 
 Artist and service CRUD is already expressed cleanly with Spring Data JPA. The

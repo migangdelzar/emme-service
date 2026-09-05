@@ -36,8 +36,8 @@ public class PaymentPersistenceAdapter implements PaymentRepository {
   }
 
   @Override
-  public List<Payment> findByTenantId(UUID tenantId) {
-    return repository.findByTenantId(tenantId).stream().map(mapper::toDomain).toList();
+  public List<Payment> findAll() {
+    return repository.findAll().stream().map(mapper::toDomain).toList();
   }
 
   @Override

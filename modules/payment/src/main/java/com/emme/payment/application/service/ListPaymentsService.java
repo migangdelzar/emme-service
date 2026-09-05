@@ -20,8 +20,6 @@ public class ListPaymentsService implements ListPaymentsUseCase {
 
   @Override
   public List<PaymentDetails> list(ListPaymentsQuery query) {
-    return repository.findByTenantId(query.tenantId()).stream()
-        .map(PaymentApplicationMapper::toResult)
-        .toList();
+    return repository.findAll().stream().map(PaymentApplicationMapper::toResult).toList();
   }
 }

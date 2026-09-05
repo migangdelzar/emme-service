@@ -1887,6 +1887,25 @@ Completed in this slice:
 - [ ] Reconcile the role vocabulary with the identity module's eventual
       centralized authorization contract before changing serialized/auth tokens.
 
+#### Current slice 21B — Keep generic H2 fixtures free of PostgreSQL provisioning
+
+Completed in this slice:
+
+- The shared `TestBootstrapJdbcConfig` now supplies a primary no-op
+  `TenantSchemaMigrationPort` for H2 module tests.
+- Generic test fixtures no longer pull the database module just to expose
+  PostgreSQL Liquibase resources.
+- PostgreSQL tenant schema migration remains covered by the real adapter and
+  is reserved for the Testcontainers/integration source set.
+
+- [x] Add a fixture contract test for the no-op migration boundary.
+- [x] Remove the unnecessary database runtime dependency from generic testing
+      fixtures.
+- [x] Verify tenancy tests complete without asynchronous PostgreSQL migration
+      errors in H2 contexts.
+- [ ] Run the real Liquibase migration against PostgreSQL/Testcontainers when
+      Docker is available.
+
 ## 12. Subagent-driven execution protocol
 
 Subagents are the default for independent work, as requested. The coordinator

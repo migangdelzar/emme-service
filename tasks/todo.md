@@ -190,6 +190,17 @@
 - [ ] Reconcile role vocabulary with the identity authorization contract before
       changing security token formats.
 
+### Current slice — Task 21B H2 fixture provisioning boundary
+
+- [x] Add a failing fixture contract test for the migration replacement.
+- [x] Provide a primary no-op tenant schema migration port for H2 module tests.
+- [x] Remove the unnecessary database runtime dependency from generic testing
+      fixtures.
+- [x] Run tenancy fixture/module tests and confirm no async PostgreSQL DDL
+      errors are emitted by H2 contexts.
+- [ ] Run real Liquibase tenant provisioning against PostgreSQL/Testcontainers
+      when Docker is available.
+
 ### Current slice — Task 21A tenant web fixture ownership
 
 - [x] Add a failing architecture test for tenancy-free `BaseWebTest`.

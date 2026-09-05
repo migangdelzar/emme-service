@@ -146,6 +146,16 @@
   application policy and reuse it for defense-in-depth checks; leave transport
   annotations at their adapter boundary.
 
+## 2026-09-05 — Keep database-specific provisioning out of H2 fixtures
+
+- Failure mode: Generic H2 module tests scanned the real tenant provisioning
+  listener and attempted PostgreSQL-only Liquibase DDL asynchronously.
+- Detection signal: Tests were green but emitted unfinished event publications
+  and migration errors, masking real failures in the logs.
+- Prevention rule: Supply a primary no-op provisioning port in H2 fixtures and
+  reserve the real Liquibase adapter for PostgreSQL/Testcontainers integration
+  tests.
+
 ## 2026-09-04 — Keep test and composition-root signatures synchronized
 
 - Failure mode: A focused wiring test was changed to require a `JdbcClient`

@@ -35,7 +35,12 @@ class CatalogItemPersistenceAdapter implements CatalogItemRepository {
 
   @Override
   public CatalogItem save(CatalogItem item) {
-    return repository.save(CatalogItemEntity.from(item)).toDomain();
+    CatalogItemEntity entity =
+        item.getId() == null
+            ? CatalogItemEntity.from(item)
+            : repository.findById(item.getId()).orElseThrow();
+    entity.setStatus(item.getStatus());
+    return repository.save(entity).toDomain();
   }
 
   @Override

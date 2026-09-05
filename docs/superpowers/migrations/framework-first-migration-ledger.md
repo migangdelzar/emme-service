@@ -380,3 +380,17 @@ both entities inherit `@Version`, that detached reconstruction could lose the
 version state and produce an insert/update conflict under real JPA behavior. The
 adapters now use the same provider-neutral, managed-update pattern already
 adopted by Assistant aggregates; no JPA types cross the application ports.
+
+## CatalogItem managed-update slice — 2026-09-05
+
+- [x] Add an adapter regression for an existing CatalogItem status update.
+- [x] Keep new CatalogItem IDs null until JPA persistence assigns them.
+- [x] Load existing items by ID and mutate the managed entity before saving.
+- [x] Run the full Catalog check, including Spotless and Checkstyle.
+- [ ] Run live PostgreSQL optimistic-lock conflict coverage when Docker is
+      available.
+
+CatalogItem previously reconstructed a versioned `TenantOwnedEntity` with a
+domain-assigned ID for every save. The adapter now follows the same managed
+update boundary as the other mutable tenant aggregates. Catalog images are
+create/delete-only and were deliberately not expanded with unused update code.

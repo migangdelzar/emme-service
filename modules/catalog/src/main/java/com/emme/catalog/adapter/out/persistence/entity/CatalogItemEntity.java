@@ -51,7 +51,9 @@ public class CatalogItemEntity extends TenantOwnedEntity {
 
   private CatalogItemEntity(CatalogItem item) {
     super(item.getTenantId());
-    setId(item.getId());
+    if (item.getId() != null) {
+      setId(item.getId());
+    }
     this.serviceId = item.getServiceId();
     this.code = item.getCode();
     this.name = item.getName();
@@ -65,6 +67,10 @@ public class CatalogItemEntity extends TenantOwnedEntity {
 
   public static CatalogItemEntity from(CatalogItem item) {
     return new CatalogItemEntity(item);
+  }
+
+  public void setStatus(CatalogItemStatus status) {
+    this.status = status;
   }
 
   public CatalogItem toDomain() {

@@ -2714,3 +2714,23 @@ managed entity. The application ports remain unchanged and provider-neutral.
 This follows the established Conversation and PendingAction persistence pattern:
 JPA remains the default for ordinary tenant-schema aggregate CRUD, while the
 application/domain layers do not depend on JPA types.
+
+## Current slice 18AF — Preserve versioned CatalogItem updates
+
+CatalogItem is a tenant-owned JPA aggregate with shared optimistic versioning
+and a domain status transition. Its adapter previously rebuilt an entity with a
+domain-assigned ID for every save, which bypassed the managed update pattern and
+could lose persistence version state. New items now defer identity generation to
+JPA; existing items are loaded by ID and only their mutable status is applied.
+
+- [x] Add a failing adapter regression for an existing CatalogItem update.
+- [x] Make new CatalogItem identity JPA-generated and nullable before persist.
+- [x] Conditionally restore entity identity and update status on the managed
+      entity.
+- [x] Run the focused Catalog persistence test and full Catalog check.
+- [ ] Run PostgreSQL optimistic-lock conflict coverage when Docker is available.
+
+CatalogItemImage remains unchanged because its current contract is create and
+delete-only with no domain mutation path. Customer identity and membership also
+remain unchanged because they are shared control-plane persistence without the
+tenant-owned versioned aggregate model.

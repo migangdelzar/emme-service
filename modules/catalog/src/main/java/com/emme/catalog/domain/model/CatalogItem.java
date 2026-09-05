@@ -1,6 +1,5 @@
 package com.emme.catalog.domain.model;
 
-import com.emme.shared.identity.IdGenerator;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
@@ -35,7 +34,7 @@ public class CatalogItem {
       Integer durationMinutes,
       String materials) {
     this(
-        IdGenerator.generate(),
+        null,
         tenantId,
         serviceId,
         code,
@@ -60,7 +59,7 @@ public class CatalogItem {
       Integer durationMinutes,
       String materials,
       CatalogItemStatus status) {
-    this.id = Objects.requireNonNull(id, "id must not be null");
+    this.id = id;
     this.tenantId = Objects.requireNonNull(tenantId, "tenantId must not be null");
     this.serviceId = Objects.requireNonNull(serviceId, "serviceId must not be null");
     this.code = Objects.requireNonNull(code, "code must not be null");

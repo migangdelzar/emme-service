@@ -3795,3 +3795,28 @@ Completed in this slice:
   compilation, Spotless, and Checkstyle.
 - Docker-backed PostgreSQL verification remains open because the local Colima
   Docker daemon is unavailable.
+
+#### Current slice 18AF — Preserve versioned CatalogItem updates
+
+Completed in this slice:
+
+- CatalogItem creation now leaves identity generation to the shared JPA
+  `PersistedEntity` lifecycle.
+- Existing CatalogItem saves load the managed row and apply the domain status
+  transition without reconstructing the versioned entity.
+- CatalogItemImage was intentionally left create/delete-only because it has no
+  domain update operation.
+
+- [x] Add a failing CatalogItem adapter regression.
+- [x] Implement conditional new-versus-existing persistence handling.
+- [x] Run the focused Catalog persistence test.
+- [x] Run the full Catalog check, including Spotless and Checkstyle.
+- [ ] Run live PostgreSQL optimistic-lock conflict coverage when Docker is
+      available.
+
+### Results
+
+- Catalog persistence tests and `:modules:catalog:check` pass.
+- No application port or provider-specific dependency was changed.
+- Docker-backed PostgreSQL verification remains open because the local Colima
+  Docker daemon is unavailable.

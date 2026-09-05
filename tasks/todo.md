@@ -212,6 +212,13 @@
 - [x] Run Calendar tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue reviewing remaining tenant-schema list/search methods.
 
+### Push-gate correction — stable contract source scan
+
+- [x] Diagnose the `KafkaEventContractTest` race with Spring Modulith docs.
+- [x] Scan stable source/build-script roots instead of mutable build output.
+- [x] Run focused Kafka/Modulith tests and Spotless.
+- [ ] Confirm the corrected full push gate succeeds.
+
 ### Tenant schema routing decision
 
 - [x] Apply tenant schema and session configuration when a connection is taken

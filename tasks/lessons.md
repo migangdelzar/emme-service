@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-09-05 — Do not walk mutable build output in source contract tests
+
+- Failure mode: A repository-wide contract test walked a whole project tree
+  while Spring Modulith documentation generation concurrently created or
+  removed `build/spring-modulith-docs`.
+- Detection signal: The push gate failed with a transient
+  `NoSuchFileException` under an ignored build directory, although the test's
+  intended source files were unchanged.
+- Prevention rule: Build source-contract file lists from stable source and
+  build-script roots; never traverse mutable `build/` output directories.
+
 ## 2026-09-04 — Trigger persistence lifecycle setup in adapter fixtures
 
 - Failure mode: an adapter test returned a new JPA entity without the ID that

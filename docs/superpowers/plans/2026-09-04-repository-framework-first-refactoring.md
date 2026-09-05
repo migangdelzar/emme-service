@@ -1457,6 +1457,19 @@ for re-export remains explicit because it resolves a provider/business key.
 - [x] Run Calendar tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
 
+#### Push-gate correction — stabilize source contract traversal
+
+The application push gate exposed a race in `KafkaEventContractTest`: walking
+the entire `applications` tree allowed concurrent Spring Modulith documentation
+generation to remove `build/spring-modulith-docs` during traversal. The test now
+enumerates stable `src/main` and build-script roots, preserving dependency
+contract coverage without traversing mutable build output.
+
+- [x] Reproduce the missing-build-directory failure from the push gate.
+- [x] Restrict the source scan to stable source and build-script roots.
+- [x] Add the failure mode and prevention rule to engineering lessons.
+- [x] Run focused Kafka/Modulith tests and Spotless.
+
 #### Current slice 18E — Use ID-only service-catalog updates
 
 Artist and service CRUD is already expressed cleanly with Spring Data JPA. The

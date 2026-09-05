@@ -15,6 +15,7 @@ import java.lang.reflect.RecordComponent;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -120,17 +121,7 @@ class KafkaEventContractTest {
   @Test
   void applicationDoesNotSelectRabbitOrAmqpTransport() throws IOException {
     Path repository = repositoryRoot();
-    List<Path> sourceRoots =
-        List.of(
-            repository.resolve("gradle/libs.versions.toml"),
-            repository.resolve("build.gradle.kts"),
-            repository.resolve("settings.gradle.kts"),
-            repository.resolve("build-logic"),
-            repository.resolve("applications"),
-            repository.resolve("modules"),
-            repository.resolve("libraries"),
-            repository.resolve("database"),
-            repository.resolve("infra"));
+    List<Path> sourceRoots = sourceRoots(repository);
 
     List<String> forbiddenTokens = List.of("spring-rabbit", "spring-amqp", "rabbitmq", "amqp");
     for (Path sourceRoot : sourceRoots) {
@@ -152,6 +143,33 @@ class KafkaEventContractTest {
         }
       }
     }
+  }
+
+  private static List<Path> sourceRoots(Path repository) throws IOException {
+    List<Path> roots =
+        new ArrayList<>(
+            List.of(
+                repository.resolve("gradle/libs.versions.toml"),
+                repository.resolve("build.gradle.kts"),
+                repository.resolve("settings.gradle.kts"),
+                repository.resolve("build-logic/src/main"),
+                repository.resolve("infra")));
+    for (String projectGroup : List.of("applications", "modules", "libraries", "database")) {
+      Path groupRoot = repository.resolve(projectGroup);
+      if (!Files.isDirectory(groupRoot)) {
+        continue;
+      }
+      try (Stream<Path> projects = Files.list(groupRoot)) {
+        projects
+            .filter(Files::isDirectory)
+            .forEach(
+                project -> {
+                  roots.add(project.resolve("build.gradle.kts"));
+                  roots.add(project.resolve("src/main"));
+                });
+      }
+    }
+    return roots;
   }
 
   private static Path repositoryRoot() {

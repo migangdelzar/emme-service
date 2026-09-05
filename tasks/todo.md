@@ -196,6 +196,7 @@
 - [x] Provide a primary no-op tenant schema migration port for H2 module tests.
 - [x] Remove the unnecessary database runtime dependency from generic testing
       fixtures.
+- [x] Apply the same override to tenancy-owned web fixtures.
 - [x] Run tenancy fixture/module tests and confirm no async PostgreSQL DDL
       errors are emitted by H2 contexts.
 - [ ] Run real Liquibase tenant provisioning against PostgreSQL/Testcontainers

@@ -1901,6 +1901,8 @@ Completed in this slice:
 - [x] Add a fixture contract test for the no-op migration boundary.
 - [x] Remove the unnecessary database runtime dependency from generic testing
       fixtures.
+- [x] Apply the H2 provisioning override to tenancy-owned web fixtures as well
+      as the shared full-context module fixture.
 - [x] Verify tenancy tests complete without asynchronous PostgreSQL migration
       errors in H2 contexts.
 - [ ] Run the real Liquibase migration against PostgreSQL/Testcontainers when

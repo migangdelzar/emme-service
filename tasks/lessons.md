@@ -1466,3 +1466,13 @@
   `computeAdvice` runs showed dependency analysis is registered by module.
 - **Prevention rule:** Validate plan commands against `./gradlew tasks` and use
   the owning project task path; do not assume a root aggregate exists.
+
+## 2026-09-05 — Validate active deployment overlays before deleting backups
+
+- **Failure mode:** A stale Compose backup can obscure which environment
+  configuration is authoritative and can be removed without proving the active
+  overlay still contains the required dependencies.
+- **Detection signal:** The active and backup overlays differed in migration,
+  Keycloak, tenant-seeding, and healthcheck configuration.
+- **Prevention rule:** Run the active Compose contract and inspect the diff
+  before deleting a backup; retain only the tested authoritative overlay.

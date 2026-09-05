@@ -3668,3 +3668,21 @@ appointment mutation tools are registered.
 - The provider-neutral rate-limit port is unchanged; no provider-specific
   abstraction leaked into the identity application layer.
 - The full repository `check` passes after the slice (`255 actionable tasks`).
+
+## Deployment configuration cleanup slice — 2026-09-05
+
+- [x] Verify the active E2E Compose overlay before removing its stale backup.
+- [x] Remove `deployment/compose/compose.environment-e2e.yaml.bak`.
+- [x] Run backend/container workflow and AGE/Kafka/E2E Compose contract checks.
+- [ ] Run Kubernetes and container-backed smoke tests in the deployment
+      environment.
+
+### Results
+
+- The active E2E Compose contract passed before deletion; its current overlay
+  includes the seeded tenant schema, migration dependency, Keycloak realms,
+  Redis dependency, and JVM healthcheck wiring.
+- Backend workflow, container-image workflow, AGE, Kafka, and E2E Compose
+  contracts all pass.
+- The Gradle task inventory passes, but this repository has no `appConfig` task;
+  the plan now uses the actual validation scripts and contract tests.

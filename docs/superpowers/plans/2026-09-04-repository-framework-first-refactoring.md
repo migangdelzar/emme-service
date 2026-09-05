@@ -2290,16 +2290,29 @@ Kubernetes probe, migration job dependency, and CI Gradle task. Assert the
 final quality command includes compile, tests, Spotless, Checkstyle, coverage,
 security/dependency analysis, and architecture tests.
 
-- [ ] **Step 2: Run configuration validation**
+- [x] **Step 2: Run configuration validation**
 
 ```bash
-./gradlew tasks appConfig --no-parallel --no-configuration-cache
+./gradlew tasks --no-daemon --no-parallel --no-configuration-cache
+node scripts/validate-backend-workflow.mjs
+node scripts/validate-container-workflow.mjs
+node deployment/compose/compose.age.contract.test.mjs
+node deployment/compose/compose.kafka.contract.test.mjs
+node deployment/compose/compose.e2e.contract.test.mjs
 ```
 
-- [ ] **Step 3: Simplify duplicate operational wiring**
+The repository does not expose an `appConfig` Gradle task. The available
+workflow and Compose contract checks pass; Kubernetes smoke execution remains
+environment-gated.
+
+- [x] **Step 3: Simplify duplicate operational wiring**
 
 Keep environment-specific overrides explicit. Remove only duplicate profiles,
 stale files, and repeated CI task definitions proven by the configuration tests.
+
+The stale E2E Compose backup was removed after the active overlay passed its
+contract test and was verified to contain the current migration, Keycloak,
+Redis, and health-check wiring.
 
 - [ ] **Step 4: Run smoke checks and commit**
 

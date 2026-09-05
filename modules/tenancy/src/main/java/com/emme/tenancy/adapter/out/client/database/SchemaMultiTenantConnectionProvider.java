@@ -2,33 +2,43 @@ package com.emme.tenancy.adapter.out.client.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 import javax.sql.DataSource;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.hibernate.service.UnknownUnwrapTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
+import org.springframework.stereotype.Component;
 
-public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectionProvider<String> {
+@Component
+@ConditionalOnBean(name = "tenantRoutingDataSource")
+@SuppressWarnings("serial")
+public class SchemaMultiTenantConnectionProvider
+    implements MultiTenantConnectionProvider<String>, HibernatePropertiesCustomizer {
 
   private static final Logger log =
       LoggerFactory.getLogger(SchemaMultiTenantConnectionProvider.class);
   private static final String CORE_SCHEMA = "emme_core";
 
-  private DataSource metadata() {
-    return ApplicationContextProvider.get().getBean(DataSource.class);
-  }
+  private final DataSource metadataDataSource;
+  private final TenantDatabasePoolProvider tenantPools;
 
-  private TenantDatabasePoolProvider tenant() {
-    return ApplicationContextProvider.get().getBean(TenantDatabasePoolProvider.class);
+  public SchemaMultiTenantConnectionProvider(
+      DataSource metadataDataSource, TenantDatabasePoolProvider tenantPools) {
+    this.metadataDataSource = metadataDataSource;
+    this.tenantPools = tenantPools;
   }
 
   @Override
   public Connection getConnection(String tenantIdentifier) throws SQLException {
     Connection connection;
     if (CORE_SCHEMA.equals(tenantIdentifier)) {
-      connection = metadata().getConnection();
+      connection = metadataDataSource.getConnection();
     } else {
-      connection = tenant().getDataSource().getConnection();
+      connection = tenantPools.getDataSource().getConnection();
       connection.setSchema(tenantIdentifier);
       log.debug("Connection routed to schema {}", tenantIdentifier);
     }
@@ -47,15 +57,7 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
 
   @Override
   public Connection getAnyConnection() throws SQLException {
-    if (ApplicationContextProvider.get() != null) {
-      return metadata().getConnection();
-    }
-    var host = System.getenv().getOrDefault("DB_HOST", "localhost");
-    var port = System.getenv().getOrDefault("DB_PORT", "5432");
-    var user = System.getenv().getOrDefault("DB_USERNAME", "emme");
-    var pass = System.getenv().getOrDefault("DB_PASSWORD", "emme");
-    return java.sql.DriverManager.getConnection(
-        "jdbc:postgresql://" + host + ":" + port + "/emme", user, pass);
+    return metadataDataSource.getConnection();
   }
 
   @Override
@@ -66,6 +68,11 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
   @Override
   public boolean supportsAggressiveRelease() {
     return false;
+  }
+
+  @Override
+  public void customize(Map<String, Object> hibernateProperties) {
+    hibernateProperties.put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, this);
   }
 
   @Override

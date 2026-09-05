@@ -1371,3 +1371,14 @@
 - **Failure mode:** A new repository guard test was inserted before the closing brace of an existing `try` block, so compilation failed before the intended assertion ran.
 - **Detection signal:** The compiler reported `';' expected` at the new test method signature.
 - **Prevention rule:** After inserting a test into an existing method, inspect the surrounding numbered lines and compile the focused test before interpreting behavioral failures.
+
+## 2026-09-04 — Reuse Spring-managed infrastructure instances
+
+- **Failure mode:** A Spring-managed tenant resolver was added while the tenant
+  data-source factory continued constructing a second resolver directly.
+- **Detection signal:** The composition root had both a component/customizer
+  instance and a `new TenantIdentifierResolver(...)` call, which would split
+  schema-cache state and make Hibernate use a different instance.
+- **Prevention rule:** When replacing service-locator construction with Spring
+  DI, search for all direct constructions and inject the managed component
+  through every composition root before committing.

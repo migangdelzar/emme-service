@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** Exposes tenant schema scoping as a stable DataSource boundary for consuming modules. */
 @Configuration(proxyBeanMethods = false)
@@ -19,8 +18,7 @@ public class TenantDataSourceConfiguration {
   @ConditionalOnMissingBean(name = "tenantScopedDataSource")
   DataSource tenantScopedDataSource(
       @Qualifier("tenantRoutingDataSource") DataSource routingDataSource,
-      @Qualifier("bootstrapJdbcClient") JdbcClient bootstrapJdbc) {
-    return new TenantScopedDataSource(
-        routingDataSource, new TenantIdentifierResolver(bootstrapJdbc));
+      TenantIdentifierResolver tenantIdentifierResolver) {
+    return new TenantScopedDataSource(routingDataSource, tenantIdentifierResolver);
   }
 }

@@ -5,12 +5,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Component;
 
-public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver<String> {
+@Component
+@ConditionalOnBean(name = "bootstrapJdbcClient")
+public class TenantIdentifierResolver
+    implements CurrentTenantIdentifierResolver<String>, HibernatePropertiesCustomizer {
 
   private static final Logger log = LoggerFactory.getLogger(TenantIdentifierResolver.class);
   private static final String CORE_SCHEMA = "emme_core";
@@ -20,6 +27,11 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
 
   public TenantIdentifierResolver(JdbcClient bootstrapJdbc) {
     this.bootstrapJdbc = Objects.requireNonNull(bootstrapJdbc, "bootstrapJdbc must not be null");
+  }
+
+  @Override
+  public void customize(Map<String, Object> hibernateProperties) {
+    hibernateProperties.put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, this);
   }
 
   @Override

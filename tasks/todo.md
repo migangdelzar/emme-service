@@ -153,8 +153,22 @@
 - [x] Wire the qualified `bootstrapJdbcClient` through
       `TenantDataSourceConfiguration`.
 - [x] Run tenancy tests, compilation, Checkstyle, and Spotless.
-- [ ] Audit `SchemaMultiTenantConnectionProvider` as a separate lifecycle
-      boundary before removing its static provider lookup.
+
+### Current slice — Task 13C Spring-managed Hibernate tenancy
+
+- [x] Add provider routing and Hibernate registration tests before production
+      changes.
+- [x] Inject metadata and tenant-pool dependencies into
+      `SchemaMultiTenantConnectionProvider`.
+- [x] Register the provider and resolver instances with Hibernate through
+      `HibernatePropertiesCustomizer`.
+- [x] Remove duplicate FQCN tenancy properties from application profiles.
+- [x] Reuse the managed resolver in `TenantDataSourceConfiguration` and delete
+      the now-unused `ApplicationContextProvider`.
+- [x] Reuse the primary core data source for bootstrap JDBC when the normal
+      profile does not define a standalone JDBC URL.
+- [x] Run tenancy tests, application compilation, Checkstyle, and Spotless.
+- [ ] Validate non-H2 startup against a PostgreSQL/Testcontainers environment.
 
 ### Current slice — Task 21A tenant web fixture ownership
 

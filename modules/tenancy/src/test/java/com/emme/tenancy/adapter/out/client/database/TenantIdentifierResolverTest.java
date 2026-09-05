@@ -7,13 +7,27 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.kernel.context.TenantContext;
+import java.util.HashMap;
 import java.util.UUID;
+import org.hibernate.cfg.AvailableSettings;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 @SuppressWarnings("unchecked")
 class TenantIdentifierResolverTest {
+
+  @Test
+  void registersTheSpringManagedResolverInstanceWithHibernate() {
+    JdbcClient jdbc = mock(JdbcClient.class);
+    TenantIdentifierResolver resolver = new TenantIdentifierResolver(jdbc);
+    var hibernateProperties = new HashMap<String, Object>();
+
+    resolver.customize(hibernateProperties);
+
+    assertThat(hibernateProperties)
+        .containsEntry(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, resolver);
+  }
 
   @Test
   void resolvesTenantSchemaUsingTheBootstrapJdbcClient() {

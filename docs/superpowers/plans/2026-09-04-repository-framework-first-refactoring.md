@@ -992,8 +992,34 @@ connection-checkout schema selection are unchanged.
 - [x] Remove the resolver's static application-context lookup.
 - [x] Wire the qualified bootstrap client in the tenant data-source factory.
 - [x] Verify focused tests, compilation, Checkstyle, and Spotless.
-- [ ] Audit `SchemaMultiTenantConnectionProvider` separately before changing
-      its remaining lifecycle fallback lookup.
+- [x] Audit and replace `SchemaMultiTenantConnectionProvider`'s lifecycle
+      fallback lookup through Spring-managed dependencies.
+
+#### Current slice 13C — Register Hibernate tenancy through Spring beans
+
+The Hibernate connection provider and tenant identifier resolver are now
+Spring-managed components. Each implements `HibernatePropertiesCustomizer` and
+registers its injected instance, so Hibernate receives the same dependency graph
+that Spring tested and composed; the previous FQCN properties and reflective
+construction path are removed from both application profiles. This follows
+Spring Boot's documented customization hook and Hibernate's support for an
+instance-valued multi-tenancy setting:
+`[Spring Boot data access](https://docs.spring.io/spring-boot/how-to/data-access.html)`
+and `[Hibernate multi-tenancy settings](https://docs.hibernate.org/orm/7.3/javadocs/org/hibernate/cfg/MultiTenancySettings.html)`.
+
+- [x] Add red tests for provider routing and Hibernate instance registration.
+- [x] Inject metadata `DataSource` and `TenantDatabasePoolProvider` into the
+      connection provider.
+- [x] Register the resolver and provider through `HibernatePropertiesCustomizer`.
+- [x] Remove duplicate YAML class-name configuration and the orphaned
+      `ApplicationContextProvider` service locator.
+- [x] Reuse the managed resolver from `TenantDataSourceConfiguration` instead
+      of constructing a second resolver/cache.
+- [x] Reuse the primary core `DataSource` as the bootstrap boundary when the
+      normal profile has no standalone `spring.datasource.url`; retain a
+      dedicated bootstrap data source when an explicit URL is configured.
+- [x] Verify tenancy tests, application compilation, Checkstyle, and Spotless.
+- [ ] Validate non-H2 startup against a PostgreSQL/Testcontainers environment.
 
 ## 8. Phase F — External provider clients
 

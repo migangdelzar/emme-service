@@ -1,19 +1,17 @@
 package com.emme.notification.adapter.out.provider.email;
 
-import com.emme.notification.configuration.NotificationHttpClient;
 import com.emme.notification.configuration.NotificationProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * SendGrid Mail Send API v3 integration.
@@ -30,17 +28,19 @@ public class SendGridProvider implements com.emme.notification.application.port.
   private static final Logger log = LoggerFactory.getLogger(SendGridProvider.class);
 
   private final String apiKey;
-  private final NotificationHttpClient client;
-  private final ObjectMapper mapper;
+  private final RestClient client;
   private String apiBase;
 
   /** Production constructor — receives typed credentials from application configuration. */
   public SendGridProvider(
-      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
-    this.apiKey = properties.sendgrid().apiKey();
+      NotificationProperties properties, @Qualifier("notificationRestClient") RestClient client) {
+    this(client, properties.sendgrid().apiKey(), "https://api.sendgrid.com");
+  }
+
+  public SendGridProvider(RestClient client, String apiKey, String apiBase) {
+    this.apiKey = apiKey;
     this.client = client;
-    this.mapper = mapper;
-    this.apiBase = "https://api.sendgrid.com";
+    this.apiBase = apiBase;
   }
 
   @Override
@@ -76,29 +76,26 @@ public class SendGridProvider implements com.emme.notification.application.port.
                   Map.of("type", "text/plain", "value", body),
                   Map.of("type", "text/html", "value", html != null ? html : body)));
 
-      Request req =
-          new Request.Builder()
-              .url(apiBase + "/v3/mail/send")
+      var response =
+          client
+              .post()
+              .uri(apiBase + "/v3/mail/send")
               .header("Authorization", "Bearer " + apiKey)
-              .header("Content-Type", "application/json")
-              .post(
-                  RequestBody.create(
-                      mapper.writeValueAsString(payload), MediaType.get("application/json")))
-              .build();
-
-      try (Response res = client.newCall(req).execute()) {
-        String messageId = res.header("X-Message-Id");
-        String responseBody = res.body() != null ? res.body().string() : "";
-
-        if (!res.isSuccessful()) {
-          throw new EmailProviderException(
-              "SendGrid send failed: HTTP " + res.code() + " — " + responseBody);
-        }
-
-        log.info("SendGrid email sent: {} subject='{}' messageId={}", to, subject, messageId);
-        return messageId != null ? messageId : "sendgrid-" + System.currentTimeMillis();
-      }
-    } catch (IOException e) {
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(payload)
+              .retrieve()
+              .toBodilessEntity();
+      String messageId = response.getHeaders().getFirst("X-Message-Id");
+      log.info("SendGrid email sent: {} subject='{}' messageId={}", to, subject, messageId);
+      return messageId != null ? messageId : "sendgrid-" + System.currentTimeMillis();
+    } catch (RestClientResponseException e) {
+      throw new EmailProviderException(
+          "SendGrid send failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (RestClientException e) {
       throw new EmailProviderException("SendGrid send failed: " + e.getMessage(), e);
     }
   }

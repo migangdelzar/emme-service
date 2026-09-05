@@ -1,7 +1,7 @@
 package com.emme.notification.adapter.out.provider.push;
 
-import com.emme.notification.configuration.NotificationHttpClient;
 import com.emme.notification.configuration.NotificationProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,14 +13,17 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * Firebase Cloud Messaging (FCM) push provider using pure HTTP + OAuth2. No Firebase Admin SDK
@@ -36,7 +39,6 @@ import org.springframework.stereotype.Component;
 public class FcmPushProvider implements com.emme.notification.application.port.out.PushSender {
 
   private static final Logger log = LoggerFactory.getLogger(FcmPushProvider.class);
-  private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   static final String DEFAULT_TOKEN_URL = "https://oauth2.googleapis.com/token";
   private static final String DEFAULT_FCM_URL =
       "https://fcm.googleapis.com/v1/projects/%s/messages:send";
@@ -47,12 +49,14 @@ public class FcmPushProvider implements com.emme.notification.application.port.o
   private final PrivateKey privateKey;
   private final String tokenUrl;
   private final String fcmUrl;
-  private final NotificationHttpClient client;
+  private final RestClient client;
   private final ObjectMapper mapper;
 
   /** Production constructor — receives typed credentials from application configuration. */
   public FcmPushProvider(
-      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
+      NotificationProperties properties,
+      @Qualifier("notificationRestClient") RestClient client,
+      ObjectMapper mapper) {
     this(
         client,
         mapper,
@@ -65,7 +69,7 @@ public class FcmPushProvider implements com.emme.notification.application.port.o
 
   /** Full constructor for testing — all values injected directly. */
   public FcmPushProvider(
-      NotificationHttpClient client,
+      RestClient client,
       ObjectMapper mapper,
       String tokenUrl,
       String fcmBaseUrl,
@@ -133,7 +137,7 @@ public class FcmPushProvider implements com.emme.notification.application.port.o
       String messageId = sendMessage(accessToken, deviceToken, title, body, data);
       log.info("FCM push sent — id={} token={}", messageId, deviceToken);
       return messageId;
-    } catch (IOException e) {
+    } catch (IOException | RestClientException e) {
       throw new PushProviderException("FCM push failed: " + e.getMessage(), e);
     }
   }
@@ -143,25 +147,31 @@ public class FcmPushProvider implements com.emme.notification.application.port.o
   String fetchAccessToken() throws IOException {
     String assertion = buildJwtAssertion();
 
-    String reqBody =
-        "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer" + "&assertion=" + assertion;
+    MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+    form.add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
+    form.add("assertion", assertion);
 
-    Request req =
-        new Request.Builder()
-            .url(tokenUrl)
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .post(RequestBody.create(reqBody, MediaType.get("application/x-www-form-urlencoded")))
-            .build();
-
-    try (Response res = client.newCall(req).execute()) {
-      String respBody = res.body() != null ? res.body().string() : "";
-      if (!res.isSuccessful()) {
-        throw new PushProviderException(
-            "FCM OAuth2 token request failed: HTTP " + res.code() + " — " + respBody);
-      }
+    try {
+      String respBody =
+          client
+              .post()
+              .uri(tokenUrl)
+              .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+              .body(form)
+              .retrieve()
+              .body(String.class);
       @SuppressWarnings("unchecked")
-      Map<String, Object> tokenResp = mapper.readValue(respBody, Map.class);
+      Map<String, Object> tokenResp = mapper.readValue(respBody == null ? "" : respBody, Map.class);
       return (String) tokenResp.get("access_token");
+    } catch (RestClientResponseException e) {
+      throw new PushProviderException(
+          "FCM OAuth2 token request failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (RestClientException | JsonProcessingException e) {
+      throw new PushProviderException("FCM OAuth2 token request failed: " + e.getMessage(), e);
     }
   }
 
@@ -191,23 +201,27 @@ public class FcmPushProvider implements com.emme.notification.application.port.o
 
     payload.put("message", message);
 
-    String jsonBody = mapper.writeValueAsString(payload);
-
-    Request req =
-        new Request.Builder()
-            .url(fcmUrl)
-            .header("Authorization", "Bearer " + accessToken)
-            .header("Content-Type", "application/json")
-            .post(RequestBody.create(jsonBody, JSON))
-            .build();
-
-    try (Response res = client.newCall(req).execute()) {
-      String respBody = res.body() != null ? res.body().string() : "";
-      if (!res.isSuccessful()) {
-        throw new PushProviderException("FCM send failed: HTTP " + res.code() + " — " + respBody);
-      }
-      Map<String, Object> result = mapper.readValue(respBody, Map.class);
+    try {
+      String respBody =
+          client
+              .post()
+              .uri(fcmUrl)
+              .header("Authorization", "Bearer " + accessToken)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(payload)
+              .retrieve()
+              .body(String.class);
+      Map<String, Object> result = mapper.readValue(respBody == null ? "" : respBody, Map.class);
       return (String) result.get("name");
+    } catch (RestClientResponseException e) {
+      throw new PushProviderException(
+          "FCM send failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (RestClientException | JsonProcessingException e) {
+      throw new PushProviderException("FCM send failed: " + e.getMessage(), e);
     }
   }
 

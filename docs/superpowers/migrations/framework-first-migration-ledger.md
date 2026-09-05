@@ -182,6 +182,14 @@ lookup should become a schema-local `findByChannel` contract.
 | Identity appointment membership consumer | Replacement tested | Consume `customerId` and `tenantId` from the externalized `AppointmentCreated` fact; do not require request-local `SecurityContext`. The existing membership use case provides idempotent duplicate handling. |
 | Calendar staff synchronization listener | Replacement tested | Restore the event tenant context before schema-local JPA access and keep failure marking inside that context. |
 
+### 4.0.2 Redis client/template decisions
+
+| Boundary | Status | Decision and reason | Date |
+|---|---|---|---|
+| Tenancy HTTP rate-limit interceptor | Replacement tested | Use Spring Data `StringRedisTemplate` as the project standard for string keys/values, counters, TTLs, and simple Redis scripts. The previous broad `RedisTemplate<String, String>` accepted incompatible serializer configurations and was inconsistent with the other Redis adapters. | 2026-09-05 |
+| AI operational state, live events, and login-attempt limiter | Classified | Keep `StringRedisTemplate`; Spring manages connection and serialization, while adapter ports keep providers replaceable from application code. | 2026-09-05 |
+| Spring AI semantic vector store and hot projection | Classified | Keep the isolated, Spring-managed Jedis `RedisClient` because the official Spring AI `RedisVectorStore` and native set/index invalidation require it. Do not introduce a second generic template solely for standardization. | 2026-09-05 |
+
 ### 4.0 Tenant-qualified lookup decisions
 
 | Boundary | Status | Decision |

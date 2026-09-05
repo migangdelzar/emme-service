@@ -1821,6 +1821,30 @@ git add modules/assistant modules/identity
 git commit -m "refactor(redis): simplify hot-state infrastructure"
 ```
 
+#### Current slice 20A — Standardize the tenancy Redis template boundary
+
+The tenancy HTTP rate-limit interceptor now requires Spring Data Redis's
+`StringRedisTemplate`, matching the operational-state adapter, live-event
+publisher, login-attempt limiter, calendar OAuth flow, and shared test fixture.
+The broader `RedisTemplate<String, String>` type was technically compatible
+but allowed an object/binary serializer bean to activate a string-keyed rate
+limiter, which could produce unreadable keys or runtime serialization errors.
+
+Jedis remains limited to the Spring AI Redis vector-store and native set/index
+operations in the semantic hot projection. The semantic `RedisClient` is
+already Spring-managed with `destroyMethod = "close"`; it is not replaced by a
+second generic template because the official Spring AI Redis vector store
+requires the Jedis client and the hot projection uses Redis-native index
+operations that are not smaller through `StringRedisTemplate`.
+
+- [x] Add a failing contract test for the required Redis template type.
+- [x] Change the interceptor constructor and conditional bean boundary to
+      `StringRedisTemplate`.
+- [x] Run the tenancy check, including Spotless, Checkstyle, compilation, and
+      tests.
+- [ ] Continue Redis outage/eviction and semantic metadata integration gates
+      with Docker-enabled Redis.
+
 ### Task 21: Split generic and feature-specific test fixtures
 
 **Files:**

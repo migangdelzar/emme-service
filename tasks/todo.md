@@ -484,6 +484,16 @@
 - [x] Keep membership creation idempotent through the existing use-case port.
 - [ ] Continue duplicate-delivery coverage and live Kafka replay checks.
 
+### Current slice — Task 20A Redis template boundary
+
+- [x] Add a failing contract test requiring the project-standard
+      `StringRedisTemplate` for the tenancy rate limiter.
+- [x] Replace the broad tenancy `RedisTemplate<String, String>` dependency
+      with `StringRedisTemplate` and align its conditional bean boundary.
+- [x] Run `:modules:tenancy:check` successfully.
+- [ ] Continue real Redis outage, eviction, and semantic metadata gates when
+      Docker is available.
+
 
 - User requested subagent-driven execution when work can be safely parallelized.
 - Shared contracts, Liquibase migrations, version catalog, and composition-root

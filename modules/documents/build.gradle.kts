@@ -15,6 +15,7 @@ dependencies {
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
   testImplementation(project(":modules:subscriptions"))
   testImplementation(testFixtures(project(":libraries:testing")))
+  testImplementation(testFixtures(project(":modules:tenancy")))
   testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(libs.spring.security.test)
 }

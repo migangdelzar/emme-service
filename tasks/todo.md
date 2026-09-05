@@ -144,6 +144,16 @@
       tenant connection routing.
 - [x] Run focused configuration tests and assistant compilation.
 
+### Current slice — Task 21A tenant web fixture ownership
+
+- [x] Add a failing architecture test for tenancy-free `BaseWebTest`.
+- [x] Keep generic JWT/MockMvc helpers in `libraries/testing`.
+- [x] Move tenant provisioning to `modules/tenancy`'s `TenantWebTest` fixture.
+- [x] Migrate representative tenant-provisioning web tests and their fixture
+      dependencies.
+- [x] Compile affected fixtures and run representative web tests.
+- [ ] Split the remaining feature-specific `BaseSpringModuleTest` setup.
+
 ### Current slice — Task 18G document ID lookups
 
 - [x] Add document service and adapter coverage for ID-based loading.

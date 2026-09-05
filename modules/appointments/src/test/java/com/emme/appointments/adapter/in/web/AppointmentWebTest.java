@@ -9,7 +9,7 @@ import com.emme.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
 import com.emme.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
 import com.emme.subscriptions.api.type.PlanType;
 import com.emme.tenancy.api.result.TenantDetails;
-import com.emme.testing.BaseWebTest;
+import com.emme.tenancy.testing.TenantWebTest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-class AppointmentWebTest extends BaseWebTest {
+class AppointmentWebTest extends TenantWebTest {
 
   @Autowired private SpringDataSubscriptionRepository subscriptionRepo;
 

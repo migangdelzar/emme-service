@@ -2,9 +2,6 @@ package com.emme.testing;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
-import com.emme.tenancy.api.command.CreateTenantCommand;
-import com.emme.tenancy.api.result.TenantDetails;
-import com.emme.tenancy.api.usecase.CreateTenantUseCase;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -19,10 +16,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Base class for L2 web slice tests (controller HTTP contracts). Provides MockMvc with full Spring
- * Security via JWT + tenant context.
+ * Security via JWT claims. Tenant provisioning helpers belong to the tenancy-owned fixture.
  *
- * <p>Usage: {@code class AppointmentControllerTest extends BaseWebTest} Inherits: mockMvc field,
- * auth() helper, tenantId
+ * <p>Usage: {@code class AuthControllerTest extends BaseWebTest} Inherits: mockMvc field, auth()
+ * helper, tenantId
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
@@ -31,13 +28,8 @@ import org.springframework.test.web.servlet.MockMvc;
 public abstract class BaseWebTest {
 
   @Autowired protected MockMvc mockMvc;
-  @Autowired protected CreateTenantUseCase createTenantUseCase;
 
   protected UUID tenantId;
-
-  protected TenantDetails createTenant(String slug, String name) {
-    return createTenantUseCase.create(new CreateTenantCommand(slug, name));
-  }
 
   /**
    * Build a JWT RequestPostProcessor with admin role and random tenant. Override in subclass to

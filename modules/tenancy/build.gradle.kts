@@ -32,6 +32,7 @@ dependencies {
 
   // Test fixtures — tenant-aware helpers consumed by every module
   testFixturesImplementation(platform(project(":platform")))
+  testFixturesImplementation(testFixtures(project(":libraries:testing")))
   testFixturesImplementation(project(":libraries:functional"))
   testFixturesImplementation(project(":libraries:kernel"))
   testFixturesCompileOnly(project(":libraries:test-containers"))

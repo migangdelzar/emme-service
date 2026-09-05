@@ -55,6 +55,19 @@ class RepositoryFrameworkBoundaryArchitectureTest {
     assertNoFrameworkTypeOutsideOwnedEdges(assistantAi, "adapter", "configuration");
   }
 
+  @Test
+  void genericWebFixtureDoesNotOwnTenantProvisioning() throws IOException {
+    String source =
+        read(
+            sourcePath(
+                "libraries/testing/src/testFixtures/java/com/emme/testing/BaseWebTest.java"));
+
+    assertThat(source)
+        .doesNotContain("com.emme.tenancy")
+        .doesNotContain("CreateTenantUseCase")
+        .doesNotContain("TenantDetails");
+  }
+
   private static void assertNoFrameworkTypeOutsideOwnedEdges(Path root, String... allowedAreas)
       throws IOException {
     try (Stream<Path> files = Files.walk(root)) {

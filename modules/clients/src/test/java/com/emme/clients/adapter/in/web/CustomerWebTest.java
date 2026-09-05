@@ -8,7 +8,7 @@ import com.emme.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
 import com.emme.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
 import com.emme.subscriptions.api.type.PlanType;
 import com.emme.tenancy.api.result.TenantDetails;
-import com.emme.testing.BaseWebTest;
+import com.emme.tenancy.testing.TenantWebTest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-class CustomerWebTest extends BaseWebTest {
+class CustomerWebTest extends TenantWebTest {
 
   @Autowired private SpringDataSubscriptionRepository subscriptionRepo;
 

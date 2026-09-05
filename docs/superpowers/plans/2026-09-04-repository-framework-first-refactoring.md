@@ -1576,6 +1576,20 @@ git add libraries/testing modules/identity modules/tenancy modules/salon modules
 git commit -m "refactor(testing): isolate feature fixtures"
 ```
 
+#### Current slice 21A — Move tenant provisioning out of the generic web fixture
+
+`BaseWebTest` now contains only generic Spring Security/MockMvc helpers. The
+tenant-creation use case and tenant result mapping live in the tenancy-owned
+`TenantWebTest` test fixture, and only web-test consumers that provision a
+tenant depend on that fixture. This keeps provider-neutral test infrastructure
+separate from tenancy policy without changing production code.
+
+- [x] Add a failing architecture test for tenancy-free `BaseWebTest`.
+- [x] Add `modules/tenancy`'s tenant-aware web fixture.
+- [x] Migrate tenant-provisioning web tests to `TenantWebTest`.
+- [x] Compile all affected fixtures/tests and run representative web tests.
+- [ ] Continue separating `BaseSpringModuleTest` feature setup and provider fakes.
+
 ### Task 22: Remove duplicate Gradle capabilities and dependencies
 
 **Files:**

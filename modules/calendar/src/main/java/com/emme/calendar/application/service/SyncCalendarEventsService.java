@@ -28,7 +28,7 @@ public class SyncCalendarEventsService implements SyncCalendarEventsUseCase {
   public CalendarSyncStateDetails sync(UUID tenantId) {
     CalendarSyncState state =
         repository
-            .findByTenantIdAndProvider(tenantId, CalendarProvider.GOOGLE_CALENDAR)
+            .findByProvider(CalendarProvider.GOOGLE_CALENDAR)
             .orElseGet(
                 () ->
                     repository.save(

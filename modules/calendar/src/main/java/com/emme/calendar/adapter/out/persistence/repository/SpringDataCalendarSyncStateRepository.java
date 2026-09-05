@@ -11,6 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataCalendarSyncStateRepository
     extends JpaRepository<CalendarSyncStateEntity, UUID> {
 
-  Optional<CalendarSyncStateEntity> findByTenantIdAndProvider(
-      UUID tenantId, CalendarProvider provider);
+  Optional<CalendarSyncStateEntity> findByProvider(CalendarProvider provider);
 }

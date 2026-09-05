@@ -2503,6 +2503,23 @@ removing the existing list query used for multi-provider operations.
 - [ ] Add a PostgreSQL uniqueness/cardinality migration only after the provider
       model supports more than the current Google provider.
 
+#### Current slice 18AA — Make Calendar sync-state lookup schema-local
+
+Calendar synchronization state is stored in the tenant schema and the tenant
+connection is selected before the JPA repository is invoked. Its lookup now
+uses the provider-only Spring Data method; tenant identity remains in the
+domain/entity for context, creation, response mapping, and RLS, while the
+application use case still receives the current tenant ID at the boundary.
+
+- [x] Add failing repository and adapter coverage for provider-only lookup.
+- [x] Replace `findByTenantIdAndProvider` with `findByProvider` in the JPA
+      repository and application port.
+- [x] Update the Calendar adapter and sync service without changing the
+      provider-neutral API response or tenant context boundary.
+- [x] Run focused Calendar persistence tests and the full Calendar check.
+- [ ] Continue the operation-by-operation review for remaining tenant-schema
+      methods whose tenant ID is a business key or shared/control-plane key.
+
 ## 12. Subagent-driven execution protocol
 
 Subagents are the default for independent work, as requested. The coordinator

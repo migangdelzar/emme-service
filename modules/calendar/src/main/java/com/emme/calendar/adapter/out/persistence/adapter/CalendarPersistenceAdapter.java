@@ -59,9 +59,8 @@ public class CalendarPersistenceAdapter
   }
 
   @Override
-  public Optional<CalendarSyncState> findByTenantIdAndProvider(
-      UUID tenantId, CalendarProvider provider) {
-    return syncStates.findByTenantIdAndProvider(tenantId, provider).map(mapper::toDomain);
+  public Optional<CalendarSyncState> findByProvider(CalendarProvider provider) {
+    return syncStates.findByProvider(provider).map(mapper::toDomain);
   }
 
   @Override

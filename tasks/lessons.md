@@ -1496,3 +1496,13 @@
   Identity even though the ledger path belonged to Tenancy.
 - **Prevention rule:** Resolve candidate references using the implementation's
   package-qualified name and only use the simple name inside its own package.
+
+## 2026-09-05 — Remove only redundant tenant predicates
+
+- **Failure mode:** A tenant-schema JPA lookup could retain `tenantId` as a
+  query key even though the connection had already selected the tenant schema.
+- **Detection signal:** Calendar sync state was tenant-local, but its repository
+  method was still named `findByTenantIdAndProvider`.
+- **Prevention rule:** Remove tenant IDs from schema-local lookup signatures while
+  retaining them in domain state, creation, response, RLS, and any shared or
+  business-key operation that still needs explicit scope.

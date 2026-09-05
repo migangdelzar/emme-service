@@ -6,11 +6,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.emme.calendar.adapter.out.persistence.entity.CalendarEventLinkEntity;
+import com.emme.calendar.adapter.out.persistence.entity.CalendarSyncStateEntity;
 import com.emme.calendar.adapter.out.persistence.mapper.CalendarPersistenceMapper;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataCalendarEventLinkRepository;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataCalendarSyncStateRepository;
 import com.emme.calendar.domain.model.CalendarEventLink;
 import com.emme.calendar.domain.model.CalendarProvider;
+import com.emme.calendar.domain.model.CalendarSyncStatus;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -71,5 +73,23 @@ class CalendarPersistenceAdapterTest {
         .get()
         .extracting(CalendarEventLink::appointmentId, CalendarEventLink::provider)
         .containsExactly(link.appointmentId(), link.provider());
+  }
+
+  @Test
+  void findsOneSchemaLocalSyncStateByProvider() {
+    UUID stateId = UUID.randomUUID();
+    UUID tenantId = UUID.randomUUID();
+    CalendarSyncStateEntity entity =
+        CalendarSyncStateEntity.restore(
+            stateId,
+            tenantId,
+            CalendarProvider.GOOGLE_CALENDAR,
+            "token",
+            null,
+            CalendarSyncStatus.ACTIVE);
+    when(syncStates.findByProvider(CalendarProvider.GOOGLE_CALENDAR))
+        .thenReturn(Optional.of(entity));
+
+    assertThat(adapter.findByProvider(CalendarProvider.GOOGLE_CALENDAR)).isPresent();
   }
 }

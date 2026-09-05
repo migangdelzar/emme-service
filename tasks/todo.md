@@ -3722,3 +3722,20 @@ appointment mutation tools are registered.
 - The repository-wide dependency advice attempt remains partially blocked by
   the application integration-test analysis task requesting the disabled
   `emme-platform-0.1.0.jar`; representative module advice remains usable.
+
+## Calendar schema-local sync-state slice — 2026-09-05
+
+- [x] Add red repository and adapter tests for provider-only sync-state lookup.
+- [x] Replace the redundant tenant predicate with Spring Data `findByProvider`.
+- [x] Preserve tenant identity in domain state, response mapping, and RLS.
+- [x] Run focused persistence tests and the full Calendar `check`.
+- [ ] Continue reviewing remaining tenant IDs that represent business keys or
+      shared/control-plane lookup scope.
+
+### Results
+
+- Calendar sync-state lookup now relies on the tenant-selected connection and
+  provider key; no application contract or schema migration was changed.
+- Red compile failure and an entity-fixture null-ID failure were resolved before
+  the focused tests passed.
+- Full Calendar check passed with 57 actionable tasks.

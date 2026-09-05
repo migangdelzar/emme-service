@@ -10,8 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SpringDataArtistCapabilityRepository
     extends JpaRepository<ArtistCapabilityEntity, UUID> {
-  List<ArtistCapabilityEntity> findByTenantId(UUID tenantId);
-
   List<ArtistCapabilityEntity> findByArtistId(UUID artistId);
 
   Optional<ArtistCapabilityEntity> findByArtistIdAndServiceId(UUID artistId, UUID serviceId);

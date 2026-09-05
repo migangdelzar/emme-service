@@ -236,6 +236,16 @@
 - [x] Run Calendar tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue the Calendar event-link cardinality and OAuth/sync routing audit.
 
+### Current slice — Task 18W Remove dead tenant-list declarations
+
+- [x] Verify unused `findByTenantId` methods in Services, Salon, Assistant,
+      and Identity Spring Data repositories.
+- [x] Remove the four unused derived query declarations and their imports.
+- [x] Preserve active capability, preference, participant, and membership
+      business-key operations.
+- [x] Run affected module tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue reviewing active Calendar and Assistant specialized queries.
+
 ### Push-gate correction — stable contract source scan
 
 - [x] Diagnose the `KafkaEventContractTest` race with Spring Modulith docs.

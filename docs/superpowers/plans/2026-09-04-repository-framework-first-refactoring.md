@@ -1589,6 +1589,19 @@ provider-aware cardinality and idempotency contract is redesigned.
 - [x] Keep active provider/business-key operations unchanged.
 - [x] Update the repository test and run Calendar quality gates.
 
+#### Current slice 18W — Remove dead tenant-list declarations
+
+Four tenant-qualified Spring Data list methods had no production or test
+caller: artist capabilities, notification preferences, channel participants,
+and identity memberships. They were removed from the concrete repositories
+only; the active application ports and provider/business-key operations remain
+unchanged. This reduces generated query surface and avoids implying a list
+capability that the application does not expose.
+
+- [x] Verify no callers before removal.
+- [x] Remove unused derived methods and imports.
+- [x] Run Services, Salon, Assistant, and Identity quality gates.
+
 #### Tenant isolation boundary correction
 
 `TenantDatabasePoolProvider` caches pools by `databaseId`, not by tenant schema.
@@ -1611,6 +1624,7 @@ dynamic provisioning. The application ports remain provider-neutral throughout.
 | Calendar OAuth token `findByTenantIdAndUserIdAndPersonaType` | Keep | This is a tenant/user/persona business-key lookup, not aggregate identity; tenant and persona are required to select credentials safely. |
 | Subscription singleton lookup | Converted | `TenantActivated` and web boundaries establish tenant context before access; schema-local JPA `findFirstByOrderByCreatedAtAsc()` replaces the redundant tenant predicate. |
 | Calendar unused tenant list queries | Removed | No application caller used the methods; deleting them reduces Spring Data surface area without changing active provider/state contracts. |
+| Unused tenant-list declarations in Services/Salon/Assistant/Identity | Removed | The methods had no callers or application-port capability; active relationship, preference, participant, and authorization lookups remain intact. |
 | Assistant conversation aggregate listing | Converted | Generic conversation listing now uses schema-local JPA `findAll()`; event history, pending-action claims, expiration, and provider-channel lookups remain explicit and require a separate ordering/claim audit. |
 | Documents metadata and chunks | Converted | Document listing, chunk-by-document, chunk-by-ID, and replacement delete now use schema-local JPA methods; the document search projection still keeps explicit tenant scope. |
 | Catalog item metadata and ranked hydration | Converted | Catalog listing uses `findAll()` and ranked hydration uses `findAllById(...)`; shared vector/full-text search remains explicitly tenant-scoped. |

@@ -1,6 +1,5 @@
 package com.emme.notification.adapter.out.provider.email;
 
-import com.emme.notification.configuration.NotificationHttpClient;
 import com.emme.notification.configuration.NotificationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -16,14 +15,15 @@ import java.util.Map;
 import java.util.TreeMap;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * AWS SES v2 email provider using Signature V4 auth (pure Java, no AWS SDK).
@@ -49,13 +49,15 @@ public class SesEmailProvider implements com.emme.notification.application.port.
   private final String accessKey;
   private final String secretKey;
   private final String region;
-  private final NotificationHttpClient client;
+  private final RestClient client;
   private final ObjectMapper mapper;
   private String apiBase;
 
   /** Production constructor — receives typed credentials from application configuration. */
   public SesEmailProvider(
-      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
+      NotificationProperties properties,
+      @Qualifier("notificationRestClient") RestClient client,
+      ObjectMapper mapper) {
     this.accessKey = properties.ses().accessKey();
     this.secretKey = properties.ses().secretKey();
     this.region = properties.ses().region();
@@ -82,7 +84,7 @@ public class SesEmailProvider implements com.emme.notification.application.port.
 
   /** Test constructor — injects HTTP client and overrides base URL. */
   public SesEmailProvider(
-      NotificationHttpClient client,
+      RestClient client,
       String accessKey,
       String secretKey,
       String region,
@@ -161,29 +163,28 @@ public class SesEmailProvider implements com.emme.notification.application.port.
               amzDate,
               dateStamp);
 
-      Request req =
-          new Request.Builder()
-              .url(effectiveApiBase + path)
+      var response =
+          client
+              .post()
+              .uri(effectiveApiBase + path)
               .header("Authorization", authorization)
-              .header("Content-Type", CONTENT_TYPE)
               .header("X-Amz-Date", amzDate)
               .header("X-Amz-Content-Sha256", bodyHash)
-              .post(RequestBody.create(jsonBody, MediaType.get(CONTENT_TYPE)))
-              .build();
-
-      try (Response res = client.newCall(req).execute()) {
-        String responseBody = res.body() != null ? res.body().string() : "";
-        String messageId = res.header("X-Amzn-Message-Id");
-
-        if (!res.isSuccessful()) {
-          throw new EmailProviderException(
-              "AWS SES send failed: HTTP " + res.code() + " — " + responseBody);
-        }
-
-        log.info("AWS SES email sent: {} subject='{}' messageId={}", to, subject, messageId);
-        return messageId != null ? messageId : "ses-" + System.currentTimeMillis();
-      }
-    } catch (IOException e) {
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(bodyBytes)
+              .retrieve()
+              .toEntity(String.class);
+      String messageId = response.getHeaders().getFirst("X-Amzn-Message-Id");
+      log.info("AWS SES email sent: {} subject='{}' messageId={}", to, subject, messageId);
+      return messageId != null ? messageId : "ses-" + System.currentTimeMillis();
+    } catch (RestClientResponseException e) {
+      throw new EmailProviderException(
+          "AWS SES send failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (IOException | RestClientException e) {
       throw new EmailProviderException("AWS SES send failed: " + e.getMessage(), e);
     }
   }

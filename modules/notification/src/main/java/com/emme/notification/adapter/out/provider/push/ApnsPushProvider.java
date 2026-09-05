@@ -1,6 +1,5 @@
 package com.emme.notification.adapter.out.provider.push;
 
-import com.emme.notification.configuration.NotificationHttpClient;
 import com.emme.notification.configuration.NotificationProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -13,14 +12,15 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * Apple Push Notification service (APNs) provider using pure HTTP + JWT. No Apple Push SDK
@@ -35,7 +35,6 @@ import org.springframework.stereotype.Component;
 public class ApnsPushProvider implements com.emme.notification.application.port.out.PushSender {
 
   private static final Logger log = LoggerFactory.getLogger(ApnsPushProvider.class);
-  private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   private static final String PROD_URL = "https://api.push.apple.com";
   private static final String SANDBOX_URL = "https://api.sandbox.push.apple.com";
 
@@ -44,12 +43,14 @@ public class ApnsPushProvider implements com.emme.notification.application.port.
   private final String teamId;
   private final String bundleId;
   private final PrivateKey privateKey;
-  private final NotificationHttpClient client;
+  private final RestClient client;
   private final ObjectMapper mapper;
 
   /** Production constructor — receives typed credentials from application configuration. */
   public ApnsPushProvider(
-      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
+      NotificationProperties properties,
+      @Qualifier("notificationRestClient") RestClient client,
+      ObjectMapper mapper) {
     this(
         client,
         mapper,
@@ -63,7 +64,7 @@ public class ApnsPushProvider implements com.emme.notification.application.port.
 
   /** Full constructor for testing — all values injected directly. */
   public ApnsPushProvider(
-      NotificationHttpClient client,
+      RestClient client,
       ObjectMapper mapper,
       String apnsBase,
       String keyId,
@@ -101,7 +102,7 @@ public class ApnsPushProvider implements com.emme.notification.application.port.
       String apnsId = sendRequest(jwt, deviceToken, title, body, data);
       log.info("APNs push sent — id={} token={}", apnsId, deviceToken);
       return apnsId;
-    } catch (IOException e) {
+    } catch (IOException | RestClientException e) {
       throw new PushProviderException("APNs push failed: " + e.getMessage(), e);
     }
   }
@@ -130,24 +131,30 @@ public class ApnsPushProvider implements com.emme.notification.application.port.
     String jsonBody = mapper.writeValueAsString(payload);
     String url = apnsBase + "/3/device/" + deviceToken;
 
-    Request req =
-        new Request.Builder()
-            .url(url)
-            .header("authorization", "bearer " + jwt)
-            .header("apns-topic", bundleId)
-            .header("apns-push-type", "alert")
-            .header("content-type", "application/json")
-            .post(RequestBody.create(jsonBody, JSON))
-            .build();
-
-    try (Response res = client.newCall(req).execute()) {
-      if (!res.isSuccessful()) {
-        String respBody = res.body() != null ? res.body().string() : "";
-        throw new PushProviderException("APNs send failed: HTTP " + res.code() + " — " + respBody);
-      }
+    try {
+      var response =
+          client
+              .post()
+              .uri(url)
+              .header("authorization", "bearer " + jwt)
+              .header("apns-topic", bundleId)
+              .header("apns-push-type", "alert")
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(jsonBody)
+              .retrieve()
+              .toEntity(String.class);
       // APNs returns apns-id in response header on success
-      String apnsId = res.header("apns-id");
+      String apnsId = response.getHeaders().getFirst("apns-id");
       return apnsId != null ? apnsId : "unknown";
+    } catch (RestClientResponseException e) {
+      throw new PushProviderException(
+          "APNs send failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (RestClientException e) {
+      throw new PushProviderException("APNs send failed: " + e.getMessage(), e);
     }
   }
 

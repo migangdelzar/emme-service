@@ -22,8 +22,14 @@ public class PaymentPersistenceMapper {
     PaymentEntity entity =
         new PaymentEntity(
             payment.tenantId(), payment.providerReference(), payment.amount(), payment.currency());
-    entity.restoreIdentity(payment.id(), payment.updatedAt());
-    entity.setStatus(payment.status());
+    if (payment.id() != null) {
+      entity.restoreIdentity(payment.id(), payment.updatedAt());
+    }
+    updateEntity(payment, entity);
     return entity;
+  }
+
+  public void updateEntity(Payment payment, PaymentEntity entity) {
+    entity.setStatus(payment.status());
   }
 }

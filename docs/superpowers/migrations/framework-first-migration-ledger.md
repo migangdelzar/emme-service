@@ -365,3 +365,18 @@ Rebuilding an existing versioned entity from a domain object without carrying
 the persistence version can make Spring Data treat it as new. The managed update
 path avoids that failure while keeping optimistic locking in the shared mapped
 superclass and keeping JPA types out of the application contract.
+
+## Notification and Payment managed-update slice — 2026-09-05
+
+- [x] Add adapter regressions for existing Notification and Payment updates.
+- [x] Keep new aggregate IDs null until JPA persistence assigns them.
+- [x] Update managed JPA entities instead of rebuilding existing versioned rows.
+- [x] Run both affected module checks, including Spotless and Checkstyle.
+- [ ] Run live PostgreSQL optimistic-lock conflict coverage when Docker is
+      available.
+
+Notification and Payment previously mapped every save to a new entity. Because
+both entities inherit `@Version`, that detached reconstruction could lose the
+version state and produce an insert/update conflict under real JPA behavior. The
+adapters now use the same provider-neutral, managed-update pattern already
+adopted by Assistant aggregates; no JPA types cross the application ports.

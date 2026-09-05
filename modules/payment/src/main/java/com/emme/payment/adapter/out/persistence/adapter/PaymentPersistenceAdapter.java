@@ -42,7 +42,12 @@ public class PaymentPersistenceAdapter implements PaymentRepository {
 
   @Override
   public Payment save(Payment payment) {
-    PaymentEntity saved = repository.save(mapper.toEntity(payment));
+    PaymentEntity entity =
+        payment.id() == null
+            ? mapper.toEntity(payment)
+            : repository.findById(payment.id()).orElseThrow();
+    mapper.updateEntity(payment, entity);
+    PaymentEntity saved = repository.save(entity);
     return mapper.toDomain(saved);
   }
 }

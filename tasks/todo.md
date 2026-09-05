@@ -3768,3 +3768,30 @@ appointment mutation tools are registered.
 - Red compile failure and an entity-fixture null-ID failure were resolved before
   the focused tests passed.
 - Full Calendar check passed with 57 actionable tasks.
+
+#### Current slice 18AE — Preserve versioned Notification and Payment updates
+
+Completed in this slice:
+
+- Notification and Payment new aggregates now leave IDs null until JPA persists
+  them, matching the shared `PersistedEntity` lifecycle.
+- Existing saves load the entity by ID, mutate only the mutable status, and save
+  the managed instance so inherited `@Version` state is preserved.
+- Mapper identity restoration is conditional for new versus existing aggregates;
+  application ports remain unchanged.
+
+- [x] Add failing adapter regressions for existing Notification and Payment
+      updates.
+- [x] Implement the managed JPA update path and conditional identity mapping.
+- [x] Run focused persistence tests.
+- [x] Run `:modules:notification:check` and `:modules:payment:check`.
+- [ ] Run live PostgreSQL optimistic-lock conflict coverage when Docker is
+      available.
+
+### Results
+
+- Focused Notification and Payment persistence tests pass.
+- Both complete module checks pass, including unit tests, integration-test
+  compilation, Spotless, and Checkstyle.
+- Docker-backed PostgreSQL verification remains open because the local Colima
+  Docker daemon is unavailable.

@@ -2690,3 +2690,27 @@ dedicated migrations and Docker-backed tests.
 - Keycloak and Google provider SDK adoption requires a protocol/auth/error comparison in Task 14; Spring HTTP interfaces remain the default.
 - Appointment exclusion/range constraints require PostgreSQL concurrency evidence in Task 17; a JPA existence query is the default first attempt.
 - The current platform patch upgrade to the latest compatible stable version is a separate maintenance change and is not part of the first refactoring commits.
+
+## Current slice 18AE — Preserve versioned Notification and Payment updates
+
+Notification and Payment are tenant-owned JPA aggregates with inherited
+optimistic versioning. Their previous adapters rebuilt an entity from the domain
+object for every save, which discarded the persistence version and could make a
+Spring Data update look like a new insert. New aggregates now leave identity
+generation to JPA; existing aggregates are loaded by ID and updated on the
+managed entity. The application ports remain unchanged and provider-neutral.
+
+- [x] Add failing adapter regressions for existing Notification and Payment
+      updates.
+- [x] Make new domain aggregate IDs null until JPA persists them.
+- [x] Add mapper `updateEntity` methods and conditionally restore identity only
+      for existing mapped aggregates.
+- [x] Load existing entities by ID before saving and preserve their managed
+      JPA/version state.
+- [x] Run focused tests and `:modules:notification:check` plus
+      `:modules:payment:check`.
+- [ ] Run PostgreSQL optimistic-lock conflict coverage when Docker is available.
+
+This follows the established Conversation and PendingAction persistence pattern:
+JPA remains the default for ordinary tenant-schema aggregate CRUD, while the
+application/domain layers do not depend on JPA types.

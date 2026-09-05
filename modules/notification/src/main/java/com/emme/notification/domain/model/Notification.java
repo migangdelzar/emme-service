@@ -18,7 +18,7 @@ public final class Notification {
   public Notification(
       UUID tenantId, NotificationChannel channel, String recipientReference, String body) {
     this(
-        UUID.randomUUID(),
+        null,
         tenantId,
         channel,
         recipientReference,
@@ -35,7 +35,7 @@ public final class Notification {
       String body,
       NotificationStatus status,
       Instant createdAt) {
-    this.id = Objects.requireNonNull(id);
+    this.id = id;
     this.tenantId = Objects.requireNonNull(tenantId);
     this.channel = Objects.requireNonNull(channel);
     this.recipientReference = Objects.requireNonNull(recipientReference);
@@ -52,7 +52,14 @@ public final class Notification {
       String body,
       NotificationStatus status,
       Instant createdAt) {
-    return new Notification(id, tenantId, channel, recipientReference, body, status, createdAt);
+    return new Notification(
+        Objects.requireNonNull(id, "id must not be null"),
+        tenantId,
+        channel,
+        recipientReference,
+        body,
+        status,
+        createdAt);
   }
 
   public UUID id() {

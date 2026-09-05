@@ -34,7 +34,7 @@ class GetNotificationServiceTest {
 
     @Override
     public Optional<Notification> findById(UUID notificationId) {
-      return notification.id().equals(notificationId)
+      return java.util.Objects.equals(notification.id(), notificationId)
           ? Optional.of(notification)
           : Optional.empty();
     }

@@ -24,8 +24,14 @@ public class NotificationPersistenceMapper {
             notification.channel(),
             notification.recipientReference(),
             notification.body());
-    entity.restoreIdentity(notification.id(), notification.createdAt());
-    entity.setStatus(notification.status());
+    if (notification.id() != null) {
+      entity.restoreIdentity(notification.id(), notification.createdAt());
+    }
+    updateEntity(notification, entity);
     return entity;
+  }
+
+  public void updateEntity(Notification notification, NotificationEntity entity) {
+    entity.setStatus(notification.status());
   }
 }

@@ -2,6 +2,7 @@ package com.emme.payment.domain.model;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 /** Framework-free payment aggregate; provider adapters must not leak into it. */
@@ -15,7 +16,7 @@ public final class Payment {
   private Instant updatedAt;
 
   public Payment(UUID tenantId, String providerReference, BigDecimal amount, String currency) {
-    this.id = UUID.randomUUID();
+    this.id = null;
     this.tenantId = tenantId;
     this.providerReference = providerReference;
     this.amount = amount;
@@ -33,7 +34,7 @@ public final class Payment {
       PaymentStatus status,
       Instant updatedAt) {
     Payment payment = new Payment(tenantId, providerReference, amount, currency);
-    payment.id = id;
+    payment.id = Objects.requireNonNull(id, "id must not be null");
     payment.status = status;
     payment.updatedAt = updatedAt;
     return payment;

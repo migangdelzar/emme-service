@@ -33,7 +33,12 @@ public class NotificationPersistenceAdapter implements NotificationRepository {
 
   @Override
   public Notification save(Notification notification) {
-    NotificationEntity saved = repository.save(mapper.toEntity(notification));
+    NotificationEntity entity =
+        notification.id() == null
+            ? mapper.toEntity(notification)
+            : repository.findById(notification.id()).orElseThrow();
+    mapper.updateEntity(notification, entity);
+    NotificationEntity saved = repository.save(entity);
     return mapper.toDomain(saved);
   }
 }

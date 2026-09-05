@@ -11,8 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataCalendarEventLinkRepository
     extends JpaRepository<CalendarEventLinkEntity, UUID> {
 
-  List<CalendarEventLinkEntity> findByTenantId(UUID tenantId);
-
   Optional<CalendarEventLinkEntity> findByTenantIdAndAppointmentId(
       UUID tenantId, UUID appointmentId);
 

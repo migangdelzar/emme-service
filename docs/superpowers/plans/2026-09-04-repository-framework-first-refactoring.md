@@ -1574,6 +1574,21 @@ authorization and domain boundaries.
       physical schema per tenant in a shared in-memory database.
 - [x] Run the Subscription module test, compilation, Checkstyle, and Spotless.
 
+#### Current slice 18V — Remove dead Calendar list queries
+
+Calendar sync-state and event-link repositories contained tenant-qualified
+`findByTenantId` methods without any production caller. These methods added
+surface area without providing a usable application capability, so they were
+removed. The active sync-state lookup remains tenant/provider-qualified because
+it is a business-key lookup and the schema currently does not guarantee one
+state per provider. The event-link lookup remains deferred until its
+provider-aware cardinality and idempotency contract is redesigned.
+
+- [x] Verify production caller usage before removal.
+- [x] Remove unused sync-state and event-link list methods.
+- [x] Keep active provider/business-key operations unchanged.
+- [x] Update the repository test and run Calendar quality gates.
+
 #### Tenant isolation boundary correction
 
 `TenantDatabasePoolProvider` caches pools by `databaseId`, not by tenant schema.
@@ -1595,6 +1610,7 @@ dynamic provisioning. The application ports remain provider-neutral throughout.
 | Calendar event link `findByTenantIdAndAppointmentId` | Defer and redesign | `appointment_id` is not the event-link aggregate ID, the table permits multiple providers/links, and the current `Optional` contract has a cardinality risk. Add a provider-aware or list-based contract and a uniqueness/idempotency decision before changing it. |
 | Calendar OAuth token `findByTenantIdAndUserIdAndPersonaType` | Keep | This is a tenant/user/persona business-key lookup, not aggregate identity; tenant and persona are required to select credentials safely. |
 | Subscription singleton lookup | Converted | `TenantActivated` and web boundaries establish tenant context before access; schema-local JPA `findFirstByOrderByCreatedAtAsc()` replaces the redundant tenant predicate. |
+| Calendar unused tenant list queries | Removed | No application caller used the methods; deleting them reduces Spring Data surface area without changing active provider/state contracts. |
 | Assistant conversation aggregate listing | Converted | Generic conversation listing now uses schema-local JPA `findAll()`; event history, pending-action claims, expiration, and provider-channel lookups remain explicit and require a separate ordering/claim audit. |
 | Documents metadata and chunks | Converted | Document listing, chunk-by-document, chunk-by-ID, and replacement delete now use schema-local JPA methods; the document search projection still keeps explicit tenant scope. |
 | Catalog item metadata and ranked hydration | Converted | Catalog listing uses `findAll()` and ranked hydration uses `findAllById(...)`; shared vector/full-text search remains explicitly tenant-scoped. |

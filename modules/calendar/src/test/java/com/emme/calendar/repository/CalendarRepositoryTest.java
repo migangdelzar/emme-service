@@ -34,8 +34,8 @@ class CalendarRepositoryTest extends BaseRepositoryTest {
     assertThat(saved.getId()).isNotNull();
     assertThat(saved.getStatus()).isEqualTo(CalendarSyncStatus.ACTIVE);
 
-    List<CalendarSyncStateEntity> found = syncStateRepo.findByTenantId(TENANT_ID);
-    assertThat(found).isNotEmpty();
+    assertThat(syncStateRepo.findByTenantIdAndProvider(TENANT_ID, CalendarProvider.GOOGLE_CALENDAR))
+        .isPresent();
   }
 
   @Test

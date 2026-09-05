@@ -225,6 +225,17 @@
 - [ ] Continue reviewing Calendar provider-facing and Assistant specialized
       queries.
 
+### Current slice — Task 18V Calendar dead query cleanup
+
+- [x] Confirm Calendar sync-state and event-link tenant list methods have no
+      production callers.
+- [x] Remove the unused `findByTenantId` Spring Data methods.
+- [x] Keep provider/business-key lookups that still encode cardinality or
+      credential-selection semantics.
+- [x] Update the repository test to cover the retained sync-state lookup.
+- [x] Run Calendar tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue the Calendar event-link cardinality and OAuth/sync routing audit.
+
 ### Push-gate correction — stable contract source scan
 
 - [x] Diagnose the `KafkaEventContractTest` race with Spring Modulith docs.

@@ -27,8 +27,8 @@ public class ConversationPersistenceAdapter implements ConversationRepository {
   }
 
   @Override
-  public List<Conversation> findByTenantId(UUID tenantId) {
-    return repository.findByTenantId(tenantId).stream().map(mapper::toDomain).toList();
+  public List<Conversation> findAll() {
+    return repository.findAll().stream().map(mapper::toDomain).toList();
   }
 
   @Override

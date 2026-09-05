@@ -8,7 +8,7 @@ import java.util.UUID;
 public interface ConversationRepository {
   Optional<Conversation> findById(UUID conversationId);
 
-  List<Conversation> findByTenantId(UUID tenantId);
+  List<Conversation> findAll();
 
   Conversation save(Conversation conversation);
 }

@@ -196,6 +196,14 @@
 - [x] Run Payment tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue reviewing remaining tenant-schema list/search methods.
 
+### Current slice — Task 18S Assistant conversation listing
+
+- [x] Add an adapter test for tenant-schema conversation listing.
+- [x] Replace the tenant-qualified conversation query with JPA `findAll()`.
+- [x] Preserve explicit tenant/business keys for event history and provider channels.
+- [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue reviewing remaining tenant-schema list/search methods.
+
 ### Tenant schema routing decision
 
 - [x] Apply tenant schema and session configuration when a connection is taken

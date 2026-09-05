@@ -20,8 +20,6 @@ public class ListConversationsService implements ListConversationsUseCase {
 
   @Override
   public List<ConversationDetails> list(ListConversationsQuery query) {
-    return repository.findByTenantId(query.tenantId()).stream()
-        .map(AssistantApplicationMapper::toResult)
-        .toList();
+    return repository.findAll().stream().map(AssistantApplicationMapper::toResult).toList();
   }
 }

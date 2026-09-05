@@ -1430,6 +1430,20 @@ are unchanged.
 - [x] Run Payment tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
 
+#### Current slice 18S — Remove tenant predicates from Assistant conversation listing
+
+Conversation aggregate listing is a tenant-schema-local JPA operation. The
+provider-neutral repository uses inherited `findAll()`, while conversation
+events, pending actions, channel-participant provider references, and other
+history/workflow queries retain explicit keys because they are not generic
+aggregate listing operations.
+
+- [x] Add adapter contract coverage for schema-local conversation listing.
+- [x] Replace tenant-qualified conversation JPA list methods with `findAll()`.
+- [x] Remove the unused duplicate conversation status list declaration.
+- [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
+
 #### Current slice 18E — Use ID-only service-catalog updates
 
 Artist and service CRUD is already expressed cleanly with Spring Data JPA. The

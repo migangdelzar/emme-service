@@ -1506,3 +1506,13 @@
 - **Prevention rule:** Remove tenant IDs from schema-local lookup signatures while
   retaining them in domain state, creation, response, RLS, and any shared or
   business-key operation that still needs explicit scope.
+
+## 2026-09-05 — Use the domain vocabulary in persistence regressions
+
+- **Failure mode:** A new CatalogItem adapter regression used an `INACTIVE`
+  status that the domain enum does not define.
+- **Detection signal:** Test compilation failed before exercising the intended
+  managed-update behavior.
+- **Prevention rule:** Read the aggregate enum and existing transition tests
+  before writing fixtures; use the actual domain vocabulary so a red test proves
+  behavior rather than a fixture typo.

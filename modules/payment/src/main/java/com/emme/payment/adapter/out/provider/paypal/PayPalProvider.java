@@ -2,7 +2,6 @@ package com.emme.payment.adapter.out.provider.paypal;
 
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
-import com.emme.payment.configuration.PaymentHttpClient;
 import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -11,12 +10,15 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * PayPal Orders API v2 integration via REST.
@@ -32,12 +34,9 @@ import org.springframework.stereotype.Component;
 public class PayPalProvider implements PaymentProvider {
 
   private static final String API_BASE = "https://api-m.sandbox.paypal.com";
-  private static final MediaType JSON = MediaType.get("application/json");
-  private static final MediaType FORM = MediaType.get("application/x-www-form-urlencoded");
-
   private final String clientId;
   private final String clientSecret;
-  private final PaymentHttpClient client;
+  private final RestClient client;
   private final ObjectMapper mapper;
   private final String apiBase;
 
@@ -46,12 +45,27 @@ public class PayPalProvider implements PaymentProvider {
 
   /** Production constructor — receives typed credentials from application configuration. */
   public PayPalProvider(
-      PaymentProperties properties, PaymentHttpClient client, ObjectMapper mapper) {
+      PaymentProperties properties,
+      @Qualifier("paymentRestClient") RestClient client,
+      ObjectMapper mapper) {
     this.clientId = properties.paypal().clientId();
     this.clientSecret = properties.paypal().clientSecret();
     this.client = client;
     this.mapper = mapper;
     this.apiBase = API_BASE;
+  }
+
+  public PayPalProvider(
+      RestClient client,
+      ObjectMapper mapper,
+      String clientId,
+      String clientSecret,
+      String apiBase) {
+    this.clientId = clientId;
+    this.clientSecret = clientSecret;
+    this.client = client;
+    this.mapper = mapper;
+    this.apiBase = apiBase;
   }
 
   @Override
@@ -71,28 +85,38 @@ public class PayPalProvider implements PaymentProvider {
     }
 
     String credentials =
-        Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes());
+        Base64.getEncoder()
+            .encodeToString(
+                (clientId + ":" + clientSecret).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+    form.add("grant_type", "client_credentials");
 
-    Request req =
-        new Request.Builder()
-            .url(apiBase + "/v1/oauth2/token")
-            .header("Authorization", "Basic " + credentials)
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .post(RequestBody.create("grant_type=client_credentials", FORM))
-            .build();
-
-    try (Response res = client.newCall(req).execute()) {
-      String responseBody = res.body() != null ? res.body().string() : "{}";
-      if (!res.isSuccessful()) {
-        throw new PaymentProviderException(
-            "PayPal OAuth2 failed: HTTP " + res.code() + " — " + responseBody);
-      }
+    try {
+      String responseBody =
+          client
+              .post()
+              .uri(apiBase + "/v1/oauth2/token")
+              .header("Authorization", "Basic " + credentials)
+              .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+              .body(form)
+              .retrieve()
+              .body(String.class);
       @SuppressWarnings("unchecked")
-      Map<String, Object> result = mapper.readValue(responseBody, Map.class);
+      Map<String, Object> result =
+          mapper.readValue(responseBody == null ? "{}" : responseBody, Map.class);
       accessToken = (String) result.get("access_token");
       int expiresIn = ((Number) result.get("expires_in")).intValue();
       tokenExpiry = Instant.now().plusSeconds(expiresIn - 60); // 60s buffer
       return accessToken;
+    } catch (RestClientResponseException e) {
+      throw new PaymentProviderException(
+          "PayPal OAuth2 failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (RestClientException e) {
+      throw new PaymentProviderException("PayPal OAuth2 failed: " + e.getMessage(), e);
     }
   }
 
@@ -117,41 +141,43 @@ public class PayPalProvider implements PaymentProvider {
                       "return_url", "https://emme.app/success",
                       "cancel_url", "https://emme.app/cancel"));
 
-      Request req =
-          new Request.Builder()
-              .url(apiBase + "/v2/checkout/orders")
+      String responseBody =
+          client
+              .post()
+              .uri(apiBase + "/v2/checkout/orders")
               .header("Authorization", "Bearer " + getAccessToken())
-              .header("Content-Type", "application/json")
               .header("PayPal-Request-Id", idempotencyKey)
-              .post(RequestBody.create(mapper.writeValueAsString(body), JSON))
-              .build();
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(body)
+              .retrieve()
+              .body(String.class);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> result =
+          mapper.readValue(responseBody == null ? "{}" : responseBody, Map.class);
+      String orderId = (String) result.get("id");
 
-      try (Response res = client.newCall(req).execute()) {
-        String responseBody = res.body() != null ? res.body().string() : "{}";
-        if (!res.isSuccessful()) {
-          throw new PaymentProviderException(
-              "PayPal initiate failed: HTTP " + res.code() + " — " + responseBody);
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> result = mapper.readValue(responseBody, Map.class);
-        String orderId = (String) result.get("id");
-
-        // Extract approval URL from links
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> links = (List<Map<String, Object>>) result.get("links");
-        String approvalUrl = "";
-        if (links != null) {
-          approvalUrl =
-              links.stream()
-                  .filter(l -> "approve".equals(l.get("rel")))
-                  .map(l -> (String) l.get("href"))
-                  .findFirst()
-                  .orElse("");
-        }
-
-        return new PaymentResult(orderId, "PENDING", Map.of("approval_url", approvalUrl));
+      // Extract approval URL from links
+      @SuppressWarnings("unchecked")
+      List<Map<String, Object>> links = (List<Map<String, Object>>) result.get("links");
+      String approvalUrl = "";
+      if (links != null) {
+        approvalUrl =
+            links.stream()
+                .filter(l -> "approve".equals(l.get("rel")))
+                .map(l -> (String) l.get("href"))
+                .findFirst()
+                .orElse("");
       }
-    } catch (IOException e) {
+
+      return new PaymentResult(orderId, "PENDING", Map.of("approval_url", approvalUrl));
+    } catch (RestClientResponseException e) {
+      throw new PaymentProviderException(
+          "PayPal initiate failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (IOException | RestClientException e) {
       throw new PaymentProviderException("PayPal initiate failed: " + e.getMessage(), e);
     }
   }
@@ -182,28 +208,28 @@ public class PayPalProvider implements PaymentProvider {
               "note_to_payer",
               reason != null ? reason : "");
 
-      Request req =
-          new Request.Builder()
-              .url(apiBase + "/v2/payments/captures/" + providerTransactionId + "/refund")
+      String responseBody =
+          client
+              .post()
+              .uri(apiBase + "/v2/payments/captures/" + providerTransactionId + "/refund")
               .header("Authorization", "Bearer " + getAccessToken())
-              .header("Content-Type", "application/json")
-              .post(RequestBody.create(mapper.writeValueAsString(body), JSON))
-              .build();
-
-      try (Response res = client.newCall(req).execute()) {
-        String responseBody = res.body() != null ? res.body().string() : "{}";
-        if (!res.isSuccessful()) {
-          throw new PaymentProviderException(
-              "PayPal refund failed: HTTP " + res.code() + " — " + responseBody);
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> result = mapper.readValue(responseBody, Map.class);
-        return new PaymentResult(
-            providerTransactionId,
-            "REFUNDED",
-            Map.of("refund_id", String.valueOf(result.get("id"))));
-      }
-    } catch (IOException e) {
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(body)
+              .retrieve()
+              .body(String.class);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> result =
+          mapper.readValue(responseBody == null ? "{}" : responseBody, Map.class);
+      return new PaymentResult(
+          providerTransactionId, "REFUNDED", Map.of("refund_id", String.valueOf(result.get("id"))));
+    } catch (RestClientResponseException e) {
+      throw new PaymentProviderException(
+          "PayPal refund failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (IOException | RestClientException e) {
       throw new PaymentProviderException("PayPal refund failed: " + e.getMessage(), e);
     }
   }

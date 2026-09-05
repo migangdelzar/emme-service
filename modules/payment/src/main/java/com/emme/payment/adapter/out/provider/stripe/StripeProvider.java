@@ -2,20 +2,20 @@ package com.emme.payment.adapter.out.provider.stripe;
 
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
-import com.emme.payment.configuration.PaymentHttpClient;
 import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * Stripe payment provider — global processor available in Mexico since 2019.
@@ -33,22 +33,22 @@ import org.springframework.stereotype.Component;
 public class StripeProvider implements PaymentProvider {
 
   private static final String PRODUCTION_API_BASE = "https://api.stripe.com";
-  private static final MediaType FORM_URLENCODED =
-      MediaType.get("application/x-www-form-urlencoded");
-
   private final String apiBase;
   private final String secretKey;
   private final String webhookSecret;
-  private final PaymentHttpClient client;
+  private final RestClient client;
   private final ObjectMapper mapper;
 
-  public StripeProvider(PaymentProperties props, PaymentHttpClient client, ObjectMapper mapper) {
+  public StripeProvider(
+      PaymentProperties props,
+      @Qualifier("paymentRestClient") RestClient client,
+      ObjectMapper mapper) {
     this(props, client, PRODUCTION_API_BASE, mapper);
   }
 
   /** Test constructor — accepts a capability-owned client and custom API base URL. */
   public StripeProvider(
-      PaymentProperties props, PaymentHttpClient client, String apiBase, ObjectMapper mapper) {
+      PaymentProperties props, RestClient client, String apiBase, ObjectMapper mapper) {
     this.secretKey = props.stripe().secretKey();
     this.webhookSecret = props.stripe().webhookSecret();
     this.client = client;
@@ -66,39 +66,37 @@ public class StripeProvider implements PaymentProvider {
       String idempotencyKey, BigDecimal amount, String currency, String description) {
     try {
       int amountCents = amount.multiply(new BigDecimal("100")).intValueExact();
-      String body =
-          "amount="
-              + amountCents
-              + "&currency="
-              + currency.toLowerCase()
-              + "&description="
-              + URLEncoder.encode(description, StandardCharsets.UTF_8);
-
-      Request req =
-          new Request.Builder()
-              .url(apiBase + "/v1/payment_intents")
+      MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+      form.add("amount", String.valueOf(amountCents));
+      form.add("currency", currency.toLowerCase());
+      form.add("description", description);
+      String responseBody =
+          client
+              .post()
+              .uri(apiBase + "/v1/payment_intents")
               .header("Authorization", "Bearer " + secretKey)
-              .header("Content-Type", "application/x-www-form-urlencoded")
               .header("Idempotency-Key", idempotencyKey)
-              .post(RequestBody.create(body, FORM_URLENCODED))
-              .build();
-
-      try (Response res = client.newCall(req).execute()) {
-        String responseBody = res.body() != null ? res.body().string() : "";
-        if (!res.isSuccessful()) {
-          throw new PaymentProviderException(
-              "Stripe initiate failed: HTTP " + res.code() + " — " + responseBody);
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> result = mapper.readValue(responseBody, Map.class);
-        String paymentIntentId = (String) result.get("id");
-        String clientSecret = (String) result.get("client_secret");
-        return new PaymentResult(
-            paymentIntentId,
-            "PENDING",
-            Map.of("client_secret", clientSecret != null ? clientSecret : ""));
-      }
-    } catch (IOException e) {
+              .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+              .body(form)
+              .retrieve()
+              .body(String.class);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> result =
+          mapper.readValue(responseBody == null ? "" : responseBody, Map.class);
+      String paymentIntentId = (String) result.get("id");
+      String clientSecret = (String) result.get("client_secret");
+      return new PaymentResult(
+          paymentIntentId,
+          "PENDING",
+          Map.of("client_secret", clientSecret != null ? clientSecret : ""));
+    } catch (RestClientResponseException e) {
+      throw new PaymentProviderException(
+          "Stripe initiate failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (IOException | RestClientException e) {
       throw new PaymentProviderException("Stripe initiate failed: " + e.getMessage(), e);
     }
   }
@@ -122,33 +120,32 @@ public class StripeProvider implements PaymentProvider {
   public PaymentResult refund(String providerTransactionId, BigDecimal amount, String reason) {
     try {
       int amountCents = amount.multiply(new BigDecimal("100")).intValueExact();
-      String body =
-          "payment_intent="
-              + providerTransactionId
-              + "&amount="
-              + amountCents
-              + "&reason=requested_by_customer";
-
-      Request req =
-          new Request.Builder()
-              .url(apiBase + "/v1/refunds")
+      MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+      form.add("payment_intent", providerTransactionId);
+      form.add("amount", String.valueOf(amountCents));
+      form.add("reason", "requested_by_customer");
+      String responseBody =
+          client
+              .post()
+              .uri(apiBase + "/v1/refunds")
               .header("Authorization", "Bearer " + secretKey)
-              .header("Content-Type", "application/x-www-form-urlencoded")
-              .post(RequestBody.create(body, FORM_URLENCODED))
-              .build();
-
-      try (Response res = client.newCall(req).execute()) {
-        String responseBody = res.body() != null ? res.body().string() : "";
-        if (!res.isSuccessful()) {
-          throw new PaymentProviderException(
-              "Stripe refund failed: HTTP " + res.code() + " — " + responseBody);
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> result = mapper.readValue(responseBody, Map.class);
-        return new PaymentResult(
-            providerTransactionId, "REFUNDED", Map.of("refund_id", (String) result.get("id")));
-      }
-    } catch (IOException e) {
+              .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+              .body(form)
+              .retrieve()
+              .body(String.class);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> result =
+          mapper.readValue(responseBody == null ? "" : responseBody, Map.class);
+      return new PaymentResult(
+          providerTransactionId, "REFUNDED", Map.of("refund_id", (String) result.get("id")));
+    } catch (RestClientResponseException e) {
+      throw new PaymentProviderException(
+          "Stripe refund failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
+    } catch (IOException | RestClientException e) {
       throw new PaymentProviderException("Stripe refund failed: " + e.getMessage(), e);
     }
   }

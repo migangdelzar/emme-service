@@ -587,6 +587,18 @@ Completed in this slice:
   tenant/workflow boundary for replaceable checkpoint implementations.
 - Focused LangGraph, checkpoint, and compilation tests pass.
 
+#### Current slice 13A — Name the shared tenant JDBC boundary
+
+The tenant-scoped connection pool is shared by AI learning, tools, and AGE
+adapters. Its composition-root bean is therefore named `tenantJdbcClient`, not
+`aiTenantJdbcClient`; the rename does not change the data source, tenant schema
+routing, application ports, or provider substitution boundary.
+
+- [x] Add a failing configuration test for the capability-oriented bean name.
+- [x] Rename the bean, factory method, qualifiers, and configuration guards.
+- [x] Verify no `aiTenantJdbcClient` references remain.
+- [x] Run the focused configuration tests and assistant compilation.
+
 **Files:**
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiLangGraphConfiguration.java`

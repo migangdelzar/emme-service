@@ -13,9 +13,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 @ConditionalOnBean(name = "tenantScopedDataSource")
 public class SpringAiTenantJdbcConfiguration {
 
-  @Bean(name = "aiTenantJdbcClient")
+  @Bean(name = "tenantJdbcClient")
   @Primary
-  JdbcClient aiTenantJdbcClient(@Qualifier("tenantScopedDataSource") DataSource tenantDataSource) {
+  JdbcClient tenantJdbcClient(@Qualifier("tenantScopedDataSource") DataSource tenantDataSource) {
     return JdbcClient.create(tenantDataSource);
   }
 }

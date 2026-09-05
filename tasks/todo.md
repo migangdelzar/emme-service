@@ -127,6 +127,14 @@
       tenant-schema CRUD, shared/control-plane access, cross-tenant jobs, or
       atomic/specialized SQL.
 
+### Current slice — Task 13A shared tenant JDBC naming
+
+- [x] Confirm the tenant-scoped pool is shared beyond Assistant AI adapters.
+- [x] Rename `aiTenantJdbcClient` to `tenantJdbcClient` at the composition root.
+- [x] Update all qualifiers and configuration tests without changing ports or
+      tenant connection routing.
+- [x] Run focused configuration tests and assistant compilation.
+
 ### Current slice — Task 18G document ID lookups
 
 - [x] Add document service and adapter coverage for ID-based loading.

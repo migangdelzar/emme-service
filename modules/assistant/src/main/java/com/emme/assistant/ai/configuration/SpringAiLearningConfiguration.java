@@ -23,13 +23,13 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** Wires governed candidate capture to the existing tenant-aware JDBC boundary. */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnBean(name = "aiTenantJdbcClient")
+@ConditionalOnBean(name = "tenantJdbcClient")
 public class SpringAiLearningConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(LearningCandidateStore.class)
   LearningCandidateStore learningCandidateStore(
-      @Qualifier("aiTenantJdbcClient") JdbcClient jdbc, ObjectMapper objectMapper) {
+      @Qualifier("tenantJdbcClient") JdbcClient jdbc, ObjectMapper objectMapper) {
     return new JdbcLearningCandidateStore(jdbc, objectMapper);
   }
 
@@ -49,7 +49,7 @@ public class SpringAiLearningConfiguration {
   @Bean
   @ConditionalOnMissingBean(LearningCandidateEvaluationStore.class)
   LearningCandidateEvaluationStore learningCandidateEvaluationStore(
-      @Qualifier("aiTenantJdbcClient") JdbcClient jdbc, ObjectMapper objectMapper) {
+      @Qualifier("tenantJdbcClient") JdbcClient jdbc, ObjectMapper objectMapper) {
     return new JdbcLearningCandidateEvaluationStore(jdbc, objectMapper);
   }
 

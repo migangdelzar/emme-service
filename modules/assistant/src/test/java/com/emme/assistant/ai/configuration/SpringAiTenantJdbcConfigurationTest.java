@@ -16,13 +16,13 @@ class SpringAiTenantJdbcConfigurationTest {
   void exposesTheTenantScopedJdbcClientAsThePrimaryClient() throws Exception {
     Method method =
         SpringAiTenantJdbcConfiguration.class.getDeclaredMethod(
-            "aiTenantJdbcClient", DataSource.class);
+            "tenantJdbcClient", DataSource.class);
 
-    assertThat(method.getAnnotation(Bean.class).name()).containsExactly("aiTenantJdbcClient");
+    assertThat(method.getAnnotation(Bean.class).name()).containsExactly("tenantJdbcClient");
     assertThat(method.getAnnotation(Primary.class)).isNotNull();
     assertThat(method.getParameters()[0].getAnnotation(Qualifier.class).value())
         .isEqualTo("tenantScopedDataSource");
-    assertThat(new SpringAiTenantJdbcConfiguration().aiTenantJdbcClient(mock(DataSource.class)))
+    assertThat(new SpringAiTenantJdbcConfiguration().tenantJdbcClient(mock(DataSource.class)))
         .isNotNull();
   }
 }

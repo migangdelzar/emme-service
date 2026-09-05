@@ -31,7 +31,7 @@ class SpringAiAgeConfigurationTest {
     AgeGraphClient client =
         configuration.ageGraphClient(
             dataSource,
-            new SpringAiTenantJdbcConfiguration().aiTenantJdbcClient(dataSource),
+            new SpringAiTenantJdbcConfiguration().tenantJdbcClient(dataSource),
             new ObjectMapper());
     AgeGraphAdapter adapter =
         configuration.ageGraphAdapter(client, new SpringAiAgeProperties(true, "emme_ai_graph_", 5));
@@ -47,7 +47,7 @@ class SpringAiAgeConfigurationTest {
             "ageGraphClient", DataSource.class, JdbcClient.class, ObjectMapper.class);
 
     assertThat(method.getParameters()[1].getAnnotation(Qualifier.class).value())
-        .isEqualTo("aiTenantJdbcClient");
+        .isEqualTo("tenantJdbcClient");
     assertThat(SpringAiAgeConfiguration.class.getDeclaredMethods())
         .extracting(Method::getName)
         .doesNotContain("tenantScopedJdbcClient");

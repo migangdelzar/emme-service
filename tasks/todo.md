@@ -12,8 +12,17 @@
       checkpoint, interruption, parallel, and cancellation capabilities.
 - [x] Write the approved architecture design document.
 - [x] Self-review the design document for placeholders, contradictions, and scope.
-- [ ] Ask the user to review the committed design document.
-- [ ] Create the detailed execution plan after design-document approval.
+- [x] Ask the user to review the committed design document; approval was received.
+- [x] Create the detailed execution plan after design-document approval:
+      `docs/superpowers/plans/2026-09-04-emme-durable-conversational-workflows.md`.
+
+### Current slice — durable workflow implementation plan — 2026-09-04
+
+- [x] Reconcile the plan with the approved design, current repository baseline,
+      and clear simplified naming rules.
+- [x] Add exact implementation files, typed protocols, TDD steps, rollback
+      boundaries, phase checkpoints, and final enterprise verification commands.
+- [ ] Select execution mode and begin implementation task-by-task.
 
 ## Repository framework-first refactoring plan — 2026-09-04
 

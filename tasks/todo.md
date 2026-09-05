@@ -733,6 +733,15 @@
 - [x] Run the focused LangGraph configuration tests.
 - [ ] Run live LangGraph startup and checkpoint coverage with Docker.
 
+### Current slice — Task 8F quote resume checkpoint guard
+
+- [x] Add a failing resume test for a missing quote workflow checkpoint.
+- [x] Reject resume before `updateState` when no quote checkpoint exists.
+- [x] Preserve the adapter's workflow-context error wrapper and assert the
+      missing-checkpoint cause.
+- [x] Run the focused quote resume test suite.
+- [ ] Run live LangGraph checkpoint/resume coverage with Docker.
+
 ### Remaining repository-wide framework-first work
 
 - [x] Finish Spring AI metadata-contract and hybrid-search capability

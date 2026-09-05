@@ -720,6 +720,18 @@ property.
 - [x] Run focused LangGraph configuration tests.
 - [ ] Run live LangGraph startup and checkpoint coverage when Docker is available.
 
+#### Current slice 8F — Quote resume checkpoint guard
+
+Quote workflow resume now verifies that a persisted checkpoint exists before
+calling `updateState` or resuming the graph. Missing checkpoints retain the
+adapter's existing workflow-context error wrapper while exposing the explicit
+missing-checkpoint cause; no state mutation is attempted.
+
+- [x] Add focused missing-checkpoint resume coverage.
+- [x] Reject quote resume without a checkpoint before state mutation.
+- [x] Run the focused quote resume test suite.
+- [ ] Run live LangGraph checkpoint/resume coverage when Docker is available.
+
 - [ ] **Step 1: Write failing configuration/security tests**
 
 Test disabled graph startup, one graph bean per capability, unauthorized

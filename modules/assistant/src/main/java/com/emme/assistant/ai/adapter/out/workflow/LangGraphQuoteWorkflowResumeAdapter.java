@@ -39,6 +39,9 @@ public final class LangGraphQuoteWorkflowResumeAdapter implements QuoteWorkflowR
     RunnableConfig config =
         RunnableConfig.builder().threadId(workflowId + ":" + QUOTE_NAMESPACE).build();
     try {
+      graph
+          .lastStateOf(config)
+          .orElseThrow(() -> new IllegalStateException("Quote workflow checkpoint not found"));
       RunnableConfig updated =
           graph.updateState(config, Map.of("needsReview", false), APPROVAL_GATE_NODE);
       graph.invoke(GraphInput.resume(), updated);

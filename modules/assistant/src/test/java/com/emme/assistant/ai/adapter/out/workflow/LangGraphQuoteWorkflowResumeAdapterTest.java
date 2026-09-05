@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -13,12 +14,14 @@ import com.emme.assistant.ai.domain.workflow.QuoteReviewDecisionType;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphInput;
 import org.bsc.langgraph4j.RunnableConfig;
 import org.bsc.langgraph4j.state.AgentState;
+import org.bsc.langgraph4j.state.StateSnapshot;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -34,6 +37,9 @@ class LangGraphQuoteWorkflowResumeAdapterTest {
   void resumesOnlyAfterAnApprovalOrEditDecision() throws Exception {
     CompiledGraph<AgentState> graph = mock(CompiledGraph.class);
     RunnableConfig updated = RunnableConfig.builder().threadId(WORKFLOW_ID.toString()).build();
+    StateSnapshot<AgentState> checkpoint = mock(StateSnapshot.class);
+    org.mockito.Mockito.when(graph.lastStateOf(any(RunnableConfig.class)))
+        .thenReturn(Optional.of(checkpoint));
     org.mockito.Mockito.when(
             graph.updateState(any(RunnableConfig.class), anyMap(), eq("approval_gate")))
         .thenReturn(updated);
@@ -81,6 +87,24 @@ class LangGraphQuoteWorkflowResumeAdapterTest {
                     () -> adapter.resume(UUID.randomUUID(), QuoteReviewDecisionType.APPROVED)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("workflowId does not match AI execution context");
+  }
+
+  @Test
+  void rejectsResumeWhenTheQuoteWorkflowCheckpointDoesNotExist() throws Exception {
+    CompiledGraph<AgentState> graph = mock(CompiledGraph.class);
+    org.mockito.Mockito.when(graph.lastStateOf(any(RunnableConfig.class)))
+        .thenReturn(Optional.empty());
+    LangGraphQuoteWorkflowResumeAdapter adapter = new LangGraphQuoteWorkflowResumeAdapter(graph);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.run(
+                    context(), () -> adapter.resume(WORKFLOW_ID, QuoteReviewDecisionType.APPROVED)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Unable to resume quote workflow: " + WORKFLOW_ID)
+        .hasRootCauseMessage("Quote workflow checkpoint not found");
+
+    verify(graph, never()).updateState(any(RunnableConfig.class), anyMap(), eq("approval_gate"));
   }
 
   private static AiExecutionContext context() {

@@ -503,34 +503,44 @@ Completed in this slice:
 - PostgreSQL remains authoritative for durable cache metadata/hits; Redis remains an evictable hot projection.
 - `HybridSearch` remains direct SQL until an equivalent Spring AI/vector-store path reproduces FTS, pgvector, RRF, model identity, and tenant filtering with equal or better measured behavior.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Cover advisor order, retrieved-document tenant filter, empty retrieval,
 provider fallback, unsafe answer abstention, top-1 threshold and margin,
 embedding model/version/dimension mismatch, Redis safe miss, durable cache
-hit confirmation, and hybrid search ranking.
+hit confirmation, and hybrid search ranking. These tests are covered by the
+completed advisor, RAG, semantic policy, Redis projection, metadata, and
+hybrid-search slices.
 
-- [ ] **Step 2: Run focused tests**
+- [x] **Step 2: Run focused tests**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:shared:test :database:test --tests '*Rag*' --tests '*Semantic*' --tests '*HybridSearch*' --no-parallel --no-configuration-cache
 ```
 
-- [ ] **Step 3: Implement the minimum consolidation**
+The focused matrix passed with the current provider-neutral ports and Spring AI
+adapters.
+
+- [x] **Step 3: Implement the minimum consolidation**
 
 Build one advisor list per use case, inject the canonical router, simplify the
 cache constructor to one production path, and keep policy-specific code only
 where the framework cannot express tenant/security/abstention rules. The
 advisor composition now delegates ordering to Spring's comparator and keeps
-the security and prompt advisors ahead of retrieval.
+the security and prompt advisors ahead of retrieval. The remaining direct SQL
+hybrid adapter is intentional and documented in slice 6F.
 
-- [ ] **Step 4: Run focused tests, integration contracts, and commit**
+- [x] **Step 4: Run focused tests, integration contracts, and commit**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:shared:test :database:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
 git add modules/assistant modules/shared
 git commit -m "refactor(ai): consolidate Spring AI RAG and semantic paths"
 ```
+
+Focused assistant/shared/database tests, integration-test source compilation,
+and repository quality checks pass. Runtime pgvector/Redis integration remains
+Docker-gated.
 
 #### Current slice 6C — Preserve the provider-neutral RAG metadata contract
 

@@ -31,6 +31,8 @@
 - [x] Add a source-only architecture inventory for production OkHttp usage.
 - [x] Document the capability-scoped `RestClient` policy and retained
       MockWebServer/OkHttp exceptions in the migration ledger.
+- [x] Migrate Identity/Keycloak token, user-info, admin, and chained user
+      provisioning calls to the named `identityRestClient`.
 - [x] Establish the named Notification `RestClient` boundary without
       migrating provider callers yet.
 - [x] Migrate Twilio with form encoding and Basic authentication coverage.
@@ -39,7 +41,7 @@
 - [x] Migrate FCM OAuth-token/send sequencing and SendGrid message-ID
       extraction.
 - [x] Migrate APNs JWT/header handling and SES byte-preserving SigV4 signing.
-- [ ] Migrate the remaining Identity, Calendar, Notification, and Payment
+- [ ] Migrate the remaining Calendar and Payment
       provider callers one focused contract slice at a time.
 - [ ] Keep the Notification wrapper until HTTP-13 proves all callers and
       production dependencies are gone.

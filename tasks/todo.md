@@ -179,6 +179,15 @@
 - [x] Run Appointments tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue reviewing remaining tenant-schema list/search methods.
 
+### Current slice — Task 18Q Document and chunk schema-local CRUD
+
+- [x] Add test-first coverage for document listing and chunk method boundaries.
+- [x] Replace tenant-qualified document/chunk JPA methods with `findAll()`,
+      document-key, and ID-based methods.
+- [x] Preserve tenant scope on shared vector/full-text search and domain state.
+- [x] Run Documents tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue reviewing remaining tenant-schema list/search methods.
+
 ### Tenant schema routing decision
 
 - [x] Apply tenant schema and session configuration when a connection is taken

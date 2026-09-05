@@ -31,8 +31,8 @@ public class DocumentPersistenceAdapter implements DocumentRepository {
   }
 
   @Override
-  public List<Document> findByTenantId(UUID tenantId) {
-    return documents.findByTenantId(tenantId).stream().map(DocumentEntity::toDomain).toList();
+  public List<Document> findAll() {
+    return documents.findAll().stream().map(DocumentEntity::toDomain).toList();
   }
 
   @Override
@@ -49,22 +49,20 @@ public class DocumentPersistenceAdapter implements DocumentRepository {
   }
 
   @Override
-  public List<DocumentChunk> findChunks(UUID tenantId, UUID documentId) {
-    return chunks.findByTenantIdAndDocumentIdOrderByChunkIndexAsc(tenantId, documentId).stream()
+  public List<DocumentChunk> findChunks(UUID documentId) {
+    return chunks.findByDocumentIdOrderByChunkIndexAsc(documentId).stream()
         .map(DocumentChunkEntity::toDomain)
         .toList();
   }
 
   @Override
-  public List<DocumentChunk> findChunksByTenantIdAndIds(UUID tenantId, List<UUID> chunkIds) {
-    return chunks.findByTenantIdAndIdIn(tenantId, chunkIds).stream()
-        .map(DocumentChunkEntity::toDomain)
-        .toList();
+  public List<DocumentChunk> findChunksByIds(List<UUID> chunkIds) {
+    return chunks.findByIdIn(chunkIds).stream().map(DocumentChunkEntity::toDomain).toList();
   }
 
   @Override
-  public void replaceChunks(UUID tenantId, UUID documentId, List<DocumentChunk> newChunks) {
-    chunks.deleteByTenantIdAndDocumentId(tenantId, documentId);
+  public void replaceChunks(UUID documentId, List<DocumentChunk> newChunks) {
+    chunks.deleteByDocumentId(documentId);
     chunks.flush();
     chunks.saveAll(newChunks.stream().map(DocumentChunkEntity::from).toList());
   }

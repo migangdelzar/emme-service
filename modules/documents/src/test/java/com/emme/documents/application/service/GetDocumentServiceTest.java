@@ -35,7 +35,7 @@ class GetDocumentServiceTest {
     }
 
     @Override
-    public List<Document> findByTenantId(UUID tenantId) {
+    public List<Document> findAll() {
       return List.of();
     }
 
@@ -45,21 +45,18 @@ class GetDocumentServiceTest {
     }
 
     @Override
-    public List<com.emme.documents.domain.model.DocumentChunk> findChunks(
-        UUID tenantId, UUID documentId) {
+    public List<com.emme.documents.domain.model.DocumentChunk> findChunks(UUID documentId) {
       return List.of();
     }
 
     @Override
-    public List<com.emme.documents.domain.model.DocumentChunk> findChunksByTenantIdAndIds(
-        UUID tenantId, List<UUID> chunkIds) {
+    public List<com.emme.documents.domain.model.DocumentChunk> findChunksByIds(
+        List<UUID> chunkIds) {
       return List.of();
     }
 
     @Override
     public void replaceChunks(
-        UUID tenantId,
-        UUID documentId,
-        List<com.emme.documents.domain.model.DocumentChunk> chunks) {}
+        UUID documentId, List<com.emme.documents.domain.model.DocumentChunk> chunks) {}
   }
 }

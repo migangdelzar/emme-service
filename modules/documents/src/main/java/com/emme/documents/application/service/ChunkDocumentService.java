@@ -42,7 +42,7 @@ public class ChunkDocumentService implements ChunkDocumentUseCase {
                       document.tenantId(), document.id(), index, content, sha256(content));
                 })
             .toList();
-    documentRepository.replaceChunks(command.tenantId(), command.documentId(), chunks);
+    documentRepository.replaceChunks(command.documentId(), chunks);
     return chunks.stream().map(DocumentApplicationMapper::toResult).toList();
   }
 

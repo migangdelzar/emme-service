@@ -39,7 +39,7 @@ public class SearchDocumentChunksService implements SearchDocumentChunksUseCase 
     }
 
     Map<java.util.UUID, DocumentChunk> chunksById =
-        repository.findChunksByTenantIdAndIds(query.tenantId(), chunkIds).stream()
+        repository.findChunksByIds(chunkIds).stream()
             .collect(Collectors.toMap(DocumentChunk::id, Function.identity()));
     return chunkIds.stream()
         .map(chunksById::get)

@@ -32,7 +32,7 @@ class SearchDocumentChunksServiceTest {
                 new DocumentSearchHit(secondChunkId, 0.9),
                 new DocumentSearchHit(firstChunkId, 0.7)));
     UUID documentId = UUID.randomUUID();
-    when(repository.findChunksByTenantIdAndIds(tenantId, List.of(secondChunkId, firstChunkId)))
+    when(repository.findChunksByIds(List.of(secondChunkId, firstChunkId)))
         .thenReturn(
             List.of(
                 new DocumentChunk(firstChunkId, tenantId, documentId, 0, "first", "fingerprint-1"),
@@ -46,6 +46,6 @@ class SearchDocumentChunksServiceTest {
         .extracting(DocumentChunkDetails::id)
         .containsExactly(secondChunkId, firstChunkId);
     verify(search).search(tenantId, List.of(0.25f), "pricing", 5);
-    verify(repository).findChunksByTenantIdAndIds(tenantId, List.of(secondChunkId, firstChunkId));
+    verify(repository).findChunksByIds(List.of(secondChunkId, firstChunkId));
   }
 }

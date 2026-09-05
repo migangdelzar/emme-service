@@ -22,8 +22,6 @@ public class ListDocumentsService implements ListDocumentsUseCase {
 
   @Override
   public List<DocumentDetails> list(ListDocumentsQuery query) {
-    return documentRepository.findByTenantId(query.tenantId()).stream()
-        .map(DocumentApplicationMapper::toResult)
-        .toList();
+    return documentRepository.findAll().stream().map(DocumentApplicationMapper::toResult).toList();
   }
 }

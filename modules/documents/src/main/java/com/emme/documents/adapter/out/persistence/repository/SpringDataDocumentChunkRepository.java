@@ -10,10 +10,9 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataDocumentChunkRepository
     extends JpaRepository<DocumentChunkEntity, UUID> {
 
-  List<DocumentChunkEntity> findByTenantIdAndDocumentIdOrderByChunkIndexAsc(
-      UUID tenantId, UUID documentId);
+  List<DocumentChunkEntity> findByDocumentIdOrderByChunkIndexAsc(UUID documentId);
 
-  List<DocumentChunkEntity> findByTenantIdAndIdIn(UUID tenantId, List<UUID> ids);
+  List<DocumentChunkEntity> findByIdIn(List<UUID> ids);
 
-  void deleteByTenantIdAndDocumentId(UUID tenantId, UUID documentId);
+  void deleteByDocumentId(UUID documentId);
 }

@@ -46,9 +46,9 @@ class DocumentPersistenceAdapterTest {
     List<DocumentChunk> newChunks =
         List.of(new DocumentChunk(tenantId, documentId, 0, "content", "fingerprint"));
 
-    adapter.replaceChunks(tenantId, documentId, newChunks);
+    adapter.replaceChunks(documentId, newChunks);
 
-    verify(chunks).deleteByTenantIdAndDocumentId(tenantId, documentId);
+    verify(chunks).deleteByDocumentId(documentId);
     verify(chunks).flush();
     verify(chunks).saveAll(anyList());
   }

@@ -1402,6 +1402,20 @@ invariant and are backed by PostgreSQL concurrency protections.
 - [x] Run Appointments tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
 
+#### Current slice 18Q — Remove tenant predicates from Document and chunk CRUD
+
+Document metadata and chunks are owned by the tenant schema and accessed after
+tenant connection selection. The JPA port now uses inherited `findAll()` and
+ID/document-key methods without repeating `tenantId`; the search port retains
+tenant scope for the shared vector/full-text projection, and the domain chunk
+still carries its tenant identity for persistence and mapping.
+
+- [x] Add failing adapter/service contract changes for schema-local document/chunk operations.
+- [x] Replace tenant-qualified Spring Data document/chunk methods with schema-local methods.
+- [x] Update document listing, chunking, retrieval, and search hydration callers.
+- [x] Run Documents tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
+
 #### Current slice 18E — Use ID-only service-catalog updates
 
 Artist and service CRUD is already expressed cleanly with Spring Data JPA. The

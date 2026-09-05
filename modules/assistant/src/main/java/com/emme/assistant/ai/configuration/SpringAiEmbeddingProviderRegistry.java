@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
-import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.contracts.semantic.DistanceMetric;
+import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;

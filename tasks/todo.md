@@ -608,7 +608,7 @@
 - [x] Remove `JdbcOperations` from the AGE production adapter boundary.
 - [x] Keep AGE-specific SQL, transaction-local search path, and graph traversal
       in the specialized `JdbcClient` adapter.
-- [x] Reuse `aiTenantJdbcClient` instead of creating a second AGE-specific bean.
+- [x] Reuse `tenantJdbcClient` instead of creating a second AGE-specific bean.
 - [x] Keep `JdbcTemplate` only in AGE integration-test database setup.
 - [x] Run focused configuration tests, compilation, and Spotless.
 - [ ] Re-run the live AGE Testcontainers integration with Docker available.
@@ -827,7 +827,7 @@ pgvector/PostgreSQL tests pass.
 - [x] Add an application-facing candidate submission service that persists only
       evidence-gated candidates and requires the backend AI execution context.
 - [x] Wire candidate persistence through the existing tenant-aware
-      `aiTenantJdbcClient`; keep application startup conditional on that bean.
+      `tenantJdbcClient`; keep application startup conditional on that bean.
 - [x] Dispatch admitted candidates through a stable, tenant-partitionable
       Spring Modulith evaluation event; keep evaluation asynchronous and
       external to the customer request.
@@ -976,7 +976,7 @@ not call the store for rejected evidence, and returns a pending-evaluation
 submission rather than changing runtime routing.
 
 The JDBC candidate adapter is now composed from the existing
-`aiTenantJdbcClient` in assistant configuration. It verifies the supplied
+`tenantJdbcClient` in assistant configuration. It verifies the supplied
 context equals the bound context, persists JSON evidence and a SHA-256 text
 fingerprint, and returns the existing row on a duplicate candidate. The
 candidate feature remains unavailable when the tenant-aware JDBC boundary is

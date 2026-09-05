@@ -79,6 +79,29 @@ class RepositoryFrameworkFirstInventoryTest {
         .isEqualTo(1);
   }
 
+  @Test
+  void modulesUsingTestingConventionDoNotRedeclareItsSharedFixtures() throws IOException {
+    List<String> modules =
+        List.of(
+            "modules/appointments",
+            "modules/audit",
+            "modules/booking",
+            "modules/clients",
+            "modules/documents",
+            "modules/salon",
+            "modules/services",
+            "modules/staffing",
+            "modules/subscriptions");
+
+    for (String module : modules) {
+      String build = Files.readString(sourcePath(module + "/build.gradle.kts"));
+      assertThat(build)
+          .as("the emme.testing convention owns the shared test fixture for %s", module)
+          .contains("id(\"emme.testing\")")
+          .doesNotContain("testImplementation(testFixtures(project(\":libraries:testing\")))");
+    }
+  }
+
   private boolean containsJdbcReference(Path path) {
     try {
       String source = Files.readString(path);

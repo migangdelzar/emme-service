@@ -13,7 +13,6 @@ dependencies {
   implementation(project(":modules:clients"))
   implementation(project(":modules:staffing"))
   implementation(project(":modules:catalog"))
-  testImplementation(testFixtures(project(":libraries:testing")))
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
 }

@@ -4,5 +4,4 @@ plugins {
 }
 
 dependencies {
-  testImplementation(testFixtures(project(":libraries:testing")))
 }

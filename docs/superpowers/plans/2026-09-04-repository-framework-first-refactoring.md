@@ -2061,8 +2061,27 @@ changes remain separate until dependency analysis demonstrates a real benefit.
 - [x] Run the repository inventory test, affected compilation, and Spotless.
 - [x] Record the actual per-project dependency-analysis task names and Java 25
       class-file compatibility blocker.
+- [x] Remove redundant shared test-fixture declarations from modules already
+      applying the `emme.testing` convention.
+- [x] Extend the repository inventory guard to prevent that convention
+      duplication from returning.
 - [ ] Complete convention-plugin and dependency-analysis follow-up slices once
       the analysis plugin supports the configured Java toolchain.
+
+#### Current slice 22B — Let the testing convention own shared fixtures
+
+The `emme.testing` convention already contributes the generic testing fixture
+to a module's test suite. Nine modules repeated the same dependency in their
+build scripts, adding maintenance noise without adding a different capability.
+Those declarations were removed, while integration-test fixture declarations
+remain explicit because they belong to a separate source set. The repository
+inventory test now enforces this ownership rule.
+
+- [x] Add a failing repository test for convention-owned shared fixtures.
+- [x] Remove the nine redundant test-suite fixture declarations.
+- [x] Compile every affected module's test sources and run the inventory test.
+- [ ] Revisit convention-plugin scope after Java 25-compatible dependency
+      analysis is available.
 
 ## 11. Phase I — Database, deployment, and final cleanup
 

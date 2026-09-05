@@ -557,6 +557,17 @@
 - [x] Run the inventory test, affected compilation, and Spotless.
 - [ ] Complete convention-plugin and dependency-analysis follow-up slices.
 
+### Current slice — Task 22B convention-owned test fixtures
+
+- [x] Add a failing repository guard for duplicate shared test fixtures.
+- [x] Remove explicit `libraries:testing` test dependencies from the nine
+      modules that already apply `emme.testing`.
+- [x] Keep integration-test fixture dependencies explicit for their separate
+      source set.
+- [x] Run the inventory test and affected test-source compilation.
+- [ ] Revisit convention-plugin scope after Java 25-compatible dependency
+      analysis is available.
+
 ### Current slice — Task 11A atomic AI job persistence
 
 - [x] Add a failing configuration test requiring the qualified `coreJdbcClient` boundary.

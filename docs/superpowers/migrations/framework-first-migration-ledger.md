@@ -248,6 +248,7 @@ lookup should become a schema-local `findByChannel` contract.
 |---|---|---|
 | Repeated `kernel` dependencies | `modules/booking/build.gradle.kts`, `modules/catalog/build.gradle.kts` | One declaration per project |
 | Repeated security test dependency | `modules/assistant/build.gradle.kts` | One declaration |
+| Repeated shared test-fixture dependency | Modules applying `emme.testing` | Convention owns the normal test suite; integration-test fixtures remain explicit |
 | Repeated `emme.testing` application | module build files | Rely on `emme.java-library`/`emme.spring-module` convention chain |
 | Repeated Modulith application | `applications/emme-platform/build.gradle.kts` | Rely on `emme.spring-application` once |
 | Over-provisioned persistence plugin | `build-logic/src/main/kotlin/emme.persistence.gradle.kts` and placeholder modules | Split only if dependency analysis proves benefit |

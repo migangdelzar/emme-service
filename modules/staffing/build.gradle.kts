@@ -6,5 +6,4 @@ plugins {
 dependencies {
   implementation(project(":modules:shared"))
   implementation(project(":modules:tenancy"))
-  testImplementation(testFixtures(project(":libraries:testing")))
 }

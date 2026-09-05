@@ -20,7 +20,6 @@ dependencies {
   implementation(libs.spring.boot.starter.validation)
   implementation(libs.spring.boot.starter.security)
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
-  testImplementation(testFixtures(project(":libraries:testing")))
   testImplementation(testFixtures(project(":modules:tenancy")))
   testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(libs.spring.security.test)

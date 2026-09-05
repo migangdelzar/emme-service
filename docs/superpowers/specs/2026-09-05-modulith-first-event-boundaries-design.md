@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date | 2026-09-05 |
-| Status | Draft — awaiting user review |
+| Status | Approved |
 | Scope | Emme Nails initial runtime |
 | Related | `docs/adr/0005-spring-modulith-kafka-event-streaming.md`, `docs/adr/0006-mvp-low-cost-runtime-boundary.md` |
 
@@ -83,9 +83,10 @@ under an `api.event` package.
 - Disable Kafka externalization in every application profile.
 - Remove Kafka bootstrap-server, security, producer, and consumer-group
   requirements from active runtime configuration.
-- Remove Kafka from the active `emme-platform` capability composition.
-- Keep `emme.messaging` and its Kafka aliases as a dormant build capability for
-  future activation, rather than deleting the reusable build logic immediately.
+- Do not activate or wire a Kafka provider in the `emme-platform` runtime.
+- Retain `emme.messaging` and its Kafka aliases as dormant build/test capability
+  so the future externalization contract can be compiled and run explicitly,
+  rather than deleting the reusable build logic immediately.
 
 ### Local containers and deployment
 
@@ -96,24 +97,25 @@ default local runtime, production deployment, or normal CI gate.
 
 The Kafka Compose contract test and Kafka integration profile are therefore
 commented out or gated as deferred checks, not run as part of the initial
-Modulith-only validation path. They should not be silently deleted because they
-document the future reactivation contract.
+Modulith-only validation path. The Kafka integration test may run only through
+an explicit deferred-test Gradle property. They should not be silently deleted
+because they document the future reactivation contract.
 
 ## 5. Expected File Impact
 
-The implementation plan is expected to touch approximately 15–20 files:
+The implementation plan is expected to touch approximately 20–26 files:
 
 | Area | Expected impact |
 |---|---:|
-| Six event records and event-specific tests | 7–9 |
-| Application build and runtime profiles | 3–5 |
-| Kafka integration profile/Testcontainers test setup | 3–5 |
-| CI and Compose/Kubernetes activation gates | 3–5 |
-| Canonical architecture/ADR/AI documentation | 4–7 |
+| Six event records, provider cleanup, and event tests | 9–11 |
+| Application build and runtime profiles | 4–5 |
+| CI and Compose/Kubernetes activation gates | 3–4 |
+| Canonical architecture/ADR/AI documentation | 5–6 |
 
-The exact count depends on whether deferred Kafka artifacts are commented out in
-place or gated through profile/CI conditions. The preferred approach is to keep
-the artifacts but make their deferred status explicit.
+The exact count depends on whether provider-only configuration is removed or
+left as dormant validation code. The preferred approach removes unused active
+provider configuration, keeps reusable Kafka test/build artifacts, and gates
+their execution explicitly.
 
 ## 6. Testing Design
 
@@ -163,4 +165,3 @@ real external boundary. The activation must include:
 - The future Kafka capability remains discoverable and reactivatable through an
   explicit external-event decision.
 - Documentation clearly explains when Kafka becomes appropriate.
-

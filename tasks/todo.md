@@ -1,5 +1,20 @@
 # Service architecture migration checklist
 
+## Current slice — Durable conversational workflows design — 2026-09-04
+
+- [x] Confirm the scope includes the complete appointment lifecycle, payment links,
+      payment callbacks, refunds, staff review, and durable resume.
+- [x] Compare Spring AI-only, LangGraph-only, LLM-supervisor, typed-subgraph,
+      and external workflow-engine alternatives.
+- [x] Define explicit node-level control for tools, memory, model role, timeout,
+      and interruption policy.
+- [x] Research current Spring AI RAG/tooling and LangGraph4j subgraph,
+      checkpoint, interruption, parallel, and cancellation capabilities.
+- [x] Write the approved architecture design document.
+- [x] Self-review the design document for placeholders, contradictions, and scope.
+- [ ] Ask the user to review the committed design document.
+- [ ] Create the detailed execution plan after design-document approval.
+
 ## Repository framework-first refactoring plan — 2026-09-04
 
 ### Current slice — Task 5 structured extraction and tool wiring

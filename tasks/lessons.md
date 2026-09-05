@@ -1487,3 +1487,12 @@
 - **Prevention rule:** Resolve each Liquibase include against the parent
   directory of the changelog that declares it, then assert existence and
   uniqueness.
+
+## 2026-09-05 — Use qualified names for deletion inventory checks
+
+- **Failure mode:** A deletion guard treated an Identity replacement with the
+  same simple class name as a caller of the deleted tenancy implementation.
+- **Detection signal:** The guard failed on `EnsureTenantMembershipService` in
+  Identity even though the ledger path belonged to Tenancy.
+- **Prevention rule:** Resolve candidate references using the implementation's
+  package-qualified name and only use the simple name inside its own package.

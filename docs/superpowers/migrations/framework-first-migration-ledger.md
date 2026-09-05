@@ -305,3 +305,18 @@ Before deleting any ledger row's old implementation:
 - [ ] Performance/query/latency baseline is not regressed.
 - [ ] Rollback composition or feature flag is available until the release gate.
 - [ ] Ledger status is changed to `Deleted` with commit SHA and date.
+
+### 6.1 Compatibility deletion readiness
+
+The status is intentionally explicit so a future deletion can be automated and
+reviewed. `Pending` means callers or a prerequisite migration remain; `Ready`
+means the inventory test must find no repository references before deletion;
+`Deleted` means the implementation path and all repository references must be
+gone.
+
+| Implementation path | Status | Blocking condition or deletion evidence |
+|---|---|---|
+| `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java` | Pending | Assistant and legacy compatibility callers still depend on the composite provider contract; migrate callers behind the canonical chat/embedding ports first |
+| `modules/payment/src/main/java/com/emme/payment/configuration/PaymentHttpClient.java` | Pending | Provider adapters still use the shared OkHttp transport; HTTP-client standardization is intentionally deferred |
+| `modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java` | Pending | Provider adapters still use the shared OkHttp transport; HTTP-client standardization is intentionally deferred |
+| `modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleHttpClient.java` | Pending | Google adapters and live tests still use the shared OkHttp transport; HTTP-client standardization is intentionally deferred |

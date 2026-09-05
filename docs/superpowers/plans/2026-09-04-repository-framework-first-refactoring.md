@@ -2150,8 +2150,14 @@ splits remain gated on dependency-analysis evidence.
       and run representative advice tasks on the configured Java toolchain.
 - [x] Review the assistant duplicate-class advice and remove the proven
       conflicting legacy Swagger annotation artifact.
-- [ ] Review remaining generated advice module by module before changing any
-      additional dependency or convention declaration.
+- [x] Review remaining generated advice module by module before changing any
+      additional dependency or convention declaration. The module-only pass
+      completed for all database, library, business-module, and tooling
+      projects; recommendations are predominantly convention-owned framework
+      transitives or test/integration scope suggestions. No additional safe
+      removal was justified. The application integration source set remains a
+      tooling exception because its disabled application JAR is requested by
+      the analysis plugin.
 
 #### Current slice 22B — Let the testing convention own shared fixtures
 
@@ -2345,18 +2351,29 @@ git commit -m "chore(ops): standardize repository verification gates"
 - No serialized event/workflow contract changes occur without compatibility coverage.
 - Unused provider/JDBC/HTTP dependencies are removed from the narrowest owning scope.
 
-- [ ] **Step 1: Write failing deletion-candidate tests**
+- [x] **Step 1: Write failing deletion-candidate tests**
 
 Add a repository inventory test that fails when a ledger item marked ready for
 deletion still has a source caller, bean declaration, import, or build
-dependency.
+dependency. `CompatibilityDeletionInventoryTest` now reads explicit
+`Pending`/`Ready`/`Deleted` ledger rows, verifies path/status consistency, and
+checks qualified references before a ready or deleted item can pass.
 
-- [ ] **Step 2: Run caller and dependency searches**
+- [x] **Step 2: Run caller and dependency searches**
 
 ```bash
 rg -n 'SpringAiModelProvider|PaymentHttpClient|NotificationHttpClient|GoogleHttpClient|AiHttpClient|JdbcTemplate|NamedParameterJdbcTemplate' modules libraries applications tools
-./gradlew dependencyAnalysis --no-parallel --no-configuration-cache
+./gradlew :modules:assistant:computeActualUsageMain :modules:assistant:computeAdvice \
+  :modules:ai-platform:computeActualUsageMain :modules:ai-platform:computeAdvice \
+  :modules:booking:computeActualUsageMain :modules:booking:computeAdvice \
+  :modules:catalog:computeActualUsageMain :modules:catalog:computeAdvice \
+  --no-daemon --no-parallel --no-configuration-cache
 ```
+
+The repository-wide caller search is complete. The module-only advice pass
+completed for all non-application projects; the application-specific analysis
+remains blocked by its `integrationTest` task requesting the disabled
+`emme-platform-0.1.0.jar`.
 
 - [ ] **Step 3: Delete one compatibility family at a time**
 
@@ -2371,6 +2388,23 @@ do not mix unrelated formatting changes.
 git add modules libraries platform gradle
 git commit -m "refactor: remove verified compatibility layers"
 ```
+
+#### Current slice 25A — Make compatibility deletion status executable
+
+The deletion checklist is now backed by `CompatibilityDeletionInventoryTest`.
+The migration ledger records the remaining provider wrappers and the composite
+Spring AI model provider as `Pending`; the test will reject a future `Ready`
+or `Deleted` status while its qualified implementation reference remains.
+The test also distinguishes a deleted tenancy implementation from an Identity
+replacement that happens to share the same simple class name.
+
+- [x] Add the failing inventory test before adding ledger status rows.
+- [x] Add explicit compatibility candidate status rows to the migration ledger.
+- [x] Verify pending paths and deleted paths against the repository.
+- [x] Verify ready/deleted candidates have no qualified source, test, bean, or
+      build references.
+- [ ] Delete a compatibility family; this remains gated by the pending caller
+      migrations and the explicitly deferred provider HTTP session.
 
 #### Current slice 13D — Validate Hibernate schema identifiers at the provider boundary
 

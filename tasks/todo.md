@@ -3703,3 +3703,22 @@ appointment mutation tools are registered.
   includes across the core and studio changelogs.
 - The active E2E Compose, AGE, Kafka, backend workflow, and container workflow
   contracts pass.
+
+## Compatibility deletion inventory slice — 2026-09-05
+
+- [x] Add a test-driven ledger guard for compatibility implementation status.
+- [x] Record remaining Spring AI and provider HTTP wrappers as `Pending`.
+- [x] Verify deleted paths and qualified source/test/build references.
+- [ ] Delete compatibility families only after their caller migrations and
+      deferred provider HTTP standardization are complete.
+
+### Results
+
+- `CompatibilityDeletionInventoryTest` passes with explicit `Pending` and
+  historical `Deleted` ledger rows.
+- The guard handles same-simple-name replacements by checking the candidate's
+  qualified package reference, avoiding a false positive for Identity's
+  replacement of the deleted tenancy service.
+- The repository-wide dependency advice attempt remains partially blocked by
+  the application integration-test analysis task requesting the disabled
+  `emme-platform-0.1.0.jar`; representative module advice remains usable.

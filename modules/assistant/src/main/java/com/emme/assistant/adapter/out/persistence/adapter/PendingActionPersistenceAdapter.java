@@ -24,8 +24,8 @@ public class PendingActionPersistenceAdapter implements PendingActionRepository 
   }
 
   @Override
-  public Optional<PendingAction> findByTenantIdAndId(UUID tenantId, UUID actionId) {
-    return repository.findByIdAndTenantId(actionId, tenantId).map(mapper::toDomain);
+  public Optional<PendingAction> findById(UUID actionId) {
+    return repository.findById(actionId).map(mapper::toDomain);
   }
 
   @Override

@@ -128,6 +128,17 @@
 - [x] Preserve provider-reference, webhook, and list tenant filters.
 - [x] Run notification/payment tests, Checkstyle, and Spotless.
 
+### Current slice — Task 18I Assistant aggregate ID lookups
+
+- [x] Add contract coverage for connection-scoped conversation and pending
+      action aggregate reads.
+- [x] Remove redundant tenant-qualified aggregate methods from Assistant ports,
+      adapters, and Spring Data repositories.
+- [x] Simplify Assistant service helper and mutation callers.
+- [x] Preserve tenant-qualified child, list, expiration, and operation-specific
+      queries.
+- [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
+
 ### Plan working notes
 
 ### Current slice — Task 19A tenant event boundary

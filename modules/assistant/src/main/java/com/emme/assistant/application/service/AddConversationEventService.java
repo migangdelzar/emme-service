@@ -25,8 +25,7 @@ public class AddConversationEventService implements AddConversationEventUseCase 
   @Override
   public ConversationEventDetails add(AddConversationEventCommand command) {
     var conversation =
-        AssistantServiceSupport.conversation(
-            conversations, command.tenantId(), command.conversationId());
+        AssistantServiceSupport.conversation(conversations, command.conversationId());
     int nextSequence =
         events
             .findLatestByTenantIdAndConversationId(command.tenantId(), command.conversationId())

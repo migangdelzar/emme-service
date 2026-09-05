@@ -97,7 +97,7 @@ class AssistantPackageConventionTest {
   }
 
   @Test
-  void requiresTenantScopedLookupBoundariesForUserOwnedData() throws Exception {
+  void usesConnectionScopedAggregateLookupsAndExplicitlyScopedChildQueries() throws Exception {
     String conversationPort =
         Files.readString(ROOT.resolve("application/port/out/ConversationRepository.java"));
     String conversationAdapter =
@@ -117,16 +117,16 @@ class AssistantPackageConventionTest {
     String controller =
         Files.readString(ROOT.resolve("adapter/in/web/controller/ConversationController.java"));
 
-    assertThat(conversationPort).contains("findByTenantIdAndId(");
-    assertThat(conversationPort).doesNotContain("findById(UUID conversationId)");
-    assertThat(conversationAdapter).contains("findByTenantIdAndId(");
-    assertThat(conversationAdapter).doesNotContain("repository.findById(");
+    assertThat(conversationPort).contains("findById(UUID conversationId)");
+    assertThat(conversationPort).doesNotContain("findByTenantIdAndId(");
+    assertThat(conversationAdapter).contains("repository.findById(");
+    assertThat(conversationAdapter).doesNotContain("findByTenantIdAndId(");
     assertThat(eventPort).contains("tenantId");
     assertThat(eventAdapter).contains("tenantId");
-    assertThat(actionPort).contains("findByTenantIdAndId(");
-    assertThat(actionPort).doesNotContain("findById(UUID actionId)");
-    assertThat(actionAdapter).contains("findByTenantIdAndId(");
-    assertThat(actionAdapter).doesNotContain("repository.findById(");
+    assertThat(actionPort).contains("findById(UUID actionId)");
+    assertThat(actionPort).doesNotContain("findByTenantIdAndId(");
+    assertThat(actionAdapter).contains("repository.findById(");
+    assertThat(actionAdapter).doesNotContain("findByTenantIdAndId(");
     assertThat(controller).contains("withCurrentTenant");
     assertThat(controller).contains("new GetConversationQuery(tenantId, id)");
     assertThat(controller).contains("new CloseConversationCommand(tenantId, id)");

@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PendingActionRepository {
-  Optional<PendingAction> findByTenantIdAndId(UUID tenantId, UUID actionId);
+  Optional<PendingAction> findById(UUID actionId);
 
   List<PendingAction> findByTenantIdAndConversationIdAndStatus(
       UUID tenantId, UUID conversationId, ActionStatus status);

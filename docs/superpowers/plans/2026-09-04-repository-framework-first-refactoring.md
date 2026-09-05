@@ -1188,8 +1188,8 @@ unchanged and the adapter still owns all JPA repository access.
 
 - [x] Add adapter contract coverage for document and chunk persistence.
 - [x] Remove the redundant mapper and its zero-value configuration/package files.
-- [x] Keep tenant-scoped repository methods and the explicit chunk replacement
-      delete/flush/write sequence unchanged.
+- [x] Use ID-only aggregate CRUD inside the tenant-scoped connection and keep
+      the explicit chunk replacement delete/flush/write sequence unchanged.
 - [ ] Extend the same evidence-based review to the remaining entity modules.
 
 #### Current slice 18B — Remove zero-value subscription persistence mapper
@@ -1288,6 +1288,23 @@ tenant/business-key semantics.
 - [x] Simplify notification/payment mutation helpers and callers.
 - [x] Preserve tenant-qualified provider-reference and list operations.
 - [x] Run notification/payment tests, Checkstyle, and Spotless.
+
+#### Current slice 18I — Use ID-only Assistant aggregate lookups
+
+Conversation and pending-action are tenant-owned aggregates persisted through
+the tenant-scoped JPA connection. Their provider-neutral ports and adapters now
+use the inherited Spring Data `findById` contract; the tenant ID remains part
+of commands, domain state, authorization/context checks, and child/event
+queries. This keeps aggregate CRUD simple without weakening the explicit scope
+of conversation history, participant, expiration, or list operations.
+
+- [x] Add contract coverage for connection-scoped conversation and action reads.
+- [x] Remove redundant tenant-qualified aggregate methods from Assistant ports
+      and Spring Data repositories.
+- [x] Simplify Assistant persistence adapters and service helper callers.
+- [x] Preserve explicit tenant filters for child, list, expiration, and
+      operation-specific queries.
+- [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
 
 #### Tenant isolation boundary correction
 

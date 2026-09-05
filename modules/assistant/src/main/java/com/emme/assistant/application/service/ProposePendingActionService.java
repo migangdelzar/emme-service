@@ -27,8 +27,7 @@ public class ProposePendingActionService implements ProposePendingActionUseCase 
   @Override
   public PendingActionDetails propose(ProposePendingActionCommand command) {
     var conversation =
-        AssistantServiceSupport.conversation(
-            conversations, command.tenantId(), command.conversationId());
+        AssistantServiceSupport.conversation(conversations, command.conversationId());
     return AssistantApplicationMapper.toResult(
         actions.save(
             new PendingAction(

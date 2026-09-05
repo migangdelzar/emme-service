@@ -21,8 +21,7 @@ public class CloseConversationService implements CloseConversationUseCase {
   @Override
   public ConversationDetails close(CloseConversationCommand command) {
     Conversation conversation =
-        AssistantServiceSupport.conversation(
-            repository, command.tenantId(), command.conversationId());
+        AssistantServiceSupport.conversation(repository, command.conversationId());
     conversation.close();
     return AssistantApplicationMapper.toResult(repository.save(conversation));
   }

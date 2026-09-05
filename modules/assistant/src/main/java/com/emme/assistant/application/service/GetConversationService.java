@@ -20,8 +20,6 @@ public class GetConversationService implements GetConversationUseCase {
 
   @Override
   public Optional<ConversationDetails> get(GetConversationQuery query) {
-    return repository
-        .findByTenantIdAndId(query.tenantId(), query.conversationId())
-        .map(AssistantApplicationMapper::toResult);
+    return repository.findById(query.conversationId()).map(AssistantApplicationMapper::toResult);
   }
 }

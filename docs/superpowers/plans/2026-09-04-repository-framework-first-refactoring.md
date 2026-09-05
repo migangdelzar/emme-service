@@ -1633,6 +1633,22 @@ separate from tenancy policy without changing production code.
 - [x] Compile all affected fixtures/tests and run representative web tests.
 - [ ] Continue separating `BaseSpringModuleTest` feature setup and provider fakes.
 
+#### Current slice 21C — Use the identity-provider port in test fixtures
+
+`MockKeycloakAdminClientConfig` was a concrete adapter subclass that required
+Keycloak client configuration and HTTP dependencies in every full-context test.
+It is replaced by `MockIdentityProviderAdministrationConfig`, which supplies a
+no-op `IdentityProviderAdministrationPort` implementation. Production
+composition remains unchanged; the test seam now follows the same port-first
+boundary as the application listener.
+
+- [x] Add a failing test requiring the fixture bean to return the provider port.
+- [x] Replace concrete Keycloak subclassing with a provider-port fake.
+- [x] Rename the fixture to communicate its capability rather than its vendor.
+- [x] Run focused identity tests and affected fixture compilation.
+- [ ] Remove remaining feature-specific setup from `BaseSpringModuleTest` in a
+      dependency-safe follow-up slice.
+
 ### Task 22: Remove duplicate Gradle capabilities and dependencies
 
 **Files:**

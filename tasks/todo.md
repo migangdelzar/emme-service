@@ -197,6 +197,15 @@
 - [x] Remove the unnecessary database runtime dependency from generic testing
       fixtures.
 - [x] Apply the same override to tenancy-owned web fixtures.
+
+### Current slice — Task 21C identity-provider fixture boundary
+
+- [x] Add a failing contract test for a provider-port-based identity fake.
+- [x] Replace concrete `KeycloakAdminClient` subclassing with a no-op
+  `IdentityProviderAdministrationPort` implementation.
+- [x] Rename the fixture to `MockIdentityProviderAdministrationConfig`.
+- [x] Run focused identity tests and affected fixture compilation.
+- [ ] Continue separating feature-specific setup from `BaseSpringModuleTest`.
 - [x] Run tenancy fixture/module tests and confirm no async PostgreSQL DDL
       errors are emitted by H2 contexts.
 - [ ] Run real Liquibase tenant provisioning against PostgreSQL/Testcontainers

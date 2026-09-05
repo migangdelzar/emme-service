@@ -43,7 +43,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 @Import({
   TestSecurityConfig.class,
   TestBootstrapJdbcConfig.class,
-  MockKeycloakAdminClientConfig.class
+  MockIdentityProviderAdministrationConfig.class
 })
 @ActiveProfiles("test")
 public abstract class BaseSpringModuleTest {

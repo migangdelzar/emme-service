@@ -6,17 +6,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import okhttp3.FormBody;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 @Component
 public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
 
-  private final OkHttpClient httpClient;
+  private final RestClient httpClient;
   private final ObjectMapper objectMapper;
   private final String baseUrl;
   private final String adminRealm;
@@ -24,7 +27,9 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
   private final String adminPassword;
 
   public KeycloakAdminClient(
-      IdentityKeycloakProperties properties, ObjectMapper objectMapper, OkHttpClient httpClient) {
+      IdentityKeycloakProperties properties,
+      ObjectMapper objectMapper,
+      @Qualifier("identityRestClient") RestClient httpClient) {
     this.baseUrl = properties.baseUrl();
     this.adminRealm = properties.adminRealm();
     this.adminUser = properties.adminUsername();
@@ -35,22 +40,27 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
 
   /** Get admin token from master realm. */
   public String getAdminToken() throws IOException {
-    var body =
-        new FormBody.Builder()
-            .add("grant_type", "password")
-            .add("client_id", "admin-cli")
-            .add("username", adminUser)
-            .add("password", adminPassword)
-            .build();
-    var req =
-        new Request.Builder()
-            .url(baseUrl + "/realms/" + adminRealm + "/protocol/openid-connect/token")
-            .post(body)
-            .build();
-    try (var resp = httpClient.newCall(req).execute()) {
-      if (!resp.isSuccessful()) throw new IOException("Admin token failed: HTTP " + resp.code());
-      var node = objectMapper.readTree(resp.body().string());
+    MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+    body.add("grant_type", "password");
+    body.add("client_id", "admin-cli");
+    body.add("username", adminUser);
+    body.add("password", adminPassword);
+    try {
+      String responseBody =
+          httpClient
+              .post()
+              .uri(baseUrl + "/realms/" + adminRealm + "/protocol/openid-connect/token")
+              .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+              .body(body)
+              .retrieve()
+              .body(String.class);
+      var node = objectMapper.readTree(responseBody == null ? "" : responseBody);
       return node.get("access_token").asText();
+    } catch (RestClientResponseException exception) {
+      throw new IOException(
+          "Admin token failed: HTTP " + exception.getStatusCode().value(), exception);
+    } catch (RestClientException exception) {
+      throw new IOException("Admin token request failed", exception);
     }
   }
 
@@ -59,19 +69,7 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
   public void createRealm(String realmName, String displayName) throws IOException {
     var token = getAdminToken();
     var body = realmRepresentation(realmName, displayName);
-    var req =
-        new Request.Builder()
-            .url(baseUrl + "/admin/realms")
-            .header("Authorization", "Bearer " + token)
-            .header("Content-Type", "application/json")
-            .post(
-                RequestBody.create(
-                    objectMapper.writeValueAsString(body), MediaType.get("application/json")))
-            .build();
-    try (var resp = httpClient.newCall(req).execute()) {
-      if (resp.code() == 409) return; // realm already exists
-      if (resp.code() != 201) throw new IOException("Realm create failed: HTTP " + resp.code());
-    }
+    executeCreate("Realm", baseUrl + "/admin/realms", token, body, HttpMethod.POST, 201);
   }
 
   static Map<String, Object> realmRepresentation(String realmName, String displayName) {
@@ -92,19 +90,13 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
       throws IOException {
     var token = getAdminToken();
     var body = clientRepresentation(clientId, redirectUris);
-    var req =
-        new Request.Builder()
-            .url(baseUrl + "/admin/realms/" + realm + "/clients")
-            .header("Authorization", "Bearer " + token)
-            .header("Content-Type", "application/json")
-            .post(
-                RequestBody.create(
-                    objectMapper.writeValueAsString(body), MediaType.get("application/json")))
-            .build();
-    try (var resp = httpClient.newCall(req).execute()) {
-      if (resp.code() == 409) return;
-      if (resp.code() != 201) throw new IOException("Client create failed: HTTP " + resp.code());
-    }
+    executeCreate(
+        "Client",
+        baseUrl + "/admin/realms/" + realm + "/clients",
+        token,
+        body,
+        HttpMethod.POST,
+        201);
   }
 
   static Map<String, Object> clientRepresentation(String clientId, List<String> redirectUris) {
@@ -136,19 +128,8 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
   public void createRealmRole(String realm, String roleName) throws IOException {
     var token = getAdminToken();
     var body = Map.of("name", roleName);
-    var req =
-        new Request.Builder()
-            .url(baseUrl + "/admin/realms/" + realm + "/roles")
-            .header("Authorization", "Bearer " + token)
-            .header("Content-Type", "application/json")
-            .post(
-                RequestBody.create(
-                    objectMapper.writeValueAsString(body), MediaType.get("application/json")))
-            .build();
-    try (var resp = httpClient.newCall(req).execute()) {
-      if (resp.code() == 409) return;
-      if (resp.code() != 201) throw new IOException("Role create failed: HTTP " + resp.code());
-    }
+    executeCreate(
+        "Role", baseUrl + "/admin/realms/" + realm + "/roles", token, body, HttpMethod.POST, 201);
   }
 
   /** Create a user with password and assign a realm role. Returns user ID. */
@@ -176,84 +157,111 @@ public class KeycloakAdminClient implements IdentityProviderAdministrationPort {
             "User",
             "requiredActions",
             List.of());
-    var userReq =
-        new Request.Builder()
-            .url(baseUrl + "/admin/realms/" + realm + "/users")
-            .header("Authorization", "Bearer " + token)
-            .header("Content-Type", "application/json")
-            .post(
-                RequestBody.create(
-                    objectMapper.writeValueAsString(userBody), MediaType.get("application/json")))
-            .build();
-    try (var resp = httpClient.newCall(userReq).execute()) {
-      if (resp.code() == 409) {
+    try {
+      var response =
+          httpClient
+              .post()
+              .uri(baseUrl + "/admin/realms/" + realm + "/users")
+              .header("Authorization", "Bearer " + token)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(userBody)
+              .exchange((request, clientResponse) -> clientResponse);
+      int status = response.getStatusCode().value();
+      if (status == 409) {
         // User already exists — look up their ID
-        var searchReq =
-            new Request.Builder()
-                .url(baseUrl + "/admin/realms/" + realm + "/users?username=" + username)
-                .header("Authorization", "Bearer " + token)
+        String searchBody =
+            httpClient
                 .get()
-                .build();
-        try (var searchResp = httpClient.newCall(searchReq).execute()) {
-          var results = objectMapper.readTree(searchResp.body().string());
-          if (results.size() > 0) {
-            userId = results.get(0).get("id").asText();
-          } else {
-            throw new IOException("User exists but cannot find ID for: " + username);
-          }
+                .uri(baseUrl + "/admin/realms/" + realm + "/users?username=" + username)
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .body(String.class);
+        var results = objectMapper.readTree(searchBody == null ? "" : searchBody);
+        if (results.size() > 0) {
+          userId = results.get(0).get("id").asText();
+        } else {
+          throw new IOException("User exists but cannot find ID for: " + username);
         }
-      } else if (resp.code() == 201) {
-        var location = resp.header("Location");
+      } else if (status == 201) {
+        var location = response.getHeaders().getFirst("Location");
         if (location == null) throw new IOException("No Location header in user create response");
         userId = location.substring(location.lastIndexOf('/') + 1);
       } else {
-        throw new IOException("User create failed: HTTP " + resp.code());
+        throw new IOException("User create failed: HTTP " + status);
       }
+    } catch (RestClientResponseException exception) {
+      throw new IOException(
+          "User create failed: HTTP " + exception.getStatusCode().value(), exception);
+    } catch (RestClientException exception) {
+      throw new IOException("User create request failed", exception);
     }
 
     // Step 2: Set password via reset-password endpoint
     var pwdBody = Map.of("type", "password", "value", password, "temporary", false);
-    var pwdReq =
-        new Request.Builder()
-            .url(baseUrl + "/admin/realms/" + realm + "/users/" + userId + "/reset-password")
-            .header("Authorization", "Bearer " + token)
-            .header("Content-Type", "application/json")
-            .put(
-                RequestBody.create(
-                    objectMapper.writeValueAsString(pwdBody), MediaType.get("application/json")))
-            .build();
-    try (var resp = httpClient.newCall(pwdReq).execute()) {
-      if (resp.code() != 204) throw new IOException("Password set failed: HTTP " + resp.code());
-    }
+    executeCreate(
+        "Password set",
+        baseUrl + "/admin/realms/" + realm + "/users/" + userId + "/reset-password",
+        token,
+        pwdBody,
+        HttpMethod.PUT,
+        204);
 
     // Step 3: Look up role ID
-    var roleReq =
-        new Request.Builder()
-            .url(baseUrl + "/admin/realms/" + realm + "/roles/" + roleName)
-            .header("Authorization", "Bearer " + token)
-            .get()
-            .build();
     String roleId;
-    try (var resp = httpClient.newCall(roleReq).execute()) {
-      if (!resp.isSuccessful()) throw new IOException("Role lookup failed: HTTP " + resp.code());
-      var node = objectMapper.readTree(resp.body().string());
+    try {
+      String responseBody =
+          httpClient
+              .get()
+              .uri(baseUrl + "/admin/realms/" + realm + "/roles/" + roleName)
+              .header("Authorization", "Bearer " + token)
+              .retrieve()
+              .body(String.class);
+      var node = objectMapper.readTree(responseBody == null ? "" : responseBody);
       roleId = node.get("id").asText();
+    } catch (RestClientResponseException exception) {
+      throw new IOException(
+          "Role lookup failed: HTTP " + exception.getStatusCode().value(), exception);
+    } catch (RestClientException exception) {
+      throw new IOException("Role lookup request failed", exception);
     }
 
     // Step 4: Assign role to user
     var assignBody = List.of(Map.of("id", roleId, "name", roleName));
-    var assignReq =
-        new Request.Builder()
-            .url(baseUrl + "/admin/realms/" + realm + "/users/" + userId + "/role-mappings/realm")
-            .header("Authorization", "Bearer " + token)
-            .header("Content-Type", "application/json")
-            .post(
-                RequestBody.create(
-                    objectMapper.writeValueAsString(assignBody), MediaType.get("application/json")))
-            .build();
-    try (var resp = httpClient.newCall(assignReq).execute()) {
-      if (resp.code() != 204) throw new IOException("Role assignment failed: HTTP " + resp.code());
-    }
+    executeCreate(
+        "Role assignment",
+        baseUrl + "/admin/realms/" + realm + "/users/" + userId + "/role-mappings/realm",
+        token,
+        assignBody,
+        HttpMethod.POST,
+        204);
     return userId;
+  }
+
+  private void executeCreate(
+      String operation,
+      String uri,
+      String token,
+      Object body,
+      HttpMethod method,
+      int expectedStatus)
+      throws IOException {
+    try {
+      var request = httpClient.method(method).uri(uri).header("Authorization", "Bearer " + token);
+      request
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(body)
+          .exchange(
+              (ignored, response) -> {
+                int status = response.getStatusCode().value();
+                if (status == 409 || status == expectedStatus) return null;
+                throw new IOException(operation + " failed: HTTP " + status);
+              });
+    } catch (RestClientResponseException exception) {
+      if (exception.getStatusCode().value() == 409) return;
+      throw new IOException(
+          operation + " failed: HTTP " + exception.getStatusCode().value(), exception);
+    } catch (RestClientException exception) {
+      throw new IOException(operation + " request failed", exception);
+    }
   }
 }

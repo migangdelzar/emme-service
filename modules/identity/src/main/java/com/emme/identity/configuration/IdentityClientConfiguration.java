@@ -2,21 +2,17 @@ package com.emme.identity.configuration;
 
 import com.emme.identity.application.port.out.IdentityRealmConfigurationPort;
 import com.emme.identity.application.port.out.RetryDelayPort;
-import java.time.Duration;
-import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 /** Composition-root beans for Identity outbound HTTP clients. */
 @Configuration
 public class IdentityClientConfiguration {
 
-  @Bean
-  public OkHttpClient identityHttpClient() {
-    return new OkHttpClient.Builder()
-        .connectTimeout(Duration.ofSeconds(10))
-        .readTimeout(Duration.ofSeconds(30))
-        .build();
+  @Bean(name = "identityRestClient")
+  public RestClient identityRestClient(RestClient.Builder builder) {
+    return builder.build();
   }
 
   @Bean

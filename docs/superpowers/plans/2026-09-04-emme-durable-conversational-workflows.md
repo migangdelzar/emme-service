@@ -21,6 +21,11 @@
 - Embedding-provider failover is allowed only for explicit provider-unavailable failures. Invalid dimensions, model-version mismatches, authorization failures, and policy failures remain errors.
 - Semantic tool routing is limited to backend-authorized read-only tools. Mutation tools run through typed workflows after confirmation and idempotency checks.
 - No `langgraph4j-spring-ai` runtime dependency is added in this plan. LangGraph4j core owns workflow durability; Spring AI owns model, tool, embedding, and RAG mechanics behind adapters.
+- Internal domain events remain Spring Modulith events in the initial runtime. Workflow completion,
+  notification, and calendar integration must use the PostgreSQL-backed Modulith publication
+  registry; they must not activate Kafka, require broker configuration, or import Kafka types.
+  Kafka becomes eligible only when an independently deployed consumer and its versioned delivery
+  contract are approved.
 - Existing clear names remain preferred: `BookAppointmentService`, `CancelAuthorizedAppointmentService`, and `RescheduleAuthorizedAppointmentService`. New names are short, noun-based, and describe one responsibility.
 - Focused module checks run after each task. Phase-level integration checks run after each phase. The final enterprise gate runs after all implementation work.
 - Existing unrelated worktree changes are preserved and never staged with a task unless that task owns them.
@@ -41,6 +46,46 @@
   duplicate concept. A rename must be accompanied by a caller inventory, focused tests, and a
   compatibility decision in the same task.
 
+---
+
+## 0. Separate-session handoff
+
+The next session must start from the branch state, not from an assumed clean baseline. The
+coordinator uses Luna High when that runtime option is available; spawned implementation
+workers use Luna Medium. If model selection is unavailable, keep the same coordinator/worker
+responsibility split and do not change the technical plan.
+
+- [ ] Check out and synchronize the feature branch:
+
+  ```bash
+  git checkout feat/ai-platform-foundation
+  git pull --ff-only origin feat/ai-platform-foundation
+  git status --short
+  git log --oneline --decorate -8
+  ```
+
+- [ ] Read this plan, the approved design, and the completed simplification record before
+  selecting a task:
+
+  ```bash
+  sed -n '1,220p' docs/superpowers/plans/2026-09-04-emme-durable-conversational-workflows.md
+  sed -n '1,260p' docs/superpowers/specs/2026-09-04-emme-durable-conversational-workflows-design.md
+  sed -n '1,220p' docs/superpowers/plans/2026-09-03-ai-platform-simplification.md
+  ```
+
+- [ ] Re-run the caller inventory for the selected task and compare it with the task's file
+  map. If the branch has already completed a task, mark it complete using its commit and
+  verification evidence instead of reimplementing it.
+
+- [ ] Keep one task in progress at a time. For each task, write the failing test, run the
+  smallest focused test, implement the smallest production change, run focused compile/test
+  and `spotlessCheck`, refactor, and commit only that task's files. Do not run `spotlessApply`
+  during every slice; run it once before the final commit only if the final gate requires it.
+
+- [ ] Do not run the expensive enterprise gate while a phase is still being developed. Run
+  focused module checks during the phase, phase-level integration checks at the phase boundary,
+  and the complete enterprise gate only after Task 13's compatibility cleanup is complete.
+
 ## 1. Scope and Current Baseline
 
 This plan extends the completed simplification work recorded in
@@ -58,7 +103,7 @@ The current repository already provides:
 | Conversation workflow | `ConversationWorkflowGraph` and quote workflow support checkpointing and interruption | Add per-node model/tool/memory policy, guardrail projections, and appointment/payment subgraphs |
 | Guardrails | Context, tool authorization, and response non-blank checks exist in separate boundaries | Add typed layered input, context, output, grounding, and delivery policies |
 
-## 2.1 Flow coverage
+## 2. Scope, flow coverage, and budget
 
 The deterministic application router selects the smallest safe path. Only flows that need
 multi-turn state, approval, external callbacks, or compensating actions enter LangGraph4j.
@@ -74,7 +119,7 @@ multi-turn state, approval, external callbacks, or compensating actions enter La
 | Staff review/escalation | Role/policy requires human decision | Existing quote/review graph extended by node profiles | `WAITING_FOR_APPROVAL` with reviewer identity | Review audit and approved application use case |
 | Notification/calendar | Committed appointment/payment event | Event consumers, not model graph nodes | Retry from event publication/outbox state | Notification delivery and calendar synchronization |
 
-## 2.2 Model and embedding budget
+### Model and embedding budget
 
 The plan does not add a supervisor model. Model calls are attached to the smallest
 responsibility that needs them and are bounded per operation.
@@ -91,7 +136,7 @@ rewrite-model call. Each variant has its own embedding and quality decision, whi
 request shares one deadline and maximum-attempt budget. This keeps embedding-first behavior
 useful for latency and cost without treating similarity as authorization or truth.
 
-## 2. File Map
+### File Map
 
 | Area | Create | Modify | Test |
 |---|---|---|---|
@@ -102,7 +147,7 @@ useful for latency and cost without treating similarity as authorization or trut
 | Guardrails | `GuardrailAction.java`, `GuardrailDecision.java`, typed boundary requests, `InputGuard.java`, `ContextGuard.java`, `ToolGuard.java`, `OutputGuard.java`, `GroundingGuard.java`, `DeliveryGuard.java`, `GuardrailPipeline.java` | Spring AI advisors, `ProcessConversationService.java`, `ChatService.java`, `SpringAiToolCallbackProvider.java`, RAG answer path, channel delivery | Guardrail unit, advisor, tool, output, delivery, and workflow tests |
 | Node policy | `NodeModelRole.java`, `NodeProfile.java`, `NodeMemoryPolicy.java`, `NodeToolPolicy.java`, `NodeGuardrailPolicy.java`, `NodeContext.java`, `NodeResult.java`, `NodePolicyRegistry.java` | `ConversationWorkflowCapabilities.java`, `ConversationWorkflowGraph.java`, LangGraph adapter/configuration | Projection, allow-list, guardrail, interruption, timeout, and state-boundary tests |
 | Appointment/payment workflows | `AppointmentHold.java`, `PaymentLink.java`, workflow event contracts, `AppointmentBookingWorkflow.java`, `AppointmentRescheduleWorkflow.java`, `AppointmentCancellationWorkflow.java`, `AppointmentPaymentWorkflow.java` | Appointment/payment application ports and assistant workflow composition | Workflow transition, collision, webhook, refund, restart, and idempotency tests |
-| Durable persistence | `034-appointment-holds.sql`, `035-ai-payment-workflow.sql`, and `036-ai-workflow-correlations.sql` under `database/src/main/resources/db/emme-studio/releases/0.1.0/` | `database/src/main/resources/db/emme-studio/changelog.yaml`, JDBC adapters, and migration contract tests | Schema, RLS, index, rollback-shape, and integration tests |
+| Durable persistence | `035-appointment-holds.sql`, `036-ai-payment-workflow.sql`, and `037-ai-workflow-correlations.sql` under `database/src/main/resources/db/emme-studio/releases/0.1.0/` | `database/src/main/resources/db/emme-studio/changelog.yaml`, JDBC adapters, and migration contract tests | Schema, RLS, index, rollback-shape, and integration tests |
 | Learning/operations | None; extend existing learning/evaluation records only when the bounded evidence fields require it | `AiSemanticExecutionTrace.java`, `JdbcAiTraceRecorder.java`, `MicrometerSemanticMetrics.java`, `tools/ai-evaluation/src/emme_ai_evaluation/contracts.py`, `pipeline.py`, and `redaction.py` | Redaction, metric-cardinality, evaluator, and promotion-gate tests |
 
 ## 3. Execution Order
@@ -145,6 +190,31 @@ Phase checkpoints are explicit:
 | After Phase C | Guardrail, advisor, controller, chat, tool, and RAG configuration tests pass; startup verifies advisor ordering and fail-closed behavior |
 | After Phase D | Appointment, payment, assistant workflow, notification, and calendar integration tests pass with PostgreSQL/Testcontainers; restart, webhook replay, hold expiry, and tenant isolation are evidenced |
 | Before Phase E closure | Offline evaluation fixture set is non-empty, redaction and bounded metric-label tests pass, and no production threshold or prompt is auto-promoted |
+
+### Task dependency map
+
+```text
+Task 1 → Task 2 → Task 3 → Task 4 → Task 5
+                         ↘ Task 6
+Task 7 → Task 8
+Task 8 + Task 5 → Task 9
+Task 9 + existing appointment/payment services → Task 10
+Task 10 → Task 11 → Task 12 → Task 13
+```
+
+Task 6 can begin after Task 3, but its final wiring waits for Task 7/8 when the full output
+guard is required. Task 9 consumes the guardrail contracts, so it cannot be started from an
+older branch snapshot that lacks Task 7. Task 10 and Task 11 must not create parallel mutation
+implementations: they call existing authorized appointment/payment use cases and add only the
+durable hold, callback, and graph boundaries.
+
+Before Task 11, the active event boundary must be Modulith-first: current internal events have no
+`@Externalized` metadata, asynchronous consumers use Spring Modulith listeners, and event
+publication is recoverable through PostgreSQL. If the event-boundary plan is being implemented
+in the same session, read and complete
+`docs/superpowers/plans/2026-09-05-modulith-first-event-boundaries.md`'s event classification
+and default-runtime configuration tasks before the Task 11 phase checkpoint. Do not make
+workflow progress depend on Kafka availability.
 
 ## 4. Phase A — Contracts and Evidence
 
@@ -561,6 +631,49 @@ public record GuardrailDecision(
     String code,
     Map<String, String> safeAttributes) {}
 
+public record InputRequest(
+    String message, long contentBytes, int attachmentCount, String idempotencyKey) {}
+
+public record ContextRequest(
+    UUID tenantId,
+    UUID principalId,
+    Set<String> roles,
+    String traceId,
+    Instant deadline) {}
+
+public record ToolRequest(
+    String toolKey,
+    Map<String, String> arguments,
+    boolean mutating,
+    boolean confirmed,
+    String idempotencyKey) {}
+
+public record GroundingRequest(
+    boolean retrievalAccepted,
+    double topScore,
+    double margin,
+    List<String> sourceIds) {}
+
+public record OutputRequest(
+    String channel,
+    String content,
+    boolean structured,
+    boolean containsBusinessClaim) {}
+
+public record DeliveryRequest(
+    String channel,
+    String content,
+    int maximumCharacters,
+    boolean streaming) {}
+
+public record GuardrailRequest(
+    InputRequest input,
+    ContextRequest context,
+    ToolRequest tool,
+    GroundingRequest grounding,
+    OutputRequest output,
+    DeliveryRequest delivery) {}
+
 public interface InputGuard {
   GuardrailDecision check(InputRequest request, AiExecutionContext context);
 }
@@ -591,10 +704,9 @@ public interface GuardrailPipeline {
 ```
 
 `ContextGuard`, `ToolGuard`, `GroundingGuard`, and `DeliveryGuard` use the same decision type
-with their specific typed input. `GuardrailRequest` contains the boundary facts needed for one
-evaluation and optional tool/grounding facts; it never contains raw prompt, document, tool
-argument, secret, or customer PII. `GuardrailPipeline` is the only class that composes the
-individual guards, so each guard remains independently testable and injectable.
+with their specific typed input. The request objects contain only bounded, boundary-local data;
+they are never persisted or copied into decisions. `GuardrailPipeline` is the only class that
+composes the individual guards, so each guard remains independently testable and injectable.
 
 - [ ] **Step 1: Write failing contract tests.** Assert every guardrail action is typed, reason codes are non-blank, safe attributes are bounded, and a denial cannot be represented as `ALLOW`.
 - [ ] **Step 2: Run focused tests.** Run `./gradlew :libraries:ai-contracts:test --tests '*GuardrailContractTest' :modules:assistant:test --tests '*GuardrailPipelineTest'`; expected failure is missing contracts.
@@ -778,9 +890,9 @@ are immutable, namespaced, bounded, and JSON-safe before conversion to LangGraph
 - Create: `modules/payment/src/main/java/com/emme/payment/api/command/CreatePaymentLinkCommand.java`
 - Create: `modules/payment/src/main/java/com/emme/payment/api/usecase/CreatePaymentLinkUseCase.java`
 - Create: `modules/payment/src/main/java/com/emme/payment/application/service/CreatePaymentLinkService.java`
-- Create: `database/src/main/resources/db/emme-studio/releases/0.1.0/034-appointment-holds.sql`
-- Create: `database/src/main/resources/db/emme-studio/releases/0.1.0/035-ai-payment-workflow.sql`
-- Create: `database/src/main/resources/db/emme-studio/releases/0.1.0/036-ai-workflow-correlations.sql`
+- Create: `database/src/main/resources/db/emme-studio/releases/0.1.0/035-appointment-holds.sql` (the current branch already uses `034-calendar-event-link-cardinality.sql`)
+- Create: `database/src/main/resources/db/emme-studio/releases/0.1.0/036-ai-payment-workflow.sql`
+- Create: `database/src/main/resources/db/emme-studio/releases/0.1.0/037-ai-workflow-correlations.sql`
 - Modify: `database/src/main/resources/db/emme-studio/changelog.yaml`
 - Modify: `modules/payment/src/main/java/com/emme/payment/adapter/in/webhook/MercadoPagoWebhookController.java`
 - Modify: `modules/payment/src/main/java/com/emme/payment/adapter/out/persistence/adapter/PaymentWebhookEventPersistenceAdapter.java`
@@ -855,8 +967,11 @@ extract → validate → availability/policy/payment fan-out → join → propos
 ```
 
 The hold and payment services derive tenant, customer, amount, currency, and ownership
-from trusted application state. Provider callbacks are signature-verified and idempotent.
-Graph replay cannot repeat a mutation without the business idempotency key.
+from trusted application state. Store each record in the same tenant boundary already used by
+the owning module: schema-local persistence for tenant-schema tables, or shared persistence with
+RLS and explicit tenant predicates for control-plane tables. Do not introduce a second tenant
+lookup or a mixed schema/RLS access path. Provider callbacks are signature-verified and
+idempotent. Graph replay cannot repeat a mutation without the business idempotency key.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.
@@ -914,7 +1029,10 @@ Rescheduling loads the owned appointment, evaluates policy, fans out target avai
 price difference, and payment/refund policy, then interrupts for confirmation. Cancellation
 evaluates the cancellation window and refund policy before confirmation. Staff review uses
 backend role and reviewer identity. Notifications and calendar synchronization occur from
-committed Modulith events, never from model output.
+committed Modulith events, never from model output. These events are internal to the initial
+deployment: no `@Externalized` annotation, Kafka provider, broker bootstrap setting, or direct
+Kafka API is introduced by this task. Listener failure recovery and publication retry remain
+owned by the existing Modulith JDBC registry.
 
 - [ ] **Step 1: Write failing tests.** Cover owned-appointment checks, unavailable target slot, price increase/decrease, refund eligibility, cancellation window, staff-only approval, duplicate resume, notification event idempotency, and calendar reconciliation after restart.
 - [ ] **Step 2: Run focused tests.** Run:

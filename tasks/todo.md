@@ -90,7 +90,7 @@
 - [x] Replace unscoped JPA `findById` with derived tenant-qualified queries.
 - [x] Keep services application ports provider-neutral and unchanged.
 - [x] Run focused tests, compilation, Checkstyle, and Spotless.
-- [ ] Commit and push the services slice.
+- [x] Commit and push the services slice.
 
 ### Plan working notes
 

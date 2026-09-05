@@ -25,7 +25,7 @@ public class SubscriptionPersistenceAdapter implements SubscriptionRepository {
   public Subscription save(Subscription subscription) {
     SubscriptionEntity existing =
         repository
-            .findByTenantIdAndId(subscription.tenantId(), subscription.id())
+            .findById(subscription.id())
             .orElseGet(() -> SubscriptionEntity.from(subscription));
     existing.setPlan(subscription.plan());
     existing.setStatus(subscription.status());

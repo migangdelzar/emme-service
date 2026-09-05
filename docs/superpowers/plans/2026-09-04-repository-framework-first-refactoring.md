@@ -1306,6 +1306,19 @@ of conversation history, participant, expiration, or list operations.
       operation-specific queries.
 - [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
 
+#### Current slice 18J — Use ID-only subscription aggregate saves
+
+Subscription is a tenant-owned JPA aggregate. Provisioning and public tenant
+operations already establish the tenant-scoped connection, while the
+tenant-keyed lookup remains necessary to locate the singleton subscription.
+Once that aggregate has been materialized, an existing save uses the standard
+`JpaRepository.findById`; the redundant tenant-plus-ID derived query is removed.
+
+- [x] Add contract coverage for existing subscription saves.
+- [x] Replace the redundant tenant-plus-ID save lookup with `findById`.
+- [x] Preserve the tenant-keyed singleton lookup used by provisioning and reads.
+- [x] Run subscription tests, compilation, Checkstyle, and Spotless.
+
 #### Tenant isolation boundary correction
 
 `TenantDatabasePoolProvider` caches pools by `databaseId`, not by tenant schema.

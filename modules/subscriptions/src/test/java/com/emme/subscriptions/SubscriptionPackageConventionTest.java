@@ -51,13 +51,13 @@ class SubscriptionPackageConventionTest {
   }
 
   @Test
-  void requiresTenantScopeWhenSavingAnExistingSubscription() throws Exception {
+  void usesTheTenantScopedConnectionWhenSavingAnExistingSubscription() throws Exception {
     String source =
         Files.readString(
             ROOT.resolve("adapter/out/persistence/adapter/SubscriptionPersistenceAdapter.java"));
 
-    assertThat(source).doesNotContain("repository.findById(");
-    assertThat(source).contains("findByTenantIdAndId(");
+    assertThat(source).contains("findById(subscription.id())");
+    assertThat(source).doesNotContain("findByTenantIdAndId(");
   }
 
   private static boolean hasJavaSources(Path directory) {

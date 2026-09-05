@@ -139,6 +139,14 @@
       queries.
 - [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
 
+### Current slice — Task 18J subscription aggregate saves
+
+- [x] Add contract coverage for existing subscription saves.
+- [x] Replace the redundant tenant-plus-ID save lookup with standard JPA
+      `findById`.
+- [x] Preserve tenant-keyed singleton lookup for provisioning and reads.
+- [x] Run subscription tests, compilation, Checkstyle, and Spotless.
+
 ### Plan working notes
 
 ### Current slice — Task 19A tenant event boundary

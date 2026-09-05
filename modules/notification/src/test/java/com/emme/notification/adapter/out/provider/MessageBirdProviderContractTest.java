@@ -2,63 +2,71 @@ package com.emme.notification.adapter.out.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.client.MockRestServiceServer.bindTo;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 import com.emme.notification.adapter.out.provider.sms.MessageBirdProvider;
 import com.emme.notification.adapter.out.provider.sms.SmsProviderException;
-import com.emme.notification.configuration.NotificationHttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.OkHttpClient;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestClient;
 
 class MessageBirdProviderContractTest {
-  private MockWebServer server;
-  private MessageBirdProvider provider;
-
-  @BeforeEach
-  void setUp() throws Exception {
-    server = new MockWebServer();
-    server.start();
-    provider =
-        new MessageBirdProvider(
-            new NotificationHttpClient(new OkHttpClient()),
-            baseUrl(),
-            "key-123",
-            "Emme",
-            new ObjectMapper());
-  }
-
-  @AfterEach
-  void tearDown() throws Exception {
-    server.shutdown();
-  }
 
   @Test
-  void sendsMessageBirdJsonContractAndReturnsProviderId() throws Exception {
-    server.enqueue(new MockResponse().setResponseCode(201).setBody("{\"id\":\"mb-123\"}"));
+  void sendsMessageBirdJsonContractAndReturnsProviderId() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer server = bindTo(builder).build();
+    MessageBirdProvider provider = provider(builder);
+
+    server
+        .expect(requestTo("https://messagebird.test/messages"))
+        .andExpect(method(HttpMethod.POST))
+        .andExpect(header("Authorization", "AccessKey key-123"))
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {
+                      "recipients": ["+5215551111111"],
+                      "originator": "Emme",
+                      "body": "Hello"
+                    }
+                    """))
+        .andRespond(withStatus(HttpStatus.CREATED).body("{\"id\":\"mb-123\"}"));
 
     assertThat(provider.send("+5215551111111", "Hello")).isEqualTo("messagebird-mb-123");
-
-    var request = server.takeRequest();
-    assertThat(request.getHeader("Authorization")).isEqualTo("AccessKey key-123");
-    assertThat(request.getBody().readUtf8())
-        .contains(
-            "\"recipients\":[\"+5215551111111\"]", "\"originator\":\"Emme\"", "\"body\":\"Hello\"");
+    server.verify();
   }
 
   @Test
   void translatesProviderHttpFailureToTypedException() {
-    server.enqueue(new MockResponse().setResponseCode(503).setBody("unavailable"));
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer server = bindTo(builder).build();
+    MessageBirdProvider provider = provider(builder);
+    server
+        .expect(requestTo("https://messagebird.test/messages"))
+        .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE).body("unavailable"));
 
     assertThatThrownBy(() -> provider.send("+5215551111111", "Hello"))
         .isInstanceOf(SmsProviderException.class)
         .hasMessage("MessageBird send failed: HTTP 503");
+    server.verify();
   }
 
-  private String baseUrl() {
-    return server.url("/").toString().replaceFirst("/$", "");
+  private static MessageBirdProvider provider(RestClient.Builder builder) {
+    return new MessageBirdProvider(
+        builder.baseUrl("https://messagebird.test").build(),
+        "https://messagebird.test",
+        "key-123",
+        "Emme",
+        new ObjectMapper());
   }
 }

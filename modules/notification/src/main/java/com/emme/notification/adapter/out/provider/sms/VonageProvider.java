@@ -1,19 +1,19 @@
 package com.emme.notification.adapter.out.provider.sms;
 
-import com.emme.notification.configuration.NotificationHttpClient;
 import com.emme.notification.configuration.NotificationProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 /**
  * Vonage (formerly Nexmo) SMS provider via REST API.
@@ -28,17 +28,17 @@ public class VonageProvider implements com.emme.notification.application.port.ou
 
   private static final Logger log = LoggerFactory.getLogger(VonageProvider.class);
   private static final String PRODUCTION_API_BASE = "https://rest.nexmo.com";
-  private static final MediaType JSON = MediaType.get("application/json");
-
   private final String apiKey;
   private final String apiSecret;
   private final String fromNumber;
-  private final NotificationHttpClient client;
+  private final RestClient client;
   private final String apiBase;
   private final ObjectMapper mapper;
 
   public VonageProvider(
-      NotificationProperties properties, NotificationHttpClient client, ObjectMapper mapper) {
+      NotificationProperties properties,
+      @Qualifier("notificationRestClient") RestClient client,
+      ObjectMapper mapper) {
     this(
         client,
         PRODUCTION_API_BASE,
@@ -50,7 +50,7 @@ public class VonageProvider implements com.emme.notification.application.port.ou
 
   /** Package-private constructor for testing with custom API base, client, and credentials. */
   public VonageProvider(
-      NotificationHttpClient client,
+      RestClient client,
       String apiBase,
       String apiKey,
       String apiSecret,
@@ -95,31 +95,32 @@ public class VonageProvider implements com.emme.notification.application.port.ou
               "to", to,
               "text", message);
 
-      Request request =
-          new Request.Builder()
-              .url(apiBase + "/sms/json")
-              .header("Content-Type", "application/json")
-              .post(RequestBody.create(mapper.writeValueAsString(jsonBody), JSON))
-              .build();
-
-      try (Response response = client.newCall(request).execute()) {
-        String responseBody = response.body() != null ? response.body().string() : "";
-        if (!response.isSuccessful()) {
-          log.warn("Vonage API error: status={}, body={}", response.code(), responseBody);
-          throw new SmsProviderException("Vonage send failed: HTTP " + response.code());
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> result = mapper.readValue(responseBody, Map.class);
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> messages = (List<Map<String, Object>>) result.get("messages");
-        String msgId =
-            messages != null && !messages.isEmpty()
-                ? (String) messages.get(0).getOrDefault("message-id", "unknown")
-                : "unknown";
-        log.info("Vonage SMS sent — id: {}, to: {}", msgId, to);
-        return "vonage-" + msgId;
-      }
-    } catch (IOException e) {
+      String responseBody =
+          client
+              .post()
+              .uri(apiBase + "/sms/json")
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(jsonBody)
+              .retrieve()
+              .body(String.class);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> result =
+          mapper.readValue(responseBody == null ? "" : responseBody, Map.class);
+      @SuppressWarnings("unchecked")
+      List<Map<String, Object>> messages = (List<Map<String, Object>>) result.get("messages");
+      String msgId =
+          messages != null && !messages.isEmpty()
+              ? (String) messages.get(0).getOrDefault("message-id", "unknown")
+              : "unknown";
+      log.info("Vonage SMS sent — id: {}, to: {}", msgId, to);
+      return "vonage-" + msgId;
+    } catch (RestClientResponseException e) {
+      log.warn(
+          "Vonage API error: status={}, body={}",
+          e.getStatusCode().value(),
+          e.getResponseBodyAsString());
+      throw new SmsProviderException("Vonage send failed: HTTP " + e.getStatusCode().value());
+    } catch (RestClientException | JsonProcessingException e) {
       log.error("Vonage SMS send failed", e);
       throw new SmsProviderException("Vonage send failed: " + e.getMessage(), e);
     }

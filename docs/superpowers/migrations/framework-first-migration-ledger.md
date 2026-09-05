@@ -197,7 +197,7 @@ lookup should become a schema-local `findByChannel` contract.
 | Assistant conversation and pending-action aggregate reads | Replacement tested | Use connection-scoped `findById`; retain tenant IDs in commands/domain state and explicit child/list operations. |
 | Subscription existing aggregate save | Replacement tested | Use connection-scoped `findById`; retain tenant-keyed singleton lookup for provisioning and reads. |
 | Identity membership | Keep explicit scope | Shared `emme_core` persistence and cross-tenant authorization require `tenant_id` in the lookup contract. |
-| Calendar event links by appointment | Classified/deferred | Appointment is a foreign business key and multiple provider links are allowed; redesign cardinality/idempotency before changing the query. |
+| Calendar event links by appointment | Replacement tested | Use schema-local `findByAppointmentIdAndProvider`; tenant is selected at connection checkout and provider disambiguates the `Optional` result as additional calendar providers are introduced. Keep `findByAppointmentId` for operations that intentionally handle multiple links. |
 | Calendar OAuth tokens | Replacement tested | Durable staff sync restores the event tenant context and enumerates schema-local tokens with JPA `findAll()`; interactive user/persona selection remains explicit. |
 | Calendar spreadsheet links | Keep explicit scope | Tenant/spreadsheet business keys select external resources. |
 

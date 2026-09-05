@@ -4,6 +4,7 @@ import com.emme.calendar.api.result.CalendarEventLinkDetails;
 import com.emme.calendar.api.usecase.FindCalendarEventLinkUseCase;
 import com.emme.calendar.application.mapper.CalendarEventLinkApplicationMapper;
 import com.emme.calendar.application.port.out.CalendarEventLinkRepository;
+import com.emme.calendar.domain.model.CalendarProvider;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,9 @@ public class FindCalendarEventLinkService implements FindCalendarEventLinkUseCas
   }
 
   @Override
-  public Optional<CalendarEventLinkDetails> find(UUID tenantId, UUID appointmentId) {
+  public Optional<CalendarEventLinkDetails> find(UUID appointmentId, CalendarProvider provider) {
     return repository
-        .findByTenantIdAndAppointmentId(tenantId, appointmentId)
+        .findByAppointmentIdAndProvider(appointmentId, provider)
         .map(CalendarEventLinkApplicationMapper::toResult);
   }
 }

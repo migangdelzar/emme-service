@@ -1,6 +1,7 @@
 package com.emme.calendar.application.port.out;
 
 import com.emme.calendar.domain.model.CalendarEventLink;
+import com.emme.calendar.domain.model.CalendarProvider;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,7 +11,8 @@ public interface CalendarEventLinkRepository {
 
   List<CalendarEventLink> findByAppointmentId(UUID appointmentId);
 
-  Optional<CalendarEventLink> findByTenantIdAndAppointmentId(UUID tenantId, UUID appointmentId);
+  Optional<CalendarEventLink> findByAppointmentIdAndProvider(
+      UUID appointmentId, CalendarProvider provider);
 
   CalendarEventLink save(CalendarEventLink link);
 

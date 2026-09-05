@@ -5,6 +5,7 @@ import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
 import com.emme.calendar.application.mapper.CalendarEventLinkApplicationMapper;
 import com.emme.calendar.application.port.out.CalendarEventLinkRepository;
 import com.emme.calendar.domain.model.CalendarEventLink;
+import com.emme.calendar.domain.model.CalendarProvider;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +22,11 @@ public class MarkCalendarEventLinkSyncedService implements MarkCalendarEventLink
   }
 
   @Override
-  public CalendarEventLinkDetails markSynced(UUID tenantId, UUID appointmentId, String etag) {
+  public CalendarEventLinkDetails markSynced(
+      UUID appointmentId, CalendarProvider provider, String etag) {
     CalendarEventLink link =
         repository
-            .findByTenantIdAndAppointmentId(tenantId, appointmentId)
+            .findByAppointmentIdAndProvider(appointmentId, provider)
             .orElseThrow(() -> new IllegalArgumentException("No link found for " + appointmentId));
     link.markSynced(etag);
     return CalendarEventLinkApplicationMapper.toResult(repository.save(link));

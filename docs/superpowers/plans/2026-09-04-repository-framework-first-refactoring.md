@@ -2236,6 +2236,23 @@ Completed in this slice:
 - [ ] Continue the Calendar event-link provider-cardinality audit before
       changing appointment/provider lookups.
 
+#### Current slice 18Z — Make Calendar event-link lookup schema-local and provider-aware
+
+The single-link Calendar application port no longer accepts a redundant tenant
+identifier. Tenant schema routing is the isolation boundary, while provider is
+retained in the query because an appointment may have more than one external
+calendar link as providers are added. `findByAppointmentIdAndProvider` avoids
+the previous `Optional` ambiguity without changing the database schema or
+removing the existing list query used for multi-provider operations.
+
+- [x] Add a failing adapter test for appointment/provider lookup.
+- [x] Replace the tenant-qualified Spring Data query with the provider-aware,
+      schema-local query.
+- [x] Update the Calendar application port, use cases, and Google adapters.
+- [x] Run focused Calendar tests and `:modules:calendar:check`.
+- [ ] Add a PostgreSQL uniqueness/cardinality migration only after the provider
+      model supports more than the current Google provider.
+
 ## 12. Subagent-driven execution protocol
 
 Subagents are the default for independent work, as requested. The coordinator

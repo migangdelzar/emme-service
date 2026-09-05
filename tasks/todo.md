@@ -494,6 +494,16 @@
 - [ ] Continue real Redis outage, eviction, and semantic metadata gates when
       Docker is available.
 
+### Current slice — Task 18Z Calendar event-link lookup
+
+- [x] Add a failing adapter test for schema-local appointment/provider lookup.
+- [x] Replace the redundant tenant-qualified single-link query with
+      `findByAppointmentIdAndProvider`.
+- [x] Update application ports, use cases, and Google sync callers.
+- [x] Run focused Calendar tests and `:modules:calendar:check`.
+- [ ] Decide and prove future provider cardinality with a PostgreSQL constraint
+      or explicit multi-link selection policy.
+
 
 - User requested subagent-driven execution when work can be safely parallelized.
 - Shared contracts, Liquibase migrations, version catalog, and composition-root

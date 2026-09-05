@@ -9,6 +9,7 @@ import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
 import com.emme.calendar.application.port.out.ClientCalendarSyncPort;
 import com.emme.calendar.configuration.GoogleHttpClient;
+import com.emme.calendar.domain.model.CalendarProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.time.Instant;
@@ -98,7 +99,7 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
 
     // Check for existing link to avoid duplicates
     Optional<CalendarEventLinkDetails> existing =
-        findCalendarEventLink.find(tenantId, appointmentId);
+        findCalendarEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR);
     if (existing.isPresent()) {
       log.info(
           "Appointment {} already linked to event {} — reusing",
@@ -147,7 +148,8 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
         String etag = created.has("etag") ? created.get("etag").asText() : null;
 
         createCalendarEventLink.create(tenantId, appointmentId, "GOOGLE_CALENDAR", eventId);
-        markCalendarEventLinkSynced.markSynced(tenantId, appointmentId, etag);
+        markCalendarEventLinkSynced.markSynced(
+            appointmentId, CalendarProvider.GOOGLE_CALENDAR, etag);
 
         log.info(
             "Created Google Calendar event {} for client appointment {}", eventId, appointmentId);
@@ -176,7 +178,7 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
         userId);
 
     Optional<CalendarEventLinkDetails> existing =
-        findCalendarEventLink.find(tenantId, appointmentId);
+        findCalendarEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR);
     if (existing.isEmpty()) {
       log.warn(
           "No calendar event link found for appointment {} — nothing to unsync", appointmentId);

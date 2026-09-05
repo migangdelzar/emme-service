@@ -13,6 +13,7 @@ import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
 import com.emme.calendar.configuration.CalendarProperties;
 import com.emme.calendar.configuration.GoogleHttpClient;
+import com.emme.calendar.domain.model.CalendarProvider;
 import com.emme.kernel.context.TenantContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -119,7 +120,7 @@ public class StaffCalendarSyncAdapter {
 
   private void createEvent(CalendarSyncRequested e) throws Exception {
     // Check for existing link to avoid duplicates
-    var existing = findCalendarEventLink.find(e.tenantId(), e.appointmentId());
+    var existing = findCalendarEventLink.find(e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR);
     if (existing.isPresent()) {
       log.info(
           "Appointment {} already linked to event {} — skipping CREATE",
@@ -170,7 +171,8 @@ public class StaffCalendarSyncAdapter {
       String etag = created.has("etag") ? created.get("etag").asText() : null;
 
       createCalendarEventLink.create(e.tenantId(), e.appointmentId(), "GOOGLE_CALENDAR", eventId);
-      markCalendarEventLinkSynced.markSynced(e.tenantId(), e.appointmentId(), etag);
+      markCalendarEventLinkSynced.markSynced(
+          e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR, etag);
       log.info("Created Google Calendar event {} for appointment {}", eventId, e.appointmentId());
     }
   }
@@ -183,7 +185,8 @@ public class StaffCalendarSyncAdapter {
     String externalEventId = e.oldExternalEventId();
     if (externalEventId == null || externalEventId.isBlank()) {
       // Try to find existing link
-      var existing = findCalendarEventLink.find(e.tenantId(), e.appointmentId());
+      var existing =
+          findCalendarEventLink.find(e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR);
       if (existing.isPresent()) {
         externalEventId = existing.get().externalEventId();
       } else {
@@ -240,7 +243,8 @@ public class StaffCalendarSyncAdapter {
       String etag = updated.has("etag") ? updated.get("etag").asText() : null;
 
       if (etag != null) {
-        markCalendarEventLinkSynced.markSynced(e.tenantId(), e.appointmentId(), etag);
+        markCalendarEventLinkSynced.markSynced(
+            e.appointmentId(), CalendarProvider.GOOGLE_CALENDAR, etag);
       }
       log.info(
           "Updated Google Calendar event {} for appointment {}",

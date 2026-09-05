@@ -14,6 +14,7 @@ import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
 import com.emme.calendar.configuration.CalendarProperties;
 import com.emme.calendar.configuration.GoogleHttpClient;
+import com.emme.calendar.domain.model.CalendarProvider;
 import com.emme.kernel.context.TenantContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
@@ -29,7 +30,7 @@ class StaffCalendarSyncAdapterTest {
     UUID tenantId = UUID.randomUUID();
     UUID appointmentId = UUID.randomUUID();
     FindCalendarEventLinkUseCase findEventLink = mock(FindCalendarEventLinkUseCase.class);
-    when(findEventLink.find(tenantId, appointmentId))
+    when(findEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR))
         .thenAnswer(
             invocation -> {
               assertThat(TenantContextHolder.currentTenantOptional()).contains(tenantId);

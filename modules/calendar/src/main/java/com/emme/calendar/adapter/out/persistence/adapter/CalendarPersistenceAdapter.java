@@ -39,9 +39,9 @@ public class CalendarPersistenceAdapter
   }
 
   @Override
-  public Optional<CalendarEventLink> findByTenantIdAndAppointmentId(
-      UUID tenantId, UUID appointmentId) {
-    return eventLinks.findByTenantIdAndAppointmentId(tenantId, appointmentId).map(mapper::toDomain);
+  public Optional<CalendarEventLink> findByAppointmentIdAndProvider(
+      UUID appointmentId, CalendarProvider provider) {
+    return eventLinks.findByAppointmentIdAndProvider(appointmentId, provider).map(mapper::toDomain);
   }
 
   @Override

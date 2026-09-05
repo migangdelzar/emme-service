@@ -3620,3 +3620,35 @@ appointment mutation tools are registered.
 - The final enterprise gate passed on 2026-09-04. Docker-backed integration,
   local PostgreSQL startup, and deployed E2E remain blocked only by unavailable
   environment services/configuration.
+
+## Framework-first checkpoint reconciliation — 2026-09-05
+
+- [x] Re-run the repository-wide `check` after the AI Platform dependency and
+      semantic-plan reconciliation.
+- [x] Run Checkpoint A (`ai-contracts`, `ai-platform`, `assistant`, `shared`,
+      and `database`) with focused tests.
+- [x] Run Checkpoint B (`assistant`, `ai-platform`, `tenancy`,
+      `subscriptions`, and `shared`) with focused tests.
+- [x] Run the database migration-contract suite and the repository framework-
+      first inventory guard.
+- [x] Reconcile the plan's checkpoint status and replace its unavailable root
+      `dependencyAnalysis` command with the repository's per-project advice
+      tasks.
+
+### Results
+
+- `./gradlew check --no-daemon --no-parallel --no-configuration-cache` passes
+  with 255 actionable tasks.
+- Checkpoint A passes with 65 actionable tasks; Checkpoint B passes with 64
+  actionable tasks.
+- `:database:test --tests '*MigrationContractTest'` and
+  `:applications:emme-platform:test --tests '*RepositoryFrameworkFirstInventoryTest'`
+  both pass.
+- No additional production refactor was justified by this audit. The sole
+  production `JdbcTemplate` remains the managed bootstrap `ConnectionCallback`
+  boundary; AI, vector/full-text, claims, JSONB, provisioning, graph, and
+  checkpoint paths remain named `JdbcClient` survivors behind provider-neutral
+  ports.
+- Still open: Docker-backed PostgreSQL/RLS/Liquibase/Redis/Kafka/AGE tests,
+  deployed E2E, per-module dependency-advice review, and the provider HTTP
+  migration explicitly deferred to a separate session.

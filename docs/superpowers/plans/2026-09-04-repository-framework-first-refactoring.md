@@ -2221,11 +2221,17 @@ version columns, vector dimensions/indexes, generated `tsvector`, and tenant
 schema provisioning state. Test invalid tenant slug/schema input in the shell
 script with a disposable PostgreSQL environment.
 
-- [ ] **Step 2: Run the database contract suite**
+- [x] **Step 2: Run the database contract suite**
 
 ```bash
 ./gradlew :database:test --tests '*MigrationContractTest' --no-parallel --no-configuration-cache
 ```
+
+The existing migration-contract suite passes. It covers the AI job, semantic,
+quote, learning, AGE, design-image, appointment-collision, and event
+idempotency migrations. Live Liquibase application and PostgreSQL catalog/RLS
+verification remain Docker-gated; no deployed migration was edited in this
+slice.
 
 - [ ] **Step 3: Add only required forward migrations and script fixes**
 
@@ -2472,11 +2478,11 @@ and replacement evidence.
 
 ### Checkpoint A — after Tasks 1–6
 
-- [ ] AI contracts have one canonical capability per operation.
-- [ ] `ai-contracts` has no framework/provider imports.
-- [ ] Spring AI chat/tools/RAG construction has one production path.
-- [ ] Focused assistant, ai-platform, shared, and database tests pass.
-- [ ] Affected compilation and architecture tests pass.
+- [x] AI contracts have one canonical capability per operation.
+- [x] `ai-contracts` has no framework/provider imports.
+- [x] Spring AI chat/tools/RAG construction has one production path.
+- [x] Focused assistant, ai-platform, shared, and database tests pass.
+- [x] Affected compilation and architecture tests pass.
 
 ```bash
 ./gradlew :libraries:ai-contracts:test :modules:ai-platform:test :modules:assistant:test :modules:shared:test :database:test --no-parallel --no-configuration-cache
@@ -2484,10 +2490,10 @@ and replacement evidence.
 
 ### Checkpoint B — after Tasks 7–13
 
-- [ ] LangGraph is limited to proven resumable complexity.
-- [ ] AI JDBC stores are classified and stable CRUD has a tested JPA path.
-- [ ] Remaining `JdbcClient` code is named and justified.
-- [ ] Tenant bootstrap JDBC is isolated from application policy.
+- [x] LangGraph is limited to proven resumable complexity.
+- [x] AI JDBC stores are classified and stable CRUD has a tested JPA path.
+- [x] Remaining `JdbcClient` code is named and justified.
+- [x] Tenant bootstrap JDBC is isolated from application policy.
 - [ ] Tenant provisioning duplicate/failure behavior is integration-tested.
 
 ```bash
@@ -2498,12 +2504,21 @@ and replacement evidence.
 
 - [ ] Provider gateways use typed Spring HTTP clients or justified official SDKs.
 - [ ] Redis and Modulith behavior is safe under outage/retry/duplicate delivery.
-- [ ] Generic test fixtures no longer depend on feature modules.
-- [ ] Duplicate Gradle declarations and unused placeholder capabilities are removed.
+- [x] Generic test fixtures no longer depend on feature modules.
+- [x] Duplicate Gradle declarations and unused placeholder capabilities are removed.
 
 ```bash
-./gradlew test compileJava dependencyAnalysis --no-parallel --no-configuration-cache
+./gradlew test compileJava \
+  :modules:assistant:computeAdvice :modules:booking:computeAdvice \
+  :modules:catalog:computeAdvice :modules:ai-platform:computeAdvice \
+  --no-daemon --no-parallel --no-configuration-cache
 ```
+
+There is no root `dependencyAnalysis` task in this repository. Dependency
+analysis is exposed per project through `computeActualUsage*` and
+`computeAdvice`; representative Java 25-compatible advice tasks pass. The
+provider HTTP and Redis/Modulith outage gates remain open pending their
+dedicated migrations and Docker-backed tests.
 
 ### Final repository gate — after Tasks 23–25
 

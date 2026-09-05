@@ -1457,3 +1457,12 @@
 - **Prevention rule:** Every direct feature-specific test must import its
   owning fixture explicitly; generic test bases must not carry feature
   configuration implicitly.
+
+## 2026-09-05 — Keep verification commands aligned with Gradle task ownership
+
+- **Failure mode:** The framework-first plan referenced a root
+  `dependencyAnalysis` task that this multi-project build does not expose.
+- **Detection signal:** Gradle task discovery and the successful per-project
+  `computeAdvice` runs showed dependency analysis is registered by module.
+- **Prevention rule:** Validate plan commands against `./gradlew tasks` and use
+  the owning project task path; do not assume a root aggregate exists.

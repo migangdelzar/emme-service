@@ -1978,7 +1978,8 @@ its fixture dependency graph is designed.
 
 - [x] Add a failing fixture-boundary test for the unused salon repository.
 - [x] Remove the unused import and field from `BaseTenantModuleTest`.
-- [x] Run the tenancy fixture boundary test and affected compilation.
+- [x] Remove the now-unneeded direct Salon dependency from the tenancy fixture artifact.
+- [x] Run the tenancy fixture boundary test and affected fixture compilation.
 - [ ] Split the remaining feature-specific setup without widening fixture dependencies.
 
 ### Task 22: Remove duplicate Gradle capabilities and dependencies

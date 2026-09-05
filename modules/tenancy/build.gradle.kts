@@ -43,7 +43,6 @@ dependencies {
   testFixturesImplementation(libs.spring.boot.webmvc.test)
   testFixturesImplementation(libs.spring.security.test)
   testFixturesImplementation(testFixtures(project(":modules:identity")))
-  testFixturesImplementation(project(":modules:salon"))
   testFixturesImplementation(project(":modules:subscriptions"))
   testFixturesCompileOnly(project(":libraries:test-containers"))
   testFixturesImplementation(libs.spring.boot.starter.test)

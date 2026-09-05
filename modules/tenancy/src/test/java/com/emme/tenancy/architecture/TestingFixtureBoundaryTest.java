@@ -12,6 +12,7 @@ class TestingFixtureBoundaryTest {
       sourcePath("libraries/testing/src/testFixtures/java/com/emme/testing");
   private static final Path TENANCY_FIXTURE_ROOT =
       sourcePath("modules/tenancy/src/testFixtures/java/com/emme/tenancy/testing");
+  private static final Path TENANCY_BUILD_FILE = sourcePath("modules/tenancy/build.gradle.kts");
   private static final Path TENANCY_BOOTSTRAP_FIXTURE =
       sourcePath(
           "modules/tenancy/src/testFixtures/java/com/emme/testing/TestBootstrapJdbcConfig.java");
@@ -35,6 +36,8 @@ class TestingFixtureBoundaryTest {
     assertThat(Files.readString(TENANCY_FIXTURE_ROOT.resolve("BaseTenantModuleTest.java")))
         .doesNotContain("SpringDataBusinessProfileRepository")
         .doesNotContain("profileRepo");
+    assertThat(Files.readString(TENANCY_BUILD_FILE))
+        .doesNotContain("testFixturesImplementation(project(\":modules:salon\"))");
   }
 
   private static Path sourcePath(String relativePath) {

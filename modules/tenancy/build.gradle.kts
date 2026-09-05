@@ -24,7 +24,6 @@ dependencies {
   implementation(libs.shedlock.provider.jdbc.template)
 
   // Unit / slice tests (H2, fast)
-  testImplementation(testFixtures(project(":libraries:testing")))
   testImplementation(testFixtures(project(":modules:tenancy")))
   testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(libs.spring.boot.resttestclient)

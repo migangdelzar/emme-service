@@ -21,7 +21,6 @@ dependencies {
   testImplementation(libs.spring.boot.starter.oauth2.resource.server)
   testImplementation(libs.spring.security.test)
   testImplementation(libs.jackson.databind)
-  testImplementation(testFixtures(project(":libraries:testing")))
 
   // Test fixtures — shared base classes consumed by all modules
   testFixturesImplementation(platform(project(":platform")))

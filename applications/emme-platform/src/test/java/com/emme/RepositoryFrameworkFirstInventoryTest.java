@@ -83,15 +83,23 @@ class RepositoryFrameworkFirstInventoryTest {
   void modulesUsingTestingConventionDoNotRedeclareItsSharedFixtures() throws IOException {
     List<String> modules =
         List.of(
+            "modules/assistant",
             "modules/appointments",
             "modules/audit",
             "modules/booking",
+            "modules/calendar",
+            "modules/catalog",
             "modules/clients",
             "modules/documents",
+            "modules/identity",
+            "modules/notification",
+            "modules/payment",
             "modules/salon",
             "modules/services",
             "modules/staffing",
-            "modules/subscriptions");
+            "modules/subscriptions",
+            "modules/shared",
+            "modules/tenancy");
 
     for (String module : modules) {
       String build = Files.readString(sourcePath(module + "/build.gradle.kts"));

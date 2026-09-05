@@ -27,7 +27,6 @@ dependencies {
   implementation(libs.jackson.databind)
 
   testImplementation(libs.spring.security.test)
-  testImplementation(testFixtures(project(":libraries:testing")))
   testImplementation(testFixtures(project(":modules:tenancy")))
   testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(libs.spring.boot.resttestclient)

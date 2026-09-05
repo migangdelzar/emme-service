@@ -257,6 +257,7 @@ lookup should become a schema-local `findByChannel` contract.
 | Deterministic persistence/event verification | Tenancy, Identity, Subscriptions, Documents, Catalog, Calendar, Notification, Payment, Assistant, Appointments | Repository/adapter and event/listener suites pass; live provider replay/routing gates await Docker |
 | Over-provisioned persistence plugin | `build-logic/src/main/kotlin/emme.persistence.gradle.kts` and placeholder modules | Split only if dependency analysis proves benefit |
 | Feature fixture coupling | `libraries/testing/build.gradle.kts` and `src/testFixtures/java/**` | Move feature fixtures to owning modules |
+| Dependency-analysis Java 25 compatibility | `gradle/libs.versions.toml`, `gradle/verification-metadata.xml` | Upgraded the analysis plugin to `3.18.0`; representative assistant/booking/catalog bytecode and advice tasks now pass |
 
 ## 5. Baseline verification commands
 
@@ -276,12 +277,12 @@ git diff --check
 
 There is no root `dependencyAnalysis` task in this Gradle build. The
 dependency-analysis plugin provides per-project `computeActualUsage*` and
-`computeAdvice` tasks. The representative command currently fails before
-advice generation because its ASM parser does not support the Java 25 class
-files produced by the configured toolchain (major version 69). This is an
-environment/tooling gate, not evidence that a dependency is unused; source
-inventory tests remain the deterministic duplicate-declaration guard until the
-plugin or Gradle JDK is made compatible.
+`computeAdvice` tasks. The plugin is pinned to `3.18.0`, with verification
+metadata for its artifact graph. Representative assistant, booking, and
+catalog tasks now complete on the Java 25 toolchain, including bytecode
+analysis and advice generation. Generated advice is reviewed per module before
+any dependency or convention declaration is changed; source inventory tests
+remain the deterministic duplicate-declaration guard.
 
 Container-backed PostgreSQL/Redis/Kafka tests require a working Docker
 environment. Provider-offline startup and E2E tests require their configured

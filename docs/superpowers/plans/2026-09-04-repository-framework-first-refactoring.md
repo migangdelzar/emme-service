@@ -2016,7 +2016,7 @@ creation, request, and JWT mechanics.
 - Conventions are applied once through the plugin chain; application-level Modulith is not duplicated.
 - Platform constraints use the narrowest safe scope after dependency analysis.
 
-- [ ] **Step 1: Write failing convention/dependency tests**
+- [x] **Step 1: Write failing convention/dependency tests**
 
 Add build-logic tests that apply representative convention plugins to a
 temporary project and assert plugin application counts and expected
@@ -2034,18 +2034,27 @@ in the known module build files.
 ```
 
 The repository has no root `dependencyAnalysis` task. The dependency-analysis
-plugin exposes per-project `computeActualUsage*` and `computeAdvice` tasks, but
-the first representative run is currently blocked by the plugin's ASM parser:
-the Gradle daemon runs on Java 25 and the plugin fails on class-file major
-version 69 before producing advice. Keep the source-level duplicate-declaration
-test as the deterministic guard until the plugin/toolchain compatibility is
-resolved; do not mark dependency advice as complete from a failed run.
+plugin exposes per-project `computeActualUsage*` and `computeAdvice` tasks. The
+plugin was upgraded from `2.14.0` to `3.18.0`, and dependency verification
+metadata was regenerated for the new artifact graph. The representative
+assistant, booking, and catalog analysis tasks now complete on the Java 25
+toolchain, including bytecode analysis and advice generation.
 
-- [ ] **Step 3: Remove duplicate declarations and split conventions only where measured**
+The generated advice contains configuration recommendations and intentional
+framework-owned/transitive entries. It is evidence for follow-up slices, not a
+license for bulk removal. Existing source inventory tests remain the guard for
+duplicate declarations, and each future dependency change must be validated
+against source usage and the affected test classpath.
+
+- [x] **Step 3: Remove duplicate declarations and split conventions only where measured**
 
 Remove repeated lines and redundant plugins first. Split persistence/testing
 conventions only when the source/dependency report shows a real capability
-overprovisioning benefit that outweighs new convention names.
+overprovisioning benefit that outweighs new convention names. The measured
+cleanup removed duplicate dependency notation, redundant convention
+applications, and eight remaining unit-test fixture redeclarations; integration
+test fixture declarations remain explicit because they belong to a separate
+source set.
 
 - [ ] **Step 4: Run compile and build checks, then commit**
 
@@ -2075,8 +2084,10 @@ splits remain gated on dependency-analysis evidence.
       applying the `emme.testing` convention.
 - [x] Extend the repository inventory guard to prevent that convention
       duplication from returning.
-- [ ] Complete convention-plugin and dependency-analysis follow-up slices once
-      the analysis plugin supports the configured Java toolchain.
+- [x] Upgrade dependency analysis to `3.18.0`, regenerate verification metadata,
+      and run representative advice tasks on the configured Java toolchain.
+- [ ] Review remaining generated advice module by module before changing any
+      additional dependency or convention declaration.
 
 #### Current slice 22B — Let the testing convention own shared fixtures
 
@@ -2086,6 +2097,11 @@ build scripts, adding maintenance noise without adding a different capability.
 Those declarations were removed, while integration-test fixture declarations
 remain explicit because they belong to a separate source set. The repository
 inventory test now enforces this ownership rule.
+
+The same rule was then applied to the remaining Spring/Java-library modules:
+assistant, calendar, catalog, identity, notification, payment, shared, and
+tenancy. Their unit-test source sets now receive the generic fixture solely
+through `emme.testing`; integration-test fixture dependencies remain explicit.
 
 - [x] Add a failing repository test for convention-owned shared fixtures.
 - [x] Remove the nine redundant test-suite fixture declarations.

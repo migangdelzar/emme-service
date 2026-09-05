@@ -469,10 +469,12 @@
 - [x] Confirm the build exposes per-project dependency-analysis tasks rather
       than a root `dependencyAnalysis` task.
 - [x] Attempt representative `computeActualUsageMain`/`computeAdvice` tasks.
-- [x] Record the Java 25 / class-file major 69 incompatibility and preserve the
-      source-level duplicate-declaration guard.
-- [ ] Re-run dependency advice after the plugin supports the configured Java
-      toolchain; do not remove dependencies from the failed report.
+- [x] Upgrade dependency analysis from `2.14.0` to `3.18.0` and regenerate
+      dependency verification metadata for the new artifact graph.
+- [x] Run representative assistant, booking, and catalog advice tasks on the
+      Java 25 toolchain; bytecode analysis and advice generation succeed.
+- [ ] Review remaining generated advice module by module before changing any
+      additional dependency or convention declaration.
 
 ### Current slice — Task 19A tenant event boundary
 
@@ -561,7 +563,11 @@
 - [x] Remove repeated `libraries:kernel` declarations from booking and catalog.
 - [x] Remove the repeated Spring Security test dependency from assistant.
 - [x] Run the inventory test, affected compilation, and Spotless.
-- [ ] Complete convention-plugin and dependency-analysis follow-up slices.
+- [x] Remove the remaining redundant unit-test fixture declarations from
+      assistant, calendar, catalog, identity, notification, payment, shared,
+      and tenancy.
+- [x] Run representative dependency analysis after upgrading the plugin.
+- [ ] Review remaining generated advice before any additional build changes.
 
 ### Current slice — Task 22B convention-owned test fixtures
 
@@ -573,6 +579,8 @@
 - [x] Run the inventory test and affected test-source compilation.
 - [x] Remove explicit `emme.testing` applications from Spring modules because
       `emme.spring-module` already owns that capability.
+- [x] Extend the guard to all current modules that receive the testing
+      convention through `emme.spring-module` or `emme.java-library`.
 - [x] Add a repository guard for duplicate convention application.
 - [x] Remove the duplicate application-level Modulith plugin and shared test
       fixture owned by `emme.spring-application`.

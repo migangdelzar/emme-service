@@ -41,7 +41,10 @@
 - [x] Migrate FCM OAuth-token/send sequencing and SendGrid message-ID
       extraction.
 - [x] Migrate APNs JWT/header handling and SES byte-preserving SigV4 signing.
-- [ ] Migrate the remaining Calendar and Payment
+- [x] Establish the Payment `RestClient` boundary and migrate Conekta,
+      Mercado Pago, Stripe, and PayPal while preserving idempotency and
+      provider operation semantics.
+- [ ] Migrate the remaining Calendar
       provider callers one focused contract slice at a time.
 - [ ] Keep the Notification wrapper until HTTP-13 proves all callers and
       production dependencies are gone.

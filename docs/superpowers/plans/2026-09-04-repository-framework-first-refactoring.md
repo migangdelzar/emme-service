@@ -2087,6 +2087,8 @@ inventory test now enforces this ownership rule.
       application from returning.
 - [x] Remove the duplicate `emme.modulith` plugin and shared test fixture from
       the application already covered by `emme.spring-application`.
+- [x] Remove the empty `emme.test-fixtures` convention from subscriptions;
+      Identity's fixture remains because tenancy consumes it.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
 

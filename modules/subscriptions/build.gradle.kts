@@ -4,7 +4,6 @@ plugins {
   id("emme.integration-testing")
   id("emme.spring-web")
   id("emme.persistence")
-  id("emme.test-fixtures")
 }
 
 dependencies {

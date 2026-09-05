@@ -570,6 +570,8 @@
 - [x] Add a repository guard for duplicate convention application.
 - [x] Remove the duplicate application-level Modulith plugin and shared test
       fixture owned by `emme.spring-application`.
+- [x] Remove the unused empty test-fixture convention from subscriptions while
+      retaining Identity's consumed fixture.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
 

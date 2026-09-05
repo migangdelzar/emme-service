@@ -132,6 +132,15 @@ class RepositoryFrameworkFirstInventoryTest {
         .doesNotContain("testImplementation(testFixtures(project(\":libraries:testing\")))");
   }
 
+  @Test
+  void modulesWithoutFixtureSourcesDoNotApplyFixtureConvention() throws IOException {
+    String build = Files.readString(sourcePath("modules/subscriptions/build.gradle.kts"));
+
+    assertThat(build)
+        .contains("id(\"emme.spring-module\")")
+        .doesNotContain("id(\"emme.test-fixtures\")");
+  }
+
   private boolean containsJdbcReference(Path path) {
     try {
       String source = Files.readString(path);

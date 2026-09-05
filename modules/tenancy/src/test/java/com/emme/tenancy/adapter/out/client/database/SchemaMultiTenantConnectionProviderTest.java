@@ -1,6 +1,7 @@
 package com.emme.tenancy.adapter.out.client.database;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -43,6 +44,19 @@ class SchemaMultiTenantConnectionProviderTest {
 
     assertThat(provider.getConnection("tenant_schema")).isSameAs(connection);
     verify(connection).setSchema("tenant_schema");
+  }
+
+  @Test
+  void rejectsInvalidTenantSchemaBeforeAcquiringAConnection() {
+    DataSource metadataDataSource = mock(DataSource.class);
+    TenantDatabasePoolProvider tenantPools = mock(TenantDatabasePoolProvider.class);
+    SchemaMultiTenantConnectionProvider provider =
+        new SchemaMultiTenantConnectionProvider(metadataDataSource, tenantPools);
+
+    assertThatThrownBy(() -> provider.getConnection("tenant_schema;drop"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Invalid tenant schema name");
+    verifyNoInteractions(tenantPools);
   }
 
   @Test

@@ -38,9 +38,10 @@ public class SchemaMultiTenantConnectionProvider
     if (CORE_SCHEMA.equals(tenantIdentifier)) {
       connection = metadataDataSource.getConnection();
     } else {
+      String schema = TenantSchemaName.requireValid(tenantIdentifier);
       connection = tenantPools.getDataSource().getConnection();
-      connection.setSchema(tenantIdentifier);
-      log.debug("Connection routed to schema {}", tenantIdentifier);
+      connection.setSchema(schema);
+      log.debug("Connection routed to schema {}", schema);
     }
     return connection;
   }

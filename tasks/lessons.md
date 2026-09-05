@@ -125,6 +125,17 @@
   canonical client unless different transaction or connection settings are
   proven necessary.
 
+## 2026-09-05 — Validate dynamic schema identifiers at every boundary
+
+- Failure mode: The normal tenant checkout path validated schema names, but a
+  direct Hibernate multi-tenant provider call could reach `Connection.setSchema`
+  without that validation.
+- Detection signal: A provider-level regression test reached the tenant pool
+  and failed with an unrelated null connection instead of rejecting the input.
+- Prevention rule: Validate dynamic tenant schema identifiers immediately at
+  every provider boundary before acquiring a connection; do not rely only on
+  upstream resolver validation.
+
 ## 2026-09-04 — Keep test and composition-root signatures synchronized
 
 - Failure mode: A focused wiring test was changed to require a `JdbcClient`

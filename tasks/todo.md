@@ -170,6 +170,16 @@
 - [x] Run tenancy tests, application compilation, Checkstyle, and Spotless.
 - [ ] Validate non-H2 startup against a PostgreSQL/Testcontainers environment.
 
+### Current slice — Task 13D provider-boundary schema validation
+
+- [x] Add a failing test proving invalid Hibernate tenant identifiers are
+      rejected before tenant connection acquisition.
+- [x] Reuse `TenantSchemaName.requireValid` at the multi-tenant provider
+      boundary.
+- [x] Run focused tenancy tests, Spotless, and Checkstyle.
+- [ ] Run the PostgreSQL/Testcontainers startup and schema-routing gate when
+      Docker is available.
+
 ### Current slice — Task 21A tenant web fixture ownership
 
 - [x] Add a failing architecture test for tenancy-free `BaseWebTest`.

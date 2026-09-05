@@ -1850,6 +1850,25 @@ git add modules libraries platform gradle
 git commit -m "refactor: remove verified compatibility layers"
 ```
 
+#### Current slice 13D — Validate Hibernate schema identifiers at the provider boundary
+
+Completed in this slice:
+
+- The Hibernate multi-tenant connection provider validates every non-core
+  schema identifier immediately before acquiring a tenant connection.
+- The existing `TenantSchemaName` validator remains the single validation
+  policy; no SQL quoting or dynamic identifier concatenation was introduced.
+- Invalid identifiers are rejected before `TenantDatabasePoolProvider` is
+  touched, protecting direct Hibernate/provider calls as well as the normal
+  tenant checkout path.
+
+- [x] Add a failing provider test for an invalid schema identifier.
+- [x] Validate the identifier before tenant pool acquisition and schema
+      selection.
+- [x] Run focused tenancy tests, Spotless, and Checkstyle.
+- [ ] Run the PostgreSQL/Testcontainers startup and schema-routing gate when
+      Docker is available.
+
 ## 12. Subagent-driven execution protocol
 
 Subagents are the default for independent work, as requested. The coordinator

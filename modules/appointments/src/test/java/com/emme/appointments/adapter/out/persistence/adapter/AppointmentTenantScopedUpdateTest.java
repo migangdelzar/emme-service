@@ -1,7 +1,6 @@
 package com.emme.appointments.adapter.out.persistence.adapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class AppointmentTenantScopedUpdateTest {
 
   @Test
-  void updatesAppointmentThroughTheTenantScopedRepositoryQuery() {
+  void updatesAppointmentByIdWithinTheTenantScopedConnection() {
     SpringDataAppointmentRepository repository = org.mockito.Mockito.mock();
     AppointmentPersistenceAdapter adapter = new AppointmentPersistenceAdapter(repository);
     UUID tenantId = UUID.randomUUID();
@@ -45,13 +44,12 @@ class AppointmentTenantScopedUpdateTest {
             updatedEnd,
             AppointmentStatus.CONFIRMED,
             ExternalCalendarStatus.NOT_SYNCED);
-    when(repository.findByTenantIdAndId(tenantId, appointmentId)).thenReturn(Optional.of(entity));
+    when(repository.findById(appointmentId)).thenReturn(Optional.of(entity));
     when(repository.save(entity)).thenReturn(entity);
 
     Appointment saved = adapter.save(appointment);
 
-    verify(repository).findByTenantIdAndId(tenantId, appointmentId);
-    verify(repository, never()).findById(appointmentId);
+    verify(repository).findById(appointmentId);
     assertThat(entity.getStartsAt()).isEqualTo(updatedStart);
     assertThat(saved.getTenantId()).isEqualTo(tenantId);
   }

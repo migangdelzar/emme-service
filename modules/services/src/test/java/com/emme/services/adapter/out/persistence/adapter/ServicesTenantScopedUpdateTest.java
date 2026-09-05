@@ -1,7 +1,6 @@
 package com.emme.services.adapter.out.persistence.adapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,26 +20,25 @@ import org.junit.jupiter.api.Test;
 class ServicesTenantScopedUpdateTest {
 
   @Test
-  void updatesArtistThroughTheTenantScopedRepositoryQuery() {
+  void updatesArtistByIdWithinTheTenantScopedConnection() {
     SpringDataArtistRepository repository = org.mockito.Mockito.mock();
     ArtistPersistenceAdapter adapter = new ArtistPersistenceAdapter(repository);
     UUID tenantId = UUID.randomUUID();
     UUID artistId = UUID.randomUUID();
     ArtistEntity entity = new ArtistEntity(tenantId, "Before");
     Artist artist = Artist.reconstitute(artistId, tenantId, "After", ArtistStatus.ACTIVE);
-    when(repository.findByTenantIdAndId(tenantId, artistId)).thenReturn(Optional.of(entity));
+    when(repository.findById(artistId)).thenReturn(Optional.of(entity));
     when(repository.save(entity)).thenReturn(entity);
 
     Artist saved = adapter.save(artist);
 
-    verify(repository).findByTenantIdAndId(tenantId, artistId);
-    verify(repository, never()).findById(artistId);
+    verify(repository).findById(artistId);
     assertThat(entity.getName()).isEqualTo("After");
     assertThat(saved.getTenantId()).isEqualTo(tenantId);
   }
 
   @Test
-  void updatesServiceThroughTheTenantScopedRepositoryQuery() {
+  void updatesServiceByIdWithinTheTenantScopedConnection() {
     SpringDataServiceRepository repository = org.mockito.Mockito.mock();
     ServicePersistenceAdapter adapter = new ServicePersistenceAdapter(repository);
     UUID tenantId = UUID.randomUUID();
@@ -57,13 +55,12 @@ class ServicesTenantScopedUpdateTest {
             45,
             BigDecimal.valueOf(25),
             ServiceStatus.ACTIVE);
-    when(repository.findByTenantIdAndId(tenantId, serviceId)).thenReturn(Optional.of(entity));
+    when(repository.findById(serviceId)).thenReturn(Optional.of(entity));
     when(repository.save(entity)).thenReturn(entity);
 
     Service saved = adapter.save(service);
 
-    verify(repository).findByTenantIdAndId(tenantId, serviceId);
-    verify(repository, never()).findById(serviceId);
+    verify(repository).findById(serviceId);
     assertThat(entity.getName()).isEqualTo("After");
     assertThat(saved.getTenantId()).isEqualTo(tenantId);
   }

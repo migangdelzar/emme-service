@@ -27,16 +27,14 @@ public class CustomerPersistenceAdapter implements CustomerRepository {
     CustomerEntity entity =
         customer.getId() == null
             ? mapper.toNewEntity(customer)
-            : repository
-                .findByTenantIdAndId(customer.getTenantId(), customer.getId())
-                .orElseThrow();
+            : repository.findById(customer.getId()).orElseThrow();
     mapper.updateEntity(customer, entity);
     return mapper.toDomain(repository.save(entity));
   }
 
   @Override
-  public Optional<Customer> findByTenantIdAndId(UUID tenantId, UUID id) {
-    return repository.findByTenantIdAndId(tenantId, id).map(mapper::toDomain);
+  public Optional<Customer> findById(UUID id) {
+    return repository.findById(id).map(mapper::toDomain);
   }
 
   @Override

@@ -66,40 +66,51 @@
 - [x] Run the subscriptions test, compile, and Spotless gates.
 - [ ] Continue the same JPA-first review across the remaining entity modules.
 
-### Current slice — Task 18C customer tenant-scoped update
+### Current slice — Task 18C customer ID lookup under tenant schema routing
 
 - [x] Add an adapter contract test for existing-customer updates.
-- [x] Replace unscoped `findById` with `findByTenantIdAndId` in the JPA adapter.
-- [x] Require tenant identity in the provider-neutral `CustomerRepository` port.
-- [x] Update clients and appointments callers to use the scoped lookup.
+- [x] Keep the standard `findById` contract under the tenant-scoped connection.
+- [x] Remove the redundant tenant-qualified Spring Data query and port method.
+- [x] Keep clients and appointments callers ID-based for tenant-schema CRUD.
 - [x] Run the focused clients persistence test.
-- [x] Audit customer reads and use-case contracts for tenant scope.
+- [x] Record the connection-checkout isolation boundary.
 
-### Current slice — Task 18D salon tenant-scoped updates
+### Current slice — Task 18D salon ID updates under tenant schema routing
 
 - [x] Add adapter tests for booking-policy, business-profile, and
       operating-hours existing-record updates.
-- [x] Replace unscoped JPA `findById` with derived tenant-qualified queries.
-- [x] Keep salon application ports provider-neutral and unchanged.
+- [x] Remove redundant tenant-qualified derived queries and use `findById`.
+- [x] Keep salon application ports provider-neutral.
 - [x] Run the focused salon adapter test.
 - [x] Run the broader salon module quality gates and commit the slice.
 
-### Current slice — Task 18E services tenant-scoped updates
+### Current slice — Task 18E services ID updates under tenant schema routing
 
 - [x] Add adapter tests for artist and service existing-record updates.
-- [x] Replace unscoped JPA `findById` with derived tenant-qualified queries.
-- [x] Keep services application ports provider-neutral and unchanged.
+- [x] Remove redundant tenant-qualified derived queries and use `findById`.
+- [x] Keep services application ports provider-neutral.
 - [x] Run focused tests, compilation, Checkstyle, and Spotless.
 - [x] Commit and push the services slice.
 
-### Current slice — Task 18F appointments tenant-scoped updates
+### Current slice — Task 18F appointments ID updates under tenant schema routing
 
 - [x] Add an adapter test for existing appointment updates.
-- [x] Replace unscoped JPA `findById` with the tenant-qualified query.
-- [x] Keep the appointment application port provider-neutral and unchanged.
+- [x] Remove the redundant tenant-qualified query and use `findById`.
+- [x] Keep the appointment application port provider-neutral.
 - [x] Run the full appointments module tests, compilation, Checkstyle, and
       Spotless.
-- [ ] Commit and push the appointments slice.
+- [x] Commit and push the appointments slice.
+
+### Tenant schema routing decision
+
+- [x] Apply tenant schema and session configuration when a connection is taken
+      from the database pool.
+- [x] Do not use dynamic tenant schema values in Hikari `connectionInitSql` for
+      pools shared by multiple tenant schemas.
+- [x] Prefer ID-only JPA CRUD inside the tenant-scoped connection.
+- [ ] Audit all remaining tenant-qualified repository methods by operation type:
+      tenant-schema CRUD, shared/control-plane access, cross-tenant jobs, or
+      atomic/specialized SQL.
 
 ### Plan working notes
 

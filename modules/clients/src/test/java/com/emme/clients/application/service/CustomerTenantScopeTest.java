@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import com.emme.clients.application.port.out.CustomerRepository;
 import com.emme.clients.domain.model.Customer;
-import com.emme.kernel.context.TenantContextHolder;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class CustomerTenantScopeTest {
 
   @Test
-  void getsCustomerThroughTheCurrentTenant() {
+  void getsCustomerByIdFromTheTenantScopedConnection() {
     CustomerRepository repository = org.mockito.Mockito.mock();
     GetCustomerService service = new GetCustomerService(repository);
     UUID tenantId = UUID.randomUUID();
@@ -27,16 +26,16 @@ class CustomerTenantScopeTest {
             null,
             null,
             com.emme.clients.domain.model.CustomerStatus.ACTIVE);
-    when(repository.findByTenantIdAndId(tenantId, customerId)).thenReturn(Optional.of(customer));
+    when(repository.findById(customerId)).thenReturn(Optional.of(customer));
 
-    var result = TenantContextHolder.withTenantOverride(tenantId, () -> service.get(customerId));
+    var result = service.get(customerId);
 
-    verify(repository).findByTenantIdAndId(tenantId, customerId);
+    verify(repository).findById(customerId);
     assertThat(result).isPresent();
   }
 
   @Test
-  void updatesCustomerThroughTheCurrentTenant() {
+  void updatesCustomerByIdFromTheTenantScopedConnection() {
     CustomerRepository repository = org.mockito.Mockito.mock();
     UpdateCustomerService service = new UpdateCustomerService(repository);
     UUID tenantId = UUID.randomUUID();
@@ -49,18 +48,17 @@ class CustomerTenantScopeTest {
             null,
             null,
             com.emme.clients.domain.model.CustomerStatus.ACTIVE);
-    when(repository.findByTenantIdAndId(tenantId, customerId)).thenReturn(Optional.of(customer));
+    when(repository.findById(customerId)).thenReturn(Optional.of(customer));
     when(repository.save(customer)).thenReturn(customer);
 
-    TenantContextHolder.withTenantOverride(
-        tenantId, () -> service.update(customerId, "After", null, null));
+    service.update(customerId, "After", null, null);
 
-    verify(repository).findByTenantIdAndId(tenantId, customerId);
+    verify(repository).findById(customerId);
     assertThat(customer.getName()).isEqualTo("After");
   }
 
   @Test
-  void retiresCustomerThroughTheCurrentTenant() {
+  void retiresCustomerByIdFromTheTenantScopedConnection() {
     CustomerRepository repository = org.mockito.Mockito.mock();
     RetireCustomerService service = new RetireCustomerService(repository);
     UUID tenantId = UUID.randomUUID();
@@ -73,12 +71,12 @@ class CustomerTenantScopeTest {
             null,
             null,
             com.emme.clients.domain.model.CustomerStatus.ACTIVE);
-    when(repository.findByTenantIdAndId(tenantId, customerId)).thenReturn(Optional.of(customer));
+    when(repository.findById(customerId)).thenReturn(Optional.of(customer));
     when(repository.save(customer)).thenReturn(customer);
 
-    TenantContextHolder.withTenantOverride(tenantId, () -> service.retire(customerId));
+    service.retire(customerId);
 
-    verify(repository).findByTenantIdAndId(tenantId, customerId);
+    verify(repository).findById(customerId);
     assertThat(customer.getStatus())
         .isEqualTo(com.emme.clients.domain.model.CustomerStatus.RETIRED);
   }

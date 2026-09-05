@@ -10,6 +10,4 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataBusinessProfileRepository
     extends JpaRepository<BusinessProfileEntity, UUID> {
   Optional<BusinessProfileEntity> findByTenantId(UUID tenantId);
-
-  Optional<BusinessProfileEntity> findByTenantIdAndId(UUID tenantId, UUID id);
 }

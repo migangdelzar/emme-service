@@ -1205,68 +1205,74 @@ lookup and update semantics.
 - [x] Preserve the `SubscriptionRepository` port and tenant-scoped update lookup.
 - [ ] Extend the same evidence-based review to the remaining entity modules.
 
-#### Current slice 18C — Enforce tenant scope on customer updates
+#### Current slice 18C — Use ID-only customer lookups inside the tenant connection
 
-The clients adapter previously loaded an existing customer with the generic
-`JpaRepository.findById`, even though the customer aggregate carries its tenant
-identity. The adapter now uses the Spring Data derived query
-`findByTenantIdAndId`, preventing an update path from selecting a record owned
-by another tenant while retaining the existing mapper and application port.
+The tenant boundary is established before persistence access: the tenant-scoped
+DataSource resolves the authenticated schema and tenant session setting whenever
+a connection is acquired. Because the Hikari pools are shared at the database
+level (especially in `SHARED` mode), a pool initialization SQL statement cannot
+bind one tenant schema safely. The customer adapter therefore keeps the simple
+Spring Data `findById` contract; the connection/schema boundary and PostgreSQL
+RLS provide isolation without duplicating tenant predicates in every CRUD lookup.
 
-- [x] Add an adapter test that rejects unscoped update lookup by contract.
-- [x] Add the tenant-scoped Spring Data query.
-- [x] Update customer save to use tenant and customer identity together.
-- [x] Update customer application reads and appointment callers to use the
-      tenant-qualified port.
+- [x] Add adapter coverage for an existing-customer update by ID.
+- [x] Remove the redundant tenant-qualified Spring Data query.
+- [x] Keep customer application reads and appointment callers ID-based.
 - [x] Run the focused clients persistence test.
-- [x] Audit customer read/use-case ports for the same tenant-scope assumption.
+- [x] Record the connection-checkout isolation decision.
 
-#### Current slice 18D — Enforce tenant scope on salon aggregate updates
+#### Current slice 18D — Use ID-only salon aggregate updates
 
-The salon booking-policy, business-profile, and operating-hours adapters already
-use Spring Data JPA for stable entity CRUD. Their existing-record branches were
-still using generic `findById`, which did not carry the aggregate tenant scope
-into the update lookup. The adapters now use derived JPA queries combining
-`tenantId` and aggregate `id`; no `JdbcClient` or application-port change is
-needed because Spring Data expresses the invariant directly and keeps the
-provider-neutral boundaries intact.
+Booking-policy, business-profile, and operating-hours are ordinary tenant-schema
+CRUD. Their adapters use the tenant-scoped connection and Spring Data JPA, so
+existing records are loaded with `findById`; tenant IDs remain domain/entity
+data and are still protected by the database RLS contract. This avoids adding a
+second tenant argument to provider-neutral repository implementations.
 
-- [x] Add adapter coverage for tenant-scoped booking-policy, business-profile,
-      and operating-hours updates.
-- [x] Add `findByTenantIdAndId` to the three Spring Data repositories.
-- [x] Update all three adapter update branches to use tenant and aggregate ID.
-- [x] Verify no salon update path uses unscoped `findById`.
-- [ ] Continue the same evidence-based review across remaining entity modules.
+- [x] Add adapter coverage for ID-based booking-policy, business-profile, and
+      operating-hours updates.
+- [x] Remove the redundant `findByTenantIdAndId` methods.
+- [x] Update all three adapter update branches to use `findById`.
+- [x] Verify the focused salon adapter tests.
 
-#### Current slice 18E — Enforce tenant scope on service-catalog updates
+#### Current slice 18E — Use ID-only service-catalog updates
 
-The services module already uses Spring Data JPA for artist and service CRUD,
-but existing-record updates used generic `findById` even though both domain
-aggregates are tenant-owned. The adapters now use derived JPA lookups combining
-tenant and aggregate identity. This keeps the application ports stable, avoids
-introducing SQL for ordinary CRUD, and prevents an update from selecting an
-aggregate outside its tenant scope.
+Artist and service CRUD is already expressed cleanly with Spring Data JPA. The
+tenant-scoped connection selects the tenant schema before the repository call,
+so existing-record updates use the standard `findById` operation. Specialized
+tenant-filtered list/status queries remain separate concerns and will be
+reviewed by operation type rather than mechanically changing every method.
 
-- [x] Add adapter coverage for artist and service existing-record updates.
-- [x] Add tenant-qualified derived queries to the artist and service repositories.
-- [x] Update both adapter update branches to use tenant and aggregate ID.
+- [x] Add adapter coverage for ID-based artist and service updates.
+- [x] Remove the redundant tenant-qualified derived queries.
+- [x] Update both adapter update branches to use `findById`.
 - [x] Run focused services tests, compilation, Checkstyle, and Spotless.
-- [ ] Continue the same evidence-based review across remaining entity modules.
 
-#### Current slice 18F — Enforce tenant scope on appointment updates
+#### Current slice 18F — Use ID-only appointment updates
 
-The appointment aggregate is tenant-owned and its JPA adapter already supports
-tenant-scoped collision and listing queries, but the existing-record update
-branch still used generic `findById`. A derived Spring Data query now combines
-tenant and appointment identity for updates while leaving the application port
-unchanged. This closes the update-path isolation gap without introducing custom
-SQL or changing the provider-neutral contract.
+Appointments are ordinary tenant-schema CRUD for update and rehydration. The
+adapter now uses standard JPA `findById` for an existing appointment, while
+collision, list, and time-window operations retain their explicit operation
+filters until their schema-routing and database-invariant contracts are audited
+individually.
 
-- [x] Add adapter coverage for existing appointment updates.
-- [x] Add the tenant-qualified appointment repository query.
-- [x] Update the adapter to use tenant and appointment ID together.
+- [x] Add adapter coverage for an existing appointment update by ID.
+- [x] Remove the redundant tenant-qualified appointment query.
+- [x] Update the adapter to use `findById`.
 - [x] Run the appointments module tests, compilation, Checkstyle, and Spotless.
-- [ ] Continue the same evidence-based review across remaining entity modules.
+
+#### Tenant isolation boundary correction
+
+`TenantDatabasePoolProvider` caches pools by `databaseId`, not by tenant schema.
+`TenantScopedDataSource#getConnection()` therefore applies `setSchema`, the
+validated `search_path`, and `app.current_tenant_id` when a connection is taken
+from the pool. `connectionInitSql` remains appropriate for the fixed core pool,
+but not for dynamic tenant schema selection in a shared database pool.
+
+The next repository audit will classify operations as: ID-only tenant-schema
+CRUD; explicit tenant filters for shared/control-plane or cross-tenant jobs; and
+named `JdbcClient` operations for atomic transitions, vectors/full-text, or
+dynamic provisioning. The application ports remain provider-neutral throughout.
 
 - [ ] **Step 1: Write failing per-module persistence tests**
 

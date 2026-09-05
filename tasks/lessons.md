@@ -1353,3 +1353,15 @@
 - **Failure mode:** A bounded JPA existence query could be mistaken for a complete concurrent-booking fix even though two transactions can pass the pre-check.
 - **Detection signal:** The optimized query improved allocation, but no PostgreSQL constraint and live concurrent-write assertion existed.
 - **Prevention rule:** Treat query optimization and database invariant enforcement as separate plan gates; do not mark collision safety complete until a real PostgreSQL concurrency test proves the invariant.
+
+## 2026-09-04 — Configure dynamic tenant scope at connection checkout
+
+- **Failure mode:** Tenant-qualified JPA methods were added to ordinary CRUD
+  even though the tenant schema was already selected by the persistence boundary.
+- **Detection signal:** The Hikari cache is keyed by `databaseId`, while a shared
+  database can serve multiple tenant schemas; a pool initialization SQL value
+  therefore cannot safely represent the current tenant.
+- **Prevention rule:** Apply the validated schema and tenant session setting when
+  a connection is acquired. Use ID-only JPA CRUD inside that boundary; retain
+  explicit tenant parameters only for shared/control-plane, cross-tenant, or
+  operation-specific invariants.

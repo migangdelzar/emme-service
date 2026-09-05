@@ -28,9 +28,7 @@ public class OperatingHoursPersistenceAdapter implements OperatingHoursRepositor
     OperatingHoursEntity entity =
         operatingHours.getId() == null
             ? mapper.toNewEntity(operatingHours)
-            : repository
-                .findByTenantIdAndId(operatingHours.getTenantId(), operatingHours.getId())
-                .orElseThrow();
+            : repository.findById(operatingHours.getId()).orElseThrow();
     mapper.updateEntity(operatingHours, entity);
     return mapper.toDomain(repository.save(entity));
   }

@@ -34,10 +34,7 @@ public class AppointmentPersistenceAdapter implements AppointmentRepository {
     if (appointment.getId() == null) {
       entity = mapper.toNewEntity(appointment);
     } else {
-      entity =
-          repository
-              .findByTenantIdAndId(appointment.getTenantId(), appointment.getId())
-              .orElseThrow();
+      entity = repository.findById(appointment.getId()).orElseThrow();
     }
     mapper.updateEntity(appointment, entity);
     return mapper.toDomain(repository.save(entity));

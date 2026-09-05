@@ -15,6 +15,4 @@ public interface SpringDataServiceRepository extends JpaRepository<ServiceEntity
   List<ServiceEntity> findByTenantIdAndStatus(UUID tenantId, ServiceStatus status);
 
   Optional<ServiceEntity> findByTenantIdAndCode(UUID tenantId, String code);
-
-  Optional<ServiceEntity> findByTenantIdAndId(UUID tenantId, UUID id);
 }

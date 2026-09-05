@@ -57,7 +57,7 @@ final class AppointmentApplicationSupport {
     if (!confirmed) throw new SecurityException("User confirmation is required");
     if (!actor.isStaff() && (!actor.hasRole("client") || !actor.principalId().equals(customerId)))
       throw new SecurityException("Actor is not authorized to book for customer");
-    if (customerRepository.findByTenantIdAndId(actor.tenantId(), customerId).isEmpty())
+    if (customerRepository.findById(customerId).isEmpty())
       throw new SecurityException("Customer is outside actor tenant");
   }
 
@@ -67,7 +67,7 @@ final class AppointmentApplicationSupport {
   }
 
   void ensureReferences(UUID tenantId, UUID customerId, UUID serviceId, UUID artistId) {
-    if (customerRepository.findByTenantIdAndId(tenantId, customerId).isEmpty())
+    if (customerRepository.findById(customerId).isEmpty())
       throw new SecurityException("Appointment reference is outside actor tenant");
     if (serviceRepository.findById(serviceId).isEmpty()) {
       throw new IllegalArgumentException("Service not found: " + serviceId);
@@ -101,7 +101,7 @@ final class AppointmentApplicationSupport {
   AppointmentDetails toDetails(Appointment appointment) {
     String customerName =
         customerRepository
-            .findByTenantIdAndId(appointment.getTenantId(), appointment.getCustomerId())
+            .findById(appointment.getCustomerId())
             .map(Customer::getName)
             .orElse(null);
     String serviceName =

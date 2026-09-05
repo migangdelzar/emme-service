@@ -39,7 +39,7 @@ class AppointmentMutationAuthorizationTest {
     UUID customer = UUID.randomUUID();
     UUID service = UUID.randomUUID();
     UUID artist = UUID.randomUUID();
-    when(customers.findByTenantIdAndId(TENANT, customer)).thenReturn(Optional.empty());
+    when(customers.findById(customer)).thenReturn(Optional.empty());
     when(services.findById(service))
         .thenReturn(Optional.of(mock(com.emme.services.domain.model.Service.class)));
     when(artists.findById(artist))

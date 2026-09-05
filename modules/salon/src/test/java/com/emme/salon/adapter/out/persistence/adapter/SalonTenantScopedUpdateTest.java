@@ -1,7 +1,6 @@
 package com.emme.salon.adapter.out.persistence.adapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,26 +22,25 @@ import org.junit.jupiter.api.Test;
 class SalonTenantScopedUpdateTest {
 
   @Test
-  void updatesBookingPolicyThroughTheTenantScopedRepositoryQuery() {
+  void updatesBookingPolicyByIdWithinTheTenantScopedConnection() {
     SpringDataBookingPolicyRepository repository = org.mockito.Mockito.mock();
     BookingPolicyPersistenceAdapter adapter = new BookingPolicyPersistenceAdapter(repository);
     UUID tenantId = UUID.randomUUID();
     UUID policyId = UUID.randomUUID();
     BookingPolicyEntity entity = new BookingPolicyEntity(tenantId, 60, 30, 120, false);
     BookingPolicy policy = BookingPolicy.reconstitute(policyId, tenantId, 15, 45, 90, true);
-    when(repository.findByTenantIdAndId(tenantId, policyId)).thenReturn(Optional.of(entity));
+    when(repository.findById(policyId)).thenReturn(Optional.of(entity));
     when(repository.save(entity)).thenReturn(entity);
 
     BookingPolicy saved = adapter.save(policy);
 
-    verify(repository).findByTenantIdAndId(tenantId, policyId);
-    verify(repository, never()).findById(policyId);
+    verify(repository).findById(policyId);
     assertThat(entity.getMinNoticeMinutes()).isEqualTo(15);
     assertThat(saved.getTenantId()).isEqualTo(tenantId);
   }
 
   @Test
-  void updatesBusinessProfileThroughTheTenantScopedRepositoryQuery() {
+  void updatesBusinessProfileByIdWithinTheTenantScopedConnection() {
     SpringDataBusinessProfileRepository repository = org.mockito.Mockito.mock();
     BusinessProfilePersistenceAdapter adapter = new BusinessProfilePersistenceAdapter(repository);
     UUID tenantId = UUID.randomUUID();
@@ -50,19 +48,18 @@ class SalonTenantScopedUpdateTest {
     BusinessProfileEntity entity = new BusinessProfileEntity(tenantId, "UTC", "en-US", "Before");
     BusinessProfile profile =
         BusinessProfile.reconstitute(profileId, tenantId, "America/Mexico_City", "es-MX", "After");
-    when(repository.findByTenantIdAndId(tenantId, profileId)).thenReturn(Optional.of(entity));
+    when(repository.findById(profileId)).thenReturn(Optional.of(entity));
     when(repository.save(entity)).thenReturn(entity);
 
     BusinessProfile saved = adapter.save(profile);
 
-    verify(repository).findByTenantIdAndId(tenantId, profileId);
-    verify(repository, never()).findById(profileId);
+    verify(repository).findById(profileId);
     assertThat(entity.getTimeZone()).isEqualTo("America/Mexico_City");
     assertThat(saved.getTenantId()).isEqualTo(tenantId);
   }
 
   @Test
-  void updatesOperatingHoursThroughTheTenantScopedRepositoryQuery() {
+  void updatesOperatingHoursByIdWithinTheTenantScopedConnection() {
     SpringDataOperatingHoursRepository repository = org.mockito.Mockito.mock();
     OperatingHoursPersistenceAdapter adapter = new OperatingHoursPersistenceAdapter(repository);
     UUID tenantId = UUID.randomUUID();
@@ -72,13 +69,12 @@ class SalonTenantScopedUpdateTest {
     OperatingHours operatingHours =
         OperatingHours.reconstitute(
             hoursId, tenantId, DayOfWeek.MON, LocalTime.of(10, 0), LocalTime.of(18, 0), false);
-    when(repository.findByTenantIdAndId(tenantId, hoursId)).thenReturn(Optional.of(entity));
+    when(repository.findById(hoursId)).thenReturn(Optional.of(entity));
     when(repository.save(entity)).thenReturn(entity);
 
     OperatingHours saved = adapter.save(operatingHours);
 
-    verify(repository).findByTenantIdAndId(tenantId, hoursId);
-    verify(repository, never()).findById(hoursId);
+    verify(repository).findById(hoursId);
     assertThat(entity.getOpensAt()).isEqualTo(LocalTime.of(10, 0));
     assertThat(saved.getTenantId()).isEqualTo(tenantId);
   }

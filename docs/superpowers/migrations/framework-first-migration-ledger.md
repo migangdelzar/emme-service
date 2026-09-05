@@ -190,6 +190,7 @@ lookup should become a schema-local `findByChannel` contract.
 | AI operational state, live events, and login-attempt limiter | Classified | Keep `StringRedisTemplate`; Spring manages connection and serialization, while adapter ports keep providers replaceable from application code. | 2026-09-05 |
 | Spring AI semantic vector store and hot projection | Classified | Keep the isolated, Spring-managed Jedis `RedisClient` because the official Spring AI `RedisVectorStore` and native set/index invalidation require it. Do not introduce a second generic template solely for standardization. | 2026-09-05 |
 | Spring AI semantic-cache metadata contract | Replacement tested | Centralize Redis metadata names and vector field types in `RedisSemanticCacheMetadata`; both the vector-store composition root and hot-store adapter consume the same contract. Provider-neutral cache ports remain free of Spring AI and Redis types. | 2026-09-05 |
+| Tenant full-context test fixture | Replacement tested | Remove the unused salon business-profile repository from `BaseTenantModuleTest`; retain only collaborators with active consumers until the remaining feature-specific setup can be split without broad fixture churn. | 2026-09-05 |
 
 ### 4.0.3 LangGraph persistence wiring
 

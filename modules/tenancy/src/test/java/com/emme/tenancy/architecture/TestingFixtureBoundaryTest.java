@@ -30,6 +30,13 @@ class TestingFixtureBoundaryTest {
         .contains("@Import(TestBootstrapJdbcConfig.class)");
   }
 
+  @Test
+  void tenantFixtureDoesNotExposeUnusedSalonRepositories() throws Exception {
+    assertThat(Files.readString(TENANCY_FIXTURE_ROOT.resolve("BaseTenantModuleTest.java")))
+        .doesNotContain("SpringDataBusinessProfileRepository")
+        .doesNotContain("profileRepo");
+  }
+
   private static Path sourcePath(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     for (int attempt = 0; attempt < 8 && current != null; attempt++) {

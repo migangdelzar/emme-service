@@ -3,7 +3,6 @@ package com.emme.tenancy.testing;
 import com.emme.identity.adapter.out.persistence.entity.FeatureFlagEntity;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataFeatureFlagRepository;
 import com.emme.identity.testing.MockIdentityProviderAdministrationConfig;
-import com.emme.salon.adapter.out.persistence.repository.SpringDataBusinessProfileRepository;
 import com.emme.subscriptions.adapter.out.persistence.entity.SubscriptionEntity;
 import com.emme.subscriptions.adapter.out.persistence.repository.SpringDataSubscriptionRepository;
 import com.emme.subscriptions.api.type.PlanType;
@@ -48,7 +47,6 @@ public abstract class BaseTenantModuleTest {
   @Autowired protected GetTenantUseCase getTenantUseCase;
   @Autowired protected SpringDataSubscriptionRepository subscriptionRepo;
   @Autowired protected SpringDataFeatureFlagRepository featureFlagRepo;
-  @Autowired protected SpringDataBusinessProfileRepository profileRepo;
 
   @Autowired
   protected com.emme.identity.adapter.out.persistence.repository.SpringDataMembershipRepository

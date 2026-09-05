@@ -399,6 +399,13 @@
 - [x] Compile affected fixtures and run representative web tests.
 - [ ] Split the remaining feature-specific `BaseTenantModuleTest` setup.
 
+### Current slice — Task 21E remove unused tenant-fixture repository
+
+- [x] Add a failing fixture-boundary test for the unused salon repository.
+- [x] Remove `profileRepo` and its salon repository import from `BaseTenantModuleTest`.
+- [x] Run the tenancy fixture boundary test.
+- [ ] Split remaining feature-specific setup after a dependency-safe design.
+
 ### Current slice — Task 18G document ID lookups
 
 - [x] Add document service and adapter coverage for ID-based loading.

@@ -1968,6 +1968,19 @@ receive the bootstrap override through the tenancy-owned `TenantWebTest`.
       `BaseTenantModuleTest` only after a dependency-safe fixture design is
       established.
 
+#### Current slice 21E — Remove the unused salon repository from the tenant fixture
+
+`BaseTenantModuleTest` no longer autowires the unused
+`SpringDataBusinessProfileRepository`. The fixture still owns only the
+subscription, feature-flag, membership, and role collaborators that have
+active test consumers; the broader feature-setup split remains deferred until
+its fixture dependency graph is designed.
+
+- [x] Add a failing fixture-boundary test for the unused salon repository.
+- [x] Remove the unused import and field from `BaseTenantModuleTest`.
+- [x] Run the tenancy fixture boundary test and affected compilation.
+- [ ] Split the remaining feature-specific setup without widening fixture dependencies.
+
 ### Task 22: Remove duplicate Gradle capabilities and dependencies
 
 **Files:**

@@ -707,6 +707,19 @@ as an empty checkpoint history. The live PostgreSQL proof remains Docker-gated.
 - [x] Run focused LangGraph/checkpoint tests, compilation, and Spotless.
 - [ ] Run the live PostgreSQL checkpoint security/resume coverage when Docker is available.
 
+#### Current slice 8E — Quote graph capability gating
+
+The quote graph definition and compiled graph are now created only when the
+quote capability is enabled. This keeps the opt-in LangGraph composition root
+from creating an orphaned quote graph when `app.ai.quote.enabled` is false;
+the existing quote resume adapter condition remains aligned with the same
+property.
+
+- [x] Add focused configuration coverage for quote capability gating.
+- [x] Gate the quote graph and compiled graph beans with the quote property.
+- [x] Run focused LangGraph configuration tests.
+- [ ] Run live LangGraph startup and checkpoint coverage when Docker is available.
+
 - [ ] **Step 1: Write failing configuration/security tests**
 
 Test disabled graph startup, one graph bean per capability, unauthorized

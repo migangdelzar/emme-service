@@ -70,6 +70,7 @@ public class SpringAiLangGraphConfiguration {
   }
 
   @Bean
+  @ConditionalOnProperty(prefix = "app.ai.quote", name = "enabled", havingValue = "true")
   @ConditionalOnMissingBean
   QuoteWorkflowGraph quoteWorkflowGraph(
       @Qualifier("workflowCheckpointStore") BaseCheckpointSaver checkpointSaver) {
@@ -77,6 +78,7 @@ public class SpringAiLangGraphConfiguration {
   }
 
   @Bean(name = "aiQuoteWorkflowCompiledGraph")
+  @ConditionalOnProperty(prefix = "app.ai.quote", name = "enabled", havingValue = "true")
   @ConditionalOnMissingBean(name = "aiQuoteWorkflowCompiledGraph")
   CompiledGraph<AgentState> quoteWorkflowCompiledGraph(QuoteWorkflowGraph graph) throws Exception {
     return graph.compile();

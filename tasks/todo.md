@@ -724,6 +724,15 @@
 - [x] Run focused LangGraph/checkpoint tests, compilation, and Spotless.
 - [ ] Re-run the live PostgreSQL checkpoint security/resume coverage with Docker.
 
+### Current slice — Task 8E quote graph capability gating
+
+- [x] Add a failing configuration test for quote graph bean creation when the
+      quote capability is disabled.
+- [x] Gate the quote graph definition and compiled graph with
+      `app.ai.quote.enabled=true`.
+- [x] Run the focused LangGraph configuration tests.
+- [ ] Run live LangGraph startup and checkpoint coverage with Docker.
+
 ### Remaining repository-wide framework-first work
 
 - [x] Finish Spring AI metadata-contract and hybrid-search capability

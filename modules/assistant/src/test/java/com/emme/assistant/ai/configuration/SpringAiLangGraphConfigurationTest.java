@@ -19,6 +19,7 @@ import org.bsc.langgraph4j.checkpoint.BaseCheckpointSaver;
 import org.bsc.langgraph4j.state.AgentState;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 class SpringAiLangGraphConfigurationTest {
@@ -97,5 +98,30 @@ class SpringAiLangGraphConfigurationTest {
         .isEqualTo("aiConversationWorkflowCompiledGraph");
     assertThat(quoteMethod.getParameters()[0].getAnnotation(Qualifier.class).value())
         .isEqualTo("aiQuoteWorkflowCompiledGraph");
+  }
+
+  @Test
+  void createsQuoteGraphBeansOnlyWhenTheQuoteCapabilityIsEnabled() throws Exception {
+    var quoteGraphMethod =
+        SpringAiLangGraphConfiguration.class.getDeclaredMethod(
+            "quoteWorkflowGraph", BaseCheckpointSaver.class);
+    var compiledGraphMethod =
+        SpringAiLangGraphConfiguration.class.getDeclaredMethod(
+            "quoteWorkflowCompiledGraph", QuoteWorkflowGraph.class);
+
+    assertThat(quoteGraphMethod.getAnnotation(ConditionalOnProperty.class))
+        .satisfies(
+            condition -> {
+              assertThat(condition.prefix()).isEqualTo("app.ai.quote");
+              assertThat(condition.name()).containsExactly("enabled");
+              assertThat(condition.havingValue()).isEqualTo("true");
+            });
+    assertThat(compiledGraphMethod.getAnnotation(ConditionalOnProperty.class))
+        .satisfies(
+            condition -> {
+              assertThat(condition.prefix()).isEqualTo("app.ai.quote");
+              assertThat(condition.name()).containsExactly("enabled");
+              assertThat(condition.havingValue()).isEqualTo("true");
+            });
   }
 }

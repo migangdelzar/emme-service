@@ -38,7 +38,7 @@ public class ArtistPersistenceAdapter implements ArtistRepository {
   }
 
   @Override
-  public List<Artist> findByTenantId(UUID tenantId) {
-    return repository.findByTenantId(tenantId).stream().map(mapper::toDomain).toList();
+  public List<Artist> findAll() {
+    return repository.findAll().stream().map(mapper::toDomain).toList();
   }
 }

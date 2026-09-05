@@ -75,12 +75,9 @@ final class AppointmentApplicationSupport {
     if (artistRepository.findById(artistId).isEmpty()) {
       throw new IllegalArgumentException("Artist not found: " + artistId);
     }
-    if (serviceRepository
-            .findByTenantIdAndStatus(tenantId, com.emme.services.domain.model.ServiceStatus.ACTIVE)
-            .stream()
+    if (serviceRepository.findByStatus(com.emme.services.domain.model.ServiceStatus.ACTIVE).stream()
             .noneMatch(s -> s.getId().equals(serviceId))
-        || artistRepository.findByTenantId(tenantId).stream()
-            .noneMatch(a -> a.getId().equals(artistId)))
+        || artistRepository.findAll().stream().noneMatch(a -> a.getId().equals(artistId)))
       throw new SecurityException("Appointment reference is outside actor tenant");
   }
 

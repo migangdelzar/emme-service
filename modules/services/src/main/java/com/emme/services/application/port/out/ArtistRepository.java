@@ -12,5 +12,5 @@ public interface ArtistRepository {
 
   Optional<Artist> findById(UUID id);
 
-  List<Artist> findByTenantId(UUID tenantId);
+  List<Artist> findAll();
 }

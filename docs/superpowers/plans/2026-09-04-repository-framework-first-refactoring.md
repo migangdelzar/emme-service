@@ -1331,6 +1331,33 @@ commands for authorization, creation, and response mapping.
 - [x] Run Salon and appointment tests plus Spotless.
 - [ ] Apply the same operation-by-operation review to remaining tenant-schema lists.
 
+#### Current slice 18L — Remove tenant predicates from Clients schema-local lists
+
+Customer list and name-search operations execute through the tenant-selected
+JPA connection. The provider-neutral port now exposes `findAll()` and
+`searchByName(String)`; application use cases retain the tenant argument at the
+web/application boundary for authorization and request context, while the
+adapter does not repeat the schema boundary in every query.
+
+- [x] Add adapter coverage for schema-local list and name-search operations.
+- [x] Replace tenant-qualified Spring Data methods with standard list/name methods.
+- [x] Update customer application services and the repository integration test.
+- [x] Run Clients and appointment tests plus Spotless.
+- [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
+
+#### Current slice 18M — Remove tenant predicates from Services schema-local lists
+
+Artist listing and active service-catalog listing are tenant-schema reads. The
+ports now use standard `findAll()` and status filtering, while appointment
+authorization still receives the tenant ID at the application boundary and
+uses it for actor/reference policy rather than repeating it in JPA predicates.
+
+- [x] Add adapter contract coverage for artist and service schema-local lists.
+- [x] Replace tenant-qualified Spring Data list/status methods.
+- [x] Update service consumers and appointment reference validation.
+- [x] Run Services and appointment tests plus Spotless.
+- [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
+
 #### Current slice 18E — Use ID-only service-catalog updates
 
 Artist and service CRUD is already expressed cleanly with Spring Data JPA. The

@@ -22,7 +22,7 @@ public class SearchCustomersService implements SearchCustomersUseCase {
 
   @Override
   public List<CustomerDetails> search(UUID tenantId, String query) {
-    return customerRepository.searchByName(tenantId, query).stream()
+    return customerRepository.searchByName(query).stream()
         .map(CustomerApplicationMapper::toDetails)
         .toList();
   }

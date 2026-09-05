@@ -13,11 +13,38 @@ import com.emme.services.domain.model.ArtistStatus;
 import com.emme.services.domain.model.Service;
 import com.emme.services.domain.model.ServiceStatus;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class ServicesTenantScopedUpdateTest {
+
+  @Test
+  void listsArtistsFromTheCurrentTenantSchema() {
+    SpringDataArtistRepository repository = org.mockito.Mockito.mock();
+    ArtistPersistenceAdapter adapter = new ArtistPersistenceAdapter(repository);
+    when(repository.findAll()).thenReturn(List.of(new ArtistEntity(UUID.randomUUID(), "Ada")));
+
+    List<Artist> artists = adapter.findAll();
+
+    verify(repository).findAll();
+    assertThat(artists).hasSize(1);
+  }
+
+  @Test
+  void listsServicesByStatusFromTheCurrentTenantSchema() {
+    SpringDataServiceRepository repository = org.mockito.Mockito.mock();
+    ServicePersistenceAdapter adapter = new ServicePersistenceAdapter(repository);
+    when(repository.findByStatus(ServiceStatus.ACTIVE))
+        .thenReturn(
+            List.of(new ServiceEntity(UUID.randomUUID(), "CUT", "Cut", 30, BigDecimal.TEN)));
+
+    List<Service> services = adapter.findByStatus(ServiceStatus.ACTIVE);
+
+    verify(repository).findByStatus(ServiceStatus.ACTIVE);
+    assertThat(services).hasSize(1);
+  }
 
   @Test
   void updatesArtistByIdWithinTheTenantScopedConnection() {

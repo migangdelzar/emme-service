@@ -24,7 +24,7 @@ public class ListActiveServiceCatalogEntriesService
 
   @Override
   public List<ServiceDetails> listActive(UUID tenantId) {
-    return serviceRepository.findByTenantIdAndStatus(tenantId, ServiceStatus.ACTIVE).stream()
+    return serviceRepository.findByStatus(ServiceStatus.ACTIVE).stream()
         .map(ServiceCatalogApplicationMapper::toDetails)
         .toList();
   }

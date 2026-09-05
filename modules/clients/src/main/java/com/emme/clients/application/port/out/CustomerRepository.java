@@ -12,7 +12,7 @@ public interface CustomerRepository {
 
   Optional<Customer> findById(UUID id);
 
-  List<Customer> findByTenantId(UUID tenantId);
+  List<Customer> findAll();
 
-  List<Customer> searchByName(UUID tenantId, String name);
+  List<Customer> searchByName(String name);
 }

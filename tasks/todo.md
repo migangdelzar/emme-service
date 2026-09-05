@@ -135,6 +135,23 @@
 - [ ] Continue the same operation-by-operation review for remaining tenant-schema
       list/search methods.
 
+### Current slice — Task 18L Clients schema-local lists
+
+- [x] Add adapter tests for tenant-schema customer list and name search.
+- [x] Replace tenant-qualified JPA methods with `findAll()` and name search.
+- [x] Preserve tenant arguments at application/web boundaries for authorization
+      and tenant context while removing duplicate persistence predicates.
+- [x] Run Clients and appointments tests, compilation, and Spotless.
+- [ ] Continue reviewing remaining tenant-schema list/search methods.
+
+### Current slice — Task 18M Services schema-local lists
+
+- [x] Add adapter tests for artist and active-service schema-local reads.
+- [x] Replace tenant-qualified JPA methods with `findAll()` and status filtering.
+- [x] Preserve application-level tenant authorization and reference checks.
+- [x] Run Services and appointments tests, compilation, and Spotless.
+- [ ] Continue reviewing remaining tenant-schema list/search methods.
+
 ### Tenant schema routing decision
 
 - [x] Apply tenant schema and session configuration when a connection is taken

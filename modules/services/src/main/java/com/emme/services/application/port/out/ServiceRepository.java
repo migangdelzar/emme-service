@@ -13,5 +13,5 @@ public interface ServiceRepository {
 
   Optional<Service> findById(UUID id);
 
-  List<Service> findByTenantIdAndStatus(UUID tenantId, ServiceStatus status);
+  List<Service> findByStatus(ServiceStatus status);
 }

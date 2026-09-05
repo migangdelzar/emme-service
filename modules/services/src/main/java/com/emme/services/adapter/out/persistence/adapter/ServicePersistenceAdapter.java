@@ -39,9 +39,7 @@ public class ServicePersistenceAdapter implements ServiceRepository {
   }
 
   @Override
-  public List<Service> findByTenantIdAndStatus(UUID tenantId, ServiceStatus status) {
-    return repository.findByTenantIdAndStatus(tenantId, status).stream()
-        .map(mapper::toDomain)
-        .toList();
+  public List<Service> findByStatus(ServiceStatus status) {
+    return repository.findByStatus(status).stream().map(mapper::toDomain).toList();
   }
 }

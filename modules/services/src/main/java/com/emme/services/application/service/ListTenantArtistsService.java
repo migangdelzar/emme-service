@@ -22,8 +22,6 @@ public class ListTenantArtistsService implements ListTenantArtistsUseCase {
 
   @Override
   public List<ArtistDetails> list(UUID tenantId) {
-    return artistRepository.findByTenantId(tenantId).stream()
-        .map(ArtistApplicationMapper::toDetails)
-        .toList();
+    return artistRepository.findAll().stream().map(ArtistApplicationMapper::toDetails).toList();
   }
 }

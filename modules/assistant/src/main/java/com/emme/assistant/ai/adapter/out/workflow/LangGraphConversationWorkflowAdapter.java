@@ -3,6 +3,7 @@ package com.emme.assistant.ai.adapter.out.workflow;
 import com.emme.assistant.ai.api.command.ProcessConversationCommand;
 import com.emme.assistant.ai.api.command.ResumeConversationWorkflowCommand;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowPort;
+import com.emme.assistant.ai.application.security.AiStaffRolePolicy;
 import com.emme.assistant.ai.domain.workflow.ConversationWorkflowDecision;
 import com.emme.assistant.ai.domain.workflow.ConversationWorkflowSnapshot;
 import com.emme.assistant.ai.domain.workflow.ConversationWorkflowStatus;
@@ -10,7 +11,6 @@ import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.CompletionException;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphInput;
@@ -20,18 +20,6 @@ import org.bsc.langgraph4j.state.StateSnapshot;
 
 /** LangGraph4j adapter for the trusted generic conversation workflow boundary. */
 public final class LangGraphConversationWorkflowAdapter implements ConversationWorkflowPort {
-
-  private static final Set<String> STAFF_ROLES =
-      Set.of(
-          "tenant_staff",
-          "tenant_owner",
-          "ROLE_tenant_staff",
-          "ROLE_tenant_owner",
-          "ROLE_STAFF",
-          "ROLE_OWNER",
-          "ROLE_ADMIN",
-          "ROLE_admin",
-          "admin");
 
   private final CompiledGraph<AgentState> graph;
 
@@ -138,7 +126,7 @@ public final class LangGraphConversationWorkflowAdapter implements ConversationW
       throw new IllegalArgumentException("conversationId does not match AI execution context");
     }
     if (command.decision() != ConversationWorkflowDecision.PROVIDE_CLARIFICATION
-        && context.roles().stream().noneMatch(STAFF_ROLES::contains)) {
+        && !AiStaffRolePolicy.isStaff(context.roles())) {
       throw new SecurityException("Staff role is required to resume a conversation workflow");
     }
   }

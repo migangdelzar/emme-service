@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.adapter.out.workflow;
 
+import com.emme.assistant.ai.application.security.AiStaffRolePolicy;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import org.bsc.langgraph4j.RunnableConfig;
 import org.bsc.langgraph4j.checkpoint.BaseCheckpointSaver;
@@ -22,17 +22,6 @@ public final class JdbcLangGraphCheckpointSaver implements BaseCheckpointSaver {
 
   private final JdbcClient jdbc;
   private final ObjectMapper objectMapper;
-  private static final Set<String> STAFF_ROLES =
-      Set.of(
-          "tenant_staff",
-          "tenant_owner",
-          "ROLE_tenant_staff",
-          "ROLE_tenant_owner",
-          "ROLE_STAFF",
-          "ROLE_OWNER",
-          "ROLE_ADMIN",
-          "ROLE_admin",
-          "admin");
 
   public JdbcLangGraphCheckpointSaver(JdbcClient jdbc, ObjectMapper objectMapper) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
@@ -305,7 +294,7 @@ public final class JdbcLangGraphCheckpointSaver implements BaseCheckpointSaver {
   }
 
   private static boolean isStaffReviewer(com.emme.kernel.context.AiExecutionContext context) {
-    return context.roles().stream().anyMatch(STAFF_ROLES::contains);
+    return AiStaffRolePolicy.isStaff(context.roles());
   }
 
   private record WorkflowThread(UUID workflowId, String namespace) {}

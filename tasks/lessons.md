@@ -136,6 +136,16 @@
   every provider boundary before acquiring a connection; do not rely only on
   upstream resolver validation.
 
+## 2026-09-05 — Centralize cross-layer authorization vocabulary
+
+- Failure mode: Equivalent AI staff-role sets were copied into application
+  services and persistence/workflow adapters.
+- Detection signal: A role representation could be added to one path while
+  another path continued rejecting the same authenticated principal.
+- Prevention rule: Keep the authorization vocabulary in one provider-neutral
+  application policy and reuse it for defense-in-depth checks; leave transport
+  annotations at their adapter boundary.
+
 ## 2026-09-04 — Keep test and composition-root signatures synchronized
 
 - Failure mode: A focused wiring test was changed to require a `JdbcClient`

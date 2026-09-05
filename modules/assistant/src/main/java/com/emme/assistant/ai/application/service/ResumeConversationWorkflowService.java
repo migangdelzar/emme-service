@@ -5,13 +5,13 @@ import com.emme.assistant.ai.api.usecase.ResumeConversationWorkflowUseCase;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowFinalizationPort;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowPort;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowReviewAuditPort;
+import com.emme.assistant.ai.application.security.AiStaffRolePolicy;
 import com.emme.assistant.ai.domain.workflow.ConversationWorkflowDecision;
 import com.emme.assistant.ai.domain.workflow.ConversationWorkflowSnapshot;
 import com.emme.assistant.ai.domain.workflow.ConversationWorkflowStatus;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
-import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
@@ -22,18 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 @ConditionalOnBean(ConversationWorkflowPort.class)
 @Transactional
 public class ResumeConversationWorkflowService implements ResumeConversationWorkflowUseCase {
-
-  private static final Set<String> STAFF_ROLES =
-      Set.of(
-          "tenant_staff",
-          "tenant_owner",
-          "ROLE_tenant_staff",
-          "ROLE_tenant_owner",
-          "ROLE_STAFF",
-          "ROLE_OWNER",
-          "ROLE_ADMIN",
-          "ROLE_admin",
-          "admin");
 
   private final ConversationWorkflowPort workflow;
   private final ConversationWorkflowFinalizationPort finalization;
@@ -67,8 +55,7 @@ public class ResumeConversationWorkflowService implements ResumeConversationWork
   public ConversationWorkflowSnapshot resume(ResumeConversationWorkflowCommand command) {
     Objects.requireNonNull(command, "command must not be null");
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
-    if (requiresStaffDecision(command.decision())
-        && context.roles().stream().noneMatch(STAFF_ROLES::contains)) {
+    if (requiresStaffDecision(command.decision()) && !AiStaffRolePolicy.isStaff(context.roles())) {
       throw new SecurityException("Staff role is required to resume a conversation workflow");
     }
     if (!context.workflowId().equals(command.workflowId())) {

@@ -6,6 +6,7 @@ import com.emme.assistant.ai.api.usecase.ReviewQuoteUseCase;
 import com.emme.assistant.ai.application.port.out.QuoteReviewRepository;
 import com.emme.assistant.ai.application.port.out.QuoteWorkflowRepository;
 import com.emme.assistant.ai.application.port.out.QuoteWorkflowResumePort;
+import com.emme.assistant.ai.application.security.AiStaffRolePolicy;
 import com.emme.assistant.ai.domain.workflow.QuoteReviewDecisionType;
 import com.emme.assistant.ai.domain.workflow.QuoteReviewTask;
 import com.emme.assistant.ai.domain.workflow.QuoteWorkflow;
@@ -13,7 +14,6 @@ import com.emme.assistant.ai.domain.workflow.QuoteWorkflowState;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
-import java.util.Set;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,18 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @ConditionalOnProperty(prefix = "app.ai.quote", name = "enabled", havingValue = "true")
 public class ReviewQuoteService implements ReviewQuoteUseCase {
-
-  private static final Set<String> STAFF_ROLES =
-      Set.of(
-          "tenant_staff",
-          "tenant_owner",
-          "ROLE_tenant_staff",
-          "ROLE_tenant_owner",
-          "ROLE_STAFF",
-          "ROLE_OWNER",
-          "ROLE_ADMIN",
-          "ROLE_admin",
-          "admin");
 
   private final QuoteReviewRepository reviews;
   private final QuoteWorkflowRepository workflows;
@@ -53,7 +41,7 @@ public class ReviewQuoteService implements ReviewQuoteUseCase {
   public ReviewQuoteResult review(ReviewQuoteCommand command) {
     Objects.requireNonNull(command, "command must not be null");
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
-    if (context.roles().stream().noneMatch(STAFF_ROLES::contains)) {
+    if (!AiStaffRolePolicy.isStaff(context.roles())) {
       throw new SecurityException("Staff role is required to review a quote");
     }
 

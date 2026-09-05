@@ -180,6 +180,16 @@
 - [ ] Run the PostgreSQL/Testcontainers startup and schema-routing gate when
       Docker is available.
 
+### Current slice — Task 8C shared AI staff-role policy
+
+- [x] Add failing policy characterization tests.
+- [x] Centralize supported staff-role representations in the application
+      security package.
+- [x] Replace duplicated workflow/review/checkpoint role checks.
+- [x] Run assistant tests, compilation, Spotless, and Checkstyle.
+- [ ] Reconcile role vocabulary with the identity authorization contract before
+      changing security token formats.
+
 ### Current slice — Task 21A tenant web fixture ownership
 
 - [x] Add a failing architecture test for tenancy-free `BaseWebTest`.

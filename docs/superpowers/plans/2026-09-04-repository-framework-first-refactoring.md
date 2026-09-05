@@ -1869,6 +1869,24 @@ Completed in this slice:
 - [ ] Run the PostgreSQL/Testcontainers startup and schema-routing gate when
       Docker is available.
 
+#### Current slice 8C — Centralize AI staff-role policy
+
+Completed in this slice:
+
+- The repeated staff-role representation set is now owned by
+  `AiStaffRolePolicy` in the provider-neutral application security package.
+- Quote review, conversation resume, workflow persistence, and LangGraph
+  checkpoint authorization all use that one policy.
+- Controller-level Spring Security annotations remain unchanged; this utility
+  is the defense-in-depth policy used after an authenticated AI context exists.
+
+- [x] Add policy characterization tests for supported and non-staff roles.
+- [x] Replace duplicated role sets in services and adapters.
+- [x] Add package metadata and run assistant tests, compilation, Spotless, and
+      Checkstyle.
+- [ ] Reconcile the role vocabulary with the identity module's eventual
+      centralized authorization contract before changing serialized/auth tokens.
+
 ## 12. Subagent-driven execution protocol
 
 Subagents are the default for independent work, as requested. The coordinator

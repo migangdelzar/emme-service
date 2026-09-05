@@ -1,31 +1,19 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
 import com.emme.assistant.ai.application.port.out.QuoteWorkflowRepository;
+import com.emme.assistant.ai.application.security.AiStaffRolePolicy;
 import com.emme.assistant.ai.domain.workflow.QuoteWorkflow;
 import com.emme.assistant.ai.domain.workflow.QuoteWorkflowState;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /** PostgreSQL adapter for tenant-scoped quote workflow state and optimistic updates. */
 @Component
 public final class JdbcQuoteWorkflowRepository implements QuoteWorkflowRepository {
-
-  private static final Set<String> STAFF_ROLES =
-      Set.of(
-          "tenant_staff",
-          "tenant_owner",
-          "ROLE_tenant_staff",
-          "ROLE_tenant_owner",
-          "ROLE_STAFF",
-          "ROLE_OWNER",
-          "ROLE_ADMIN",
-          "ROLE_admin",
-          "admin");
 
   private final JdbcClient jdbc;
 
@@ -116,7 +104,7 @@ public final class JdbcQuoteWorkflowRepository implements QuoteWorkflowRepositor
   }
 
   private static boolean isStaff(AiExecutionContext context) {
-    return context.roles().stream().anyMatch(STAFF_ROLES::contains);
+    return AiStaffRolePolicy.isStaff(context.roles());
   }
 
   private static String insertSql() {

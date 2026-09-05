@@ -580,7 +580,9 @@
 - [ ] Run PostgreSQL, Redis, Kafka, AGE, and concurrency integration gates when
       Docker is available. Current environment: `docker info` cannot connect
       to `unix:///Users/miguelangeldelgadillozarate/.colima/default/docker.sock`
-      and `colima status` reports that Colima is not running.
+      and `colima status` reports that Colima is not running. A normal
+      `colima start` attempt also failed before VM boot with Lima reporting
+      `failed to run attach disk "colima", in use by instance "colima"`.
 
 ### Current slice — Task 22B convention-owned test fixtures
 

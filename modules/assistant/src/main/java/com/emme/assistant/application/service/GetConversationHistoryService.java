@@ -20,9 +20,7 @@ public class GetConversationHistoryService implements GetConversationHistoryUseC
 
   @Override
   public List<ConversationEventDetails> get(GetConversationHistoryQuery query) {
-    return repository
-        .findByTenantIdAndConversationId(query.tenantId(), query.conversationId())
-        .stream()
+    return repository.findByConversationId(query.conversationId()).stream()
         .map(AssistantApplicationMapper::toResult)
         .toList();
   }

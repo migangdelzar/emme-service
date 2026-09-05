@@ -246,6 +246,17 @@
 - [x] Run affected module tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue reviewing active Calendar and Assistant specialized queries.
 
+### Current slice — Task 18X Assistant conversation-scoped history
+
+- [x] Add adapter tests for latest-event, ordered-history, and active-action
+      reads.
+- [x] Remove redundant tenant predicates from conversation-scoped JPA methods.
+- [x] Preserve sequence ordering and action-status filtering.
+- [x] Keep explicit tenant scope for provider participants, expiration scans,
+      claims, and idempotency boundaries.
+- [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue auditing claim/resume semantics and Calendar provider queries.
+
 ### Push-gate correction — stable contract source scan
 
 - [x] Diagnose the `KafkaEventContractTest` race with Spring Modulith docs.

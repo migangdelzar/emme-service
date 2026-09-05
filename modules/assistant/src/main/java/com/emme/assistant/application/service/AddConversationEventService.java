@@ -28,7 +28,7 @@ public class AddConversationEventService implements AddConversationEventUseCase 
         AssistantServiceSupport.conversation(conversations, command.conversationId());
     int nextSequence =
         events
-            .findLatestByTenantIdAndConversationId(command.tenantId(), command.conversationId())
+            .findLatestByConversationId(command.conversationId())
             .map(event -> event.sequenceNumber() + 1)
             .orElse(1);
     return AssistantApplicationMapper.toResult(

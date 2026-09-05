@@ -99,7 +99,7 @@ class AssistantPackageConventionTest {
   }
 
   @Test
-  void usesConnectionScopedAggregateLookupsAndExplicitlyScopedChildQueries() throws Exception {
+  void usesConnectionScopedAggregateAndConversationLookups() throws Exception {
     String conversationPort =
         Files.readString(ROOT.resolve("application/port/out/ConversationRepository.java"));
     String conversationAdapter =
@@ -123,11 +123,23 @@ class AssistantPackageConventionTest {
     assertThat(conversationPort).doesNotContain("findByTenantIdAndId(");
     assertThat(conversationAdapter).contains("repository.findById(");
     assertThat(conversationAdapter).doesNotContain("findByTenantIdAndId(");
-    assertThat(eventPort).contains("tenantId");
-    assertThat(eventAdapter).contains("tenantId");
+    assertThat(eventPort)
+        .contains("findLatestByConversationId(UUID conversationId)")
+        .contains("findByConversationId(UUID conversationId)")
+        .doesNotContain("findLatestByTenantIdAndConversationId")
+        .doesNotContain("findByTenantIdAndConversationId");
+    assertThat(eventAdapter)
+        .contains("findTopByConversationIdOrderBySequenceNumberDesc")
+        .contains("findByConversationIdOrderBySequenceNumberAsc")
+        .doesNotContain("findTopByTenantIdAndConversationId")
+        .doesNotContain("findByTenantIdAndConversationId");
     assertThat(actionPort).contains("findById(UUID actionId)");
+    assertThat(actionPort).contains("findByConversationIdAndStatus");
+    assertThat(actionPort).doesNotContain("findByTenantIdAndConversationId");
     assertThat(actionPort).doesNotContain("findByTenantIdAndId(");
     assertThat(actionAdapter).contains("repository.findById(");
+    assertThat(actionAdapter).contains("repository.findByConversationIdAndStatus");
+    assertThat(actionAdapter).doesNotContain("repository.findByTenantIdAndConversationId");
     assertThat(actionAdapter).doesNotContain("findByTenantIdAndId(");
     assertThat(controller).contains("withCurrentTenant");
     assertThat(controller).contains("new GetConversationQuery(tenantId, id)");

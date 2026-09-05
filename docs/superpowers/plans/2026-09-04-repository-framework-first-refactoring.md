@@ -1602,6 +1602,24 @@ capability that the application does not expose.
 - [x] Remove unused derived methods and imports.
 - [x] Run Services, Salon, Assistant, and Identity quality gates.
 
+#### Current slice 18X — Use schema-local Assistant conversation queries
+
+Conversation history and active pending-action reads execute through the
+tenant-selected schema connection. Their existing ordering and status
+predicates remain, but the redundant tenant predicate is removed from the
+provider-neutral ports, adapters, and Spring Data repositories. Tenant IDs
+remain in commands/domain records for RLS, event payloads, authorization, and
+cross-tenant expiration/claim workflows; those specialized operations are not
+collapsed into ordinary schema-local reads.
+
+- [x] Add adapter tests for latest-event, ordered-history, and active-action
+      reads.
+- [x] Replace tenant-qualified conversation event methods with
+      `findLatestByConversationId` and `findByConversationId`.
+- [x] Replace the tenant-qualified active-action method with
+      `findByConversationIdAndStatus`.
+- [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
+
 #### Tenant isolation boundary correction
 
 `TenantDatabasePoolProvider` caches pools by `databaseId`, not by tenant schema.
@@ -1625,7 +1643,7 @@ dynamic provisioning. The application ports remain provider-neutral throughout.
 | Subscription singleton lookup | Converted | `TenantActivated` and web boundaries establish tenant context before access; schema-local JPA `findFirstByOrderByCreatedAtAsc()` replaces the redundant tenant predicate. |
 | Calendar unused tenant list queries | Removed | No application caller used the methods; deleting them reduces Spring Data surface area without changing active provider/state contracts. |
 | Unused tenant-list declarations in Services/Salon/Assistant/Identity | Removed | The methods had no callers or application-port capability; active relationship, preference, participant, and authorization lookups remain intact. |
-| Assistant conversation aggregate listing | Converted | Generic conversation listing now uses schema-local JPA `findAll()`; event history, pending-action claims, expiration, and provider-channel lookups remain explicit and require a separate ordering/claim audit. |
+| Assistant conversation aggregate and conversation-scoped reads | Converted | Conversation listing, ordered event history, and active-action reads now use schema-local JPA methods; expiration scans, claims/idempotency, and provider-channel lookups remain explicit for their cross-request or business-key semantics. |
 | Documents metadata and chunks | Converted | Document listing, chunk-by-document, chunk-by-ID, and replacement delete now use schema-local JPA methods; the document search projection still keeps explicit tenant scope. |
 | Catalog item metadata and ranked hydration | Converted | Catalog listing uses `findAll()` and ranked hydration uses `findAllById(...)`; shared vector/full-text search remains explicitly tenant-scoped. |
 | Notification and payment history listing | Converted | Ordinary tenant-schema lists use JPA `findAll()`; notification/payment provider-reference and callback operations retain explicit tenant/business-key scope. |

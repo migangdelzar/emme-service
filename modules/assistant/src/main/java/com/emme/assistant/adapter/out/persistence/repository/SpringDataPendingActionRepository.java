@@ -11,8 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SpringDataPendingActionRepository
     extends JpaRepository<PendingActionEntity, UUID> {
-  List<PendingActionEntity> findByTenantIdAndConversationIdAndStatus(
-      UUID tenantId, UUID conversationId, ActionStatus status);
+  List<PendingActionEntity> findByConversationIdAndStatus(UUID conversationId, ActionStatus status);
 
   List<PendingActionEntity> findByExpiresAtBeforeAndStatus(Instant now, ActionStatus status);
 }

@@ -28,7 +28,7 @@ public class ServicePersistenceAdapter implements ServiceRepository {
     ServiceEntity entity =
         service.getId() == null
             ? mapper.toNewEntity(service)
-            : repository.findById(service.getId()).orElseThrow();
+            : repository.findByTenantIdAndId(service.getTenantId(), service.getId()).orElseThrow();
     mapper.updateEntity(service, entity);
     return mapper.toDomain(repository.save(entity));
   }

@@ -1238,6 +1238,21 @@ provider-neutral boundaries intact.
 - [x] Verify no salon update path uses unscoped `findById`.
 - [ ] Continue the same evidence-based review across remaining entity modules.
 
+#### Current slice 18E — Enforce tenant scope on service-catalog updates
+
+The services module already uses Spring Data JPA for artist and service CRUD,
+but existing-record updates used generic `findById` even though both domain
+aggregates are tenant-owned. The adapters now use derived JPA lookups combining
+tenant and aggregate identity. This keeps the application ports stable, avoids
+introducing SQL for ordinary CRUD, and prevents an update from selecting an
+aggregate outside its tenant scope.
+
+- [x] Add adapter coverage for artist and service existing-record updates.
+- [x] Add tenant-qualified derived queries to the artist and service repositories.
+- [x] Update both adapter update branches to use tenant and aggregate ID.
+- [x] Run focused services tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue the same evidence-based review across remaining entity modules.
+
 - [ ] **Step 1: Write failing per-module persistence tests**
 
 Use the same create/find/list/update/not-found/tenant/version/idempotency matrix

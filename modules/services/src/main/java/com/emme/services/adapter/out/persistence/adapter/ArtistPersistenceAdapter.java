@@ -27,7 +27,7 @@ public class ArtistPersistenceAdapter implements ArtistRepository {
     ArtistEntity entity =
         artist.getId() == null
             ? mapper.toNewEntity(artist)
-            : repository.findById(artist.getId()).orElseThrow();
+            : repository.findByTenantIdAndId(artist.getTenantId(), artist.getId()).orElseThrow();
     mapper.updateEntity(artist, entity);
     return mapper.toDomain(repository.save(entity));
   }

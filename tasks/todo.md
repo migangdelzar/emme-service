@@ -82,7 +82,15 @@
 - [x] Replace unscoped JPA `findById` with derived tenant-qualified queries.
 - [x] Keep salon application ports provider-neutral and unchanged.
 - [x] Run the focused salon adapter test.
-- [ ] Run the broader salon module quality gates and commit the slice.
+- [x] Run the broader salon module quality gates and commit the slice.
+
+### Current slice — Task 18E services tenant-scoped updates
+
+- [x] Add adapter tests for artist and service existing-record updates.
+- [x] Replace unscoped JPA `findById` with derived tenant-qualified queries.
+- [x] Keep services application ports provider-neutral and unchanged.
+- [x] Run focused tests, compilation, Checkstyle, and Spotless.
+- [ ] Commit and push the services slice.
 
 ### Plan working notes
 

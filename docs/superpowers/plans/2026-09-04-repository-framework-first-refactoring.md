@@ -1444,6 +1444,19 @@ aggregate listing operations.
 - [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
 
+#### Current slice 18T — Remove tenant predicates from Google Sheets listing
+
+The Sheets controller already requires an authenticated tenant context, and
+the list operation executes through the tenant-selected connection. The query
+port and JPA adapter now use `findAll()`; tenant-qualified spreadsheet lookup
+for re-export remains explicit because it resolves a provider/business key.
+
+- [x] Add adapter contract coverage for schema-local spreadsheet listing.
+- [x] Replace the tenant-qualified list method with inherited JPA `findAll()`.
+- [x] Keep the controller tenant-context requirement and provider-key lookup.
+- [x] Run Calendar tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
+
 #### Current slice 18E — Use ID-only service-catalog updates
 
 Artist and service CRUD is already expressed cleanly with Spring Data JPA. The

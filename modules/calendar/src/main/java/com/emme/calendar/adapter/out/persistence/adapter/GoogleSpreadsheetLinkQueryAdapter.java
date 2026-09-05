@@ -5,7 +5,6 @@ import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleSpre
 import com.emme.calendar.api.result.GoogleSpreadsheetDetails;
 import com.emme.calendar.application.port.out.GoogleSpreadsheetLinkQueryPort;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,7 +19,7 @@ public class GoogleSpreadsheetLinkQueryAdapter implements GoogleSpreadsheetLinkQ
   }
 
   @Override
-  public List<GoogleSpreadsheetDetails> findByTenantId(UUID tenantId) {
-    return repository.findByTenantId(tenantId).stream().map(mapper::toResult).toList();
+  public List<GoogleSpreadsheetDetails> findAll() {
+    return repository.findAll().stream().map(mapper::toResult).toList();
   }
 }

@@ -204,6 +204,14 @@
 - [x] Run Assistant tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue reviewing remaining tenant-schema list/search methods.
 
+### Current slice — Task 18T Google Sheets listing
+
+- [x] Add an adapter test for tenant-schema spreadsheet listing.
+- [x] Replace the tenant-qualified JPA list with `findAll()`.
+- [x] Preserve tenant context enforcement and provider-key re-export lookup.
+- [x] Run Calendar tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue reviewing remaining tenant-schema list/search methods.
+
 ### Tenant schema routing decision
 
 - [x] Apply tenant schema and session configuration when a connection is taken

@@ -68,8 +68,8 @@ public class SheetsController {
       "@featureFlagService.isEnabled('google_workspace') and @featureFlagService.isEnabled('google_sheets_export')")
   @Operation(summary = "List exported spreadsheets")
   public ResponseEntity<Object> list() {
-    UUID tenantId = TenantContextHolder.requireCurrentTenantId();
-    return ResponseEntity.ok(sheetLinks.findByTenantId(tenantId));
+    TenantContextHolder.requireCurrentTenantId();
+    return ResponseEntity.ok(sheetLinks.findAll());
   }
 
   public record ExportRequest(String exportType) {}

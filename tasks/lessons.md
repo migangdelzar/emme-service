@@ -1,5 +1,15 @@
 # Engineering lessons
 
+## 2026-09-05 — Externalized event consumers cannot depend on request security
+
+- Failure mode: An externalized appointment consumer read `SecurityContext` to
+  decide whether to establish customer membership.
+- Detection signal: A replay-style test with no authentication performed no
+  membership action even though the event carried the customer identity.
+- Prevention rule: Durable event consumers must use authoritative event data
+  and provider-neutral idempotent use cases; request-local authentication is
+  not available during Kafka/Modulith replay.
+
 ## 2026-09-05 — Do not walk mutable build output in source contract tests
 
 - Failure mode: A repository-wide contract test walked a whole project tree

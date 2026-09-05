@@ -3,13 +3,9 @@ package com.emme.identity.adapter.in.messaging.consumer;
 import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.identity.api.command.EnsureCustomerMembershipCommand;
 import com.emme.identity.api.usecase.EnsureCustomerMembershipUseCase;
-import java.util.UUID;
-import org.springframework.context.event.EventListener;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
-/** Starts customer membership establishment when a customer creates an appointment. */
+/** Starts idempotent customer membership establishment from the durable appointment fact. */
 @Component
 public class AppointmentCreatedConsumer {
 
@@ -19,18 +15,10 @@ public class AppointmentCreatedConsumer {
     this.ensureCustomerMembership = ensureCustomerMembership;
   }
 
-  @EventListener
+  @org.springframework.modulith.events.ApplicationModuleListener(
+      id = "identity.appointment-created-membership")
   public void on(AppointmentCreated event) {
-    var authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
-      return;
-    }
-    if (!"CUSTOMER".equals(jwt.getClaimAsString("role"))) {
-      return;
-    }
-
-    UUID customerId = UUID.fromString(jwt.getSubject());
     ensureCustomerMembership.ensure(
-        new EnsureCustomerMembershipCommand(customerId, event.tenantId()));
+        new EnsureCustomerMembershipCommand(event.customerId(), event.tenantId()));
   }
 }

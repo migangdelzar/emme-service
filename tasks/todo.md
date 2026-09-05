@@ -475,6 +475,15 @@
 - [x] Verify enqueue, processing, idempotency, and context-rebinding tests.
 - [ ] Continue listener duplicate-delivery and Kafka externalization coverage.
 
+### Current slice — Task 19C externalized appointment replay
+
+- [x] Add a failing replay test with no `SecurityContext`.
+- [x] Make the Identity appointment consumer use the event's authoritative
+      customer identity instead of request-local authentication.
+- [x] Give the listener a stable Modulith listener identifier.
+- [x] Keep membership creation idempotent through the existing use-case port.
+- [ ] Continue duplicate-delivery coverage and live Kafka replay checks.
+
 
 - User requested subagent-driven execution when work can be safely parallelized.
 - Shared contracts, Liquibase migrations, version catalog, and composition-root

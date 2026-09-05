@@ -4,7 +4,7 @@
 |---|---|
 | Design | [`2026-09-03-repository-framework-first-refactoring-design.md`](../specs/2026-09-03-repository-framework-first-refactoring-design.md) |
 | Plan | [`2026-09-04-repository-framework-first-refactoring.md`](../plans/2026-09-04-repository-framework-first-refactoring.md) |
-| Status | Phase A guardrails, AI contract slice, and tenancy membership/subscription slice implemented; remaining waves pending |
+| Status | Phase A guardrails, AI contract slice, tenancy membership/subscription slice, and Calendar tenant-context slice implemented; remaining waves pending |
 | Owner | Backend architecture / `eng` |
 | Rule | Every replacement must preserve behavior, pass focused tests, and satisfy its deletion condition before the old path is removed |
 
@@ -165,7 +165,22 @@ connection lifecycle APIs that are not CRUD repositories.
 | `modules/ai-platform/src/main/java/com/emme/ai/platform/learning/JdbcLearningCandidateStateStore.java` | JdbcClient survivor: atomic claim | Versioned status transition on `ai_learning_candidate` | Expected-version conditional update is one atomic state transition; a JPA read-modify-write would widen the race window | Candidate identity is checked against the bound tenant context before transition | `LearningCandidateStateStore` / `JdbcLearningCandidateStateStore` | `JdbcLearningCandidateStateStoreTest` |
 | `modules/ai-platform/src/main/java/com/emme/ai/platform/learning/JdbcLearningCandidateEvaluationStore.java` | JdbcClient survivor: JSONB/idempotent insert | `ai_learning_candidate_evaluation` versioned evidence and metrics JSONB | FK-guarded unique evaluation upsert avoids duplicate evaluation rows | Tenant is supplied from the bound context and protected by RLS | `LearningCandidateEvaluationStore` / `JdbcLearningCandidateEvaluationStore` | `JdbcLearningCandidateEvaluationStoreTest` |
 
+The Salon notification-preference entity and repository remain an inventory
+item, but are currently dormant: repository search found no application port,
+adapter, service, or test caller. They are not deleted in this wave because the
+database table and decomposition ADR still describe the capability; deletion
+requires an explicit product/schema decision rather than a persistence-query
+cleanup. If activated under tenant-schema routing, its `(tenant_id, channel)`
+lookup should become a schema-local `findByChannel` contract.
+
 ## 4. Other framework-first inventories
+
+### 4.0.1 Externalized event replay decisions
+
+| Boundary | Status | Decision |
+|---|---|---|
+| Identity appointment membership consumer | Replacement tested | Consume `customerId` and `tenantId` from the externalized `AppointmentCreated` fact; do not require request-local `SecurityContext`. The existing membership use case provides idempotent duplicate handling. |
+| Calendar staff synchronization listener | Replacement tested | Restore the event tenant context before schema-local JPA access and keep failure marking inside that context. |
 
 ### 4.0 Tenant-qualified lookup decisions
 
@@ -175,7 +190,8 @@ connection lifecycle APIs that are not CRUD repositories.
 | Subscription existing aggregate save | Replacement tested | Use connection-scoped `findById`; retain tenant-keyed singleton lookup for provisioning and reads. |
 | Identity membership | Keep explicit scope | Shared `emme_core` persistence and cross-tenant authorization require `tenant_id` in the lookup contract. |
 | Calendar event links by appointment | Classified/deferred | Appointment is a foreign business key and multiple provider links are allowed; redesign cardinality/idempotency before changing the query. |
-| Calendar OAuth tokens and spreadsheet links | Keep explicit scope | Tenant/user/persona or tenant/spreadsheet business keys select external credentials/resources. |
+| Calendar OAuth tokens | Replacement tested | Durable staff sync restores the event tenant context and enumerates schema-local tokens with JPA `findAll()`; interactive user/persona selection remains explicit. |
+| Calendar spreadsheet links | Keep explicit scope | Tenant/spreadsheet business keys select external resources. |
 
 ### 4.1 Provider HTTP candidates
 

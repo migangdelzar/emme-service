@@ -144,6 +144,18 @@
       tenant connection routing.
 - [x] Run focused configuration tests and assistant compilation.
 
+### Current slice — Task 13B tenant resolver dependency injection
+
+- [x] Write the red resolver/configuration tests against constructor-injected
+      `JdbcClient` dependencies.
+- [x] Remove `ApplicationContextProvider` lookup from
+      `TenantIdentifierResolver`.
+- [x] Wire the qualified `bootstrapJdbcClient` through
+      `TenantDataSourceConfiguration`.
+- [x] Run tenancy tests, compilation, Checkstyle, and Spotless.
+- [ ] Audit `SchemaMultiTenantConnectionProvider` as a separate lifecycle
+      boundary before removing its static provider lookup.
+
 ### Current slice — Task 21A tenant web fixture ownership
 
 - [x] Add a failing architecture test for tenancy-free `BaseWebTest`.

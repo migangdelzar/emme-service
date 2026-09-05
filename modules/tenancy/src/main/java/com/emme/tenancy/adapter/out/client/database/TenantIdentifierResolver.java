@@ -2,6 +2,7 @@ package com.emme.tenancy.adapter.out.client.database;
 
 import com.emme.kernel.context.TenantContext;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
@@ -14,10 +15,11 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
   private static final Logger log = LoggerFactory.getLogger(TenantIdentifierResolver.class);
   private static final String CORE_SCHEMA = "emme_core";
 
+  private final JdbcClient bootstrapJdbc;
   private final Map<UUID, String> schemaCache = new ConcurrentHashMap<>();
 
-  private JdbcClient bootstrapJdbc() {
-    return ApplicationContextProvider.get().getBean("bootstrapJdbcClient", JdbcClient.class);
+  public TenantIdentifierResolver(JdbcClient bootstrapJdbc) {
+    this.bootstrapJdbc = Objects.requireNonNull(bootstrapJdbc, "bootstrapJdbc must not be null");
   }
 
   @Override
@@ -32,7 +34,7 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
   private String lookupSchemaName(UUID tenantId) {
     try {
       String schemaName =
-          bootstrapJdbc()
+          bootstrapJdbc
               .sql(
                   "SELECT schema_name FROM emme_core.tenant_registry "
                       + "WHERE tenant_id = CAST(:tenantId AS uuid)")

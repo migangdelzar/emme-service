@@ -978,6 +978,23 @@ not alter transaction propagation, database isolation, or tenant/RLS policy.
 - [x] Keep `JdbcTemplate` only for the raw managed connection callback.
 - [x] Run the focused resolver test and tenancy formatting checks.
 
+#### Current slice 13B — Inject the bootstrap client into tenant resolution
+
+`TenantIdentifierResolver` now receives the named `bootstrapJdbcClient` through
+its constructor. The resolver no longer reaches into
+`ApplicationContextProvider` to locate infrastructure at runtime, so the
+Hibernate boundary is explicit and directly testable. `TenantDataSourceConfiguration`
+remains the composition root for this adapter and wires the same dedicated
+bootstrap client into the resolver; the tenant-scoped data source and
+connection-checkout schema selection are unchanged.
+
+- [x] Write the red test using constructor-injected `JdbcClient` fakes.
+- [x] Remove the resolver's static application-context lookup.
+- [x] Wire the qualified bootstrap client in the tenant data-source factory.
+- [x] Verify focused tests, compilation, Checkstyle, and Spotless.
+- [ ] Audit `SchemaMultiTenantConnectionProvider` separately before changing
+      its remaining lifecycle fallback lookup.
+
 ## 8. Phase F — External provider clients
 
 ### Task 14: Establish the typed HTTP client convention

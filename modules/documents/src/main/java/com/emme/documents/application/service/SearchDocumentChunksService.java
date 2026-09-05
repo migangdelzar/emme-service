@@ -8,6 +8,7 @@ import com.emme.documents.application.port.out.DocumentRepository;
 import com.emme.documents.application.port.out.DocumentSearchHit;
 import com.emme.documents.application.port.out.DocumentSearchPort;
 import com.emme.documents.domain.model.DocumentChunk;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -32,8 +33,15 @@ public class SearchDocumentChunksService implements SearchDocumentChunksUseCase 
   public List<DocumentChunkDetails> search(SearchDocumentChunksQuery query) {
     List<DocumentSearchHit> hits =
         search.search(query.tenantId(), query.queryVector(), query.queryText(), query.limit());
-    List<java.util.UUID> chunkIds =
-        hits.stream().map(DocumentSearchHit::chunkId).distinct().toList();
+    Map<java.util.UUID, Double> scoresByChunkId =
+        hits.stream()
+            .collect(
+                Collectors.toMap(
+                    DocumentSearchHit::chunkId,
+                    DocumentSearchHit::score,
+                    (first, duplicate) -> first,
+                    LinkedHashMap::new));
+    List<java.util.UUID> chunkIds = scoresByChunkId.keySet().stream().toList();
     if (chunkIds.isEmpty()) {
       return List.of();
     }
@@ -44,7 +52,7 @@ public class SearchDocumentChunksService implements SearchDocumentChunksUseCase 
     return chunkIds.stream()
         .map(chunksById::get)
         .filter(java.util.Objects::nonNull)
-        .map(DocumentApplicationMapper::toResult)
+        .map(chunk -> DocumentApplicationMapper.toResult(chunk, scoresByChunkId.get(chunk.id())))
         .toList();
   }
 }

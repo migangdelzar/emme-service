@@ -45,6 +45,7 @@ class SearchDocumentChunksServiceTest {
     assertThat(results)
         .extracting(DocumentChunkDetails::id)
         .containsExactly(secondChunkId, firstChunkId);
+    assertThat(results).extracting(DocumentChunkDetails::score).containsExactly(0.9, 0.7);
     verify(search).search(tenantId, List.of(0.25f), "pricing", 5);
     verify(repository).findChunksByIds(List.of(secondChunkId, firstChunkId));
   }

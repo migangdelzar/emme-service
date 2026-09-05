@@ -62,7 +62,7 @@ class DocumentKnowledgeRetrievalAdapterTest {
         .thenReturn(
             List.of(
                 new com.emme.documents.api.result.DocumentChunkDetails(
-                    UUID.randomUUID(), documentId, 0, "The answer is here.", "fingerprint")));
+                    UUID.randomUUID(), documentId, 0, "The answer is here.", "fingerprint", 0.92)));
     DocumentKnowledgeRetrievalAdapter adapter =
         new DocumentKnowledgeRetrievalAdapter(
             legacyModel,
@@ -85,6 +85,7 @@ class DocumentKnowledgeRetrievalAdapterTest {
             document -> {
               assertThat(document.sourceId()).isEqualTo(documentId.toString());
               assertThat(document.content()).isEqualTo("The answer is here.");
+              assertThat(document.score()).isEqualTo(0.92);
             });
     ArgumentCaptor<com.emme.documents.api.query.SearchDocumentChunksQuery> query =
         ArgumentCaptor.forClass(com.emme.documents.api.query.SearchDocumentChunksQuery.class);

@@ -71,7 +71,10 @@ public final class DocumentKnowledgeRetrievalAdapter implements KnowledgeRetriev
         .map(
             chunk ->
                 new RetrievedDocument(
-                    chunk.documentId().toString(), chunk.content(), java.util.Map.of(), 0.0))
+                    chunk.documentId().toString(),
+                    chunk.content(),
+                    java.util.Map.of(),
+                    chunk.score()))
         .toList();
   }
 

@@ -21,11 +21,16 @@ public final class DocumentApplicationMapper {
   }
 
   public static DocumentChunkDetails toResult(DocumentChunk chunk) {
+    return toResult(chunk, 0.0);
+  }
+
+  public static DocumentChunkDetails toResult(DocumentChunk chunk, double score) {
     return new DocumentChunkDetails(
         chunk.id(),
         chunk.documentId(),
         chunk.chunkIndex(),
         chunk.content(),
-        chunk.contentFingerprint());
+        chunk.contentFingerprint(),
+        score);
   }
 }

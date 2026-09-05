@@ -22,7 +22,7 @@ public class GetOperatingHoursService implements GetOperatingHoursUseCase {
 
   @Override
   public List<OperatingHoursDetails> get(UUID tenantId) {
-    return repository.findByTenantId(tenantId).stream()
+    return repository.findAll().stream()
         .map(BusinessConfigurationApplicationMapper::toDetails)
         .toList();
   }

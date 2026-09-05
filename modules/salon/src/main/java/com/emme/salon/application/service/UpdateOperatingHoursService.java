@@ -29,7 +29,7 @@ public class UpdateOperatingHoursService implements UpdateOperatingHoursUseCase 
     DayOfWeek domainDay = DayOfWeek.valueOf(day.name());
     OperatingHours hours =
         repository
-            .findByTenantIdAndDayOfWeek(tenantId, domainDay)
+            .findByDayOfWeek(domainDay)
             .orElse(new OperatingHours(tenantId, domainDay, opensAt, closesAt));
     hours.update(opensAt, closesAt, active);
     return BusinessConfigurationApplicationMapper.toDetails(repository.save(hours));

@@ -22,7 +22,7 @@ public class GetBusinessProfileService implements GetBusinessProfileUseCase {
   @Override
   public Optional<BusinessProfileSummary> getBusinessProfile(UUID tenantId) {
     return profileRepository
-        .findByTenantId(tenantId)
+        .find()
         .map(p -> new BusinessProfileSummary(p.getTenantId(), p.getDisplayName(), p.getLocale()));
   }
 }

@@ -125,6 +125,16 @@
       Spotless.
 - [x] Commit and push the appointments slice.
 
+### Current slice — Task 18K Salon schema-local reads
+
+- [x] Add adapter tests for profile, policy, and operating-hours reads without
+      tenant predicates.
+- [x] Replace tenant-qualified JPA derived queries with singleton/day queries.
+- [x] Update Salon services and appointment availability lookup.
+- [x] Run Salon and appointments tests, compilation, and Spotless.
+- [ ] Continue the same operation-by-operation review for remaining tenant-schema
+      list/search methods.
+
 ### Tenant schema routing decision
 
 - [x] Apply tenant schema and session configuration when a connection is taken

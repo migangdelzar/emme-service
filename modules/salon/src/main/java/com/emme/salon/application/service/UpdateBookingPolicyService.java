@@ -25,7 +25,7 @@ public class UpdateBookingPolicyService implements UpdateBookingPolicyUseCase {
       UUID tenantId, int minNotice, int maxAdvance, int cancelWindow, boolean allowOverlap) {
     BookingPolicy policy =
         repository
-            .findByTenantId(tenantId)
+            .find()
             .orElse(new BookingPolicy(tenantId, minNotice, maxAdvance, cancelWindow, allowOverlap));
     policy.update(minNotice, maxAdvance, cancelWindow, allowOverlap);
     return BusinessConfigurationApplicationMapper.toDetails(repository.save(policy));

@@ -6,7 +6,6 @@ import com.emme.salon.adapter.out.persistence.repository.SpringDataBookingPolicy
 import com.emme.salon.application.port.out.BookingPolicyRepository;
 import com.emme.salon.domain.model.BookingPolicy;
 import java.util.Optional;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /** Implements the booking-policy persistence port using Spring Data JPA. */
@@ -32,7 +31,7 @@ public class BookingPolicyPersistenceAdapter implements BookingPolicyRepository 
   }
 
   @Override
-  public Optional<BookingPolicy> findByTenantId(UUID tenantId) {
-    return repository.findByTenantId(tenantId).map(mapper::toDomain);
+  public Optional<BookingPolicy> find() {
+    return repository.findFirstByOrderByCreatedAtAsc().map(mapper::toDomain);
   }
 }

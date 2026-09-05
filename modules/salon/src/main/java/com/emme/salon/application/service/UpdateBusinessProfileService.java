@@ -24,9 +24,7 @@ public class UpdateBusinessProfileService implements UpdateBusinessProfileUseCas
   public BusinessProfileDetails update(
       UUID tenantId, String displayName, String timeZone, String locale) {
     BusinessProfile profile =
-        repository
-            .findByTenantId(tenantId)
-            .orElse(new BusinessProfile(tenantId, timeZone, locale, displayName));
+        repository.find().orElse(new BusinessProfile(tenantId, timeZone, locale, displayName));
     profile.update(timeZone, locale, displayName);
     return BusinessConfigurationApplicationMapper.toDetails(repository.save(profile));
   }

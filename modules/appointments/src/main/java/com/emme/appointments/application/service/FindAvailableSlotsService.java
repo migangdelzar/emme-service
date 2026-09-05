@@ -75,8 +75,7 @@ public class FindAvailableSlotsService implements FindAvailableSlotsUseCase {
   }
 
   private Optional<OperatingHours> findHours(UUID tenantId, LocalDate date) {
-    return operatingHoursRepository.findByTenantIdAndDayOfWeek(
-        tenantId, toStudioDayOfWeek(date.getDayOfWeek()));
+    return operatingHoursRepository.findByDayOfWeek(toStudioDayOfWeek(date.getDayOfWeek()));
   }
 
   private DayOfWeek toStudioDayOfWeek(java.time.DayOfWeek javaDay) {

@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SpringDataBookingPolicyRepository
     extends JpaRepository<BookingPolicyEntity, UUID> {
-  Optional<BookingPolicyEntity> findByTenantId(UUID tenantId);
+  Optional<BookingPolicyEntity> findFirstByOrderByCreatedAtAsc();
 }

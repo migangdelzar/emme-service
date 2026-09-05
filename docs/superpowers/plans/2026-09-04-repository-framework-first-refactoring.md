@@ -1317,6 +1317,20 @@ second tenant argument to provider-neutral repository implementations.
 - [x] Update all three adapter update branches to use `findById`.
 - [x] Verify the focused salon adapter tests.
 
+#### Current slice 18K — Remove tenant predicates from Salon schema-local reads
+
+The tenant connection is selected before Salon persistence executes. Profile and
+booking policy are tenant-local singletons, while operating hours are keyed by
+day within that schema. Their JPA reads therefore use singleton/day queries
+without repeating `tenantId`; tenant IDs remain in domain state and application
+commands for authorization, creation, and response mapping.
+
+- [x] Add adapter contract coverage for schema-local profile, policy, and day reads.
+- [x] Replace tenant-qualified Spring Data methods with singleton/day methods.
+- [x] Update Salon application services and appointment availability lookup.
+- [x] Run Salon and appointment tests plus Spotless.
+- [ ] Apply the same operation-by-operation review to remaining tenant-schema lists.
+
 #### Current slice 18E — Use ID-only service-catalog updates
 
 Artist and service CRUD is already expressed cleanly with Spring Data JPA. The

@@ -22,6 +22,48 @@ import org.junit.jupiter.api.Test;
 class SalonTenantScopedUpdateTest {
 
   @Test
+  void findsTheBusinessProfileFromTheCurrentTenantSchema() {
+    SpringDataBusinessProfileRepository repository = org.mockito.Mockito.mock();
+    BusinessProfilePersistenceAdapter adapter = new BusinessProfilePersistenceAdapter(repository);
+    BusinessProfileEntity entity =
+        new BusinessProfileEntity(UUID.randomUUID(), "UTC", "en-US", "Salon");
+    when(repository.findFirstByOrderByCreatedAtAsc()).thenReturn(Optional.of(entity));
+
+    Optional<BusinessProfile> profile = adapter.find();
+
+    verify(repository).findFirstByOrderByCreatedAtAsc();
+    assertThat(profile).isPresent();
+  }
+
+  @Test
+  void findsTheBookingPolicyFromTheCurrentTenantSchema() {
+    SpringDataBookingPolicyRepository repository = org.mockito.Mockito.mock();
+    BookingPolicyPersistenceAdapter adapter = new BookingPolicyPersistenceAdapter(repository);
+    BookingPolicyEntity entity = new BookingPolicyEntity(UUID.randomUUID(), 60, 30, 120, false);
+    when(repository.findFirstByOrderByCreatedAtAsc()).thenReturn(Optional.of(entity));
+
+    Optional<BookingPolicy> policy = adapter.find();
+
+    verify(repository).findFirstByOrderByCreatedAtAsc();
+    assertThat(policy).isPresent();
+  }
+
+  @Test
+  void findsOperatingHoursByDayFromTheCurrentTenantSchema() {
+    SpringDataOperatingHoursRepository repository = org.mockito.Mockito.mock();
+    OperatingHoursPersistenceAdapter adapter = new OperatingHoursPersistenceAdapter(repository);
+    OperatingHoursEntity entity =
+        new OperatingHoursEntity(
+            UUID.randomUUID(), DayOfWeek.MON, LocalTime.of(9, 0), LocalTime.of(17, 0));
+    when(repository.findByDayOfWeek(DayOfWeek.MON)).thenReturn(Optional.of(entity));
+
+    Optional<OperatingHours> hours = adapter.findByDayOfWeek(DayOfWeek.MON);
+
+    verify(repository).findByDayOfWeek(DayOfWeek.MON);
+    assertThat(hours).isPresent();
+  }
+
+  @Test
   void updatesBookingPolicyByIdWithinTheTenantScopedConnection() {
     SpringDataBookingPolicyRepository repository = org.mockito.Mockito.mock();
     BookingPolicyPersistenceAdapter adapter = new BookingPolicyPersistenceAdapter(repository);

@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SpringDataBusinessProfileRepository
     extends JpaRepository<BusinessProfileEntity, UUID> {
-  Optional<BusinessProfileEntity> findByTenantId(UUID tenantId);
+  Optional<BusinessProfileEntity> findFirstByOrderByCreatedAtAsc();
 }

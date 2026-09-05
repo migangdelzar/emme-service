@@ -6,7 +6,6 @@ import com.emme.salon.adapter.out.persistence.repository.SpringDataBusinessProfi
 import com.emme.salon.application.port.out.BusinessProfileRepository;
 import com.emme.salon.domain.model.BusinessProfile;
 import java.util.Optional;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /** Implements the business-profile persistence port using Spring Data JPA. */
@@ -32,7 +31,7 @@ public class BusinessProfilePersistenceAdapter implements BusinessProfileReposit
   }
 
   @Override
-  public Optional<BusinessProfile> findByTenantId(UUID tenantId) {
-    return repository.findByTenantId(tenantId).map(mapper::toDomain);
+  public Optional<BusinessProfile> find() {
+    return repository.findFirstByOrderByCreatedAtAsc().map(mapper::toDomain);
   }
 }

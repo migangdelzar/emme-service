@@ -8,7 +8,6 @@ import com.emme.salon.domain.model.DayOfWeek;
 import com.emme.salon.domain.model.OperatingHours;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /** Implements the operating-hours port using Spring Data JPA. */
@@ -34,12 +33,12 @@ public class OperatingHoursPersistenceAdapter implements OperatingHoursRepositor
   }
 
   @Override
-  public Optional<OperatingHours> findByTenantIdAndDayOfWeek(UUID tenantId, DayOfWeek dayOfWeek) {
-    return repository.findByTenantIdAndDayOfWeek(tenantId, dayOfWeek).map(mapper::toDomain);
+  public Optional<OperatingHours> findByDayOfWeek(DayOfWeek dayOfWeek) {
+    return repository.findByDayOfWeek(dayOfWeek).map(mapper::toDomain);
   }
 
   @Override
-  public List<OperatingHours> findByTenantId(UUID tenantId) {
-    return repository.findByTenantId(tenantId).stream().map(mapper::toDomain).toList();
+  public List<OperatingHours> findAll() {
+    return repository.findAll().stream().map(mapper::toDomain).toList();
   }
 }

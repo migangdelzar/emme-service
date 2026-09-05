@@ -22,8 +22,6 @@ public class GetBookingPolicyService implements GetBookingPolicyUseCase {
 
   @Override
   public Optional<BookingPolicyDetails> get(UUID tenantId) {
-    return repository
-        .findByTenantId(tenantId)
-        .map(BusinessConfigurationApplicationMapper::toDetails);
+    return repository.find().map(BusinessConfigurationApplicationMapper::toDetails);
   }
 }

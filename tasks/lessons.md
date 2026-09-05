@@ -1557,3 +1557,14 @@
 - **Prevention rule:** When retaining convenience constructors for unit tests,
   annotate only the single composition-root constructor and add a reflection
   guard for constructor selection.
+
+## 2026-09-05 — Include the RestClient auto-configuration dependency
+
+- **Failure mode:** A capability-scoped `RestClient` bean compiled and passed
+  isolated builder tests but prevented the Notification module context from
+  starting because no managed `RestClient.Builder` existed.
+- **Detection signal:** The full module checkpoint failed with
+  `NoSuchBeanDefinitionException` for `RestClient.Builder`.
+- **Prevention rule:** When adding a Spring-managed RestClient boundary to a
+  module, verify the module's full application context and declare the Boot
+  RestClient dependency that supplies the managed builder.

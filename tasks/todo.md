@@ -287,6 +287,12 @@
 - [ ] Audit all remaining tenant-qualified repository methods by operation type:
       tenant-schema CRUD, shared/control-plane access, cross-tenant jobs, or
       atomic/specialized SQL.
+- [x] Run the planned deterministic repository/adapter matrix across tenancy,
+      identity, subscriptions, documents, catalog, calendar, notification,
+      and payment.
+- [x] Run focused event/listener suites and compile all related integration
+      test sources.
+- [ ] Run live PostgreSQL, Redis, and Kafka gates when Docker is available.
 
 ### Remaining tenant-qualified method classification — 2026-09-05
 

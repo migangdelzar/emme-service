@@ -1691,11 +1691,16 @@ Use the same create/find/list/update/not-found/tenant/version/idempotency matrix
 for each aggregate, adding webhook signature and duplicate-delivery cases to
 notification/payment and projection rebuild cases to documents/catalog.
 
-- [ ] **Step 2: Run each module group separately**
+- [x] **Step 2: Run each module group separately**
 
 ```bash
 ./gradlew :modules:tenancy:test :modules:identity:test :modules:subscriptions:test :modules:documents:test :modules:catalog:test :modules:calendar:test :modules:notification:test :modules:payment:test --tests '*RepositoryTest' --tests '*PersistenceAdapterTest' --no-parallel --no-configuration-cache
 ```
+
+The deterministic repository/adapter matrix passed for tenancy, identity,
+subscriptions, documents, catalog, calendar, notification, and payment. The
+remaining live tenant-routing and PostgreSQL concurrency evidence still
+requires Docker.
 
 - [ ] **Step 3: Convert only the proven JPA candidates**
 
@@ -1786,11 +1791,15 @@ Test publication inside the business transaction, listener retry, duplicate
 delivery, tenant context reconstruction, Kafka partition key, and failed
 publication recovery.
 
-- [ ] **Step 2: Run focused event tests**
+- [x] **Step 2: Run focused event tests**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:appointments:test :modules:identity:test :modules:tenancy:test :modules:subscriptions:test --tests '*Event*' --tests '*Listener*' --no-parallel --no-configuration-cache
 ```
+
+The focused event/listener suites passed and the corresponding integration-test
+source sets compile. Live Kafka replay/duplicate-delivery evidence remains
+environment-gated by Docker.
 
 - [ ] **Step 3: Remove duplicated mechanics**
 

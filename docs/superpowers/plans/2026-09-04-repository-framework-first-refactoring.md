@@ -1617,6 +1617,21 @@ git add build-logic platform modules applications
 git commit -m "build: remove duplicate framework capabilities"
 ```
 
+#### Current slice 22A — Remove duplicate module dependency declarations
+
+The known duplicate declarations were limited to redundant Gradle notation:
+`modules/booking` declared `libraries:kernel` six times, `modules/catalog`
+declared it three times, and `modules/assistant` declared the Spring Security
+test dependency twice. A repository inventory test now guards one declaration
+per dependency, and only the redundant lines were removed. Plugin/convention
+changes remain separate until dependency analysis demonstrates a real benefit.
+
+- [x] Add a failing repository dependency-duplication test.
+- [x] Remove redundant `libraries:kernel` declarations from booking and catalog.
+- [x] Remove the duplicate Spring Security test dependency from assistant.
+- [x] Run the repository inventory test, affected compilation, and Spotless.
+- [ ] Complete convention-plugin and dependency-analysis follow-up slices.
+
 ## 11. Phase I — Database, deployment, and final cleanup
 
 ### Task 23: Add database ownership and migration contract checks

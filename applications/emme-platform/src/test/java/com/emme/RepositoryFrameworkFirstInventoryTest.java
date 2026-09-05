@@ -68,6 +68,17 @@ class RepositoryFrameworkFirstInventoryTest {
     }
   }
 
+  @Test
+  void knownModuleBuildsDeclareSharedDependenciesOnlyOnce() throws IOException {
+    assertThat(countExactDependency("modules/booking/build.gradle.kts", "libraries:kernel"))
+        .isEqualTo(1);
+    assertThat(countExactDependency("modules/catalog/build.gradle.kts", "libraries:kernel"))
+        .isEqualTo(1);
+    assertThat(
+            countExactDependency("modules/assistant/build.gradle.kts", "libs.spring.security.test"))
+        .isEqualTo(1);
+  }
+
   private boolean containsJdbcReference(Path path) {
     try {
       String source = Files.readString(path);
@@ -79,6 +90,14 @@ class RepositoryFrameworkFirstInventoryTest {
     } catch (IOException exception) {
       throw new IllegalStateException("Cannot read " + path, exception);
     }
+  }
+
+  private static long countExactDependency(String relativePath, String dependency)
+      throws IOException {
+    return Files.readString(sourcePath(relativePath))
+        .lines()
+        .filter(line -> line.contains(dependency))
+        .count();
   }
 
   private static Path sourcePath(String relativePath) {

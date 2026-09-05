@@ -37,7 +37,6 @@ dependencies {
   testImplementation(testFixtures(project(":libraries:testing")))
   testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(libs.spring.security.test)
-  testImplementation(libs.spring.security.test)
   testImplementation(project(":modules:identity"))
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))

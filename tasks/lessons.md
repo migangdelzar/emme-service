@@ -1365,3 +1365,9 @@
   a connection is acquired. Use ID-only JPA CRUD inside that boundary; retain
   explicit tenant parameters only for shared/control-plane, cross-tenant, or
   operation-specific invariants.
+
+## 2026-09-04 — Close existing test blocks before inserting new cases
+
+- **Failure mode:** A new repository guard test was inserted before the closing brace of an existing `try` block, so compilation failed before the intended assertion ran.
+- **Detection signal:** The compiler reported `';' expected` at the new test method signature.
+- **Prevention rule:** After inserting a test into an existing method, inspect the surrounding numbered lines and compile the focused test before interpreting behavioral failures.

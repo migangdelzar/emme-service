@@ -219,6 +219,14 @@
 - [x] Put hybrid PostgreSQL SQL behind the provider-neutral `HybridSearch` port.
 - [ ] Complete metadata-contract and measured hybrid-search follow-up slices.
 
+### Current slice — Task 22A duplicate dependency declarations
+
+- [x] Add a repository guard for duplicate shared dependencies.
+- [x] Remove repeated `libraries:kernel` declarations from booking and catalog.
+- [x] Remove the repeated Spring Security test dependency from assistant.
+- [x] Run the inventory test, affected compilation, and Spotless.
+- [ ] Complete convention-plugin and dependency-analysis follow-up slices.
+
 ### Current slice — Task 11A atomic AI job persistence
 
 - [x] Add a failing configuration test requiring the qualified `coreJdbcClient` boundary.

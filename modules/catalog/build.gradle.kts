@@ -9,9 +9,7 @@ dependencies {
   implementation(project(":modules:shared"))
   implementation(project(":libraries:kernel"))
   implementation(project(":modules:tenancy"))
-  implementation(project(":libraries:kernel"))
   implementation(project(":libraries:ai-contracts"))
-  implementation(project(":libraries:kernel"))
 
   implementation(libs.spring.boot.starter.web)
   implementation(libs.spring.boot.starter.validation)

@@ -6,9 +6,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import com.emme.ai.contracts.rag.KnowledgeQuery;
+import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -49,6 +53,42 @@ class RagAnswerPolicyTest {
     assertThatThrownBy(() -> AiExecutionContextScope.call(context(), () -> answers.answer("  ")))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("question must not be blank");
+    verifyNoInteractions(completions);
+  }
+
+  @Test
+  void generatesGroundedAnswersOnlyFromTheAcceptedDocuments() {
+    ChatCompletionPort completions = mock(ChatCompletionPort.class);
+    RagAnswerPolicy answers = new RagAnswerPolicy(completions);
+    KnowledgeQuery query = new KnowledgeQuery("What are the hours?", "es-MX", 5);
+    List<RetrievedDocument> documents =
+        List.of(new RetrievedDocument("hours", "We open at nine.", Map.of(), 0.92));
+    org.mockito.Mockito.when(completions.complete("We open at nine.", query.text()))
+        .thenReturn("We open at nine.");
+
+    String answer =
+        AiExecutionContextScope.call(
+            context(),
+            () -> answers.answer(query, documents, AiExecutionContextScope.requireCurrent()));
+
+    assertThat(answer).isEqualTo("We open at nine.");
+    verify(completions).complete("We open at nine.", query.text());
+  }
+
+  @Test
+  void rejectsGroundedAnswersForAContextDifferentFromTheCurrentScope() {
+    ChatCompletionPort completions = mock(ChatCompletionPort.class);
+    RagAnswerPolicy answers = new RagAnswerPolicy(completions);
+    KnowledgeQuery query = new KnowledgeQuery("What are the hours?", "es-MX", 5);
+    List<RetrievedDocument> documents =
+        List.of(new RetrievedDocument("hours", "We open at nine.", Map.of(), 0.92));
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context(), () -> answers.answer(query, documents, context())))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("context must match the current AI execution context");
     verifyNoInteractions(completions);
   }
 

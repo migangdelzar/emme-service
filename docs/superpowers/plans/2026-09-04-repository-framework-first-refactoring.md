@@ -2231,12 +2231,17 @@ AI Platform/Assistant compilation and tests remained green.
 - Migration scripts validate slugs/schema identifiers and return non-zero on partial failure.
 - Deployed migrations are never edited in place.
 
-- [ ] **Step 1: Write failing migration contract tests**
+- [x] **Step 1: Write failing migration contract tests**
 
 Test table ownership metadata, RLS enabled/policies, unique idempotency keys,
 version columns, vector dimensions/indexes, generated `tsvector`, and tenant
 schema provisioning state. Test invalid tenant slug/schema input in the shell
 script with a disposable PostgreSQL environment.
+
+The existing per-capability migration contracts and the new
+`MigrationCatalogContractTest` cover the checked-in Liquibase catalog and
+required AI/PostgreSQL invariants. Invalid slug/schema execution and live
+catalog/RLS behavior remain Docker-gated.
 
 - [x] **Step 2: Run the database contract suite**
 

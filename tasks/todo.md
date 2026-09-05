@@ -3686,3 +3686,20 @@ appointment mutation tools are registered.
   contracts all pass.
 - The Gradle task inventory passes, but this repository has no `appConfig` task;
   the plan now uses the actual validation scripts and contract tests.
+
+## Migration catalog and deployment drift guards — 2026-09-05
+
+- [x] Add a database contract ensuring every core/studio Liquibase include
+      resolves to an existing, unique migration file.
+- [x] Add an E2E Compose contract assertion preventing the stale backup overlay
+      from returning.
+- [x] Run the migration catalog and active deployment contracts.
+- [ ] Run live Liquibase/RLS and Kubernetes smoke validation when PostgreSQL,
+      Docker, and a cluster are available.
+
+### Results
+
+- `MigrationCatalogContractTest` passes and guards the 33 checked-in migration
+  includes across the core and studio changelogs.
+- The active E2E Compose, AGE, Kafka, backend workflow, and container workflow
+  contracts pass.

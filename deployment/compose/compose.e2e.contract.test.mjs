@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import process from 'node:process';
 
@@ -38,6 +39,12 @@ const output = execFileSync(
 );
 
 const services = JSON.parse(output).services;
+
+assert.equal(
+  existsSync('deployment/compose/compose.environment-e2e.yaml.bak'),
+  false,
+  'the active E2E overlay must not have a stale backup configuration',
+);
 
 for (const serviceName of ['emme-platform', 'postgres', 'redis', 'keycloak', 'database-migrations']) {
   assert.ok(services[serviceName], `missing ${serviceName} service`);

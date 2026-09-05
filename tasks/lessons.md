@@ -1476,3 +1476,14 @@
   Keycloak, tenant-seeding, and healthcheck configuration.
 - **Prevention rule:** Run the active Compose contract and inspect the diff
   before deleting a backup; retain only the tested authoritative overlay.
+
+## 2026-09-05 — Resolve changelog includes relative to their owning catalog
+
+- **Failure mode:** A migration-catalog test treated changelog-relative include
+  paths as repository-relative paths and reported every valid migration as
+  missing.
+- **Detection signal:** The failure listed real `emme-core` and `emme-studio`
+  files with the catalog directory omitted from the resolved path.
+- **Prevention rule:** Resolve each Liquibase include against the parent
+  directory of the changelog that declares it, then assert existence and
+  uniqueness.

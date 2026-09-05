@@ -6,6 +6,7 @@ import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.ai.document.Document;
@@ -55,7 +56,7 @@ public final class TenantScopedDocumentRetriever implements DocumentRetriever {
       if (chunk == null || chunk.content() == null || chunk.content().isBlank()) {
         continue;
       }
-      var metadata = new java.util.LinkedHashMap<String, Object>();
+      var metadata = new LinkedHashMap<String, Object>(chunk.metadata());
       metadata.put("sourceId", chunk.sourceId());
       metadata.put("score", chunk.score());
       documents.add(new Document(chunk.sourceId(), chunk.content(), metadata));

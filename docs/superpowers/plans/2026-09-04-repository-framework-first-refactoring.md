@@ -488,6 +488,21 @@ git add modules/assistant modules/shared
 git commit -m "refactor(ai): consolidate Spring AI RAG and semantic paths"
 ```
 
+#### Current slice 6C — Preserve the provider-neutral RAG metadata contract
+
+`TenantScopedDocumentRetriever` now forwards the metadata already present on
+the provider-neutral `RetrievedDocument` contract into Spring AI `Document`
+instances. The adapter still writes canonical `sourceId` and `score` values
+after copying metadata, so provenance and filtering metadata survive the
+framework boundary without allowing arbitrary metadata to replace those
+authoritative fields.
+
+- [x] Add a failing adapter test covering metadata preservation.
+- [x] Copy `RetrievedDocument.metadata()` into Spring AI document metadata.
+- [x] Preserve canonical `sourceId` and `score` adapter fields.
+- [x] Run the focused adapter test and compilation.
+- [ ] Complete measured hybrid-search and legacy compatibility cleanup slices.
+
 ## 5. Phase C — LangGraph4j and AI workflow boundary
 
 ### Task 7: Prove graph versus simple state-machine scope

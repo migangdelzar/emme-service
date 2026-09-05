@@ -26,7 +26,14 @@ class TenantScopedDocumentRetrieverTest {
         .thenReturn(
             List.of(
                 new RetrievedDocument(
-                    "source-1", "Cancellation requires 24 hours.", java.util.Map.of(), 0.92)));
+                    "source-1",
+                    "Cancellation requires 24 hours.",
+                    java.util.Map.of(
+                        "documentType", "policy",
+                        "locale", "es-MX",
+                        "sourceId", "untrusted-source",
+                        "score", "untrusted-score"),
+                    0.92)));
     TenantScopedDocumentRetriever retriever = new TenantScopedDocumentRetriever(retrieval, 5);
 
     List<org.springframework.ai.document.Document> documents =
@@ -37,6 +44,8 @@ class TenantScopedDocumentRetrieverTest {
     assertThat(documents.getFirst().getText()).isEqualTo("Cancellation requires 24 hours.");
     assertThat(documents.getFirst().getMetadata())
         .containsEntry("sourceId", "source-1")
+        .containsEntry("documentType", "policy")
+        .containsEntry("locale", "es-MX")
         .containsEntry("score", 0.92);
     verify(retrieval).search(any(), any());
   }

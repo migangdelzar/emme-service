@@ -136,7 +136,7 @@ boundary, even when they do not execute SQL themselves.
 | `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java` | Keep | Dynamic schema/Liquibase boundary; JPA is not applicable |
 | `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantIdentifierResolver.java` | JdbcClient boundary | Hibernate bootstrap resolver may execute before normal JPA routing; its scalar registry lookup uses the bootstrap-scoped `JdbcClient` |
 | `modules/tenancy/src/main/java/com/emme/tenancy/application/service/EnsureTenantMembershipService.java` | Deleted | Duplicate removed; Identity owns the existing role/membership JPA model and now implements the tenancy provisioning use case |
-| `modules/tenancy/src/main/java/com/emme/tenancy/configuration/BootstrapJdbcConfiguration.java` | Keep | Dedicated bootstrap data source exposes `JdbcClient` for scalar lookups and `JdbcTemplate` only for the managed raw-connection callback |
+| `modules/tenancy/src/main/java/com/emme/tenancy/configuration/BootstrapJdbcConfiguration.java` | Keep | Explicit bootstrap URL uses a dedicated data source; the normal profile reuses the primary core data source. `JdbcClient` serves scalar lookups while `JdbcTemplate` remains only for the managed raw-connection callback |
 
 ## 3.4 Detailed AI persistence classification
 

@@ -1526,3 +1526,12 @@
 - **Prevention rule:** Read the aggregate enum and existing transition tests
   before writing fixtures; use the actual domain vocabulary so a red test proves
   behavior rather than a fixture typo.
+
+## 2026-09-05 — Reset Mockito beans in cached Spring integration contexts
+
+- **Failure mode:** A later integration test inherited accepted-retrieval stubs
+  from an earlier test and incorrectly invoked the grounded answer port.
+- **Detection signal:** The rejection test received the prior test's accepted
+  documents despite configuring an empty retrieval result.
+- **Prevention rule:** Reset mutable Mockito beans in `@BeforeEach` when a
+  `SpringJUnitConfig` context is cached across test methods.

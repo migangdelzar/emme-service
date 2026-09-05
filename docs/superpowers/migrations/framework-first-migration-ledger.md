@@ -250,7 +250,7 @@ lookup should become a schema-local `findByChannel` contract.
 | Repeated security test dependency | `modules/assistant/build.gradle.kts` | One declaration |
 | Repeated shared test-fixture dependency | Modules applying `emme.testing` | Convention owns the normal test suite; integration-test fixtures remain explicit |
 | Repeated `emme.testing` plugin application | Seven Spring modules | `emme.spring-module` → `emme.java-library` already applies the testing convention |
-| Repeated Modulith application | `applications/emme-platform/build.gradle.kts` | Rely on `emme.spring-application` once |
+| Repeated Modulith application | `applications/emme-platform/build.gradle.kts` | Removed; `emme.spring-application` owns Modulith and its test convention |
 | Over-provisioned persistence plugin | `build-logic/src/main/kotlin/emme.persistence.gradle.kts` and placeholder modules | Split only if dependency analysis proves benefit |
 | Feature fixture coupling | `libraries/testing/build.gradle.kts` and `src/testFixtures/java/**` | Move feature fixtures to owning modules |
 

@@ -122,6 +122,16 @@ class RepositoryFrameworkFirstInventoryTest {
     }
   }
 
+  @Test
+  void springApplicationDoesNotReapplyModulithConvention() throws IOException {
+    String build = Files.readString(sourcePath("applications/emme-platform/build.gradle.kts"));
+
+    assertThat(build)
+        .contains("id(\"emme.spring-application\")")
+        .doesNotContain("id(\"emme.modulith\")")
+        .doesNotContain("testImplementation(testFixtures(project(\":libraries:testing\")))");
+  }
+
   private boolean containsJdbcReference(Path path) {
     try {
       String source = Files.readString(path);

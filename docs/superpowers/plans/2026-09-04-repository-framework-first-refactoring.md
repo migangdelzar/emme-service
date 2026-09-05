@@ -2085,6 +2085,8 @@ inventory test now enforces this ownership rule.
       covered by `emme.spring-module` → `emme.java-library`.
 - [x] Extend the repository inventory guard to prevent duplicate convention
       application from returning.
+- [x] Remove the duplicate `emme.modulith` plugin and shared test fixture from
+      the application already covered by `emme.spring-application`.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
 

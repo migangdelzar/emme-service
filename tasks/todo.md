@@ -568,6 +568,8 @@
 - [x] Remove explicit `emme.testing` applications from Spring modules because
       `emme.spring-module` already owns that capability.
 - [x] Add a repository guard for duplicate convention application.
+- [x] Remove the duplicate application-level Modulith plugin and shared test
+      fixture owned by `emme.spring-application`.
 - [ ] Revisit convention-plugin scope after Java 25-compatible dependency
       analysis is available.
 

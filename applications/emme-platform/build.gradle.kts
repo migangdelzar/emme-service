@@ -1,6 +1,5 @@
 plugins {
   id("emme.spring-application")
-  id("emme.modulith")
   id("emme.messaging")
   id("emme.integration-testing")
   id("emme.container")
@@ -82,7 +81,6 @@ dependencies {
   implementation(libs.liquibase.core)
 
   // Testing
-  testImplementation(testFixtures(project(":libraries:testing")))
   testImplementation(libs.okhttp.mockwebserver)
   testImplementation(libs.greenmail)
   testImplementation(libs.okhttp)

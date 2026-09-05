@@ -206,7 +206,7 @@ lookup should become a schema-local `findByChannel` contract.
 | Assistant conversation and pending-action aggregate reads | Replacement tested | Use connection-scoped `findById`; retain tenant IDs in commands/domain state and explicit child/list operations. |
 | Subscription existing aggregate save | Replacement tested | Use connection-scoped `findById`; retain tenant-keyed singleton lookup for provisioning and reads. |
 | Identity membership | Keep explicit scope | Shared `emme_core` persistence and cross-tenant authorization require `tenant_id` in the lookup contract. |
-| Calendar event links by appointment | Replacement tested | Use schema-local `findByAppointmentIdAndProvider`; tenant is selected at connection checkout and provider disambiguates the `Optional` result as additional calendar providers are introduced. Keep `findByAppointmentId` for operations that intentionally handle multiple links. |
+| Calendar event links by appointment | Replacement tested | Use schema-local `findByAppointmentIdAndProvider`; tenant is selected at connection checkout and the forward `034-calendar-event-link-cardinality.sql` migration enforces one row per tenant/appointment/provider. Keep `findByAppointmentId` for operations that intentionally handle multiple providers. |
 | Calendar sync state by provider | Replacement tested | Use schema-local `findByProvider`; the current tenant connection is selected before JPA access, while tenant identity remains domain/entity data for creation, response mapping, and RLS. |
 | Calendar OAuth tokens | Replacement tested | Durable staff sync restores the event tenant context and enumerates schema-local tokens with JPA `findAll()`; interactive user/persona selection remains explicit. |
 | Calendar spreadsheet links | Keep explicit scope | Tenant/spreadsheet business keys select external resources. |
@@ -321,3 +321,19 @@ gone.
 | `modules/payment/src/main/java/com/emme/payment/configuration/PaymentHttpClient.java` | Pending | Provider adapters still use the shared OkHttp transport; HTTP-client standardization is intentionally deferred |
 | `modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java` | Pending | Provider adapters still use the shared OkHttp transport; HTTP-client standardization is intentionally deferred |
 | `modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleHttpClient.java` | Pending | Google adapters and live tests still use the shared OkHttp transport; HTTP-client standardization is intentionally deferred |
+
+## Calendar event-link cardinality slice — 2026-09-05
+
+- [x] Add a test-driven migration contract for the singular
+      appointment/provider lookup.
+- [x] Add a duplicate-data preflight and unique constraint covering tenant,
+      appointment, and provider.
+- [x] Include the migration in the studio Liquibase changelog.
+- [x] Run the focused database migration contracts and catalog resolution test.
+- [ ] Run the migration against PostgreSQL/Testcontainers and verify existing
+      deployment data has no duplicate appointment/provider links.
+
+The application port returns one Calendar event link for an appointment and
+provider. The new forward migration protects that contract while still allowing
+one link for each future provider. A duplicate preflight fails deployment with
+an actionable error instead of silently selecting an arbitrary row.

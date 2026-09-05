@@ -524,8 +524,19 @@
       `findByAppointmentIdAndProvider`.
 - [x] Update application ports, use cases, and Google sync callers.
 - [x] Run focused Calendar tests and `:modules:calendar:check`.
-- [ ] Decide and prove future provider cardinality with a PostgreSQL constraint
-      or explicit multi-link selection policy.
+- [x] Decide and enforce one link per appointment/provider with a PostgreSQL
+      uniqueness constraint that permits future providers.
+- [ ] Run the migration against PostgreSQL/Testcontainers and verify existing
+      deployment data has no duplicate appointment/provider links.
+
+### Current slice — Task 18AB Calendar event-link cardinality
+
+- [x] Add a failing migration contract for the forward cardinality change.
+- [x] Add duplicate-data preflight and the unique constraint migration.
+- [x] Include the migration in the studio Liquibase changelog.
+- [x] Run migration catalog and focused database contract tests.
+- [ ] Run the migration against PostgreSQL/Testcontainers and verify existing
+      deployment data has no duplicate appointment/provider links.
 
 
 - User requested subagent-driven execution when work can be safely parallelized.
@@ -3699,7 +3710,7 @@ appointment mutation tools are registered.
 
 ### Results
 
-- `MigrationCatalogContractTest` passes and guards the 33 checked-in migration
+- `MigrationCatalogContractTest` passes and guards the 34 checked-in migration
   includes across the core and studio changelogs.
 - The active E2E Compose, AGE, Kafka, backend workflow, and container workflow
   contracts pass.

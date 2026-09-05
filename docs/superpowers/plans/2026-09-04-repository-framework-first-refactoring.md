@@ -2500,8 +2500,9 @@ removing the existing list query used for multi-provider operations.
       schema-local query.
 - [x] Update the Calendar application port, use cases, and Google adapters.
 - [x] Run focused Calendar tests and `:modules:calendar:check`.
-- [ ] Add a PostgreSQL uniqueness/cardinality migration only after the provider
-      model supports more than the current Google provider.
+- [x] Add a PostgreSQL uniqueness/cardinality migration for the singular
+      appointment/provider lookup; the constraint still permits one link for
+      each future provider.
 
 #### Current slice 18AA — Make Calendar sync-state lookup schema-local
 
@@ -2519,6 +2520,24 @@ application use case still receives the current tenant ID at the boundary.
 - [x] Run focused Calendar persistence tests and the full Calendar check.
 - [ ] Continue the operation-by-operation review for remaining tenant-schema
       methods whose tenant ID is a business key or shared/control-plane key.
+
+#### Current slice 18AB — Enforce Calendar event-link cardinality
+
+The application port intentionally returns one link for an appointment and
+provider. The original schema only constrained external event IDs, so duplicate
+rows could make the JPA `Optional` query fail at runtime with a non-unique
+result. A forward migration now preflights existing duplicates and adds a
+tenant/provider/appointment uniqueness constraint. The tenant column remains in
+the database key for compatibility with the existing RLS and shared-database
+deployment mode; tenant schema routing remains the application isolation
+boundary.
+
+- [x] Add a failing migration contract for the forward cardinality change.
+- [x] Add duplicate-data preflight and the unique constraint migration.
+- [x] Include the migration in the studio Liquibase changelog.
+- [x] Run migration catalog and focused database contract tests.
+- [ ] Run the migration against PostgreSQL/Testcontainers and verify existing
+      deployment data has no duplicate appointment/provider links.
 
 ## 12. Subagent-driven execution protocol
 

@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.semantic.DistanceMetric;
+import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
@@ -20,7 +23,12 @@ class SpringAiModelProviderTest {
     SpringAiEmbeddingModel embedding = mock(SpringAiEmbeddingModel.class);
     when(chat.provider()).thenReturn("ollama");
     when(chat.complete("context", "hello")).thenReturn("hola");
-    when(embedding.embed("faq")).thenReturn(List.of(0.25f, 0.75f));
+    when(embedding.embed("faq"))
+        .thenReturn(
+            new EmbeddingVector(
+                List.of(0.25f, 0.75f),
+                new EmbeddingModelVersion(
+                    "embeddinggemma", "v1", 2, DistanceMetric.COSINE, "query-v1")));
 
     SpringAiModelProvider provider = new SpringAiModelProvider(chat, Optional.of(embedding));
 

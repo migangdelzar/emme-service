@@ -65,7 +65,7 @@ public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
     }
 
     // 2. Embed the combined query
-    List<Float> queryVec = embeddingService.embed(queryText);
+    List<Float> queryVec = embeddingService.embed(queryText).values();
 
     // 3. Hybrid search over catalog items
     List<CatalogSearchHit> itemHits =

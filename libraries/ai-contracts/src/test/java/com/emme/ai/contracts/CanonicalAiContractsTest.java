@@ -1,6 +1,7 @@
 package com.emme.ai.contracts;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.model.AiChatCompletion;
@@ -9,6 +10,9 @@ import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RagAnswerService;
 import com.emme.ai.contracts.rag.RetrievedDocument;
+import com.emme.ai.contracts.semantic.DistanceMetric;
+import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.ai.contracts.workflow.ConversationWorkflow;
 import com.emme.ai.contracts.workflow.QuoteWorkflow;
 import com.emme.ai.contracts.workflow.WorkflowCommand;
@@ -26,6 +30,9 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 class CanonicalAiContractsTest {
+
+  private static final EmbeddingModelVersion MODEL =
+      new EmbeddingModelVersion("embeddinggemma", "v1", 3, DistanceMetric.COSINE, "query-v1");
 
   @Test
   void chatCompletionCarriesTrustedContextProviderPolicyAndResultIdentity() {
@@ -46,10 +53,26 @@ class CanonicalAiContractsTest {
   }
 
   @Test
-  void embeddingServiceIsTheSingleVerbOrientedCrossModuleCapability() {
-    EmbeddingService embeddings = text -> List.of(text.length() * 1.0f);
+  void embeddingServiceReturnsTheVersionedSharedVector() {
+    EmbeddingVector expected = new EmbeddingVector(List.of(0.1f, 0.2f, 0.3f), MODEL);
+    EmbeddingService embeddings = text -> expected;
 
-    assertThat(embeddings.embed("nails")).containsExactly(5.0f);
+    assertThat(embeddings.embed("appointment pricing")).isEqualTo(expected);
+    assertThat(embeddings.embed("appointment pricing").model()).isEqualTo(MODEL);
+  }
+
+  @Test
+  void vectorRejectsAProviderDimensionMismatch() {
+    assertThatThrownBy(() -> new EmbeddingVector(List.of(0.1f, 0.2f), MODEL))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("values dimension must match model dimension");
+  }
+
+  @Test
+  void vectorRequiresModelIdentity() {
+    assertThatThrownBy(() -> new EmbeddingVector(List.of(0.1f, 0.2f, 0.3f), null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("model must not be null");
   }
 
   @Test

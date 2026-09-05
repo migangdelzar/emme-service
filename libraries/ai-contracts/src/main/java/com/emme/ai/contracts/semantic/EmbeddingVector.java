@@ -8,6 +8,7 @@ public record EmbeddingVector(List<Float> values, EmbeddingModelVersion model) {
 
   public EmbeddingVector {
     Objects.requireNonNull(values, "values must not be null");
+    Objects.requireNonNull(model, "model must not be null");
     if (values.isEmpty()) {
       throw new IllegalArgumentException("values must not be empty");
     }

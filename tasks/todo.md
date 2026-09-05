@@ -1,5 +1,16 @@
 # Service architecture migration checklist
 
+## Current execution checkpoint — framework-first plan / durable Task 1 — 2026-09-05
+
+- [x] Synchronize `feat/ai-platform-foundation` with its remote branch.
+- [x] Review the umbrella framework-first plan and its durable workflow,
+      Modulith, provider HTTP, and selective Lombok child plans.
+- [x] Write the failing canonical versioned-embedding contract test.
+- [x] Implement the shared `EmbeddingService` result and platform adapter identity.
+- [x] Verify focused AI-contract, AI-platform, Assistant compilation, and Catalog compilation.
+- [ ] Migrate Assistant semantic consumers and remove the duplicate local vector type.
+- [ ] Run the complete Task 1 focused matrix, Spotless, and commit the completed slice.
+
 ## Current slice — Durable conversational workflows design — 2026-09-04
 
 - [x] Confirm the scope includes the complete appointment lifecycle, payment links,

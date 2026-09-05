@@ -1,6 +1,8 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
+import com.emme.ai.contracts.semantic.DistanceMetric;
+import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
@@ -85,8 +87,12 @@ public final class SpringAiEmbeddingProviderRegistry {
                       new SpringAiEmbeddingModel(
                           delegate,
                           configured.key(),
-                          configured.modelVersion(),
-                          embeddingConfiguration.dimension());
+                          new EmbeddingModelVersion(
+                              embeddingConfiguration.modelName(),
+                              configured.modelVersion(),
+                              embeddingConfiguration.dimension(),
+                              DistanceMetric.COSINE,
+                              "query-v1"));
                   return new EmbeddingModelSelector.Provider(
                       configured.key(),
                       new TracingEmbeddingModelPort(
@@ -111,7 +117,7 @@ public final class SpringAiEmbeddingProviderRegistry {
       SpringAiEmbeddingModel model, String providerKey) {
     return text -> {
       try {
-        return new EmbeddingVector(model.modelVersion(), model.embed(text));
+        return new EmbeddingVector(model.modelVersion(), model.embed(text).values());
       } catch (IllegalArgumentException invalidInput) {
         throw invalidInput;
       } catch (EmbeddingProviderUnavailableException unavailable) {

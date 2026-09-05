@@ -21,7 +21,7 @@ class SpringAiEmbeddingModelTest {
     SpringAiEmbeddingModel model =
         new SpringAiEmbeddingModel(delegate, "ollama", "embedding-v1", 2);
 
-    assertThat(AiExecutionContextScope.call(context(), () -> model.embed("faq")))
+    assertThat(AiExecutionContextScope.call(context(), () -> model.embed("faq")).values())
         .containsExactly(0.25f, 0.75f);
     assertThat(model.provider()).isEqualTo("ollama");
     assertThat(model.modelVersion()).isEqualTo("embedding-v1");

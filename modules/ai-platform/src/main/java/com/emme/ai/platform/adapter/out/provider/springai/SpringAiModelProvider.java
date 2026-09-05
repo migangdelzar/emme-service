@@ -41,7 +41,7 @@ public final class SpringAiModelProvider implements AiModelProvider {
   @Override
   public List<Float> embed(String text) {
     AiExecutionContextScope.requireCurrent();
-    return embeddingModel.map(model -> model.embed(text)).orElseGet(List::of);
+    return embeddingModel.map(model -> model.embed(text).values()).orElseGet(List::of);
   }
 
   @Override

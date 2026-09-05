@@ -2,6 +2,8 @@ package com.emme.ai.platform.configuration;
 
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.contracts.semantic.DistanceMetric;
+import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiModelProvider;
@@ -105,8 +107,12 @@ public class AiProviderConfiguration {
             new SpringAiEmbeddingModel(
                 embeddingModel,
                 properties.provider(),
-                properties.embedding().modelVersion(),
-                properties.embedding().dimension())),
+                new EmbeddingModelVersion(
+                    properties.embedding().model(),
+                    properties.embedding().modelVersion(),
+                    properties.embedding().dimension(),
+                    DistanceMetric.COSINE,
+                    "query-v1"))),
         Optional.of(new SpringAiVisionModel(chatClient)));
   }
 

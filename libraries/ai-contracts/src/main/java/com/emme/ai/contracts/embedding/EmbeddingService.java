@@ -1,10 +1,10 @@
 package com.emme.ai.contracts.embedding;
 
-import java.util.List;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 
 /** Cross-module application capability for embedding text. */
 @FunctionalInterface
 public interface EmbeddingService {
 
-  List<Float> embed(String text);
+  EmbeddingVector embed(String text);
 }

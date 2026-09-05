@@ -213,6 +213,24 @@ lookup should become a schema-local `findByChannel` contract.
 
 ### 4.1 Provider HTTP candidates
 
+#### Provider HTTP transport policy
+
+The provider HTTP migration is executed through the focused plan in
+`docs/superpowers/plans/2026-09-05-external-provider-http-clients.md`.
+Production provider adapters use one capability-scoped Spring `RestClient`
+bean, while application ports and domain code remain provider-neutral. The
+migration does not introduce a universal HTTP wrapper and does not change
+provider-specific authentication, signing, idempotency, retry, timeout, or
+error semantics.
+
+Provider contract tests use `MockRestServiceServer` and assert the externally
+visible request and response contract. A deliberately small `MockWebServer`
+matrix remains for real transport behavior such as socket timeout, disconnect,
+pooling, and selected wire-level behavior. `UserSession` remains an independent
+OkHttp black-box E2E client. Test fixtures and transport-only tests may retain
+OkHttp where that is their explicit purpose; generated `build/` output is never
+part of the inventory.
+
 | Candidate family | Current paths | Target |
 |---|---|---|
 | Payment transport | `modules/payment/**/PaymentHttpClient.java`, `adapter/out/provider/{stripe,paypal,conekta,mercadopago}/**` | Typed `{Provider}PaymentGateway` plus `RestClient`/HTTP interface or justified SDK |

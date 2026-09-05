@@ -24,6 +24,19 @@
 - [x] Verify `RagQueryServiceTest`, `ConversationWebTest`, and the Assistant
       unit test checkpoint.
 
+## Current slice — Framework-first provider HTTP policy — 2026-09-05
+
+- [x] Read the focused external-provider HTTP plan and verify its HTTP-01
+      dependency ordering.
+- [x] Add a source-only architecture inventory for production OkHttp usage.
+- [x] Document the capability-scoped `RestClient` policy and retained
+      MockWebServer/OkHttp exceptions in the migration ledger.
+- [x] Establish the named Notification `RestClient` boundary without
+      migrating provider callers yet.
+- [ ] Migrate the remaining Identity, Calendar, Notification, and Payment
+      provider callers one focused contract slice at a time.
+- [ ] Run live provider transport tests when Docker/infrastructure is available.
+
 ## Current execution checkpoint — framework-first plan / durable Task 1 — 2026-09-05
 
 - [x] Synchronize `feat/ai-platform-foundation` with its remote branch.

@@ -61,8 +61,7 @@ class CatalogRepositoryTest extends BaseRepositoryTest {
             null);
     itemRepo.save(CatalogItemEntity.from(item));
 
-    List<CatalogItem> items =
-        itemRepo.findByTenantId(TENANT_ID).stream().map(CatalogItemEntity::toDomain).toList();
+    List<CatalogItem> items = itemRepo.findAll().stream().map(CatalogItemEntity::toDomain).toList();
     assertThat(items).isNotEmpty();
     assertThat(items.get(0).getStatus()).isEqualTo(CatalogItemStatus.ACTIVE);
   }

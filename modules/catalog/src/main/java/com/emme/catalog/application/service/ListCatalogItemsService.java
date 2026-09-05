@@ -22,8 +22,6 @@ public class ListCatalogItemsService implements ListCatalogItemsUseCase {
 
   @Override
   public List<CatalogItemDetails> list(ListCatalogItemsQuery query) {
-    return itemRepository.findByTenantId(query.tenantId()).stream()
-        .map(CatalogApplicationMapper::toResult)
-        .toList();
+    return itemRepository.findAll().stream().map(CatalogApplicationMapper::toResult).toList();
   }
 }

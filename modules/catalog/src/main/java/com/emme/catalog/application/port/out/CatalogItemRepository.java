@@ -9,7 +9,9 @@ public interface CatalogItemRepository {
 
   Optional<CatalogItem> findById(UUID id);
 
-  List<CatalogItem> findByTenantId(UUID tenantId);
+  List<CatalogItem> findAll();
+
+  List<CatalogItem> findAllById(Iterable<UUID> ids);
 
   CatalogItem save(CatalogItem item);
 

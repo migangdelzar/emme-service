@@ -24,8 +24,13 @@ class CatalogItemPersistenceAdapter implements CatalogItemRepository {
   }
 
   @Override
-  public List<CatalogItem> findByTenantId(UUID tenantId) {
-    return repository.findByTenantId(tenantId).stream().map(CatalogItemEntity::toDomain).toList();
+  public List<CatalogItem> findAll() {
+    return repository.findAll().stream().map(CatalogItemEntity::toDomain).toList();
+  }
+
+  @Override
+  public List<CatalogItem> findAllById(Iterable<UUID> ids) {
+    return repository.findAllById(ids).stream().map(CatalogItemEntity::toDomain).toList();
   }
 
   @Override

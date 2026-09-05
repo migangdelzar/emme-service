@@ -1373,6 +1373,21 @@ they may resolve a tenant before a tenant-scoped connection exists.
 - [x] Run Notification tests, compilation, and Spotless.
 - [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
 
+#### Current slice 18O — Remove tenant predicates from Catalog schema-local reads
+
+Catalog item listing runs through the tenant-selected JPA connection, so the
+provider-neutral port now uses standard `findAll()`. Hybrid matching does not
+load the entire catalog: after vector/text ranking, it uses Spring Data's
+inherited `findAllById(...)` to fetch only matched items. The explicit tenant
+ID remains at the search projection boundary because the shared hybrid-search
+adapter still queries tenant-keyed vector/full-text data.
+
+- [x] Add adapter contract coverage for schema-local list and matched-ID reads.
+- [x] Replace the tenant-qualified Spring Data list method with inherited JPA methods.
+- [x] Update catalog list and hybrid-match consumers.
+- [x] Run Catalog tests, compilation, and Spotless.
+- [ ] Continue the same operation-by-operation review for remaining tenant-schema lists.
+
 #### Current slice 18E — Use ID-only service-catalog updates
 
 Artist and service CRUD is already expressed cleanly with Spring Data JPA. The

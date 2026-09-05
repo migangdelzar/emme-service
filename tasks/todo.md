@@ -161,6 +161,15 @@
 - [x] Run Notification focused tests, compilation, and Spotless.
 - [ ] Continue reviewing remaining tenant-schema list/search methods.
 
+### Current slice — Task 18O Catalog schema-local reads
+
+- [x] Add adapter tests for standard list and matched-ID JPA reads.
+- [x] Replace tenant-qualified catalog item queries with `findAll()` and
+      `findAllById(...)`.
+- [x] Keep explicit tenant IDs at the shared hybrid-search projection boundary.
+- [x] Run Catalog tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue reviewing remaining tenant-schema list/search methods.
+
 ### Tenant schema routing decision
 
 - [x] Apply tenant schema and session configuration when a connection is taken

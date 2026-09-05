@@ -102,7 +102,7 @@ public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
 
     // 6. Load catalog items with tenant isolation check
     Map<UUID, CatalogItem> itemsById = new HashMap<>();
-    for (CatalogItem item : itemRepository.findByTenantId(tenantId)) {
+    for (CatalogItem item : itemRepository.findAllById(itemScores.keySet())) {
       if (itemScores.containsKey(item.getId())) {
         itemsById.put(item.getId(), item);
       }

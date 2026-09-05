@@ -1091,7 +1091,16 @@ and `[Hibernate multi-tenancy settings](https://docs.hibernate.org/orm/7.3/javad
 
 ## 8. Phase F — External provider clients
 
-### Task 14: Establish the typed HTTP client convention
+The executable provider-HTTP plan is now maintained separately at
+[`2026-09-05-external-provider-http-clients.md`](2026-09-05-external-provider-http-clients.md).
+It supersedes the broad Task 14/15 outline below with HTTP-01 through HTTP-13:
+provider-by-provider TDD slices, exact file ownership, MockRestServiceServer
+contract tests, a small MockWebServer transport matrix, retained OkHttp E2E
+boundaries, and wrapper/dependency deletion gates. Execute that focused plan
+before treating Phase F as complete; the historical outline below is retained
+only for continuity with earlier checkpoints.
+
+### Historical Task 14: Establish the typed HTTP client convention (superseded)
 
 **Files:**
 
@@ -1153,7 +1162,7 @@ inside the outbound adapter.
       Keycloak; preserve official SDKs where authentication/signing risk makes
       them safer than a hand-written Spring client.
 
-### Task 15: Replace zero-value HTTP wrappers with named gateways
+### Historical Task 15: Replace zero-value HTTP wrappers with named gateways (superseded)
 
 **Files:**
 
@@ -2370,7 +2379,7 @@ git commit -m "chore(ops): standardize repository verification gates"
 **Files:**
 
 - Delete: duplicate AI contracts and provider wrappers listed in the migration ledger
-- Delete: `modules/payment/.../PaymentHttpClient.java`, `modules/notification/.../NotificationHttpClient.java`, `modules/calendar/.../GoogleHttpClient.java`, and `modules/assistant/.../AiHttpClient.java` only after Task 15
+- Delete: `modules/payment/.../PaymentHttpClient.java`, `modules/notification/.../NotificationHttpClient.java`, and `modules/calendar/.../GoogleHttpClient.java` only after focused-plan task `HTTP-13`; the Assistant `AiHttpClient` deletion is already complete
 - Delete: `modules/ai-platform/.../SpringAiModelProvider.java` only after Task 4
 - Modify: `gradle/libs.versions.toml`, `platform/build.gradle.kts`, and owning build files
 - Modify: package-info and architecture tests with stale module names
@@ -2588,7 +2597,7 @@ contexts for:
 | B | RAG/vector/cache review (Task 6) | Tests, implementation, SQL retention rationale, commit SHA |
 | C | LangGraph boundary (Tasks 7–8) | Topology/security tests, workflow changes, commit SHA |
 | D | AI persistence classification (Task 9) | Completed ledger and classification tests, no unapproved broad rewrite |
-| E | Provider HTTP inventory and one provider migration (Tasks 14–15) | Provider contract tests, typed client change, commit SHA |
+| E | Provider HTTP focused plan (`HTTP-01`–`HTTP-13`) | Provider contract tests, transport matrix, dependency cleanup, commit SHAs |
 | F | Test fixture split (Task 21) | Fixture dependency test, moved fixtures, commit SHA |
 
 Do not parallelize tasks that edit the same contract files, version catalog,
@@ -2637,7 +2646,7 @@ and replacement evidence.
 ./gradlew :modules:assistant:test :modules:ai-platform:test :modules:tenancy:test :modules:subscriptions:test :modules:shared:test --no-parallel --no-configuration-cache
 ```
 
-### Checkpoint C — after Tasks 14–22
+### Checkpoint C — after Phase F and Tasks 20–22
 
 - [ ] Provider gateways use typed Spring HTTP clients or justified official SDKs.
 - [ ] Redis and Modulith behavior is safe under outage/retry/duplicate delivery.
@@ -2687,7 +2696,7 @@ dedicated migrations and Docker-backed tests.
 ## 15. Plan review gaps to resolve before execution
 
 - The exact canonical embedding name (`EmbeddingPort` versus `EmbeddingService`) must be selected by caller search in Task 3; the plan intentionally prevents two identical contracts but does not invent a public API name without usage evidence.
-- Keycloak and Google provider SDK adoption requires a protocol/auth/error comparison in Task 14; Spring HTTP interfaces remain the default.
+- Keycloak and Google provider SDK adoption is explicitly deferred to the focused provider HTTP plan; Spring `RestClient` remains the default unless a separate protocol/auth/error comparison approves an SDK.
 - Appointment exclusion/range constraints require PostgreSQL concurrency evidence in Task 17; a JPA existence query is the default first attempt.
 - The current platform patch upgrade to the latest compatible stable version is a separate maintenance change and is not part of the first refactoring commits.
 

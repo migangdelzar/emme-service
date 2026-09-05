@@ -61,6 +61,8 @@
 - [ ] Execute Phase D AI persistence with JPA-first decisions (Task 9 classification complete; Tasks 10–11 pending).
 - [x] Execute Phase E tenancy/bootstrap safety — membership/subscription policy and bootstrap boundary slices complete; remaining repository waves pending.
 - [ ] Execute Phase F provider HTTP migration.
+- [ ] Execute the focused provider HTTP plan:
+      `docs/superpowers/plans/2026-09-05-external-provider-http-clients.md`
 - [ ] Execute Phase G domain persistence waves.
 - [ ] Execute Phase H events, Redis, libraries, and build foundations.
 - [ ] Execute Phase I database, deployment, and final cleanup.

@@ -1,5 +1,15 @@
 # Engineering lessons
 
+## 2026-09-05 — Verify source-set and package paths before writing plans
+
+- Failure mode: an implementation plan initially placed the existing Twilio
+  contract test under a provider subpackage that does not exist.
+- Detection signal: comparing the plan’s file inventory with `find` output
+  during the self-review caught the mismatch before implementation began.
+- Prevention rule: resolve every existing test and source path with `rg --files`
+  or `find` before committing a multi-file implementation plan; mark only truly
+  new files as `Create`.
+
 ## 2026-09-05 — Externalized event consumers cannot depend on request security
 
 - Failure mode: An externalized appointment consumer read `SecurityContext` to

@@ -1253,6 +1253,21 @@ aggregate outside its tenant scope.
 - [x] Run focused services tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue the same evidence-based review across remaining entity modules.
 
+#### Current slice 18F — Enforce tenant scope on appointment updates
+
+The appointment aggregate is tenant-owned and its JPA adapter already supports
+tenant-scoped collision and listing queries, but the existing-record update
+branch still used generic `findById`. A derived Spring Data query now combines
+tenant and appointment identity for updates while leaving the application port
+unchanged. This closes the update-path isolation gap without introducing custom
+SQL or changing the provider-neutral contract.
+
+- [x] Add adapter coverage for existing appointment updates.
+- [x] Add the tenant-qualified appointment repository query.
+- [x] Update the adapter to use tenant and appointment ID together.
+- [x] Run the appointments module tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue the same evidence-based review across remaining entity modules.
+
 - [ ] **Step 1: Write failing per-module persistence tests**
 
 Use the same create/find/list/update/not-found/tenant/version/idempotency matrix

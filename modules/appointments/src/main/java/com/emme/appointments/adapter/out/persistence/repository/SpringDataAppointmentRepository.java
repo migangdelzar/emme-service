@@ -5,6 +5,7 @@ import com.emme.appointments.domain.model.AppointmentStatus;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SpringDataAppointmentRepository extends JpaRepository<AppointmentEntity, UUID> {
   List<AppointmentEntity> findByTenantId(UUID tenantId);
+
+  Optional<AppointmentEntity> findByTenantIdAndId(UUID tenantId, UUID id);
 
   List<AppointmentEntity> findByTenantIdOrderByStartsAtDesc(UUID tenantId);
 

@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-09-04 — Trigger persistence lifecycle setup in adapter fixtures
+
+- Failure mode: an adapter test returned a new JPA entity without the ID that
+  Hibernate normally assigns during `@PrePersist`.
+- Detection signal: domain rehydration failed with `id must not be null` after
+  the repository lookup itself was correctly scoped.
+- Prevention rule: when mocking a saved JPA entity, invoke its public lifecycle
+  setup or otherwise provide the persisted identity required by the mapper.
+
 ## 2026-09-04 — Reuse domain enum vocabulary in adapter tests
 
 - Failure mode: a focused persistence test used the familiar JDK day-of-week

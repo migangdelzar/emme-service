@@ -92,6 +92,15 @@
 - [x] Run focused tests, compilation, Checkstyle, and Spotless.
 - [x] Commit and push the services slice.
 
+### Current slice — Task 18F appointments tenant-scoped updates
+
+- [x] Add an adapter test for existing appointment updates.
+- [x] Replace unscoped JPA `findById` with the tenant-qualified query.
+- [x] Keep the appointment application port provider-neutral and unchanged.
+- [x] Run the full appointments module tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Commit and push the appointments slice.
+
 ### Plan working notes
 
 ### Current slice — Task 19A tenant event boundary

@@ -1,8 +1,8 @@
 package com.emme.assistant.ai.application.semantic;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
@@ -39,7 +39,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
 
   private static final String CACHE_KIND = "CHAT_INFORMATIONAL";
 
-  private final EmbeddingModelPort embeddings;
+  private final EmbeddingService legacyEmbeddings;
   private final SemanticCacheResolver resolver;
   private final SemanticCachePort cache;
   private final SemanticCachePayloadCodec codec;
@@ -55,7 +55,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
   private final AiTraceRecorder traceRecorder;
 
   public SemanticChatCache(
-      EmbeddingModelPort embeddings,
+      EmbeddingService embeddings,
       SemanticCacheResolver resolver,
       SemanticCachePort cache,
       SemanticCachePayloadCodec codec,
@@ -69,7 +69,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
       String locale,
       String quoteTemplateVersion,
       AiTraceRecorder traceRecorder) {
-    this.embeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
+    this.legacyEmbeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.resolver = Objects.requireNonNull(resolver, "resolver must not be null");
     this.cache = Objects.requireNonNull(cache, "cache must not be null");
     this.codec = Objects.requireNonNull(codec, "codec must not be null");
@@ -91,23 +91,22 @@ public final class SemanticChatCache implements SemanticResponseCache {
   }
 
   @Override
-  public Optional<String> lookup(String conversationContext, String userMessage) {
-    if (!isEligible(conversationContext, userMessage)) {
+  public Optional<String> lookup(String conversationContext, SemanticQuery query) {
+    if (!isEligible(conversationContext, query)) {
       recordLookup("bypass");
       return Optional.empty();
     }
     try {
-      EmbeddingVector query = embeddings.embed(userMessage);
       SemanticCachePort.Lookup lookup =
           new SemanticCachePort.Lookup(
               CACHE_KIND,
               contextFingerprint(conversationContext),
               promptVersion,
-              query,
+              query.embedding(),
               identityForCurrentContext());
       Optional<SemanticCachePort.Candidate> hotHit =
           hotStore
-              .flatMap(store -> safeHotLookup(store, lookup, userMessage))
+              .flatMap(store -> safeHotLookup(store, lookup, query.text()))
               .flatMap(candidates -> resolver.confirm(candidates, this::hasSafePayload));
       Optional<String> result =
           hotHit
@@ -126,18 +125,41 @@ public final class SemanticChatCache implements SemanticResponseCache {
     }
   }
 
+  /**
+   * @deprecated use {@link #lookup(String, SemanticQuery)}.
+   */
   @Override
-  public Optional<UUID> store(String conversationContext, String userMessage, String response) {
-    return store(conversationContext, userMessage, response, identityForCurrentContext());
+  @Deprecated
+  public Optional<String> lookup(String conversationContext, String userMessage) {
+    if (!isEligibleText(conversationContext, userMessage)) {
+      recordLookup("bypass");
+      return Optional.empty();
+    }
+    try {
+      return lookup(
+          conversationContext, new SemanticQuery(userMessage, legacyEmbeddings.embed(userMessage)));
+    } catch (RuntimeException failure) {
+      SemanticFailurePolicy.rethrowSecurityFailure(failure);
+      recordFailure("cache.lookup", failure);
+      recordFallback("cache.lookup", fallbackReason(failure));
+      recordSemanticFailure("cache.lookup", failure);
+      recordLookup("failure");
+      return Optional.empty();
+    }
   }
 
   @Override
-  public Optional<UUID> store(
-      String conversationContext,
-      String userMessage,
-      String response,
-      SemanticCacheIdentity producingIdentity) {
-    if (!isEligible(conversationContext, userMessage)) {
+  public Optional<UUID> store(String conversationContext, SemanticQuery query, String response) {
+    return store(conversationContext, query, response, identityForCurrentContext());
+  }
+
+  /**
+   * @deprecated use {@link #store(String, SemanticQuery, String)}.
+   */
+  @Override
+  @Deprecated
+  public Optional<UUID> store(String conversationContext, String userMessage, String response) {
+    if (!isEligibleText(conversationContext, userMessage)) {
       recordWrite("bypass");
       return Optional.empty();
     }
@@ -147,19 +169,83 @@ public final class SemanticChatCache implements SemanticResponseCache {
       return Optional.empty();
     }
     try {
-      EmbeddingVector query = embeddings.embed(userMessage);
+      return store(
+          conversationContext,
+          new SemanticQuery(userMessage, legacyEmbeddings.embed(userMessage)),
+          response);
+    } catch (RuntimeException failure) {
+      SemanticFailurePolicy.rethrowSecurityFailure(failure);
+      recordFailure("cache.store", failure);
+      recordFallback("cache.store", fallbackReason(failure));
+      recordSemanticFailure("cache.store", failure);
+      recordWrite("failure");
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * @deprecated use {@link #store(String, SemanticQuery, String, SemanticCacheIdentity)}.
+   */
+  @Deprecated
+  public Optional<UUID> store(
+      String conversationContext,
+      String userMessage,
+      String response,
+      SemanticCacheIdentity producingIdentity) {
+    if (!isEligibleText(conversationContext, userMessage)) {
+      recordWrite("bypass");
+      return Optional.empty();
+    }
+    requireText(response, "response");
+    if (!isSafeResponse(response)) {
+      recordWrite("rejected");
+      return Optional.empty();
+    }
+    try {
+      return store(
+          conversationContext,
+          new SemanticQuery(userMessage, legacyEmbeddings.embed(userMessage)),
+          response,
+          producingIdentity);
+    } catch (RuntimeException failure) {
+      SemanticFailurePolicy.rethrowSecurityFailure(failure);
+      recordFailure("cache.store", failure);
+      recordFallback("cache.store", fallbackReason(failure));
+      recordSemanticFailure("cache.store", failure);
+      recordWrite("failure");
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public Optional<UUID> store(
+      String conversationContext,
+      SemanticQuery query,
+      String response,
+      SemanticCacheIdentity producingIdentity) {
+    if (!isEligible(conversationContext, query)) {
+      recordWrite("bypass");
+      return Optional.empty();
+    }
+    requireText(response, "response");
+    if (!isSafeResponse(response)) {
+      recordWrite("rejected");
+      return Optional.empty();
+    }
+    try {
       String contextFingerprint = contextFingerprint(conversationContext);
       SemanticCacheIdentity cacheIdentity = mergeContextIdentity(producingIdentity);
       SemanticCachePort.Put write =
           new SemanticCachePort.Put(
               CACHE_KIND,
-              userMessage,
+              query.text(),
               contextFingerprint,
               promptVersion,
               codec.encodeText(response),
               Instant.now(clock).plus(ttl),
-              query,
-              writeIdempotencyKey(contextFingerprint, userMessage, query, cacheIdentity),
+              query.embedding(),
+              writeIdempotencyKey(
+                  contextFingerprint, query.text(), query.embedding(), cacheIdentity),
               cacheIdentity);
       UUID cacheId = cache.put(write);
       hotStore.ifPresent(store -> safeHotPut(store, cacheId, write));
@@ -272,7 +358,11 @@ public final class SemanticChatCache implements SemanticResponseCache {
         : "cache_unavailable";
   }
 
-  private static boolean isEligible(String conversationContext, String userMessage) {
+  private static boolean isEligible(String conversationContext, SemanticQuery query) {
+    return query != null && isEligibleText(conversationContext, query.text());
+  }
+
+  private static boolean isEligibleText(String conversationContext, String userMessage) {
     if (conversationContext != null && !conversationContext.isBlank()) {
       return false;
     }

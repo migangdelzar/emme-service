@@ -8,6 +8,8 @@ import com.emme.assistant.ai.application.port.out.ProactiveToolRouter;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
 import com.emme.assistant.ai.application.semantic.SemanticFailurePolicy;
+import com.emme.assistant.ai.application.semantic.SemanticQuery;
+import com.emme.assistant.ai.application.semantic.SemanticQueryFactory;
 import com.emme.assistant.ai.application.tool.AiToolResult;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
@@ -21,6 +23,7 @@ public class ChatService implements ChatUseCase {
   private final ChatCompletionPort chatCompletion;
   private final Optional<SemanticResponseCache> semanticCache;
   private final Optional<ProactiveToolRouter> proactiveToolRouter;
+  private final Optional<SemanticQueryFactory> semanticQueryFactory;
   private final SemanticMetrics metrics;
 
   public ChatService(
@@ -35,25 +38,40 @@ public class ChatService implements ChatUseCase {
     this(chatCompletion, semanticCache, proactiveToolRouter, NoopSemanticMetrics.INSTANCE);
   }
 
-  @Autowired
   public ChatService(
       ChatCompletionPort chatCompletion,
       Optional<SemanticResponseCache> semanticCache,
       Optional<ProactiveToolRouter> proactiveToolRouter,
       SemanticMetrics metrics) {
+    this(chatCompletion, semanticCache, proactiveToolRouter, Optional.empty(), metrics);
+  }
+
+  @Autowired
+  public ChatService(
+      ChatCompletionPort chatCompletion,
+      Optional<SemanticResponseCache> semanticCache,
+      Optional<ProactiveToolRouter> proactiveToolRouter,
+      Optional<SemanticQueryFactory> semanticQueryFactory,
+      SemanticMetrics metrics) {
     this.chatCompletion = Objects.requireNonNull(chatCompletion, "chatCompletion must not be null");
     this.semanticCache = Objects.requireNonNull(semanticCache, "semanticCache must not be null");
     this.proactiveToolRouter =
         Objects.requireNonNull(proactiveToolRouter, "proactiveToolRouter must not be null");
+    this.semanticQueryFactory =
+        Objects.requireNonNull(semanticQueryFactory, "semanticQueryFactory must not be null");
     this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");
   }
 
   @Override
   public String chat(String conversationContext, String userMessage) {
-    AiExecutionContextScope.requireCurrent();
+    var context = AiExecutionContextScope.requireCurrent();
+    Optional<SemanticQuery> semanticQuery = prepareQuery(userMessage, context);
     Optional<AiToolResult> proactiveToolResult;
     try {
-      proactiveToolResult = proactiveToolRouter.flatMap(router -> router.route(userMessage));
+      proactiveToolResult =
+          proactiveToolRouter.flatMap(
+              router ->
+                  semanticQuery.map(router::route).orElseGet(() -> router.route(userMessage)));
     } catch (RuntimeException failure) {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
       recordFallback("semantic_tool_failure");
@@ -64,7 +82,12 @@ public class ChatService implements ChatUseCase {
     }
     Optional<String> cached;
     try {
-      cached = semanticCache.flatMap(cache -> cache.lookup(conversationContext, userMessage));
+      cached =
+          semanticCache.flatMap(
+              cache ->
+                  semanticQuery
+                      .map(query -> cache.lookup(conversationContext, query))
+                      .orElseGet(() -> cache.lookup(conversationContext, userMessage)));
     } catch (RuntimeException failure) {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
       recordFallback("semantic_cache_failure");
@@ -80,17 +103,22 @@ public class ChatService implements ChatUseCase {
     try {
       semanticCache.ifPresent(
           cache -> {
-            if (completed.identified()) {
-              cache.store(
-                  conversationContext,
-                  userMessage,
-                  completedResponse,
-                  new com.emme.assistant.ai.application.semantic.SemanticCacheIdentity(
-                      completed.provider(),
-                      completed.model(),
-                      "knowledge-v1",
-                      "policy-v1",
-                      "source-v1"));
+            if (semanticQuery.isPresent()) {
+              SemanticQuery query = semanticQuery.orElseThrow();
+              if (completed.identified()) {
+                cache.store(
+                    conversationContext,
+                    query,
+                    completedResponse,
+                    new com.emme.assistant.ai.application.semantic.SemanticCacheIdentity(
+                        completed.provider(),
+                        completed.model(),
+                        "knowledge-v1",
+                        "policy-v1",
+                        "source-v1"));
+              } else {
+                cache.store(conversationContext, query, completedResponse);
+              }
             } else {
               cache.store(conversationContext, userMessage, completedResponse);
             }
@@ -101,6 +129,24 @@ public class ChatService implements ChatUseCase {
       // Semantic caching is an optimization and must not make chat unavailable.
     }
     return completedResponse;
+  }
+
+  private Optional<SemanticQuery> prepareQuery(
+      String userMessage, com.emme.kernel.context.AiExecutionContext context) {
+    if (semanticCache.isEmpty() && proactiveToolRouter.isEmpty()) {
+      return Optional.empty();
+    }
+    if (semanticQueryFactory.isEmpty()) {
+      recordFallback("semantic_query_unavailable");
+      return Optional.empty();
+    }
+    try {
+      return Optional.of(semanticQueryFactory.orElseThrow().create(userMessage, context));
+    } catch (RuntimeException failure) {
+      SemanticFailurePolicy.rethrowSecurityFailure(failure);
+      recordFallback("semantic_query_failure");
+      return Optional.empty();
+    }
   }
 
   private static Completion complete(

@@ -5,12 +5,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ProactiveToolRouter;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
+import com.emme.assistant.ai.application.semantic.EmbeddingSemanticQueryFactory;
+import com.emme.assistant.ai.application.semantic.SemanticQuery;
 import com.emme.assistant.ai.application.tool.AiToolResult;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -20,6 +24,36 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class ChatServiceTest {
+
+  @Test
+  void preparesOneEmbeddingWhenToolRoutingAndSemanticCacheShareTheTurn() {
+    ChatCompletionPort model = mock(ChatCompletionPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
+    ProactiveToolRouter router = mock(ProactiveToolRouter.class);
+    SemanticResponseCache cache = mock(SemanticResponseCache.class);
+    SemanticQuery query =
+        new SemanticQuery(
+            "What are your hours?",
+            com.emme.assistant.ai.EmbeddingTestVectors.testEmbedding("embedding-v1", 1.0f, 0.0f));
+    when(embeddings.embed("What are your hours?")).thenReturn(query.embedding());
+    when(router.route(query)).thenReturn(Optional.empty());
+    when(cache.lookup("", query)).thenReturn(Optional.empty());
+    when(model.complete("", "What are your hours?")).thenReturn("Open today.");
+    ChatService service =
+        new ChatService(
+            model,
+            Optional.of(cache),
+            Optional.of(router),
+            Optional.of(new EmbeddingSemanticQueryFactory(embeddings)),
+            mock(SemanticMetrics.class));
+
+    assertThat(inContext(() -> service.chat("", "What are your hours?"))).isEqualTo("Open today.");
+
+    verify(embeddings).embed("What are your hours?");
+    verifyNoMoreInteractions(embeddings);
+    verify(router).route(query);
+    verify(cache).lookup("", query);
+  }
 
   @Test
   void rejectsChatWithoutBackendAiExecutionContext() {

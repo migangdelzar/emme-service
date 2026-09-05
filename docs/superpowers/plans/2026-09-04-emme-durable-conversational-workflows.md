@@ -390,8 +390,8 @@ values and receive new embeddings. `ProactiveToolRouter.route(SemanticQuery quer
 prepared value directly; tools and cache remain separate responsibilities rather than being
 combined behind a generic fast-path abstraction.
 
-- [ ] **Step 1: Write failing tests.** Prove that a message checked for a semantic tool and semantic cache calls the embedding service once; prove a cache miss calls normal chat; prove an empty authorized-tool set does not call embeddings.
-- [ ] **Step 2: Run focused tests.** Run:
+- [x] **Step 1: Write failing tests.** Prove that a message checked for a semantic tool and semantic cache calls the embedding service once; prove a cache miss calls normal chat; prove an empty authorized-tool set does not call embeddings.
+- [x] **Step 2: Run focused tests.** Run:
 
   ```bash
   ./gradlew :modules:assistant:test --tests '*ChatServiceTest' \
@@ -399,9 +399,9 @@ combined behind a generic fast-path abstraction.
   ```
 
   Expected result: the duplicate embedding invocation assertion fails and the new `SemanticQuery` type is absent.
-- [ ] **Step 3: Implement the shared query object and fast path.** Keep semantic cache eligibility, identity, TTL, and safety checks unchanged; pass the prepared query into tool and cache operations instead of embedding independently.
-- [ ] **Step 4: Refactor and verify.** Confirm semantic failures still produce safe misses/abstentions, security failures still propagate, and normal chat remains the fallback after a miss.
-- [ ] **Step 5: Commit.**
+- [x] **Step 3: Implement the shared query object and fast path.** Keep semantic cache eligibility, identity, TTL, and safety checks unchanged; pass the prepared query into tool and cache operations instead of embedding independently.
+- [x] **Step 4: Refactor and verify.** Confirm semantic failures still produce safe misses/abstentions, security failures still propagate, and normal chat remains the fallback after a miss.
+- [x] **Step 5: Commit.**
 
   ```bash
   git add modules/assistant

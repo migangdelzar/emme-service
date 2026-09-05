@@ -5,6 +5,8 @@ import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.ai.platform.configuration.SpringAiObservationConventions;
 import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
+import com.emme.assistant.ai.application.semantic.EmbeddingSemanticQueryFactory;
+import com.emme.assistant.ai.application.semantic.SemanticQueryFactory;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import io.micrometer.observation.ObservationRegistry;
@@ -86,5 +88,11 @@ public class SpringAiEmbeddingConfiguration {
 
   EmbeddingModelPort embeddingModel(SpringAiEmbeddingProviderRegistry registry) {
     return new EmbeddingModelSelector(registry.providers());
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  SemanticQueryFactory semanticQueryFactory(EmbeddingModelPort embeddings) {
+    return new EmbeddingSemanticQueryFactory(embeddings);
   }
 }

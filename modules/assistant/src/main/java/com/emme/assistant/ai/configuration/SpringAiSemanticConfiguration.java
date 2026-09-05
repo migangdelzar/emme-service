@@ -63,11 +63,8 @@ public class SpringAiSemanticConfiguration {
   @Bean
   @ConditionalOnMissingBean
   SemanticProactiveToolRouter semanticProactiveToolRouter(
-      EmbeddingModelPort embeddings,
-      SemanticToolSelector selector,
-      AiToolGateway gateway,
-      SemanticRoutingProperties properties) {
-    return new SemanticProactiveToolRouter(embeddings, selector, gateway, properties.locale());
+      SemanticToolSelector selector, AiToolGateway gateway, SemanticRoutingProperties properties) {
+    return new SemanticProactiveToolRouter(selector, gateway, properties.locale());
   }
 
   @Bean

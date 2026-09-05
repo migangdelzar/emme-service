@@ -1,5 +1,14 @@
 # Service architecture migration checklist
 
+## Current execution checkpoint — framework-first plan / durable Task 3 — 2026-09-05
+
+- [x] Synchronize the shared-turn semantic design with the provider-neutral application ports.
+- [x] Write the failing test for one embedding shared by tool routing and semantic cache lookup.
+- [x] Add `SemanticQuery` and `SemanticQueryFactory` at the operation boundary.
+- [x] Route semantic tools and cache operations through the prepared query.
+- [x] Preserve deprecated string compatibility until the planned compatibility-cleanup task.
+- [x] Run focused tests, full Assistant tests, integration-test compilation, and Spotless.
+
 ## Current execution checkpoint — framework-first plan / durable Task 1 — 2026-09-05
 
 - [x] Synchronize `feat/ai-platform-foundation` with its remote branch.

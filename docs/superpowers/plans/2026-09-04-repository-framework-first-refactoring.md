@@ -2529,6 +2529,8 @@ the existing already-synced or already-gone idempotency behavior.
 - [x] Mark failed client links before rethrowing provider failures.
 - [x] Preserve existing link-reuse and HTTP 410 deletion behavior.
 - [x] Run the full Calendar unit suite and formatting checks.
+- [x] Re-run the repository framework checkpoint: `./gradlew check
+      --no-parallel --no-configuration-cache` passed (258 actionable tasks).
 - [ ] Run live client provider retry/reconciliation checks when PostgreSQL and
       Google infrastructure are available.
 

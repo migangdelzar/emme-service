@@ -228,6 +228,8 @@
 - [x] Mark the client event link failed before rethrowing the provider error.
 - [x] Preserve existing link reuse and already-gone deletion behavior.
 - [x] Run the full Calendar unit suite and formatting checks.
+- [x] Re-run `./gradlew check --no-parallel --no-configuration-cache` (258
+      actionable tasks passed).
 - [ ] Run live client provider retry/reconciliation checks when PostgreSQL and
       Google infrastructure are available.
 

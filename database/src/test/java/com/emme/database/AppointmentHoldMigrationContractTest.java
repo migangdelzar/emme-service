@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Test;
 
 class AppointmentHoldMigrationContractTest {
 
-  private static final String MIGRATION =
-      "db/emme-studio/releases/0.1.0/035-appointment-holds.sql";
+  private static final String MIGRATION = "db/emme-studio/releases/0.1.0/035-appointment-holds.sql";
 
   @Test
   void createsAnIdempotentTenantScopedAppointmentHoldTable() throws IOException {

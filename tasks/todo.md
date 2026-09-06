@@ -4031,6 +4031,17 @@ appointment mutation tools are registered.
 - [x] Run the focused delivery-guard test.
 - [ ] Continue with Spring AI advisor and composition-root wiring.
 
+#### Task 8 guard composition slice
+
+- [x] Add a red composition-root test for all typed guard beans and the
+      ordered pipeline.
+- [x] Wire default guard beans and `GuardrailPipeline` through
+      `SpringAiAdvisorConfiguration`.
+- [x] Derive tool allow-list and staff-only keys from typed tool definitions.
+- [x] Run the focused configuration test and Spotless.
+- [ ] Add Spring AI input/output/grounding advisors and invoke the pipeline at
+      application boundaries.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

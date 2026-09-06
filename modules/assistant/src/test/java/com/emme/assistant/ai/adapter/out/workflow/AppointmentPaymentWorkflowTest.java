@@ -11,6 +11,7 @@ import com.emme.ai.contracts.workflow.WorkflowHandle;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
 import com.emme.appointments.api.usecase.ConfirmAppointmentUseCase;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowAppointmentRepository;
+import com.emme.assistant.ai.application.port.out.PaymentWorkflowCheckpointRepository;
 import com.emme.kernel.context.AiExecutionContext;
 import java.util.Set;
 import java.util.UUID;
@@ -21,10 +22,13 @@ class AppointmentPaymentWorkflowTest {
   @Test
   void waitsForPaymentUntilTheVerifiedEventIsCaptured() {
     AiExecutionContext context = context();
+    PaymentWorkflowCheckpointRepository checkpoints =
+        mock(PaymentWorkflowCheckpointRepository.class);
     AppointmentPaymentWorkflow workflow =
         new AppointmentPaymentWorkflow(
             mock(ConfirmAppointmentUseCase.class),
-            mock(PaymentWorkflowAppointmentRepository.class));
+            mock(PaymentWorkflowAppointmentRepository.class),
+            checkpoints);
 
     WorkflowHandle handle =
         workflow.resume(
@@ -39,6 +43,7 @@ class AppointmentPaymentWorkflowTest {
 
     assertThat(handle.status()).isEqualTo(WorkflowStatus.WAITING_FOR_PAYMENT);
     assertThat(handle.version()).isZero();
+    verify(checkpoints).record(context, handle);
   }
 
   @Test
@@ -48,10 +53,12 @@ class AppointmentPaymentWorkflowTest {
     ConfirmAppointmentUseCase confirmations = mock(ConfirmAppointmentUseCase.class);
     PaymentWorkflowAppointmentRepository appointments =
         mock(PaymentWorkflowAppointmentRepository.class);
+    PaymentWorkflowCheckpointRepository checkpoints =
+        mock(PaymentWorkflowCheckpointRepository.class);
     when(appointments.findAppointmentIdByWorkflowId(context.workflowId()))
         .thenReturn(java.util.Optional.of(appointmentId));
     WorkflowHandle handle =
-        new AppointmentPaymentWorkflow(confirmations, appointments)
+        new AppointmentPaymentWorkflow(confirmations, appointments, checkpoints)
             .resume(
                 new PaymentWorkflowEvent(
                     context.tenantId(),
@@ -65,6 +72,7 @@ class AppointmentPaymentWorkflowTest {
     assertThat(handle.status()).isEqualTo(WorkflowStatus.SUCCEEDED);
     assertThat(handle.version()).isEqualTo(1);
     verify(confirmations).confirm(appointmentId);
+    verify(checkpoints).record(context, handle);
   }
 
   @Test
@@ -75,7 +83,8 @@ class AppointmentPaymentWorkflowTest {
             () ->
                 new AppointmentPaymentWorkflow(
                         mock(ConfirmAppointmentUseCase.class),
-                        mock(PaymentWorkflowAppointmentRepository.class))
+                        mock(PaymentWorkflowAppointmentRepository.class),
+                        mock(PaymentWorkflowCheckpointRepository.class))
                     .resume(
                         new PaymentWorkflowEvent(
                             context.tenantId(),

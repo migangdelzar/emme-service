@@ -228,6 +228,13 @@
       only non-expired holds before confirmation.
 - [x] Add the enabled-only appointment workflow composition root and explicit
       hold-duration configuration; disabled LangGraph startup remains unaffected.
+- [x] Add the forward workflow-status migration required for durable
+      `WAITING_FOR_PAYMENT` checkpoints.
+- [x] Add tenant-routed atomic payment-resume claiming and checkpoint recording;
+      duplicate callback delivery no longer re-enters the payment workflow.
+- [x] Release a claimed payment resume back to `WAITING_FOR_PAYMENT` when
+      confirmation fails, preserving retryability.
+- [x] Persist booking/payment workflow handles at each typed mutation edge.
 - [ ] Wire the resumed payment workflow into the appointment graph's durable
       checkpointed mutation edge and final appointment confirmation.
 

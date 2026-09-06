@@ -10,6 +10,7 @@ import com.emme.assistant.ai.adapter.out.persistence.PaymentWorkflowAppointmentR
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentBookingWorkflow;
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentPaymentWorkflow;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowAppointmentRepository;
+import com.emme.assistant.ai.application.port.out.PaymentWorkflowCheckpointRepository;
 import com.emme.payment.api.usecase.CreatePaymentLinkUseCase;
 import com.emme.payment.application.port.out.PaymentLinkRepository;
 import com.emme.payment.application.port.out.PaymentLinkSourceRepository;
@@ -64,13 +65,17 @@ public class AppointmentWorkflowCompositionConfiguration {
 
   @Bean
   AppointmentBookingWorkflow appointmentBookingWorkflow(
-      CreateAppointmentHoldUseCase holds, CreatePaymentLinkUseCase paymentLinks) {
-    return new AppointmentBookingWorkflow(holds, paymentLinks);
+      CreateAppointmentHoldUseCase holds,
+      CreatePaymentLinkUseCase paymentLinks,
+      PaymentWorkflowCheckpointRepository checkpoints) {
+    return new AppointmentBookingWorkflow(holds, paymentLinks, checkpoints);
   }
 
   @Bean
   PaymentWorkflow appointmentPaymentWorkflow(
-      ConfirmAppointmentUseCase confirmations, PaymentWorkflowAppointmentRepository appointments) {
-    return new AppointmentPaymentWorkflow(confirmations, appointments);
+      ConfirmAppointmentUseCase confirmations,
+      PaymentWorkflowAppointmentRepository appointments,
+      PaymentWorkflowCheckpointRepository checkpoints) {
+    return new AppointmentPaymentWorkflow(confirmations, appointments, checkpoints);
   }
 }

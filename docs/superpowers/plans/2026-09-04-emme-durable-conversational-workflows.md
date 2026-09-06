@@ -1084,7 +1084,13 @@ relationship through forward migration `038-ai-payment-workflow-hold.sql`, and t
 rejects expired holds before confirmation. Checkpoint state persistence and the
 booking/payment composition root are now enabled only with LangGraph, with an explicit
 15-minute configurable hold duration and no workflow beans when the graph is disabled.
-Checkpoint state persistence and the final graph mutation edge remain for the next slice.
+Forward migration `039-ai-payment-workflow-status.sql` now permits the durable
+`WAITING_FOR_PAYMENT` checkpoint status. Checkpoint state persistence and the final graph
+mutation edge are now wired through a tenant-routed JDBC checkpoint port: payment callbacks
+claim only an owned `WAITING_FOR_PAYMENT` run, duplicate claims are skipped, and typed booking/
+payment handles are recorded after each transition; failed resumes release the claim back to
+`WAITING_FOR_PAYMENT`. The PostgreSQL runtime concurrency and resume evidence remains
+Docker-gated.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.

@@ -6,6 +6,7 @@ import com.emme.ai.contracts.workflow.WorkflowHandle;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
 import com.emme.appointments.api.usecase.ConfirmAppointmentUseCase;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowAppointmentRepository;
+import com.emme.assistant.ai.application.port.out.PaymentWorkflowCheckpointRepository;
 import com.emme.kernel.context.AiExecutionContext;
 import java.util.Objects;
 import java.util.UUID;
@@ -15,11 +16,15 @@ public final class AppointmentPaymentWorkflow implements PaymentWorkflow {
 
   private final ConfirmAppointmentUseCase confirmations;
   private final PaymentWorkflowAppointmentRepository appointments;
+  private final PaymentWorkflowCheckpointRepository checkpoints;
 
   public AppointmentPaymentWorkflow(
-      ConfirmAppointmentUseCase confirmations, PaymentWorkflowAppointmentRepository appointments) {
+      ConfirmAppointmentUseCase confirmations,
+      PaymentWorkflowAppointmentRepository appointments,
+      PaymentWorkflowCheckpointRepository checkpoints) {
     this.confirmations = Objects.requireNonNull(confirmations, "confirmations must not be null");
     this.appointments = Objects.requireNonNull(appointments, "appointments must not be null");
+    this.checkpoints = Objects.requireNonNull(checkpoints, "checkpoints must not be null");
   }
 
   @Override
@@ -29,23 +34,27 @@ public final class AppointmentPaymentWorkflow implements PaymentWorkflow {
     if (!context.workflowId().equals(event.workflowId())) {
       throw new SecurityException("workflowId does not match AI execution context");
     }
-    return switch (event.status()) {
-      case "PENDING", "AUTHORIZED" ->
-          new WorkflowHandle(context.workflowId(), WorkflowStatus.WAITING_FOR_PAYMENT, 0);
-      case "CAPTURED" -> {
-        UUID appointmentId =
-            appointments
-                .findAppointmentIdByWorkflowId(context.workflowId())
-                .orElseThrow(
-                    () ->
-                        new IllegalStateException(
-                            "No appointment is owned by payment workflow " + context.workflowId()));
-        confirmations.confirm(appointmentId);
-        yield new WorkflowHandle(context.workflowId(), WorkflowStatus.SUCCEEDED, 1);
-      }
-      case "DECLINED", "CANCELLED", "REFUNDED" ->
-          new WorkflowHandle(context.workflowId(), WorkflowStatus.FAILED, 1);
-      default -> throw new IllegalStateException("Unsupported payment workflow status");
-    };
+    WorkflowHandle handle =
+        switch (event.status()) {
+          case "PENDING", "AUTHORIZED" ->
+              new WorkflowHandle(context.workflowId(), WorkflowStatus.WAITING_FOR_PAYMENT, 0);
+          case "CAPTURED" -> {
+            UUID appointmentId =
+                appointments
+                    .findAppointmentIdByWorkflowId(context.workflowId())
+                    .orElseThrow(
+                        () ->
+                            new IllegalStateException(
+                                "No appointment is owned by payment workflow "
+                                    + context.workflowId()));
+            confirmations.confirm(appointmentId);
+            yield new WorkflowHandle(context.workflowId(), WorkflowStatus.SUCCEEDED, 1);
+          }
+          case "DECLINED", "CANCELLED", "REFUNDED" ->
+              new WorkflowHandle(context.workflowId(), WorkflowStatus.FAILED, 1);
+          default -> throw new IllegalStateException("Unsupported payment workflow status");
+        };
+    checkpoints.record(context, handle);
+    return handle;
   }
 }

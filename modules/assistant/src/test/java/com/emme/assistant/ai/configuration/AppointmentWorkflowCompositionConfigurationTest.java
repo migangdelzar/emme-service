@@ -10,6 +10,7 @@ import com.emme.appointments.application.port.out.AppointmentHoldRepository;
 import com.emme.appointments.application.port.out.AppointmentRepository;
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentBookingWorkflow;
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentPaymentWorkflow;
+import com.emme.assistant.ai.application.port.out.PaymentWorkflowCheckpointRepository;
 import com.emme.payment.api.usecase.CreatePaymentLinkUseCase;
 import com.emme.payment.application.port.out.PaymentLinkRepository;
 import com.emme.payment.application.port.out.PaymentLinkSourceRepository;
@@ -32,7 +33,10 @@ class AppointmentWorkflowCompositionConfigurationTest {
           .withBean(
               PaymentWorkflowCorrelationRepository.class,
               () -> mock(PaymentWorkflowCorrelationRepository.class))
-          .withBean(ConfirmAppointmentUseCase.class, () -> mock(ConfirmAppointmentUseCase.class));
+          .withBean(ConfirmAppointmentUseCase.class, () -> mock(ConfirmAppointmentUseCase.class))
+          .withBean(
+              PaymentWorkflowCheckpointRepository.class,
+              () -> mock(PaymentWorkflowCheckpointRepository.class));
 
   @Test
   void composesAppointmentAndPaymentWorkflowsOnlyWhenLangGraphIsEnabled() {

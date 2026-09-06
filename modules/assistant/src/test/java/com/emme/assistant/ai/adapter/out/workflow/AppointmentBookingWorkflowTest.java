@@ -11,6 +11,7 @@ import com.emme.ai.contracts.payment.PaymentLink;
 import com.emme.ai.contracts.workflow.WorkflowCommand;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
 import com.emme.appointments.api.usecase.CreateAppointmentHoldUseCase;
+import com.emme.assistant.ai.application.port.out.PaymentWorkflowCheckpointRepository;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.payment.api.usecase.CreatePaymentLinkUseCase;
 import java.time.Instant;
@@ -25,6 +26,8 @@ class AppointmentBookingWorkflowTest {
   void waitsForConfirmationBeforeCreatingAMutation() {
     CreateAppointmentHoldUseCase holds = mock(CreateAppointmentHoldUseCase.class);
     CreatePaymentLinkUseCase links = mock(CreatePaymentLinkUseCase.class);
+    PaymentWorkflowCheckpointRepository checkpoints =
+        mock(PaymentWorkflowCheckpointRepository.class);
     AiExecutionContext context = context();
     WorkflowCommand command =
         new WorkflowCommand(
@@ -33,17 +36,21 @@ class AppointmentBookingWorkflowTest {
             Map.of("appointmentId", UUID.randomUUID().toString(), "requiresPayment", true),
             context.idempotencyKey());
 
-    var handle = new AppointmentBookingWorkflow(holds, links).startOrResume(command, context);
+    var workflow = new AppointmentBookingWorkflow(holds, links, checkpoints);
+    var handle = workflow.startOrResume(command, context);
 
     assertThat(handle.status()).isEqualTo(WorkflowStatus.WAITING_FOR_CONFIRMATION);
     assertThat(handle.version()).isZero();
     verifyNoInteractions(holds, links);
+    verify(checkpoints).record(context, handle);
   }
 
   @Test
   void createsAHoldAndPaymentLinkOnlyAfterConfirmation() {
     CreateAppointmentHoldUseCase holds = mock(CreateAppointmentHoldUseCase.class);
     CreatePaymentLinkUseCase links = mock(CreatePaymentLinkUseCase.class);
+    PaymentWorkflowCheckpointRepository checkpoints =
+        mock(PaymentWorkflowCheckpointRepository.class);
     AiExecutionContext context = context();
     UUID appointmentId = UUID.randomUUID();
     UUID holdId = UUID.randomUUID();
@@ -72,12 +79,14 @@ class AppointmentBookingWorkflowTest {
                 "requiresPayment", true),
             context.idempotencyKey());
 
-    var handle = new AppointmentBookingWorkflow(holds, links).startOrResume(command, context);
+    var workflow = new AppointmentBookingWorkflow(holds, links, checkpoints);
+    var handle = workflow.startOrResume(command, context);
 
     assertThat(handle.status()).isEqualTo(WorkflowStatus.WAITING_FOR_PAYMENT);
     assertThat(handle.version()).isEqualTo(1);
     verify(holds).create(anyHold(appointmentId, context.idempotencyKey()));
     verify(links).create(anyPaymentLink(context.workflowId(), holdId));
+    verify(checkpoints).record(context, handle);
   }
 
   private static com.emme.appointments.api.command.CreateAppointmentHoldCommand anyHold(

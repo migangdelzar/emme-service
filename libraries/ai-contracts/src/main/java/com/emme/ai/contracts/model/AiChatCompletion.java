@@ -18,8 +18,8 @@ public interface AiChatCompletion {
       ProviderPolicy providerPolicy) {
 
     public Request {
-      conversationContext = requireText(conversationContext, "conversationContext");
-      userMessage = requireText(userMessage, "userMessage");
+      conversationContext = allowEmptyText(conversationContext, "conversationContext");
+      userMessage = allowEmptyText(userMessage, "userMessage");
       executionContext =
           Objects.requireNonNull(executionContext, "executionContext must not be null");
       providerPolicy = Objects.requireNonNull(providerPolicy, "providerPolicy must not be null");
@@ -40,11 +40,8 @@ public interface AiChatCompletion {
     }
   }
 
-  private static String requireText(String value, String field) {
+  private static String allowEmptyText(String value, String field) {
     Objects.requireNonNull(value, field + " must not be null");
-    if (value.isBlank()) {
-      throw new IllegalArgumentException(field + " must not be blank");
-    }
     return value;
   }
 }

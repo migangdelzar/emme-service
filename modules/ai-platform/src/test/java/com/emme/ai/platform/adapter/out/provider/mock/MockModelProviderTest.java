@@ -3,6 +3,8 @@ package com.emme.ai.platform.adapter.out.provider.mock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -45,6 +47,39 @@ class MockModelProviderTest {
         .contains("hello");
     assertThat(AiExecutionContextScope.call(context, () -> provider.embed("hello")))
         .hasSize(providerEmbeddingDimension());
+  }
+
+  @Test
+  void providesTheCanonicalChatCapabilityWithProviderIdentity() {
+    AiExecutionContext context = context();
+
+    ChatResponse response =
+        AiExecutionContextScope.call(
+            context,
+            () ->
+                ((AiChatCompletion) provider)
+                    .complete(
+                        new AiChatCompletion.Request(
+                            "context",
+                            "hello",
+                            context,
+                            new AiChatCompletion.ProviderPolicy(
+                                java.util.List.of("mock"), false))));
+
+    assertThat(response.content()).contains("hello");
+    assertThat(response.provider()).isEqualTo("mock");
+    assertThat(response.modelVersion()).isEqualTo("mock-v1");
+  }
+
+  private static AiExecutionContext context() {
+    return new AiExecutionContext(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        Set.of("ROLE_CLIENT"),
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        "trace-mock",
+        "idempotency-mock");
   }
 
   private int providerEmbeddingDimension() {

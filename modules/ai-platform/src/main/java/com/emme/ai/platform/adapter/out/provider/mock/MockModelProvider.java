@@ -1,6 +1,8 @@
 package com.emme.ai.platform.adapter.out.provider.mock;
 
+import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "app.ai.provider", havingValue = "mock", matchIfMissing = true)
-public class MockModelProvider implements AiModelProvider {
+public class MockModelProvider implements AiModelProvider, AiChatCompletion {
 
   private final AiProviderProperties props;
 
@@ -38,6 +40,16 @@ public class MockModelProvider implements AiModelProvider {
         + userMessage
         + "\". "
         + "Configure a real AI provider (Ollama/OpenAI) for intelligent responses.";
+  }
+
+  @Override
+  public ChatResponse complete(Request request) {
+    AiExecutionContextScope.requireCurrent();
+    if (!request.providerPolicy().admittedProviders().contains(name())) {
+      throw new IllegalArgumentException("chat provider is not admitted by the request policy");
+    }
+    return new ChatResponse(
+        chat(request.conversationContext(), request.userMessage()), name(), "mock-v1", 0, 0);
   }
 
   /**

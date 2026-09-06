@@ -1601,3 +1601,16 @@
 - **Prevention rule:** When ownership moves across a boundary, update fixtures
   to inject failures at the new owner and use distinct prepared values for
   identity-sensitive assertions.
+
+## 2026-09-05 — Preserve compatibility edge cases during canonical contract migration
+
+- **Failure mode:** A canonical chat request initially rejected blank user
+  messages, changing the existing mock endpoint behavior from a graceful 200
+  response to a 404 handled by the shared exception mapper.
+- **Detection signal:** The full Assistant test checkpoint failed in
+  `AiModuleTest.shouldHandleEmptyMessageGracefully` after focused adapter tests
+  were already green.
+- **Prevention rule:** Before replacing a compatibility path, run its boundary
+  tests, including empty and provider-specific graceful-degradation cases; keep
+  validation strict for required metadata while preserving documented input
+  semantics.

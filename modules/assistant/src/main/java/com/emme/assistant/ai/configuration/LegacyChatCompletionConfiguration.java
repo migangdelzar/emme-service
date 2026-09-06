@@ -1,13 +1,16 @@
 package com.emme.assistant.ai.configuration;
 
-import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
+import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.provider.ChatProviderFailurePolicy;
 import com.emme.assistant.ai.application.provider.TracingChatCompletionPort;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
+import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -26,23 +29,33 @@ public class LegacyChatCompletionConfiguration {
   @Bean(name = "aiLegacyChatCompletion")
   @ConditionalOnMissingBean(IdentifiedChatCompletionPort.class)
   IdentifiedChatCompletionPort legacyChatCompletion(
-      AiModelProvider provider,
+      AiChatCompletion completion,
+      AiProviderProperties properties,
       ModelExecutionScheduler scheduler,
       AiExecutorProperties executionProperties,
       AiTraceRecorder traceRecorder) {
+    String providerKey = properties.provider();
     ChatCompletionPort legacyModel =
         (conversationContext, userMessage) -> {
           try {
-            return provider.chat(conversationContext, userMessage);
+            var context = AiExecutionContextScope.requireCurrent();
+            ChatResponse response =
+                completion.complete(
+                    new AiChatCompletion.Request(
+                        conversationContext,
+                        userMessage,
+                        context,
+                        new AiChatCompletion.ProviderPolicy(List.of(providerKey), false)));
+            return response.content();
           } catch (RuntimeException failure) {
-            throw ChatProviderFailurePolicy.preserveInputOrUnavailable(provider.name(), failure);
+            throw ChatProviderFailurePolicy.preserveInputOrUnavailable(providerKey, failure);
           }
         };
     ChatCompletionPort tracedModel =
         new TracingChatCompletionPort(
-            legacyModel, provider.name(), "legacy-model", "chat-v1", traceRecorder);
+            legacyModel, providerKey, "legacy-model", "chat-v1", traceRecorder);
     return new ChatModelSelector(
-        List.of(new ChatModelSelector.Provider(provider.name(), tracedModel, "legacy-model")),
+        List.of(new ChatModelSelector.Provider(providerKey, tracedModel, "legacy-model")),
         scheduler,
         executionProperties.modelAdmissionTimeout());
   }

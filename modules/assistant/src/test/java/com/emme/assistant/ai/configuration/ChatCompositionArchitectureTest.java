@@ -60,6 +60,16 @@ class ChatCompositionArchitectureTest {
         .contains("new TracingChatCompletionPort");
   }
 
+  @Test
+  void legacyChatCompositionDoesNotDependOnTheCompositeModelProvider() throws IOException {
+    String legacyChat =
+        Files.readString(
+            sourcePath(
+                "modules/assistant/src/main/java/com/emme/assistant/ai/configuration/LegacyChatCompletionConfiguration.java"));
+
+    assertThat(legacyChat).doesNotContain("AiModelProvider");
+  }
+
   private static Path sourcePath(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {

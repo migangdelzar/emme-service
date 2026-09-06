@@ -58,6 +58,19 @@
       default chat, embedding, retrieval, and image callers have replacement
       beans and focused tests.
 
+## Current slice — canonical chat composition cleanup — 2026-09-05
+
+- [x] Add the failing architecture test for legacy chat's composite-provider
+      dependency.
+- [x] Add provider-identified `AiChatCompletion` adapters for Spring AI and
+      the mock provider.
+- [x] Migrate legacy chat composition and tests to the canonical boundary.
+- [x] Preserve empty conversation and mock empty-message behavior.
+- [x] Run AI-contracts, AI-platform, all Assistant tests, integration-source
+      compilation, and Spotless.
+- [ ] Continue with embedding, image, and retrieval caller migrations before
+      deleting `SpringAiModelProvider`.
+
 ## Current slice — Assistant context regression — 2026-09-05
 
 - [x] Reproduce the full Assistant phase-checkpoint failure caused by two

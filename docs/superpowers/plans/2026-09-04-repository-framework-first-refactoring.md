@@ -451,6 +451,29 @@ without changing embedding metadata or selection behavior.
 - [x] Keep Spring AI's provider-internal `EmbeddingModel` imports unchanged.
 - [x] Run AI-contracts, AI-platform, and Assistant compilation and focused tests.
 
+#### Current slice 6K — Route legacy chat composition through the canonical capability
+
+The legacy Assistant chat composition no longer consumes the deprecated
+composite `AiModelProvider`. Spring AI's default Ollama and Groq composition
+roots now expose provider-identified `AiChatCompletion` adapters, while the
+mock provider implements the same capability for tests and retains the
+composite contract only for the still-pending embedding, image, and retrieval
+compatibility callers. The canonical request preserves first-turn empty
+conversation context and the existing mock empty-message HTTP behavior.
+
+- [x] Add an architecture test proving legacy chat composition does not import
+      `AiModelProvider`.
+- [x] Add the provider-identified Spring AI `AiChatCompletion` adapter and
+      configuration beans.
+- [x] Migrate `LegacyChatCompletionConfiguration` and its tests to the
+      canonical chat request/response contract.
+- [x] Preserve mock provider compatibility and provider admission/context
+      checks.
+- [x] Run AI-contracts, AI-platform, Assistant, integration-source, and
+      Spotless verification gates.
+- [ ] Migrate remaining composite embedding, image, and retrieval callers
+      before deleting `SpringAiModelProvider`.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

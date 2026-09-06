@@ -1144,6 +1144,20 @@ remain tracked for later deletion.
       `EmbeddingService`.
 - [x] Delete the compatibility source and run Assistant verification gates.
 
+#### Current compatibility slice — canonical chat completion boundary
+
+Legacy Assistant chat composition now consumes `AiChatCompletion` rather than
+the deprecated composite `AiModelProvider`. Provider-identified Spring AI
+adapters and mock coverage preserve execution-context and provider-admission
+policy, while the composite provider remains only for the embedding, image,
+and retrieval callers that still need migration.
+
+- [x] Add canonical chat adapter and composition-root coverage.
+- [x] Migrate legacy chat composition and preserve empty-input compatibility.
+- [x] Verify AI-contract, AI-platform, and Assistant gates.
+- [ ] Migrate the remaining composite capability callers before deleting the
+      composite provider.
+
 **Files:**
 
 - Modify/delete deprecated embedding aliases only after repository-wide caller search:

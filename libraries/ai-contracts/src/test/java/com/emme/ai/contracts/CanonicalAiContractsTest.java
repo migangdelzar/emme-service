@@ -53,6 +53,32 @@ class CanonicalAiContractsTest {
   }
 
   @Test
+  void chatCompletionAllowsAnEmptyConversationContextForFirstTurnAndGroundedAnswers() {
+    AiExecutionContext context = executionContext();
+
+    var request =
+        new AiChatCompletion.Request(
+            "",
+            "new question",
+            context,
+            new AiChatCompletion.ProviderPolicy(List.of("ollama"), false));
+
+    assertThat(request.conversationContext()).isEmpty();
+  }
+
+  @Test
+  void chatCompletionAllowsAnEmptyUserMessageForProviderSpecificGracefulHandling() {
+    var request =
+        new AiChatCompletion.Request(
+            "context",
+            "",
+            executionContext(),
+            new AiChatCompletion.ProviderPolicy(List.of("mock"), false));
+
+    assertThat(request.userMessage()).isEmpty();
+  }
+
+  @Test
   void embeddingServiceReturnsTheVersionedSharedVector() {
     EmbeddingVector expected = new EmbeddingVector(List.of(0.1f, 0.2f, 0.3f), MODEL);
     EmbeddingService embeddings = text -> expected;

@@ -336,9 +336,9 @@ gone.
 
 | Implementation path | Status | Blocking condition or deletion evidence |
 |---|---|---|
-| `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java` | Pending | Assistant and legacy compatibility callers still depend on the composite provider contract; migrate callers behind the canonical chat/embedding ports first |
+| `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java` | Pending | Embedding, image, and document-retrieval compatibility callers still depend on the composite provider contract; legacy chat composition now uses `AiChatCompletion`, so migrate the remaining capability callers before deletion |
 | `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatModel.java` | Deleted | Library alias removed in `8009b011` on 2026-09-05; Spring AI's provider-internal `ChatModel` and the Assistant compatibility port remain distinct |
-| `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/EmbeddingModel.java` | Deleted | Library alias removed in `2026-09-05` compatibility cleanup; Spring AI's provider-internal `EmbeddingModel` remains distinct |
+| `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/EmbeddingModel.java` | Deleted | Library alias removed in `9361a31a` on 2026-09-05; Spring AI's provider-internal `EmbeddingModel` remains distinct |
 | `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/EmbeddingModelPort.java` | Deleted | Canonical `EmbeddingService` migration completed in `42e60a4a` on 2026-09-05; production/test caller searches are clean and Assistant focused tests pass |
 | `modules/payment/src/main/java/com/emme/payment/configuration/PaymentHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |
 | `modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |

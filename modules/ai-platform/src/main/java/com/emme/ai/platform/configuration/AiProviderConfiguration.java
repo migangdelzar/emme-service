@@ -1,9 +1,11 @@
 package com.emme.ai.platform.configuration;
 
+import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.semantic.DistanceMetric;
 import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
+import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatCompletion;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiModelProvider;
@@ -92,6 +94,24 @@ public class AiProviderConfiguration {
             .observationRegistry(observationRegistry)
             .build();
     return ChatClient.create(model, observationRegistry);
+  }
+
+  @Bean
+  @ConditionalOnBean(name = {"ollamaChatClient", "ollamaEmbeddingModel"})
+  @ConditionalOnMissingBean(AiChatCompletion.class)
+  AiChatCompletion ollamaChatCompletion(
+      @Qualifier("ollamaChatClient") ChatClient chatClient, AiProviderProperties properties) {
+    return new SpringAiChatCompletion(
+        new SpringAiChatModel(chatClient, properties.provider(), properties.chat().model()));
+  }
+
+  @Bean
+  @ConditionalOnBean(name = "groqChatClient")
+  @ConditionalOnMissingBean(AiChatCompletion.class)
+  AiChatCompletion groqChatCompletion(
+      @Qualifier("groqChatClient") ChatClient chatClient, AiProviderProperties properties) {
+    return new SpringAiChatCompletion(
+        new SpringAiChatModel(chatClient, properties.provider(), properties.chat().model()));
   }
 
   @Bean

@@ -5,7 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.platform.configuration.AiProviderProperties;
@@ -28,16 +29,16 @@ class LegacyChatCompletionConfigurationTest {
 
   @Test
   void adaptsTheLegacyProviderThroughAdmissionAndDurableTracing() {
-    AiModelProvider provider = mock(AiModelProvider.class);
+    AiChatCompletion provider = mock(AiChatCompletion.class);
     ModelExecutionScheduler scheduler = new InlineScheduler();
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
-    when(provider.name()).thenReturn("mock");
-    when(provider.chat("", "hello")).thenReturn("response");
+    when(provider.complete(org.mockito.ArgumentMatchers.any()))
+        .thenReturn(new ChatResponse("response", "mock", "mock-v1", 0, 0));
     LegacyChatCompletionConfiguration configuration = new LegacyChatCompletionConfiguration();
 
     IdentifiedChatCompletionPort port =
         configuration.legacyChatCompletion(
-            provider, scheduler, new AiExecutorProperties(2, 1, 1), recorder);
+            provider, properties(), scheduler, new AiExecutorProperties(2, 1, 1), recorder);
 
     var result =
         AiExecutionContextScope.call(context(), () -> port.completeWithIdentity("", "hello"));
@@ -46,7 +47,7 @@ class LegacyChatCompletionConfigurationTest {
         .isEqualTo(
             new IdentifiedChatCompletionPort.ChatCompletionResult(
                 "response", "mock", "legacy-model"));
-    verify(provider).chat("", "hello");
+    verify(provider).complete(org.mockito.ArgumentMatchers.any());
     verify(recorder).recordModelExecution(org.mockito.ArgumentMatchers.any());
   }
 
@@ -54,7 +55,11 @@ class LegacyChatCompletionConfigurationTest {
   void createsTheCompatibilityPortWhenSpringChatIsNotSelected() {
     new ApplicationContextRunner()
         .withUserConfiguration(LegacyChatCompletionConfiguration.class)
-        .withBean(AiModelProvider.class, LegacyChatCompletionConfigurationTest::mockProvider)
+        .withBean(
+            "legacyAiChatCompletion",
+            AiChatCompletion.class,
+            LegacyChatCompletionConfigurationTest::mockProvider)
+        .withBean(AiProviderProperties.class, LegacyChatCompletionConfigurationTest::properties)
         .withBean(ModelExecutionScheduler.class, () -> mock(ModelExecutionScheduler.class))
         .withBean(AiExecutorProperties.class, () -> new AiExecutorProperties(2, 1, 1))
         .withBean(AiTraceRecorder.class, () -> mock(AiTraceRecorder.class))
@@ -66,7 +71,11 @@ class LegacyChatCompletionConfigurationTest {
     new ApplicationContextRunner()
         .withUserConfiguration(LegacyChatCompletionConfiguration.class, SpringChatRoot.class)
         .withPropertyValues("app.ai.spring-chat.enabled=true")
-        .withBean(AiModelProvider.class, LegacyChatCompletionConfigurationTest::mockProvider)
+        .withBean(
+            "legacyAiChatCompletion",
+            AiChatCompletion.class,
+            LegacyChatCompletionConfigurationTest::mockProvider)
+        .withBean(AiProviderProperties.class, LegacyChatCompletionConfigurationTest::properties)
         .withBean(ModelExecutionScheduler.class, () -> mock(ModelExecutionScheduler.class))
         .withBean(AiExecutorProperties.class, () -> new AiExecutorProperties(2, 1, 1))
         .withBean(AiTraceRecorder.class, () -> mock(AiTraceRecorder.class))
@@ -121,10 +130,13 @@ class LegacyChatCompletionConfigurationTest {
         "idempotency-legacy-chat");
   }
 
-  private static AiModelProvider mockProvider() {
-    AiModelProvider provider = mock(AiModelProvider.class);
-    when(provider.name()).thenReturn("mock");
+  private static AiChatCompletion mockProvider() {
+    AiChatCompletion provider = mock(AiChatCompletion.class);
     return provider;
+  }
+
+  private static AiProviderProperties properties() {
+    return new AiProviderProperties("mock", null, null, true);
   }
 
   private static final class InlineScheduler implements ModelExecutionScheduler {

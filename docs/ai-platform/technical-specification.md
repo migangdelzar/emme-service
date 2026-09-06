@@ -197,7 +197,7 @@ accepts lifecycle gates.
 Token counts and estimated cost are nullable because provider usage metadata is
 not guaranteed. Trace writes are best effort and PostgreSQL is authoritative
 for the durable records; a no-op recorder is used where JDBC is unavailable.
-`TracingEmbeddingModelPort` records embedding attempts without storing vector
+`TracingEmbeddingService` records embedding attempts without storing vector
 values, and `SpringAiNailDesignExtractor` records structured extraction
 metadata without storing image bytes.
 

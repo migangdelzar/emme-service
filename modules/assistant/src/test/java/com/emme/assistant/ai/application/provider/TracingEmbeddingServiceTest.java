@@ -21,7 +21,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-class TracingEmbeddingModelPortTest {
+class TracingEmbeddingServiceTest {
 
   @Test
   void recordsSuccessfulEmbeddingAttemptsWithoutPersistingVectorValues() {
@@ -29,11 +29,11 @@ class TracingEmbeddingModelPortTest {
     when(delegate.embed("faq ana@example.com"))
         .thenReturn(testEmbedding("bge-v1", List.of(0.2f, 0.8f)));
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
-    TracingEmbeddingModelPort port =
-        new TracingEmbeddingModelPort(delegate, "local-ollama", "bge-v1", "embedding-v1", recorder);
+    TracingEmbeddingService service =
+        new TracingEmbeddingService(delegate, "local-ollama", "bge-v1", "embedding-v1", recorder);
 
     EmbeddingVector result =
-        AiExecutionContextScope.call(context(), () -> port.embed("faq ana@example.com"));
+        AiExecutionContextScope.call(context(), () -> service.embed("faq ana@example.com"));
 
     assertThat(result.values()).containsExactly(0.2f, 0.8f);
     ArgumentCaptor<AiModelExecutionTrace> trace =
@@ -52,10 +52,10 @@ class TracingEmbeddingModelPortTest {
         new EmbeddingProviderUnavailableException("embedding timeout");
     when(delegate.embed("faq")).thenThrow(failure);
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
-    TracingEmbeddingModelPort port =
-        new TracingEmbeddingModelPort(delegate, "local-ollama", "bge-v1", "embedding-v1", recorder);
+    TracingEmbeddingService service =
+        new TracingEmbeddingService(delegate, "local-ollama", "bge-v1", "embedding-v1", recorder);
 
-    assertThatThrownBy(() -> AiExecutionContextScope.call(context(), () -> port.embed("faq")))
+    assertThatThrownBy(() -> AiExecutionContextScope.call(context(), () -> service.embed("faq")))
         .isSameAs(failure);
 
     ArgumentCaptor<AiModelExecutionTrace> trace =

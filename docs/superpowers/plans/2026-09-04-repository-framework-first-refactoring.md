@@ -2211,6 +2211,21 @@ the selected schema as its isolation boundary.
 - [ ] Run live tenant-routing, PostgreSQL RLS, and optimistic-lock gates when
       Docker is available.
 
+#### Current slice 25D — Rename the embedding tracing decorator
+
+`TracingEmbeddingModelPort` was a concrete decorator around the canonical
+`EmbeddingService`; it was not an application port and retained a misleading
+compatibility-era name. The implementation is now `TracingEmbeddingService`.
+The provider registry, focused tracing tests, and supporting specifications use
+the behavior-based name; tracing and failover behavior are unchanged.
+
+- [x] Add a failing source-contract test for the old decorator name.
+- [x] Rename the production decorator and its focused test.
+- [x] Migrate registry, specification, and plan references.
+- [x] Run focused contract/tracing tests and Assistant compilation.
+- [ ] Run live provider tracing gates when Docker/provider infrastructure is
+      available.
+
 ## 10. Phase H — Events, Redis, libraries, and build foundations
 
 ### Task 19: Standardize Modulith events and Kafka boundaries

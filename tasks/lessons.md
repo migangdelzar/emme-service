@@ -13,6 +13,15 @@
   shared/control-plane, authorization, provider/business-key, callback,
   idempotency, cross-tenant, vector/full-text, JSONB, and atomic operations.
 
+## 2026-09-06 — Name concrete decorators after their behavior
+
+- Failure mode: a concrete tracing decorator retained `Port` in its name after
+  the canonical embedding service contract replaced the old port family.
+- Detection signal: the class implemented `EmbeddingService` directly and had
+  no port callers, but its name still suggested an application boundary.
+- Prevention rule: reserve `Port` for provider-neutral contracts; name concrete
+  wrappers and decorators after the service behavior they implement.
+
 ## 2026-09-05 — Run full Spring context checkpoints after constructor changes
 
 - Failure mode: adding a guardrail-aware constructor left the previous required

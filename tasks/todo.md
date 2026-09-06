@@ -15,6 +15,16 @@
 - [ ] Run live tenant-routing, PostgreSQL RLS, and optimistic-lock gates when
       Docker is available.
 
+## Current slice — Task 25D embedding tracing decorator naming — 2026-09-06
+
+- [x] Add a failing source-contract test for the misleading
+      `TracingEmbeddingModelPort` name.
+- [x] Rename the concrete decorator to `TracingEmbeddingService`.
+- [x] Migrate the provider registry, tests, and supporting specifications.
+- [x] Run focused Assistant contract/tracing tests and compilation.
+- [ ] Run live provider tracing gates when Docker/provider infrastructure is
+      available.
+
 ## Current slice — Task 16A foundational JPA query-count evidence — 2026-09-06
 
 - [x] Enable Hibernate statistics in the repository-test profile only.

@@ -228,7 +228,7 @@ workflow progress depend on Kafka availability.
 - Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiEmbeddingModel.java`
 - Modify: `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/capability/AiEmbeddingAdapter.java`
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/EmbeddingModelSelector.java`
-- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/TracingEmbeddingModelPort.java`
+- Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/TracingEmbeddingService.java`
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcSemanticCacheAdapter.java`
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/JdbcSemanticReferenceSearchAdapter.java`
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/RedisSemanticCacheHotStore.java`
@@ -244,7 +244,7 @@ workflow progress depend on Kafka availability.
 - Test: `modules/assistant/src/test/java/com/emme/assistant/ai/application/service/EmbeddingModelSelectorTest.java`
 - Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/persistence/JdbcSemanticAdapterTest.java`
 - Test: `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/provider/springai/RedisSemanticCacheHotStoreTest.java`
-- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/application/provider/TracingEmbeddingModelPortTest.java`
+- Test: `modules/assistant/src/test/java/com/emme/assistant/ai/application/provider/TracingEmbeddingServiceTest.java`
 - Test: `modules/assistant/src/test/java/com/emme/assistant/ai/configuration/SpringAiEmbeddingConfigurationTest.java`
 - Test: `modules/catalog/src/test/java/com/emme/catalog/repository/CatalogRepositoryTest.java`
 

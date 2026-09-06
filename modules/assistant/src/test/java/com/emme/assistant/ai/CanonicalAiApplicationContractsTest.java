@@ -26,6 +26,12 @@ class CanonicalAiApplicationContractsTest {
   }
 
   @Test
+  void embeddingTracingDecoratorUsesServiceNaming() throws IOException {
+    assertThat(providerSourcePath("TracingEmbeddingModelPort.java")).doesNotExist();
+    assertThat(providerSourcePath("TracingEmbeddingService.java")).exists();
+  }
+
+  @Test
   void assistantOwnsFrameworkNeutralToolMetadataGatewayAndRisk() throws IOException {
     assertThat(AiToolDefinition.class.isRecord()).isTrue();
     assertThat(AiToolGateway.class.isInterface()).isTrue();
@@ -96,6 +102,16 @@ class CanonicalAiApplicationContractsTest {
   private static Path sourcePath(String fileName) {
     String relativePath =
         "modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/" + fileName;
+    return locate(relativePath);
+  }
+
+  private static Path providerSourcePath(String fileName) {
+    String relativePath =
+        "modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/" + fileName;
+    return locate(relativePath);
+  }
+
+  private static Path locate(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {
       Path candidate = current.resolve(relativePath);

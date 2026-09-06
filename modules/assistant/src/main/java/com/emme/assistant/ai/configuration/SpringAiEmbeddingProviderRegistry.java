@@ -7,7 +7,7 @@ import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
-import com.emme.assistant.ai.application.provider.TracingEmbeddingModelPort;
+import com.emme.assistant.ai.application.provider.TracingEmbeddingService;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.HashSet;
@@ -95,7 +95,7 @@ public final class SpringAiEmbeddingProviderRegistry {
                               "query-v1"));
                   return new EmbeddingModelSelector.Provider(
                       configured.key(),
-                      new TracingEmbeddingModelPort(
+                      new TracingEmbeddingService(
                           applicationPort(model, configured.key()),
                           configured.key(),
                           configured.modelVersion(),

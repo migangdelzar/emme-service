@@ -13,9 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Records each embedding-provider attempt without persisting vector values. */
-public final class TracingEmbeddingModelPort implements EmbeddingService {
+public final class TracingEmbeddingService implements EmbeddingService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TracingEmbeddingModelPort.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TracingEmbeddingService.class);
 
   private final EmbeddingService delegate;
   private final String providerKey;
@@ -23,7 +23,7 @@ public final class TracingEmbeddingModelPort implements EmbeddingService {
   private final String promptVersion;
   private final AiTraceRecorder recorder;
 
-  public TracingEmbeddingModelPort(
+  public TracingEmbeddingService(
       EmbeddingService delegate,
       String providerKey,
       String modelVersion,

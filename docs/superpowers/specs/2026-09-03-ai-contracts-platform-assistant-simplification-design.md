@@ -189,7 +189,7 @@ focused tests, integration tests, and architecture tests.
 | `src/main/java/com/emme/assistant/ai/application/provider/EmbeddingModelSelector.java` | Keep/refactor | One embedding selection policy |
 | `src/main/java/com/emme/assistant/ai/application/provider/RagAnswerProviderChain.java` | Simplify/rename | Replace with direct Spring AI RAG composition where no policy is added |
 | `src/main/java/com/emme/assistant/ai/application/provider/TracingChatCompletionPort.java` | Delete or reduce | Keep only fields missing from Spring AI observations |
-| `src/main/java/com/emme/assistant/ai/application/provider/TracingEmbeddingModelPort.java` | Delete or reduce | Same rule as chat tracing |
+| `src/main/java/com/emme/assistant/ai/application/provider/TracingEmbeddingService.java` | Keep as a tracing decorator | Concrete decorator implements the canonical embedding service |
 | `src/main/java/com/emme/assistant/ai/application/port/out/IdentifiedChatCompletionPort.java` | Review/delete | Temporary provider-selection detail |
 | `src/main/java/com/emme/assistant/ai/application/service/ChatService.java` | Refactor | Depend on one canonical chat capability |
 | `src/main/java/com/emme/assistant/ai/application/service/RagQueryService.java` | Refactor | Depend on `KnowledgeSearch`; no framework mechanics |

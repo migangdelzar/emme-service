@@ -3997,6 +3997,15 @@ appointment mutation tools are registered.
 - [x] Run the focused context-guard test.
 - [ ] Continue with the tool, grounding, output, and delivery guards.
 
+#### Task 8 tool boundary slice
+
+- [x] Add red tests for allow-list, staff-only, confirmation, idempotency,
+      and authorized read-only behavior.
+- [x] Implement `DefaultToolGuard` with backend role policy and mutation
+      confirmation checks.
+- [x] Run the focused tool-guard test.
+- [ ] Continue with the grounding, output, and delivery guards.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

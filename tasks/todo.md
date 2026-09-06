@@ -4022,6 +4022,15 @@ appointment mutation tools are registered.
 - [x] Run the focused output-guard test.
 - [ ] Continue with the delivery guard and advisor/composition wiring.
 
+#### Task 8 delivery boundary slice
+
+- [x] Add red tests for channel authorization, empty content, length limits,
+      and safe streaming delivery.
+- [x] Implement `DefaultDeliveryGuard` with fail-closed channel and length
+      checks.
+- [x] Run the focused delivery-guard test.
+- [ ] Continue with Spring AI advisor and composition-root wiring.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

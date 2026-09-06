@@ -4,10 +4,8 @@ import com.emme.ai.contracts.workflow.PaymentWorkflow;
 import com.emme.appointments.api.usecase.CancelAuthorizedAppointmentUseCase;
 import com.emme.appointments.api.usecase.ConfirmAppointmentUseCase;
 import com.emme.appointments.api.usecase.CreateAppointmentHoldUseCase;
+import com.emme.appointments.api.usecase.GetAppointmentHoldUseCase;
 import com.emme.appointments.api.usecase.RescheduleAuthorizedAppointmentUseCase;
-import com.emme.appointments.application.port.out.AppointmentHoldRepository;
-import com.emme.appointments.application.port.out.AppointmentRepository;
-import com.emme.appointments.application.service.CreateAppointmentHoldService;
 import com.emme.assistant.ai.adapter.out.persistence.PaymentWorkflowAppointmentRepositoryAdapter;
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentBookingWorkflow;
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentCancellationWorkflow;
@@ -21,13 +19,11 @@ import com.emme.payment.api.usecase.CreatePaymentLinkUseCase;
 import java.time.Clock;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /** Composition root for the hold-first appointment/payment workflow boundary. */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(AppointmentWorkflowProperties.class)
 @ConditionalOnProperty(prefix = "app.ai.langgraph", name = "enabled", havingValue = "true")
 public class AppointmentWorkflowCompositionConfiguration {
 
@@ -37,19 +33,9 @@ public class AppointmentWorkflowCompositionConfiguration {
   }
 
   @Bean
-  CreateAppointmentHoldUseCase appointmentHoldUseCase(
-      AppointmentRepository appointments,
-      AppointmentHoldRepository holds,
-      AppointmentWorkflowProperties properties,
-      @Qualifier("appointmentWorkflowClock") Clock appointmentWorkflowClock) {
-    return new CreateAppointmentHoldService(
-        appointments, holds, appointmentWorkflowClock, properties.holdDuration());
-  }
-
-  @Bean
   PaymentWorkflowAppointmentRepository paymentWorkflowAppointmentRepository(
       PaymentWorkflowCorrelationRepository correlations,
-      AppointmentHoldRepository holds,
+      GetAppointmentHoldUseCase holds,
       @Qualifier("appointmentWorkflowClock") Clock appointmentWorkflowClock) {
     return new PaymentWorkflowAppointmentRepositoryAdapter(
         correlations, holds, appointmentWorkflowClock);

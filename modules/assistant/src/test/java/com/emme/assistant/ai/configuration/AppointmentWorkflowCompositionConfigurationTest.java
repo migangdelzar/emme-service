@@ -7,9 +7,8 @@ import com.emme.ai.contracts.workflow.PaymentWorkflow;
 import com.emme.appointments.api.usecase.CancelAuthorizedAppointmentUseCase;
 import com.emme.appointments.api.usecase.ConfirmAppointmentUseCase;
 import com.emme.appointments.api.usecase.CreateAppointmentHoldUseCase;
+import com.emme.appointments.api.usecase.GetAppointmentHoldUseCase;
 import com.emme.appointments.api.usecase.RescheduleAuthorizedAppointmentUseCase;
-import com.emme.appointments.application.port.out.AppointmentHoldRepository;
-import com.emme.appointments.application.port.out.AppointmentRepository;
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentBookingWorkflow;
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentCancellationWorkflow;
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentPaymentWorkflow;
@@ -26,8 +25,9 @@ class AppointmentWorkflowCompositionConfigurationTest {
   private final ApplicationContextRunner contextRunner =
       new ApplicationContextRunner()
           .withUserConfiguration(AppointmentWorkflowCompositionConfiguration.class)
-          .withBean(AppointmentRepository.class, () -> mock(AppointmentRepository.class))
-          .withBean(AppointmentHoldRepository.class, () -> mock(AppointmentHoldRepository.class))
+          .withBean(
+              CreateAppointmentHoldUseCase.class, () -> mock(CreateAppointmentHoldUseCase.class))
+          .withBean(GetAppointmentHoldUseCase.class, () -> mock(GetAppointmentHoldUseCase.class))
           .withBean(CreatePaymentLinkUseCase.class, () -> mock(CreatePaymentLinkUseCase.class))
           .withBean(
               PaymentLinkSourceRepository.class, () -> mock(PaymentLinkSourceRepository.class))

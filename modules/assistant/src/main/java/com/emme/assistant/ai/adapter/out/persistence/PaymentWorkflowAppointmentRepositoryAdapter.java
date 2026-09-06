@@ -1,6 +1,6 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
-import com.emme.appointments.application.port.out.AppointmentHoldRepository;
+import com.emme.appointments.api.usecase.GetAppointmentHoldUseCase;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowAppointmentRepository;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
@@ -15,12 +15,12 @@ public final class PaymentWorkflowAppointmentRepositoryAdapter
     implements PaymentWorkflowAppointmentRepository {
 
   private final PaymentWorkflowCorrelationRepository correlations;
-  private final AppointmentHoldRepository holds;
+  private final GetAppointmentHoldUseCase holds;
   private final Clock clock;
 
   public PaymentWorkflowAppointmentRepositoryAdapter(
       PaymentWorkflowCorrelationRepository correlations,
-      AppointmentHoldRepository holds,
+      GetAppointmentHoldUseCase holds,
       Clock clock) {
     this.correlations = Objects.requireNonNull(correlations, "correlations must not be null");
     this.holds = Objects.requireNonNull(holds, "holds must not be null");
@@ -35,7 +35,7 @@ public final class PaymentWorkflowAppointmentRepositoryAdapter
     return correlations
         .findByWorkflowId(workflowId)
         .map(PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation::appointmentHoldId)
-        .flatMap(holds::findById)
+        .flatMap(holds::get)
         .filter(hold -> hold.expiresAt().isAfter(now))
         .map(com.emme.ai.contracts.appointment.AppointmentHold::appointmentId);
   }

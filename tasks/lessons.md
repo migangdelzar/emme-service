@@ -1703,3 +1703,28 @@
 - **Prevention rule:** Validate tenant slug shape and PostgreSQL identifier
   length before any registry insert; keep the later schema validation as a
   defense in depth.
+
+## 2026-09-06 — Keep workflow composition on public Modulith APIs
+
+- **Failure mode:** Assistant appointment/payment workflow composition imported
+  appointment repositories/domain objects directly, and Payment API leaf
+  packages were not all registered under the named interface consumed by
+  Assistant.
+- **Detection signal:** `ModularityTest.moduleStructureIsValid()` reported
+  dependencies through appointment internals and Payment API classes even
+  though the modules declared named-interface access.
+- **Prevention rule:** Cross-module workflow composition must consume public
+  use cases and result records owned by the target module. Annotate every
+  consumed leaf package with the declared `@NamedInterface`, then run the
+  Modulith and full application architecture gates before committing.
+
+## 2026-09-06 — Keep transactional application services proxyable
+
+- **Failure mode:** The new `GetAppointmentHoldService` was final, so Spring
+  could not create the CGLIB proxy required by its class-level
+  `@Transactional(readOnly = true)` annotation.
+- **Detection signal:** Existing appointment web/module contexts failed during
+  startup with `Cannot subclass final class GetAppointmentHoldService`.
+- **Prevention rule:** Any class-based Spring transactional application service
+  must remain proxyable, or use an interface-based proxy configuration; run a
+  real application context test after adding the service bean.

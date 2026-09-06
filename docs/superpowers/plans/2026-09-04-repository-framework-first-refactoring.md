@@ -941,6 +941,26 @@ remain Docker-gated.
 - [x] Run the full Assistant unit suite.
 - [ ] Run live PostgreSQL checkpoint security/resume coverage with Docker.
 
+#### Current slice 8I — Keep Assistant workflow composition on public APIs
+
+The Assistant appointment/payment workflow composition now consumes public
+appointments use cases rather than appointment repositories or domain objects.
+Appointment-hold creation and retrieval are composed by the appointments module,
+which preserves tenant-schema routing while keeping the Assistant boundary
+provider- and persistence-neutral. Payment API leaf packages used by Assistant
+are explicitly exposed through the existing `payment-api` named interface.
+
+- [x] Add a failing appointments use-case and configuration composition test.
+- [x] Expose `GetAppointmentHoldUseCase` and move hold configuration into the
+      appointments module.
+- [x] Replace Assistant appointment repository/domain imports with public use
+      cases and API result records.
+- [x] Mark all consumed Payment API leaf packages with `payment-api`.
+- [x] Run the affected tests, integration-test compilation, architecture tests,
+      Spotless, and the full repository `check`.
+- [ ] Run the live PostgreSQL workflow startup/security/resume checks when
+      Docker is available.
+
 ## 6. Phase D — AI persistence with JPA-first decisions
 
 ### Task 9: Classify every AI JDBC adapter before changing implementation

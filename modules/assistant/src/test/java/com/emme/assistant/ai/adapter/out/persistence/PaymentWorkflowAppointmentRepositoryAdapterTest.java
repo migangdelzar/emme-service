@@ -5,7 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.appointment.AppointmentHold;
-import com.emme.appointments.application.port.out.AppointmentHoldRepository;
+import com.emme.appointments.api.usecase.GetAppointmentHoldUseCase;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowAppointmentRepository;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
@@ -26,13 +26,13 @@ class PaymentWorkflowAppointmentRepositoryAdapterTest {
     UUID appointmentId = UUID.randomUUID();
     PaymentWorkflowCorrelationRepository correlations =
         mock(PaymentWorkflowCorrelationRepository.class);
-    AppointmentHoldRepository holds = mock(AppointmentHoldRepository.class);
+    GetAppointmentHoldUseCase holds = mock(GetAppointmentHoldUseCase.class);
     when(correlations.findByWorkflowId(workflowId))
         .thenReturn(
             Optional.of(
                 new PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation(
                     workflowId, "mock", "provider-1", holdId)));
-    when(holds.findById(holdId))
+    when(holds.get(holdId))
         .thenReturn(
             Optional.of(
                 new AppointmentHold(

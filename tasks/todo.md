@@ -1,5 +1,22 @@
 # Service architecture migration checklist
 
+## Current slice — Task 8I Modulith workflow API boundary — 2026-09-06
+
+- [x] Add the failing appointment public hold-query and owner-side composition
+      tests before implementation.
+- [x] Move appointment-hold creation wiring into the appointments module and
+      expose hold reads through a public appointment use case.
+- [x] Remove Assistant imports of appointment persistence/domain internals from
+      the payment workflow adapters and composition root.
+- [x] Mark every consumed Payment API leaf package with the existing
+      `payment-api` named interface.
+- [x] Verify transactional appointment services remain proxyable and add the
+      required configuration package metadata.
+- [x] Run affected module tests, integration-test compilation, architecture
+      tests, Spotless, and the full repository `check` (255 tasks successful).
+- [ ] Run live PostgreSQL checkpoint/resume, tenant-routing, and workflow
+      persistence gates when Docker is available.
+
 ## Current slice — Task 6/8 graph-only bean boundary regression — 2026-09-06
 
 - [x] Add failing opt-in tests for payment workflow checkpoint, execution-context,

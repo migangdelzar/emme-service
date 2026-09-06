@@ -1,13 +1,13 @@
-package com.emme.assistant.ai.configuration;
+package com.emme.appointments.configuration;
 
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/** Configuration for the hold-first appointment workflow boundary. */
+/** Configuration for tenant-local appointment holds. */
 @ConfigurationProperties("app.ai.appointment-workflow")
-public record AppointmentWorkflowProperties(Duration holdDuration) {
+public record AppointmentHoldProperties(Duration holdDuration) {
 
-  public AppointmentWorkflowProperties {
+  public AppointmentHoldProperties {
     if (holdDuration == null) {
       holdDuration = Duration.ofMinutes(15);
     }

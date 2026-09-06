@@ -1,8 +1,9 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
 import com.emme.ai.contracts.appointment.AppointmentHold;
-import com.emme.appointments.application.port.out.AppointmentHoldRepository;
-import com.emme.appointments.application.port.out.AppointmentRepository;
+import com.emme.appointments.api.result.AppointmentDetails;
+import com.emme.appointments.api.usecase.GetAppointmentHoldUseCase;
+import com.emme.appointments.api.usecase.GetAppointmentUseCase;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowExecutionContextRepository;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.payment.api.port.out.PaymentLinkSourceRepository;
@@ -20,14 +21,14 @@ public final class PaymentLinkSourceRepositoryAdapter implements PaymentLinkSour
 
   private static final String DEFAULT_CURRENCY = "MXN";
 
-  private final AppointmentHoldRepository holds;
-  private final AppointmentRepository appointments;
+  private final GetAppointmentHoldUseCase holds;
+  private final GetAppointmentUseCase appointments;
   private final ServiceRepository services;
   private final PaymentWorkflowExecutionContextRepository workflows;
 
   public PaymentLinkSourceRepositoryAdapter(
-      AppointmentHoldRepository holds,
-      AppointmentRepository appointments,
+      GetAppointmentHoldUseCase holds,
+      GetAppointmentUseCase appointments,
       ServiceRepository services,
       PaymentWorkflowExecutionContextRepository workflows) {
     this.holds = Objects.requireNonNull(holds, "holds must not be null");
@@ -40,27 +41,26 @@ public final class PaymentLinkSourceRepositoryAdapter implements PaymentLinkSour
   public Optional<PaymentLinkSource> findByWorkflowIdAndHoldId(UUID workflowId, UUID holdId) {
     Objects.requireNonNull(workflowId, "workflowId must not be null");
     Objects.requireNonNull(holdId, "holdId must not be null");
-    UUID tenantId = TenantContextHolder.requireCurrentTenantId();
+    TenantContextHolder.requireCurrentTenantId();
 
     return workflows
         .findByWorkflowId(workflowId)
-        .flatMap(ignored -> holds.findById(holdId))
-        .flatMap(hold -> sourceForHold(hold, tenantId));
+        .flatMap(ignored -> holds.get(holdId))
+        .flatMap(hold -> sourceForHold(hold));
   }
 
-  private Optional<PaymentLinkSource> sourceForHold(AppointmentHold hold, UUID tenantId) {
+  private Optional<PaymentLinkSource> sourceForHold(AppointmentHold hold) {
     return appointments
-        .findById(hold.appointmentId())
-        .flatMap(
-            appointment -> {
-              if (!tenantId.equals(appointment.getTenantId())) {
-                throw new SecurityException("Appointment does not belong to the current tenant");
-              }
-              return services.findById(appointment.getServiceId());
-            })
+        .get(hold.appointmentId())
+        .flatMap(this::serviceFor)
         .map(
             service ->
                 new PaymentLinkSource(
                     service.getBasePrice(), DEFAULT_CURRENCY, service.getName(), hold.expiresAt()));
+  }
+
+  private Optional<com.emme.services.domain.model.Service> serviceFor(
+      AppointmentDetails appointment) {
+    return services.findById(appointment.serviceId());
   }
 }

@@ -5,9 +5,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.appointment.AppointmentHold;
-import com.emme.appointments.application.port.out.AppointmentHoldRepository;
-import com.emme.appointments.application.port.out.AppointmentRepository;
-import com.emme.appointments.domain.model.Appointment;
+import com.emme.appointments.api.result.AppointmentDetails;
+import com.emme.appointments.api.usecase.GetAppointmentHoldUseCase;
+import com.emme.appointments.api.usecase.GetAppointmentUseCase;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowExecutionContextRepository;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.payment.api.port.out.PaymentLinkSourceRepository.PaymentLinkSource;
@@ -39,22 +39,11 @@ class TenantPaymentLinkSourceAdapterTest {
     UUID appointmentId = UUID.randomUUID();
     UUID serviceId = UUID.randomUUID();
     Instant expiresAt = Instant.parse("2030-01-01T09:15:00Z");
-    AppointmentHoldRepository holds = mock(AppointmentHoldRepository.class);
-    AppointmentRepository appointments = mock(AppointmentRepository.class);
+    GetAppointmentHoldUseCase holds = mock(GetAppointmentHoldUseCase.class);
+    GetAppointmentUseCase appointments = mock(GetAppointmentUseCase.class);
     ServiceRepository services = mock(ServiceRepository.class);
     PaymentWorkflowExecutionContextRepository workflows =
         mock(PaymentWorkflowExecutionContextRepository.class);
-    Appointment appointment =
-        Appointment.reconstitute(
-            appointmentId,
-            tenantId,
-            UUID.randomUUID(),
-            serviceId,
-            UUID.randomUUID(),
-            Instant.parse("2030-01-01T10:00:00Z"),
-            Instant.parse("2030-01-01T11:00:00Z"),
-            com.emme.appointments.domain.model.AppointmentStatus.DRAFT,
-            com.emme.appointments.domain.model.ExternalCalendarStatus.NOT_SYNCED);
     com.emme.services.domain.model.Service service =
         com.emme.services.domain.model.Service.reconstitute(
             serviceId,
@@ -66,9 +55,22 @@ class TenantPaymentLinkSourceAdapterTest {
             60,
             new BigDecimal("125.00"),
             com.emme.services.domain.model.ServiceStatus.ACTIVE);
-    when(holds.findById(holdId))
+    when(holds.get(holdId))
         .thenReturn(Optional.of(new AppointmentHold(holdId, appointmentId, expiresAt, "hold-1")));
-    when(appointments.findById(appointmentId)).thenReturn(Optional.of(appointment));
+    when(appointments.get(appointmentId))
+        .thenReturn(
+            Optional.of(
+                new AppointmentDetails(
+                    appointmentId,
+                    UUID.randomUUID(),
+                    null,
+                    serviceId,
+                    null,
+                    UUID.randomUUID(),
+                    null,
+                    Instant.parse("2030-01-01T10:00:00Z"),
+                    Instant.parse("2030-01-01T11:00:00Z"),
+                    "DRAFT")));
     when(services.findById(serviceId)).thenReturn(Optional.of(service));
     when(workflows.findByWorkflowId(workflowId))
         .thenReturn(

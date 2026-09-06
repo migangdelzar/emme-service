@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.emme.assistant.adapter.in.messaging.WhatsAppMessageReceivedListener;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
+import com.emme.assistant.ai.application.guardrail.DeliveryGuard;
 import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
 import com.emme.assistant.api.event.WhatsAppMessageReceived;
 import com.emme.assistant.api.result.ConversationDetails;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ProcessWhatsAppMessageServiceTest {
 
@@ -153,5 +155,55 @@ class ProcessWhatsAppMessageServiceTest {
 
     verify(replyPort).send("phone", "reply");
     org.assertj.core.api.Assertions.assertThat(AiExecutionContextScope.current()).isEmpty();
+  }
+
+  @Test
+  void doesNotDeliverWhenTheDeliveryGuardRejectsTheWhatsAppReply() {
+    DeliveryGuard deliveryGuard = org.mockito.Mockito.mock();
+    ProcessWhatsAppMessageService guardedService =
+        new ProcessWhatsAppMessageService(
+            startConversation,
+            listConversations,
+            addConversationEvent,
+            chatUseCase,
+            participantRepository,
+            webhookEvents,
+            replyPort,
+            eventPublisher,
+            Optional.empty(),
+            Optional.of(deliveryGuard));
+    ProcessWhatsAppMessageCommand command =
+        new ProcessWhatsAppMessageCommand(tenantId, "event-4", "phone", "hello");
+    ChannelParticipant participant =
+        new ChannelParticipant(
+            participantId,
+            tenantId,
+            ChannelType.WHATSAPP,
+            "phone",
+            null,
+            com.emme.assistant.domain.model.ConsentStatus.UNKNOWN);
+    when(webhookEvents.claim(tenantId, "whatsapp", "event-4")).thenReturn(true);
+    when(participantRepository.findByTenantIdAndChannelAndProviderReference(
+            tenantId, ChannelType.WHATSAPP, "phone"))
+        .thenReturn(Optional.of(participant));
+    when(listConversations.list(any())).thenReturn(List.of(conversation));
+    when(chatUseCase.chat("", "hello")).thenReturn("reply");
+    when(deliveryGuard.check(any(), any()))
+        .thenReturn(
+            new com.emme.ai.contracts.guardrail.GuardrailDecision(
+                com.emme.ai.contracts.guardrail.GuardrailAction.BLOCK,
+                "delivery.rejected",
+                java.util.Map.of()));
+
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> guardedService.process(command))
+        .isInstanceOf(com.emme.assistant.ai.application.guardrail.GuardrailRejectedException.class);
+
+    ArgumentCaptor<com.emme.ai.contracts.guardrail.DeliveryRequest> request =
+        ArgumentCaptor.forClass(com.emme.ai.contracts.guardrail.DeliveryRequest.class);
+    verify(deliveryGuard).check(request.capture(), any());
+    org.assertj.core.api.Assertions.assertThat(request.getValue().channel()).isEqualTo("whatsapp");
+    org.assertj.core.api.Assertions.assertThat(request.getValue().maximumCharacters())
+        .isEqualTo(4096);
+    verify(replyPort, never()).send(any(), any());
   }
 }

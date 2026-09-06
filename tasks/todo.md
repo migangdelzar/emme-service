@@ -4074,6 +4074,8 @@ appointment mutation tools are registered.
       return the deterministic no-answer response when provenance is rejected.
 - [x] Keep compatibility constructors single-autowired and standalone Spring
       chat configuration usable when optional guardrail advisors are absent.
+- [x] Enforce the typed delivery guard before sending WhatsApp replies, using
+      the channel's 4,096-character text limit.
 - [ ] Add grounded RAG delivery enforcement and remaining controller/channel
       boundaries.
 

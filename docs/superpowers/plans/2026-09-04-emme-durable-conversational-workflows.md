@@ -825,6 +825,8 @@ returns the deterministic no-answer response for rejected grounding. The
 compatibility constructor path remains single-autowired, blank mock messages
 retain their established graceful behavior, and the standalone Spring chat
 root tolerates absent optional guardrail advisors.
+The WhatsApp application boundary now checks `DeliveryGuard` before recording
+and sending a reply, using the channel's 4,096-character text limit.
 - [ ] **Step 5: Run, refactor, and commit.**
 
   ```bash

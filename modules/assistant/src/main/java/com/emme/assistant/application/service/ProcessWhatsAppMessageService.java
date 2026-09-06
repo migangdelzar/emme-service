@@ -1,7 +1,12 @@
 package com.emme.assistant.application.service;
 
+import com.emme.ai.contracts.guardrail.DeliveryRequest;
+import com.emme.ai.contracts.guardrail.GuardrailAction;
+import com.emme.ai.contracts.guardrail.GuardrailDecision;
 import com.emme.ai.contracts.tenant.AiAuthorizationContextResolver;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
+import com.emme.assistant.ai.application.guardrail.DeliveryGuard;
+import com.emme.assistant.ai.application.guardrail.GuardrailRejectedException;
 import com.emme.assistant.api.command.AddConversationEventCommand;
 import com.emme.assistant.api.command.ProcessWhatsAppMessageCommand;
 import com.emme.assistant.api.command.StartConversationCommand;
@@ -26,6 +31,7 @@ import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.type.ChannelType;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +45,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseCase {
 
+  private static final int MAXIMUM_TEXT_CHARACTERS = 4096;
+
   private final StartConversationUseCase startConversation;
   private final ListConversationsUseCase listConversations;
   private final AddConversationEventUseCase addConversationEvent;
@@ -48,6 +56,7 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
   private final WhatsAppReplyPort replyPort;
   private final WhatsAppMessageEventPublisher eventPublisher;
   private final java.util.Optional<AiAuthorizationContextResolver> authorizationResolver;
+  private final java.util.Optional<DeliveryGuard> deliveryGuard;
 
   public ProcessWhatsAppMessageService(
       StartConversationUseCase startConversation,
@@ -66,6 +75,7 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
         webhookEvents,
         replyPort,
         event -> {},
+        java.util.Optional.empty(),
         java.util.Optional.empty());
   }
 
@@ -87,6 +97,30 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
         webhookEvents,
         replyPort,
         eventPublisher,
+        java.util.Optional.empty(),
+        java.util.Optional.empty());
+  }
+
+  public ProcessWhatsAppMessageService(
+      StartConversationUseCase startConversation,
+      ListConversationsUseCase listConversations,
+      AddConversationEventUseCase addConversationEvent,
+      ChatUseCase chatUseCase,
+      ChannelParticipantRepository participantRepository,
+      WhatsAppWebhookEventRepository webhookEvents,
+      WhatsAppReplyPort replyPort,
+      WhatsAppMessageEventPublisher eventPublisher,
+      java.util.Optional<AiAuthorizationContextResolver> authorizationResolver) {
+    this(
+        startConversation,
+        listConversations,
+        addConversationEvent,
+        chatUseCase,
+        participantRepository,
+        webhookEvents,
+        replyPort,
+        eventPublisher,
+        authorizationResolver,
         java.util.Optional.empty());
   }
 
@@ -100,7 +134,8 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
       WhatsAppWebhookEventRepository webhookEvents,
       WhatsAppReplyPort replyPort,
       WhatsAppMessageEventPublisher eventPublisher,
-      java.util.Optional<AiAuthorizationContextResolver> authorizationResolver) {
+      java.util.Optional<AiAuthorizationContextResolver> authorizationResolver,
+      java.util.Optional<DeliveryGuard> deliveryGuard) {
     this.startConversation = startConversation;
     this.listConversations = listConversations;
     this.addConversationEvent = addConversationEvent;
@@ -112,6 +147,8 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
     this.authorizationResolver =
         java.util.Objects.requireNonNull(
             authorizationResolver, "authorizationResolver must not be null");
+    this.deliveryGuard =
+        java.util.Objects.requireNonNull(deliveryGuard, "deliveryGuard must not be null");
   }
 
   @Override
@@ -157,10 +194,31 @@ public class ProcessWhatsAppMessageService implements ProcessWhatsAppMessageUseC
             command.tenantId(), conversation.id(), "MESSAGE_RECEIVED", command.text()));
 
     String response = chatInResolvedAuthorization(command, participant);
+    checkDelivery(response);
     addConversationEvent.add(
         new AddConversationEventCommand(
             command.tenantId(), conversation.id(), "MESSAGE_SENT", response));
     replyPort.send(command.from(), response);
+  }
+
+  private void checkDelivery(String response) {
+    if (deliveryGuard.isEmpty()) {
+      return;
+    }
+    AiExecutionContext context = AiExecutionContextScope.requireCurrent();
+    GuardrailDecision decision =
+        deliveryGuard
+            .orElseThrow()
+            .check(
+                new DeliveryRequest(
+                    Channel.WHATSAPP.name().toLowerCase(Locale.ROOT),
+                    response,
+                    MAXIMUM_TEXT_CHARACTERS,
+                    false),
+                context);
+    if (decision.action() != GuardrailAction.DELIVER) {
+      throw new GuardrailRejectedException(decision);
+    }
   }
 
   private String chatInResolvedAuthorization(

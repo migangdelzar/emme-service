@@ -1,0 +1,47 @@
+package com.emme.payment.application.service;
+
+import com.emme.ai.contracts.payment.PaymentWorkflowEvent;
+import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
+import com.emme.payment.api.result.PaymentDetails;
+import com.emme.payment.api.usecase.ProcessPaymentCallbackUseCase;
+import com.emme.payment.api.usecase.ProcessPaymentWorkflowCallbackUseCase;
+import com.emme.payment.application.port.out.PaymentProviderException;
+import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
+import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation;
+import java.util.Objects;
+import org.springframework.stereotype.Service;
+
+/** Converts the payment callback result into the provider-neutral workflow event contract. */
+@Service
+public final class ProcessPaymentWorkflowCallbackService
+    implements ProcessPaymentWorkflowCallbackUseCase {
+
+  private final ProcessPaymentCallbackUseCase callback;
+  private final PaymentWorkflowCorrelationRepository correlations;
+
+  public ProcessPaymentWorkflowCallbackService(
+      ProcessPaymentCallbackUseCase callback, PaymentWorkflowCorrelationRepository correlations) {
+    this.callback = Objects.requireNonNull(callback, "callback must not be null");
+    this.correlations = Objects.requireNonNull(correlations, "correlations must not be null");
+  }
+
+  @Override
+  public PaymentWorkflowEvent process(ProcessPaymentCallbackCommand command) {
+    Objects.requireNonNull(command, "command must not be null");
+    PaymentDetails payment = callback.process(command);
+    PaymentWorkflowCorrelation correlation =
+        correlations
+            .findByProviderAndProviderReference(command.provider(), payment.providerReference())
+            .orElseThrow(
+                () ->
+                    new PaymentProviderException(
+                        "Payment callback has no workflow correlation for provider reference "
+                            + payment.providerReference()));
+    return new PaymentWorkflowEvent(
+        correlation.workflowId(),
+        correlation.provider(),
+        command.eventId(),
+        correlation.providerReference(),
+        payment.status().name());
+  }
+}

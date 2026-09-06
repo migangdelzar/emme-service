@@ -209,7 +209,9 @@
 - [x] Add tenant-schema payment-link persistence, RLS migration, and migration contract coverage.
 - [x] Add tenant-schema provider-to-workflow correlation persistence, RLS migration,
       and migration contract coverage.
-- [ ] Wire verified callback ownership, idempotent workflow resume, and checkpointed graph edges.
+- [x] Normalize processed callbacks into canonical workflow events and reject missing
+      provider-to-workflow ownership.
+- [ ] Wire verified callback ownership into idempotent workflow resume and checkpointed graph edges.
 
 ## Repository framework-first refactoring plan — 2026-09-04
 

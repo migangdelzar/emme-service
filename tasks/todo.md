@@ -233,6 +233,18 @@
 - [ ] Run live client provider retry/reconciliation checks when PostgreSQL and
       Google infrastructure are available.
 
+## Current slice — Task 19I subscription replay context — 2026-09-06
+
+- [x] Add a failing listener test for tenant, database, and correlation context.
+- [x] Resolve the event tenant's database through the public Tenancy use case.
+- [x] Restore tenant/database/correlation context before schema-local
+      subscription provisioning.
+- [x] Preserve operational exception propagation for Modulith retry.
+- [x] Run Subscription tests/checks, integration-source compilation, and the
+      application event-contract tests.
+- [ ] Run live PostgreSQL/Kafka replay and tenant-routing checks when
+      infrastructure is available.
+
 ## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
 
 - [x] Inventory remaining tenant-qualified repository and persistence methods.

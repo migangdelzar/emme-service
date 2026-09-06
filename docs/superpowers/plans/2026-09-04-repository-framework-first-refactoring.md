@@ -2533,6 +2533,25 @@ the existing already-synced or already-gone idempotency behavior.
 - [ ] Run live client provider retry/reconciliation checks when PostgreSQL and
       Google infrastructure are available.
 
+#### Current slice 19I — Restore subscription database and correlation context
+
+Subscription provisioning now resolves the tenant's database through the public
+Tenancy use case before invoking schema-local persistence. The listener restores
+tenant, database, and event-derived correlation context, so an externalized or
+replayed `TenantActivated` event cannot fall back to the default database and
+its logs remain attributable to the event. The application event contract and
+subscription use case remain unchanged.
+
+- [x] Add a failing listener test for tenant, database, and correlation context.
+- [x] Inject `ResolveTenantDatabaseIdUseCase` through the subscription listener
+      boundary.
+- [x] Restore all three contexts before subscription provisioning and preserve
+      operational failure propagation for Modulith retry.
+- [x] Run the Subscription test/check, integration-source compilation, and
+      application event-contract tests.
+- [ ] Run live replay and tenant-database routing checks when PostgreSQL and
+      Kafka infrastructure are available.
+
 #### Current slice 19A — Keep tenant event publication behind a port
 
 `CreateTenantService` no longer imports Spring event infrastructure. The

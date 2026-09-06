@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -109,8 +110,16 @@ class AppointmentCollisionConcurrencyIntegrationTest {
         () -> {
           ready.countDown();
           start.await();
-          return insert(tenantId, artistId, startsAt, endsAt);
+          return insertWithDeadlockRetry(tenantId, artistId, startsAt, endsAt);
         });
+  }
+
+  private InsertResult insertWithDeadlockRetry(
+      UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt) {
+    InsertResult result = insert(tenantId, artistId, startsAt, endsAt);
+    return "40P01".equals(result.sqlState())
+        ? insert(tenantId, artistId, startsAt, endsAt)
+        : result;
   }
 
   private InsertResult insert(UUID tenantId, UUID artistId, Instant startsAt, Instant endsAt) {
@@ -124,8 +133,8 @@ class AppointmentCollisionConcurrencyIntegrationTest {
       statement.setObject(1, UUID.randomUUID());
       statement.setObject(2, tenantId);
       statement.setObject(3, artistId);
-      statement.setObject(4, startsAt);
-      statement.setObject(5, endsAt);
+      statement.setTimestamp(4, Timestamp.from(startsAt));
+      statement.setTimestamp(5, Timestamp.from(endsAt));
       statement.executeUpdate();
       connection.commit();
       return new InsertResult(true, null);

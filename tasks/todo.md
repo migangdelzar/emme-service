@@ -1,5 +1,27 @@
 # Service architecture migration checklist
 
+## Current slice — Task 17 live appointment collision gate — 2026-09-06
+
+- [x] Start an isolated `colima-emme` Docker profile after the stale default
+      profile failed to start.
+- [x] Run the PostgreSQL Testcontainers collision-concurrency test and diagnose
+      the JDBC `Instant` binding failure.
+- [x] Bind timestamp parameters with `Timestamp.from(...)` and retry one
+      PostgreSQL deadlock (`40P01`) before asserting the final exclusion
+      violation (`23P01`).
+- [x] Re-run the focused live test: one overlapping insert commits and the
+      retried contender fails with `23P01`.
+- [ ] Run the remaining PostgreSQL migration/routing/optimistic-lock gates.
+
+### Results
+
+- `DOCKER_HOST=unix:///Users/miguelangeldelgadillozarate/.colima/emme/docker.sock
+  ./gradlew :modules:appointments:integrationTest
+  --tests '*AppointmentCollisionConcurrencyIntegrationTest'
+  --no-parallel --no-configuration-cache` passes.
+- The test harness now uses the PostgreSQL JDBC timestamp type and follows the
+  documented bounded retry path for a transient exclusion-check deadlock.
+
 ## Current slice — Public API lifecycle enum boundary correction — 2026-09-06
 
 - [x] Add an API-owned AppointmentStatus enum and a failing public-boundary

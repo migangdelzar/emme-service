@@ -3674,3 +3674,20 @@ CatalogItemImage remains unchanged because its current contract is create and
 delete-only with no domain mutation path. Customer identity and membership also
 remain unchanged because they are shared control-plane persistence without the
 tenant-owned versioned aggregate model.
+
+## Current slice 17A — Live appointment collision concurrency evidence
+
+The focused PostgreSQL Testcontainers concurrency gate now runs against the
+isolated `colima-emme` Docker profile. The integration harness binds
+`Instant` values through JDBC `Timestamp` parameters. PostgreSQL may resolve
+simultaneous GiST exclusion checks with a transient `40P01` deadlock; the test
+performs one bounded transaction retry, after which the losing insert observes
+the required `23P01` exclusion violation. The production migration remains a
+non-deferrable GiST exclusion constraint; no tenant identifier or schema
+boundary was changed.
+
+- [x] Run the focused PostgreSQL concurrency test with Docker.
+- [x] Verify one overlapping insert commits and one ultimately fails with
+      `23P01`.
+- [ ] Run the deployed Liquibase migration path and remaining PostgreSQL
+      routing/optimistic-lock gates.

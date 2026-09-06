@@ -71,7 +71,7 @@ if [[ -n "${TENANT_SEED_SLUGS}" ]]; then
   IFS=',' read -r -a seed_slugs <<< "${TENANT_SEED_SLUGS}"
   for slug in "${seed_slugs[@]}"; do
     [[ -z "${slug}" ]] && continue
-    if [[ ! "${slug}" =~ ^[A-Za-z0-9-]+$ ]]; then
+    if [[ ! "${slug}" =~ ^[A-Za-z][A-Za-z0-9-]{0,62}$ ]]; then
       echo "Unsafe tenant slug: ${slug}" >&2
       exit 11
     fi

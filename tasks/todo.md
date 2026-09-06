@@ -24,6 +24,13 @@
 - [ ] Complete the remaining Task 16 query-count and live optimistic-lock
       evidence where the existing module tests do not provide it.
 
+## Current slice — Task 23 tenant migration script validation — 2026-09-06
+
+- [x] Add a failing contract test for PostgreSQL-safe tenant slug validation.
+- [x] Reject digit-starting and overlong seed slugs before registry writes.
+- [x] Run the full database contract suite and `bash -n` on the migration script.
+- [ ] Run the real Liquibase migration/catalog/RLS gate with Docker available.
+
 ## Current execution checkpoint — framework-first plan / durable Task 5 — 2026-09-05
 
 - [x] Complete Task 3 shared-turn semantic query migration and push commit `edd8eb38`.

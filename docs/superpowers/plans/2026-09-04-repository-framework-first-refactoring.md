@@ -2532,6 +2532,11 @@ Use Liquibase for schema changes and keep SQL-specific behavior in the
 database. Align runtime and script validation through tests rather than copying
 unsafe SQL interpolation into application code.
 
+The 2026-09-06 script slice tightened seed-slug validation to the PostgreSQL
+identifier-safe boundary (`^[A-Za-z][A-Za-z0-9-]{0,62}$`) before registry writes.
+No deployed migration was edited; the remaining live Liquibase/catalog/RLS gate
+is still Docker-dependent.
+
 - [ ] **Step 4: Run migration tests and commit**
 
 ```bash

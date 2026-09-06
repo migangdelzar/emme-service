@@ -1692,3 +1692,14 @@
 - **Prevention rule:** Run filtered test tasks separately from compile tasks, or
   place test filters only on the test invocation; never assume task-specific
   options apply uniformly across a multi-task Gradle command.
+
+## 2026-09-06 — Validate tenant identifiers before registry writes
+
+- **Failure mode:** The migration script accepted a digit-starting or overlong
+  seed slug, wrote provisioning state, and only rejected the derived schema in
+  a later loop.
+- **Detection signal:** The migration script contract lacked a PostgreSQL-safe
+  start-character and length assertion.
+- **Prevention rule:** Validate tenant slug shape and PostgreSQL identifier
+  length before any registry insert; keep the later schema validation as a
+  defense in depth.

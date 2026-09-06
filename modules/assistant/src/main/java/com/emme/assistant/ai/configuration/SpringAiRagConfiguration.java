@@ -5,6 +5,7 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiQueryImprover;
 import com.emme.assistant.ai.adapter.out.provider.springai.TenantScopedDocumentRetriever;
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.GroundingGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.InputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.OutputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
@@ -141,6 +142,7 @@ public class SpringAiRagConfiguration {
       InputGuardAdvisor inputGuardAdvisor,
       OutputGuardAdvisor outputGuardAdvisor,
       RetrievalAugmentationAdvisor retrievalAugmentationAdvisor,
+      GroundingGuardAdvisor groundingGuardAdvisor,
       AiTraceRecorder traceRecorder,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {
@@ -151,6 +153,7 @@ public class SpringAiRagConfiguration {
                 inputGuardAdvisor,
                 promptVersionAdvisor,
                 retrievalAugmentationAdvisor,
+                groundingGuardAdvisor,
                 outputGuardAdvisor));
     var registry =
         new SpringAiChatProviderRegistry(chatClients, chatProperties, advisors, traceRecorder);

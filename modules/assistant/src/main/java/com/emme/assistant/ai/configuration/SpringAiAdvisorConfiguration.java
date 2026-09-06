@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.GroundingGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.InputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.OutputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
@@ -117,5 +118,11 @@ public class SpringAiAdvisorConfiguration {
   @ConditionalOnMissingBean
   OutputGuardAdvisor outputGuardAdvisor(OutputGuard outputGuard) {
     return new OutputGuardAdvisor(outputGuard);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  GroundingGuardAdvisor groundingGuardAdvisor(GroundingGuard groundingGuard) {
+    return new GroundingGuardAdvisor(groundingGuard);
   }
 }

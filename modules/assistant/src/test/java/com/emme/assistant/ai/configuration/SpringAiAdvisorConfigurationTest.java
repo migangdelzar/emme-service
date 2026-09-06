@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.GroundingGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.InputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.OutputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
@@ -82,6 +83,14 @@ class SpringAiAdvisorConfigurationTest {
     assertThat(inputAdvisor.getOrder()).isLessThan(configuration.promptVersionAdvisor().getOrder());
     assertThat(outputAdvisor.getOrder())
         .isGreaterThan(configuration.promptVersionAdvisor().getOrder());
+  }
+
+  @Test
+  void composesTheSpringAiGroundingAdvisorFromTheTypedGuard() {
+    SpringAiAdvisorConfiguration configuration = new SpringAiAdvisorConfiguration();
+
+    assertThat(configuration.groundingGuardAdvisor(configuration.groundingGuard()))
+        .isInstanceOf(GroundingGuardAdvisor.class);
   }
 
   private static AiToolDefinition toolDefinition() {

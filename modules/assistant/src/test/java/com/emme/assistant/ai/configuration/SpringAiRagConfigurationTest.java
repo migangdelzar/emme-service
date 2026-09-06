@@ -123,6 +123,8 @@ class SpringAiRagConfigurationTest {
             new SpringAiAdvisorConfiguration()
                 .outputGuardAdvisor(new SpringAiAdvisorConfiguration().outputGuard()),
             mock(RetrievalAugmentationAdvisor.class),
+            new SpringAiAdvisorConfiguration()
+                .groundingGuardAdvisor(new SpringAiAdvisorConfiguration().groundingGuard()),
             mock(AiTraceRecorder.class),
             java.util.Optional.empty(),
             new AiExecutorProperties(2, 1, 1));

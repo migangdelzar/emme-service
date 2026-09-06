@@ -833,6 +833,9 @@ responses; web does not impose an arbitrary application character cap.
 The durable conversation service also checks delivery before persisting the
 assistant response or completing idempotency, so blocked responses cannot be
 recorded as successfully delivered turns.
+The Spring AI RAG advisor chain now also includes a grounding advisor after
+retrieval; it projects Spring AI document provenance into `GroundingRequest`
+and fails closed before generation when the typed grounding decision rejects.
 - [ ] **Step 5: Run, refactor, and commit.**
 
   ```bash

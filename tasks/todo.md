@@ -4080,6 +4080,8 @@ appointment mutation tools are registered.
       legacy chat, durable conversation, and RAG responses.
 - [x] Enforce the typed delivery guard before durable assistant-response
       persistence and idempotency completion.
+- [x] Add and compose the Spring AI grounding advisor from retrieved document
+      provenance, scores, and source IDs.
 - [ ] Add grounded RAG delivery enforcement and remaining controller/channel
       boundaries.
 

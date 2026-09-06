@@ -918,7 +918,9 @@ bridge dependency. Capability nodes now reject approval or confirmation pauses w
 their profile does not permit interruption, and enforce the configured node timeout.
 The tool and memory policy objects expose immutable allow-list projections for
 candidate tool keys and memory scopes. Full capability invocation projection,
-approval semantics, and adapter state-patch validation remain in the next slices.
+approval semantics, and adapter state-patch namespace validation remain in the
+next slices. `WorkflowStep` now rejects non-JSON values and recursively copies
+bounded maps/lists before the graph adapter can serialize them.
 
 - [ ] **Step 1: Write failing tests.** Prove model-facing nodes require an explicit model/tool/memory/timeout/interruption policy; deterministic nodes declare `NONE`; disallowed tools and memory fields are absent from the projection; timeout and approval policy are enforced.
 - [ ] **Step 2: Run focused tests.** Run `./gradlew :modules:assistant:test --tests '*NodePolicyRegistryTest' --tests '*ConversationWorkflowGraphTest'`; expected failure is missing policy enforcement.

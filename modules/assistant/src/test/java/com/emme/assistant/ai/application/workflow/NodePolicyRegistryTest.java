@@ -3,9 +3,12 @@ package com.emme.assistant.ai.application.workflow;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class NodePolicyRegistryTest {
@@ -34,6 +37,16 @@ class NodePolicyRegistryTest {
         .containsExactly("faq.read");
     assertThat(profile.memory().filterScopes(Set.of("conversation", "payment")))
         .containsExactly("conversation");
+  }
+
+  @Test
+  void rejectsNonJsonStatePatchValuesBeforeCheckpointSerialization() {
+    assertThatThrownBy(
+            () ->
+                new ConversationWorkflowCapabilities.WorkflowStep(
+                    Map.of("answer", UUID.randomUUID()), false, false, null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("JSON-safe");
   }
 
   private static NodeProfile profile(String nodeId) {

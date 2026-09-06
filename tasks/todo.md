@@ -4099,6 +4099,8 @@ appointment mutation tools are registered.
       pause is returned to LangGraph.
 - [x] Add provider-neutral allow-list projections for node tool keys and memory
       scopes.
+- [x] Reject non-JSON workflow state values and bound nested patch maps/lists
+      before LangGraph checkpoint serialization.
 - [ ] Register policies for every conversation graph node and enforce projected
       state, filtered tools, timeout, interruption, approval, and state-patch
       boundaries.

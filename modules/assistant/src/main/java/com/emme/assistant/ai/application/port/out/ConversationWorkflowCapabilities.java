@@ -1,6 +1,11 @@
 package com.emme.assistant.ai.application.port.out;
 
 import com.emme.kernel.context.AiExecutionContext;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -62,8 +67,13 @@ public record ConversationWorkflowCapabilities(
       boolean needsApproval,
       boolean needsConfirmation,
       String terminalStatus) {
+
+    private static final int MAX_PATCH_ENTRIES = 64;
+    private static final int MAX_PATCH_DEPTH = 8;
+    private static final int MAX_PATCH_TEXT_LENGTH = 4096;
+
     public WorkflowStep {
-      updates = Map.copyOf(Objects.requireNonNull(updates, "updates must not be null"));
+      updates = immutableJsonMap(updates, 0);
       if (terminalStatus != null && terminalStatus.isBlank()) {
         throw new IllegalArgumentException("terminalStatus must not be blank");
       }
@@ -71,6 +81,81 @@ public record ConversationWorkflowCapabilities(
 
     public static WorkflowStep empty() {
       return new WorkflowStep(Map.of(), false, false, null);
+    }
+
+    private static Map<String, Object> immutableJsonMap(Map<String, Object> values, int depth) {
+      Objects.requireNonNull(values, "updates must not be null");
+      if (values.size() > MAX_PATCH_ENTRIES) {
+        throw new IllegalArgumentException("State patch must contain at most 64 entries");
+      }
+      Map<String, Object> copy = new LinkedHashMap<>();
+      values.forEach(
+          (key, value) -> {
+            if (key == null || key.isBlank()) {
+              throw new IllegalArgumentException("State patch keys must not be blank");
+            }
+            copy.put(key, immutableJsonValue(value, depth + 1));
+          });
+      return Map.copyOf(copy);
+    }
+
+    private static Object immutableJsonValue(Object value, int depth) {
+      if (value == null) {
+        throw new IllegalArgumentException("State patch values must be JSON-safe");
+      }
+      if (depth > MAX_PATCH_DEPTH) {
+        throw new IllegalArgumentException("State patch nesting exceeds 8 levels");
+      }
+      if (value instanceof String text) {
+        if (text.length() > MAX_PATCH_TEXT_LENGTH) {
+          throw new IllegalArgumentException("State patch text exceeds 4096 characters");
+        }
+        return text;
+      }
+      if (value instanceof Boolean || value instanceof BigInteger || value instanceof BigDecimal) {
+        return value;
+      }
+      if (value instanceof Byte
+          || value instanceof Short
+          || value instanceof Integer
+          || value instanceof Long) {
+        return value;
+      }
+      if (value instanceof Float floatValue) {
+        if (!Float.isFinite(floatValue)) {
+          throw new IllegalArgumentException("State patch values must be JSON-safe");
+        }
+        return value;
+      }
+      if (value instanceof Double doubleValue) {
+        if (!Double.isFinite(doubleValue)) {
+          throw new IllegalArgumentException("State patch values must be JSON-safe");
+        }
+        return value;
+      }
+      if (value instanceof Map<?, ?> map) {
+        if (map.size() > MAX_PATCH_ENTRIES) {
+          throw new IllegalArgumentException("State patch must contain at most 64 entries");
+        }
+        Map<String, Object> copy = new LinkedHashMap<>();
+        map.forEach(
+            (key, nestedValue) -> {
+              if (!(key instanceof String textKey) || textKey.isBlank()) {
+                throw new IllegalArgumentException("State patch keys must not be blank");
+              }
+              copy.put(textKey, immutableJsonValue(nestedValue, depth + 1));
+            });
+        return Map.copyOf(copy);
+      }
+      if (value instanceof List<?> list) {
+        if (list.size() > MAX_PATCH_ENTRIES) {
+          throw new IllegalArgumentException("State patch lists must contain at most 64 entries");
+        }
+        List<Object> copy = new ArrayList<>(list.size());
+        list.forEach(item -> copy.add(immutableJsonValue(item, depth + 1)));
+        return List.copyOf(copy);
+      }
+      throw new IllegalArgumentException("State patch values must be JSON-safe");
     }
   }
 

@@ -13,7 +13,6 @@ import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
 import com.emme.calendar.configuration.CalendarProperties;
-import com.emme.calendar.configuration.GoogleHttpClient;
 import com.emme.calendar.domain.model.CalendarProvider;
 import com.emme.kernel.context.TenantContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.client.RestClient;
 
 class StaffCalendarSyncAdapterTest {
 
@@ -52,7 +52,7 @@ class StaffCalendarSyncAdapterTest {
             mock(MarkCalendarEventLinksFailedUseCase.class),
             mock(CalendarProperties.class),
             new ObjectMapper(),
-            mock(GoogleHttpClient.class));
+            RestClient.builder().build());
 
     adapter.onCalendarSyncRequested(
         new CalendarSyncRequested(

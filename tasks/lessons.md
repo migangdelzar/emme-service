@@ -1568,3 +1568,15 @@
 - **Prevention rule:** When adding a Spring-managed RestClient boundary to a
   module, verify the module's full application context and declare the Boot
   RestClient dependency that supplies the managed builder.
+
+## 2026-09-05 — Retain compatibility beans until all callers migrate
+
+- **Failure mode:** Removing Calendar's legacy Google HTTP bean during the
+  RestClient client migration broke Spring contexts while sync adapters still
+  injected the legacy wrapper.
+- **Detection signal:** Full Calendar tests failed with
+  `NoSuchBeanDefinitionException` for `GoogleHttpClient`, even though the new
+  provider contract tests passed.
+- **Prevention rule:** Keep the compatibility bean through the planned caller
+  migration slice, then delete it only after production callers, tests, and
+  dependency searches are clean.

@@ -48,7 +48,7 @@
       Google OAuth form/token calls with contract coverage.
 - [x] Migrate Google Calendar and Sheets resource clients with contract
       coverage.
-- [ ] Remove the obsolete Google wrapper dependency from Calendar sync
+- [x] Remove the obsolete Google wrapper dependency from Calendar sync
       adapters with tenant/event behavior coverage.
 - [ ] Delete provider HTTP wrappers only in HTTP-13 after caller and
       dependency searches prove they are unused.

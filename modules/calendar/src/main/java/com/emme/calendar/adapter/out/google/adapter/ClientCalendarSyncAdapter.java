@@ -8,7 +8,6 @@ import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
 import com.emme.calendar.application.port.out.ClientCalendarSyncPort;
-import com.emme.calendar.configuration.GoogleHttpClient;
 import com.emme.calendar.domain.model.CalendarProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -17,13 +16,12 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 /**
  * Syncs a client's own appointments to their personal Google Calendar.
@@ -38,7 +36,6 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
   private static final Logger log = LoggerFactory.getLogger(ClientCalendarSyncAdapter.class);
   private static final String EVENTS_URL =
       "https://www.googleapis.com/calendar/v3/calendars/primary/events";
-  private static final MediaType JSON = MediaType.get("application/json");
   private static final DateTimeFormatter ISO_INSTANT =
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
 
@@ -48,7 +45,7 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
   private final MarkCalendarEventLinkSyncedUseCase markCalendarEventLinkSynced;
   private final MarkCalendarEventLinksDeletedUseCase markCalendarEventLinksDeleted;
   private final MarkCalendarEventLinksFailedUseCase markCalendarEventLinksFailed;
-  private final GoogleHttpClient httpClient;
+  private final RestClient httpClient;
   private final ObjectMapper mapper;
 
   public ClientCalendarSyncAdapter(
@@ -59,7 +56,7 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
       MarkCalendarEventLinksDeletedUseCase markCalendarEventLinksDeleted,
       MarkCalendarEventLinksFailedUseCase markCalendarEventLinksFailed,
       ObjectMapper mapper,
-      GoogleHttpClient httpClient) {
+      @Qualifier("googleRestClient") RestClient httpClient) {
     this.oauthService = oauthService;
     this.findCalendarEventLink = findCalendarEventLink;
     this.createCalendarEventLink = createCalendarEventLink;
@@ -123,38 +120,27 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
         .put("timeZone", "America/Mexico_City");
 
     try {
-      Request request =
-          new Request.Builder()
-              .url(EVENTS_URL)
+      String responseBody =
+          httpClient
+              .post()
+              .uri(EVENTS_URL)
               .header("Authorization", "Bearer " + token)
-              .header("Content-Type", "application/json")
-              .post(RequestBody.create(mapper.writeValueAsString(body), JSON))
-              .build();
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(body))
+              .retrieve()
+              .body(String.class);
 
-      try (Response response = httpClient.newCall(request).execute()) {
-        if (!response.isSuccessful()) {
-          String errorBody = response.body() != null ? response.body().string() : "";
-          log.error(
-              "Google Calendar event CREATE failed for appointment {}: HTTP {} — {}",
-              appointmentId,
-              response.code(),
-              errorBody);
-          throw new RuntimeException(
-              "Google Calendar event creation failed: HTTP " + response.code());
-        }
+      ObjectNode created = (ObjectNode) mapper.readTree(responseBody == null ? "" : responseBody);
+      String eventId = created.get("id").asText();
+      String etag = created.has("etag") ? created.get("etag").asText() : null;
 
-        ObjectNode created = (ObjectNode) mapper.readTree(response.body().string());
-        String eventId = created.get("id").asText();
-        String etag = created.has("etag") ? created.get("etag").asText() : null;
+      createCalendarEventLink.create(tenantId, appointmentId, "GOOGLE_CALENDAR", eventId);
+      markCalendarEventLinkSynced.markSynced(
+          appointmentId, CalendarProvider.GOOGLE_CALENDAR.name(), etag);
 
-        createCalendarEventLink.create(tenantId, appointmentId, "GOOGLE_CALENDAR", eventId);
-        markCalendarEventLinkSynced.markSynced(
-            appointmentId, CalendarProvider.GOOGLE_CALENDAR.name(), etag);
-
-        log.info(
-            "Created Google Calendar event {} for client appointment {}", eventId, appointmentId);
-        return eventId;
-      }
+      log.info(
+          "Created Google Calendar event {} for client appointment {}", eventId, appointmentId);
+      return eventId;
     } catch (RuntimeException e) {
       throw e;
     } catch (Exception e) {
@@ -190,30 +176,26 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
 
     try {
       String url = EVENTS_URL + "/" + eventId;
-      Request request =
-          new Request.Builder()
-              .url(url)
-              .header("Authorization", "Bearer " + token)
-              .delete()
-              .build();
-
-      try (Response response = httpClient.newCall(request).execute()) {
-        if (response.isSuccessful() || response.code() == 410) {
-          markCalendarEventLinksDeleted.markDeleted(tenantId, appointmentId);
-          log.info(
-              "Deleted Google Calendar event {} for client appointment {}", eventId, appointmentId);
-        } else {
-          String errorBody = response.body() != null ? response.body().string() : "";
-          log.error(
-              "Google Calendar event DELETE failed for {}: HTTP {} — {}",
-              eventId,
-              response.code(),
-              errorBody);
-          markCalendarEventLinksFailed.markFailed(tenantId, appointmentId);
-          throw new RuntimeException(
-              "Google Calendar event deletion failed: HTTP " + response.code());
-        }
-      }
+      httpClient
+          .delete()
+          .uri(url)
+          .header("Authorization", "Bearer " + token)
+          .exchange(
+              (request, response) -> {
+                if (response.getStatusCode().is2xxSuccessful()
+                    || response.getStatusCode().value() == 410) {
+                  markCalendarEventLinksDeleted.markDeleted(tenantId, appointmentId);
+                  log.info(
+                      "Deleted Google Calendar event {} for client appointment {}",
+                      eventId,
+                      appointmentId);
+                  return null;
+                }
+                markCalendarEventLinksFailed.markFailed(tenantId, appointmentId);
+                throw new RuntimeException(
+                    "Google Calendar event deletion failed: HTTP "
+                        + response.getStatusCode().value());
+              });
     } catch (RuntimeException e) {
       throw e;
     } catch (Exception e) {

@@ -32,6 +32,18 @@
   provisioning, provider synchronization, or replay must declare a stable
   module-qualified ID; do not add a second delivery mechanism to solve this.
 
+## 2026-09-06 — Reconstruct database routing before tenant-schema replay
+
+- Failure mode: a replayed Calendar event restored only `tenantId`, leaving the
+  database routing context empty and allowing the default database to be
+  selected for a tenant that belongs to a dedicated database.
+- Detection signal: the event contract had tenant identity but no database
+  identity, while `TenantRoutingDataSource` selects pools from the current
+  database context.
+- Prevention rule: control-plane consumers must resolve and restore both tenant
+  and database routing context before touching tenant-schema repositories;
+  never assume request-local context exists during replay.
+
 ## 2026-09-05 — Run full Spring context checkpoints after constructor changes
 
 - Failure mode: adding a guardrail-aware constructor left the previous required

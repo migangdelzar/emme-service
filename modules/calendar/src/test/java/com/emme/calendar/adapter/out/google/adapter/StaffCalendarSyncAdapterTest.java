@@ -28,12 +28,14 @@ class StaffCalendarSyncAdapterTest {
   @Test
   void restoresTheEventTenantBeforeUsingTenantScopedPersistence() {
     UUID tenantId = UUID.randomUUID();
+    UUID databaseId = UUID.randomUUID();
     UUID appointmentId = UUID.randomUUID();
     FindCalendarEventLinkUseCase findEventLink = mock(FindCalendarEventLinkUseCase.class);
     when(findEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR.name()))
         .thenAnswer(
             invocation -> {
               assertThat(TenantContextHolder.currentTenantOptional()).contains(tenantId);
+              assertThat(TenantContextHolder.currentDatabaseOptional()).contains(databaseId);
               return Optional.empty();
             });
     SpringDataGoogleOAuthTokenRepository tokenRepository =
@@ -57,6 +59,7 @@ class StaffCalendarSyncAdapterTest {
     adapter.onCalendarSyncRequested(
         new CalendarSyncRequested(
             tenantId,
+            databaseId,
             appointmentId,
             "CREATE",
             "Appointment",

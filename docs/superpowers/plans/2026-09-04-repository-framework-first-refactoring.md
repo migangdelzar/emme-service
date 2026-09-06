@@ -2247,6 +2247,23 @@ delivery mechanism or alter tenant/business behavior.
 - [ ] Run live duplicate-delivery and event-publication retry gates when Kafka,
       PostgreSQL, and the deployment runtime are available.
 
+#### Current slice 19E — Restore database routing for Calendar replay
+
+`CalendarSyncRequested` now carries the tenant's database routing identity.
+The Calendar inbound listener resolves that identity through the control-plane
+tenant repository before publishing the internal sync request, and the Google
+adapter restores both tenant and database context before tenant-schema access.
+This prevents an externalized appointment replay from silently selecting the
+default database when the tenant is routed to a dedicated database.
+
+- [x] Add a failing Calendar listener test for database routing propagation.
+- [x] Add the database ID to the internal Calendar sync event.
+- [x] Resolve the database ID through the control-plane tenant boundary.
+- [x] Restore tenant and database context in the Calendar provider adapter.
+- [x] Run focused Calendar listener/provider tests and module compilation.
+- [ ] Run live database-per-tenant replay and provider synchronization checks
+      when PostgreSQL and external provider infrastructure are available.
+
 #### Current slice 19A — Keep tenant event publication behind a port
 
 `CreateTenantService` no longer imports Spring event infrastructure. The

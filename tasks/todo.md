@@ -12,6 +12,15 @@
 - [ ] Run live duplicate-delivery and publication-retry gates when Kafka,
       PostgreSQL, and deployment runtime infrastructure are available.
 
+## Current slice — Task 19E Calendar replay database routing — 2026-09-06
+
+- [x] Add the failing Calendar listener test for control-plane database lookup.
+- [x] Carry the resolved database ID on `CalendarSyncRequested`.
+- [x] Restore tenant and database context before Calendar tenant-schema access.
+- [x] Run focused Calendar listener/provider tests and compilation.
+- [ ] Run live database-per-tenant replay and provider synchronization checks
+      when PostgreSQL and provider infrastructure are available.
+
 ## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
 
 - [x] Inventory remaining tenant-qualified repository and persistence methods.

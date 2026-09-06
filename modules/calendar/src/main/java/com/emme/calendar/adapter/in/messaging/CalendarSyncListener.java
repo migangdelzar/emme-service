@@ -4,6 +4,9 @@ import com.emme.appointments.api.event.AppointmentCancelled;
 import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.appointments.api.event.AppointmentRescheduled;
 import com.emme.calendar.api.event.CalendarSyncRequested;
+import com.emme.tenancy.application.port.out.TenantRepository;
+import java.util.Objects;
+import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
@@ -12,9 +15,13 @@ import org.springframework.stereotype.Component;
 public class CalendarSyncListener {
 
   private final ApplicationEventPublisher eventPublisher;
+  private final TenantRepository tenantRepository;
 
-  public CalendarSyncListener(ApplicationEventPublisher eventPublisher) {
-    this.eventPublisher = eventPublisher;
+  public CalendarSyncListener(
+      ApplicationEventPublisher eventPublisher, TenantRepository tenantRepository) {
+    this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher must not be null");
+    this.tenantRepository =
+        Objects.requireNonNull(tenantRepository, "tenantRepository must not be null");
   }
 
   @ApplicationModuleListener(id = "calendar.appointment-created")
@@ -22,6 +29,7 @@ public class CalendarSyncListener {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
             event.tenantId(),
+            databaseId(event.tenantId()),
             event.appointmentId(),
             "CREATE",
             "Appointment",
@@ -35,7 +43,15 @@ public class CalendarSyncListener {
   public void onAppointmentCancelled(AppointmentCancelled event) {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
-            event.tenantId(), event.appointmentId(), "DELETE", null, null, null, null, null));
+            event.tenantId(),
+            databaseId(event.tenantId()),
+            event.appointmentId(),
+            "DELETE",
+            null,
+            null,
+            null,
+            null,
+            null));
   }
 
   @ApplicationModuleListener(id = "calendar.appointment-rescheduled")
@@ -43,6 +59,7 @@ public class CalendarSyncListener {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
             event.tenantId(),
+            databaseId(event.tenantId()),
             event.appointmentId(),
             "UPDATE",
             "Appointment",
@@ -50,5 +67,11 @@ public class CalendarSyncListener {
             event.newStartsAt(),
             event.newEndsAt(),
             null));
+  }
+
+  private UUID databaseId(UUID tenantId) {
+    return tenantRepository
+        .findDatabaseIdByTenantId(tenantId)
+        .orElseThrow(() -> new IllegalStateException("No database routing for tenant " + tenantId));
   }
 }

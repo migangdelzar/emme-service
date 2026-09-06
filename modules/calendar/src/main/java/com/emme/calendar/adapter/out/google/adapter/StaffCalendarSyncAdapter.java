@@ -91,7 +91,8 @@ public class StaffCalendarSyncAdapter {
         event.appointmentId(),
         event.tenantId());
     try {
-      TenantContextHolder.withTenantOverride(event.tenantId(), () -> process(event));
+      TenantContextHolder.withTenantOverride(
+          event.tenantId(), event.databaseId(), () -> process(event));
     } catch (RuntimeException e) {
       log.error("Calendar sync failed for appointment {}", event.appointmentId(), e);
     }

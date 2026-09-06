@@ -23,7 +23,13 @@ public final class JdbcPaymentWorkflowCheckpointRepository
 
   @Override
   public boolean claimForResume(AiExecutionContext context) {
+    return claimForResume(context, WorkflowStatus.WAITING_FOR_PAYMENT);
+  }
+
+  @Override
+  public boolean claimForResume(AiExecutionContext context, WorkflowStatus expectedStatus) {
     Objects.requireNonNull(context, "context must not be null");
+    Objects.requireNonNull(expectedStatus, "expectedStatus must not be null");
     requireTenant(context);
     return jdbc.sql(
                 """
@@ -32,11 +38,12 @@ public final class JdbcPaymentWorkflowCheckpointRepository
                 WHERE id = :workflowId
                   AND principal_id = :principalId
                   AND conversation_id = :conversationId
-                  AND status = 'WAITING_FOR_PAYMENT'
+                  AND status = :expectedStatus
                 """)
             .param("workflowId", context.workflowId())
             .param("principalId", context.principalId())
             .param("conversationId", context.conversationId())
+            .param("expectedStatus", persistedStatus(expectedStatus))
             .update()
         == 1;
   }

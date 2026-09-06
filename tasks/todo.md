@@ -238,6 +238,20 @@
 - [ ] Wire the resumed payment workflow into the appointment graph's durable
       checkpointed mutation edge and final appointment confirmation.
 
+### Current slice — Durable Task 11A appointment lifecycle boundaries — 2026-09-05
+
+- [x] Add provider-neutral reschedule and cancellation workflow boundaries.
+- [x] Require confirmation before invoking authorized appointment mutation use cases.
+- [x] Propagate the backend-resolved tenant, principal, roles, and idempotency key
+      through `AppointmentActor`.
+- [x] Add shared atomic workflow checkpoint claiming and recording for lifecycle
+      resume, while preserving the payment checkpoint compatibility method.
+- [x] Wire both lifecycle workflows into the enabled-only appointment composition root.
+- [x] Verify focused lifecycle workflow, checkpoint, composition, formatting, and
+      diff checks.
+- [ ] Add policy-specific reschedule/cancellation analysis, staff review, notification
+      idempotency, and calendar reconciliation before closing durable Task 11.
+
 ## Repository framework-first refactoring plan — 2026-09-04
 
 ### Current slice — Task 5 structured extraction and tool wiring

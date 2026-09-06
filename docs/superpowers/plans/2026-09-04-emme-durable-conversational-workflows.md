@@ -1153,6 +1153,15 @@ deployment: no `@Externalized` annotation, Kafka provider, broker bootstrap sett
 Kafka API is introduced by this task. Listener failure recovery and publication retry remain
 owned by the existing Modulith JDBC registry.
 
+**Progress checkpoint (2026-09-05):** The first lifecycle boundary slice now provides
+provider-neutral reschedule and cancellation workflows. Both require confirmation before
+calling the existing authorized appointment use cases, carry only the backend-resolved actor
+context into those commands, and use the shared atomic workflow checkpoint port to record
+waiting/terminal handles and suppress a duplicate confirmation claim. The enabled-only
+appointment composition root exposes both workflows. Policy-specific pricing/refund/staff
+review behavior and committed notification/calendar consumers remain in the next Task 11
+slices.
+
 - [ ] **Step 1: Write failing tests.** Cover owned-appointment checks, unavailable target slot, price increase/decrease, refund eligibility, cancellation window, staff-only approval, duplicate resume, notification event idempotency, and calendar reconciliation after restart.
 - [ ] **Step 2: Run focused tests.** Run:
 

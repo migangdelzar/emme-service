@@ -11,7 +11,7 @@ public final class ArtistApplicationMapper {
   private ArtistApplicationMapper() {}
 
   public static ArtistDetails toDetails(Artist artist) {
-    return new ArtistDetails(artist.getId(), artist.getName(), artist.getStatus().name());
+    return new ArtistDetails(artist.getId(), artist.getName(), artist.getStatus());
   }
 
   public static ArtistCapabilityDetails toDetails(ArtistCapability capability) {

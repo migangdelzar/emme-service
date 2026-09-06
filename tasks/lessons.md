@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-09-06 — Keep service-catalog lifecycle enums through mapping
+
+- Failure mode: Services converted `ServiceStatus` and `ArtistStatus` to
+  strings before returning public results and HTTP responses.
+- Detection signal: the boundary convention test found raw status components
+  despite both domain enums already existing.
+- Prevention rule: retain owning lifecycle enums through application and web
+  mapping; serialize stable names only at external boundaries.
+
 ## 2026-09-06 — Keep Catalog status typed through public mapping
 
 - Failure mode: Catalog converted its finite item status to a string before

@@ -1,5 +1,15 @@
 # Service architecture migration checklist
 
+## Current slice — Services status enum boundary — 2026-09-06
+
+- [x] Add a failing convention test for enum-typed service and artist status
+      models.
+- [x] Replace service and artist status strings with their existing domain
+      enums across public results, HTTP responses, and application mapping.
+- [x] Run focused Services tests and the affected fast quality gate.
+- [ ] Audit remaining finite-state strings in each owning module and migrate
+      them in separate contract-safe slices.
+
 ## Current slice — Catalog status enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed catalog status models.

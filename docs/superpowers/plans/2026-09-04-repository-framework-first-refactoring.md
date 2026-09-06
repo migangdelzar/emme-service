@@ -86,6 +86,17 @@ preserves the existing catalog status values.
 - [x] Run focused Catalog tests and the affected fast quality gate.
 - [ ] Continue finite-state migration in separate owning-module slices.
 
+### Current slice — Services status enum boundary
+
+Service-catalog and artist lifecycle statuses now retain their existing domain
+enums through application results, HTTP responses, and mapping. Stable enum-name
+serialization preserves the existing status values.
+
+- [x] Add a failing convention test for enum-typed Services status boundaries.
+- [x] Migrate Services result/response models and application mappers.
+- [x] Run focused Services tests and the affected fast quality gate.
+- [ ] Continue finite-state migration in separate owning-module slices.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

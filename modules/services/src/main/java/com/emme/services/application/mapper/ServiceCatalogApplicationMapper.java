@@ -17,6 +17,6 @@ public final class ServiceCatalogApplicationMapper {
         service.getDescription(),
         service.getDurationMinutes(),
         service.getBasePrice(),
-        service.getStatus().name());
+        service.getStatus());
   }
 }

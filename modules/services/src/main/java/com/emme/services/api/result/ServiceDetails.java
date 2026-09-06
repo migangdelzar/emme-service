@@ -1,5 +1,6 @@
 package com.emme.services.api.result;
 
+import com.emme.services.domain.model.ServiceStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -12,4 +13,4 @@ public record ServiceDetails(
     String description,
     int durationMinutes,
     BigDecimal basePrice,
-    String status) {}
+    ServiceStatus status) {}

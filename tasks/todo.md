@@ -4042,6 +4042,15 @@ appointment mutation tools are registered.
 - [ ] Add Spring AI input/output/grounding advisors and invoke the pipeline at
       application boundaries.
 
+#### Task 8 input advisor slice
+
+- [x] Add a red advisor test for blocked and allowed Spring AI prompts.
+- [x] Add typed `GuardrailRejectedException` and `InputGuardAdvisor`.
+- [x] Preserve trusted execution context and prevent blocked input from
+      reaching provider selection.
+- [x] Run the focused advisor test and diff validation.
+- [ ] Add output and grounding advisors and wire advisor ordering.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

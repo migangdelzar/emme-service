@@ -1627,6 +1627,25 @@ git add modules/clients modules/services modules/salon
 git commit -m "refactor(domain): standardize foundational JPA persistence"
 ```
 
+#### Current slice 16A — Prove foundational JPA list query counts
+
+The Clients, Services, and Salon aggregates already use module-private Spring
+Data repositories, provider-neutral application ports, and framework-free
+domain mappings. This slice adds repository-level H2 evidence that list and
+singleton reads execute one SQL statement after pending writes are flushed,
+guarding against accidental N+1 behavior without changing schema-local tenant
+routing.
+
+- [x] Enable Hibernate statistics in the repository-test profile only.
+- [x] Add customer create/find and one-query list coverage.
+- [x] Add service create/find and one-query active-list coverage.
+- [x] Add Salon singleton configuration and one-query operating-hours coverage.
+- [x] Run the full Clients, Services, and Salon module tests, compilation, and
+      Spotless checks.
+- [x] Commit and push `4c02eb92`, `1ad62cb6`, and `783c6d73`.
+- [ ] Add/execute live PostgreSQL tenant-routing and optimistic-lock conflict
+      evidence when Docker is available.
+
 ### Task 17: Make appointment collision handling concurrency-safe
 
 **Files:**

@@ -1,5 +1,17 @@
 # Service architecture migration checklist
 
+## Current slice — Task 16A foundational JPA query-count evidence — 2026-09-06
+
+- [x] Enable Hibernate statistics in the repository-test profile only.
+- [x] Prove customer create/find and one-query list behavior.
+- [x] Prove service create/find and one-query active-list behavior.
+- [x] Prove Salon singleton configuration and one-query operating-hours
+      behavior.
+- [x] Run Clients, Services, and Salon tests, compilation, and Spotless.
+- [x] Commit and push `4c02eb92`, `1ad62cb6`, and `783c6d73`.
+- [ ] Run live PostgreSQL tenant-routing and optimistic-lock conflict gates
+      when Docker is available.
+
 ## Current slice — Task 25B unused routing compatibility deletion — 2026-09-06
 
 - [x] Add a failing source-inventory assertion for the deprecated

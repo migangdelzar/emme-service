@@ -1831,3 +1831,13 @@
 - **Prevention rule:** Prove constructor usage across all source sets, add an
   API-surface test first, migrate the isolated test to the active composition,
   and preserve endpoint behavior before deleting the shortcut.
+
+## 2026-09-06 — Measure JPA list queries after flushing writes
+
+- **Failure mode:** A repository list test could report zero queries because
+  Hibernate statistics were disabled, leaving N+1 regressions invisible.
+- **Detection signal:** The first client query-count assertion returned zero
+  prepared statements even though `findAll()` had executed.
+- **Prevention rule:** Enable Hibernate statistics only in the repository-test
+  profile, flush pending writes before clearing statistics, and assert the
+  exact read-query count for each aggregate list path.

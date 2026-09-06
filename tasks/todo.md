@@ -22,6 +22,17 @@
 - [x] Commit and push `16cf9a48`.
 - [ ] Run all fixture-consuming module tests after future ownership moves.
 
+## Current slice — Task 24A deployment contract validator — 2026-09-06
+
+- [x] Add the failing deployment-contract test for CI invocation, probes,
+      non-root execution, and migration secrets.
+- [x] Add and invoke `scripts/validate-deployment-contracts.mjs` from the
+      backend quality job.
+- [x] Run backend workflow, container workflow, and deployment-contract checks.
+- [x] Commit and push `9f33de38`.
+- [ ] Run Kubernetes/Compose smoke checks and the full repository `check` at
+      the phase gate.
+
 ## Current slice — Task 25B unused routing compatibility deletion — 2026-09-06
 
 - [x] Add a failing source-inventory assertion for the deprecated

@@ -2760,7 +2760,7 @@ edited; PostgreSQL execution remains a runtime gate.
 - Migration jobs, application health probes, Redis/Kafka/PostgreSQL dependencies, and secrets have one documented source per environment.
 - Stale `.bak` configuration is deleted only after the active E2E overlay is proven equivalent.
 
-- [ ] **Step 1: Write failing configuration checks**
+- [x] **Step 1: Write failing configuration checks**
 
 Validate every referenced environment variable, health URL, compose profile,
 Kubernetes probe, migration job dependency, and CI Gradle task. Assert the
@@ -2790,6 +2790,21 @@ stale files, and repeated CI task definitions proven by the configuration tests.
 The stale E2E Compose backup was removed after the active overlay passed its
 contract test and was verified to contain the current migration, Keycloak,
 Redis, and health-check wiring.
+
+#### Current slice 24A — Add executable deployment contract validation
+
+The backend workflow now invokes a deployment contract validator during the
+quality job. The validator protects Kubernetes liveness/readiness probes,
+non-root execution, migration-job secret wiring, and the workflow invocation
+itself. Existing backend and container workflow validators remain separate.
+
+- [x] Add the failing deployment-contract test before wiring the CI step.
+- [x] Add `scripts/validate-deployment-contracts.mjs`.
+- [x] Invoke it from `.github/workflows/ci-backend.yml`.
+- [x] Run backend workflow, container workflow, and deployment-contract checks.
+- [x] Commit and push `9f33de38`.
+- [ ] Run Kubernetes rendering, Compose smoke, and the full repository check at
+      the phase gate.
 
 - [ ] **Step 4: Run smoke checks and commit**
 

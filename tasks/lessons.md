@@ -1851,3 +1851,15 @@
 - **Prevention rule:** Keep a source and build-file architecture test in the
   generic testing library so feature package/provider leakage fails at the
   owning boundary.
+
+## 2026-09-06 — Make deployment assumptions part of CI validation
+
+- **Failure mode:** Workflow and manifest contracts were validated by separate
+  checks, leaving probe, non-root, and migration-secret wiring assumptions
+  undocumented in the backend quality job.
+- **Detection signal:** No CI step asserted that Kubernetes deployment and
+  migration manifests matched the health and secret assumptions used by the
+  application.
+- **Prevention rule:** Keep one lightweight deployment-contract validator in
+  the quality lane and reserve Kubernetes/Compose execution for the infrastructure
+  phase gate.

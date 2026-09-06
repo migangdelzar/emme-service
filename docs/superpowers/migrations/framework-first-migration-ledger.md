@@ -336,7 +336,8 @@ gone.
 
 | Implementation path | Status | Blocking condition or deletion evidence |
 |---|---|---|
-| `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java` | Pending | Embedding compatibility callers still depend on the composite provider contract; legacy chat, document retrieval, and image captioning now use canonical capability ports, so migrate the remaining caller before deletion |
+| `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java` | Pending | No application capability caller remains; the deprecated composite bean, mock compatibility implementation, and tests must be removed together in the final compatibility slice |
+| `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/capability/AiEmbeddingAdapter.java` | Deleted | Composite embedding adapter removed after mock, Ollama, and unsupported Groq `EmbeddingService` composition was added; final composite-provider deletion remains a separate compatibility slice |
 | `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/capability/AiCaptionImageAdapter.java` | Deleted | Composite image adapter removed in `19e3a901` on 2026-09-05 after `CaptionImageUseCase` composition was provided for mock, Ollama, and unsupported Groq paths; focused AI-platform and Assistant gates pass |
 | `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatModel.java` | Deleted | Library alias removed in `8009b011` on 2026-09-05; Spring AI's provider-internal `ChatModel` and the Assistant compatibility port remain distinct |
 | `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/EmbeddingModel.java` | Deleted | Library alias removed in `9361a31a` on 2026-09-05; Spring AI's provider-internal `EmbeddingModel` remains distinct |

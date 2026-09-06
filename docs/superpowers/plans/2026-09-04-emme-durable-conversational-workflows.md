@@ -1169,6 +1169,11 @@ at the provider boundary, and the redundant composite image adapter was
 deleted. The platform embedding adapter remains the final provider caller
 blocking composite-provider deletion.
 
+The platform embedding adapter has since been removed as well. Mock, Ollama,
+and unsupported Groq paths now expose `EmbeddingService` directly with
+versioned vector identity; only the deprecated composite provider declaration,
+compatibility mock, and composition bean/test family remain to be deleted.
+
 **Files:**
 
 - Modify/delete deprecated embedding aliases only after repository-wide caller search:

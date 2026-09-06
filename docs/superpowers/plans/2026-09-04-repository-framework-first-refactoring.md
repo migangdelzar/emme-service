@@ -508,6 +508,24 @@ continue to depend only on `CaptionImageUseCase`.
 - [ ] Migrate the remaining platform embedding adapter before deleting
       `SpringAiModelProvider`.
 
+#### Current slice 6N — Remove the composite embedding capability adapter
+
+The provider-neutral `EmbeddingService` is now composed directly for the
+default mock, Ollama, and unsupported Groq provider paths. The redundant
+`AiEmbeddingAdapter` no longer wraps `AiModelProvider`; canonical versioned
+vectors remain the input to Assistant retrieval and semantic consumers, and
+the deprecated composite provider is retained only as an explicitly tracked
+compatibility family pending final deletion.
+
+- [x] Add a failing source-inventory test for the composite embedding adapter.
+- [x] Add deterministic mock `EmbeddingService` coverage with model identity.
+- [x] Compose Ollama and unsupported Groq embedding capabilities at the
+      provider boundary.
+- [x] Delete `AiEmbeddingAdapter` and update capability inventories.
+- [x] Run AI Platform, Assistant, integration-source, and Spotless gates.
+- [ ] Delete `SpringAiModelProvider` and `AiModelProvider` after the remaining
+      compatibility bean/test inventory is removed.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

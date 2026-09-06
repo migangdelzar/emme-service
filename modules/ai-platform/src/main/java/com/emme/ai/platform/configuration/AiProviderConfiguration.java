@@ -1,5 +1,6 @@
 package com.emme.ai.platform.configuration;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.AiModelProvider;
@@ -31,6 +32,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /** Composition root for provider configuration and transport dependencies. */
 @Configuration(proxyBeanMethods = false)
@@ -129,6 +131,35 @@ public class AiProviderConfiguration {
     return imageBase64 -> {
       throw new UnsupportedOperationException(
           "Provider '" + properties.provider() + "' does not support vision captioning");
+    };
+  }
+
+  @Bean
+  @Primary
+  @ConditionalOnBean(name = "ollamaEmbeddingModel")
+  @ConditionalOnMissingBean(EmbeddingService.class)
+  EmbeddingService ollamaEmbeddingService(
+      @Qualifier("ollamaEmbeddingModel") EmbeddingModel embeddingModel,
+      AiProviderProperties properties) {
+    return new SpringAiEmbeddingModel(
+        embeddingModel,
+        properties.provider(),
+        new EmbeddingModelVersion(
+            properties.embedding().model(),
+            properties.embeddingModelVersion(),
+            properties.embeddingDimension(),
+            DistanceMetric.COSINE,
+            "query-v1"));
+  }
+
+  @Bean
+  @Primary
+  @ConditionalOnProperty(name = "app.ai.provider", havingValue = "groq")
+  @ConditionalOnMissingBean(EmbeddingService.class)
+  EmbeddingService unsupportedGroqEmbedding(AiProviderProperties properties) {
+    return text -> {
+      throw new UnsupportedOperationException(
+          "Provider '" + properties.provider() + "' does not support embeddings");
     };
   }
 

@@ -6,6 +6,7 @@ import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.ai.platform.adapter.out.provider.mock.MockEmbeddingService;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiVisionModel;
@@ -23,6 +24,19 @@ class CanonicalAiProviderContractTest {
   @Test
   void existingEmbeddingAdapterRemainsCompatibleWithTheSelectedEmbeddingService() {
     assertThat(EmbeddingService.class.isAssignableFrom(SpringAiEmbeddingModel.class)).isTrue();
+  }
+
+  @Test
+  void mockEmbeddingProviderExposesTheCanonicalEmbeddingCapability() {
+    assertThat(EmbeddingService.class.isAssignableFrom(MockEmbeddingService.class)).isTrue();
+  }
+
+  @Test
+  void compositeEmbeddingAdapterIsRemovedAfterCanonicalMigration() {
+    assertThat(
+            sourcePath(
+                "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/capability/AiEmbeddingAdapter.java"))
+        .doesNotExist();
   }
 
   @Test

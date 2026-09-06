@@ -71,7 +71,7 @@ class AiCapabilityConventionTest {
             Files.exists(platformRoot.resolve("adapter/out/capability/AiCaptionImageAdapter.java")))
         .isFalse();
     assertThat(Files.exists(platformRoot.resolve("adapter/out/capability/AiEmbeddingAdapter.java")))
-        .isTrue();
+        .isFalse();
     assertThat(Files.exists(assistantRoot.resolve("adapter/in/web/request/ChatRequest.java")))
         .isTrue();
     assertThat(Files.exists(assistantRoot.resolve("adapter/in/web/request/IntentRequest.java")))

@@ -3,9 +3,11 @@ package com.emme.ai.platform.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.ai.platform.adapter.out.provider.mock.MockEmbeddingService;
 import com.emme.ai.platform.adapter.out.provider.mock.MockModelProvider;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
@@ -31,6 +33,7 @@ class AiProviderConfigurationTest {
               assertThat(context).hasSingleBean(AiModelProvider.class);
               assertThat(context).hasSingleBean(AiChatCompletion.class);
               assertThat(context).hasSingleBean(CaptionImageUseCase.class);
+              assertThat(context).hasSingleBean(EmbeddingService.class);
               assertThat(context.getBean(AiModelProvider.class))
                   .isInstanceOf(SpringAiModelProvider.class);
             });
@@ -40,12 +43,13 @@ class AiProviderConfigurationTest {
   void keepsTheDeterministicMockProviderActiveForMockConfiguration() {
     contextRunner
         .withPropertyValues("app.ai.provider=mock")
-        .withUserConfiguration(MockModelProvider.class)
+        .withUserConfiguration(MockModelProvider.class, MockEmbeddingService.class)
         .run(
             context -> {
               assertThat(context).hasSingleBean(AiModelProvider.class);
               assertThat(context).hasSingleBean(AiChatCompletion.class);
               assertThat(context).hasSingleBean(CaptionImageUseCase.class);
+              assertThat(context).hasSingleBean(EmbeddingService.class);
               assertThat(context.getBean(AiModelProvider.class))
                   .isInstanceOf(MockModelProvider.class);
             });
@@ -74,6 +78,7 @@ class AiProviderConfigurationTest {
               assertThat(context).hasSingleBean(AiModelProvider.class);
               assertThat(context).hasSingleBean(AiChatCompletion.class);
               assertThat(context).hasSingleBean(CaptionImageUseCase.class);
+              assertThat(context).hasSingleBean(EmbeddingService.class);
               assertThat(context.getBean(AiModelProvider.class))
                   .isInstanceOf(SpringAiModelProvider.class);
               assertThat(context.getBean("groqChatClient")).isInstanceOf(ChatClient.class);

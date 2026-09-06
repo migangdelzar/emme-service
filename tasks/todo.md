@@ -93,6 +93,17 @@
 - [ ] Continue with the remaining platform embedding adapter before deleting
       `SpringAiModelProvider`.
 
+## Current slice — canonical embedding composition cleanup — 2026-09-05
+
+- [x] Add the failing source-inventory test for `AiEmbeddingAdapter` removal.
+- [x] Add deterministic mock `EmbeddingService` with versioned identity.
+- [x] Compose Ollama and unsupported Groq embedding paths directly.
+- [x] Delete `AiEmbeddingAdapter` and update capability inventories.
+- [x] Run AI Platform tests, all Assistant tests, integration-source
+      compilation, and Spotless.
+- [ ] Delete the remaining composite provider declaration, compatibility mock,
+      composition beans, and tests after a final caller/bean inventory.
+
 ## Current slice — Assistant context regression — 2026-09-05
 
 - [x] Reproduce the full Assistant phase-checkpoint failure caused by two

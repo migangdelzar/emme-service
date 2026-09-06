@@ -491,6 +491,23 @@ still retained for the remaining image and embedding adapters.
 - [ ] Migrate the remaining platform embedding and image callers before
       deleting `SpringAiModelProvider`.
 
+#### Current slice 6M — Remove the composite image capability adapter
+
+The provider-neutral `CaptionImageUseCase` is now the direct image boundary.
+Spring AI vision, deterministic mock captioning, and explicit unsupported Groq
+behavior are composed as that capability, so the redundant
+`AiCaptionImageAdapter` no longer injects `AiModelProvider`. Catalog callers
+continue to depend only on `CaptionImageUseCase`.
+
+- [x] Add a failing canonical capability test for Spring AI vision.
+- [x] Expose mock and Spring AI vision implementations through
+      `CaptionImageUseCase`.
+- [x] Add explicit unsupported Groq composition and preserve provider behavior.
+- [x] Delete the composite image adapter and update capability inventory tests.
+- [x] Run AI Platform, Assistant, integration-source, and Spotless gates.
+- [ ] Migrate the remaining platform embedding adapter before deleting
+      `SpringAiModelProvider`.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

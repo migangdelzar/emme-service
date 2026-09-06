@@ -1163,6 +1163,12 @@ The document retrieval adapter has since been moved to the canonical
 score-preservation behavior remain covered; platform embedding and image
 adapters still block composite-provider deletion.
 
+The image capability has since been moved to `CaptionImageUseCase` directly:
+Spring AI vision, mock captioning, and unsupported Groq behavior are composed
+at the provider boundary, and the redundant composite image adapter was
+deleted. The platform embedding adapter remains the final provider caller
+blocking composite-provider deletion.
+
 **Files:**
 
 - Modify/delete deprecated embedding aliases only after repository-wide caller search:

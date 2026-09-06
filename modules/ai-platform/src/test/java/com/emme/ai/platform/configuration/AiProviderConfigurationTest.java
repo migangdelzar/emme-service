@@ -3,6 +3,7 @@ package com.emme.ai.platform.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.platform.adapter.out.provider.mock.MockModelProvider;
@@ -29,6 +30,7 @@ class AiProviderConfigurationTest {
             context -> {
               assertThat(context).hasSingleBean(AiModelProvider.class);
               assertThat(context).hasSingleBean(AiChatCompletion.class);
+              assertThat(context).hasSingleBean(CaptionImageUseCase.class);
               assertThat(context.getBean(AiModelProvider.class))
                   .isInstanceOf(SpringAiModelProvider.class);
             });
@@ -43,6 +45,7 @@ class AiProviderConfigurationTest {
             context -> {
               assertThat(context).hasSingleBean(AiModelProvider.class);
               assertThat(context).hasSingleBean(AiChatCompletion.class);
+              assertThat(context).hasSingleBean(CaptionImageUseCase.class);
               assertThat(context.getBean(AiModelProvider.class))
                   .isInstanceOf(MockModelProvider.class);
             });
@@ -70,6 +73,7 @@ class AiProviderConfigurationTest {
             context -> {
               assertThat(context).hasSingleBean(AiModelProvider.class);
               assertThat(context).hasSingleBean(AiChatCompletion.class);
+              assertThat(context).hasSingleBean(CaptionImageUseCase.class);
               assertThat(context.getBean(AiModelProvider.class))
                   .isInstanceOf(SpringAiModelProvider.class);
               assertThat(context.getBean("groqChatClient")).isInstanceOf(ChatClient.class);

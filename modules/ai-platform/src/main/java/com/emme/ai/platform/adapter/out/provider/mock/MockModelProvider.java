@@ -1,5 +1,6 @@
 package com.emme.ai.platform.adapter.out.provider.mock;
 
+import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.model.ChatResponse;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "app.ai.provider", havingValue = "mock", matchIfMissing = true)
-public class MockModelProvider implements AiModelProvider, AiChatCompletion {
+public class MockModelProvider implements AiModelProvider, AiChatCompletion, CaptionImageUseCase {
 
   private final AiProviderProperties props;
 

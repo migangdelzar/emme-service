@@ -3,6 +3,7 @@ package com.emme.ai.platform.adapter.out.provider.mock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.ai.platform.configuration.AiProviderProperties;
@@ -69,6 +70,13 @@ class MockModelProviderTest {
     assertThat(response.content()).contains("hello");
     assertThat(response.provider()).isEqualTo("mock");
     assertThat(response.modelVersion()).isEqualTo("mock-v1");
+  }
+
+  @Test
+  void providesTheCanonicalCaptionCapability() {
+    String caption = ((CaptionImageUseCase) provider).caption("base64-image");
+
+    assertThat(caption).startsWith("maqueta de imagen ").isNotBlank();
   }
 
   private static AiExecutionContext context() {

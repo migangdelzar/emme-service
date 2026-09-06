@@ -1,5 +1,6 @@
 package com.emme.ai.platform.configuration;
 
+import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
@@ -112,6 +113,23 @@ public class AiProviderConfiguration {
       @Qualifier("groqChatClient") ChatClient chatClient, AiProviderProperties properties) {
     return new SpringAiChatCompletion(
         new SpringAiChatModel(chatClient, properties.provider(), properties.chat().model()));
+  }
+
+  @Bean
+  @ConditionalOnBean(name = {"ollamaChatClient", "ollamaEmbeddingModel"})
+  @ConditionalOnMissingBean(CaptionImageUseCase.class)
+  CaptionImageUseCase ollamaCaptionImage(@Qualifier("ollamaChatClient") ChatClient chatClient) {
+    return new SpringAiVisionModel(chatClient);
+  }
+
+  @Bean
+  @ConditionalOnProperty(name = "app.ai.provider", havingValue = "groq")
+  @ConditionalOnMissingBean(CaptionImageUseCase.class)
+  CaptionImageUseCase unsupportedGroqCaptionImage(AiProviderProperties properties) {
+    return imageBase64 -> {
+      throw new UnsupportedOperationException(
+          "Provider '" + properties.provider() + "' does not support vision captioning");
+    };
   }
 
   @Bean

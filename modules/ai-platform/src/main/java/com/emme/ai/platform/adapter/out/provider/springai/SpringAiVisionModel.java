@@ -1,5 +1,6 @@
 package com.emme.ai.platform.adapter.out.provider.springai;
 
+import com.emme.ai.contracts.image.CaptionImageUseCase;
 import java.util.Base64;
 import java.util.Objects;
 import org.springframework.ai.chat.client.ChatClient;
@@ -7,7 +8,7 @@ import org.springframework.ai.content.Media;
 import org.springframework.util.MimeTypeUtils;
 
 /** Thin multimodal adapter over the existing Spring AI {@link ChatClient} transport. */
-public final class SpringAiVisionModel {
+public final class SpringAiVisionModel implements CaptionImageUseCase {
 
   private static final String SYSTEM_PROMPT =
       "Describe the supplied image concisely and factually. "

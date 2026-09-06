@@ -69,7 +69,7 @@ class AiCapabilityConventionTest {
     assertThat(Files.exists(contractsRoot.resolve("embedding/EmbedTextUseCase.java"))).isFalse();
     assertThat(
             Files.exists(platformRoot.resolve("adapter/out/capability/AiCaptionImageAdapter.java")))
-        .isTrue();
+        .isFalse();
     assertThat(Files.exists(platformRoot.resolve("adapter/out/capability/AiEmbeddingAdapter.java")))
         .isTrue();
     assertThat(Files.exists(assistantRoot.resolve("adapter/in/web/request/ChatRequest.java")))

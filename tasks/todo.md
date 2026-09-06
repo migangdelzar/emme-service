@@ -82,6 +82,17 @@
 - [ ] Continue with the remaining platform embedding and image callers before
       deleting `SpringAiModelProvider`.
 
+## Current slice — canonical image capability cleanup — 2026-09-05
+
+- [x] Add the failing contract test for canonical Spring AI vision capability.
+- [x] Expose mock, Ollama, and unsupported Groq image behavior through
+      `CaptionImageUseCase`.
+- [x] Delete `AiCaptionImageAdapter` and update architecture inventories.
+- [x] Run AI Platform tests, all Assistant tests, integration-source
+      compilation, and Spotless.
+- [ ] Continue with the remaining platform embedding adapter before deleting
+      `SpringAiModelProvider`.
+
 ## Current slice — Assistant context regression — 2026-09-05
 
 - [x] Reproduce the full Assistant phase-checkpoint failure caused by two

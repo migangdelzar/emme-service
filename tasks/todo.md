@@ -215,7 +215,12 @@
       workflow statuses.
 - [x] Add typed booking/payment workflow adapters with confirmation-before-mutation,
       hold-first payment-link creation, and workflow correlation validation.
-- [ ] Wire verified callback ownership into idempotent workflow resume and checkpointed graph edges.
+- [x] Carry trusted tenant routing through normalized payment workflow events and
+      publish verified callbacks through the provider-neutral event boundary.
+- [x] Restore persisted workflow principal/conversation/idempotency context before
+      payment resume and fail closed when workflow ownership is missing.
+- [ ] Wire the resumed payment workflow into the appointment graph's durable
+      checkpointed mutation edge and final appointment confirmation.
 
 ## Repository framework-first refactoring plan — 2026-09-04
 

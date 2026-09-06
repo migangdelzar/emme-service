@@ -1069,8 +1069,13 @@ typed booking/payment adapters to expose hold and payment interrupts without ove
 approval status. The Assistant now has typed `AppointmentBookingWorkflow` and
 `AppointmentPaymentWorkflow` adapters: booking requires confirmation before invoking
 hold/payment use cases, and payment resume validates workflow identity before projecting
-verified provider status. Final appointment confirmation, checkpoint integration, and
-callback-to-graph composition remain for the next slice.
+verified provider status. Verified callbacks now carry trusted tenant routing, are
+published through a provider-neutral Spring Modulith boundary, persist
+provider-to-workflow correlation at checkout creation, and restore backend-owned
+principal/conversation/idempotency context before invoking payment resume. The listener
+fails closed when the workflow context is absent and performs schema-local context
+lookup without repeating tenant predicates. Final appointment confirmation, checkpoint
+integration, and the booking/payment composition root remain for the next slice.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.

@@ -1182,6 +1182,13 @@ slices.
   git commit -m "feat(workflow): add appointment lifecycle subflows"
   ```
 
+**Task 11 progress note (2026-09-05):** Provider-neutral reschedule and cancellation
+boundaries, confirmation-before-mutation, trusted actor propagation, shared atomic
+checkpoint claiming/recording, and enabled-only composition are implemented. Existing
+authorized appointment services remain the source of truth for ownership and collision
+rules; cancellation-window/refund composition, staff review routing, and notification
+idempotency are still open slices.
+
 ## 8. Phase E — Evidence, Cleanup, and Release Gate
 
 ### Task 12: Add operational evidence and controlled retrieval improvement
@@ -1242,6 +1249,11 @@ promotion evidence.
   git add modules/assistant tools docs tasks/todo.md
   git commit -m "feat(ai): record guarded retrieval evidence"
   ```
+
+**Task 12 progress note (2026-09-05):** Existing bounded Micrometer labels and Java/Python
+redaction paths were verified. Semantic trace match metadata is now bounded to 16 keys of
+at most 80 characters each, and the focused Java evidence tests plus six offline evaluation
+tests pass. Explicit evaluation promotion/safety evidence remains open.
 
 ### Task 13: Remove compatibility duplicates and run the enterprise gate
 

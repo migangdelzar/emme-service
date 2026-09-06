@@ -20,6 +20,9 @@ public record AiSemanticExecutionTrace(
     String invalidationContext,
     long latencyMillis) {
 
+  private static final int MAX_MATCHES = 16;
+  private static final int MAX_MATCH_LENGTH = 80;
+
   public AiSemanticExecutionTrace {
     Objects.requireNonNull(executionId, "executionId must not be null");
     requireText(operation, "operation");
@@ -31,6 +34,13 @@ public record AiSemanticExecutionTrace(
       throw new IllegalArgumentException("Semantic trace scores must be finite and non-negative");
     }
     matches = matches == null ? List.of() : List.copyOf(matches);
+    if (matches.size() > MAX_MATCHES) {
+      throw new IllegalArgumentException("matches must contain at most 16 entries");
+    }
+    if (matches.stream()
+        .anyMatch(match -> match == null || match.isBlank() || match.length() > MAX_MATCH_LENGTH)) {
+      throw new IllegalArgumentException("matches must contain bounded non-blank values");
+    }
     if (latencyMillis < 0) {
       throw new IllegalArgumentException("latencyMillis must not be negative");
     }

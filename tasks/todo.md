@@ -252,6 +252,18 @@
 - [ ] Add policy-specific reschedule/cancellation analysis, staff review, notification
       idempotency, and calendar reconciliation before closing durable Task 11.
 
+### Current slice — Durable Task 12A bounded operational evidence — 2026-09-05
+
+- [x] Confirm existing Micrometer semantic metrics use bounded operation/outcome labels.
+- [x] Confirm existing Java and Python trace redaction removes email, phone, and bearer
+      credentials before persistence/evaluation.
+- [x] Add a bounded semantic-trace match invariant: at most 16 non-blank match keys,
+      each no longer than 80 characters.
+- [x] Run focused Assistant trace/metrics tests and the offline evaluation pipeline
+      tests (`6 passed`).
+- [ ] Add the remaining explicit evaluation promotion/safety evidence gates and phase
+      documentation before closing durable Task 12.
+
 ## Repository framework-first refactoring plan — 2026-09-04
 
 ### Current slice — Task 5 structured extraction and tool wiring

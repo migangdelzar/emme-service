@@ -736,6 +736,21 @@ startup, webhooks, and deployed E2E checks.
 
 ## 17. Sources
 
+## 18. Implementation results (2026-09-05)
+
+The durable workflow implementation has completed the canonical embedding, retrieval-quality,
+typed appointment hold/payment callback, tenant-routed checkpoint, and first appointment
+lifecycle boundary slices. Reschedule and cancellation workflows require confirmation and
+delegate all mutations to authorized appointment use cases; payment resume claims and lifecycle
+checkpoint writes are atomic at the tenant-routed workflow-run boundary. Semantic telemetry is
+redacted and its match-key metadata is bounded before durable persistence.
+
+The remaining durable work is explicit: complete cancellation-window/refund and staff-review
+composition, notification/calendar replay evidence, the full operational evaluation promotion
+gate, compatibility cleanup, and phase-level integration validation. PostgreSQL/Testcontainers
+checkpoint, concurrency, Redis, Kafka, and provider-runtime evidence remains queued until Docker
+is available.
+
 - [Spring AI ChatClient and multiple models](https://docs.spring.io/spring-ai/reference/api/chatclient.html)
 - [Spring AI tool calling and tool limits](https://docs.spring.io/spring-ai/reference/api/tools.html)
 - [Spring AI tool search](https://docs.spring.io/spring-ai/reference/api/tools/tool-search-tool.html)

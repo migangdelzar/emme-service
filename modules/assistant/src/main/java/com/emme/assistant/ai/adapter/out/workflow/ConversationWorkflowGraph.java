@@ -3,11 +3,20 @@ package com.emme.assistant.ai.adapter.out.workflow;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.WorkflowRequest;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.WorkflowStep;
+import com.emme.assistant.ai.application.workflow.NodeGuardrailPolicy;
+import com.emme.assistant.ai.application.workflow.NodeMemoryPolicy;
+import com.emme.assistant.ai.application.workflow.NodeModelRole;
+import com.emme.assistant.ai.application.workflow.NodePolicyRegistry;
+import com.emme.assistant.ai.application.workflow.NodeProfile;
+import com.emme.assistant.ai.application.workflow.NodeToolPolicy;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import org.bsc.langgraph4j.CompileConfig;
@@ -70,12 +79,27 @@ public final class ConversationWorkflowGraph {
 
   private final BaseCheckpointSaver checkpointSaver;
   private final ConversationWorkflowCapabilities capabilities;
+  private final NodePolicyRegistry nodePolicies;
 
   public ConversationWorkflowGraph(
       BaseCheckpointSaver checkpointSaver, ConversationWorkflowCapabilities capabilities) {
+    this(checkpointSaver, capabilities, defaultNodePolicyRegistry());
+  }
+
+  public ConversationWorkflowGraph(
+      BaseCheckpointSaver checkpointSaver,
+      ConversationWorkflowCapabilities capabilities,
+      NodePolicyRegistry nodePolicies) {
     this.checkpointSaver =
         Objects.requireNonNull(checkpointSaver, "checkpointSaver must not be null");
     this.capabilities = Objects.requireNonNull(capabilities, "capabilities must not be null");
+    this.nodePolicies = Objects.requireNonNull(nodePolicies, "nodePolicies must not be null");
+    validateNodePolicies(nodePolicies);
+  }
+
+  public static NodePolicyRegistry defaultNodePolicyRegistry() {
+    return new NodePolicyRegistry(
+        workflowNodeIds().stream().map(ConversationWorkflowGraph::defaultProfile).toList());
   }
 
   public CompiledGraph<AgentState> compile() throws GraphStateException {
@@ -239,6 +263,71 @@ public final class ConversationWorkflowGraph {
         EXTRACT_REQUIRED_SLOTS, EXTRACT_REQUIRED_SLOTS,
         COMPOSE_RESPONSE, COMPOSE_RESPONSE,
         APPROVAL_GATE, APPROVAL_GATE);
+  }
+
+  private static void validateNodePolicies(NodePolicyRegistry policies) {
+    for (String nodeId : workflowNodeIds()) {
+      if (!policies.nodeIds().contains(nodeId)) {
+        throw new IllegalArgumentException("Missing node policy for node: " + nodeId);
+      }
+    }
+    policies.nodeIds().stream()
+        .filter(nodeId -> !workflowNodeIds().contains(nodeId))
+        .findFirst()
+        .ifPresent(
+            nodeId -> {
+              throw new IllegalArgumentException("Unknown workflow node policy: " + nodeId);
+            });
+  }
+
+  private static List<String> workflowNodeIds() {
+    return List.of(
+        RECEIVE_REQUEST,
+        RESOLVE_AUTHENTICATED_CONTEXT,
+        INITIALIZE_WORKFLOW,
+        NORMALIZE_INPUT,
+        DETECT_EXPLICIT_INTENT,
+        DECOMPOSE_MULTI_INTENT_REQUEST,
+        SEMANTIC_ROUTE_WITH_PGVECTOR,
+        CONFIDENCE_GATE,
+        EXTRACT_REQUIRED_SLOTS,
+        RETRIEVE_CONTEXT_IF_NEEDED,
+        EXECUTE_TOOL,
+        EXECUTE_QUOTE_WORKFLOW,
+        VALIDATE_BUSINESS_RESULT,
+        APPROVAL_GATE,
+        WAIT_FOR_APPROVAL,
+        WAIT_FOR_CONFIRMATION,
+        CLARIFICATION_REQUIRED,
+        REJECTED,
+        FAILED,
+        COMPOSE_RESPONSE,
+        FINISH);
+  }
+
+  private static NodeProfile defaultProfile(String nodeId) {
+    NodeModelRole modelRole =
+        switch (nodeId) {
+          case DETECT_EXPLICIT_INTENT,
+              DECOMPOSE_MULTI_INTENT_REQUEST,
+              SEMANTIC_ROUTE_WITH_PGVECTOR ->
+              NodeModelRole.ROUTER;
+          case EXTRACT_REQUIRED_SLOTS -> NodeModelRole.EXTRACTOR;
+          case COMPOSE_RESPONSE -> NodeModelRole.ANSWER;
+          default -> NodeModelRole.NONE;
+        };
+    boolean mayInterrupt =
+        Set.of(WAIT_FOR_APPROVAL, WAIT_FOR_CONFIRMATION, CLARIFICATION_REQUIRED).contains(nodeId);
+    return new NodeProfile(
+        nodeId,
+        modelRole,
+        new NodeToolPolicy(Set.of(), true, false),
+        new NodeMemoryPolicy(Set.of(), 0, false),
+        new NodeGuardrailPolicy(true, true, true, true, true),
+        0,
+        Duration.ofSeconds(30),
+        mayInterrupt,
+        APPROVAL_GATE.equals(nodeId));
   }
 
   private static WorkflowRequest request(AgentState state, AiExecutionContext context) {

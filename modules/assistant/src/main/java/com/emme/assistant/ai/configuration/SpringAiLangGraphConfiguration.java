@@ -9,6 +9,7 @@ import com.emme.assistant.ai.adapter.out.workflow.TenantAwareCheckpointSaver;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowPort;
 import com.emme.assistant.ai.application.port.out.QuoteWorkflowResumePort;
+import com.emme.assistant.ai.application.workflow.NodePolicyRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.checkpoint.BaseCheckpointSaver;
@@ -49,10 +50,23 @@ public class SpringAiLangGraphConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
+  NodePolicyRegistry conversationWorkflowNodePolicyRegistry() {
+    return ConversationWorkflowGraph.defaultNodePolicyRegistry();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
   ConversationWorkflowGraph conversationWorkflowGraph(
       @Qualifier("workflowCheckpointStore") BaseCheckpointSaver checkpointSaver,
-      ConversationWorkflowCapabilities capabilities) {
-    return new ConversationWorkflowGraph(checkpointSaver, capabilities);
+      ConversationWorkflowCapabilities capabilities,
+      NodePolicyRegistry nodePolicies) {
+    return new ConversationWorkflowGraph(checkpointSaver, capabilities, nodePolicies);
+  }
+
+  ConversationWorkflowGraph conversationWorkflowGraph(
+      BaseCheckpointSaver checkpointSaver, ConversationWorkflowCapabilities capabilities) {
+    return conversationWorkflowGraph(
+        checkpointSaver, capabilities, ConversationWorkflowGraph.defaultNodePolicyRegistry());
   }
 
   @Bean(name = "aiConversationWorkflowCompiledGraph")

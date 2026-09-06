@@ -911,8 +911,11 @@ are immutable, namespaced, bounded, and JSON-safe before conversion to LangGraph
 Current progress: the provider-neutral immutable node policy value objects and
 `NodePolicyRegistry` are in place. The registry rejects duplicate and unknown node
 identifiers, and `NodeProfile` validates bounded timeout/tool-call policy while the
-tool and memory policies defensively copy their allow-lists. Graph-node registration,
-state projection, tool filtering, and adapter enforcement remain in the next slices.
+tool and memory policies defensively copy their allow-lists. The conversation graph
+now validates that its registry contains exactly one policy for every graph node,
+and the LangGraph composition root supplies the default registry without adding a
+bridge dependency. State projection, tool filtering, timeout/interruption/approval
+enforcement, and adapter state-patch validation remain in the next slices.
 
 - [ ] **Step 1: Write failing tests.** Prove model-facing nodes require an explicit model/tool/memory/timeout/interruption policy; deterministic nodes declare `NONE`; disallowed tools and memory fields are absent from the projection; timeout and approval policy are enforced.
 - [ ] **Step 2: Run focused tests.** Run `./gradlew :modules:assistant:test --tests '*NodePolicyRegistryTest' --tests '*ConversationWorkflowGraphTest'`; expected failure is missing policy enforcement.

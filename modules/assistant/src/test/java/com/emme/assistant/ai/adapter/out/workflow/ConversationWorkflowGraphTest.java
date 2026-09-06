@@ -1,10 +1,19 @@
 package com.emme.assistant.ai.adapter.out.workflow;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.emme.assistant.ai.WorkflowTestCapabilities;
+import com.emme.assistant.ai.application.workflow.NodeGuardrailPolicy;
+import com.emme.assistant.ai.application.workflow.NodeMemoryPolicy;
+import com.emme.assistant.ai.application.workflow.NodeModelRole;
+import com.emme.assistant.ai.application.workflow.NodePolicyRegistry;
+import com.emme.assistant.ai.application.workflow.NodeProfile;
+import com.emme.assistant.ai.application.workflow.NodeToolPolicy;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -115,10 +124,36 @@ class ConversationWorkflowGraphTest {
     }
   }
 
+  @Test
+  void rejectsARegistryThatDoesNotProfileEveryGraphNode() {
+    assertThatThrownBy(
+            () ->
+                new ConversationWorkflowGraph(
+                    new TenantAwareCheckpointSaver(new MemorySaver()),
+                    WorkflowTestCapabilities.basic(),
+                    new NodePolicyRegistry(
+                        List.of(profile(ConversationWorkflowGraph.RECEIVE_REQUEST)))))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Missing node policy for node: resolve_authenticated_context");
+  }
+
   private static CompiledGraph<AgentState> graph() throws Exception {
     return new ConversationWorkflowGraph(
             new TenantAwareCheckpointSaver(new MemorySaver()), WorkflowTestCapabilities.basic())
         .compile();
+  }
+
+  private static NodeProfile profile(String nodeId) {
+    return new NodeProfile(
+        nodeId,
+        NodeModelRole.NONE,
+        new NodeToolPolicy(Set.of(), true, false),
+        new NodeMemoryPolicy(Set.of(), 0, false),
+        new NodeGuardrailPolicy(true, true, true, true, true),
+        0,
+        Duration.ofSeconds(1),
+        false,
+        false);
   }
 
   private static CompiledGraph<AgentState> graph(

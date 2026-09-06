@@ -4093,6 +4093,8 @@ appointment mutation tools are registered.
       registry contracts.
 - [x] Run the focused registry test and confirm the Assistant production package
       metadata convention remains satisfied.
+- [x] Require the conversation graph to receive exactly one registered policy
+      for every graph node, while preserving the test-only constructor path.
 - [ ] Register policies for every conversation graph node and enforce projected
       state, filtered tools, timeout, interruption, approval, and state-patch
       boundaries.

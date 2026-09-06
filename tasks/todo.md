@@ -4006,6 +4006,14 @@ appointment mutation tools are registered.
 - [x] Run the focused tool-guard test.
 - [ ] Continue with the grounding, output, and delivery guards.
 
+#### Task 8 grounding boundary slice
+
+- [x] Add red tests for rejected retrieval, missing provenance, and accepted
+      source-backed retrieval.
+- [x] Implement `DefaultGroundingGuard` with fail-closed `NO_ANSWER` behavior.
+- [x] Run the focused grounding-guard test.
+- [ ] Continue with the output and delivery guards.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

@@ -4060,6 +4060,17 @@ appointment mutation tools are registered.
 - [ ] Add grounding advisor and invoke guardrails from application delivery
       boundaries.
 
+#### Task 8 direct chat enforcement slice
+
+- [x] Add a red `ChatService` regression for blocked input before semantic or
+      model execution.
+- [x] Inject optional typed input/output guards through the single Spring
+      constructor while preserving unit-test convenience constructors.
+- [x] Apply output checks to proactive, cached, and normal responses.
+- [x] Run the full `ChatServiceTest` suite and diff validation.
+- [ ] Add grounded RAG delivery enforcement and remaining controller/channel
+      boundaries.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

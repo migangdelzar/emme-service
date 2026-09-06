@@ -813,6 +813,11 @@ Current progress: typed input/output guard advisors are now composed into the
 Spring AI chat and RAG chains with tenant-security → input → prompt-version →
 retrieval → output precedence. Application-service delivery invocation and the
 grounding advisor remain before this task can be marked complete.
+
+The direct `ChatService` path now also accepts optional typed input/output
+guards, checks input before semantic shortcuts, and validates proactive, cached,
+and normal responses before returning them. Grounded RAG and controller/channel
+delivery boundaries remain outstanding.
 - [ ] **Step 5: Run, refactor, and commit.**
 
   ```bash

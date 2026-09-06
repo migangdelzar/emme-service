@@ -1,6 +1,13 @@
 package com.emme.assistant.ai.application.service;
 
+import com.emme.ai.contracts.guardrail.GuardrailAction;
+import com.emme.ai.contracts.guardrail.GuardrailDecision;
+import com.emme.ai.contracts.guardrail.InputRequest;
+import com.emme.ai.contracts.guardrail.OutputRequest;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
+import com.emme.assistant.ai.application.guardrail.GuardrailRejectedException;
+import com.emme.assistant.ai.application.guardrail.InputGuard;
+import com.emme.assistant.ai.application.guardrail.OutputGuard;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
@@ -12,6 +19,8 @@ import com.emme.assistant.ai.application.semantic.SemanticQuery;
 import com.emme.assistant.ai.application.semantic.SemanticQueryFactory;
 import com.emme.assistant.ai.application.tool.AiToolResult;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +34,8 @@ public class ChatService implements ChatUseCase {
   private final Optional<ProactiveToolRouter> proactiveToolRouter;
   private final Optional<SemanticQueryFactory> semanticQueryFactory;
   private final SemanticMetrics metrics;
+  private final Optional<InputGuard> inputGuard;
+  private final Optional<OutputGuard> outputGuard;
 
   public ChatService(
       ChatCompletionPort chatCompletion, Optional<SemanticResponseCache> semanticCache) {
@@ -53,6 +64,25 @@ public class ChatService implements ChatUseCase {
       Optional<ProactiveToolRouter> proactiveToolRouter,
       Optional<SemanticQueryFactory> semanticQueryFactory,
       SemanticMetrics metrics) {
+    this(
+        chatCompletion,
+        semanticCache,
+        proactiveToolRouter,
+        semanticQueryFactory,
+        metrics,
+        Optional.empty(),
+        Optional.empty());
+  }
+
+  @Autowired
+  public ChatService(
+      ChatCompletionPort chatCompletion,
+      Optional<SemanticResponseCache> semanticCache,
+      Optional<ProactiveToolRouter> proactiveToolRouter,
+      Optional<SemanticQueryFactory> semanticQueryFactory,
+      SemanticMetrics metrics,
+      Optional<InputGuard> inputGuard,
+      Optional<OutputGuard> outputGuard) {
     this.chatCompletion = Objects.requireNonNull(chatCompletion, "chatCompletion must not be null");
     this.semanticCache = Objects.requireNonNull(semanticCache, "semanticCache must not be null");
     this.proactiveToolRouter =
@@ -60,11 +90,14 @@ public class ChatService implements ChatUseCase {
     this.semanticQueryFactory =
         Objects.requireNonNull(semanticQueryFactory, "semanticQueryFactory must not be null");
     this.metrics = Objects.requireNonNull(metrics, "metrics must not be null");
+    this.inputGuard = Objects.requireNonNull(inputGuard, "inputGuard must not be null");
+    this.outputGuard = Objects.requireNonNull(outputGuard, "outputGuard must not be null");
   }
 
   @Override
   public String chat(String conversationContext, String userMessage) {
     var context = AiExecutionContextScope.requireCurrent();
+    checkInput(context, userMessage);
     Optional<SemanticQuery> semanticQuery = prepareQuery(userMessage, context);
     Optional<AiToolResult> proactiveToolResult;
     try {
@@ -76,7 +109,7 @@ public class ChatService implements ChatUseCase {
       proactiveToolResult = Optional.empty();
     }
     if (proactiveToolResult.isPresent()) {
-      return proactiveToolResult.orElseThrow().content();
+      return checkOutput(context, proactiveToolResult.orElseThrow().content());
     }
     Optional<String> cached;
     try {
@@ -92,7 +125,7 @@ public class ChatService implements ChatUseCase {
       cached = Optional.empty();
     }
     if (cached.isPresent()) {
-      return cached.orElseThrow();
+      return checkOutput(context, cached.orElseThrow());
     }
     Completion response;
     response = complete(chatCompletion, conversationContext, userMessage);
@@ -124,7 +157,43 @@ public class ChatService implements ChatUseCase {
       recordFallback("semantic_cache_write_failure");
       // Semantic caching is an optimization and must not make chat unavailable.
     }
-    return completedResponse;
+    return checkOutput(context, completedResponse);
+  }
+
+  private void checkInput(com.emme.kernel.context.AiExecutionContext context, String userMessage) {
+    if (inputGuard.isEmpty()) {
+      return;
+    }
+    GuardrailDecision decision =
+        inputGuard
+            .orElseThrow()
+            .check(
+                new InputRequest(
+                    userMessage,
+                    userMessage.getBytes(StandardCharsets.UTF_8).length,
+                    0,
+                    context.idempotencyKey()),
+                context);
+    if (decision.action() != GuardrailAction.ALLOW) {
+      throw new GuardrailRejectedException(decision);
+    }
+  }
+
+  private String checkOutput(com.emme.kernel.context.AiExecutionContext context, String response) {
+    if (outputGuard.isEmpty()) {
+      return response;
+    }
+    GuardrailDecision decision =
+        outputGuard
+            .orElseThrow()
+            .check(
+                new OutputRequest(
+                    context.channel().name().toLowerCase(Locale.ROOT), response, false, false),
+                context);
+    if (decision.action() != GuardrailAction.ALLOW) {
+      throw new GuardrailRejectedException(decision);
+    }
+    return response;
   }
 
   private Optional<SemanticQuery> prepareQuery(

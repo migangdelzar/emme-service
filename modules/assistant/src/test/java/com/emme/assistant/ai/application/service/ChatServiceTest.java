@@ -9,6 +9,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.embedding.EmbeddingService;
+import com.emme.assistant.ai.application.guardrail.GuardrailRejectedException;
+import com.emme.assistant.ai.application.guardrail.InputGuard;
+import com.emme.assistant.ai.application.guardrail.OutputGuard;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ProactiveToolRouter;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
@@ -244,6 +247,32 @@ class ChatServiceTest {
     assertThat(inContext(() -> service.chat("", "hello"))).isEqualTo("response");
 
     verify(model).complete("", "hello");
+  }
+
+  @Test
+  void rejectsInputBeforeSemanticOrModelExecutionWhenTheGuardBlocksIt() {
+    ChatCompletionPort model = mock(ChatCompletionPort.class);
+    InputGuard inputGuard = mock(InputGuard.class);
+    when(inputGuard.check(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+        .thenReturn(
+            new com.emme.ai.contracts.guardrail.GuardrailDecision(
+                com.emme.ai.contracts.guardrail.GuardrailAction.BLOCK,
+                "input.blocked",
+                java.util.Map.of()));
+    ChatService service =
+        new ChatService(
+            model,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            mock(SemanticMetrics.class),
+            Optional.of(inputGuard),
+            Optional.<OutputGuard>empty());
+
+    assertThatThrownBy(() -> inContext(() -> service.chat("", "hello")))
+        .isInstanceOf(GuardrailRejectedException.class)
+        .hasMessage("AI input rejected by guardrail: input.blocked");
+    verifyNoInteractions(model);
   }
 
   private static AiExecutionContext context() {

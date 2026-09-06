@@ -69,9 +69,7 @@ public class ChatService implements ChatUseCase {
     Optional<AiToolResult> proactiveToolResult;
     try {
       proactiveToolResult =
-          proactiveToolRouter.flatMap(
-              router ->
-                  semanticQuery.map(router::route).orElseGet(() -> router.route(userMessage)));
+          proactiveToolRouter.flatMap(router -> semanticQuery.flatMap(router::route));
     } catch (RuntimeException failure) {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
       recordFallback("semantic_tool_failure");
@@ -87,7 +85,7 @@ public class ChatService implements ChatUseCase {
               cache ->
                   semanticQuery
                       .map(query -> cache.lookup(conversationContext, query))
-                      .orElseGet(() -> cache.lookup(conversationContext, userMessage)));
+                      .orElseGet(Optional::empty));
     } catch (RuntimeException failure) {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
       recordFallback("semantic_cache_failure");
@@ -119,8 +117,6 @@ public class ChatService implements ChatUseCase {
               } else {
                 cache.store(conversationContext, query, completedResponse);
               }
-            } else {
-              cache.store(conversationContext, userMessage, completedResponse);
             }
           });
     } catch (RuntimeException failure) {

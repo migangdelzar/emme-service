@@ -395,6 +395,20 @@ Completed in this slice:
 
 Remaining Task 6 work is tracked by the steps below: Redis outage/eviction behavior, vector/cache ranking and metadata contracts, advisor-order coverage, and the measured `HybridSearch` decision.
 
+#### Current slice 6G — Remove the deprecated raw-string proactive route
+
+The proactive semantic tool boundary now accepts only a prepared `SemanticQuery`.
+ChatService prepares the query once when semantic shortcuts are configured and
+passes that same value to the tool route. The deprecated raw-string route and
+its embedding-owning constructor were removed after focused API, routing, and
+ChatService tests were migrated. The semantic-cache raw-string overloads remain
+as a separate compatibility family until their callers are migrated.
+
+- [x] Add a failing API-boundary test for the prepared-only proactive route.
+- [x] Remove the deprecated raw-string route and legacy constructor.
+- [x] Migrate ChatService and proactive-route tests to the shared query.
+- [ ] Remove the remaining semantic-cache raw-string compatibility family.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

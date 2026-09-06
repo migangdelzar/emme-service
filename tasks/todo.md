@@ -14,6 +14,16 @@
 - [x] Add and run the isolated RAG quality integration test.
 - [ ] Run the Docker-backed RAG quality phase checkpoint when infrastructure is available.
 
+## Current slice — prepared semantic proactive routing compatibility cleanup — 2026-09-05
+
+- [x] Add a failing API-boundary test proving proactive routing exposes only
+      `route(SemanticQuery)`.
+- [x] Remove the deprecated raw-string proactive route and legacy constructor.
+- [x] Make ChatService invoke semantic tools only with its prepared query.
+- [x] Migrate proactive and ChatService tests to the prepared-query contract.
+- [ ] Remove the remaining deprecated raw-string semantic-cache methods in a
+      separate compatibility slice after all cache callers are migrated.
+
 ## Current slice — Assistant context regression — 2026-09-05
 
 - [x] Reproduce the full Assistant phase-checkpoint failure caused by two
@@ -55,8 +65,8 @@
 - [x] Add real-socket MockWebServer transport coverage for Identity,
       Calendar, Notification, and Payment.
 - [x] Push HTTP-13 provider wrapper cleanup in commit `e976a397`.
-- [ ] Keep the Notification wrapper until HTTP-13 proves all callers and
-      production dependencies are gone.
+- [x] Delete the Notification wrapper after HTTP-13 proved all callers and
+      production dependencies were gone.
 - [ ] Run live provider transport tests when Docker/infrastructure is available.
 
 ## Current execution checkpoint — framework-first plan / durable Task 1 — 2026-09-05

@@ -538,6 +538,21 @@ RAG adapter; the application service owns loop limits and route policy.
 
 ### Task 6: Make semantic tools and cache explicit embedding-first shortcuts
 
+#### Current compatibility slice — prepared proactive routing
+
+The proactive semantic tool boundary now accepts only a prepared
+`SemanticQuery`. ChatService prepares the query once when semantic shortcuts
+are configured and passes that same value to the tool route. The deprecated
+raw-string route and its embedding-owning constructor were removed after
+focused API, routing, and ChatService tests were migrated. The semantic-cache
+raw-string overloads remain as a separate compatibility family until their
+callers are migrated.
+
+- [x] Add a failing API-boundary test for the prepared-only proactive route.
+- [x] Remove the deprecated raw-string route and legacy constructor.
+- [x] Migrate ChatService and proactive-route tests to the shared query.
+- [ ] Remove the remaining semantic-cache raw-string compatibility family.
+
 **Files:**
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/tool/SemanticProactiveToolRouter.java`

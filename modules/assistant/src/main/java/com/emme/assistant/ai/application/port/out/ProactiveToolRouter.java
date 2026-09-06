@@ -8,12 +8,4 @@ import java.util.Optional;
 public interface ProactiveToolRouter {
 
   Optional<AiToolResult> route(SemanticQuery query);
-
-  /**
-   * @deprecated use {@link #route(SemanticQuery)} so callers can reuse a prepared embedding.
-   */
-  @Deprecated
-  default Optional<AiToolResult> route(String userMessage) {
-    throw new UnsupportedOperationException("A prepared semantic query is required");
-  }
 }

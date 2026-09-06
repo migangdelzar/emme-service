@@ -255,7 +255,7 @@ part of the inventory.
 | Compatibility name | Canonical replacement | Current callers / deletion condition |
 |---|---|---|
 | `embedding.EmbedTextUseCase` | `embedding.EmbeddingService` | No callers remain after the catalog and AI-platform embedding migration; deleted in Task 3 |
-| `model.ChatModel` | `model.AiChatCompletion` for policy-facing use; Spring AI `ChatModel` remains provider-internal | Keep until Task 4 moves assistant callers behind the `ChatClient` router |
+| `model.ChatModel` | `model.AiChatCompletion` for policy-facing use; Spring AI `ChatModel` remains provider-internal | Deleted after caller search proved the library alias was only inherited by compatibility/provider adapters; see compatibility readiness below |
 | `assistant.application.port.out.ChatCompletionPort` | `model.AiChatCompletion` | Keep until Task 4 migrates selector/composition callers and fallback tests |
 | `assistant.application.port.out.EmbeddingModelPort` | `embedding.EmbeddingService` | Deleted after all semantic callers migrated without losing model/version/dimension checks; see compatibility readiness below |
 | `rag.KnowledgeSearch` | `rag.KnowledgeRetriever` | No callers remain after the assistant retrieval/configuration migration; deleted in Task 3 |
@@ -336,6 +336,7 @@ gone.
 | Implementation path | Status | Blocking condition or deletion evidence |
 |---|---|---|
 | `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java` | Pending | Assistant and legacy compatibility callers still depend on the composite provider contract; migrate callers behind the canonical chat/embedding ports first |
+| `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatModel.java` | Deleted | Library alias removed in `2026-09-05` compatibility cleanup; Spring AI's provider-internal `ChatModel` and the Assistant compatibility port remain distinct |
 | `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/EmbeddingModelPort.java` | Deleted | Canonical `EmbeddingService` migration completed in `42e60a4a` on 2026-09-05; production/test caller searches are clean and Assistant focused tests pass |
 | `modules/payment/src/main/java/com/emme/payment/configuration/PaymentHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |
 | `modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |

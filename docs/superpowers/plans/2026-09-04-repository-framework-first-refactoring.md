@@ -422,6 +422,21 @@ the canonical service type directly.
 - [x] Migrate affected tests and delete `EmbeddingModelPort.java`.
 - [x] Run the Assistant unit, integration-source, and Spotless gates.
 
+#### Current slice 6I — Delete the duplicate library chat alias
+
+The framework-neutral `com.emme.ai.contracts.model.ChatModel` was only an
+inheritance alias for the deprecated composite provider and Assistant-local
+chat port. It was removed after source and test caller searches confirmed that
+Spring AI's `org.springframework.ai.chat.model.ChatModel` is a separate,
+provider-internal framework type and that no application caller depended on
+the library alias directly.
+
+- [x] Add a failing source-inventory assertion for the library alias deletion.
+- [x] Remove the alias inheritance from `AiModelProvider` and
+      `ChatCompletionPort`.
+- [x] Keep Spring AI's provider-internal `ChatModel` imports unchanged.
+- [x] Run AI-contracts, AI-platform, and Assistant focused tests and compile.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

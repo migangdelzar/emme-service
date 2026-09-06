@@ -143,6 +143,10 @@ class CanonicalAiContractsTest {
   void uncalledDuplicateCapabilityDeclarationsAreRemoved() {
     assertThat(
             sourcePath(
+                "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatModel.java"))
+        .doesNotExist();
+    assertThat(
+            sourcePath(
                 "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatCompletionPort.java"))
         .doesNotExist();
     assertThat(

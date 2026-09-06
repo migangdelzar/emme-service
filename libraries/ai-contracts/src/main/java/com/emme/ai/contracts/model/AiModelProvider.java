@@ -10,13 +10,13 @@ import java.util.List;
  * <p>Implementations belong to infrastructure modules. The contract deliberately contains no
  * Spring, HTTP-client, provider SDK, tenant-resolution, or persistence types.
  *
- * @deprecated use {@link ChatModel}, {@link EmbeddingModel}, and the image capability contract
+ * @deprecated use {@link AiChatCompletion}, {@link
+ *     com.emme.ai.contracts.embedding.EmbeddingService}, and the image capability contract
  *     independently. This composite remains only as a compatibility boundary for existing wiring.
  */
 @Deprecated
-public interface AiModelProvider extends ChatModel, EmbeddingModel {
+public interface AiModelProvider extends EmbeddingModel {
 
-  @Override
   default String complete(String conversationContext, String userMessage) {
     AiExecutionContextScope.requireCurrent();
     return chat(conversationContext, userMessage);

@@ -34,6 +34,18 @@
 - [x] Run Assistant tests, integration-test compilation, and Spotless.
 - [x] Record deletion commit `42e60a4a` in the migration ledger.
 
+## Current slice — duplicate library chat alias cleanup — 2026-09-05
+
+- [x] Add a failing source-inventory assertion for the deprecated library
+      `ChatModel` alias.
+- [x] Remove the alias and its inheritance from `AiModelProvider` and the
+      Assistant compatibility port.
+- [x] Preserve Spring AI's provider-internal `ChatModel` construction paths.
+- [x] Run AI-contracts, AI-platform, and Assistant focused tests and compile.
+- [ ] Continue with the remaining composite provider and Assistant chat-port
+      migrations only after their policy callers are moved to canonical
+      capability contracts.
+
 ## Current slice — Assistant context regression — 2026-09-05
 
 - [x] Reproduce the full Assistant phase-checkpoint failure caused by two

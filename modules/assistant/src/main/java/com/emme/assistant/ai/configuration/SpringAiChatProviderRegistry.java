@@ -80,7 +80,7 @@ public final class SpringAiChatProviderRegistry {
                   return new ChatModelSelector.Provider(
                       configured.key(),
                       new TracingAiChatCompletion(
-                          applicationPort(model, configured.key(), configured.modelVersion()),
+                          applicationCompletion(model, configured.key(), configured.modelVersion()),
                           configured.key(),
                           configured.modelVersion(),
                           "chat-v1",
@@ -93,7 +93,7 @@ public final class SpringAiChatProviderRegistry {
     }
   }
 
-  private static AiChatCompletion applicationPort(
+  private static AiChatCompletion applicationCompletion(
       SpringAiChatModel model, String providerKey, String modelVersion) {
     return request -> {
       try {

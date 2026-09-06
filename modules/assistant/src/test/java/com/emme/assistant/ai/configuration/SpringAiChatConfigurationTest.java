@@ -126,7 +126,7 @@ class SpringAiChatConfigurationTest {
 
     AiChatCompletion port =
         new SpringAiChatConfiguration()
-            .chatCompletionPort(registry, Optional.empty(), new AiExecutorProperties(2, 1, 1));
+            .chatCompletion(registry, Optional.empty(), new AiExecutorProperties(2, 1, 1));
 
     assertThat(port).isInstanceOf(ChatModelSelector.class);
   }
@@ -155,7 +155,7 @@ class SpringAiChatConfigurationTest {
                 context,
                 () ->
                     configuration
-                        .chatCompletionPort(
+                        .chatCompletion(
                             registry, Optional.empty(), new AiExecutorProperties(2, 1, 1))
                         .complete(request(context, List.of("local", "cloud")))))
         .isEqualTo(new ChatResponse("hola", "cloud", "cloud-v1", 0, 0));
@@ -225,7 +225,7 @@ class SpringAiChatConfigurationTest {
             List.of(new TenantSecurityAdvisor(), new PromptVersionAdvisor("chat-v1")));
 
     assertThat(
-            configuration.chatCompletionPort(
+            configuration.chatCompletion(
                 registry,
                 Optional.of(mock(ModelExecutionScheduler.class)),
                 new AiExecutorProperties(2, 1, 1)))

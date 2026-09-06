@@ -158,7 +158,7 @@ class RagQueryServiceTest {
   }
 
   @Test
-  void usesTheCanonicalChatPort() {
+  void usesTheCanonicalChatCapability() {
     UUID tenantId = UUID.randomUUID();
     AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);

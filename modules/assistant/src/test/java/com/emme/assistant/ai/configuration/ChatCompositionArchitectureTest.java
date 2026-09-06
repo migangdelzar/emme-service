@@ -47,31 +47,32 @@ class ChatCompositionArchitectureTest {
         Files.readString(
             sourcePath(
                 "modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiChatConfiguration.java"));
-    String legacyChat =
+    String defaultChat =
         Files.readString(
             sourcePath(
-                "modules/assistant/src/main/java/com/emme/assistant/ai/configuration/LegacyChatCompletionConfiguration.java"));
+                "modules/assistant/src/main/java/com/emme/assistant/ai/configuration/DefaultChatCompletionConfiguration.java"));
 
     assertThat(springChat)
         .contains("prefix = \"app.ai.spring-chat\"")
         .contains("havingValue = \"true\"")
-        .contains("ChatModelSelector chatCompletionPort");
-    assertThat(legacyChat)
+        .contains("ChatModelSelector chatCompletion");
+    assertThat(defaultChat)
         .contains("prefix = \"app.ai.spring-chat\"")
         .contains("havingValue = \"false\"")
         .contains("matchIfMissing = true")
-        .contains("ChatModelSelector legacyChatCompletion")
-        .contains("new TracingAiChatCompletion");
+        .contains("ChatModelSelector defaultChatCompletion")
+        .contains("new TracingAiChatCompletion")
+        .doesNotContain("Legacy");
   }
 
   @Test
-  void legacyChatCompositionDoesNotDependOnTheCompositeModelProvider() throws IOException {
-    String legacyChat =
+  void defaultChatCompositionDoesNotDependOnTheCompositeModelProvider() throws IOException {
+    String defaultChat =
         Files.readString(
             sourcePath(
-                "modules/assistant/src/main/java/com/emme/assistant/ai/configuration/LegacyChatCompletionConfiguration.java"));
+                "modules/assistant/src/main/java/com/emme/assistant/ai/configuration/DefaultChatCompletionConfiguration.java"));
 
-    assertThat(legacyChat).doesNotContain("AiModelProvider");
+    assertThat(defaultChat).doesNotContain("AiModelProvider");
   }
 
   @Test
@@ -98,7 +99,7 @@ class ChatCompositionArchitectureTest {
         .contains("implements AiChatCompletion")
         .doesNotContain("ChatCompletionPort");
     assertThat(registry)
-        .contains("private static AiChatCompletion applicationPort")
+        .contains("private static AiChatCompletion applicationCompletion")
         .doesNotContain("ChatCompletionPort");
   }
 

@@ -15,26 +15,26 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-/** Keeps the pre-Spring-chat provider available through the canonical chat boundary. */
+/** Provides the basic provider composition when enhanced Spring AI chat is disabled. */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(
     prefix = "app.ai.spring-chat",
     name = "enabled",
     havingValue = "false",
     matchIfMissing = true)
-public class LegacyChatCompletionConfiguration {
+public class DefaultChatCompletionConfiguration {
 
-  @Bean(name = "aiLegacyChatCompletion")
+  @Bean(name = "defaultChatCompletion")
   @Primary
   @ConditionalOnMissingBean(name = "aiChatCompletion")
-  ChatModelSelector legacyChatCompletion(
+  ChatModelSelector defaultChatCompletion(
       AiChatCompletion completion,
       AiProviderProperties properties,
       ModelExecutionScheduler scheduler,
       AiExecutorProperties executionProperties,
       AiTraceRecorder traceRecorder) {
     String providerKey = properties.provider();
-    AiChatCompletion legacyModel =
+    AiChatCompletion defaultModel =
         request -> {
           try {
             ChatResponse response =
@@ -47,7 +47,7 @@ public class LegacyChatCompletionConfiguration {
             return new ChatResponse(
                 response.content(),
                 providerKey,
-                "legacy-model",
+                "default-model",
                 response.inputTokens(),
                 response.outputTokens());
           } catch (RuntimeException failure) {
@@ -56,9 +56,9 @@ public class LegacyChatCompletionConfiguration {
         };
     AiChatCompletion tracedModel =
         new TracingAiChatCompletion(
-            legacyModel, providerKey, "legacy-model", "chat-v1", traceRecorder);
+            defaultModel, providerKey, "default-model", "chat-v1", traceRecorder);
     return new ChatModelSelector(
-        List.of(new ChatModelSelector.Provider(providerKey, tracedModel, "legacy-model")),
+        List.of(new ChatModelSelector.Provider(providerKey, tracedModel, "default-model")),
         scheduler,
         executionProperties.modelAdmissionTimeout());
   }
@@ -66,7 +66,7 @@ public class LegacyChatCompletionConfiguration {
   @Bean(name = "aiChatProviderPolicy")
   @Primary
   @ConditionalOnMissingBean(name = "aiChatProviderPolicy")
-  AiChatCompletion.ProviderPolicy legacyChatProviderPolicy(AiProviderProperties properties) {
+  AiChatCompletion.ProviderPolicy defaultChatProviderPolicy(AiProviderProperties properties) {
     return new AiChatCompletion.ProviderPolicy(List.of(properties.provider()), true);
   }
 }

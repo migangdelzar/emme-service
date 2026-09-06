@@ -25,19 +25,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-class LegacyChatCompletionConfigurationTest {
+class DefaultChatCompletionConfigurationTest {
 
   @Test
-  void adaptsTheLegacyProviderThroughAdmissionAndDurableTracing() {
+  void adaptsTheDefaultProviderThroughAdmissionAndDurableTracing() {
     AiChatCompletion provider = mock(AiChatCompletion.class);
     ModelExecutionScheduler scheduler = new InlineScheduler();
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
     when(provider.complete(org.mockito.ArgumentMatchers.any()))
         .thenReturn(new ChatResponse("response", "mock", "mock-v1", 0, 0));
-    LegacyChatCompletionConfiguration configuration = new LegacyChatCompletionConfiguration();
+    DefaultChatCompletionConfiguration configuration = new DefaultChatCompletionConfiguration();
 
     AiChatCompletion port =
-        configuration.legacyChatCompletion(
+        configuration.defaultChatCompletion(
             provider, properties(), scheduler, new AiExecutorProperties(2, 1, 1), recorder);
 
     AiExecutionContext context = context();
@@ -52,20 +52,20 @@ class LegacyChatCompletionConfigurationTest {
                         context,
                         new AiChatCompletion.ProviderPolicy(java.util.List.of("mock"), true))));
 
-    assertThat(result).isEqualTo(new ChatResponse("response", "mock", "legacy-model", 0, 0));
+    assertThat(result).isEqualTo(new ChatResponse("response", "mock", "default-model", 0, 0));
     verify(provider).complete(org.mockito.ArgumentMatchers.any());
     verify(recorder).recordModelExecution(org.mockito.ArgumentMatchers.any());
   }
 
   @Test
-  void createsTheCompatibilityPortWhenSpringChatIsNotSelected() {
+  void createsTheDefaultCompositionWhenSpringChatIsNotSelected() {
     new ApplicationContextRunner()
-        .withUserConfiguration(LegacyChatCompletionConfiguration.class)
+        .withUserConfiguration(DefaultChatCompletionConfiguration.class)
         .withBean(
-            "legacyAiChatCompletion",
+            "providerChatCompletion",
             AiChatCompletion.class,
-            LegacyChatCompletionConfigurationTest::mockProvider)
-        .withBean(AiProviderProperties.class, LegacyChatCompletionConfigurationTest::properties)
+            DefaultChatCompletionConfigurationTest::mockProvider)
+        .withBean(AiProviderProperties.class, DefaultChatCompletionConfigurationTest::properties)
         .withBean(ModelExecutionScheduler.class, () -> mock(ModelExecutionScheduler.class))
         .withBean(AiExecutorProperties.class, () -> new AiExecutorProperties(2, 1, 1))
         .withBean(AiTraceRecorder.class, () -> mock(AiTraceRecorder.class))
@@ -78,12 +78,12 @@ class LegacyChatCompletionConfigurationTest {
   @Test
   void exposesTheConfiguredSelectorAsThePrimaryCanonicalChatCapability() {
     new ApplicationContextRunner()
-        .withUserConfiguration(LegacyChatCompletionConfiguration.class)
+        .withUserConfiguration(DefaultChatCompletionConfiguration.class)
         .withBean(
-            "legacyAiChatCompletion",
+            "providerChatCompletion",
             AiChatCompletion.class,
-            LegacyChatCompletionConfigurationTest::mockProvider)
-        .withBean(AiProviderProperties.class, LegacyChatCompletionConfigurationTest::properties)
+            DefaultChatCompletionConfigurationTest::mockProvider)
+        .withBean(AiProviderProperties.class, DefaultChatCompletionConfigurationTest::properties)
         .withBean(ModelExecutionScheduler.class, () -> mock(ModelExecutionScheduler.class))
         .withBean(AiExecutorProperties.class, () -> new AiExecutorProperties(2, 1, 1))
         .withBean(AiTraceRecorder.class, () -> mock(AiTraceRecorder.class))
@@ -94,15 +94,15 @@ class LegacyChatCompletionConfigurationTest {
   }
 
   @Test
-  void doesNotCreateTheCompatibilityPortWhenSpringChatRootIsPresent() {
+  void doesNotCreateTheDefaultCompositionWhenSpringChatRootIsPresent() {
     new ApplicationContextRunner()
-        .withUserConfiguration(LegacyChatCompletionConfiguration.class, SpringChatRoot.class)
+        .withUserConfiguration(DefaultChatCompletionConfiguration.class, SpringChatRoot.class)
         .withPropertyValues("app.ai.spring-chat.enabled=true")
         .withBean(
-            "legacyAiChatCompletion",
+            "providerChatCompletion",
             AiChatCompletion.class,
-            LegacyChatCompletionConfigurationTest::mockProvider)
-        .withBean(AiProviderProperties.class, LegacyChatCompletionConfigurationTest::properties)
+            DefaultChatCompletionConfigurationTest::mockProvider)
+        .withBean(AiProviderProperties.class, DefaultChatCompletionConfigurationTest::properties)
         .withBean(ModelExecutionScheduler.class, () -> mock(ModelExecutionScheduler.class))
         .withBean(AiExecutorProperties.class, () -> new AiExecutorProperties(2, 1, 1))
         .withBean(AiTraceRecorder.class, () -> mock(AiTraceRecorder.class))
@@ -110,14 +110,14 @@ class LegacyChatCompletionConfigurationTest {
             context ->
                 assertThat(context)
                     .hasBean("aiChatCompletion")
-                    .doesNotHaveBean("aiLegacyChatCompletion"));
+                    .doesNotHaveBean("defaultChatCompletion"));
   }
 
   @Test
   void usesTheRealSpringChatRootWhenSpringChatIsEnabled() {
     new ApplicationContextRunner()
         .withUserConfiguration(
-            SpringAiChatConfiguration.class, LegacyChatCompletionConfiguration.class)
+            SpringAiChatConfiguration.class, DefaultChatCompletionConfiguration.class)
         .withPropertyValues(
             "app.ai.spring-chat.enabled=true",
             "app.ai.spring-chat.providers[0].bean-name=ollamaChatClient",
@@ -141,7 +141,7 @@ class LegacyChatCompletionConfigurationTest {
             context ->
                 assertThat(context)
                     .hasBean("aiChatCompletion")
-                    .doesNotHaveBean("aiLegacyChatCompletion"));
+                    .doesNotHaveBean("defaultChatCompletion"));
   }
 
   private static AiExecutionContext context() {
@@ -151,8 +151,8 @@ class LegacyChatCompletionConfigurationTest {
         Set.of("ROLE_CLIENT"),
         UUID.randomUUID(),
         UUID.randomUUID(),
-        "trace-legacy-chat",
-        "idempotency-legacy-chat");
+        "trace-default-chat",
+        "idempotency-default-chat");
   }
 
   private static AiChatCompletion mockProvider() {

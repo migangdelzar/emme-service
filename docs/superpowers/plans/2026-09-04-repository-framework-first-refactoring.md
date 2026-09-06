@@ -451,9 +451,9 @@ without changing embedding metadata or selection behavior.
 - [x] Keep Spring AI's provider-internal `EmbeddingModel` imports unchanged.
 - [x] Run AI-contracts, AI-platform, and Assistant compilation and focused tests.
 
-#### Current slice 6K — Route legacy chat composition through the canonical capability
+#### Current slice 6K — Route basic chat composition through the canonical capability
 
-The legacy Assistant chat composition no longer consumes the deprecated
+The basic Assistant chat composition no longer consumes the deprecated
 composite `AiModelProvider`. Spring AI's default Ollama and Groq composition
 roots now expose provider-identified `AiChatCompletion` adapters, while the
 mock provider implements the same capability for tests and retains the
@@ -461,11 +461,11 @@ composite contract only for the still-pending embedding, image, and retrieval
 compatibility callers. The canonical request preserves first-turn empty
 conversation context and the existing mock empty-message HTTP behavior.
 
-- [x] Add an architecture test proving legacy chat composition does not import
+- [x] Add an architecture test proving basic chat composition does not import
       `AiModelProvider`.
 - [x] Add the provider-identified Spring AI `AiChatCompletion` adapter and
       configuration beans.
-- [x] Migrate `LegacyChatCompletionConfiguration` and its tests to the
+- [x] Migrate `DefaultChatCompletionConfiguration` and its tests to the
       canonical chat request/response contract.
 - [x] Preserve mock provider compatibility and provider admission/context
       checks.
@@ -552,6 +552,22 @@ inventory proved that no caller, bean, or test still depended on them.
 - [x] Run focused tests, Assistant compilation, and source architecture checks.
 - [ ] Run live provider/trace behavior gates when Docker-backed dependencies are
       available.
+
+#### Current slice 6W — Name the basic chat composition by behavior
+
+The non-enhanced Spring AI profile is the default basic provider composition
+for the mock and single-provider platform paths. It is not a historical
+compatibility port, so its configuration and bean names no longer use
+`Legacy` terminology; the Spring AI-enabled profile remains mutually exclusive.
+
+- [x] Add a failing architecture test for the behavior-based configuration name.
+- [x] Rename the configuration and test to `DefaultChatCompletionConfiguration`.
+- [x] Rename misleading chat completion composition methods containing `Port`.
+- [x] Preserve default mock-provider, scheduler, tracing, and Spring AI profile
+      selection behavior.
+- [x] Run focused configuration and architecture tests.
+- [ ] Run live application startup checks for both profiles when Docker-backed
+      dependencies are available.
 
 #### Current slice 6L — Keep document retrieval on the canonical embedding port
 

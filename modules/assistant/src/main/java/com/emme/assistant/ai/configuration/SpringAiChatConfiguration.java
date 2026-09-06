@@ -96,7 +96,7 @@ public class SpringAiChatConfiguration {
   @Bean(name = "aiChatCompletion")
   @Primary
   @ConditionalOnMissingBean(name = "aiChatCompletion")
-  ChatModelSelector chatCompletionPort(
+  ChatModelSelector chatCompletion(
       SpringAiChatProviderRegistry registry,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {

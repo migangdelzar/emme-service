@@ -1795,3 +1795,16 @@
   compile every production, unit-test, integration-test, fixture, bean, and
   source-inventory caller; migrate test doubles to the canonical request/result
   shape, then let a deletion test prove the old files are absent.
+
+## 2026-09-06 — Distinguish default composition from legacy compatibility
+
+- **Failure mode:** A pre-release fallback configuration was named `Legacy`,
+  even though it is the default mock/basic provider path when enhanced Spring
+  AI chat is disabled.
+- **Detection signal:** The application profile sets
+  `EMME_SPRING_AI_CHAT_ENABLED=false`, so deleting the configuration outright
+  would remove the default selector, scheduler, and tracing composition.
+- **Prevention rule:** Before deleting a configuration called legacy, inspect
+  active defaults and deployment properties. If the behavior is still required,
+  rename it after its runtime role and remove historical terminology instead of
+  deleting a necessary composition root.

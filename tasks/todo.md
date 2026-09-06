@@ -10,6 +10,19 @@
 - [x] Run focused tests and Assistant compilation.
 - [ ] Run live provider/trace behavior gates when Docker is available.
 
+## Current slice — Task 6W basic chat composition naming — 2026-09-06
+
+- [x] Add a failing architecture test for the behavior-based configuration
+      name.
+- [x] Rename `LegacyChatCompletionConfiguration` to
+      `DefaultChatCompletionConfiguration`.
+- [x] Rename misleading chat composition methods containing `Port`.
+- [x] Preserve mock-provider, scheduler, tracing, and mutually exclusive
+      Spring AI profile behavior.
+- [x] Run focused configuration and architecture tests.
+- [ ] Run live application startup checks for both profiles when Docker is
+      available.
+
 ## Completed slice — Task 6U canonical ChatService boundary — 2026-09-06
 
 - [x] Add failing source-architecture coverage for the deprecated ChatService
@@ -40,7 +53,7 @@
 - [x] Make `ChatModelSelector` implement `AiChatCompletion` with explicit
       execution context and provider/model metadata.
 - [x] Preserve the temporary string API's no-context behavior during migration.
-- [ ] Migrate Assistant consumers and delete `ChatCompletionPort`,
+- [x] Migrate Assistant consumers and delete `ChatCompletionPort`,
       `IdentifiedChatCompletionPort`, and `TracingChatCompletionPort`.
 
 ## Current slice — Task 6S canonical RAG answer boundary — 2026-09-06
@@ -49,7 +62,7 @@
 - [x] Migrate `RagAnswerPolicy` to `AiChatCompletion`.
 - [x] Expose canonical selector beans and explicit configured provider policy.
 - [x] Run focused RAG/configuration tests.
-- [ ] Migrate remaining chat consumers and delete deprecated chat ports.
+- [x] Migrate remaining chat consumers and delete deprecated chat ports.
 
 ## Current slice — Task 6T canonical retrieval-service boundary — 2026-09-06
 
@@ -58,7 +71,7 @@
 - [x] Preserve configured Spring provider order and fallback policy.
 - [x] Mark selector composition beans primary over raw provider capabilities.
 - [x] Run focused RAG service, composition, and web-context tests.
-- [ ] Migrate `ChatService`, tracing, and provider registry adapters.
+- [x] Migrate `ChatService`, tracing, and provider registry adapters.
 
 ## Current slice — Task 6P semantic-cache identity compatibility cleanup — 2026-09-06
 

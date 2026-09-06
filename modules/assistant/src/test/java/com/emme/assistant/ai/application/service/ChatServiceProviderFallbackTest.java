@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 class ChatServiceProviderFallbackTest {
 
   @Test
-  void usesTheCanonicalChatPortForTheConfiguredResponse() {
+  void usesTheCanonicalChatCapabilityForTheConfiguredResponse() {
     AiChatCompletion canonical = mock(AiChatCompletion.class);
     when(canonical.complete(org.mockito.ArgumentMatchers.any()))
         .thenReturn(new ChatResponse("canonical response", "test", "test-v1", 0, 0));

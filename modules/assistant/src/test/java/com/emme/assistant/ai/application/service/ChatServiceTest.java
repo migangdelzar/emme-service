@@ -261,7 +261,7 @@ class ChatServiceTest {
   }
 
   @Test
-  void executesThroughTheRequiredCanonicalChatPort() {
+  void executesThroughTheRequiredCanonicalChatCapability() {
     AiChatCompletion model = mock(AiChatCompletion.class);
     when(model.complete(any())).thenReturn(response("response"));
     ChatService service = new ChatService(model, Optional.empty());

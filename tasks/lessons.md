@@ -9,6 +9,17 @@
 - Prevention rule: preserve notification lifecycle enums through application
   and HTTP mapping, while stable enum names remain the serialized API values.
 
+## 2026-09-06 — Normalize external payment statuses at the application edge
+
+- Failure mode: Payment converted its internal lifecycle status to a string in
+  the HTTP response, while provider results also use strings for external
+  vocabularies.
+- Detection signal: the boundary convention test found raw `String status` in
+  `PaymentResponse`, while the provider port correctly required normalization.
+- Prevention rule: preserve the internal `PaymentStatus` enum through public
+  application and HTTP models; keep provider status strings isolated to the
+  provider port and normalize them before domain mutation.
+
 ## 2026-09-06 — Keep appointment lifecycle enums through API DTOs
 
 - Failure mode: Appointments converted `AppointmentStatus` to a string in

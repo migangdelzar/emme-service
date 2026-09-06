@@ -19,6 +19,15 @@
 - [ ] Run live notification provider/persistence checks when PostgreSQL and
       provider infrastructure are available.
 
+## Current slice — Payment status enum boundary — 2026-09-06
+
+- [x] Add a failing convention test for enum-typed Payment response status.
+- [x] Replace the Payment HTTP response status string with the existing public
+      `PaymentStatus` enum.
+- [x] Run the focused Payment test and affected fast quality gate.
+- [ ] Run live payment provider/webhook/persistence checks when PostgreSQL and
+      provider infrastructure are available.
+
 ## Current slice — Documents status enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed document status models.

@@ -134,6 +134,19 @@ the domain lifecycle typed in Java.
 - [ ] Run live notification provider and persistence checks when PostgreSQL and
       provider infrastructure are available.
 
+### Current slice — Payment status enum boundary
+
+Payment lifecycle status now retains the existing public `PaymentStatus` enum
+through the HTTP response boundary. Provider adapter results intentionally
+remain string-valued because they carry external provider vocabularies and are
+normalized by the payment application service before entering the domain.
+
+- [x] Add a failing convention test for enum-typed Payment response status.
+- [x] Migrate the Payment HTTP response to the public lifecycle enum.
+- [x] Run the focused Payment test and affected fast quality gate.
+- [ ] Run live payment provider, webhook, and persistence checks when
+      PostgreSQL and provider infrastructure are available.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

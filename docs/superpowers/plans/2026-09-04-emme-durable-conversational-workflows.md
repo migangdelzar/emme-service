@@ -1194,7 +1194,10 @@ cancellation now records `WAITING_FOR_CONFIRMATION` before rethrowing the origin
 mutation error, so a transient or policy failure does not strand the durable workflow
 in `RUNNING`. The behavior is covered by a focused regression test; reschedule claim
 recovery now applies the same retry-preserving boundary and is covered by its own
-focused regression test.
+focused regression test. Calendar replay now follows the same retry-preserving rule:
+provider and persistence failures mark the event links failed and rethrow the original
+runtime failure so Spring Modulith can retry the publication. Tenant and database
+context restoration remains unchanged.
 
 ## 8. Phase E — Evidence, Cleanup, and Release Gate
 

@@ -95,6 +95,7 @@ public class StaffCalendarSyncAdapter {
           event.tenantId(), event.databaseId(), () -> process(event));
     } catch (RuntimeException e) {
       log.error("Calendar sync failed for appointment {}", event.appointmentId(), e);
+      throw e;
     }
   }
 
@@ -109,6 +110,10 @@ public class StaffCalendarSyncAdapter {
     } catch (Exception exception) {
       log.error("Calendar sync failed for appointment {}", event.appointmentId(), exception);
       markCalendarEventLinksFailed.markFailed(event.tenantId(), event.appointmentId());
+      if (exception instanceof RuntimeException runtimeException) {
+        throw runtimeException;
+      }
+      throw new IllegalStateException("Calendar sync failed", exception);
     }
   }
 
@@ -170,8 +175,7 @@ public class StaffCalendarSyncAdapter {
       log.info("Created Google Calendar event {} for appointment {}", eventId, e.appointmentId());
     } catch (RuntimeException exception) {
       log.error("Google Calendar event CREATE failed", exception);
-      markCalendarEventLinksFailed.markFailed(e.tenantId(), e.appointmentId());
-      return;
+      throw exception;
     }
   }
 
@@ -241,7 +245,7 @@ public class StaffCalendarSyncAdapter {
           e.appointmentId());
     } catch (RuntimeException exception) {
       log.error("Google Calendar event UPDATE failed for {}", externalEventId, exception);
-      markCalendarEventLinksFailed.markFailed(e.tenantId(), e.appointmentId());
+      throw exception;
     }
   }
 
@@ -289,8 +293,9 @@ public class StaffCalendarSyncAdapter {
                     "Google Calendar event DELETE failed for {}: HTTP {}",
                     link.externalEventId(),
                     response.getStatusCode().value());
-                markCalendarEventLinksFailed.markFailed(e.tenantId(), e.appointmentId());
-                return null;
+                throw new IllegalStateException(
+                    "Google Calendar event DELETE failed with HTTP "
+                        + response.getStatusCode().value());
               });
     }
   }

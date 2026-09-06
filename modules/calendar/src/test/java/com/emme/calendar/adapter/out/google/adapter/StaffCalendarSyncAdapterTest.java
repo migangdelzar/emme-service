@@ -1,9 +1,13 @@
 package com.emme.calendar.adapter.out.google.adapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.calendar.adapter.out.google.model.PersonaType;
+import com.emme.calendar.adapter.out.persistence.entity.GoogleOAuthTokenEntity;
 import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleOAuthTokenRepository;
 import com.emme.calendar.api.event.CalendarSyncRequested;
 import com.emme.calendar.api.usecase.CreateCalendarEventLinkUseCase;
@@ -69,5 +73,59 @@ class StaffCalendarSyncAdapterTest {
             null));
 
     assertThat(TenantContextHolder.currentTenantOptional()).isEmpty();
+  }
+
+  @Test
+  void marksTheLinkFailedAndRethrowsProviderFailuresForModulithRetry() {
+    UUID tenantId = UUID.randomUUID();
+    UUID databaseId = UUID.randomUUID();
+    UUID appointmentId = UUID.randomUUID();
+    RuntimeException providerFailure = new IllegalStateException("Google unavailable");
+    FindCalendarEventLinkUseCase findEventLink = mock(FindCalendarEventLinkUseCase.class);
+    when(findEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR.name()))
+        .thenReturn(Optional.empty());
+    SpringDataGoogleOAuthTokenRepository tokenRepository =
+        mock(SpringDataGoogleOAuthTokenRepository.class);
+    GoogleOAuthTokenEntity token = mock(GoogleOAuthTokenEntity.class);
+    when(token.getPersonaType()).thenReturn(PersonaType.STAFF);
+    when(token.getUserId()).thenReturn("staff-user");
+    when(tokenRepository.findAll()).thenReturn(List.of(token));
+    GoogleOAuthAdapter oauthAdapter = mock(GoogleOAuthAdapter.class);
+    when(oauthAdapter.getValidAccessToken(tenantId, "staff-user", PersonaType.STAFF))
+        .thenReturn("access-token");
+    RestClient httpClient = mock(RestClient.class);
+    when(httpClient.post()).thenThrow(providerFailure);
+    MarkCalendarEventLinksFailedUseCase markFailed =
+        mock(MarkCalendarEventLinksFailedUseCase.class);
+
+    StaffCalendarSyncAdapter adapter =
+        new StaffCalendarSyncAdapter(
+            oauthAdapter,
+            tokenRepository,
+            findEventLink,
+            mock(FindCalendarEventLinksUseCase.class),
+            mock(CreateCalendarEventLinkUseCase.class),
+            mock(MarkCalendarEventLinkSyncedUseCase.class),
+            mock(MarkCalendarEventLinksDeletedUseCase.class),
+            markFailed,
+            mock(CalendarProperties.class),
+            new ObjectMapper(),
+            httpClient);
+
+    assertThatThrownBy(
+            () ->
+                adapter.onCalendarSyncRequested(
+                    new CalendarSyncRequested(
+                        tenantId,
+                        databaseId,
+                        appointmentId,
+                        "CREATE",
+                        "Appointment",
+                        null,
+                        Instant.parse("2026-09-05T10:00:00Z"),
+                        Instant.parse("2026-09-05T11:00:00Z"),
+                        null)))
+        .isSameAs(providerFailure);
+    verify(markFailed).markFailed(tenantId, appointmentId);
   }
 }

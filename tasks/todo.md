@@ -198,6 +198,18 @@
 - [ ] Run live database-per-tenant replay and provider synchronization checks
       when PostgreSQL and provider infrastructure are available.
 
+## Current slice — Task 19G Calendar replay failure propagation — 2026-09-06
+
+- [x] Add a failing Staff Calendar adapter test for provider failure
+      propagation.
+- [x] Mark failed links and rethrow operational provider/persistence failures
+      so Spring Modulith can retry the event.
+- [x] Preserve tenant/database context restoration and terminal missing-token
+      handling.
+- [x] Run focused Calendar tests, compilation, and formatting checks.
+- [ ] Run live provider replay/publication-retry checks when PostgreSQL, Google,
+      and Modulith runtime infrastructure are available.
+
 ## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
 
 - [x] Inventory remaining tenant-qualified repository and persistence methods.

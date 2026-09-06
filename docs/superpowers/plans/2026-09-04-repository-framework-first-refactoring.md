@@ -2497,7 +2497,24 @@ default database when the tenant is routed to a dedicated database.
 - [x] Restore tenant and database context in the Calendar provider adapter.
 - [x] Run focused Calendar listener/provider tests and module compilation.
 - [ ] Run live database-per-tenant replay and provider synchronization checks
-      when PostgreSQL and external provider infrastructure are available.
+  when PostgreSQL and external provider infrastructure are available.
+
+#### Current slice 19G — Propagate Calendar replay failures for retry
+
+`StaffCalendarSyncAdapter` now treats provider and persistence failures as
+operational failures: it marks the affected links as failed and rethrows the
+original runtime exception. The Modulith listener therefore does not acknowledge
+a failed replay as successful, while the existing tenant/database context
+restoration remains in place. Missing OAuth tokens and other explicit terminal
+conditions continue to mark the link failed without manufacturing a retryable
+provider exception.
+
+- [x] Add a failing adapter test for provider failure propagation.
+- [x] Centralize failure marking at the replay boundary and rethrow failures.
+- [x] Preserve tenant/database restoration and successful replay behavior.
+- [x] Run focused Calendar listener/adapter tests and compilation.
+- [ ] Run live provider replay and publication-retry checks when PostgreSQL,
+      Google, and Modulith runtime infrastructure are available.
 
 #### Current slice 19A — Keep tenant event publication behind a port
 

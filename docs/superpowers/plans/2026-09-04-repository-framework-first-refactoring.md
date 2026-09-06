@@ -1529,6 +1529,10 @@ The unit and H2 repository tests pass. The live PostgreSQL concurrency gate is
 written but could not start because Docker is unavailable in the current
 environment; Task 17 remains open until that gate runs successfully.
 
+The focused collision/repository tests and `:modules:appointments:compileJava`
+passed on 2026-09-06. The remaining Task 17 evidence is the live PostgreSQL
+exclusion-constraint race against the deployed migration path.
+
 ```bash
 ./gradlew :modules:appointments:test :modules:appointments:compileJava --no-parallel --no-configuration-cache
 git add modules/appointments database/src/main/resources/db/changelog

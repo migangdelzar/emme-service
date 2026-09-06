@@ -13,6 +13,17 @@
 - [ ] Run the Docker-backed hybrid-search benchmark and PostgreSQL workflow
       startup/security/resume gates when infrastructure is available.
 
+## Current slice — Tasks 16/17 non-Docker persistence evidence — 2026-09-06
+
+- [x] Run the focused Clients, Services, and Salon repository/adapter/module
+      tests; all three module tasks passed.
+- [x] Run appointment collision/repository tests; the focused task passed.
+- [x] Run appointment Java compilation; the compile task passed.
+- [ ] Execute the PostgreSQL/Testcontainers appointment exclusion-concurrency
+      test and verify the deployed migration path when Docker is available.
+- [ ] Complete the remaining Task 16 query-count and live optimistic-lock
+      evidence where the existing module tests do not provide it.
+
 ## Current execution checkpoint — framework-first plan / durable Task 5 — 2026-09-05
 
 - [x] Complete Task 3 shared-turn semantic query migration and push commit `edd8eb38`.

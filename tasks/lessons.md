@@ -1682,3 +1682,13 @@
   every graph-only adapter and its source adapter; run the full Assistant suite
   after focused configuration tests. Also verify `@Transactional` services are
   proxyable and not final.
+
+## 2026-09-06 — Keep Gradle test filters off compile tasks
+
+- **Failure mode:** A combined Gradle invocation applied `--tests` to a
+  `compileJava` task and failed before executing the requested gate.
+- **Detection signal:** Gradle reported `Unknown command-line option '--tests'`
+  while configuring `:modules:appointments:compileJava`.
+- **Prevention rule:** Run filtered test tasks separately from compile tasks, or
+  place test filters only on the test invocation; never assume task-specific
+  options apply uniformly across a multi-task Gradle command.

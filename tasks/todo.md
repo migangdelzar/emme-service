@@ -1,5 +1,14 @@
 # Service architecture migration checklist
 
+## Current slice — Subscription status enum boundary — 2026-09-06
+
+- [x] Add a failing convention test for enum-typed subscription status models.
+- [x] Replace subscription status strings with `SubscriptionStatus` across
+      public results, HTTP responses, and application mapping.
+- [x] Run focused Subscription tests and the affected fast quality gate.
+- [ ] Audit remaining finite-state strings in each owning module and migrate
+      them in separate contract-safe slices.
+
 ## Current slice — Identity membership enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed membership status models.

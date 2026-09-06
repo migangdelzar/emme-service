@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-09-06 — Keep subscription lifecycle state typed through HTTP mapping
+
+- Failure mode: subscription domain status was converted to a string in the
+  application result before reaching the HTTP response.
+- Detection signal: the public result and response records declared `String
+  status` despite an existing `SubscriptionStatus` enum.
+- Prevention rule: pass finite lifecycle enums through application and web
+  mapping layers; let the serializer preserve their stable names.
+
 ## 2026-09-06 — Reuse domain enums in public read models
 
 - Failure mode: Identity converted `MembershipStatus` to a string before it

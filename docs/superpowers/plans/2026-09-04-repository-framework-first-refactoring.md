@@ -39,6 +39,18 @@ removes Java-side raw state strings without changing the external status values.
 - [x] Run focused Identity tests, compilation, and Spotless checks.
 - [ ] Continue finite-state migration in separate owning-module slices.
 
+### Current slice — Subscription status enum boundary
+
+Subscription status now uses the existing `SubscriptionStatus` enum across the
+application result and HTTP response boundaries. Stable enum-name serialization
+preserves the existing external values while keeping subscription lifecycle
+state typed inside Java.
+
+- [x] Add a failing convention test for enum-typed subscription status boundaries.
+- [x] Migrate the subscription application mapper and public result/response.
+- [x] Run focused Subscription tests and the affected fast quality gate.
+- [ ] Continue finite-state migration in separate owning-module slices.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

@@ -11,7 +11,7 @@ public final class SubscriptionApplicationMapper {
         subscription.id(),
         subscription.tenantId(),
         subscription.plan().name(),
-        subscription.status().name(),
+        subscription.status(),
         subscription.periodEndsAt(),
         subscription.createdAt());
   }

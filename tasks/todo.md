@@ -242,6 +242,8 @@
 - [x] Preserve operational exception propagation for Modulith retry.
 - [x] Run Subscription tests/checks, integration-source compilation, and the
       application event-contract tests.
+- [x] Run the repository-wide `./gradlew check` phase checkpoint after the
+      Modulith metadata correction; 258 actionable tasks passed.
 - [ ] Run live PostgreSQL/Kafka replay and tenant-routing checks when
       infrastructure is available.
 
@@ -472,6 +474,8 @@
 - [x] Run the generic tenancy-owned test-fixture boundary architecture test.
 - [x] Confirm provider HTTP production wrappers remain deleted and only the
       documented transport/test exceptions remain.
+- [x] Run the repository-wide framework checkpoint after the subscription
+      replay-context correction; 258 actionable tasks passed.
 - [ ] Run Kafka replay, Redis outage/eviction, PostgreSQL tenant-routing, and
       provider transport gates when Docker/infrastructure is available.
 

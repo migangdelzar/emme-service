@@ -2549,6 +2549,8 @@ subscription use case remain unchanged.
       operational failure propagation for Modulith retry.
 - [x] Run the Subscription test/check, integration-source compilation, and
       application event-contract tests.
+- [x] Run the repository-wide `./gradlew check` phase checkpoint after the
+      Modulith metadata correction; 258 actionable tasks passed.
 - [ ] Run live replay and tenant-database routing checks when PostgreSQL and
       Kafka infrastructure are available.
 

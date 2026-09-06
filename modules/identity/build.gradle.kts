@@ -24,7 +24,6 @@ dependencies {
   implementation(libs.spring.boot.starter.validation)
   implementation(libs.spring.boot.starter.data.redis)
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
-  implementation(libs.okhttp)
   implementation(libs.jackson.databind)
 
   testImplementation(libs.spring.security.test)
@@ -33,4 +32,7 @@ dependencies {
   testImplementation(libs.spring.boot.resttestclient)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
+  add("integrationTestImplementation", libs.spring.boot.restclient)
+  add("integrationTestImplementation", libs.jackson.databind)
+  add("integrationTestImplementation", libs.okhttp.mockwebserver)
 }

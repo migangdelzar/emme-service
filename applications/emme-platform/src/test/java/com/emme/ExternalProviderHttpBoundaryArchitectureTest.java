@@ -18,37 +18,10 @@ class ExternalProviderHttpBoundaryArchitectureTest {
       List.of(
           "applications/emme-platform/src/e2eTest/java/com/emme/client/UserSession.java",
           "modules/ai-platform/src/test/java/com/emme/ai/platform/configuration/AiProviderConfigurationIntegrationTest.java",
-          "modules/calendar/src/integrationTest/java/com/emme/calendar/GoogleCalendarClientLiveTest.java",
           "modules/notification/src/test/java/com/emme/notification/adapter/out/provider/TwilioSmsProviderContractTest.java",
           "modules/payment/src/test/java/com/emme/payment/adapter/out/provider/StripeProviderContractTest.java");
 
-  private static final Set<String> PROVIDER_PRODUCTION_ALLOWLIST =
-      Set.of(
-          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/adapter/ClientCalendarSyncAdapter.java",
-          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/adapter/GoogleOAuthAdapter.java",
-          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/adapter/StaffCalendarSyncAdapter.java",
-          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/client/GoogleCalendarClient.java",
-          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/client/GoogleSheetsClient.java",
-          "modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleClientConfiguration.java",
-          "modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleHttpClient.java",
-          "modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/KeycloakAdminClient.java",
-          "modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/KeycloakUserAuthenticationAdapter.java",
-          "modules/identity/src/main/java/com/emme/identity/configuration/IdentityClientConfiguration.java",
-          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/email/SendGridProvider.java",
-          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/email/SesEmailProvider.java",
-          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/push/ApnsPushProvider.java",
-          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/push/FcmPushProvider.java",
-          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/MessageBirdProvider.java",
-          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/TwilioSmsProvider.java",
-          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/VonageProvider.java",
-          "modules/notification/src/main/java/com/emme/notification/configuration/NotificationClientConfiguration.java",
-          "modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java",
-          "modules/payment/src/main/java/com/emme/payment/adapter/out/provider/conekta/ConektaProvider.java",
-          "modules/payment/src/main/java/com/emme/payment/adapter/out/provider/mercadopago/MercadoPagoProvider.java",
-          "modules/payment/src/main/java/com/emme/payment/adapter/out/provider/paypal/PayPalProvider.java",
-          "modules/payment/src/main/java/com/emme/payment/adapter/out/provider/stripe/StripeProvider.java",
-          "modules/payment/src/main/java/com/emme/payment/configuration/PaymentClientConfiguration.java",
-          "modules/payment/src/main/java/com/emme/payment/configuration/PaymentHttpClient.java");
+  private static final Set<String> PROVIDER_PRODUCTION_ALLOWLIST = Set.of();
 
   @Test
   void retainedOkHttpLocationsAreExplicitAndExist() {
@@ -57,7 +30,27 @@ class ExternalProviderHttpBoundaryArchitectureTest {
   }
 
   @Test
-  void everyProductionOkHttpReferenceIsInTheProviderMigrationAllowlist() throws IOException {
+  void obsoleteProviderWrappersAreDeleted() {
+    Path repository = sourcePath("settings.gradle.kts").getParent();
+    assertThat(
+            Files.exists(
+                repository.resolve(
+                    "modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleHttpClient.java")))
+        .isFalse();
+    assertThat(
+            Files.exists(
+                repository.resolve(
+                    "modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java")))
+        .isFalse();
+    assertThat(
+            Files.exists(
+                repository.resolve(
+                    "modules/payment/src/main/java/com/emme/payment/configuration/PaymentHttpClient.java")))
+        .isFalse();
+  }
+
+  @Test
+  void ordinaryProductionProviderSourcesContainNoOkHttpReferences() throws IOException {
     Path repository = sourcePath("settings.gradle.kts").getParent();
     Set<String> productionReferences = new LinkedHashSet<>();
 

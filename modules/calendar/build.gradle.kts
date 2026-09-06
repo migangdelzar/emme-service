@@ -19,7 +19,6 @@ dependencies {
   implementation(libs.spring.boot.starter.oauth2.client)
   implementation(libs.spring.boot.starter.data.redis)
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
-  implementation(libs.okhttp)
   implementation(libs.jackson.databind)
   testImplementation(testFixtures(project(":modules:tenancy")))
   testImplementation(libs.spring.boot.webmvc.test)
@@ -27,6 +26,6 @@ dependencies {
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
   add("integrationTestImplementation", libs.spring.boot.restclient)
-  add("integrationTestImplementation", libs.okhttp)
+  add("integrationTestImplementation", libs.okhttp.mockwebserver)
   add("integrationTestImplementation", libs.jackson.databind)
 }

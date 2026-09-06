@@ -50,8 +50,10 @@
       coverage.
 - [x] Remove the obsolete Google wrapper dependency from Calendar sync
       adapters with tenant/event behavior coverage.
-- [ ] Delete provider HTTP wrappers only in HTTP-13 after caller and
+- [x] Delete provider HTTP wrappers only in HTTP-13 after caller and
       dependency searches prove they are unused.
+- [x] Add real-socket MockWebServer transport coverage for Identity,
+      Calendar, Notification, and Payment.
 - [ ] Keep the Notification wrapper until HTTP-13 proves all callers and
       production dependencies are gone.
 - [ ] Run live provider transport tests when Docker/infrastructure is available.

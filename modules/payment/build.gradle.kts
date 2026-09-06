@@ -13,7 +13,6 @@ dependencies {
   implementation(libs.spring.boot.starter.web)
   implementation(libs.spring.boot.restclient)
   implementation(libs.spring.boot.starter.validation)
-  implementation(libs.okhttp)
   implementation(libs.jackson.databind)
   testImplementation(testFixtures(project(":modules:tenancy")))
   testImplementation(libs.spring.boot.webmvc.test)
@@ -22,4 +21,7 @@ dependencies {
   testRuntimeOnly(libs.h2)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
+  add("integrationTestImplementation", libs.spring.boot.restclient)
+  add("integrationTestImplementation", libs.jackson.databind)
+  add("integrationTestImplementation", libs.okhttp.mockwebserver)
 }

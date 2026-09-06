@@ -32,7 +32,6 @@ dependencies {
   implementation(libs.spring.ai.tool.search.advisor)
   implementation(libs.spring.ai.ollama)
   implementation(libs.langgraph4j.core)
-  implementation(libs.okhttp)
   implementation(libs.jackson.databind)
   testImplementation(testFixtures(project(":modules:tenancy")))
   testImplementation(libs.spring.boot.webmvc.test)

@@ -1,5 +1,14 @@
 # Service architecture migration checklist
 
+## Current slice — Clients customer status enum boundary — 2026-09-06
+
+- [x] Add a failing convention test for enum-typed customer status models.
+- [x] Replace customer status strings with `CustomerStatus` across public
+      results, HTTP responses, and application mapping.
+- [x] Run focused Clients tests and the affected fast quality gate.
+- [ ] Audit remaining finite-state strings in each owning module and migrate
+      them in separate contract-safe slices.
+
 ## Current slice — Subscription status enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed subscription status models.

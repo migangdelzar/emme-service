@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-09-06 — Preserve customer lifecycle enums through read mapping
+
+- Failure mode: the Clients mapper converted `CustomerStatus` to a string
+  before returning the public customer result.
+- Detection signal: a boundary convention test found raw status types in both
+  the use-case result and HTTP response despite an existing domain enum.
+- Prevention rule: keep finite lifecycle enums through application and web
+  mappings, with stable names handled only by serialization.
+
 ## 2026-09-06 — Keep subscription lifecycle state typed through HTTP mapping
 
 - Failure mode: subscription domain status was converted to a string in the

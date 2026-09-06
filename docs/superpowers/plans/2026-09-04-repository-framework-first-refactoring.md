@@ -51,6 +51,18 @@ state typed inside Java.
 - [x] Run focused Subscription tests and the affected fast quality gate.
 - [ ] Continue finite-state migration in separate owning-module slices.
 
+### Current slice — Clients customer status enum boundary
+
+Customer status now uses the existing `CustomerStatus` enum across the
+application result, HTTP response, and application mapping boundaries. Stable
+enum-name serialization preserves the existing `ACTIVE`/`RETIRED` values while
+keeping customer lifecycle state typed inside Java.
+
+- [x] Add a failing convention test for enum-typed customer status boundaries.
+- [x] Migrate the customer application mapper and public result/response.
+- [x] Run focused Clients tests and the affected fast quality gate.
+- [ ] Continue finite-state migration in separate owning-module slices.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

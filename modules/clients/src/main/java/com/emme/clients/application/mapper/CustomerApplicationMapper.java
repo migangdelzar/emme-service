@@ -14,6 +14,6 @@ public final class CustomerApplicationMapper {
         customer.getName(),
         customer.getPhone(),
         customer.getEmail(),
-        customer.getStatus().name());
+        customer.getStatus());
   }
 }

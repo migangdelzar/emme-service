@@ -16,7 +16,7 @@ public final class DocumentApplicationMapper {
         document.tenantId(),
         document.name(),
         document.sourceType(),
-        document.status().name(),
+        document.status(),
         document.version());
   }
 

@@ -97,6 +97,17 @@ serialization preserves the existing status values.
 - [x] Run focused Services tests and the affected fast quality gate.
 - [ ] Continue finite-state migration in separate owning-module slices.
 
+### Current slice — Documents status enum boundary
+
+Document lifecycle status now retains the existing `DocumentStatus` enum through
+the application result, HTTP response, and mapping boundaries. Stable enum-name
+serialization preserves existing document status values.
+
+- [x] Add a failing convention test for enum-typed Documents status boundaries.
+- [x] Migrate Documents result/response models and the application mapper.
+- [x] Run focused Documents tests and the affected fast quality gate.
+- [ ] Continue finite-state migration in separate owning-module slices.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

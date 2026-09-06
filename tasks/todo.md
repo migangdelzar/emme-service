@@ -1,5 +1,14 @@
 # Service architecture migration checklist
 
+## Current slice — Documents status enum boundary — 2026-09-06
+
+- [x] Add a failing convention test for enum-typed document status models.
+- [x] Replace document status strings with `DocumentStatus` across public
+      results, HTTP responses, and application mapping.
+- [x] Run focused Documents tests and the affected fast quality gate.
+- [ ] Audit remaining finite-state strings in each owning module and migrate
+      them in separate contract-safe slices.
+
 ## Current slice — Services status enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed service and artist status

@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-09-06 — Keep document lifecycle enums through read models
+
+- Failure mode: Documents converted `DocumentStatus` to a string before
+  returning application and HTTP models.
+- Detection signal: a boundary convention test found raw status components
+  despite an existing document lifecycle enum.
+- Prevention rule: preserve the domain enum through Documents result and web
+  mapping, serializing only at the external boundary.
+
 ## 2026-09-06 — Keep service-catalog lifecycle enums through mapping
 
 - Failure mode: Services converted `ServiceStatus` and `ArtistStatus` to

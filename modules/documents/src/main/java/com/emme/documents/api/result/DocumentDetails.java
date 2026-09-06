@@ -1,7 +1,8 @@
 package com.emme.documents.api.result;
 
+import com.emme.documents.domain.model.DocumentStatus;
 import java.util.UUID;
 
 /** Stable public representation of a document. */
 public record DocumentDetails(
-    UUID id, UUID tenantId, String name, String sourceType, String status, int version) {}
+    UUID id, UUID tenantId, String name, String sourceType, DocumentStatus status, int version) {}

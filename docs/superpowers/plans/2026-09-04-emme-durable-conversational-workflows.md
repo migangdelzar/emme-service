@@ -827,6 +827,9 @@ retain their established graceful behavior, and the standalone Spring chat
 root tolerates absent optional guardrail advisors.
 The WhatsApp application boundary now checks `DeliveryGuard` before recording
 and sending a reply, using the channel's 4,096-character text limit.
+The web controller now checks the same typed delivery boundary inside the
+trusted execution scope for legacy chat, durable conversation, and RAG
+responses; web does not impose an arbitrary application character cap.
 - [ ] **Step 5: Run, refactor, and commit.**
 
   ```bash

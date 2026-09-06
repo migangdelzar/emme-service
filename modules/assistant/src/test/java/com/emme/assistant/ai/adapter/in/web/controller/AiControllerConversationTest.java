@@ -15,6 +15,7 @@ import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.ai.api.usecase.DetectIntentUseCase;
 import com.emme.assistant.ai.api.usecase.ProcessConversationUseCase;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
+import com.emme.assistant.ai.application.guardrail.DeliveryGuard;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.tracing.CorrelationId;
 import java.util.List;
@@ -93,6 +94,48 @@ class AiControllerConversationTest {
 
     assertThat(response.getBody()).isEqualTo(new ChatResponse("answer"));
     verify(legacyChat).chat("", "question");
+  }
+
+  @Test
+  void doesNotReturnAConversationResponseWhenWebDeliveryIsRejected() {
+    ChatUseCase legacyChat = mock(ChatUseCase.class);
+    DetectIntentUseCase intent = mock(DetectIntentUseCase.class);
+    RagQueryUseCase rag = mock(RagQueryUseCase.class);
+    ProcessConversationUseCase conversations = mock(ProcessConversationUseCase.class);
+    DeliveryGuard delivery = mock(DeliveryGuard.class);
+    when(conversations.process(any(ProcessConversationCommand.class)))
+        .thenReturn(new ProcessConversationResult(CONVERSATION_ID, WORKFLOW_ID, "answer"));
+    when(delivery.check(any(), any()))
+        .thenReturn(
+            new com.emme.ai.contracts.guardrail.GuardrailDecision(
+                com.emme.ai.contracts.guardrail.GuardrailAction.BLOCK,
+                "delivery.rejected",
+                java.util.Map.of()));
+    AiController controller =
+        new AiController(
+            legacyChat,
+            intent,
+            rag,
+            conversations,
+            new AiWebExecutionContextFactory(),
+            java.util.Optional.of(delivery));
+    Jwt jwt = jwt();
+    var authentication =
+        new UsernamePasswordAuthenticationToken(
+            jwt, null, List.of(new SimpleGrantedAuthority("ROLE_tenant_client")));
+    CorrelationId.set("trace-conversation-rejected");
+
+    org.assertj.core.api.Assertions.assertThatThrownBy(
+            () ->
+                TenantContextHolder.withTenantOverride(
+                    TENANT_ID,
+                    () ->
+                        controller.chat(
+                            new ChatRequest("question", null, CONVERSATION_ID),
+                            "conversation-turn-rejected",
+                            jwt,
+                            authentication)))
+        .isInstanceOf(com.emme.assistant.ai.application.guardrail.GuardrailRejectedException.class);
   }
 
   private static Jwt jwt() {

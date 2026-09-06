@@ -1,5 +1,7 @@
 package com.emme.assistant.ai.adapter.in.web.controller;
 
+import com.emme.ai.contracts.guardrail.DeliveryRequest;
+import com.emme.ai.contracts.guardrail.GuardrailAction;
 import com.emme.assistant.ai.adapter.in.web.request.ChatRequest;
 import com.emme.assistant.ai.adapter.in.web.request.IntentRequest;
 import com.emme.assistant.ai.adapter.in.web.request.RagRequest;
@@ -12,11 +14,14 @@ import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.ai.api.usecase.DetectIntentUseCase;
 import com.emme.assistant.ai.api.usecase.ProcessConversationUseCase;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
+import com.emme.assistant.ai.application.guardrail.DeliveryGuard;
+import com.emme.assistant.ai.application.guardrail.GuardrailRejectedException;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.tracing.CorrelationId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,14 +41,16 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "AI")
 public class AiController {
 
+  private static final int UNBOUNDED_WEB_RESPONSE_CHARACTERS = Integer.MAX_VALUE;
+
   private final ChatUseCase chatUseCase;
   private final DetectIntentUseCase detectIntent;
   private final RagQueryUseCase ragQuery;
   private final Optional<ProcessConversationUseCase> processConversation;
   private final AiWebExecutionContextFactory contextFactory;
+  private final Optional<DeliveryGuard> deliveryGuard;
 
   /** Constructor used by Spring and by callers that support durable conversations. */
-  @Autowired
   public AiController(
       ChatUseCase chatUseCase,
       DetectIntentUseCase detectIntent,
@@ -51,12 +58,25 @@ public class AiController {
       ProcessConversationUseCase processConversation,
       AiWebExecutionContextFactory contextFactory) {
     this(
+        chatUseCase, detectIntent, ragQuery, processConversation, contextFactory, Optional.empty());
+  }
+
+  @Autowired
+  public AiController(
+      ChatUseCase chatUseCase,
+      DetectIntentUseCase detectIntent,
+      RagQueryUseCase ragQuery,
+      ProcessConversationUseCase processConversation,
+      AiWebExecutionContextFactory contextFactory,
+      Optional<DeliveryGuard> deliveryGuard) {
+    this(
         chatUseCase,
         detectIntent,
         ragQuery,
         Optional.of(
             Objects.requireNonNull(processConversation, "processConversation must not be null")),
-        contextFactory);
+        contextFactory,
+        deliveryGuard);
   }
 
   /** Backwards-compatible constructor for clients that only use the legacy chat endpoint. */
@@ -65,7 +85,7 @@ public class AiController {
       DetectIntentUseCase detectIntent,
       RagQueryUseCase ragQuery,
       AiWebExecutionContextFactory contextFactory) {
-    this(chatUseCase, detectIntent, ragQuery, Optional.empty(), contextFactory);
+    this(chatUseCase, detectIntent, ragQuery, Optional.empty(), contextFactory, Optional.empty());
   }
 
   private AiController(
@@ -73,13 +93,15 @@ public class AiController {
       DetectIntentUseCase detectIntent,
       RagQueryUseCase ragQuery,
       Optional<ProcessConversationUseCase> processConversation,
-      AiWebExecutionContextFactory contextFactory) {
+      AiWebExecutionContextFactory contextFactory,
+      Optional<DeliveryGuard> deliveryGuard) {
     this.chatUseCase = chatUseCase;
     this.detectIntent = detectIntent;
     this.ragQuery = ragQuery;
     this.processConversation =
         Objects.requireNonNull(processConversation, "processConversation must not be null");
     this.contextFactory = contextFactory;
+    this.deliveryGuard = Objects.requireNonNull(deliveryGuard, "deliveryGuard must not be null");
   }
 
   @PostMapping("/chat")
@@ -97,20 +119,28 @@ public class AiController {
       var result =
           AiExecutionContextScope.call(
               conversationContext(request.conversationId(), idempotencyKey, jwt, authentication),
-              () ->
-                  conversationUseCase.process(
-                      new ProcessConversationCommand(
-                          request.conversationId(), request.userMessage(), idempotencyKey)));
+              () -> {
+                var processed =
+                    conversationUseCase.process(
+                        new ProcessConversationCommand(
+                            request.conversationId(), request.userMessage(), idempotencyKey));
+                checkDelivery(processed.response());
+                return processed;
+              });
       return ResponseEntity.ok(
           new ChatResponse(result.response(), result.conversationId(), result.workflowId()));
     }
     String response =
         AiExecutionContextScope.call(
             readOnlyContext(jwt, authentication),
-            () ->
-                chatUseCase.chat(
-                    request.conversationContext() != null ? request.conversationContext() : "",
-                    request.userMessage()));
+            () -> {
+              String result =
+                  chatUseCase.chat(
+                      request.conversationContext() != null ? request.conversationContext() : "",
+                      request.userMessage());
+              checkDelivery(result);
+              return result;
+            });
     return ResponseEntity.ok(new ChatResponse(response));
   }
 
@@ -136,7 +166,30 @@ public class AiController {
       Authentication authentication) {
     return AiExecutionContextScope.call(
         readOnlyContext(jwt, authentication),
-        () -> ResponseEntity.ok(new RagResponse(ragQuery.query(request.question()))));
+        () -> {
+          String response = ragQuery.query(request.question());
+          checkDelivery(response);
+          return ResponseEntity.ok(new RagResponse(response));
+        });
+  }
+
+  private void checkDelivery(String response) {
+    if (deliveryGuard.isEmpty()) {
+      return;
+    }
+    var decision =
+        deliveryGuard
+            .orElseThrow()
+            .check(
+                new DeliveryRequest(
+                    com.emme.kernel.context.Channel.WEB.name().toLowerCase(Locale.ROOT),
+                    response,
+                    UNBOUNDED_WEB_RESPONSE_CHARACTERS,
+                    false),
+                AiExecutionContextScope.requireCurrent());
+    if (decision.action() != GuardrailAction.DELIVER) {
+      throw new GuardrailRejectedException(decision);
+    }
   }
 
   private AiExecutionContext readOnlyContext(Jwt jwt, Authentication authentication) {

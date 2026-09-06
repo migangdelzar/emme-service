@@ -4076,6 +4076,8 @@ appointment mutation tools are registered.
       chat configuration usable when optional guardrail advisors are absent.
 - [x] Enforce the typed delivery guard before sending WhatsApp replies, using
       the channel's 4,096-character text limit.
+- [x] Enforce the typed delivery guard inside the web execution context for
+      legacy chat, durable conversation, and RAG responses.
 - [ ] Add grounded RAG delivery enforcement and remaining controller/channel
       boundaries.
 

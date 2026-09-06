@@ -220,7 +220,7 @@
 - [x] Preserve the Identity fixture dependency required by
       `EntitledTenantModuleTest` feature-flag setup.
 - [x] Run fixture compilation, Identity/Tenancy/Assistant tests, and Spotless.
-- [ ] Run all fixture-consuming module tests after further fixture moves.
+- [x] Run all fixture-consuming module unit tests after the fixture move.
 
 ## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
 

@@ -2838,7 +2838,7 @@ entity and repository for entitlement setup.
 - [x] Preserve the Identity fixture dependency required by entitlement setup.
 - [x] Run tenancy boundary, Identity, Tenancy, and Assistant tests plus
       fixture compilation and Spotless.
-- [ ] Run all fixture-consuming module tests after further fixture moves.
+- [x] Run all fixture-consuming module unit tests after the fixture move.
 
 ### Task 22: Remove duplicate Gradle capabilities and dependencies
 

@@ -9,10 +9,8 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.stereotype.Component;
 
 /** Resolves the active appointment owned by a tenant-local payment workflow. */
-@Component
 public final class PaymentWorkflowAppointmentRepositoryAdapter
     implements PaymentWorkflowAppointmentRepository {
 

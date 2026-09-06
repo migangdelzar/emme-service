@@ -226,6 +226,8 @@
       payment resume invoke the authoritative appointment confirmation use case.
 - [x] Persist the workflow-to-hold relation with a forward migration and resolve
       only non-expired holds before confirmation.
+- [x] Add the enabled-only appointment workflow composition root and explicit
+      hold-duration configuration; disabled LangGraph startup remains unaffected.
 - [ ] Wire the resumed payment workflow into the appointment graph's durable
       checkpointed mutation edge and final appointment confirmation.
 

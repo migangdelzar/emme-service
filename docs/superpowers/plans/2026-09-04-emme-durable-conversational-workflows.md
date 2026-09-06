@@ -1082,7 +1082,9 @@ appointment through a provider-neutral port and delegates confirmation to the ex
 appointments use case. The provider/workflow correlation now carries the appointment-hold
 relationship through forward migration `038-ai-payment-workflow-hold.sql`, and the resolver
 rejects expired holds before confirmation. Checkpoint state persistence and the
-booking/payment composition root remain for the next slice.
+booking/payment composition root are now enabled only with LangGraph, with an explicit
+15-minute configurable hold duration and no workflow beans when the graph is disabled.
+Checkpoint state persistence and the final graph mutation edge remain for the next slice.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.

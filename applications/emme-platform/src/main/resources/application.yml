@@ -233,6 +233,8 @@ app:
     langgraph:
       enabled: ${EMME_AI_LANGGRAPH_ENABLED:false}
       graph-version: ${EMME_AI_LANGGRAPH_GRAPH_VERSION:quote-v1}
+    appointment-workflow:
+      hold-duration: ${EMME_AI_APPOINTMENT_HOLD_DURATION:15m}
     age:
       # Optional derived graph projection. The default pgvector runtime remains unchanged.
       enabled: ${EMME_AI_AGE_ENABLED:false}

@@ -489,6 +489,19 @@ callers unexpectedly.
 - [x] Preserve the existing no-context behavior of the temporary string API.
 - [ ] Migrate all Assistant consumers and delete the temporary chat ports.
 
+#### Current slice 6S — Route RAG answer policy through canonical chat
+
+`RagAnswerPolicy` now depends directly on `AiChatCompletion` and sends an
+explicit execution context plus provider admission/fallback policy with every
+request. Spring RAG composition exposes the concrete selector as the
+canonical capability and derives the admission policy from configured provider
+keys; no default or hidden provider identity is introduced.
+
+- [x] Add failing policy tests for canonical request and provider metadata.
+- [x] Migrate grounded and advisor-backed RAG answer composition.
+- [x] Expose canonical selector beans from both chat composition profiles.
+- [ ] Migrate `ChatService`, `RagQueryService`, and tracing/provider adapters.
+
 #### Current slice 6L — Keep document retrieval on the canonical embedding port
 
 The Assistant document retrieval adapter now requires the provider-neutral

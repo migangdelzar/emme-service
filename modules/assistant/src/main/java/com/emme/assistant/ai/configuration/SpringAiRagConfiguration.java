@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
 import com.emme.ai.contracts.embedding.EmbeddingService;
+import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiQueryImprover;
@@ -10,8 +11,6 @@ import com.emme.assistant.ai.adapter.out.provider.springai.advisor.InputGuardAdv
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.OutputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
-import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
-import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.provider.RagAnswerPolicy;
@@ -157,23 +156,28 @@ public class SpringAiRagConfiguration {
                 outputGuardAdvisor));
     var registry =
         new SpringAiChatProviderRegistry(chatClients, chatProperties, advisors, traceRecorder);
-    ChatCompletionPort completions =
+    AiChatCompletion completions =
         scheduler
             .map(
                 admission ->
-                    (ChatCompletionPort)
-                        new ChatModelSelector(
-                            registry.providers(),
-                            admission,
-                            executionProperties.modelAdmissionTimeout()))
+                    new ChatModelSelector(
+                        registry.providers(),
+                        admission,
+                        executionProperties.modelAdmissionTimeout()))
             .orElseGet(() -> new ChatModelSelector(registry.providers()));
-    return new RagAnswerPolicy(completions);
+    return new RagAnswerPolicy(completions, providerPolicy(chatProperties));
   }
 
   @Bean(name = "aiGroundedRagAnswer")
   @ConditionalOnMissingBean(name = "aiGroundedRagAnswer")
-  RagAnswerPort groundedRagAnswerPort(IdentifiedChatCompletionPort chatCompletion) {
-    return new RagAnswerPolicy(chatCompletion);
+  RagAnswerPort groundedRagAnswerPort(
+      AiChatCompletion chatCompletion, SpringAiChatProperties chatProperties) {
+    return new RagAnswerPolicy(chatCompletion, providerPolicy(chatProperties));
+  }
+
+  private static AiChatCompletion.ProviderPolicy providerPolicy(SpringAiChatProperties properties) {
+    return new AiChatCompletion.ProviderPolicy(
+        properties.providers().stream().map(SpringAiChatProperties.Provider::key).toList(), true);
   }
 
   private static ChatClient configuredChatClient(

@@ -7,7 +7,6 @@ import com.emme.assistant.ai.adapter.out.provider.springai.advisor.InputGuardAdv
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.OutputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
-import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import io.micrometer.observation.ObservationRegistry;
@@ -86,7 +85,7 @@ public class SpringAiChatConfiguration {
 
   @Bean(name = "aiChatCompletion")
   @ConditionalOnMissingBean(name = "aiChatCompletion")
-  IdentifiedChatCompletionPort chatCompletionPort(
+  ChatModelSelector chatCompletionPort(
       SpringAiChatProviderRegistry registry,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {

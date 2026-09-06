@@ -28,7 +28,7 @@ public class LegacyChatCompletionConfiguration {
 
   @Bean(name = "aiLegacyChatCompletion")
   @ConditionalOnMissingBean(IdentifiedChatCompletionPort.class)
-  IdentifiedChatCompletionPort legacyChatCompletion(
+  ChatModelSelector legacyChatCompletion(
       AiChatCompletion completion,
       AiProviderProperties properties,
       ModelExecutionScheduler scheduler,

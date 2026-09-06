@@ -51,12 +51,12 @@ class ChatCompositionArchitectureTest {
     assertThat(springChat)
         .contains("prefix = \"app.ai.spring-chat\"")
         .contains("havingValue = \"true\"")
-        .contains("IdentifiedChatCompletionPort chatCompletionPort");
+        .contains("ChatModelSelector chatCompletionPort");
     assertThat(legacyChat)
         .contains("prefix = \"app.ai.spring-chat\"")
         .contains("havingValue = \"false\"")
         .contains("matchIfMissing = true")
-        .contains("IdentifiedChatCompletionPort legacyChatCompletion")
+        .contains("ChatModelSelector legacyChatCompletion")
         .contains("new TracingChatCompletionPort");
   }
 

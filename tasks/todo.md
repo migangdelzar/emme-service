@@ -21,6 +21,14 @@
 - [ ] Migrate Assistant consumers and delete `ChatCompletionPort`,
       `IdentifiedChatCompletionPort`, and `TracingChatCompletionPort`.
 
+## Current slice — Task 6S canonical RAG answer boundary — 2026-09-06
+
+- [x] Add failing tests for canonical RAG request context and provider policy.
+- [x] Migrate `RagAnswerPolicy` to `AiChatCompletion`.
+- [x] Expose canonical selector beans and explicit configured provider policy.
+- [x] Run focused RAG/configuration tests.
+- [ ] Migrate remaining chat consumers and delete deprecated chat ports.
+
 ## Current slice — Task 6P semantic-cache identity compatibility cleanup — 2026-09-06
 
 - [x] Add a failing source-inventory test for legacy semantic-cache identity

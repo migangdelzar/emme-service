@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.guardrail.GuardrailAction;
 import com.emme.ai.contracts.guardrail.GuardrailDecision;
+import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
@@ -282,7 +284,17 @@ class RagQueryServiceTest {
     UUID tenantId = UUID.randomUUID();
     ChatCompletionPort chat = mock(ChatCompletionPort.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    RagAnswerPort ragAnswer = new RagAnswerPolicy(chat);
+    AiChatCompletion completions =
+        request ->
+            new ChatResponse(
+                chat.complete(request.conversationContext(), request.userMessage()),
+                "test",
+                "test-v1",
+                0,
+                0);
+    RagAnswerPort ragAnswer =
+        new RagAnswerPolicy(
+            completions, new AiChatCompletion.ProviderPolicy(List.of("test"), true));
     RagQueryService service =
         new RagQueryService(realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
     when(chat.complete("", "What is the premium?")).thenReturn("It is monthly.");

@@ -13,6 +13,7 @@ import com.emme.payment.api.command.CreatePaymentLinkCommand;
 import com.emme.payment.application.port.out.PaymentLinkRepository;
 import com.emme.payment.application.port.out.PaymentLinkSourceRepository;
 import com.emme.payment.application.port.out.PaymentProvider;
+import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Map;
@@ -30,6 +31,8 @@ class CreatePaymentLinkServiceTest {
     PaymentLinkRepository links = mock(PaymentLinkRepository.class);
     PaymentLinkSourceRepository sources = mock(PaymentLinkSourceRepository.class);
     PaymentProvider provider = mock(PaymentProvider.class);
+    PaymentWorkflowCorrelationRepository correlations =
+        mock(PaymentWorkflowCorrelationRepository.class);
     when(links.findByIdempotencyKey("payment-1")).thenReturn(Optional.empty());
     when(sources.findByWorkflowIdAndHoldId(workflowId, holdId))
         .thenReturn(
@@ -44,7 +47,7 @@ class CreatePaymentLinkServiceTest {
     when(links.save(any(), eq("payment-1"))).thenAnswer(invocation -> invocation.getArgument(0));
 
     PaymentLink link =
-        new CreatePaymentLinkService(links, sources, provider)
+        new CreatePaymentLinkService(links, sources, provider, correlations)
             .create(new CreatePaymentLinkCommand(workflowId, holdId, "payment-1"));
 
     assertThat(link.workflowId()).isEqualTo(workflowId);
@@ -52,6 +55,10 @@ class CreatePaymentLinkServiceTest {
     assertThat(link.checkoutUrl()).isEqualTo("https://pay.test/1");
     assertThat(link.expiresAt()).isEqualTo(expiresAt);
     verify(provider).initiate("payment-1", new BigDecimal("125.00"), "MXN", "Appointment");
+    verify(correlations)
+        .save(
+            new PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation(
+                workflowId, "mock", "provider-payment-1"));
   }
 
   @Test
@@ -68,13 +75,15 @@ class CreatePaymentLinkServiceTest {
     PaymentLinkRepository links = mock(PaymentLinkRepository.class);
     PaymentLinkSourceRepository sources = mock(PaymentLinkSourceRepository.class);
     PaymentProvider provider = mock(PaymentProvider.class);
+    PaymentWorkflowCorrelationRepository correlations =
+        mock(PaymentWorkflowCorrelationRepository.class);
     when(links.findByIdempotencyKey("payment-1")).thenReturn(Optional.of(existing));
 
     PaymentLink actual =
-        new CreatePaymentLinkService(links, sources, provider)
+        new CreatePaymentLinkService(links, sources, provider, correlations)
             .create(new CreatePaymentLinkCommand(workflowId, holdId, "payment-1"));
 
     assertThat(actual).isEqualTo(existing);
-    verifyNoInteractions(sources, provider);
+    verifyNoInteractions(sources, provider, correlations);
   }
 }

@@ -7,6 +7,7 @@ import com.emme.payment.application.port.out.PaymentLinkRepository;
 import com.emme.payment.application.port.out.PaymentLinkSourceRepository;
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
+import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -17,12 +18,17 @@ public final class CreatePaymentLinkService implements CreatePaymentLinkUseCase 
   private final PaymentLinkRepository links;
   private final PaymentLinkSourceRepository sources;
   private final PaymentProvider provider;
+  private final PaymentWorkflowCorrelationRepository correlations;
 
   public CreatePaymentLinkService(
-      PaymentLinkRepository links, PaymentLinkSourceRepository sources, PaymentProvider provider) {
+      PaymentLinkRepository links,
+      PaymentLinkSourceRepository sources,
+      PaymentProvider provider,
+      PaymentWorkflowCorrelationRepository correlations) {
     this.links = Objects.requireNonNull(links, "links must not be null");
     this.sources = Objects.requireNonNull(sources, "sources must not be null");
     this.provider = Objects.requireNonNull(provider, "provider must not be null");
+    this.correlations = Objects.requireNonNull(correlations, "correlations must not be null");
   }
 
   @Override
@@ -43,15 +49,25 @@ public final class CreatePaymentLinkService implements CreatePaymentLinkUseCase 
     PaymentProvider.PaymentResult result =
         provider.initiate(
             command.idempotencyKey(), source.amount(), source.currency(), source.description());
+    if (result == null
+        || result.providerTransactionId() == null
+        || result.providerTransactionId().isBlank()) {
+      throw new PaymentProviderException("Provider did not return a transaction reference");
+    }
     String checkoutUrl = checkoutUrl(result);
-    return links.save(
-        new PaymentLink(
-            UUID.randomUUID(),
-            command.workflowId(),
-            provider.name(),
-            checkoutUrl,
-            source.expiresAt()),
-        command.idempotencyKey());
+    PaymentLink link =
+        links.save(
+            new PaymentLink(
+                UUID.randomUUID(),
+                command.workflowId(),
+                provider.name(),
+                checkoutUrl,
+                source.expiresAt()),
+            command.idempotencyKey());
+    correlations.save(
+        new PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation(
+            command.workflowId(), provider.name(), result.providerTransactionId()));
+    return link;
   }
 
   private static String checkoutUrl(PaymentProvider.PaymentResult result) {

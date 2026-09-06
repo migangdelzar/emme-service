@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 /** Converts the payment callback result into the provider-neutral workflow event contract. */
 @Service
 @Transactional
-public final class ProcessPaymentWorkflowCallbackService
+public class ProcessPaymentWorkflowCallbackService
     implements ProcessPaymentWorkflowCallbackUseCase {
 
   private final ProcessPaymentCallbackUseCase callback;

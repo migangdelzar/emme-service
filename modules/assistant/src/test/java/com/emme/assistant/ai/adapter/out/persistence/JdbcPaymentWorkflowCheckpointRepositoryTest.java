@@ -15,10 +15,22 @@ import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 @SuppressWarnings("unchecked")
 class JdbcPaymentWorkflowCheckpointRepositoryTest {
+
+  @Test
+  void isOptInWithTheLangGraphWorkflowBoundary() {
+    assertThat(JdbcPaymentWorkflowCheckpointRepository.class)
+        .hasAnnotation(ConditionalOnProperty.class);
+    assertThat(
+            JdbcPaymentWorkflowCheckpointRepository.class
+                .getAnnotation(ConditionalOnProperty.class)
+                .prefix())
+        .isEqualTo("app.ai.langgraph");
+  }
 
   @Test
   void claimsAndRecordsUsingTheTenantRoutedWorkflowRunWithoutRepeatingTenantPredicates() {

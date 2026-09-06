@@ -6,11 +6,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /** Loads payment workflow ownership from the tenant-routed workflow state. */
 @Component
+@ConditionalOnProperty(prefix = "app.ai.langgraph", name = "enabled", havingValue = "true")
 public final class JdbcPaymentWorkflowExecutionContextRepository
     implements PaymentWorkflowExecutionContextRepository {
 

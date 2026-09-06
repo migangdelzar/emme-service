@@ -1669,3 +1669,16 @@
 - **Prevention rule:** Add transaction policy and public API contracts in the
   same TDD slice as every new application service; run the application
   architecture/convention gate before committing the slice.
+
+## 2026-09-06 — Gate graph-only adapters as one composition boundary
+
+- **Failure mode:** New payment workflow adapters were component-scanned in
+  ordinary Assistant contexts even though their qualified `tenantJdbcClient`
+  exists only in the LangGraph composition path.
+- **Detection signal:** Full Assistant tests failed with missing
+  `tenantJdbcClient`, then with missing graph-only ports after the first adapter
+  was gated.
+- **Prevention rule:** Apply the same `app.ai.langgraph.enabled` condition to
+  every graph-only adapter and its source adapter; run the full Assistant suite
+  after focused configuration tests. Also verify `@Transactional` services are
+  proxyable and not final.

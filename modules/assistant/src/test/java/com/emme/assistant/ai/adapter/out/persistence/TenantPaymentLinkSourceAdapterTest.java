@@ -17,8 +17,19 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 class TenantPaymentLinkSourceAdapterTest {
+
+  @Test
+  void isOptInWithTheLangGraphWorkflowBoundary() {
+    assertThat(PaymentLinkSourceRepositoryAdapter.class).hasAnnotation(ConditionalOnProperty.class);
+    assertThat(
+            PaymentLinkSourceRepositoryAdapter.class
+                .getAnnotation(ConditionalOnProperty.class)
+                .prefix())
+        .isEqualTo("app.ai.langgraph");
+  }
 
   @Test
   void derivesPaymentFactsFromTheHeldAppointmentAndService() {

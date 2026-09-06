@@ -927,6 +927,20 @@ The non-Docker Task 8 security/configuration gate passed on 2026-09-06. Live
 PostgreSQL checkpoint security/resume and startup evidence remain queued until
 Docker is available.
 
+#### Current slice 8H — Gate payment workflow persistence with LangGraph
+
+Payment workflow checkpoint, execution-context, and tenant-routed payment-source
+adapters are now created only when `app.ai.langgraph.enabled=true`. This keeps
+ordinary Assistant/web contexts free of graph-only tenant JDBC dependencies while
+preserving the enabled composition root. Focused opt-in tests and the full
+Assistant unit suite pass; live PostgreSQL startup, ownership, and resume checks
+remain Docker-gated.
+
+- [x] Add focused opt-in configuration coverage for each graph-only adapter.
+- [x] Apply the LangGraph property condition to all three adapters.
+- [x] Run the full Assistant unit suite.
+- [ ] Run live PostgreSQL checkpoint security/resume coverage with Docker.
+
 ## 6. Phase D — AI persistence with JPA-first decisions
 
 ### Task 9: Classify every AI JDBC adapter before changing implementation

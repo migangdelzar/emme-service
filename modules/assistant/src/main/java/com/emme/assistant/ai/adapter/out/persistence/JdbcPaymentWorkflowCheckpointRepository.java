@@ -7,11 +7,13 @@ import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.TenantContextHolder;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /** Persists payment resume state in the tenant-routed workflow run. */
 @Component
+@ConditionalOnProperty(prefix = "app.ai.langgraph", name = "enabled", havingValue = "true")
 public final class JdbcPaymentWorkflowCheckpointRepository
     implements PaymentWorkflowCheckpointRepository {
 

@@ -10,10 +10,12 @@ import com.emme.services.application.port.out.ServiceRepository;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /** Derives payment facts from tenant-routed appointment state. */
 @Component
+@ConditionalOnProperty(prefix = "app.ai.langgraph", name = "enabled", havingValue = "true")
 public final class PaymentLinkSourceRepositoryAdapter implements PaymentLinkSourceRepository {
 
   private static final String DEFAULT_CURRENCY = "MXN";

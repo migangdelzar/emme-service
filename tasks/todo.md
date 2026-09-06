@@ -1,5 +1,18 @@
 # Service architecture migration checklist
 
+## Current slice — Task 6/8 graph-only bean boundary regression — 2026-09-06
+
+- [x] Add failing opt-in tests for payment workflow checkpoint, execution-context,
+      and payment-source adapters.
+- [x] Gate all three LangGraph-only adapters on `app.ai.langgraph.enabled=true`.
+- [x] Run the full Assistant unit suite after the boundary fix — 597 tests passed.
+- [x] Remove the `final` modifier that prevented Spring's transactional proxy
+      from creating `ProcessPaymentWorkflowCallbackService`.
+- [x] Record the persistence classification rows for the two payment workflow
+      JDBC adapters.
+- [ ] Run the Docker-backed hybrid-search benchmark and PostgreSQL workflow
+      startup/security/resume gates when infrastructure is available.
+
 ## Current execution checkpoint — framework-first plan / durable Task 5 — 2026-09-05
 
 - [x] Complete Task 3 shared-turn semantic query migration and push commit `edd8eb38`.

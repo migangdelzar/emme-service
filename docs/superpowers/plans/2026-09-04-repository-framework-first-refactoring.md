@@ -2567,6 +2567,8 @@ security state.
 - [x] Restore the deterministic correlation context in the staff sync adapter.
 - [x] Run focused Calendar tests, event-contract tests, the Calendar check,
       and Spotless.
+- [x] Run the repository-wide `./gradlew check` shared-boundary checkpoint;
+      258 actionable tasks passed.
 - [ ] Run live Calendar replay/provider retry checks when PostgreSQL, Kafka,
       and Google infrastructure are available.
 

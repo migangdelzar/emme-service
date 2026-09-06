@@ -256,6 +256,8 @@
       persistence and provider calls.
 - [x] Run focused Calendar listener/replay tests, the Calendar check, event
       contract tests, and Spotless.
+- [x] Run the repository-wide `./gradlew check` shared-boundary checkpoint;
+      258 actionable tasks passed.
 - [ ] Run live Calendar replay and provider retry checks when PostgreSQL,
       Kafka, and Google infrastructure are available.
 

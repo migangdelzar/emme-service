@@ -474,6 +474,21 @@ conversation context and the existing mock empty-message HTTP behavior.
 - [ ] Migrate remaining composite embedding, image, and retrieval callers
       before deleting `SpringAiModelProvider`.
 
+#### Current slice 6R — Add the canonical chat request to provider selection
+
+`ChatModelSelector` now implements the canonical `AiChatCompletion` contract in
+addition to the temporary Assistant chat port. Canonical requests validate the
+bound execution context, honor the ordered admitted-provider policy, preserve
+the explicit fallback flag, and return provider/model metadata. The temporary
+string API remains only while its consumers are migrated in the next slice;
+its no-context behavior is preserved so this bridge does not change existing
+callers unexpectedly.
+
+- [x] Add failing selector tests for canonical provider admission and fallback.
+- [x] Implement canonical request selection and provider/model response metadata.
+- [x] Preserve the existing no-context behavior of the temporary string API.
+- [ ] Migrate all Assistant consumers and delete the temporary chat ports.
+
 #### Current slice 6L — Keep document retrieval on the canonical embedding port
 
 The Assistant document retrieval adapter now requires the provider-neutral

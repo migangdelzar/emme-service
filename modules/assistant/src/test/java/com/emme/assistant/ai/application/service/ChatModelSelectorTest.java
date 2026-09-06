@@ -7,6 +7,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
@@ -23,6 +25,62 @@ import java.util.concurrent.Callable;
 import org.junit.jupiter.api.Test;
 
 class ChatModelSelectorTest {
+
+  @Test
+  void completesCanonicalRequestsUsingTheAdmittedProviderOrder() {
+    ChatCompletionPort local = mock(ChatCompletionPort.class);
+    ChatCompletionPort cloud = mock(ChatCompletionPort.class);
+    when(local.complete("context", "hello")).thenReturn("hola");
+    ChatModelSelector selector =
+        new ChatModelSelector(
+            List.of(
+                new ChatModelSelector.Provider("local", local, "llama-local"),
+                new ChatModelSelector.Provider("cloud", cloud, "gpt-cloud")));
+    AiExecutionContext context = context();
+
+    ChatResponse response =
+        AiExecutionContextScope.call(
+            context,
+            () ->
+                selector.complete(
+                    new AiChatCompletion.Request(
+                        "context",
+                        "hello",
+                        context,
+                        new AiChatCompletion.ProviderPolicy(List.of("local", "cloud"), true))));
+
+    assertThat(response).isEqualTo(new ChatResponse("hola", "local", "llama-local", 0, 0));
+    verifyNoInteractions(cloud);
+  }
+
+  @Test
+  void canonicalRequestsWithoutFallbackDoNotTryTheNextAdmittedProvider() {
+    ChatCompletionPort local = mock(ChatCompletionPort.class);
+    ChatCompletionPort cloud = mock(ChatCompletionPort.class);
+    when(local.complete("", "hello"))
+        .thenThrow(new ChatProviderUnavailableException("local unavailable"));
+    ChatModelSelector selector =
+        new ChatModelSelector(
+            List.of(
+                new ChatModelSelector.Provider("local", local, "llama-local"),
+                new ChatModelSelector.Provider("cloud", cloud, "gpt-cloud")));
+    AiExecutionContext context = context();
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context,
+                    () ->
+                        selector.complete(
+                            new AiChatCompletion.Request(
+                                "",
+                                "hello",
+                                context,
+                                new AiChatCompletion.ProviderPolicy(
+                                    List.of("local", "cloud"), false)))))
+        .isInstanceOf(ChatProviderUnavailableException.class);
+    verifyNoInteractions(cloud);
+  }
 
   @Test
   void returnsTheFirstHealthyProviderResponse() {

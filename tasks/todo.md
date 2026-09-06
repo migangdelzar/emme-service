@@ -12,6 +12,15 @@
 - [ ] Run live Redis invalidation and PostgreSQL semantic-cache gates when
       Docker is available.
 
+## Current slice — Task 6R canonical chat selector boundary — 2026-09-06
+
+- [x] Add failing selector tests for canonical provider admission and fallback.
+- [x] Make `ChatModelSelector` implement `AiChatCompletion` with explicit
+      execution context and provider/model metadata.
+- [x] Preserve the temporary string API's no-context behavior during migration.
+- [ ] Migrate Assistant consumers and delete `ChatCompletionPort`,
+      `IdentifiedChatCompletionPort`, and `TracingChatCompletionPort`.
+
 ## Current slice — Task 6P semantic-cache identity compatibility cleanup — 2026-09-06
 
 - [x] Add a failing source-inventory test for legacy semantic-cache identity

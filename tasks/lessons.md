@@ -1749,3 +1749,13 @@
 - **Prevention rule:** Cross-cutting invalidation ports must accept explicit
   tenant, principal, dependency, and version data; callers at the authenticated
   boundary should construct that value before invoking the adapter.
+## 2026-09-06 — Canonical bridges must preserve compatibility semantics while callers migrate
+
+- Failure mode: the first canonical selector implementation unconditionally
+  required an execution context and broke existing temporary string callers
+  that intentionally run without a scheduler/context.
+- Detection signal: the focused selector suite failed with `No AI execution
+  context` before reaching provider behavior.
+- Prevention rule: when adding a canonical boundary beside a compatibility
+  boundary, test both contracts explicitly and preserve the old contract's
+  documented behavior until every caller has migrated.

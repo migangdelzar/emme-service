@@ -1,6 +1,6 @@
 package com.emme.calendar.api.result;
 
-import com.emme.calendar.domain.model.CalendarSyncStatus;
+import com.emme.calendar.api.type.CalendarSyncStatus;
 import java.util.UUID;
 
 /** Public read model returned after a calendar synchronization request. */

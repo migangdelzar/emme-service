@@ -37,6 +37,8 @@ an explicit name-preserving conversion at that boundary.
 - [x] Prove the regression with the framework architecture checkpoint.
 - [x] Correct the Appointment public boundary and affected cross-module
       fixtures.
+- [x] Correct the Calendar public boundaries with API-owned enums and explicit
+      application mapping.
 - [ ] Correct the remaining public records that still expose domain enums.
 - [ ] Re-run the full framework checkpoint after the correction slices.
 
@@ -78,9 +80,10 @@ keeping customer lifecycle state typed inside Java.
 
 ### Current slice — Calendar status enum boundary
 
-Calendar event-link and synchronization state now retain their existing domain
-enums through application results and the HTTP synchronization response. Their
-stable enum names remain unchanged at serialization boundaries.
+Calendar event-link and synchronization state now use API-owned enums through
+application results and the HTTP synchronization response. The application
+boundary explicitly converts the domain values while stable enum names remain
+unchanged at serialization boundaries.
 
 - [x] Add a failing convention test for enum-typed Calendar status boundaries.
 - [x] Migrate Calendar result/response models, mappers, and affected fixtures.

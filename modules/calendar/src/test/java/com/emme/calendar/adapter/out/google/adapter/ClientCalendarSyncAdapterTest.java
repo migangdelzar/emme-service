@@ -11,12 +11,12 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.calendar.api.result.CalendarEventLinkDetails;
+import com.emme.calendar.api.type.CalendarEventLinkStatus;
 import com.emme.calendar.api.usecase.CreateCalendarEventLinkUseCase;
 import com.emme.calendar.api.usecase.FindCalendarEventLinkUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
-import com.emme.calendar.domain.model.CalendarEventLinkStatus;
 import com.emme.calendar.domain.model.CalendarProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;

@@ -1,6 +1,6 @@
 package com.emme.calendar.api.result;
 
-import com.emme.calendar.domain.model.CalendarEventLinkStatus;
+import com.emme.calendar.api.type.CalendarEventLinkStatus;
 import java.util.UUID;
 
 /** Public DTO for CalendarEventLink — no entity details leaked. */

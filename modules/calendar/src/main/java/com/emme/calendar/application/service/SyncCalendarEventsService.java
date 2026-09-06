@@ -1,6 +1,7 @@
 package com.emme.calendar.application.service;
 
 import com.emme.calendar.api.result.CalendarSyncStateDetails;
+import com.emme.calendar.api.type.CalendarSyncStatus;
 import com.emme.calendar.api.usecase.SyncCalendarEventsUseCase;
 import com.emme.calendar.application.port.out.CalendarSyncStateRepository;
 import com.emme.calendar.domain.model.CalendarProvider;
@@ -42,6 +43,9 @@ public class SyncCalendarEventsService implements SyncCalendarEventsUseCase {
     }
     CalendarSyncState saved = repository.save(state);
     return new CalendarSyncStateDetails(
-        saved.id(), saved.tenantId(), saved.provider().name(), saved.status());
+        saved.id(),
+        saved.tenantId(),
+        saved.provider().name(),
+        CalendarSyncStatus.valueOf(saved.status().name()));
   }
 }

@@ -7,6 +7,8 @@
 - [x] Map appointment domain status values explicitly into API results and
       HTTP responses.
 - [x] Migrate Assistant fixtures that construct appointment public results.
+- [x] Correct Calendar public event-link and synchronization status boundaries
+      with API-owned enums and explicit application mapping.
 - [ ] Repeat the same boundary correction for remaining public records that
       still expose domain lifecycle enums.
 - [ ] Re-run the full framework checkpoint after all affected modules are

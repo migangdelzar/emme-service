@@ -1,7 +1,7 @@
 package com.emme.calendar.adapter.in.web.response;
 
 import com.emme.calendar.api.result.CalendarSyncStateDetails;
-import com.emme.calendar.domain.model.CalendarSyncStatus;
+import com.emme.calendar.api.type.CalendarSyncStatus;
 import java.util.UUID;
 
 /** HTTP representation of the Calendar synchronization state. */

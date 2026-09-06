@@ -3963,6 +3963,23 @@ appointment mutation tools are registered.
   the application integration-test analysis task requesting the disabled
   `emme-platform-0.1.0.jar`; representative module advice remains usable.
 
+## Durable guardrail contract slice — 2026-09-05
+
+- [x] Add red tests for typed guardrail actions, bounded decisions, and ordered
+      short-circuiting.
+- [x] Add provider-neutral guardrail request/decision records and application
+      guard interfaces.
+- [x] Add the injectable ordered guardrail pipeline.
+- [x] Run focused contract, assistant, and Spotless checks.
+- [ ] Continue with concrete guard enforcement and Spring AI advisors in Task 8.
+
+### Results
+
+- Guardrail contracts remain framework-neutral and carry only bounded boundary
+  facts; the pipeline stops on blocking, denial, escalation, or no-answer
+  decisions before invoking later stages.
+- The focused tests were red before implementation and green after it.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

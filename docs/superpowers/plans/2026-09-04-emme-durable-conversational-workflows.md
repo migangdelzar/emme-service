@@ -723,15 +723,19 @@ with their specific typed input. The request objects contain only bounded, bound
 they are never persisted or copied into decisions. `GuardrailPipeline` is the only class that
 composes the individual guards, so each guard remains independently testable and injectable.
 
-- [ ] **Step 1: Write failing contract tests.** Assert every guardrail action is typed, reason codes are non-blank, safe attributes are bounded, and a denial cannot be represented as `ALLOW`.
-- [ ] **Step 2: Run focused tests.** Run `./gradlew :libraries:ai-contracts:test --tests '*GuardrailContractTest' :modules:assistant:test --tests '*GuardrailPipelineTest'`; expected failure is missing contracts.
-- [ ] **Step 3: Implement the contracts and pipeline.** The pipeline evaluates input → context → tool/grounding → output in order and stops on `BLOCK`, `DENY`, `ESCALATE`, or `NO_ANSWER`; it never converts guardrail errors into provider failover.
-- [ ] **Step 4: Refactor and commit.**
+- [x] **Step 1: Write failing contract tests.** Assert every guardrail action is typed, reason codes are non-blank, safe attributes are bounded, and a denial cannot be represented as `ALLOW`.
+- [x] **Step 2: Run focused tests.** Run `./gradlew :libraries:ai-contracts:test --tests '*GuardrailContractTest' :modules:assistant:test --tests '*GuardrailPipelineTest'`; expected failure is missing contracts.
+- [x] **Step 3: Implement the contracts and pipeline.** The pipeline evaluates input → context → tool/grounding → output in order and stops on `BLOCK`, `DENY`, `ESCALATE`, or `NO_ANSWER`; it never converts guardrail errors into provider failover.
+- [x] **Step 4: Refactor and commit.**
 
   ```bash
   git add libraries/ai-contracts modules/assistant
   git commit -m "feat(ai): add typed guardrail contracts"
   ```
+
+The typed contract and ordered pipeline were added in the current framework-first
+slice. `DefaultGuardrailPipeline` is the injectable composition implementation;
+provider transport and concrete policy checks remain Task 8 work.
 
 ### Task 8: Enforce guardrails around direct chat, RAG, tools, and delivery
 

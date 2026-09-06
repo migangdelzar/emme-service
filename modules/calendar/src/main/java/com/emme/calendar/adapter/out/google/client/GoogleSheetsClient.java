@@ -2,18 +2,17 @@ package com.emme.calendar.adapter.out.google.client;
 
 import com.emme.calendar.adapter.out.google.adapter.GoogleOAuthAdapter;
 import com.emme.calendar.adapter.out.google.model.PersonaType;
-import com.emme.calendar.configuration.GoogleHttpClient;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.shared.web.security.CurrentUserContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 @Service
 public class GoogleSheetsClient {
@@ -23,10 +22,12 @@ public class GoogleSheetsClient {
 
   private final GoogleOAuthAdapter oauthService;
   private final ObjectMapper mapper;
-  private final GoogleHttpClient httpClient;
+  private final RestClient httpClient;
 
   public GoogleSheetsClient(
-      GoogleOAuthAdapter oauthService, ObjectMapper mapper, GoogleHttpClient httpClient) {
+      GoogleOAuthAdapter oauthService,
+      ObjectMapper mapper,
+      @Qualifier("googleRestClient") RestClient httpClient) {
     this.oauthService = oauthService;
     this.mapper = mapper;
     this.httpClient = httpClient;
@@ -41,26 +42,28 @@ public class GoogleSheetsClient {
     var props = body.putObject("properties");
     props.put("title", title);
 
-    Request request =
-        new Request.Builder()
-            .url(SHEETS_API)
-            .header("Authorization", "Bearer " + token)
-            .post(
-                RequestBody.create(
-                    mapper.writeValueAsString(body), MediaType.get("application/json")))
-            .build();
-
-    try (Response response = httpClient.newCall(request).execute()) {
-      if (!response.isSuccessful()) {
-        String errorBody = response.body() != null ? response.body().string() : "";
-        throw new RuntimeException(
-            "Sheets create failed: HTTP " + response.code() + " — " + errorBody);
-      }
-      var json = mapper.readTree(response.body().string());
+    try {
+      String responseBody =
+          httpClient
+              .post()
+              .uri(SHEETS_API)
+              .header("Authorization", "Bearer " + token)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(body))
+              .retrieve()
+              .body(String.class);
+      var json = mapper.readTree(responseBody == null ? "" : responseBody);
       var id = json.get("spreadsheetId").asText();
       var url = json.get("spreadsheetUrl").asText();
       log.info("Created spreadsheet: {} ({})", title, id);
       return new SpreadsheetDetails(id, url, title);
+    } catch (RestClientResponseException e) {
+      throw new RuntimeException(
+          "Sheets create failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
     }
   }
 
@@ -81,22 +84,23 @@ public class GoogleSheetsClient {
     String url =
         SHEETS_API + "/" + spreadsheetId + "/values/" + range + "?valueInputOption=USER_ENTERED";
 
-    Request request =
-        new Request.Builder()
-            .url(url)
-            .header("Authorization", "Bearer " + token)
-            .put(
-                RequestBody.create(
-                    mapper.writeValueAsString(body), MediaType.get("application/json")))
-            .build();
-
-    try (Response response = httpClient.newCall(request).execute()) {
-      if (!response.isSuccessful()) {
-        String errorBody = response.body() != null ? response.body().string() : "";
-        throw new RuntimeException(
-            "Sheets write failed: HTTP " + response.code() + " — " + errorBody);
-      }
+    try {
+      httpClient
+          .put()
+          .uri(url)
+          .header("Authorization", "Bearer " + token)
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(mapper.writeValueAsString(body))
+          .retrieve()
+          .toBodilessEntity();
       log.info("Wrote {} rows to spreadsheetId={} range={}", values.length, spreadsheetId, range);
+    } catch (RestClientResponseException e) {
+      throw new RuntimeException(
+          "Sheets write failed: HTTP "
+              + e.getStatusCode().value()
+              + " — "
+              + e.getResponseBodyAsString(),
+          e);
     }
   }
 

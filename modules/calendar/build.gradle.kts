@@ -26,6 +26,7 @@ dependencies {
   testImplementation(libs.spring.security.test)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
+  add("integrationTestImplementation", libs.spring.boot.restclient)
   add("integrationTestImplementation", libs.okhttp)
   add("integrationTestImplementation", libs.jackson.databind)
 }

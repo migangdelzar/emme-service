@@ -4,7 +4,6 @@ import com.emme.calendar.adapter.out.google.oauth.GoogleUserTokenSource;
 import com.emme.calendar.api.result.CalendarBusyTimeRange;
 import com.emme.calendar.application.port.out.GoogleCalendarPort;
 import com.emme.calendar.configuration.GoogleCalendarProperties;
-import com.emme.calendar.configuration.GoogleHttpClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
@@ -21,15 +20,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
 
 /**
  * Google Calendar API client using service account JWT authentication. Pure HTTP + java.security —
@@ -42,11 +41,7 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
 
   private static final String SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
   private static final long TOKEN_CACHE_SECONDS = 59 * 60; // 59 min (1h with buffer)
-  private static final MediaType FORM_URLENCODED =
-      MediaType.get("application/x-www-form-urlencoded");
-  private static final MediaType JSON = MediaType.get("application/json");
-
-  private final GoogleHttpClient client;
+  private final RestClient client;
   private final ObjectMapper mapper;
   private final String tokenUrl;
   private final String freeBusyUrl;
@@ -64,7 +59,7 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
   public GoogleCalendarClient(
       Optional<GoogleUserTokenSource> userTokenSource,
       GoogleCalendarProperties properties,
-      GoogleHttpClient client,
+      @Qualifier("googleRestClient") RestClient client,
       ObjectMapper mapper) {
     this(
         client,
@@ -77,16 +72,7 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
 
   /** Test constructor — inject HTTP client, base64-encoded SA JSON, and endpoint URLs. */
   public GoogleCalendarClient(
-      OkHttpClient client,
-      ObjectMapper mapper,
-      String saJsonBase64,
-      String tokenUrl,
-      String freeBusyUrl) {
-    this(new GoogleHttpClient(client), mapper, saJsonBase64, tokenUrl, freeBusyUrl);
-  }
-
-  private GoogleCalendarClient(
-      GoogleHttpClient client,
+      RestClient client,
       ObjectMapper mapper,
       String saJsonBase64,
       String tokenUrl,
@@ -149,33 +135,23 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
       return cachedToken;
     }
     String jwt = buildJwt();
-    String body =
-        "grant_type="
-            + java.net.URLEncoder.encode(
-                "urn:ietf:params:oauth:grant-type:jwt-bearer", StandardCharsets.UTF_8)
-            + "&assertion="
-            + java.net.URLEncoder.encode(jwt, StandardCharsets.UTF_8);
+    MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+    body.add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
+    body.add("assertion", jwt);
 
-    Request request =
-        new Request.Builder()
-            .url(tokenUrl)
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .post(RequestBody.create(body, FORM_URLENCODED))
-            .build();
-
-    try (Response response = client.newCall(request).execute()) {
-      if (!response.isSuccessful()) {
-        String errorBody = response.body() != null ? response.body().string() : "";
-        throw new RuntimeException(
-            "Token request failed: HTTP " + response.code() + " — " + errorBody);
-      }
-      String responseBody = response.body().string();
-      JsonNode node = mapper.readTree(responseBody);
-      cachedToken = node.get("access_token").asText();
-      tokenExpiresAt = now + TOKEN_CACHE_SECONDS;
-      log.debug("Access token obtained, cached until {}", Instant.ofEpochSecond(tokenExpiresAt));
-      return cachedToken;
-    }
+    String responseBody =
+        client
+            .post()
+            .uri(tokenUrl)
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .body(body)
+            .retrieve()
+            .body(String.class);
+    JsonNode node = mapper.readTree(responseBody);
+    cachedToken = node.get("access_token").asText();
+    tokenExpiresAt = now + TOKEN_CACHE_SECONDS;
+    log.debug("Access token obtained, cached until {}", Instant.ofEpochSecond(tokenExpiresAt));
+    return cachedToken;
   }
 
   /**
@@ -197,22 +173,16 @@ public class GoogleCalendarClient implements GoogleCalendarPort {
                   "timeMax", timeMax,
                   "items", List.of(Map.of("id", calendarId))));
 
-      Request request =
-          new Request.Builder()
-              .url(freeBusyUrl)
+      String responseBody =
+          client
+              .post()
+              .uri(freeBusyUrl)
               .header("Authorization", "Bearer " + token)
-              .header("Content-Type", "application/json")
-              .post(RequestBody.create(requestBody, JSON))
-              .build();
-
-      try (Response response = client.newCall(request).execute()) {
-        if (!response.isSuccessful()) {
-          String errorBody = response.body() != null ? response.body().string() : "";
-          log.error("Free/busy request failed: HTTP {} — {}", response.code(), errorBody);
-          return Collections.emptyList();
-        }
-        return parseBusyTimes(response.body().string(), calendarId);
-      }
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(requestBody)
+              .retrieve()
+              .body(String.class);
+      return parseBusyTimes(responseBody == null ? "" : responseBody, calendarId);
     } catch (Exception e) {
       log.error("Failed to fetch free/busy: {}", e.getMessage(), e);
       return Collections.emptyList();

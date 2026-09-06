@@ -46,7 +46,7 @@
       provider operation semantics.
 - [x] Establish the named Calendar `googleRestClient` boundary and migrate
       Google OAuth form/token calls with contract coverage.
-- [ ] Migrate Google Calendar and Sheets resource clients with contract
+- [x] Migrate Google Calendar and Sheets resource clients with contract
       coverage.
 - [ ] Remove the obsolete Google wrapper dependency from Calendar sync
       adapters with tenant/event behavior coverage.

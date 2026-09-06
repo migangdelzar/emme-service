@@ -32,7 +32,7 @@
 - [x] Migrate all Assistant production and test callers to `EmbeddingService`.
 - [x] Delete the deprecated embedding compatibility source.
 - [x] Run Assistant tests, integration-test compilation, and Spotless.
-- [ ] Record the final deletion commit SHA in the migration ledger.
+- [x] Record deletion commit `42e60a4a` in the migration ledger.
 
 ## Current slice — Assistant context regression — 2026-09-05
 

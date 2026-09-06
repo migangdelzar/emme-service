@@ -336,7 +336,7 @@ gone.
 | Implementation path | Status | Blocking condition or deletion evidence |
 |---|---|---|
 | `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java` | Pending | Assistant and legacy compatibility callers still depend on the composite provider contract; migrate callers behind the canonical chat/embedding ports first |
-| `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/EmbeddingModelPort.java` | Deleted | Canonical `EmbeddingService` migration completed; production/test caller searches are clean and Assistant focused tests pass |
+| `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/EmbeddingModelPort.java` | Deleted | Canonical `EmbeddingService` migration completed in `42e60a4a` on 2026-09-05; production/test caller searches are clean and Assistant focused tests pass |
 | `modules/payment/src/main/java/com/emme/payment/configuration/PaymentHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |
 | `modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |
 | `modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |

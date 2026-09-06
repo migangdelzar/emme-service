@@ -38,6 +38,7 @@ public final class ProcessPaymentWorkflowCallbackService
                         "Payment callback has no workflow correlation for provider reference "
                             + payment.providerReference()));
     return new PaymentWorkflowEvent(
+        command.tenantId(),
         correlation.workflowId(),
         correlation.provider(),
         command.eventId(),

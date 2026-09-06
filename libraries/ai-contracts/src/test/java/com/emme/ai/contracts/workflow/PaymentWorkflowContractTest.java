@@ -14,6 +14,7 @@ class PaymentWorkflowContractTest {
 
   @Test
   void preservesTrustedWorkflowCorrelationsAndRejectsBlankBoundaryValues() {
+    UUID tenantId = UUID.randomUUID();
     UUID workflowId = UUID.randomUUID();
     UUID holdId = UUID.randomUUID();
     Instant expiresAt = Instant.parse("2026-09-05T23:00:00Z");
@@ -24,13 +25,17 @@ class PaymentWorkflowContractTest {
         new PaymentLink(
             UUID.randomUUID(), workflowId, "mercadopago", "https://checkout.test/1", expiresAt);
     PaymentWorkflowEvent event =
-        new PaymentWorkflowEvent(workflowId, "mercadopago", "event-1", "provider-1", "CAPTURED");
+        new PaymentWorkflowEvent(
+            tenantId, workflowId, "mercadopago", "event-1", "provider-1", "CAPTURED");
 
     assertThat(hold.holdId()).isEqualTo(holdId);
     assertThat(link.workflowId()).isEqualTo(workflowId);
+    assertThat(event.tenantId()).isEqualTo(tenantId);
     assertThat(event.status()).isEqualTo("CAPTURED");
     assertThatThrownBy(
-            () -> new PaymentWorkflowEvent(workflowId, "", "event-1", "provider-1", "CAPTURED"))
+            () ->
+                new PaymentWorkflowEvent(
+                    tenantId, workflowId, "", "event-1", "provider-1", "CAPTURED"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("provider must not be blank");
   }

@@ -21,7 +21,12 @@ class AppointmentPaymentWorkflowTest {
     WorkflowHandle handle =
         workflow.resume(
             new PaymentWorkflowEvent(
-                context.workflowId(), "mock", "event-1", "provider-1", "PENDING"),
+                context.tenantId(),
+                context.workflowId(),
+                "mock",
+                "event-1",
+                "provider-1",
+                "PENDING"),
             context);
 
     assertThat(handle.status()).isEqualTo(WorkflowStatus.WAITING_FOR_PAYMENT);
@@ -35,7 +40,12 @@ class AppointmentPaymentWorkflowTest {
         new AppointmentPaymentWorkflow()
             .resume(
                 new PaymentWorkflowEvent(
-                    context.workflowId(), "mock", "event-1", "provider-1", "CAPTURED"),
+                    context.tenantId(),
+                    context.workflowId(),
+                    "mock",
+                    "event-1",
+                    "provider-1",
+                    "CAPTURED"),
                 context);
 
     assertThat(handle.status()).isEqualTo(WorkflowStatus.SUCCEEDED);
@@ -51,7 +61,12 @@ class AppointmentPaymentWorkflowTest {
                 new AppointmentPaymentWorkflow()
                     .resume(
                         new PaymentWorkflowEvent(
-                            UUID.randomUUID(), "mock", "event-1", "provider-1", "CAPTURED"),
+                            context.tenantId(),
+                            UUID.randomUUID(),
+                            "mock",
+                            "event-1",
+                            "provider-1",
+                            "CAPTURED"),
                         context))
         .isInstanceOf(SecurityException.class)
         .hasMessageContaining("workflowId");

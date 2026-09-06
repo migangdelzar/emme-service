@@ -6,12 +6,18 @@ import java.util.UUID;
 
 /** Normalized, signature-verified provider event used to resume a payment workflow. */
 public record PaymentWorkflowEvent(
-    UUID workflowId, String provider, String eventId, String providerReference, String status) {
+    UUID tenantId,
+    UUID workflowId,
+    String provider,
+    String eventId,
+    String providerReference,
+    String status) {
 
   private static final Set<String> STATUSES =
       Set.of("PENDING", "AUTHORIZED", "CAPTURED", "DECLINED", "REFUNDED", "CANCELLED");
 
   public PaymentWorkflowEvent {
+    tenantId = Objects.requireNonNull(tenantId, "tenantId must not be null");
     workflowId = Objects.requireNonNull(workflowId, "workflowId must not be null");
     provider = requireText(provider, "provider");
     eventId = requireText(eventId, "eventId");

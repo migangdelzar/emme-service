@@ -2,6 +2,7 @@ package com.emme.assistant.ai.application.workflow;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /** Immutable allow-list and execution policy for one workflow node. */
 public record NodeToolPolicy(
@@ -13,5 +14,12 @@ public record NodeToolPolicy(
       throw new IllegalArgumentException("allowedKeys must not contain blank values");
     }
     allowedKeys = Set.copyOf(allowedKeys);
+  }
+
+  public Set<String> filter(Set<String> candidateKeys) {
+    Objects.requireNonNull(candidateKeys, "candidateKeys must not be null");
+    return candidateKeys.stream()
+        .filter(allowedKeys::contains)
+        .collect(Collectors.toUnmodifiableSet());
   }
 }

@@ -26,6 +26,16 @@ class NodePolicyRegistryTest {
         .hasMessageContaining("Unknown workflow node: missing");
   }
 
+  @Test
+  void projectsOnlyTheToolsAndMemoryScopesAllowedByTheNode() {
+    NodeProfile profile = profile("answer");
+
+    assertThat(profile.tools().filter(Set.of("faq.read", "appointment.write")))
+        .containsExactly("faq.read");
+    assertThat(profile.memory().filterScopes(Set.of("conversation", "payment")))
+        .containsExactly("conversation");
+  }
+
   private static NodeProfile profile(String nodeId) {
     return new NodeProfile(
         nodeId,

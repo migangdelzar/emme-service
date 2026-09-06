@@ -42,8 +42,16 @@ public final class AppointmentCancellationWorkflow implements ConversationWorkfl
       return new WorkflowHandle(context.workflowId(), WorkflowStatus.WAITING_FOR_CONFIRMATION, 0);
     }
 
-    cancellation.cancel(
-        new CancelAppointmentCommand(actor(context), requiredUuid(command, "appointmentId"), true));
+    try {
+      cancellation.cancel(
+          new CancelAppointmentCommand(
+              actor(context), requiredUuid(command, "appointmentId"), true));
+    } catch (RuntimeException exception) {
+      checkpoints.record(
+          context,
+          new WorkflowHandle(context.workflowId(), WorkflowStatus.WAITING_FOR_CONFIRMATION, 0));
+      throw exception;
+    }
     WorkflowHandle handle = new WorkflowHandle(context.workflowId(), WorkflowStatus.SUCCEEDED, 1);
     checkpoints.record(context, handle);
     return handle;

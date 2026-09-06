@@ -1189,6 +1189,12 @@ authorized appointment services remain the source of truth for ownership and col
 rules; cancellation-window/refund composition, staff review routing, and notification
 idempotency are still open slices.
 
+**Current slice — cancellation claim recovery (2026-09-06):** A failed authorized
+cancellation now records `WAITING_FOR_CONFIRMATION` before rethrowing the original
+mutation error, so a transient or policy failure does not strand the durable workflow
+in `RUNNING`. The behavior is covered by a focused regression test; reschedule claim
+recovery remains the next independent lifecycle slice.
+
 ## 8. Phase E — Evidence, Cleanup, and Release Gate
 
 ### Task 12: Add operational evidence and controlled retrieval improvement

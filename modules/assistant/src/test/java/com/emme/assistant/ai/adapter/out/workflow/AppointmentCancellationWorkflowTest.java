@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.adapter.out.workflow;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -93,6 +94,39 @@ class AppointmentCancellationWorkflowTest {
                 appointmentId,
                 true));
     verify(checkpoints).record(context, handle);
+  }
+
+  @Test
+  void releasesTheConfirmationClaimWhenCancellationFails() {
+    CancelAuthorizedAppointmentUseCase cancellation =
+        mock(CancelAuthorizedAppointmentUseCase.class);
+    WorkflowCheckpointRepository checkpoints = mock(WorkflowCheckpointRepository.class);
+    when(checkpoints.claimForResume(
+            org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+        .thenReturn(true);
+    when(cancellation.cancel(org.mockito.ArgumentMatchers.any()))
+        .thenThrow(new IllegalStateException("appointment is no longer mutable"));
+    AiExecutionContext context = context();
+    UUID appointmentId = UUID.randomUUID();
+    WorkflowCommand command =
+        new WorkflowCommand(
+            context.workflowId(),
+            "appointment_cancellation",
+            Map.of("appointmentId", appointmentId.toString(), "confirmed", true),
+            context.idempotencyKey());
+
+    assertThatThrownBy(
+            () ->
+                new AppointmentCancellationWorkflow(cancellation, checkpoints)
+                    .startOrResume(command, context))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("appointment is no longer mutable");
+
+    verify(checkpoints)
+        .record(
+            context,
+            new com.emme.ai.contracts.workflow.WorkflowHandle(
+                context.workflowId(), WorkflowStatus.WAITING_FOR_CONFIRMATION, 0));
   }
 
   private static AiExecutionContext context() {

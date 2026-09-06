@@ -680,6 +680,16 @@
 - [ ] Add policy-specific reschedule/cancellation analysis, staff review, notification
       idempotency, and calendar reconciliation before closing durable Task 11.
 
+### Current slice — Durable Task 11B cancellation claim recovery — 2026-09-06
+
+- [x] Add a failing regression test for an authorized cancellation failure after
+      the workflow claim is acquired.
+- [x] Restore `WAITING_FOR_CONFIRMATION` before rethrowing the mutation error so
+      retryable and policy failures do not strand the workflow in `RUNNING`.
+- [x] Run the focused cancellation workflow test, Assistant compilation, and
+      Assistant Spotless checks.
+- [ ] Apply the same independently tested recovery boundary to rescheduling.
+
 ### Current slice — Durable Task 12A bounded operational evidence — 2026-09-05
 
 - [x] Confirm existing Micrometer semantic metrics use bounded operation/outcome labels.

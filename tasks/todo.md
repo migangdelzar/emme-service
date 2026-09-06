@@ -31,6 +31,15 @@
 - [x] Run the full database contract suite and `bash -n` on the migration script.
 - [ ] Run the real Liquibase migration/catalog/RLS gate with Docker available.
 
+## Current slice — framework boundary checkpoint evidence — 2026-09-06
+
+- [x] Run repository framework, provider HTTP, and Kafka event contract tests.
+- [x] Run the generic tenancy-owned test-fixture boundary architecture test.
+- [x] Confirm provider HTTP production wrappers remain deleted and only the
+      documented transport/test exceptions remain.
+- [ ] Run Kafka replay, Redis outage/eviction, PostgreSQL tenant-routing, and
+      provider transport gates when Docker/infrastructure is available.
+
 ## Current execution checkpoint — framework-first plan / durable Task 5 — 2026-09-05
 
 - [x] Complete Task 3 shared-turn semantic query migration and push commit `edd8eb38`.

@@ -20,6 +20,7 @@ spring:
       hibernate:
         multi_tenancy: NONE
         dialect: org.hibernate.dialect.H2Dialect
+        generate_statistics: true
         hbm2ddl:
           create_namespaces: true
         create_empty_composites:

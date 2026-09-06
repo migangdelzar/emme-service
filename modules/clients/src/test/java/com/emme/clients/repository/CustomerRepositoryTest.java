@@ -7,8 +7,13 @@ import com.emme.clients.adapter.out.persistence.repository.SpringDataCustomerRep
 import com.emme.clients.domain.model.CustomerStatus;
 import com.emme.testing.BaseRepositoryTest;
 import com.emme.testing.TestSecurityConfig;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceContext;
 import java.util.Optional;
 import java.util.UUID;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -17,6 +22,8 @@ import org.springframework.context.annotation.Import;
 class CustomerRepositoryTest extends BaseRepositoryTest {
 
   @Autowired private SpringDataCustomerRepository customerRepo;
+  @Autowired private EntityManagerFactory entityManagerFactory;
+  @PersistenceContext private EntityManager entityManager;
 
   private static final UUID TENANT_ID = UUID.randomUUID();
 
@@ -44,5 +51,18 @@ class CustomerRepositoryTest extends BaseRepositoryTest {
     Optional<CustomerEntity> found = customerRepo.findByEmail("unique@example.com");
     assertThat(found).isPresent();
     assertThat(found.get().getName()).isEqualTo("Email Customer");
+  }
+
+  @Test
+  void listsCustomersWithOneQueryAfterPendingInsertsAreFlushed() {
+    customerRepo.save(new CustomerEntity(TENANT_ID, "First Customer"));
+    customerRepo.save(new CustomerEntity(TENANT_ID, "Second Customer"));
+    entityManager.flush();
+
+    Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+    statistics.clear();
+
+    assertThat(customerRepo.findAll()).hasSize(2);
+    assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
   }
 }

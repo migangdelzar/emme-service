@@ -211,6 +211,8 @@
       and migration contract coverage.
 - [x] Normalize processed callbacks into canonical workflow events and reject missing
       provider-to-workflow ownership.
+- [x] Add explicit canonical `WAITING_FOR_CONFIRMATION` and `WAITING_FOR_PAYMENT`
+      workflow statuses.
 - [ ] Wire verified callback ownership into idempotent workflow resume and checkpointed graph edges.
 
 ## Repository framework-first refactoring plan — 2026-09-04

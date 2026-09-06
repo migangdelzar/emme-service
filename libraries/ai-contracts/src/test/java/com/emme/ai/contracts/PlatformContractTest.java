@@ -231,6 +231,8 @@ class PlatformContractTest {
   void workflowStatusesExposeOnlyExplicitTerminalStates() {
     assertThat(WorkflowStatus.SUCCEEDED.isTerminal()).isTrue();
     assertThat(WorkflowStatus.WAITING_FOR_APPROVAL.isTerminal()).isFalse();
+    assertThat(WorkflowStatus.WAITING_FOR_CONFIRMATION.isTerminal()).isFalse();
+    assertThat(WorkflowStatus.WAITING_FOR_PAYMENT.isTerminal()).isFalse();
     assertThat(WorkflowStatus.RUNNING.isTerminal()).isFalse();
     assertThat(WorkflowStatus.FAILED.isTerminal()).isTrue();
   }

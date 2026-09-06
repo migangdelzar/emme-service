@@ -2175,19 +2175,41 @@ subscriptions, documents, catalog, calendar, notification, and payment. The
 remaining live tenant-routing and PostgreSQL concurrency evidence still
 requires Docker.
 
-- [ ] **Step 3: Convert only the proven JPA candidates**
+- [x] **Step 3: Convert only the proven JPA candidates**
 
 Use projections and locking before custom SQL. Keep specialized vector,
 generated-FTS, webhook, and atomic state-transition SQL in named adapters when
 the ledger says JPA is less clear or unsafe.
 
-- [ ] **Step 4: Run tests, architecture checks, compile, and commit in two groups**
+- [x] **Step 4: Run tests, architecture checks, compile, and commit in two groups**
 
 ```bash
 ./gradlew :modules:tenancy:test :modules:identity:test :modules:subscriptions:test :modules:documents:test :modules:catalog:test :modules:calendar:test :modules:notification:test :modules:payment:test --no-parallel --no-configuration-cache
 git add modules/tenancy modules/identity modules/subscriptions modules/documents modules/catalog modules/calendar modules/notification modules/payment
 git commit -m "refactor(domain): standardize remaining JPA persistence"
 ```
+
+#### Current slice 18AG — Close the tenant-qualified persistence audit
+
+The remaining tenant-qualified persistence methods were reviewed operation by
+operation after the schema-local JPA conversions. No additional removal is
+safe: the remaining methods are either control-plane or authorization state,
+provider/business-key lookups, callbacks and idempotency claims, cross-tenant
+jobs, or specialized vector/full-text/JSONB/atomic stores. These boundaries
+must keep explicit tenant identity even when ordinary tenant-schema CRUD uses
+the selected schema as its isolation boundary.
+
+- [x] Inventory all remaining tenant-qualified repository and persistence
+      adapter methods.
+- [x] Confirm schema-local CRUD/list candidates are already converted to
+      ID-only or schema-local JPA operations.
+- [x] Confirm explicit tenant predicates remain for membership, provider keys,
+      callbacks, claims, cross-tenant jobs, projections, and specialized SQL.
+- [x] Run the deterministic repository/adapter matrix for the remaining entity
+      modules.
+- [x] Record that no further mechanical tenant-ID removal is justified.
+- [ ] Run live tenant-routing, PostgreSQL RLS, and optimistic-lock gates when
+      Docker is available.
 
 ## 10. Phase H — Events, Redis, libraries, and build foundations
 

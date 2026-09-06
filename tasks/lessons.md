@@ -1,5 +1,18 @@
 # Engineering lessons
 
+## 2026-09-06 — Do not remove explicit tenant identity by naming pattern
+
+- Failure mode: treating every `findByTenantId...` method as duplicated schema
+  filtering would weaken control-plane authorization, provider-key resolution,
+  callback claims, idempotency, cross-tenant jobs, or specialized projections.
+- Detection signal: the operation-by-operation audit showed that the remaining
+  methods either resolve a tenant before schema checkout or preserve an
+  invariant that JPA schema-local CRUD cannot express.
+- Prevention rule: remove tenant predicates only for ordinary CRUD/list reads
+  after the tenant connection is selected; keep explicit tenant identity for
+  shared/control-plane, authorization, provider/business-key, callback,
+  idempotency, cross-tenant, vector/full-text, JSONB, and atomic operations.
+
 ## 2026-09-05 — Run full Spring context checkpoints after constructor changes
 
 - Failure mode: adding a guardrail-aware constructor left the previous required

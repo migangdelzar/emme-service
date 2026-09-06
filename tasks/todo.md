@@ -1,5 +1,20 @@
 # Service architecture migration checklist
 
+## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
+
+- [x] Inventory remaining tenant-qualified repository and persistence methods.
+- [x] Confirm ordinary tenant-schema CRUD and list operations use the selected
+      tenant connection rather than duplicated tenant predicates.
+- [x] Preserve explicit tenant identity for control-plane authorization,
+      provider/business keys, callbacks, claims, cross-tenant jobs, and
+      vector/full-text/JSONB/atomic persistence.
+- [x] Run the deterministic repository/adapter matrix for tenancy, identity,
+      subscriptions, documents, catalog, calendar, notification, and payment.
+- [x] Record that no additional mechanical tenant-ID removal is safe.
+- [x] Update the framework-first plan and migration audit notes.
+- [ ] Run live tenant-routing, PostgreSQL RLS, and optimistic-lock gates when
+      Docker is available.
+
 ## Current slice — Task 16A foundational JPA query-count evidence — 2026-09-06
 
 - [x] Enable Hibernate statistics in the repository-test profile only.

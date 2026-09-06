@@ -657,10 +657,9 @@ without changing embedding metadata or selection behavior.
 The basic Assistant chat composition no longer consumes the deprecated
 composite `AiModelProvider`. Spring AI's default Ollama and Groq composition
 roots now expose provider-identified `AiChatCompletion` adapters, while the
-mock provider implements the same capability for tests and retains the
-composite contract only for the still-pending embedding, image, and retrieval
-compatibility callers. The canonical request preserves first-turn empty
-conversation context and the existing mock empty-message HTTP behavior.
+mock provider implements the same capability for tests. The canonical request
+preserves first-turn empty conversation context and the existing mock
+empty-message HTTP behavior.
 
 - [x] Add an architecture test proving basic chat composition does not import
       `AiModelProvider`.
@@ -672,7 +671,7 @@ conversation context and the existing mock empty-message HTTP behavior.
       checks.
 - [x] Run AI-contracts, AI-platform, Assistant, integration-source, and
       Spotless verification gates.
-- [ ] Migrate remaining composite embedding, image, and retrieval callers
+- [x] Migrate remaining composite embedding, image, and retrieval callers
       before deleting `SpringAiModelProvider`.
 
 #### Current slice 6R — Add the canonical chat request to provider selection
@@ -776,15 +775,15 @@ The Assistant document retrieval adapter now requires the provider-neutral
 `EmbeddingService` directly. Its compatibility fallback through
 `AiModelProvider` was removed after the canonical embedding composition was
 already available; vector dimension validation, tenant context binding, and
-ranked score propagation remain unchanged. The platform composite provider is
-still retained for the remaining image and embedding adapters.
+ranked score propagation remain unchanged. The remaining image and embedding
+callers were subsequently migrated to canonical capabilities.
 
 - [x] Add a failing architecture test for the retrieval adapter's composite
       provider dependency.
 - [x] Inject `EmbeddingService` directly and remove the legacy vector fallback.
 - [x] Update retrieval tests to use versioned canonical embedding vectors.
 - [x] Run the full Assistant unit suite and integration-source compilation.
-- [ ] Migrate the remaining platform embedding and image callers before
+- [x] Migrate the remaining platform embedding and image callers before
       deleting `SpringAiModelProvider`.
 
 #### Current slice 6M — Remove the composite image capability adapter
@@ -801,7 +800,7 @@ continue to depend only on `CaptionImageUseCase`.
 - [x] Add explicit unsupported Groq composition and preserve provider behavior.
 - [x] Delete the composite image adapter and update capability inventory tests.
 - [x] Run AI Platform, Assistant, integration-source, and Spotless gates.
-- [ ] Migrate the remaining platform embedding adapter before deleting
+- [x] Migrate the remaining platform embedding adapter before deleting
       `SpringAiModelProvider`.
 
 #### Current slice 6N — Remove the composite embedding capability adapter
@@ -809,9 +808,7 @@ continue to depend only on `CaptionImageUseCase`.
 The provider-neutral `EmbeddingService` is now composed directly for the
 default mock, Ollama, and unsupported Groq provider paths. The redundant
 `AiEmbeddingAdapter` no longer wraps `AiModelProvider`; canonical versioned
-vectors remain the input to Assistant retrieval and semantic consumers, and
-the deprecated composite provider is retained only as an explicitly tracked
-compatibility family pending final deletion.
+vectors remain the input to Assistant retrieval and semantic consumers.
 
 - [x] Add a failing source-inventory test for the composite embedding adapter.
 - [x] Add deterministic mock `EmbeddingService` coverage with model identity.
@@ -819,8 +816,8 @@ compatibility family pending final deletion.
       provider boundary.
 - [x] Delete `AiEmbeddingAdapter` and update capability inventories.
 - [x] Run AI Platform, Assistant, integration-source, and Spotless gates.
-- [ ] Delete `SpringAiModelProvider` and `AiModelProvider` after the remaining
-      compatibility bean/test inventory is removed.
+- [x] Delete `SpringAiModelProvider` and `AiModelProvider` after the remaining
+      compatibility bean/test inventory was removed.
 
 #### Current slice 6O — Delete the verified composite provider family
 
@@ -1034,7 +1031,8 @@ authoritative fields.
 - [x] Copy `RetrievedDocument.metadata()` into Spring AI document metadata.
 - [x] Preserve canonical `sourceId` and `score` adapter fields.
 - [x] Run the focused adapter test and compilation.
-- [ ] Complete measured hybrid-search and legacy compatibility cleanup slices.
+- [x] Complete measured hybrid-search evaluation and legacy compatibility
+      cleanup; runtime benchmark gates remain Docker-dependent.
 
 #### Current slice 6D — Remove the orphaned local RAG document type
 
@@ -1046,7 +1044,8 @@ architecture test prevents it from being reintroduced.
 - [x] Add a failing package-convention test for the duplicate type.
 - [x] Remove `modules/assistant/.../application/port/out/KnowledgeDocument.java`.
 - [x] Verify the canonical shared RAG contract remains the only assistant RAG document type.
-- [ ] Complete measured hybrid-search and legacy compatibility cleanup slices.
+- [x] Complete measured hybrid-search evaluation and legacy compatibility
+      cleanup; runtime benchmark gates remain Docker-dependent.
 
 ## 5. Phase C — LangGraph4j and AI workflow boundary
 
@@ -3231,13 +3230,13 @@ completed for all non-application projects; the application-specific analysis
 remains blocked by its `integrationTest` task requesting the disabled
 `emme-platform-0.1.0.jar`.
 
-- [ ] **Step 3: Delete one compatibility family at a time**
+- [x] **Step 3: Delete one compatibility family at a time**
 
 Delete only after its ledger condition, focused tests, architecture tests, and
 compilation pass. Update names and documentation in the same logical family;
 do not mix unrelated formatting changes.
 
-- [ ] **Step 4: Run affected tests and commit each family**
+- [x] **Step 4: Run affected tests and commit each family**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:ai-platform:test :modules:payment:test :modules:notification:test :modules:calendar:test --no-parallel --no-configuration-cache
@@ -3248,19 +3247,19 @@ git commit -m "refactor: remove verified compatibility layers"
 #### Current slice 25A — Make compatibility deletion status executable
 
 The deletion checklist is now backed by `CompatibilityDeletionInventoryTest`.
-The migration ledger records the remaining provider wrappers and the composite
-Spring AI model provider as `Pending`; the test will reject a future `Ready`
-or `Deleted` status while its qualified implementation reference remains.
-The test also distinguishes a deleted tenancy implementation from an Identity
-replacement that happens to share the same simple class name.
+The migration ledger records each verified compatibility family as `Deleted`,
+and the test rejects a `Ready` or `Deleted` status while its qualified
+implementation reference remains. The test also distinguishes a deleted
+tenancy implementation from an Identity replacement that happens to share the
+same simple class name.
 
 - [x] Add the failing inventory test before adding ledger status rows.
 - [x] Add explicit compatibility candidate status rows to the migration ledger.
 - [x] Verify pending paths and deleted paths against the repository.
 - [x] Verify ready/deleted candidates have no qualified source, test, bean, or
       build references.
-- [ ] Delete a compatibility family; this remains gated by the pending caller
-      migrations and the explicitly deferred provider HTTP session.
+- [x] Delete each compatibility family after its caller, bean, dependency, and
+      replacement-test inventory was clean.
 
 #### Current slice 25B — Delete unused routing compatibility contracts
 
@@ -3293,6 +3292,21 @@ without changing `/api/ai/chat` behavior.
   and Spotless.
 - [x] Commit and push `3a67ee68`.
 - [ ] Run live web/application startup gates when Docker is available.
+
+#### Current slice 25E — Reconcile compatibility deletion closure
+
+The composite AI provider family, temporary Assistant chat ports, deprecated
+embedding port, provider HTTP wrappers, routing aliases, and controller
+construction shortcut are all deleted. The repository inventory and focused
+architecture tests pass; only live provider/startup behavior remains
+environment-gated.
+
+- [x] Verify every ledger candidate has a `Deleted` status and commit evidence.
+- [x] Run compatibility inventory, external-provider boundary, AI-platform,
+      and Assistant contract tests.
+- [x] Confirm the repository has no qualified compatibility implementation
+      callers, beans, or build references.
+- [ ] Run live provider and application-startup gates when Docker is available.
 
 #### Current slice 13D — Validate Hibernate schema identifiers at the provider boundary
 

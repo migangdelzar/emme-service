@@ -505,9 +505,8 @@
       Assistant compatibility port.
 - [x] Preserve Spring AI's provider-internal `ChatModel` construction paths.
 - [x] Run AI-contracts, AI-platform, and Assistant focused tests and compile.
-- [ ] Continue with the remaining composite provider and Assistant chat-port
-      migrations only after their policy callers are moved to canonical
-      capability contracts.
+- [x] Complete the remaining composite provider and Assistant chat-port
+      migrations through the canonical capability contracts.
 
 ## Current slice — duplicate library embedding alias cleanup — 2026-09-05
 
@@ -517,9 +516,9 @@
 - [x] Preserve Spring AI's provider-internal `EmbeddingModel` construction and
       registry paths.
 - [x] Run AI-contracts and AI-platform focused tests plus Assistant compilation.
-- [ ] Continue with the composite provider capability migration only after its
-      default chat, embedding, retrieval, and image callers have replacement
-      beans and focused tests.
+- [x] Complete the composite provider capability migration after its default
+      chat, embedding, retrieval, and image callers gained replacement beans
+      and focused tests.
 
 ## Current slice — canonical chat composition cleanup — 2026-09-05
 
@@ -531,7 +530,7 @@
 - [x] Preserve empty conversation and mock empty-message behavior.
 - [x] Run AI-contracts, AI-platform, all Assistant tests, integration-source
       compilation, and Spotless.
-- [ ] Continue with embedding, image, and retrieval caller migrations before
+- [x] Complete embedding, image, and retrieval caller migrations before
       deleting `SpringAiModelProvider`.
 
 ## Current slice — canonical document retrieval embedding boundary — 2026-09-05
@@ -542,8 +541,8 @@
 - [x] Remove the legacy vector fallback and migrate retrieval fixtures to
       versioned canonical vectors.
 - [x] Run the full Assistant test suite and integration-source compilation.
-- [ ] Continue with the remaining platform embedding and image callers before
-      deleting `SpringAiModelProvider`.
+- [x] Complete the remaining platform embedding and image caller migrations
+      before deleting `SpringAiModelProvider`.
 
 ## Current slice — canonical image capability cleanup — 2026-09-05
 
@@ -553,8 +552,8 @@
 - [x] Delete `AiCaptionImageAdapter` and update architecture inventories.
 - [x] Run AI Platform tests, all Assistant tests, integration-source
       compilation, and Spotless.
-- [ ] Continue with the remaining platform embedding adapter before deleting
-      `SpringAiModelProvider`.
+- [x] Complete the remaining platform embedding adapter migration before
+      deleting `SpringAiModelProvider`.
 
 ## Current slice — canonical embedding composition cleanup — 2026-09-05
 
@@ -564,7 +563,7 @@
 - [x] Delete `AiEmbeddingAdapter` and update capability inventories.
 - [x] Run AI Platform tests, all Assistant tests, integration-source
       compilation, and Spotless.
-- [ ] Delete the remaining composite provider declaration, compatibility mock,
+- [x] Delete the remaining composite provider declaration, compatibility mock,
       composition beans, and tests after a final caller/bean inventory.
 
 ## Current slice — composite provider family deletion — 2026-09-05
@@ -575,8 +574,18 @@
 - [x] Migrate provider configuration and transport tests to canonical ports.
 - [x] Run contract, AI Platform, all Assistant, integration-source, and
       Spotless gates.
-- [ ] Continue with the remaining non-provider compatibility families tracked
-      by the framework-first plan.
+- [x] Complete the remaining non-provider compatibility families tracked by the
+      framework-first plan; live provider/startup gates remain environment-
+      gated.
+
+## Current slice — compatibility deletion closure — 2026-09-06
+
+- [x] Run the compatibility deletion inventory and provider-boundary tests.
+- [x] Confirm composite AI, HTTP-wrapper, routing, embedding, and controller
+      compatibility families are deleted with no qualified callers or beans.
+- [x] Reconcile the framework-first plan and migration ledger with the actual
+      deleted source inventory.
+- [ ] Run live provider and application-startup gates when Docker is available.
 
 ## Current slice — Assistant context regression — 2026-09-05
 

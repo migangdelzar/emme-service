@@ -1,5 +1,6 @@
 package com.emme.identity.api.result;
 
+import com.emme.identity.domain.model.MembershipStatus;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -10,11 +11,11 @@ public record MembershipDetails(
     String tenantName,
     String roleCode,
     String userReference,
-    String status,
+    MembershipStatus status,
     Instant createdAt) {
 
   public MembershipDetails(
-      UUID id, UUID tenantId, String tenantName, String roleCode, String status) {
+      UUID id, UUID tenantId, String tenantName, String roleCode, MembershipStatus status) {
     this(id, tenantId, tenantName, roleCode, null, status, null);
   }
 }

@@ -1,5 +1,6 @@
 package com.emme.identity.adapter.in.web.response;
 
+import com.emme.identity.domain.model.MembershipStatus;
 import java.util.Set;
 import java.util.UUID;
 
@@ -10,5 +11,5 @@ public record TenantMembershipResponse(
     String tenantName,
     String displayName,
     String role,
-    String status,
+    MembershipStatus status,
     Set<String> permissions) {}

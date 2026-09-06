@@ -1,8 +1,14 @@
 package com.emme.identity.adapter.in.web.response;
 
+import com.emme.identity.domain.model.MembershipStatus;
 import java.time.Instant;
 import java.util.UUID;
 
 /** HTTP representation of a user membership. */
 public record MembershipResponse(
-    UUID id, UUID tenantId, String role, String userReference, String status, Instant createdAt) {}
+    UUID id,
+    UUID tenantId,
+    String role,
+    String userReference,
+    MembershipStatus status,
+    Instant createdAt) {}

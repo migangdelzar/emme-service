@@ -10,6 +10,7 @@ import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.application.authorization.FeatureFlagEvaluator;
 import com.emme.identity.application.port.out.CustomerMembershipRepository;
 import com.emme.identity.application.port.out.SubscriptionPlanPort;
+import com.emme.identity.domain.model.MembershipStatus;
 import com.emme.kernel.context.Channel;
 import com.emme.subscriptions.api.type.PlanType;
 import java.util.List;
@@ -28,7 +29,11 @@ class IdentityAiAuthorizationContextResolverTest {
         .thenReturn(
             List.of(
                 new MembershipDetails(
-                    UUID.randomUUID(), tenantId, "Salon", "tenant_staff", "ACTIVE")));
+                    UUID.randomUUID(),
+                    tenantId,
+                    "Salon",
+                    "tenant_staff",
+                    MembershipStatus.ACTIVE)));
     SubscriptionPlanPort plans = mock(SubscriptionPlanPort.class);
     when(plans.findPlanForTenant(tenantId)).thenReturn(java.util.Optional.of(PlanType.PRO));
     FeatureFlagEvaluator features = mock(FeatureFlagEvaluator.class);

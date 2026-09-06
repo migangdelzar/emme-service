@@ -27,6 +27,18 @@
 - Preserve unrelated worktree changes and stage only files belonging to the current task.
 - Final repository-wide Spotless, Checkstyle, compilation, coverage, integration, startup, E2E, security, and performance gates run after the gradual waves; affected-module gates run before each slice commit.
 
+### Current slice — Identity membership enum boundary
+
+Identity membership status now uses the existing `MembershipStatus` enum across
+the application result, current-user result, HTTP response, and mapping
+boundaries. Jackson continues to serialize the same stable enum names, so this
+removes Java-side raw state strings without changing the external status values.
+
+- [x] Add a failing convention test for enum-typed membership status boundaries.
+- [x] Migrate Identity mappers and affected Assistant/Identity fixtures.
+- [x] Run focused Identity tests, compilation, and Spotless checks.
+- [ ] Continue finite-state migration in separate owning-module slices.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

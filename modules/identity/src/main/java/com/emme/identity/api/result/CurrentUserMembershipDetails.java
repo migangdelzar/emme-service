@@ -1,5 +1,6 @@
 package com.emme.identity.api.result;
 
+import com.emme.identity.domain.model.MembershipStatus;
 import java.util.Set;
 import java.util.UUID;
 
@@ -9,7 +10,7 @@ public record CurrentUserMembershipDetails(
     String tenantSlug,
     String tenantName,
     String role,
-    String status,
+    MembershipStatus status,
     Set<String> permissions) {
 
   public CurrentUserMembershipDetails {

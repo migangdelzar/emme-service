@@ -7,6 +7,7 @@ import com.emme.identity.api.result.CurrentUserDetails;
 import com.emme.identity.api.result.MembershipDetails;
 import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
+import com.emme.identity.domain.model.MembershipStatus;
 import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import com.emme.tenancy.domain.model.TenantStatus;
@@ -25,7 +26,11 @@ class GetCurrentUserServiceTest {
         query ->
             List.of(
                 new MembershipDetails(
-                    UUID.randomUUID(), tenantId, "Tenant", "tenant_owner", "ACTIVE"));
+                    UUID.randomUUID(),
+                    tenantId,
+                    "Tenant",
+                    "tenant_owner",
+                    MembershipStatus.ACTIVE));
     GetUserPermissionsUseCase permissions =
         (userReference, requestedTenantId) -> Set.of("tenant:read");
     GetTenantUseCase tenants =

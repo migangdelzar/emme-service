@@ -1,5 +1,14 @@
 # Service architecture migration checklist
 
+## Current slice — Identity membership enum boundary — 2026-09-06
+
+- [x] Add a failing convention test for enum-typed membership status models.
+- [x] Replace membership status strings with `MembershipStatus` across public
+      results, current-user results, HTTP responses, mappers, and fixtures.
+- [x] Run focused Identity tests and affected compilation/formatting checks.
+- [ ] Audit remaining finite-state strings in each owning module and migrate
+      them in separate contract-safe slices.
+
 ## Current slice — Enum lifecycle-state rule — 2026-09-06
 
 - [x] Add a failing enum-typed provisioning-state usage to the listener tests.

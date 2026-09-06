@@ -1,5 +1,15 @@
 # Engineering lessons
 
+## 2026-09-06 — Reuse domain enums in public read models
+
+- Failure mode: Identity converted `MembershipStatus` to a string before it
+  crossed application and HTTP boundaries, allowing a finite state to lose its
+  type at the API edge.
+- Detection signal: a boundary convention test found `String status` in all
+  four membership read/response records.
+- Prevention rule: keep the owning domain enum through application and response
+  models; rely on stable enum-name serialization at external boundaries.
+
 ## 2026-09-06 — Encode finite lifecycle states as enums
 
 - Failure mode: tenant provisioning state crossed the port, API, persistence,

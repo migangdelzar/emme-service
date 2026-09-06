@@ -15,7 +15,7 @@ public final class MembershipApplicationMapper {
         null,
         membership.roleCode(),
         membership.userReference(),
-        membership.status().name(),
+        membership.status(),
         membership.createdAt());
   }
 }

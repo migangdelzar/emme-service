@@ -24,7 +24,7 @@ import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.api.query.ListActiveTenantsQuery;
 import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.ListActiveTenantsUseCase;
-import com.emme.tenancy.domain.model.TenantStatus;
+import com.emme.tenancy.api.type.TenantStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

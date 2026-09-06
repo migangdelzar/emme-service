@@ -1,6 +1,7 @@
 package com.emme.tenancy.application.mapper;
 
 import com.emme.tenancy.api.result.TenantDetails;
+import com.emme.tenancy.api.type.TenantStatus;
 import com.emme.tenancy.domain.model.Tenant;
 
 public final class TenantApplicationMapper {
@@ -12,7 +13,7 @@ public final class TenantApplicationMapper {
         tenant.slug(),
         tenant.name(),
         null,
-        tenant.status(),
+        TenantStatus.valueOf(tenant.status().name()),
         null,
         tenant.keycloakRealm(),
         tenant.createdAt());

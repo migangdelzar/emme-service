@@ -51,7 +51,9 @@ an explicit name-preserving conversion at that boundary.
       application mapping.
 - [x] Correct the Subscriptions public boundary with an API-owned enum and
       explicit application mapping.
-- [ ] Correct the remaining public records that still expose domain enums.
+- [x] Correct the Tenancy public tenant and provisioning-status boundaries
+      with API-owned enums and explicit application mapping.
+- [x] Correct the remaining public records that exposed domain enums.
 - [ ] Re-run the full framework checkpoint after the correction slices.
 
 ### Current slice — Identity membership enum boundary
@@ -65,6 +67,20 @@ Jackson continues to serialize the same stable enum names.
 - [x] Migrate Identity mappers and affected Assistant/Identity fixtures.
 - [x] Run focused Identity tests, compilation, and Spotless checks.
 - [ ] Continue finite-state migration in separate owning-module slices.
+
+### Current slice — Tenancy lifecycle enum boundaries
+
+Tenant and tenant-provisioning lifecycle values now use API-owned enums in
+public results and HTTP responses. Domain entities and application ports retain
+domain enums for persistence and internal policy, with explicit conversion at
+the public application boundary.
+
+- [x] Add API-owned `TenantStatus` and `TenantProvisioningState` values.
+- [x] Convert tenant and provisioning results from domain values explicitly.
+- [x] Keep persistence entities and provisioning ports domain-typed.
+- [x] Run Tenancy tests, downstream test compilation, and the architecture
+      boundary test.
+- [ ] Run live tenant routing/provisioning checks when Docker is available.
 
 ### Current slice — Subscription status enum boundary
 

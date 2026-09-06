@@ -1,6 +1,6 @@
 package com.emme.tenancy.api.result;
 
-import com.emme.tenancy.domain.model.TenantProvisioningState;
+import com.emme.tenancy.api.type.TenantProvisioningState;
 import java.time.Instant;
 
 public record TenantProvisioningStatus(

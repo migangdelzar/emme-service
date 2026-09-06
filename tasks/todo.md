@@ -21,8 +21,10 @@
       API-owned enums and explicit application mapping.
 - [x] Correct Subscriptions public status boundaries with an API-owned enum
       and explicit application mapping.
-- [ ] Repeat the same boundary correction for remaining public records that
-      still expose domain lifecycle enums.
+- [x] Correct Tenancy public tenant and provisioning-status boundaries with
+      API-owned enums and explicit application mapping.
+- [x] Correct the remaining public records that exposed domain lifecycle
+      enums.
 - [ ] Re-run the full framework checkpoint after all affected modules are
       corrected.
 
@@ -142,9 +144,10 @@
 ## Current slice — Enum lifecycle-state rule — 2026-09-06
 
 - [x] Add a failing enum-typed provisioning-state usage to the listener tests.
-- [x] Replace tenant provisioning lifecycle strings with
-      `TenantProvisioningState` across the port, API result, JPA entity, query,
-      adapter, listener, and tests.
+- [x] Replace tenant provisioning lifecycle strings with typed
+      `TenantProvisioningState` values. Keep the domain enum at the port and
+      JPA entity boundary, and use the API-owned enum in public results and
+      HTTP responses.
 - [x] Add a convention test preventing regression to a string state at the port
       and persistence boundaries.
 - [x] Run focused provisioning tests and the Tenancy fast quality gate.

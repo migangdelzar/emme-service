@@ -10,7 +10,7 @@ import com.emme.identity.application.port.out.UserAuthenticationPort;
 import com.emme.tenancy.api.query.ListTenantsQuery;
 import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.ListTenantsUseCase;
-import com.emme.tenancy.domain.model.TenantStatus;
+import com.emme.tenancy.api.type.TenantStatus;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

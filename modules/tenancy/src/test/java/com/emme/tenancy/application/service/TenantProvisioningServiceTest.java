@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 import com.emme.tenancy.api.command.RequestTenantProvisioningCommand;
 import com.emme.tenancy.api.query.GetTenantProvisioningStatusQuery;
 import com.emme.tenancy.api.result.TenantProvisioningStatus;
+import com.emme.tenancy.api.type.TenantProvisioningState;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
-import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,10 @@ class TenantProvisioningServiceTest {
     when(provisioningRepository.findStatus(tenantId))
         .thenReturn(
             new TenantProvisioningRepository.TenantProvisioningStatus(
-                TenantProvisioningState.ACTIVE, "studio_a", migratedAt, null));
+                com.emme.tenancy.domain.model.TenantProvisioningState.ACTIVE,
+                "studio_a",
+                migratedAt,
+                null));
     GetTenantProvisioningStatusService service =
         new GetTenantProvisioningStatusService(provisioningRepository);
 

@@ -1,6 +1,6 @@
 package com.emme.tenancy.api.result;
 
-import com.emme.tenancy.domain.model.TenantStatus;
+import com.emme.tenancy.api.type.TenantStatus;
 import java.time.Instant;
 import java.util.UUID;
 

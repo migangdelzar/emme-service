@@ -55,6 +55,8 @@ jobs:
         run: node scripts/validate-container-workflow.mjs
       - name: Validate backend workflow contract
         run: node scripts/validate-backend-workflow.mjs
+      - name: Validate deployment contract
+        run: node scripts/validate-deployment-contracts.mjs
       - name: Run Gradle static-analysis lifecycle
         run: >-
           ./gradlew ci -x test -x integrationTest -x e2eTest --no-daemon

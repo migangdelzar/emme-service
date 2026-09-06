@@ -31,6 +31,11 @@ public class TenantActivationListener {
   public void onTenantRealmReady(TenantRealmReady event) {
     log.info("Activating tenant {} — schema + realm ready", event.tenantId());
 
+    if ("ACTIVE".equalsIgnoreCase(provisioningRepository.findStatus(event.tenantId()).status())) {
+      log.info("Tenant {} is already active; ignoring duplicate activation", event.tenantId());
+      return;
+    }
+
     provisioningRepository.markActive(event.tenantId());
 
     String schemaName = provisioningRepository.findSchemaName(event.tenantId());

@@ -1,5 +1,15 @@
 # Engineering lessons
 
+## 2026-09-06 — Make lifecycle listeners idempotent before republishing facts
+
+- Failure mode: a duplicate tenant-realm-ready event would mark the tenant
+  active and publish another activation fact.
+- Detection signal: a focused listener test with an already `ACTIVE` registry
+  reached event construction instead of returning a no-op.
+- Prevention rule: lifecycle consumers must inspect authoritative control-plane
+  state and classify already-completed transitions as no-ops before mutation or
+  downstream publication; keep retryable failed/provisioning states executable.
+
 ## 2026-09-06 — Do not remove explicit tenant identity by naming pattern
 
 - Failure mode: treating every `findByTenantId...` method as duplicated schema

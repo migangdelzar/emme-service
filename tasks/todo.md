@@ -1,5 +1,15 @@
 # Service architecture migration checklist
 
+## Current slice — Task 19F idempotent tenant activation delivery — 2026-09-06
+
+- [x] Add a failing listener test for a duplicate activation of an already
+      active tenant.
+- [x] Ignore duplicate activation without mutating the registry or publishing
+      another `TenantActivated` event.
+- [x] Run focused Tenancy listener tests and the affected fast quality gate.
+- [ ] Run live duplicate-delivery and publication-retry checks with PostgreSQL/
+      Kafka when Docker is available.
+
 ## Current slice — Task 13E idempotent tenant provisioning requests — 2026-09-06
 
 - [x] Add a failing adapter test for a duplicate slug with a different

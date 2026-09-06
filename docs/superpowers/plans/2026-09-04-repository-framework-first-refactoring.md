@@ -2245,6 +2245,23 @@ the behavior-based name; tracing and failover behavior are unchanged.
 
 ### Task 19: Standardize Modulith events and Kafka boundaries
 
+#### Current slice 19F — Make tenant activation duplicate-safe
+
+`TenantActivationListener` now treats an activation event for an already
+`ACTIVE` tenant as a no-op. It does not rewrite the registry or publish a
+second `TenantActivated` event, while `PROVISIONING` and `FAILED` tenants
+continue through the normal activation path. This is in-process
+duplicate-delivery policy; durable Modulith/Kafka replay evidence remains
+runtime-gated.
+
+- [x] Add a failing listener test for an already active tenant.
+- [x] Skip duplicate activation before registry mutation and downstream event
+      publication.
+- [x] Run focused Tenancy listener tests, Spotless, Checkstyle, and Modulith
+      architecture validation.
+- [ ] Run live duplicate-delivery/publication-retry checks when PostgreSQL and
+      Kafka are available.
+
 #### Current slice 19D — Give durable Modulith listeners stable identities
 
 Provisioning and calendar listeners now declare explicit Modulith listener IDs,

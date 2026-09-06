@@ -32,7 +32,7 @@ public class TenantSchemaProvisioningListener {
     this.eventPublisher = eventPublisher;
   }
 
-  @ApplicationModuleListener
+  @ApplicationModuleListener(id = "tenancy.tenant-created.schema-provisioning")
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void onTenantCreated(TenantCreated event) {
     log.info("Provisioning schema for tenant {} (slug={})", event.tenantId(), event.slug());

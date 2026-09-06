@@ -1,5 +1,17 @@
 # Service architecture migration checklist
 
+## Current slice — Task 19D stable Modulith listener identities — 2026-09-06
+
+- [x] Add the failing application source-contract test for explicit durable
+      listener IDs.
+- [x] Add stable IDs to calendar sync, tenant schema/realm activation, and
+      subscription provisioning listeners.
+- [x] Run the application contract test and Calendar, Tenancy, Identity, and
+      Subscription tests.
+- [x] Run affected-module Spotless checks.
+- [ ] Run live duplicate-delivery and publication-retry gates when Kafka,
+      PostgreSQL, and deployment runtime infrastructure are available.
+
 ## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
 
 - [x] Inventory remaining tenant-qualified repository and persistence methods.

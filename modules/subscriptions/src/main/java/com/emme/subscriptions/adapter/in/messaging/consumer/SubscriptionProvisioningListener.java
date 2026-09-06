@@ -15,7 +15,7 @@ public class SubscriptionProvisioningListener {
     this.provisioning = provisioning;
   }
 
-  @ApplicationModuleListener
+  @ApplicationModuleListener(id = "subscriptions.tenant-activated.provisioning")
   public void onTenantActivated(TenantActivated event) {
     TenantContextHolder.withTenantOverride(
         event.tenantId(), () -> provisioning.ensure(event.tenantId()));

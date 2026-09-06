@@ -17,7 +17,7 @@ public class CalendarSyncListener {
     this.eventPublisher = eventPublisher;
   }
 
-  @ApplicationModuleListener
+  @ApplicationModuleListener(id = "calendar.appointment-created")
   public void onAppointmentCreated(AppointmentCreated event) {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
@@ -31,14 +31,14 @@ public class CalendarSyncListener {
             null));
   }
 
-  @ApplicationModuleListener
+  @ApplicationModuleListener(id = "calendar.appointment-cancelled")
   public void onAppointmentCancelled(AppointmentCancelled event) {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
             event.tenantId(), event.appointmentId(), "DELETE", null, null, null, null, null));
   }
 
-  @ApplicationModuleListener
+  @ApplicationModuleListener(id = "calendar.appointment-rescheduled")
   public void onAppointmentRescheduled(AppointmentRescheduled event) {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(

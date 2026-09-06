@@ -2230,6 +2230,23 @@ the behavior-based name; tracing and failover behavior are unchanged.
 
 ### Task 19: Standardize Modulith events and Kafka boundaries
 
+#### Current slice 19D — Give durable Modulith listeners stable identities
+
+Provisioning and calendar listeners now declare explicit Modulith listener IDs,
+matching the existing Assistant payment, WhatsApp, and semantic-cache listener
+contracts. Stable IDs make event-publication records and retry diagnostics
+independent of generated method identity; this slice does not add a second
+delivery mechanism or alter tenant/business behavior.
+
+- [x] Add a failing application source-contract test for the durable listener
+      identity set.
+- [x] Add explicit IDs to calendar, tenancy, identity, and subscription
+      listeners.
+- [x] Run the application contract test and affected module tests.
+- [x] Run affected-module Spotless checks.
+- [ ] Run live duplicate-delivery and event-publication retry gates when Kafka,
+      PostgreSQL, and the deployment runtime are available.
+
 #### Current slice 19A — Keep tenant event publication behind a port
 
 `CreateTenantService` no longer imports Spring event infrastructure. The

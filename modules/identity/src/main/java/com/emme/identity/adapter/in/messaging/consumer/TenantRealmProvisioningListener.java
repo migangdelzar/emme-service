@@ -45,7 +45,7 @@ public class TenantRealmProvisioningListener {
     this.ensureMembership = ensureMembership;
   }
 
-  @ApplicationModuleListener
+  @ApplicationModuleListener(id = "identity.tenant-schema-ready.realm-provisioning")
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void onTenantSchemaReady(TenantSchemaReady event) {
     log.info("Provisioning Keycloak realm for tenant {} (slug={})", event.tenantId(), event.slug());

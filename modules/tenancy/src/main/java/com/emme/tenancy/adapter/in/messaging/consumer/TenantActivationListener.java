@@ -26,7 +26,7 @@ public class TenantActivationListener {
     this.eventPublisher = eventPublisher;
   }
 
-  @ApplicationModuleListener
+  @ApplicationModuleListener(id = "tenancy.tenant-realm-ready.activation")
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void onTenantRealmReady(TenantRealmReady event) {
     log.info("Activating tenant {} — schema + realm ready", event.tenantId());

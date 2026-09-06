@@ -83,7 +83,7 @@ public class StaffCalendarSyncAdapter {
     this.mapper = mapper;
   }
 
-  @ApplicationModuleListener
+  @ApplicationModuleListener(id = "calendar.sync-requested.staff")
   public void onCalendarSyncRequested(CalendarSyncRequested event) {
     log.info(
         "Received calendar sync request — action={} appointment={} tenant={}",

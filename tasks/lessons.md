@@ -22,6 +22,16 @@
 - Prevention rule: reserve `Port` for provider-neutral contracts; name concrete
   wrappers and decorators after the service behavior they implement.
 
+## 2026-09-06 — Give durable event listeners explicit stable identities
+
+- Failure mode: relying on generated listener identity makes publication and
+  retry diagnostics coupled to class or method naming changes.
+- Detection signal: existing durable listeners mixed explicit IDs with default
+  generated IDs across provisioning and calendar boundaries.
+- Prevention rule: every durable Modulith listener that participates in
+  provisioning, provider synchronization, or replay must declare a stable
+  module-qualified ID; do not add a second delivery mechanism to solve this.
+
 ## 2026-09-05 — Run full Spring context checkpoints after constructor changes
 
 - Failure mode: adding a guardrail-aware constructor left the previous required

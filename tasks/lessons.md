@@ -1808,3 +1808,15 @@
   active defaults and deployment properties. If the behavior is still required,
   rename it after its runtime role and remove historical terminology instead of
   deleting a necessary composition root.
+
+## 2026-09-06 — Delete isolated contract families only after source inventory
+
+- **Failure mode:** Deprecated routing contracts and a compatibility tool-risk
+  enum remained in the framework-neutral library after Assistant had moved to
+  its own semantic routing and tool policy boundaries.
+- **Detection signal:** A repository-wide Java source search found references
+  only in the contracts' own test and the deprecated source files; no
+  production, bean, reflection, or build caller remained.
+- **Prevention rule:** Add a failing source-path deletion assertion, remove the
+  obsolete contract test with the family, and compile downstream consumers
+  before recording the family as deleted in the migration ledger.

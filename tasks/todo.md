@@ -1,5 +1,18 @@
 # Service architecture migration checklist
 
+## Current slice — Task 25B unused routing compatibility deletion — 2026-09-06
+
+- [x] Add a failing source-inventory assertion for the deprecated
+      `ai-contracts` routing and `ToolRisk` sources.
+- [x] Verify the family had no production, bean, test, reflection, or build
+      callers outside its retired contract test.
+- [x] Delete the routing records, routing port, package metadata, and
+      `ToolRisk` compatibility enum.
+- [x] Run all `ai-contracts` tests, Assistant compilation, and Spotless.
+- [x] Commit and push `8b603cbf`.
+- [ ] Run Docker-backed provider behavior gates when infrastructure is
+      available.
+
 ## Current slice — Task 6V temporary chat port deletion — 2026-09-06
 
 - [x] Add a failing source-inventory test for the temporary chat port files.

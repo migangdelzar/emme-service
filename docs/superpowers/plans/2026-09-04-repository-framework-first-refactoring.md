@@ -2826,6 +2826,22 @@ replacement that happens to share the same simple class name.
 - [ ] Delete a compatibility family; this remains gated by the pending caller
       migrations and the explicitly deferred provider HTTP session.
 
+#### Current slice 25B — Delete unused routing compatibility contracts
+
+The deprecated `ai-contracts` intent-routing records, routing port, and
+`ToolRisk` enum had no production, bean, test, or build callers outside their
+own contract test. Assistant-owned semantic routing and `AiToolRisk` remain the
+active boundaries. A source-inventory assertion now protects the deletion.
+
+- [x] Add a failing source-inventory test for the routing and tool compatibility
+  family.
+- [x] Verify no production, test, bean, reflection, or build caller remains.
+- [x] Delete the routing records, routing port, package metadata, and
+  `ToolRisk` compatibility enum.
+- [x] Run all `ai-contracts` tests, Assistant compilation, and Spotless.
+- [x] Commit and push `8b603cbf`.
+- [ ] Run any live provider behavior gates when Docker is available.
+
 #### Current slice 13D — Validate Hibernate schema identifiers at the provider boundary
 
 Completed in this slice:

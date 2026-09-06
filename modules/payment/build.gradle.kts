@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+  implementation(project(":libraries:ai-contracts"))
   implementation(project(":modules:shared"))
   implementation(project(":libraries:kernel"))
   implementation(project(":modules:tenancy"))

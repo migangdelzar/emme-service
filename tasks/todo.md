@@ -4115,6 +4115,8 @@ appointment mutation tools are registered.
 - [x] Add framework-neutral `AppointmentHold`, `PaymentLink`,
       `PaymentWorkflowEvent`, and `PaymentWorkflow` contracts.
 - [x] Run the focused AI-contracts test.
+- [x] Add appointment hold and payment-link commands/use cases and the required
+      module dependency on the canonical AI contracts library.
 - [ ] Add tenant-scoped hold/link persistence, idempotent services, callback
       correlation, and checkpointed booking/payment graph edges.
 

@@ -1040,7 +1040,10 @@ Current progress: the framework-neutral appointment-hold, payment-link, normaliz
 payment-event, and payment-workflow contracts are now present with identifier,
 correlation, expiry, and normalized-status validation. Tenant-scoped persistence,
 idempotent application services, callback ownership checks, and checkpointed graph
-edges remain for the next slices.
+edges remain for the next slices. Appointment and payment modules now expose the
+planned hold/link commands and use-case ports through the canonical contracts
+library; implementation services are intentionally deferred until their repository,
+clock, and tenant-context dependencies are established.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.

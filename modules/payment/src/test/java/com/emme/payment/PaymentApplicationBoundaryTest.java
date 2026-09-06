@@ -25,6 +25,8 @@ class PaymentApplicationBoundaryTest {
     assertThat(Files.exists(APPLICATION.resolve("service/ListPaymentsService.java"))).isTrue();
     assertThat(Files.exists(APPLICATION.resolve("service/ProcessPaymentCallbackService.java")))
         .isTrue();
+    assertThat(Files.exists(ROOT.resolve("api/command/CreatePaymentLinkCommand.java"))).isTrue();
+    assertThat(Files.exists(ROOT.resolve("api/usecase/CreatePaymentLinkUseCase.java"))).isTrue();
   }
 
   @Test

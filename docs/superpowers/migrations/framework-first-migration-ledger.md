@@ -336,8 +336,8 @@ gone.
 
 | Implementation path | Status | Blocking condition or deletion evidence |
 |---|---|---|
-| `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/AiModelProvider.java` | Deleted | Composite contract removed after repository-wide production caller inventory was clean; canonical chat, embedding, image, and retrieval capabilities are independently composed |
-| `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java` | Deleted | Composite Spring provider removed after all capability callers migrated and configuration/integration tests were moved to canonical ports |
+| `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/AiModelProvider.java` | Deleted | Composite contract removed in `568241c5` on 2026-09-05 after repository-wide production caller inventory was clean; canonical chat, embedding, image, and retrieval capabilities are independently composed |
+| `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java` | Deleted | Composite Spring provider removed in `568241c5` on 2026-09-05 after all capability callers migrated and configuration/integration tests were moved to canonical ports |
 | `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/capability/AiEmbeddingAdapter.java` | Deleted | Composite embedding adapter removed in `ee5696c8` on 2026-09-05 after mock, Ollama, and unsupported Groq `EmbeddingService` composition was added |
 | `modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/capability/AiCaptionImageAdapter.java` | Deleted | Composite image adapter removed in `19e3a901` on 2026-09-05 after `CaptionImageUseCase` composition was provided for mock, Ollama, and unsupported Groq paths; focused AI-platform and Assistant gates pass |
 | `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatModel.java` | Deleted | Library alias removed in `8009b011` on 2026-09-05; Spring AI's provider-internal `ChatModel` and the Assistant compatibility port remain distinct |

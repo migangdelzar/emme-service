@@ -1,7 +1,9 @@
 package com.emme.calendar.adapter.out.google.adapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.MockRestServiceServer.bindTo;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -111,5 +113,44 @@ class ClientCalendarSyncAdapterTest {
 
     org.mockito.Mockito.verify(deleted).markDeleted(tenantId, appointmentId);
     server.verify();
+  }
+
+  @Test
+  void marksTheLinkFailedBeforeRethrowingProviderSyncFailures() {
+    UUID tenantId = UUID.randomUUID();
+    UUID appointmentId = UUID.randomUUID();
+    RuntimeException providerFailure = new IllegalStateException("Google unavailable");
+    FindCalendarEventLinkUseCase findEventLink = mock(FindCalendarEventLinkUseCase.class);
+    when(findEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR.name()))
+        .thenReturn(Optional.empty());
+    GoogleOAuthAdapter oauth = mock(GoogleOAuthAdapter.class);
+    when(oauth.getValidAccessToken(tenantId, "user-123", PersonaType.CLIENT))
+        .thenReturn("google-token");
+    RestClient httpClient = mock(RestClient.class);
+    when(httpClient.post()).thenThrow(providerFailure);
+    MarkCalendarEventLinksFailedUseCase failed = mock(MarkCalendarEventLinksFailedUseCase.class);
+    ClientCalendarSyncAdapter adapter =
+        new ClientCalendarSyncAdapter(
+            oauth,
+            findEventLink,
+            mock(CreateCalendarEventLinkUseCase.class),
+            mock(MarkCalendarEventLinkSyncedUseCase.class),
+            mock(MarkCalendarEventLinksDeletedUseCase.class),
+            failed,
+            new ObjectMapper(),
+            httpClient);
+
+    assertThatThrownBy(
+            () ->
+                adapter.sync(
+                    tenantId,
+                    appointmentId,
+                    "user-123",
+                    java.time.Instant.parse("2026-09-05T10:00:00Z"),
+                    java.time.Instant.parse("2026-09-05T11:00:00Z"),
+                    "Appointment",
+                    null))
+        .isSameAs(providerFailure);
+    verify(failed).markFailed(tenantId, appointmentId);
   }
 }

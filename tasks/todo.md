@@ -222,6 +222,15 @@
 - [x] Run fixture compilation, Identity/Tenancy/Assistant tests, and Spotless.
 - [x] Run all fixture-consuming module unit tests after the fixture move.
 
+## Current slice — Task 19H client Calendar failure state — 2026-09-06
+
+- [x] Add a failing client Calendar adapter test for provider sync failure.
+- [x] Mark the client event link failed before rethrowing the provider error.
+- [x] Preserve existing link reuse and already-gone deletion behavior.
+- [x] Run the full Calendar unit suite and formatting checks.
+- [ ] Run live client provider retry/reconciliation checks when PostgreSQL and
+      Google infrastructure are available.
+
 ## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
 
 - [x] Inventory remaining tenant-qualified repository and persistence methods.

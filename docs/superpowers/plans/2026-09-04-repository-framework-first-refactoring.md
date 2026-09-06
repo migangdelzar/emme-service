@@ -2518,6 +2518,20 @@ provider exception.
 - [ ] Run live provider replay and publication-retry checks when PostgreSQL,
       Google, and Modulith runtime infrastructure are available.
 
+#### Current slice 19H — Preserve client Calendar failure state
+
+Client-calendar provider sync failures now mark the appointment link as failed
+before rethrowing the original runtime exception. This keeps direct client
+calendar synchronization consistent with staff replay handling without changing
+the existing already-synced or already-gone idempotency behavior.
+
+- [x] Add a failing client adapter test for provider sync failure marking.
+- [x] Mark failed client links before rethrowing provider failures.
+- [x] Preserve existing link-reuse and HTTP 410 deletion behavior.
+- [x] Run the full Calendar unit suite and formatting checks.
+- [ ] Run live client provider retry/reconciliation checks when PostgreSQL and
+      Google infrastructure are available.
+
 #### Current slice 19A — Keep tenant event publication behind a port
 
 `CreateTenantService` no longer imports Spring event infrastructure. The

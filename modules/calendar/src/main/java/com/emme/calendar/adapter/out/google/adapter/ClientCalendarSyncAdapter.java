@@ -142,6 +142,7 @@ public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
           "Created Google Calendar event {} for client appointment {}", eventId, appointmentId);
       return eventId;
     } catch (RuntimeException e) {
+      markCalendarEventLinksFailed.markFailed(tenantId, appointmentId);
       throw e;
     } catch (Exception e) {
       log.error("Failed to sync appointment {} to client calendar", appointmentId, e);

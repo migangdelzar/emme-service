@@ -210,7 +210,8 @@ class CanonicalAiContractsTest {
             "tool/ToolRisk.java",
             "tool/package-info.java")) {
       assertThat(
-              sourcePath("libraries/ai-contracts/src/main/java/com/emme/ai/contracts/" + legacySource))
+              sourcePath(
+                  "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/" + legacySource))
           .as("removed compatibility contract: %s", legacySource)
           .doesNotExist();
     }

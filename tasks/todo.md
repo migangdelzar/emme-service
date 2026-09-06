@@ -222,6 +222,8 @@
 - [x] Derive payment-link amount, currency, description, and expiry from the
       tenant-routed held appointment and persisted service state, requiring an
       existing workflow execution context.
+- [x] Add a provider-neutral workflow-to-appointment resolver and make captured
+      payment resume invoke the authoritative appointment confirmation use case.
 - [ ] Wire the resumed payment workflow into the appointment graph's durable
       checkpointed mutation edge and final appointment confirmation.
 

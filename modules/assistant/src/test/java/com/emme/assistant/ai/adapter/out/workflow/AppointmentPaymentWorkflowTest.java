@@ -2,10 +2,15 @@ package com.emme.assistant.ai.adapter.out.workflow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.payment.PaymentWorkflowEvent;
 import com.emme.ai.contracts.workflow.WorkflowHandle;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
+import com.emme.appointments.api.usecase.ConfirmAppointmentUseCase;
+import com.emme.assistant.ai.application.port.out.PaymentWorkflowAppointmentRepository;
 import com.emme.kernel.context.AiExecutionContext;
 import java.util.Set;
 import java.util.UUID;
@@ -16,7 +21,10 @@ class AppointmentPaymentWorkflowTest {
   @Test
   void waitsForPaymentUntilTheVerifiedEventIsCaptured() {
     AiExecutionContext context = context();
-    AppointmentPaymentWorkflow workflow = new AppointmentPaymentWorkflow();
+    AppointmentPaymentWorkflow workflow =
+        new AppointmentPaymentWorkflow(
+            mock(ConfirmAppointmentUseCase.class),
+            mock(PaymentWorkflowAppointmentRepository.class));
 
     WorkflowHandle handle =
         workflow.resume(
@@ -36,8 +44,14 @@ class AppointmentPaymentWorkflowTest {
   @Test
   void completesAfterTheVerifiedEventIsCaptured() {
     AiExecutionContext context = context();
+    UUID appointmentId = UUID.randomUUID();
+    ConfirmAppointmentUseCase confirmations = mock(ConfirmAppointmentUseCase.class);
+    PaymentWorkflowAppointmentRepository appointments =
+        mock(PaymentWorkflowAppointmentRepository.class);
+    when(appointments.findAppointmentIdByWorkflowId(context.workflowId()))
+        .thenReturn(java.util.Optional.of(appointmentId));
     WorkflowHandle handle =
-        new AppointmentPaymentWorkflow()
+        new AppointmentPaymentWorkflow(confirmations, appointments)
             .resume(
                 new PaymentWorkflowEvent(
                     context.tenantId(),
@@ -50,6 +64,7 @@ class AppointmentPaymentWorkflowTest {
 
     assertThat(handle.status()).isEqualTo(WorkflowStatus.SUCCEEDED);
     assertThat(handle.version()).isEqualTo(1);
+    verify(confirmations).confirm(appointmentId);
   }
 
   @Test
@@ -58,7 +73,9 @@ class AppointmentPaymentWorkflowTest {
 
     assertThatThrownBy(
             () ->
-                new AppointmentPaymentWorkflow()
+                new AppointmentPaymentWorkflow(
+                        mock(ConfirmAppointmentUseCase.class),
+                        mock(PaymentWorkflowAppointmentRepository.class))
                     .resume(
                         new PaymentWorkflowEvent(
                             context.tenantId(),

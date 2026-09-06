@@ -1077,8 +1077,10 @@ fails closed when the workflow context is absent and performs schema-local conte
 lookup without repeating tenant predicates. The Assistant composition boundary now derives
 payment-link facts from the tenant-routed hold, appointment, and service repositories,
 requiring a persisted workflow execution context before returning an amount, default
-currency, description, and hold expiry. Final appointment confirmation, checkpoint
-integration, and the booking/payment composition root remain for the next slice.
+currency, description, and hold expiry. Captured payment resume now resolves the owned
+appointment through a provider-neutral port and delegates confirmation to the existing
+appointments use case; table resolution, checkpoint state persistence, and the
+booking/payment composition root remain for the next slice.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.

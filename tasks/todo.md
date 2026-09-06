@@ -4014,6 +4014,14 @@ appointment mutation tools are registered.
 - [x] Run the focused grounding-guard test.
 - [ ] Continue with the output and delivery guards.
 
+#### Task 8 output boundary slice
+
+- [x] Add red tests for channel authorization, empty output, structured
+      business claims, sensitive data, and safe output.
+- [x] Implement `DefaultOutputGuard` with deterministic fail-closed checks.
+- [x] Run the focused output-guard test.
+- [ ] Continue with the delivery guard and advisor/composition wiring.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

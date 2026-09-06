@@ -15,6 +15,8 @@
 ## Current slice — Task 19E Calendar replay database routing — 2026-09-06
 
 - [x] Add the failing Calendar listener test for control-plane database lookup.
+- [x] Expose tenant database resolution through the public Tenancy API instead
+      of importing an internal repository across the module boundary.
 - [x] Carry the resolved database ID on `CalendarSyncRequested`.
 - [x] Restore tenant and database context before Calendar tenant-schema access.
 - [x] Run focused Calendar listener/provider tests and compilation.

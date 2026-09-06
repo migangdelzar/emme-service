@@ -7,9 +7,8 @@ import static org.mockito.Mockito.when;
 
 import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.calendar.api.event.CalendarSyncRequested;
-import com.emme.tenancy.application.port.out.TenantRepository;
+import com.emme.tenancy.api.usecase.ResolveTenantDatabaseIdUseCase;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -20,11 +19,11 @@ class CalendarSyncListenerTest {
   @Test
   void publishesSyncRequestWithTheTenantDatabaseRoutingIdentity() {
     ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
-    TenantRepository tenants = mock(TenantRepository.class);
+    ResolveTenantDatabaseIdUseCase databaseResolver = mock(ResolveTenantDatabaseIdUseCase.class);
     UUID tenantId = UUID.randomUUID();
     UUID databaseId = UUID.randomUUID();
-    when(tenants.findDatabaseIdByTenantId(tenantId)).thenReturn(Optional.of(databaseId));
-    CalendarSyncListener listener = new CalendarSyncListener(publisher, tenants);
+    when(databaseResolver.resolve(tenantId)).thenReturn(databaseId);
+    CalendarSyncListener listener = new CalendarSyncListener(publisher, databaseResolver);
 
     listener.onAppointmentCreated(
         new AppointmentCreated(

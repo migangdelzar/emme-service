@@ -2250,15 +2250,17 @@ delivery mechanism or alter tenant/business behavior.
 #### Current slice 19E — Restore database routing for Calendar replay
 
 `CalendarSyncRequested` now carries the tenant's database routing identity.
-The Calendar inbound listener resolves that identity through the control-plane
-tenant repository before publishing the internal sync request, and the Google
-adapter restores both tenant and database context before tenant-schema access.
+The Calendar inbound listener resolves that identity through the public Tenancy
+database-routing use case before publishing the internal sync request, and the
+Google adapter restores both tenant and database context before tenant-schema
+access. The Calendar module does not import the Tenancy module's internal
+repository port.
 This prevents an externalized appointment replay from silently selecting the
 default database when the tenant is routed to a dedicated database.
 
 - [x] Add a failing Calendar listener test for database routing propagation.
 - [x] Add the database ID to the internal Calendar sync event.
-- [x] Resolve the database ID through the control-plane tenant boundary.
+- [x] Resolve the database ID through the public Tenancy API boundary.
 - [x] Restore tenant and database context in the Calendar provider adapter.
 - [x] Run focused Calendar listener/provider tests and module compilation.
 - [ ] Run live database-per-tenant replay and provider synchronization checks

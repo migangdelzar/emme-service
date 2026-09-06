@@ -44,6 +44,16 @@
   and database routing context before touching tenant-schema repositories;
   never assume request-local context exists during replay.
 
+## 2026-09-06 — Cross-module consumers must use public APIs
+
+- Failure mode: Calendar restored replay routing by importing Tenancy's
+  internal `TenantRepository` port directly across the module boundary.
+- Detection signal: `CrossModuleDependencyArchitectureTest` rejected the
+  dependency even though focused Calendar and Tenancy tests passed.
+- Prevention rule: expose cross-module business operations as provider-neutral
+  use cases in the owning module's public API; keep internal repository ports
+  behind that API and let the architecture test enforce the boundary.
+
 ## 2026-09-05 — Run full Spring context checkpoints after constructor changes
 
 - Failure mode: adding a guardrail-aware constructor left the previous required

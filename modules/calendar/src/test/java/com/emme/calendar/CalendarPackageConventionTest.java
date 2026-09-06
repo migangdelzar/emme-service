@@ -111,6 +111,13 @@ class CalendarPackageConventionTest {
   }
 
   @Test
+  void calendarDeclaresThePublicTenancyApiBoundary() throws IOException {
+    Path moduleMetadata = SOURCE_ROOT.resolve("package-info.java");
+
+    assertThat(Files.readString(moduleMetadata)).contains("tenancy :: tenant-api");
+  }
+
+  @Test
   void applicationServicesAreOneUseCasePerClass() {
     Set<String> legacyServices =
         Set.of("CalendarService", "CalendarSyncApiService", "CalendarSyncApi");

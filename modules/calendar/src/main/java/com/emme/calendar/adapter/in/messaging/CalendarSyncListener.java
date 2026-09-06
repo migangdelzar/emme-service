@@ -4,7 +4,7 @@ import com.emme.appointments.api.event.AppointmentCancelled;
 import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.appointments.api.event.AppointmentRescheduled;
 import com.emme.calendar.api.event.CalendarSyncRequested;
-import com.emme.tenancy.application.port.out.TenantRepository;
+import com.emme.tenancy.api.usecase.ResolveTenantDatabaseIdUseCase;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
 public class CalendarSyncListener {
 
   private final ApplicationEventPublisher eventPublisher;
-  private final TenantRepository tenantRepository;
+  private final ResolveTenantDatabaseIdUseCase databaseResolver;
 
   public CalendarSyncListener(
-      ApplicationEventPublisher eventPublisher, TenantRepository tenantRepository) {
+      ApplicationEventPublisher eventPublisher, ResolveTenantDatabaseIdUseCase databaseResolver) {
     this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher must not be null");
-    this.tenantRepository =
-        Objects.requireNonNull(tenantRepository, "tenantRepository must not be null");
+    this.databaseResolver =
+        Objects.requireNonNull(databaseResolver, "databaseResolver must not be null");
   }
 
   @ApplicationModuleListener(id = "calendar.appointment-created")
@@ -70,8 +70,6 @@ public class CalendarSyncListener {
   }
 
   private UUID databaseId(UUID tenantId) {
-    return tenantRepository
-        .findDatabaseIdByTenantId(tenantId)
-        .orElseThrow(() -> new IllegalStateException("No database routing for tenant " + tenantId));
+    return databaseResolver.resolve(tenantId);
   }
 }

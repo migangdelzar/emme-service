@@ -1,6 +1,6 @@
 package com.emme.subscriptions.api.result;
 
-import com.emme.subscriptions.domain.model.SubscriptionStatus;
+import com.emme.subscriptions.api.type.SubscriptionStatus;
 import java.time.Instant;
 import java.util.UUID;
 

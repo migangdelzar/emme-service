@@ -49,6 +49,8 @@ an explicit name-preserving conversion at that boundary.
       and explicit application mapping.
 - [x] Correct the Services public boundaries with API-owned enums and explicit
       application mapping.
+- [x] Correct the Subscriptions public boundary with an API-owned enum and
+      explicit application mapping.
 - [ ] Correct the remaining public records that still expose domain enums.
 - [ ] Re-run the full framework checkpoint after the correction slices.
 
@@ -66,10 +68,10 @@ Jackson continues to serialize the same stable enum names.
 
 ### Current slice — Subscription status enum boundary
 
-Subscription status now uses the existing `SubscriptionStatus` enum across the
-application result and HTTP response boundaries. Stable enum-name serialization
-preserves the existing external values while keeping subscription lifecycle
-state typed inside Java.
+Subscription status now uses an API-owned `SubscriptionStatus` enum across the
+application result and HTTP response boundaries. The application boundary
+explicitly converts the domain value while stable enum-name serialization
+preserves the existing external values.
 
 - [x] Add a failing convention test for enum-typed subscription status boundaries.
 - [x] Migrate the subscription application mapper and public result/response.

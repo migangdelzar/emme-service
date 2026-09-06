@@ -41,6 +41,8 @@ an explicit name-preserving conversion at that boundary.
       application mapping.
 - [x] Correct the Catalog public boundary with an API-owned enum and explicit
       application mapping.
+- [x] Correct the Clients public boundary with an API-owned enum and explicit
+      application mapping.
 - [ ] Correct the remaining public records that still expose domain enums.
 - [ ] Re-run the full framework checkpoint after the correction slices.
 
@@ -70,10 +72,10 @@ state typed inside Java.
 
 ### Current slice — Clients customer status enum boundary
 
-Customer status now uses the existing `CustomerStatus` enum across the
-application result, HTTP response, and application mapping boundaries. Stable
-enum-name serialization preserves the existing `ACTIVE`/`RETIRED` values while
-keeping customer lifecycle state typed inside Java.
+Customer status now uses an API-owned `CustomerStatus` enum across the
+application result, HTTP response, and application mapping boundaries. The
+application boundary explicitly converts the domain value while stable
+enum-name serialization preserves the existing `ACTIVE`/`RETIRED` values.
 
 - [x] Add a failing convention test for enum-typed customer status boundaries.
 - [x] Migrate the customer application mapper and public result/response.

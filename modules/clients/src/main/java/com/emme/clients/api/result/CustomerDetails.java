@@ -1,6 +1,6 @@
 package com.emme.clients.api.result;
 
-import com.emme.clients.domain.model.CustomerStatus;
+import com.emme.clients.api.type.CustomerStatus;
 import java.util.UUID;
 
 /** Stable public customer representation returned by Studio use cases. */

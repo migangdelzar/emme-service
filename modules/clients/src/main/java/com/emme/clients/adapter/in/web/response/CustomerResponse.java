@@ -1,7 +1,7 @@
 package com.emme.clients.adapter.in.web.response;
 
 import com.emme.clients.api.result.CustomerDetails;
-import com.emme.clients.domain.model.CustomerStatus;
+import com.emme.clients.api.type.CustomerStatus;
 import java.util.UUID;
 
 /** HTTP representation of a Studio customer. */

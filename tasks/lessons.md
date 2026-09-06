@@ -54,6 +54,17 @@
   use cases in the owning module's public API; keep internal repository ports
   behind that API and let the architecture test enforce the boundary.
 
+## 2026-09-06 — Duplicate provisioning must return the authoritative tenant
+
+- Failure mode: a repeated tenant provisioning request skipped insertion for an
+  existing slug but returned the newly generated request ID.
+- Detection signal: a focused duplicate-slug test with distinct requested and
+  existing IDs exposed the mismatch between the returned identity and the
+  control-plane registry.
+- Prevention rule: idempotent control-plane requests must return the existing
+  authoritative tenant ID when their business key already exists; never expose
+  a transient ID that has no schema-routing record.
+
 ## 2026-09-05 — Run full Spring context checkpoints after constructor changes
 
 - Failure mode: adding a guardrail-aware constructor left the previous required

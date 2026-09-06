@@ -1,5 +1,15 @@
 # Service architecture migration checklist
 
+## Current slice — Task 13E idempotent tenant provisioning requests — 2026-09-06
+
+- [x] Add a failing adapter test for a duplicate slug with a different
+      requested tenant ID.
+- [x] Return the existing control-plane tenant ID when the slug is already
+      registered, without inserting a second registry row.
+- [x] Run focused tenancy provisioning tests and compilation.
+- [ ] Run duplicate/failure behavior against PostgreSQL/Testcontainers when
+      Docker is available.
+
 ## Current slice — Task 19D stable Modulith listener identities — 2026-09-06
 
 - [x] Add the failing application source-contract test for explicit durable

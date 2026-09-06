@@ -21,13 +21,11 @@ public class TenantProvisioningPersistenceAdapter implements TenantProvisioningR
 
   @Override
   public UUID requestProvisioning(UUID tenantId, String slug, String schemaName) {
-    repository
-        .findBySlug(slug)
-        .ifPresentOrElse(
-            existing -> {},
-            () ->
-                repository.save(
-                    new TenantRegistryEntity(tenantId, slug, schemaName, "PROVISIONING")));
+    var existing = repository.findBySlug(slug);
+    if (existing.isPresent()) {
+      return existing.get().getTenantId();
+    }
+    repository.save(new TenantRegistryEntity(tenantId, slug, schemaName, "PROVISIONING"));
     return tenantId;
   }
 

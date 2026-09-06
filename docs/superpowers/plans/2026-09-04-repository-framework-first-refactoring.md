@@ -1459,6 +1459,21 @@ and `[Hibernate multi-tenancy settings](https://docs.hibernate.org/orm/7.3/javad
 - [x] Verify tenancy tests, application compilation, Checkstyle, and Spotless.
 - [ ] Validate non-H2 startup against a PostgreSQL/Testcontainers environment.
 
+#### Current slice 13E — Preserve tenant provisioning idempotency
+
+Tenant provisioning requests now return the existing control-plane tenant ID
+when the requested slug is already registered. The adapter still avoids a
+second registry insert, so repeated provisioning requests cannot create a new
+logical tenant while the existing schema-per-tenant routing record remains the
+authoritative identity.
+
+- [x] Add a failing adapter test for an existing slug with a different request
+      tenant ID.
+- [x] Return the existing registry tenant ID for duplicate slugs.
+- [x] Verify focused tenancy provisioning tests and compilation.
+- [ ] Run duplicate/failure behavior against PostgreSQL/Testcontainers when
+      Docker is available.
+
 ## 8. Phase F — External provider clients
 
 The executable provider-HTTP plan is now maintained separately at

@@ -31,16 +31,18 @@ class TenantProvisioningPersistenceAdapterTest {
   void requestProvisioning_skipsExistingSlug() {
     var repository = mock(SpringDataTenantRegistryRepository.class);
     UUID tenantId = UUID.randomUUID();
+    UUID existingTenantId = UUID.randomUUID();
     when(repository.findBySlug("studio-a"))
         .thenReturn(
             Optional.of(
-                new TenantRegistryEntity(tenantId, "studio-a", "studio_a", "PROVISIONING")));
+                new TenantRegistryEntity(
+                    existingTenantId, "studio-a", "studio_a", "PROVISIONING")));
 
     UUID result =
         new TenantProvisioningPersistenceAdapter(repository)
             .requestProvisioning(tenantId, "studio-a", "studio_a");
 
-    assertThat(result).isEqualTo(tenantId);
+    assertThat(result).isEqualTo(existingTenantId);
     verify(repository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
   }
 

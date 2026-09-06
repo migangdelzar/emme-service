@@ -1,5 +1,6 @@
 package com.emme.catalog.api.result;
 
+import com.emme.catalog.domain.model.CatalogItemStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -13,4 +14,4 @@ public record CatalogItemDetails(
     String priceNotes,
     Integer durationMinutes,
     String materials,
-    String status) {}
+    CatalogItemStatus status) {}

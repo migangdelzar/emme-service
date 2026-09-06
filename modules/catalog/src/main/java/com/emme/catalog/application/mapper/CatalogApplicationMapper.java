@@ -18,7 +18,7 @@ public final class CatalogApplicationMapper {
         item.getPriceNotes(),
         item.getDurationMinutes(),
         item.getMaterials(),
-        item.getStatus().name());
+        item.getStatus());
   }
 
   public static CatalogItemImageDetails toResult(CatalogItemImage image) {

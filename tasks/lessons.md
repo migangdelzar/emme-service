@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-09-06 — Keep Catalog status typed through public mapping
+
+- Failure mode: Catalog converted its finite item status to a string before
+  returning application and HTTP models.
+- Detection signal: a boundary convention test found raw status components even
+  though `CatalogItemStatus` already existed in the domain.
+- Prevention rule: preserve the domain enum through Catalog result and response
+  mapping, serializing only at the external boundary.
+
 ## 2026-09-06 — Keep Calendar state enums at provider-facing read boundaries
 
 - Failure mode: Calendar converted event-link and synchronization state enums

@@ -75,6 +75,17 @@ stable enum names remain unchanged at serialization boundaries.
 - [ ] Run live Calendar provider/replay checks when PostgreSQL and provider
       infrastructure are available.
 
+### Current slice — Catalog status enum boundary
+
+Catalog item status now uses the existing `CatalogItemStatus` enum through the
+application result and HTTP response mappings. Stable enum-name serialization
+preserves the existing catalog status values.
+
+- [x] Add a failing convention test for enum-typed Catalog status boundaries.
+- [x] Migrate Catalog result/response models and the application mapper.
+- [x] Run focused Catalog tests and the affected fast quality gate.
+- [ ] Continue finite-state migration in separate owning-module slices.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

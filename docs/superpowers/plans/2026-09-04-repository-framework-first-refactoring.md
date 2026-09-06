@@ -161,6 +161,20 @@ assistant state typed through the web boundary.
 - [ ] Run live Assistant persistence/workflow checks when PostgreSQL and
       workflow infrastructure are available.
 
+### Current slice — Payment workflow contract status enum
+
+The provider-neutral `PaymentWorkflowEvent` now carries a contracts-owned
+`PaymentWorkflowStatus` enum instead of a validated raw string. Payment maps
+its internal lifecycle status into the shared contract, and Assistant workflow
+handling switches on the typed value; serialized enum names remain stable.
+
+- [x] Add a failing contract convention test for typed workflow status.
+- [x] Add `PaymentWorkflowStatus` and migrate Payment/Assistant producers,
+      consumers, and fixtures.
+- [x] Run contract tests and affected module test compilation.
+- [ ] Run live payment workflow replay and external event checks when Kafka,
+      PostgreSQL, and workflow infrastructure are available.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

@@ -39,6 +39,16 @@
 - [ ] Run live Assistant persistence/workflow checks when PostgreSQL and
       workflow infrastructure are available.
 
+## Current slice — Payment workflow contract status enum — 2026-09-06
+
+- [x] Add a failing contract convention test for typed workflow status.
+- [x] Add `PaymentWorkflowStatus` and replace the shared workflow event string
+      with the contracts-owned enum.
+- [x] Migrate Payment/Assistant producers, consumers, and fixtures.
+- [x] Run contract tests and affected module test compilation.
+- [ ] Run live payment workflow replay and external event checks when Kafka,
+      PostgreSQL, and workflow infrastructure are available.
+
 ## Current slice — Documents status enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed document status models.

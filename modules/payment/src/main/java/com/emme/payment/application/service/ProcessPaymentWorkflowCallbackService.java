@@ -1,6 +1,7 @@
 package com.emme.payment.application.service;
 
 import com.emme.ai.contracts.payment.PaymentWorkflowEvent;
+import com.emme.ai.contracts.payment.PaymentWorkflowStatus;
 import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
 import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
 import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation;
@@ -51,7 +52,7 @@ public class ProcessPaymentWorkflowCallbackService
             correlation.provider(),
             command.eventId(),
             correlation.providerReference(),
-            payment.status().name());
+            PaymentWorkflowStatus.valueOf(payment.status().name()));
     events.publish(event);
     return event;
   }

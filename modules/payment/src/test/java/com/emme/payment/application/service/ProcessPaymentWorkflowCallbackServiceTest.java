@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.payment.PaymentWorkflowEvent;
+import com.emme.ai.contracts.payment.PaymentWorkflowStatus;
 import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
 import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
 import com.emme.payment.api.result.PaymentDetails;
@@ -56,7 +57,7 @@ class ProcessPaymentWorkflowCallbackServiceTest {
     assertThat(event.provider()).isEqualTo("mock");
     assertThat(event.eventId()).isEqualTo("event-1");
     assertThat(event.providerReference()).isEqualTo("provider-payment-1");
-    assertThat(event.status()).isEqualTo("CAPTURED");
+    assertThat(event.status()).isEqualTo(PaymentWorkflowStatus.CAPTURED);
     verify(callback).process(command);
     verify(events).publish(event);
   }

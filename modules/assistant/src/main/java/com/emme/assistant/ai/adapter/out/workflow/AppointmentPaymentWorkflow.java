@@ -36,9 +36,9 @@ public final class AppointmentPaymentWorkflow implements PaymentWorkflow {
     }
     WorkflowHandle handle =
         switch (event.status()) {
-          case "PENDING", "AUTHORIZED" ->
+          case PENDING, AUTHORIZED ->
               new WorkflowHandle(context.workflowId(), WorkflowStatus.WAITING_FOR_PAYMENT, 0);
-          case "CAPTURED" -> {
+          case CAPTURED -> {
             UUID appointmentId =
                 appointments
                     .findAppointmentIdByWorkflowId(context.workflowId())
@@ -50,7 +50,7 @@ public final class AppointmentPaymentWorkflow implements PaymentWorkflow {
             confirmations.confirm(appointmentId);
             yield new WorkflowHandle(context.workflowId(), WorkflowStatus.SUCCEEDED, 1);
           }
-          case "DECLINED", "CANCELLED", "REFUNDED" ->
+          case DECLINED, CANCELLED, REFUNDED ->
               new WorkflowHandle(context.workflowId(), WorkflowStatus.FAILED, 1);
           default -> throw new IllegalStateException("Unsupported payment workflow status");
         };

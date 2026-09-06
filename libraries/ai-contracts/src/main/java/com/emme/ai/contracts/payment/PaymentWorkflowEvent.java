@@ -1,7 +1,6 @@
 package com.emme.ai.contracts.payment;
 
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 /** Normalized, signature-verified provider event used to resume a payment workflow. */
@@ -11,10 +10,7 @@ public record PaymentWorkflowEvent(
     String provider,
     String eventId,
     String providerReference,
-    String status) {
-
-  private static final Set<String> STATUSES =
-      Set.of("PENDING", "AUTHORIZED", "CAPTURED", "DECLINED", "REFUNDED", "CANCELLED");
+    PaymentWorkflowStatus status) {
 
   public PaymentWorkflowEvent {
     tenantId = Objects.requireNonNull(tenantId, "tenantId must not be null");
@@ -22,10 +18,7 @@ public record PaymentWorkflowEvent(
     provider = requireText(provider, "provider");
     eventId = requireText(eventId, "eventId");
     providerReference = requireText(providerReference, "providerReference");
-    status = requireText(status, "status").toUpperCase(java.util.Locale.ROOT);
-    if (!STATUSES.contains(status)) {
-      throw new IllegalArgumentException("Unsupported payment workflow status: " + status);
-    }
+    status = Objects.requireNonNull(status, "status must not be null");
   }
 
   private static String requireText(String value, String field) {

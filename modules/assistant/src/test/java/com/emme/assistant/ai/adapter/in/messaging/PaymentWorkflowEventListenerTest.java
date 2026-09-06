@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.payment.PaymentWorkflowEvent;
+import com.emme.ai.contracts.payment.PaymentWorkflowStatus;
 import com.emme.ai.contracts.workflow.PaymentWorkflow;
 import com.emme.ai.contracts.workflow.WorkflowHandle;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
@@ -133,6 +134,6 @@ class PaymentWorkflowEventListenerTest {
 
   private static PaymentWorkflowEvent event() {
     return new PaymentWorkflowEvent(
-        TENANT_ID, WORKFLOW_ID, "mock", "event-1", "provider-1", "CAPTURED");
+        TENANT_ID, WORKFLOW_ID, "mock", "event-1", "provider-1", PaymentWorkflowStatus.CAPTURED);
   }
 }

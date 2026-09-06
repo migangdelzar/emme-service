@@ -31,6 +31,18 @@
   dependent fixtures in the same compatibility slice whenever a shared result
   contract becomes strongly typed.
 
+## 2026-09-06 — Type finite statuses in shared workflow contracts
+
+- Failure mode: `PaymentWorkflowEvent` validated a fixed status vocabulary at
+  runtime but exposed it as a raw string to Payment and Assistant workflow
+  implementations.
+- Detection signal: the contract convention test could not compile until the
+  missing enum was introduced, and downstream switches depended on string
+  literals.
+- Prevention rule: finite values owned by a shared provider-neutral contract
+  must use a contracts-owned enum; adapters normalize external strings before
+  constructing the event.
+
 ## 2026-09-06 — Keep appointment lifecycle enums through API DTOs
 
 - Failure mode: Appointments converted `AppointmentStatus` to a string in

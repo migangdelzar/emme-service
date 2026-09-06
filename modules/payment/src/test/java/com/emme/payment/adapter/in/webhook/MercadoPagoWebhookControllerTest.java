@@ -3,6 +3,7 @@ package com.emme.payment.adapter.in.webhook;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.ai.contracts.payment.PaymentWorkflowEvent;
+import com.emme.ai.contracts.payment.PaymentWorkflowStatus;
 import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
 import com.emme.payment.api.usecase.ProcessPaymentWorkflowCallbackUseCase;
 import com.emme.payment.configuration.PaymentProperties;
@@ -118,7 +119,12 @@ class MercadoPagoWebhookControllerTest {
     private ProcessPaymentCallbackCommand command;
     private final PaymentWorkflowEvent event =
         new PaymentWorkflowEvent(
-            TENANT_ID, UUID.randomUUID(), "mercadopago", "request-1", "payment-1", "CAPTURED");
+            TENANT_ID,
+            UUID.randomUUID(),
+            "mercadopago",
+            "request-1",
+            "payment-1",
+            PaymentWorkflowStatus.CAPTURED);
 
     @Override
     public PaymentWorkflowEvent process(ProcessPaymentCallbackCommand command) {

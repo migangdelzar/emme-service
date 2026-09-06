@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.payment.PaymentWorkflowEvent;
+import com.emme.ai.contracts.payment.PaymentWorkflowStatus;
 import com.emme.ai.contracts.workflow.WorkflowHandle;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
 import com.emme.appointments.api.usecase.ConfirmAppointmentUseCase;
@@ -38,7 +39,7 @@ class AppointmentPaymentWorkflowTest {
                 "mock",
                 "event-1",
                 "provider-1",
-                "PENDING"),
+                PaymentWorkflowStatus.PENDING),
             context);
 
     assertThat(handle.status()).isEqualTo(WorkflowStatus.WAITING_FOR_PAYMENT);
@@ -66,7 +67,7 @@ class AppointmentPaymentWorkflowTest {
                     "mock",
                     "event-1",
                     "provider-1",
-                    "CAPTURED"),
+                    PaymentWorkflowStatus.CAPTURED),
                 context);
 
     assertThat(handle.status()).isEqualTo(WorkflowStatus.SUCCEEDED);
@@ -92,7 +93,7 @@ class AppointmentPaymentWorkflowTest {
                             "mock",
                             "event-1",
                             "provider-1",
-                            "CAPTURED"),
+                            PaymentWorkflowStatus.CAPTURED),
                         context))
         .isInstanceOf(SecurityException.class)
         .hasMessageContaining("workflowId");

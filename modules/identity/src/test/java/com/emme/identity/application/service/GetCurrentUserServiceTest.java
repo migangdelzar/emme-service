@@ -9,6 +9,7 @@ import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
 import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
+import com.emme.tenancy.domain.model.TenantStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,7 +36,7 @@ class GetCurrentUserServiceTest {
                     "tenant",
                     "Tenant",
                     "tenant_schema",
-                    "ACTIVE",
+                    TenantStatus.ACTIVE,
                     "DEDICATED",
                     "emme-tenant"));
 

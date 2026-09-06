@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.emme.tenancy.api.event.TenantActivated;
 import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
+import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +32,7 @@ class TenantActivationListenerTest {
     when(provisioningRepository.findStatus(tenantId))
         .thenReturn(
             new TenantProvisioningRepository.TenantProvisioningStatus(
-                "PROVISIONING", "tenant_slug", null, null));
+                TenantProvisioningState.PROVISIONING, "tenant_slug", null, null));
     when(provisioningRepository.findSchemaName(tenantId)).thenReturn("tenant_slug");
 
     listener.onTenantRealmReady(event);
@@ -48,7 +49,7 @@ class TenantActivationListenerTest {
     when(provisioningRepository.findStatus(tenantId))
         .thenReturn(
             new TenantProvisioningRepository.TenantProvisioningStatus(
-                "ACTIVE", "tenant_slug", null, null));
+                TenantProvisioningState.ACTIVE, "tenant_slug", null, null));
     var listener = new TenantActivationListener(provisioningRepository, eventPublisher);
 
     listener.onTenantRealmReady(

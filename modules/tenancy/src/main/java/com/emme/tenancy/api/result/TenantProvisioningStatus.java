@@ -1,6 +1,7 @@
 package com.emme.tenancy.api.result;
 
+import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.time.Instant;
 
 public record TenantProvisioningStatus(
-    String status, String schemaName, Instant lastMigratedAt, String error) {}
+    TenantProvisioningState status, String schemaName, Instant lastMigratedAt, String error) {}

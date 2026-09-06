@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.emme.tenancy.adapter.out.persistence.entity.TenantRegistryEntity;
 import com.emme.tenancy.adapter.out.persistence.repository.SpringDataTenantRegistryRepository;
+import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,10 @@ class TenantProvisioningPersistenceAdapterTest {
         .thenReturn(
             Optional.of(
                 new TenantRegistryEntity(
-                    existingTenantId, "studio-a", "studio_a", "PROVISIONING")));
+                    existingTenantId,
+                    "studio-a",
+                    "studio_a",
+                    TenantProvisioningState.PROVISIONING)));
 
     UUID result =
         new TenantProvisioningPersistenceAdapter(repository)
@@ -52,7 +56,9 @@ class TenantProvisioningPersistenceAdapterTest {
     UUID tenantId = UUID.randomUUID();
     when(repository.findByTenantId(tenantId))
         .thenReturn(
-            Optional.of(new TenantRegistryEntity(tenantId, "slug", "schema_name", "ACTIVE")));
+            Optional.of(
+                new TenantRegistryEntity(
+                    tenantId, "slug", "schema_name", TenantProvisioningState.ACTIVE)));
 
     String result = new TenantProvisioningPersistenceAdapter(repository).findSchemaName(tenantId);
     assertThat(result).isEqualTo("schema_name");

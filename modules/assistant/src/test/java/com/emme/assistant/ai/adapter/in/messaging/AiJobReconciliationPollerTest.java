@@ -24,6 +24,7 @@ import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.api.query.ListActiveTenantsQuery;
 import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.ListActiveTenantsUseCase;
+import com.emme.tenancy.domain.model.TenantStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -160,6 +161,7 @@ class AiJobReconciliationPollerTest {
   }
 
   private static TenantDetails tenant(UUID id) {
-    return new TenantDetails(id, "tenant-" + id, "Tenant " + id, null, "ACTIVE", null, "emme");
+    return new TenantDetails(
+        id, "tenant-" + id, "Tenant " + id, null, TenantStatus.ACTIVE, null, "emme");
   }
 }

@@ -3,6 +3,7 @@ package com.emme.tenancy.adapter.out.persistence.adapter;
 import com.emme.tenancy.adapter.out.persistence.entity.TenantRegistryEntity;
 import com.emme.tenancy.adapter.out.persistence.repository.SpringDataTenantRegistryRepository;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
+import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +26,8 @@ public class TenantProvisioningPersistenceAdapter implements TenantProvisioningR
     if (existing.isPresent()) {
       return existing.get().getTenantId();
     }
-    repository.save(new TenantRegistryEntity(tenantId, slug, schemaName, "PROVISIONING"));
+    repository.save(
+        new TenantRegistryEntity(tenantId, slug, schemaName, TenantProvisioningState.PROVISIONING));
     return tenantId;
   }
 
@@ -42,7 +44,7 @@ public class TenantProvisioningPersistenceAdapter implements TenantProvisioningR
 
   @Override
   public List<TenantProvisioningRequest> findPending() {
-    return repository.findByStatus("PROVISIONING").stream()
+    return repository.findByStatus(TenantProvisioningState.PROVISIONING).stream()
         .map(e -> new TenantProvisioningRequest(e.getTenantId(), e.getSlug(), e.getSchemaName()))
         .toList();
   }
@@ -53,7 +55,7 @@ public class TenantProvisioningPersistenceAdapter implements TenantProvisioningR
         .findByTenantId(tenantId)
         .ifPresent(
             entity -> {
-              entity.setStatus("ACTIVE");
+              entity.setStatus(TenantProvisioningState.ACTIVE);
               entity.setSchemaVersion("0.1.0");
               entity.setLastMigratedAt(Instant.now());
               entity.setMigrationError(null);
@@ -67,7 +69,7 @@ public class TenantProvisioningPersistenceAdapter implements TenantProvisioningR
         .findByTenantId(tenantId)
         .ifPresent(
             entity -> {
-              entity.setStatus("FAILED");
+              entity.setStatus(TenantProvisioningState.FAILED);
               entity.setMigrationError(error);
               repository.save(entity);
             });

@@ -6,6 +6,7 @@ import com.emme.tenancy.api.query.GetTenantProvisioningStatusQuery;
 import com.emme.tenancy.api.result.TenantProvisioningStatus;
 import com.emme.tenancy.api.usecase.GetTenantProvisioningStatusUseCase;
 import com.emme.tenancy.api.usecase.RequestTenantProvisioningUseCase;
+import com.emme.tenancy.domain.model.TenantProvisioningState;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.Map;
@@ -44,9 +45,12 @@ class TenantProvisioningController {
         .location(URI.create("/api/tenant-provisioning/" + tenantId))
         .body(
             Map.of(
-                "tenantId", tenantId,
-                "status", "PROVISIONING",
-                "message", "Tenant provisioning started"));
+                "tenantId",
+                tenantId,
+                "status",
+                TenantProvisioningState.PROVISIONING,
+                "message",
+                "Tenant provisioning started"));
   }
 
   @GetMapping("/{tenantId}")

@@ -1,8 +1,11 @@
 package com.emme.tenancy.adapter.out.persistence.entity;
 
 import com.emme.shared.time.ClockProvider;
+import com.emme.tenancy.domain.model.TenantProvisioningState;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -31,7 +34,8 @@ public class TenantRegistryEntity {
   private String databaseKey = "emme";
 
   @Column(name = "status", nullable = false, length = 24)
-  private String status = "PROVISIONING";
+  @Enumerated(EnumType.STRING)
+  private TenantProvisioningState status = TenantProvisioningState.PROVISIONING;
 
   @Column(name = "schema_version", length = 64)
   private String schemaVersion;
@@ -53,7 +57,8 @@ public class TenantRegistryEntity {
 
   protected TenantRegistryEntity() {}
 
-  public TenantRegistryEntity(UUID tenantId, String slug, String schemaName, String status) {
+  public TenantRegistryEntity(
+      UUID tenantId, String slug, String schemaName, TenantProvisioningState status) {
     this.tenantId = tenantId;
     this.slug = slug;
     this.schemaName = schemaName;
@@ -84,7 +89,7 @@ public class TenantRegistryEntity {
     return schemaName;
   }
 
-  public String getStatus() {
+  public TenantProvisioningState getStatus() {
     return status;
   }
 
@@ -104,7 +109,7 @@ public class TenantRegistryEntity {
     return databaseId;
   }
 
-  public void setStatus(String status) {
+  public void setStatus(TenantProvisioningState status) {
     this.status = status;
   }
 

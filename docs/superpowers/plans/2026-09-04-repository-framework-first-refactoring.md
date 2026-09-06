@@ -20,6 +20,7 @@
 - LangGraph4j owns only graph topology, checkpointed interruption, and resume; it does not own authorization, repositories, payments, or generic event delivery.
 - PostgreSQL remains the durable source of truth; Redis is disposable cache/live/coordination state; Kafka is not an aggregate database.
 - Stable application ports and cross-module contracts are canonical. Provider and mechanism implementations remain replaceable behind those ports; do not make PostgreSQL, Redis, Kafka, JPA, Spring AI, or vendor-specific types part of use cases, domain code, public APIs, or event contracts. Configuration exposes ports, and provider selection stays in the composition root.
+- Use enums or value objects for finite domain states at application, domain, and persistence boundaries. Do not encode lifecycle states as raw Java strings; keep database/API serialization compatible at the adapter boundary.
 - Every implementation task writes the failing test first, runs the focused test, implements the minimum, refactors only after green, and commits one logical slice.
 - Do not edit deployed Liquibase migrations in place; add forward migrations and migration-contract coverage.
 - Do not combine dependency upgrades with behavioral refactors. Upgrade to the latest compatible stable patch in a separate platform task.

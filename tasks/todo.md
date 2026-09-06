@@ -1,5 +1,17 @@
 # Service architecture migration checklist
 
+## Current slice — Enum lifecycle-state rule — 2026-09-06
+
+- [x] Add a failing enum-typed provisioning-state usage to the listener tests.
+- [x] Replace tenant provisioning lifecycle strings with
+      `TenantProvisioningState` across the port, API result, JPA entity, query,
+      adapter, listener, and tests.
+- [x] Add a convention test preventing regression to a string state at the port
+      and persistence boundaries.
+- [x] Run focused provisioning tests and the Tenancy fast quality gate.
+- [ ] Audit remaining finite-state strings across other modules in their
+      owning persistence/application slices.
+
 ## Current slice — Task 19F idempotent tenant activation delivery — 2026-09-06
 
 - [x] Add a failing listener test for a duplicate activation of an already

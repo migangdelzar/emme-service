@@ -12,7 +12,7 @@ public final class TenantApplicationMapper {
         tenant.slug(),
         tenant.name(),
         null,
-        tenant.status().name(),
+        tenant.status(),
         null,
         tenant.keycloakRealm(),
         tenant.createdAt());

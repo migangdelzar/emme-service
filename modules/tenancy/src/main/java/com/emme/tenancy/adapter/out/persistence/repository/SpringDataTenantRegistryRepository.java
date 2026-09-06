@@ -1,6 +1,7 @@
 package com.emme.tenancy.adapter.out.persistence.repository;
 
 import com.emme.tenancy.adapter.out.persistence.entity.TenantRegistryEntity;
+import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,5 +16,5 @@ public interface SpringDataTenantRegistryRepository
 
   Optional<TenantRegistryEntity> findBySlug(String slug);
 
-  List<TenantRegistryEntity> findByStatus(String status);
+  List<TenantRegistryEntity> findByStatus(TenantProvisioningState status);
 }

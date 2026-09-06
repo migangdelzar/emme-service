@@ -1,5 +1,6 @@
 package com.emme.tenancy.application.port.out;
 
+import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +21,7 @@ public interface TenantProvisioningRepository {
   String findSchemaName(UUID tenantId);
 
   record TenantProvisioningStatus(
-      String status, String schemaName, Instant lastMigratedAt, String error) {}
+      TenantProvisioningState status, String schemaName, Instant lastMigratedAt, String error) {}
 
   record TenantProvisioningRequest(UUID tenantId, String slug, String schemaName) {}
 }

@@ -9,6 +9,7 @@ import com.emme.tenancy.api.command.RequestTenantProvisioningCommand;
 import com.emme.tenancy.api.query.GetTenantProvisioningStatusQuery;
 import com.emme.tenancy.api.result.TenantProvisioningStatus;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
+import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -47,13 +48,13 @@ class TenantProvisioningServiceTest {
     when(provisioningRepository.findStatus(tenantId))
         .thenReturn(
             new TenantProvisioningRepository.TenantProvisioningStatus(
-                "ACTIVE", "studio_a", migratedAt, null));
+                TenantProvisioningState.ACTIVE, "studio_a", migratedAt, null));
     GetTenantProvisioningStatusService service =
         new GetTenantProvisioningStatusService(provisioningRepository);
 
     TenantProvisioningStatus result = service.get(new GetTenantProvisioningStatusQuery(tenantId));
 
-    assertThat(result.status()).isEqualTo("ACTIVE");
+    assertThat(result.status()).isEqualTo(TenantProvisioningState.ACTIVE);
     assertThat(result.schemaName()).isEqualTo("studio_a");
     assertThat(result.lastMigratedAt()).isEqualTo(migratedAt);
     assertThat(result.error()).isNull();

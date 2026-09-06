@@ -1,5 +1,15 @@
 # Engineering lessons
 
+## 2026-09-06 — Encode finite lifecycle states as enums
+
+- Failure mode: tenant provisioning state crossed the port, API, persistence,
+  and listener layers as unvalidated strings such as `ACTIVE` and `FAILED`.
+- Detection signal: the duplicate-activation guard needed a raw string
+  comparison, and one spelling change could silently create an unknown state.
+- Prevention rule: represent finite lifecycle states with enums or value
+  objects at Java boundaries; serialize their stable names only at database or
+  external protocol edges, and add a convention test for the boundary.
+
 ## 2026-09-06 — Make lifecycle listeners idempotent before republishing facts
 
 - Failure mode: a duplicate tenant-realm-ready event would mark the tenant

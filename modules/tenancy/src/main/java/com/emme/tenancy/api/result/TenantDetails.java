@@ -1,5 +1,6 @@
 package com.emme.tenancy.api.result;
 
+import com.emme.tenancy.domain.model.TenantStatus;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -9,7 +10,7 @@ public record TenantDetails(
     String slug,
     String name,
     String schemaName,
-    String status,
+    TenantStatus status,
     String databaseMode,
     String identityRealm,
     Instant createdAt) {
@@ -18,7 +19,7 @@ public record TenantDetails(
       String slug,
       String name,
       String schemaName,
-      String status,
+      TenantStatus status,
       String databaseMode,
       String identityRealm) {
     this(id, slug, name, schemaName, status, databaseMode, identityRealm, null);

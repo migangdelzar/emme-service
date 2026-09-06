@@ -120,6 +120,20 @@ names preserve the existing API status values.
 - [ ] Run live PostgreSQL appointment concurrency and migration checks when
       Docker is available.
 
+### Current slice — Notification status enum boundary
+
+Notification delivery status now retains the existing public
+`NotificationStatus` enum through the HTTP response boundary. Stable enum-name
+serialization preserves the existing notification status values while keeping
+the domain lifecycle typed in Java.
+
+- [x] Add a failing convention test for enum-typed Notification response
+      status.
+- [x] Migrate the Notification HTTP response and mapping to the public enum.
+- [x] Run the focused Notification test and affected fast quality gate.
+- [ ] Run live notification provider and persistence checks when PostgreSQL and
+      provider infrastructure are available.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

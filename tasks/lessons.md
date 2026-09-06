@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-09-06 — Keep notification lifecycle enums through HTTP mapping
+
+- Failure mode: Notification converted its public delivery status to a string
+  in the HTTP response even though the API already owned `NotificationStatus`.
+- Detection signal: a boundary convention test found the raw `String status`
+  component in `NotificationResponse`.
+- Prevention rule: preserve notification lifecycle enums through application
+  and HTTP mapping, while stable enum names remain the serialized API values.
+
 ## 2026-09-06 — Keep appointment lifecycle enums through API DTOs
 
 - Failure mode: Appointments converted `AppointmentStatus` to a string in

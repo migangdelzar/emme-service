@@ -9,6 +9,16 @@
 - [ ] Run live PostgreSQL appointment concurrency/migration checks when Docker
       is available.
 
+## Current slice — Notification status enum boundary — 2026-09-06
+
+- [x] Add a failing convention test for enum-typed Notification response
+      status.
+- [x] Replace the Notification HTTP response status string with the existing
+      public `NotificationStatus` enum.
+- [x] Run the focused Notification test and affected fast quality gate.
+- [ ] Run live notification provider/persistence checks when PostgreSQL and
+      provider infrastructure are available.
+
 ## Current slice — Documents status enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed document status models.

@@ -1,6 +1,6 @@
 package com.emme.identity.adapter.in.web.response;
 
-import com.emme.identity.domain.model.MembershipStatus;
+import com.emme.identity.api.type.MembershipStatus;
 import java.util.Set;
 import java.util.UUID;
 

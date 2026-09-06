@@ -6,11 +6,11 @@ import static org.mockito.Mockito.when;
 
 import com.emme.identity.api.query.GetCurrentUserMembershipsQuery;
 import com.emme.identity.api.result.MembershipDetails;
+import com.emme.identity.api.type.MembershipStatus;
 import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.application.authorization.FeatureFlagEvaluator;
 import com.emme.identity.application.port.out.CustomerMembershipRepository;
 import com.emme.identity.application.port.out.SubscriptionPlanPort;
-import com.emme.identity.domain.model.MembershipStatus;
 import com.emme.kernel.context.Channel;
 import com.emme.subscriptions.api.type.PlanType;
 import java.util.List;

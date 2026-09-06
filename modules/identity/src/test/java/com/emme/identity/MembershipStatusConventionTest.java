@@ -6,13 +6,13 @@ import com.emme.identity.adapter.in.web.response.MembershipResponse;
 import com.emme.identity.adapter.in.web.response.TenantMembershipResponse;
 import com.emme.identity.api.result.CurrentUserMembershipDetails;
 import com.emme.identity.api.result.MembershipDetails;
-import com.emme.identity.domain.model.MembershipStatus;
+import com.emme.identity.api.type.MembershipStatus;
 import org.junit.jupiter.api.Test;
 
 class MembershipStatusConventionTest {
 
   @Test
-  void membershipStatusUsesTheDomainEnumAcrossPublicBoundaries() {
+  void membershipStatusUsesAnApiOwnedEnumAcrossPublicBoundaries() {
     assertThat(MembershipDetails.class.getRecordComponents()[5].getType())
         .isEqualTo(MembershipStatus.class);
     assertThat(CurrentUserMembershipDetails.class.getRecordComponents()[4].getType())

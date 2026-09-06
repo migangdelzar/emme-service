@@ -6,6 +6,7 @@ import com.emme.identity.adapter.in.web.response.MembershipResponse;
 import com.emme.identity.adapter.in.web.response.TenantMembershipResponse;
 import com.emme.identity.api.result.CurrentUserDetails;
 import com.emme.identity.api.result.MembershipDetails;
+import com.emme.identity.api.type.MembershipStatus;
 import java.util.List;
 
 /** Maps Identity application data into HTTP response models. */
@@ -19,7 +20,7 @@ public final class IdentityWebMapper {
         membership.tenantId(),
         membership.roleCode(),
         membership.userReference(),
-        membership.status(),
+        MembershipStatus.valueOf(membership.status().name()),
         membership.createdAt());
   }
 
@@ -34,7 +35,7 @@ public final class IdentityWebMapper {
                         membership.tenantName(),
                         membership.tenantName(),
                         membership.role(),
-                        membership.status(),
+                        MembershipStatus.valueOf(membership.status().name()),
                         membership.permissions()))
             .toList();
     BusinessProfileResponse profile =

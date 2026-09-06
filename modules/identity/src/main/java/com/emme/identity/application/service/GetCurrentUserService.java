@@ -5,6 +5,7 @@ import com.emme.identity.api.query.GetCurrentUserQuery;
 import com.emme.identity.api.result.CurrentUserDetails;
 import com.emme.identity.api.result.CurrentUserMembershipDetails;
 import com.emme.identity.api.result.MembershipDetails;
+import com.emme.identity.api.type.MembershipStatus;
 import com.emme.identity.api.usecase.GetCurrentUserMembershipsUseCase;
 import com.emme.identity.api.usecase.GetCurrentUserUseCase;
 import com.emme.identity.api.usecase.GetUserPermissionsUseCase;
@@ -61,7 +62,7 @@ public class GetCurrentUserService implements GetCurrentUserUseCase {
         tenant.slug(),
         tenant.name(),
         membership.roleCode(),
-        membership.status(),
+        MembershipStatus.valueOf(membership.status().name()),
         permissions.getPermissions(userId, membership.tenantId()));
   }
 

@@ -45,15 +45,17 @@ an explicit name-preserving conversion at that boundary.
       application mapping.
 - [x] Correct the Documents public boundary with an API-owned enum and
       explicit application mapping.
+- [x] Correct the Identity public membership boundary with an API-owned enum
+      and explicit application mapping.
 - [ ] Correct the remaining public records that still expose domain enums.
 - [ ] Re-run the full framework checkpoint after the correction slices.
 
 ### Current slice — Identity membership enum boundary
 
-Identity membership status now uses the existing `MembershipStatus` enum across
+Identity membership status now uses an API-owned `MembershipStatus` enum across
 the application result, current-user result, HTTP response, and mapping
-boundaries. Jackson continues to serialize the same stable enum names, so this
-removes Java-side raw state strings without changing the external status values.
+boundaries. The application boundary explicitly converts the domain value;
+Jackson continues to serialize the same stable enum names.
 
 - [x] Add a failing convention test for enum-typed membership status boundaries.
 - [x] Migrate Identity mappers and affected Assistant/Identity fixtures.

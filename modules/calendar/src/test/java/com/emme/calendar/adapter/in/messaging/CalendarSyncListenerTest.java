@@ -22,12 +22,13 @@ class CalendarSyncListenerTest {
     ResolveTenantDatabaseIdUseCase databaseResolver = mock(ResolveTenantDatabaseIdUseCase.class);
     UUID tenantId = UUID.randomUUID();
     UUID databaseId = UUID.randomUUID();
+    UUID eventId = UUID.randomUUID();
     when(databaseResolver.resolve(tenantId)).thenReturn(databaseId);
     CalendarSyncListener listener = new CalendarSyncListener(publisher, databaseResolver);
 
     listener.onAppointmentCreated(
         new AppointmentCreated(
-            UUID.randomUUID(),
+            eventId,
             tenantId,
             UUID.randomUUID(),
             UUID.randomUUID(),
@@ -42,5 +43,6 @@ class CalendarSyncListenerTest {
     verify(publisher).publishEvent(event.capture());
     assertThat(event.getValue().tenantId()).isEqualTo(tenantId);
     assertThat(event.getValue().databaseId()).isEqualTo(databaseId);
+    assertThat(event.getValue().eventId()).isEqualTo(eventId);
   }
 }

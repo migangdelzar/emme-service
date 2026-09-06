@@ -19,6 +19,7 @@ import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
 import com.emme.calendar.configuration.CalendarProperties;
 import com.emme.calendar.domain.model.CalendarProvider;
 import com.emme.kernel.context.TenantContextHolder;
+import com.emme.kernel.tracing.CorrelationContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
@@ -34,12 +35,15 @@ class StaffCalendarSyncAdapterTest {
     UUID tenantId = UUID.randomUUID();
     UUID databaseId = UUID.randomUUID();
     UUID appointmentId = UUID.randomUUID();
+    UUID eventId = UUID.randomUUID();
     FindCalendarEventLinkUseCase findEventLink = mock(FindCalendarEventLinkUseCase.class);
     when(findEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR.name()))
         .thenAnswer(
             invocation -> {
               assertThat(TenantContextHolder.currentTenantOptional()).contains(tenantId);
               assertThat(TenantContextHolder.currentDatabaseOptional()).contains(databaseId);
+              assertThat(CorrelationContextHolder.requireCorrelationId())
+                  .isEqualTo("calendar-sync:" + eventId);
               return Optional.empty();
             });
     SpringDataGoogleOAuthTokenRepository tokenRepository =
@@ -62,6 +66,7 @@ class StaffCalendarSyncAdapterTest {
 
     adapter.onCalendarSyncRequested(
         new CalendarSyncRequested(
+            eventId,
             tenantId,
             databaseId,
             appointmentId,
@@ -116,6 +121,7 @@ class StaffCalendarSyncAdapterTest {
             () ->
                 adapter.onCalendarSyncRequested(
                     new CalendarSyncRequested(
+                        UUID.randomUUID(),
                         tenantId,
                         databaseId,
                         appointmentId,

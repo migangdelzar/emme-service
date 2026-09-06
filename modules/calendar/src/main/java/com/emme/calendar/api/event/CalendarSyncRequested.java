@@ -5,6 +5,7 @@ import java.util.UUID;
 
 /** Public fact raised when an appointment change requires calendar synchronization. */
 public record CalendarSyncRequested(
+    UUID eventId,
     UUID tenantId,
     UUID databaseId,
     UUID appointmentId,

@@ -2554,6 +2554,22 @@ subscription use case remain unchanged.
 - [ ] Run live replay and tenant-database routing checks when PostgreSQL and
       Kafka infrastructure are available.
 
+#### Current slice 19J — Restore Calendar replay correlation context
+
+Calendar replay events now retain the originating appointment event ID. The
+staff Calendar adapter restores `calendar-sync:<eventId>` together with the
+tenant and database routing context before schema-local persistence and Google
+provider calls, so replay logs remain attributable without using request-local
+security state.
+
+- [x] Add a failing Calendar replay test for correlation restoration.
+- [x] Carry the appointment event ID through `CalendarSyncRequested`.
+- [x] Restore the deterministic correlation context in the staff sync adapter.
+- [x] Run focused Calendar tests, event-contract tests, the Calendar check,
+      and Spotless.
+- [ ] Run live Calendar replay/provider retry checks when PostgreSQL, Kafka,
+      and Google infrastructure are available.
+
 #### Current slice 19A — Keep tenant event publication behind a port
 
 `CreateTenantService` no longer imports Spring event infrastructure. The

@@ -28,6 +28,7 @@ public class CalendarSyncListener {
   public void onAppointmentCreated(AppointmentCreated event) {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
+            event.eventId(),
             event.tenantId(),
             databaseId(event.tenantId()),
             event.appointmentId(),
@@ -43,6 +44,7 @@ public class CalendarSyncListener {
   public void onAppointmentCancelled(AppointmentCancelled event) {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
+            event.eventId(),
             event.tenantId(),
             databaseId(event.tenantId()),
             event.appointmentId(),
@@ -58,6 +60,7 @@ public class CalendarSyncListener {
   public void onAppointmentRescheduled(AppointmentRescheduled event) {
     eventPublisher.publishEvent(
         new CalendarSyncRequested(
+            event.eventId(),
             event.tenantId(),
             databaseId(event.tenantId()),
             event.appointmentId(),

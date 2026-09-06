@@ -247,6 +247,18 @@
 - [ ] Run live PostgreSQL/Kafka replay and tenant-routing checks when
       infrastructure is available.
 
+## Current slice — Task 19J Calendar replay correlation context — 2026-09-06
+
+- [x] Add a failing Calendar replay test requiring the durable event
+      correlation ID alongside tenant/database routing.
+- [x] Carry the originating appointment event ID into `CalendarSyncRequested`.
+- [x] Restore `calendar-sync:<eventId>` while processing staff Calendar sync
+      persistence and provider calls.
+- [x] Run focused Calendar listener/replay tests, the Calendar check, event
+      contract tests, and Spotless.
+- [ ] Run live Calendar replay and provider retry checks when PostgreSQL,
+      Kafka, and Google infrastructure are available.
+
 ## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
 
 - [x] Inventory remaining tenant-qualified repository and persistence methods.

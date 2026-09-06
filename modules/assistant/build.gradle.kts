@@ -13,6 +13,7 @@ dependencies {
   implementation(project(":modules:documents"))
   implementation(project(":modules:services"))
   implementation(project(":modules:appointments"))
+  implementation(project(":modules:payment"))
   implementation(project(":modules:ai-platform"))
   testImplementation(project(":modules:subscriptions"))
 

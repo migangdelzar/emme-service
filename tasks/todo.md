@@ -213,6 +213,8 @@
       provider-to-workflow ownership.
 - [x] Add explicit canonical `WAITING_FOR_CONFIRMATION` and `WAITING_FOR_PAYMENT`
       workflow statuses.
+- [x] Add typed booking/payment workflow adapters with confirmation-before-mutation,
+      hold-first payment-link creation, and workflow correlation validation.
 - [ ] Wire verified callback ownership into idempotent workflow resume and checkpointed graph edges.
 
 ## Repository framework-first refactoring plan — 2026-09-04

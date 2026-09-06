@@ -1066,7 +1066,11 @@ the trusted correlation, and emits `PaymentWorkflowEvent`; missing ownership fai
 closed before any workflow resume can occur. The canonical workflow status enum now also
 distinguishes `WAITING_FOR_CONFIRMATION` from `WAITING_FOR_PAYMENT`, allowing the next
 typed booking/payment adapters to expose hold and payment interrupts without overloading
-approval status.
+approval status. The Assistant now has typed `AppointmentBookingWorkflow` and
+`AppointmentPaymentWorkflow` adapters: booking requires confirmation before invoking
+hold/payment use cases, and payment resume validates workflow identity before projecting
+verified provider status. Final appointment confirmation, checkpoint integration, and
+callback-to-graph composition remain for the next slice.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.

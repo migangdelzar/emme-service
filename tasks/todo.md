@@ -54,6 +54,7 @@
       dependency searches prove they are unused.
 - [x] Add real-socket MockWebServer transport coverage for Identity,
       Calendar, Notification, and Payment.
+- [x] Push HTTP-13 provider wrapper cleanup in commit `e976a397`.
 - [ ] Keep the Notification wrapper until HTTP-13 proves all callers and
       production dependencies are gone.
 - [ ] Run live provider transport tests when Docker/infrastructure is available.

@@ -10,6 +10,7 @@ import com.emme.ai.contracts.workflow.WorkflowCommand;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
 import com.emme.appointments.api.result.AppointmentDetails;
 import com.emme.appointments.api.usecase.CancelAuthorizedAppointmentUseCase;
+import com.emme.appointments.domain.model.AppointmentStatus;
 import com.emme.assistant.ai.application.port.out.WorkflowCheckpointRepository;
 import com.emme.kernel.context.AiExecutionContext;
 import java.time.Instant;
@@ -68,7 +69,7 @@ class AppointmentCancellationWorkflowTest {
                 "Artist",
                 Instant.parse("2030-01-01T10:00:00Z"),
                 Instant.parse("2030-01-01T11:00:00Z"),
-                "CANCELLED"));
+                AppointmentStatus.CANCELLED));
     WorkflowCommand command =
         new WorkflowCommand(
             context.workflowId(),

@@ -147,6 +147,20 @@ normalized by the payment application service before entering the domain.
 - [ ] Run live payment provider, webhook, and persistence checks when
       PostgreSQL and provider infrastructure are available.
 
+### Current slice — Assistant read-model status enum boundaries
+
+Assistant conversation and pending-action HTTP responses now retain their
+existing public `ConversationStatus` and `ActionStatus` enums. Stable enum-name
+serialization preserves the existing response values while keeping finite
+assistant state typed through the web boundary.
+
+- [x] Add failing convention tests for conversation and pending-action response
+      status types.
+- [x] Migrate Assistant response DTOs and the enum-valued test fixtures.
+- [x] Run the focused Assistant test and affected fast quality gate.
+- [ ] Run live Assistant persistence/workflow checks when PostgreSQL and
+      workflow infrastructure are available.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

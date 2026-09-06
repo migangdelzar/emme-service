@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.emme.assistant.ai.application.tool.AiToolExecutionContext;
 import com.emme.services.api.result.ServiceDetails;
 import com.emme.services.api.usecase.ListActiveServiceCatalogEntriesUseCase;
+import com.emme.services.domain.model.ServiceStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.List;
@@ -33,7 +34,7 @@ class ServicesToolHandlerTest {
                     "Long-lasting finish",
                     60,
                     BigDecimal.valueOf(450),
-                    "ACTIVE")));
+                    ServiceStatus.ACTIVE)));
     ServicesToolHandler handler = new ServicesToolHandler(listServices, new ObjectMapper());
 
     String result =

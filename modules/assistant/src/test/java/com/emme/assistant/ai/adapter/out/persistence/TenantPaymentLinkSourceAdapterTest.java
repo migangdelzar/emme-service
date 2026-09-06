@@ -8,6 +8,7 @@ import com.emme.ai.contracts.appointment.AppointmentHold;
 import com.emme.appointments.api.result.AppointmentDetails;
 import com.emme.appointments.api.usecase.GetAppointmentHoldUseCase;
 import com.emme.appointments.api.usecase.GetAppointmentUseCase;
+import com.emme.appointments.domain.model.AppointmentStatus;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowExecutionContextRepository;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.payment.api.port.out.PaymentLinkSourceRepository.PaymentLinkSource;
@@ -70,7 +71,7 @@ class TenantPaymentLinkSourceAdapterTest {
                     null,
                     Instant.parse("2030-01-01T10:00:00Z"),
                     Instant.parse("2030-01-01T11:00:00Z"),
-                    "DRAFT")));
+                    AppointmentStatus.DRAFT)));
     when(services.findById(serviceId)).thenReturn(Optional.of(service));
     when(workflows.findByWorkflowId(workflowId))
         .thenReturn(

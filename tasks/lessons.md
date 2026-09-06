@@ -20,6 +20,17 @@
   application and HTTP models; keep provider status strings isolated to the
   provider port and normalize them before domain mutation.
 
+## 2026-09-06 — Keep Assistant state enums through response mapping
+
+- Failure mode: Assistant conversation and pending-action response records
+  converted finite API states to strings, and older cross-module fixtures still
+  passed strings after the owning modules became enum-typed.
+- Detection signal: the new response convention test failed, followed by test
+  compilation errors in four Assistant fixtures.
+- Prevention rule: preserve API-owned state enums through web mapping and update
+  dependent fixtures in the same compatibility slice whenever a shared result
+  contract becomes strongly typed.
+
 ## 2026-09-06 — Keep appointment lifecycle enums through API DTOs
 
 - Failure mode: Appointments converted `AppointmentStatus` to a string in

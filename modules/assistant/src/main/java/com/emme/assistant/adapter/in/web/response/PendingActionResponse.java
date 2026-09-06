@@ -1,6 +1,7 @@
 package com.emme.assistant.adapter.in.web.response;
 
 import com.emme.assistant.api.result.PendingActionDetails;
+import com.emme.assistant.api.type.ActionStatus;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -8,7 +9,7 @@ public record PendingActionResponse(
     UUID id,
     UUID conversationId,
     String actionType,
-    String status,
+    ActionStatus status,
     String details,
     Instant expiresAt,
     Instant createdAt) {
@@ -17,7 +18,7 @@ public record PendingActionResponse(
         info.id(),
         info.conversationId(),
         info.actionType().name(),
-        info.status().name(),
+        info.status(),
         info.details(),
         info.expiresAt(),
         info.createdAt());

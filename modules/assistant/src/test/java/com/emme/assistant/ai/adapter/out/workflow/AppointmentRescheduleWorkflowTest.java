@@ -10,6 +10,7 @@ import com.emme.ai.contracts.workflow.WorkflowCommand;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
 import com.emme.appointments.api.result.AppointmentDetails;
 import com.emme.appointments.api.usecase.RescheduleAuthorizedAppointmentUseCase;
+import com.emme.appointments.domain.model.AppointmentStatus;
 import com.emme.assistant.ai.application.port.out.WorkflowCheckpointRepository;
 import com.emme.kernel.context.AiExecutionContext;
 import java.time.Instant;
@@ -73,7 +74,7 @@ class AppointmentRescheduleWorkflowTest {
                 "Artist",
                 startsAt,
                 endsAt,
-                "CONFIRMED"));
+                AppointmentStatus.CONFIRMED));
     WorkflowCommand command =
         new WorkflowCommand(
             context.workflowId(),

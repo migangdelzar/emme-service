@@ -28,6 +28,17 @@
 - [ ] Run live payment provider/webhook/persistence checks when PostgreSQL and
       provider infrastructure are available.
 
+## Current slice — Assistant read-model status enum boundaries — 2026-09-06
+
+- [x] Add failing convention tests for conversation and pending-action response
+      status types.
+- [x] Replace Assistant response status strings with the existing public
+      `ConversationStatus` and `ActionStatus` enums.
+- [x] Migrate four Assistant test fixtures exposed by the earlier enum changes.
+- [x] Run the focused Assistant test and affected fast quality gate.
+- [ ] Run live Assistant persistence/workflow checks when PostgreSQL and
+      workflow infrastructure are available.
+
 ## Current slice — Documents status enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed document status models.

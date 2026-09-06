@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.application.port.out;
 
+import com.emme.assistant.ai.application.workflow.NodeProfile;
 import com.emme.kernel.context.AiExecutionContext;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -53,7 +54,13 @@ public record ConversationWorkflowCapabilities(
   }
 
   public record WorkflowRequest(
-      String message, AiExecutionContext context, Map<String, Object> state) {
+      String message, AiExecutionContext context, Map<String, Object> state, NodeProfile profile) {
+
+    /** Compatibility constructor for direct capability callers outside the graph adapter. */
+    public WorkflowRequest(String message, AiExecutionContext context, Map<String, Object> state) {
+      this(message, context, state, null);
+    }
+
     public WorkflowRequest {
       Objects.requireNonNull(message, "message must not be null");
       Objects.requireNonNull(context, "context must not be null");

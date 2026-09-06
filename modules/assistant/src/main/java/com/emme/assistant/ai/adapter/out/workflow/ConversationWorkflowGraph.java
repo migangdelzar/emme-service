@@ -196,7 +196,7 @@ public final class ConversationWorkflowGraph {
       verifyIdentity(state, context);
       NodeProfile profile = nodePolicies.profile(node);
       long startedAt = System.nanoTime();
-      WorkflowStep step = capability.apply(request(state, context));
+      WorkflowStep step = capability.apply(request(state, context, profile));
       if ((step.needsApproval() || step.needsConfirmation()) && !profile.mayInterrupt()) {
         String decision = step.needsApproval() ? "approval" : "confirmation";
         throw new IllegalStateException("Node " + node + " cannot interrupt for " + decision);
@@ -344,9 +344,10 @@ public final class ConversationWorkflowGraph {
         APPROVAL_GATE.equals(nodeId));
   }
 
-  private static WorkflowRequest request(AgentState state, AiExecutionContext context) {
+  private static WorkflowRequest request(
+      AgentState state, AiExecutionContext context, NodeProfile profile) {
     return new WorkflowRequest(
-        state.<String>value(MESSAGE).orElse(""), context, Map.copyOf(state.data()));
+        state.<String>value(MESSAGE).orElse(""), context, Map.copyOf(state.data()), profile);
   }
 
   private static Map<String, Object> identity(AiExecutionContext context) {

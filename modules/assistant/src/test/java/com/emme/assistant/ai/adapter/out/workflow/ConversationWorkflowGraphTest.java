@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.emme.assistant.ai.WorkflowTestCapabilities;
+import com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities;
 import com.emme.assistant.ai.application.workflow.NodeGuardrailPolicy;
 import com.emme.assistant.ai.application.workflow.NodeMemoryPolicy;
 import com.emme.assistant.ai.application.workflow.NodeModelRole;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphInput;
 import org.bsc.langgraph4j.RunnableConfig;
@@ -171,6 +173,35 @@ class ConversationWorkflowGraphTest {
                                 RunnableConfig.builder().threadId(WORKFLOW_ID.toString()).build())
                             .orElseThrow()))
         .hasRootCauseMessage("Node validate_business_result cannot interrupt for approval");
+  }
+
+  @Test
+  void passesTheResolvedNodeProfileToTheCapabilityBoundary() throws Exception {
+    var defaults = WorkflowTestCapabilities.basic();
+    AtomicReference<NodeProfile> observed = new AtomicReference<>();
+    ConversationWorkflowCapabilities capabilities =
+        new ConversationWorkflowCapabilities(
+            request -> {
+              observed.set(request.profile());
+              return defaults.intentDetection().detect(request);
+            },
+            defaults.decomposition(),
+            defaults.semanticRouting(),
+            defaults.slotExtraction(),
+            defaults.retrieval(),
+            defaults.toolExecution(),
+            defaults.businessValidation(),
+            defaults.responseComposition(),
+            defaults.quoteWorkflow());
+
+    runWithContext(
+        () ->
+            graph(capabilities)
+                .invoke(input(), RunnableConfig.builder().threadId(WORKFLOW_ID.toString()).build())
+                .orElseThrow());
+
+    assertThat(observed).isNotNull();
+    assertThat(observed.get().nodeId()).isEqualTo(ConversationWorkflowGraph.DETECT_EXPLICIT_INTENT);
   }
 
   private static CompiledGraph<AgentState> graph() throws Exception {

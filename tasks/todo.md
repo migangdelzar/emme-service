@@ -4101,6 +4101,9 @@ appointment mutation tools are registered.
       scopes.
 - [x] Reject non-JSON workflow state values and bound nested patch maps/lists
       before LangGraph checkpoint serialization.
+- [x] Pass the resolved `NodeProfile` through `WorkflowRequest` at the graph
+      capability boundary while retaining the direct-call compatibility
+      constructor.
 - [ ] Register policies for every conversation graph node and enforce projected
       state, filtered tools, timeout, interruption, approval, and state-patch
       boundaries.

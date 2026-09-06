@@ -2638,8 +2638,23 @@ through `emme.testing`; integration-test fixture dependencies remain explicit.
       `ai-platform` and `shared`, which inherit it from `emme.testing`.
 - [x] Remove the unused `modules:shared` dependency from the generic testing
       library's main and fixture configurations.
-- [ ] Revisit convention-plugin scope after Java 25-compatible dependency
-      analysis is available.
+- [x] Revisit convention-plugin scope after Java 25-compatible dependency
+      analysis is available. Representative advice was reviewed module by
+      module; no additional safe scope reduction was justified.
+
+#### Current slice 22D — Complete Java 25 dependency-analysis review
+
+The build-logic suite and representative Assistant, Booking, and Catalog
+dependency-analysis tasks now pass on the configured Java 25 toolchain. Advice
+was reviewed as evidence; framework-owned transitives and source-set-specific
+test dependencies were retained, and no speculative convention split or bulk
+dependency removal was applied.
+
+- [x] Run `:build-logic:test`.
+- [x] Run representative `computeActualUsageMain` and `computeAdvice` tasks.
+- [x] Review remaining advice against source usage and test classpaths.
+- [x] Commit/push the prior measured dependency cleanup; no new build change
+      was justified by this review.
 
 #### Current slice 22C — Remove the proven Swagger duplicate
 

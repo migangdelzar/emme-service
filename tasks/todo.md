@@ -924,8 +924,18 @@
       the legacy non-Jakarta artifact from `spring-ai-openai`.
 - [x] Remove the unused aggregate `spring-boot-starter` from `ai-platform`;
       keep the aggregate starter at deployable application boundaries.
-- [ ] Review remaining generated advice module by module before changing any
-      additional dependency or convention declaration.
+- [x] Review remaining generated advice module by module before changing any
+      additional dependency or convention declaration; no further safe removal
+      or convention split was justified.
+
+### Current slice — Task 22D Java 25 dependency-analysis review
+
+- [x] Run build-logic tests and representative Assistant, Booking, and Catalog
+      dependency-analysis tasks.
+- [x] Review generated advice against source usage and affected test classpaths.
+- [x] Retain framework-owned/transitive dependencies and source-set-specific
+      test dependencies where the evidence does not justify removal.
+- [ ] Run the full repository quality gate again at the final phase checkpoint.
 
 ### Current slice — Task 19A tenant event boundary
 

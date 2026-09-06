@@ -1863,3 +1863,15 @@
 - **Prevention rule:** Keep one lightweight deployment-contract validator in
   the quality lane and reserve Kubernetes/Compose execution for the infrastructure
   phase gate.
+
+## 2026-09-06 — Treat dependency-analysis advice as evidence
+
+- **Failure mode:** Automated dependency advice can suggest removing framework
+  transitives or source-set-specific test dependencies that are still required
+  by conventions or affected tests.
+- **Detection signal:** Java 25-compatible analysis completed successfully, but
+  remaining recommendations mapped to convention-owned transitives and test or
+  integration classpaths rather than proven dead production dependencies.
+- **Prevention rule:** Review advice against source usage and every affected
+  classpath; apply only measured removals and record when retaining a dependency
+  is the safer decision.

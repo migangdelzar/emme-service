@@ -44,13 +44,20 @@ public final class AppointmentRescheduleWorkflow implements ConversationWorkflow
       return new WorkflowHandle(context.workflowId(), WorkflowStatus.WAITING_FOR_CONFIRMATION, 0);
     }
 
-    rescheduling.reschedule(
-        new RescheduleAppointmentCommand(
-            actor(context),
-            requiredUuid(command, "appointmentId"),
-            requiredInstant(command, "startsAt"),
-            requiredInstant(command, "endsAt"),
-            true));
+    try {
+      rescheduling.reschedule(
+          new RescheduleAppointmentCommand(
+              actor(context),
+              requiredUuid(command, "appointmentId"),
+              requiredInstant(command, "startsAt"),
+              requiredInstant(command, "endsAt"),
+              true));
+    } catch (RuntimeException exception) {
+      checkpoints.record(
+          context,
+          new WorkflowHandle(context.workflowId(), WorkflowStatus.WAITING_FOR_CONFIRMATION, 0));
+      throw exception;
+    }
     WorkflowHandle handle = new WorkflowHandle(context.workflowId(), WorkflowStatus.SUCCEEDED, 1);
     checkpoints.record(context, handle);
     return handle;

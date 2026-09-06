@@ -1193,7 +1193,8 @@ idempotency are still open slices.
 cancellation now records `WAITING_FOR_CONFIRMATION` before rethrowing the original
 mutation error, so a transient or policy failure does not strand the durable workflow
 in `RUNNING`. The behavior is covered by a focused regression test; reschedule claim
-recovery remains the next independent lifecycle slice.
+recovery now applies the same retry-preserving boundary and is covered by its own
+focused regression test.
 
 ## 8. Phase E — Evidence, Cleanup, and Release Gate
 

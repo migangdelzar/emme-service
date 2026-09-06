@@ -688,7 +688,7 @@
       retryable and policy failures do not strand the workflow in `RUNNING`.
 - [x] Run the focused cancellation workflow test, Assistant compilation, and
       Assistant Spotless checks.
-- [ ] Apply the same independently tested recovery boundary to rescheduling.
+- [x] Apply the same independently tested recovery boundary to rescheduling.
 
 ### Current slice — Durable Task 12A bounded operational evidence — 2026-09-05
 

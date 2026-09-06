@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.adapter.out.workflow;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -136,6 +137,49 @@ class AppointmentRescheduleWorkflowTest {
 
     assertThat(handle.status()).isEqualTo(WorkflowStatus.WAITING_FOR_CONFIRMATION);
     verifyNoInteractions(rescheduling);
+  }
+
+  @Test
+  void releasesTheConfirmationClaimWhenReschedulingFails() {
+    RescheduleAuthorizedAppointmentUseCase rescheduling =
+        mock(RescheduleAuthorizedAppointmentUseCase.class);
+    WorkflowCheckpointRepository checkpoints = mock(WorkflowCheckpointRepository.class);
+    when(checkpoints.claimForResume(
+            org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+        .thenReturn(true);
+    when(rescheduling.reschedule(org.mockito.ArgumentMatchers.any()))
+        .thenThrow(new IllegalStateException("target slot is no longer available"));
+    AiExecutionContext context = context();
+    UUID appointmentId = UUID.randomUUID();
+    Instant startsAt = Instant.parse("2030-01-01T10:00:00Z");
+    Instant endsAt = Instant.parse("2030-01-01T11:00:00Z");
+    WorkflowCommand command =
+        new WorkflowCommand(
+            context.workflowId(),
+            "appointment_reschedule",
+            Map.of(
+                "appointmentId",
+                appointmentId.toString(),
+                "startsAt",
+                startsAt.toString(),
+                "endsAt",
+                endsAt.toString(),
+                "confirmed",
+                true),
+            context.idempotencyKey());
+
+    assertThatThrownBy(
+            () ->
+                new AppointmentRescheduleWorkflow(rescheduling, checkpoints)
+                    .startOrResume(command, context))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("target slot is no longer available");
+
+    verify(checkpoints)
+        .record(
+            context,
+            new com.emme.ai.contracts.workflow.WorkflowHandle(
+                context.workflowId(), WorkflowStatus.WAITING_FOR_CONFIRMATION, 0));
   }
 
   private static AiExecutionContext context() {

@@ -66,7 +66,10 @@ public final class CreatePaymentLinkService implements CreatePaymentLinkUseCase 
             command.idempotencyKey());
     correlations.save(
         new PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation(
-            command.workflowId(), provider.name(), result.providerTransactionId()));
+            command.workflowId(),
+            provider.name(),
+            result.providerTransactionId(),
+            command.holdId()));
     return link;
   }
 

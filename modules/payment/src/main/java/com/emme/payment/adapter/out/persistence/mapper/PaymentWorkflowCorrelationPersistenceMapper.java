@@ -12,7 +12,10 @@ public final class PaymentWorkflowCorrelationPersistenceMapper {
   public PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation toDomain(
       PaymentWorkflowCorrelationEntity entity) {
     return new PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation(
-        entity.getWorkflowId(), entity.getProvider(), entity.getProviderReference());
+        entity.getWorkflowId(),
+        entity.getProvider(),
+        entity.getProviderReference(),
+        entity.getAppointmentHoldId());
   }
 
   public PaymentWorkflowCorrelationEntity toNewEntity(
@@ -21,6 +24,7 @@ public final class PaymentWorkflowCorrelationPersistenceMapper {
         tenantId,
         correlation.workflowId(),
         correlation.provider(),
-        correlation.providerReference());
+        correlation.providerReference(),
+        correlation.appointmentHoldId());
   }
 }

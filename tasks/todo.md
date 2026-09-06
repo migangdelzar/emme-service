@@ -224,6 +224,8 @@
       existing workflow execution context.
 - [x] Add a provider-neutral workflow-to-appointment resolver and make captured
       payment resume invoke the authoritative appointment confirmation use case.
+- [x] Persist the workflow-to-hold relation with a forward migration and resolve
+      only non-expired holds before confirmation.
 - [ ] Wire the resumed payment workflow into the appointment graph's durable
       checkpointed mutation edge and final appointment confirmation.
 

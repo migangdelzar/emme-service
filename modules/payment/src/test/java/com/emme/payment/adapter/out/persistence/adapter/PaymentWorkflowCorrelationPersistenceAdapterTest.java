@@ -21,9 +21,10 @@ class PaymentWorkflowCorrelationPersistenceAdapterTest {
         new PaymentWorkflowCorrelationPersistenceAdapter(
             repository, new PaymentWorkflowCorrelationPersistenceMapper());
     UUID workflowId = UUID.randomUUID();
+    UUID holdId = UUID.randomUUID();
     PaymentWorkflowCorrelationEntity entity =
         new PaymentWorkflowCorrelationEntity(
-            UUID.randomUUID(), workflowId, "mock", "provider-payment-1");
+            UUID.randomUUID(), workflowId, "mock", "provider-payment-1", holdId);
     when(repository.findByProviderAndProviderReference("mock", "provider-payment-1"))
         .thenReturn(Optional.of(entity));
 
@@ -32,6 +33,7 @@ class PaymentWorkflowCorrelationPersistenceAdapterTest {
             correlation -> {
               assertThat(correlation.workflowId()).isEqualTo(workflowId);
               assertThat(correlation.provider()).isEqualTo("mock");
+              assertThat(correlation.appointmentHoldId()).isEqualTo(holdId);
             });
 
     verify(repository).findByProviderAndProviderReference("mock", "provider-payment-1");

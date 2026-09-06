@@ -16,12 +16,15 @@ public interface PaymentWorkflowCorrelationRepository {
 
   PaymentWorkflowCorrelation save(PaymentWorkflowCorrelation correlation);
 
-  record PaymentWorkflowCorrelation(UUID workflowId, String provider, String providerReference) {
+  record PaymentWorkflowCorrelation(
+      UUID workflowId, String provider, String providerReference, UUID appointmentHoldId) {
 
     public PaymentWorkflowCorrelation {
       workflowId = Objects.requireNonNull(workflowId, "workflowId must not be null");
       provider = requireText(provider, "provider");
       providerReference = requireText(providerReference, "providerReference");
+      appointmentHoldId =
+          Objects.requireNonNull(appointmentHoldId, "appointmentHoldId must not be null");
     }
 
     private static String requireText(String value, String field) {

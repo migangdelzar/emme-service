@@ -58,7 +58,7 @@ class CreatePaymentLinkServiceTest {
     verify(correlations)
         .save(
             new PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation(
-                workflowId, "mock", "provider-payment-1"));
+                workflowId, "mock", "provider-payment-1", holdId));
   }
 
   @Test

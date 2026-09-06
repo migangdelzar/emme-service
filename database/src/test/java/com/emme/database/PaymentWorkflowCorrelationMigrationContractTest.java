@@ -11,6 +11,8 @@ class PaymentWorkflowCorrelationMigrationContractTest {
 
   private static final String MIGRATION =
       "db/emme-studio/releases/0.1.0/037-ai-workflow-correlations.sql";
+  private static final String HOLD_LINK_MIGRATION =
+      "db/emme-studio/releases/0.1.0/038-ai-payment-workflow-hold.sql";
 
   @Test
   void createsTenantScopedProviderToWorkflowCorrelation() throws IOException {
@@ -28,7 +30,17 @@ class PaymentWorkflowCorrelationMigrationContractTest {
   @Test
   void includesTheForwardMigrationInTheStudioChangelog() throws IOException {
     assertThat(resource("db/emme-studio/changelog.yaml"))
-        .contains("releases/0.1.0/037-ai-workflow-correlations.sql");
+        .contains("releases/0.1.0/037-ai-workflow-correlations.sql")
+        .contains("releases/0.1.0/038-ai-payment-workflow-hold.sql");
+  }
+
+  @Test
+  void linksTheWorkflowCorrelationToItsAppointmentHold() throws IOException {
+    assertThat(resource(HOLD_LINK_MIGRATION))
+        .contains("ALTER TABLE ai_payment_workflow_correlation")
+        .contains("appointment_hold_id UUID")
+        .contains("REFERENCES appointment_hold(id)")
+        .contains("idx_ai_payment_workflow_correlation_hold");
   }
 
   private static String resource(String path) throws IOException {

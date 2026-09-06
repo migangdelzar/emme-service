@@ -47,7 +47,7 @@ class ProcessPaymentWorkflowCallbackServiceTest {
         .thenReturn(
             java.util.Optional.of(
                 new PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation(
-                    workflowId, "mock", "provider-payment-1")));
+                    workflowId, "mock", "provider-payment-1", UUID.randomUUID())));
 
     PaymentWorkflowEvent event =
         new ProcessPaymentWorkflowCallbackService(callback, correlations, events).process(command);

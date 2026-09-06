@@ -14,7 +14,7 @@ class PaymentWorkflowCorrelationPersistenceMapperTest {
     UUID tenantId = UUID.randomUUID();
     PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation correlation =
         new PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation(
-            UUID.randomUUID(), "mock", "provider-payment-1");
+            UUID.randomUUID(), "mock", "provider-payment-1", UUID.randomUUID());
 
     PaymentWorkflowCorrelationPersistenceMapper mapper =
         new PaymentWorkflowCorrelationPersistenceMapper();
@@ -24,6 +24,7 @@ class PaymentWorkflowCorrelationPersistenceMapperTest {
     assertThat(entity.getWorkflowId()).isEqualTo(correlation.workflowId());
     assertThat(entity.getProvider()).isEqualTo(correlation.provider());
     assertThat(entity.getProviderReference()).isEqualTo(correlation.providerReference());
+    assertThat(entity.getAppointmentHoldId()).isEqualTo(correlation.appointmentHoldId());
     assertThat(mapper.toDomain(entity)).isEqualTo(correlation);
   }
 }

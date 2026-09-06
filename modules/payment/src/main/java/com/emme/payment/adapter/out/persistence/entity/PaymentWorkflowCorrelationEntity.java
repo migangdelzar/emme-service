@@ -21,15 +21,24 @@ public class PaymentWorkflowCorrelationEntity extends TenantOwnedEntity {
   @Column(name = "provider_reference", nullable = false, length = 200)
   private String providerReference;
 
+  @Column(name = "appointment_hold_id")
+  private UUID appointmentHoldId;
+
   protected PaymentWorkflowCorrelationEntity() {}
 
   @SuppressWarnings("this-escape")
   public PaymentWorkflowCorrelationEntity(
-      UUID tenantId, UUID workflowId, String provider, String providerReference) {
+      UUID tenantId,
+      UUID workflowId,
+      String provider,
+      String providerReference,
+      UUID appointmentHoldId) {
     super(tenantId);
     this.workflowId = Objects.requireNonNull(workflowId, "workflowId must not be null");
     this.provider = requireText(provider, "provider");
     this.providerReference = requireText(providerReference, "providerReference");
+    this.appointmentHoldId =
+        Objects.requireNonNull(appointmentHoldId, "appointmentHoldId must not be null");
   }
 
   public UUID getWorkflowId() {
@@ -42,6 +51,10 @@ public class PaymentWorkflowCorrelationEntity extends TenantOwnedEntity {
 
   public String getProviderReference() {
     return providerReference;
+  }
+
+  public UUID getAppointmentHoldId() {
+    return appointmentHoldId;
   }
 
   private static String requireText(String value, String field) {

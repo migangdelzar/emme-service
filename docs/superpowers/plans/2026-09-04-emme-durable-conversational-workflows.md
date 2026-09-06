@@ -1079,7 +1079,9 @@ payment-link facts from the tenant-routed hold, appointment, and service reposit
 requiring a persisted workflow execution context before returning an amount, default
 currency, description, and hold expiry. Captured payment resume now resolves the owned
 appointment through a provider-neutral port and delegates confirmation to the existing
-appointments use case; table resolution, checkpoint state persistence, and the
+appointments use case. The provider/workflow correlation now carries the appointment-hold
+relationship through forward migration `038-ai-payment-workflow-hold.sql`, and the resolver
+rejects expired holds before confirmation. Checkpoint state persistence and the
 booking/payment composition root remain for the next slice.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.

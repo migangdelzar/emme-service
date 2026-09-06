@@ -1250,10 +1250,12 @@ promotion evidence.
   git commit -m "feat(ai): record guarded retrieval evidence"
   ```
 
-**Task 12 progress note (2026-09-05):** Existing bounded Micrometer labels and Java/Python
-redaction paths were verified. Semantic trace match metadata is now bounded to 16 keys of
-at most 80 characters each, and the focused Java evidence tests plus six offline evaluation
-tests pass. Explicit evaluation promotion/safety evidence remains open.
+**Task 12 progress note (2026-09-06):** Existing bounded Micrometer labels and Java/Python
+redaction paths were verified. Semantic trace match metadata is bounded to 16 keys of at
+most 80 characters each. The offline evaluator now fails closed when a candidate does not
+carry `accepted: true` and a successful `outcome`, before invoking the metric engine; the
+example dataset and eight offline tests pass. Java lifecycle gates remain authoritative for
+candidate approval and promotion, and no automatic promotion is performed.
 
 ### Task 13: Remove compatibility duplicates and run the enterprise gate
 

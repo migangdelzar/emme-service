@@ -39,6 +39,8 @@ class EvaluationPipelineTest(unittest.TestCase):
                     "user_input": "Contact maria@example.com",
                     "response": "Call +52 555 123 4567",
                     "retrieved_contexts": ["Bearer secret-token"],
+                    "accepted": True,
+                    "outcome": "success",
                 }
             ]
         )
@@ -74,6 +76,8 @@ class EvaluationPipelineTest(unittest.TestCase):
                     "user_input": "What are your services?",
                     "response": "We offer manicures.",
                     "retrieved_contexts": ["Manicures are available."],
+                    "accepted": True,
+                    "outcome": "success",
                 }
             ]
         )
@@ -81,6 +85,53 @@ class EvaluationPipelineTest(unittest.TestCase):
         self.assertFalse(report.gates.shadow_comparison_passed)
         self.assertFalse(report.gates.canary_passed)
         self.assertFalse(hasattr(report, "promoted"))
+
+    def test_rejects_candidates_without_an_accepted_successful_retrieval(self):
+        evaluator = FakeMetricEvaluator({"faithfulness": 1.0})
+        pipeline = EvaluationPipeline(evaluator)
+
+        report = pipeline.evaluate(
+            [
+                {
+                    "user_input": "What are your services?",
+                    "response": "We offer manicures.",
+                    "retrieved_contexts": ["Manicures are available."],
+                    "accepted": False,
+                    "outcome": "success",
+                }
+            ]
+        )
+
+        self.assertFalse(report.gates.dataset_complete)
+        self.assertFalse(report.gates.safety_passed)
+        self.assertEqual(report.sample_count, 0)
+        self.assertIsNone(evaluator.samples)
+
+    def test_accepts_only_candidates_with_accepted_successful_retrieval(self):
+        evaluator = FakeMetricEvaluator(
+            {
+                "faithfulness": 0.95,
+                "answer_relevancy": 0.90,
+                "context_precision": 0.92,
+            }
+        )
+
+        report = EvaluationPipeline(evaluator).evaluate(
+            [
+                {
+                    "user_input": "What are your services?",
+                    "response": "We offer manicures.",
+                    "retrieved_contexts": ["Manicures are available."],
+                    "accepted": True,
+                    "outcome": "SUCCEEDED",
+                }
+            ]
+        )
+
+        self.assertTrue(report.gates.dataset_complete)
+        self.assertTrue(report.gates.safety_passed)
+        self.assertEqual(report.sample_count, 1)
+        self.assertEqual(len(evaluator.samples), 1)
 
     def test_jsonl_trace_loader_preserves_only_the_evaluation_fields(self):
         evaluator = FakeMetricEvaluator({"faithfulness": 0.90})
@@ -96,6 +147,8 @@ class EvaluationPipelineTest(unittest.TestCase):
                         "user_input": "What are your services?",
                         "response": "We offer manicures.",
                         "retrieved_contexts": ["Manicures are available."],
+                        "accepted": True,
+                        "outcome": "success",
                         "ignored": "must not enter evaluation",
                     }
                 )

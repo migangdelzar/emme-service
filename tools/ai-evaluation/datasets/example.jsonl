@@ -1,1 +1,1 @@
-{"user_input":"¿Qué servicios ofrecen?","response":"Ofrecemos manicure y gel semipermanente.","retrieved_contexts":["El salón ofrece manicure y gel semipermanente."],"reference":"El salón ofrece manicure y gel semipermanente."}
+{"user_input":"¿Qué servicios ofrecen?","response":"Ofrecemos manicure y gel semipermanente.","retrieved_contexts":["El salón ofrece manicure y gel semipermanente."],"reference":"El salón ofrece manicure y gel semipermanente.","accepted":true,"outcome":"success"}

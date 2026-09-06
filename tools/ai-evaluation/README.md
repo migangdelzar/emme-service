@@ -25,8 +25,11 @@ uv run pytest
 uv run emme-ai-evaluate --dataset datasets/example.jsonl --output evals/report.json
 ```
 
-Each JSONL row must contain `user_input`, `response`, and
-`retrieved_contexts`. `reference` is optional. Tenant IDs, principal IDs,
+Each JSONL row must contain `user_input`, `response`, `retrieved_contexts`,
+`accepted: true`, and a successful `outcome` (`success` or `succeeded`).
+`reference` is optional. Rows without an accepted retrieval decision or a
+successful outcome fail the safety gate and are not sent to the metric engine.
+Tenant IDs, principal IDs,
 workflow IDs, and raw trace metadata are intentionally not passed to Ragas.
 
 The report's `regression_passed` and `shadow_comparison_passed` fields are

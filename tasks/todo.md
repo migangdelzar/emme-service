@@ -261,8 +261,11 @@
       each no longer than 80 characters.
 - [x] Run focused Assistant trace/metrics tests and the offline evaluation pipeline
       tests (`6 passed`).
-- [ ] Add the remaining explicit evaluation promotion/safety evidence gates and phase
-      documentation before closing durable Task 12.
+- [x] Add the offline safety gate requiring an accepted retrieval decision and successful
+      outcome before evaluation samples reach the metric engine.
+- [x] Keep Java lifecycle approval/promotion authoritative and document the offline
+      evaluator's non-promotion boundary.
+- [x] Run the full offline evaluation test suite (`8 passed`) and update the example dataset.
 
 ## Repository framework-first refactoring plan — 2026-09-04
 

@@ -25,8 +25,7 @@ class EvaluationPipeline:
         self._evaluator = evaluator
 
     def evaluate(self, traces: Sequence[Mapping[str, object]]) -> EvaluationReport:
-        samples = tuple(self._sample(trace) for trace in traces)
-        if not samples:
+        if not traces or not all(self._eligible_candidate(trace) for trace in traces):
             return EvaluationReport(
                 metrics={},
                 gates=EvaluationGates(
@@ -38,6 +37,7 @@ class EvaluationPipeline:
                 sample_count=0,
             )
 
+        samples = tuple(self._sample(trace) for trace in traces)
         metrics = self._validate_metrics(self._evaluator.evaluate(samples))
         regression_passed = all(
             metrics.get(name, -1.0) >= threshold
@@ -54,6 +54,16 @@ class EvaluationPipeline:
             ),
             sample_count=len(samples),
         )
+
+    @staticmethod
+    def _eligible_candidate(trace: Mapping[str, object]) -> bool:
+        if trace.get("accepted") is not True:
+            return False
+        outcome = trace.get("outcome")
+        return isinstance(outcome, str) and outcome.strip().lower() in {
+            "success",
+            "succeeded",
+        }
 
     def evaluate_jsonl(self, path: Path) -> EvaluationReport:
         traces = []

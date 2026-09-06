@@ -199,6 +199,21 @@ class CanonicalAiContractsTest {
             sourcePath(
                 "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/rag/KnowledgeSearch.java"))
         .doesNotExist();
+    for (String legacySource :
+        List.of(
+            "routing/IntentDefinition.java",
+            "routing/IntentMatch.java",
+            "routing/IntentRoute.java",
+            "routing/IntentRouter.java",
+            "routing/RouteRequest.java",
+            "routing/package-info.java",
+            "tool/ToolRisk.java",
+            "tool/package-info.java")) {
+      assertThat(
+              sourcePath("libraries/ai-contracts/src/main/java/com/emme/ai/contracts/" + legacySource))
+          .as("removed compatibility contract: %s", legacySource)
+          .doesNotExist();
+    }
   }
 
   private static AiExecutionContext executionContext() {

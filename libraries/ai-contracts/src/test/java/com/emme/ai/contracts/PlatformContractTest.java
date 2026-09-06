@@ -8,14 +8,9 @@ import com.emme.ai.contracts.extraction.ArtComplexity;
 import com.emme.ai.contracts.extraction.NailDesignFeatures;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
-import com.emme.ai.contracts.routing.IntentDefinition;
-import com.emme.ai.contracts.routing.IntentMatch;
-import com.emme.ai.contracts.routing.IntentRoute;
-import com.emme.ai.contracts.routing.RouteRequest;
 import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.ai.contracts.semantic.SemanticCacheEntry;
-import com.emme.ai.contracts.tool.ToolRisk;
 import com.emme.ai.contracts.workflow.WorkflowStatus;
 import com.emme.kernel.context.AiExecutionContext;
 import java.time.Instant;
@@ -150,44 +145,6 @@ class PlatformContractTest {
                     Map.of("shape", 1.1),
                     List.of(),
                     false));
-  }
-
-  @Test
-  void routeIncludesTopTwoEvidenceAndAbstainsWhenConfidenceGateFails() {
-    var request = new RouteRequest("cuánto cuesta el diseño", "es-MX", Set.of("QUOTE_DESIGN"));
-    var definition =
-        new IntentDefinition(
-            "QUOTE_DESIGN",
-            "Calculate a design quote",
-            List.of("cuánto cuesta este diseño"),
-            "calculateQuote",
-            Set.of("design"),
-            Set.of("CLIENT", "STAFF"),
-            ToolRisk.READ_ONLY,
-            true,
-            true);
-    var top = new IntentMatch(definition, 0.91);
-    var second =
-        new IntentMatch(
-            new IntentDefinition(
-                "SERVICE_INFORMATION",
-                "Explain a service",
-                List.of("qué servicios tienen"),
-                "getSalonServices",
-                Set.of(),
-                Set.of("CLIENT"),
-                ToolRisk.READ_ONLY,
-                false,
-                false),
-            0.72);
-
-    var route = IntentRoute.abstained(request, top, second, 0.19, false, "missing design slot");
-
-    assertThat(route.top1()).isEqualTo(top);
-    assertThat(route.top2()).isEqualTo(second);
-    assertThat(route.margin()).isEqualTo(0.19);
-    assertThat(route.abstained()).isTrue();
-    assertThat(route.abstainReason()).contains("missing design slot");
   }
 
   @Test

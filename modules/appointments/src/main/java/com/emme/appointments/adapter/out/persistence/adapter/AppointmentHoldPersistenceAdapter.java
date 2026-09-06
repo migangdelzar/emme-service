@@ -25,6 +25,13 @@ public final class AppointmentHoldPersistenceAdapter implements AppointmentHoldR
   }
 
   @Override
+  public Optional<AppointmentHold> findById(UUID holdId) {
+    return repository
+        .findById(Objects.requireNonNull(holdId, "holdId must not be null"))
+        .map(mapper::toDomain);
+  }
+
+  @Override
   public Optional<AppointmentHold> findByIdempotencyKey(String idempotencyKey) {
     return repository.findByIdempotencyKey(idempotencyKey).map(mapper::toDomain);
   }

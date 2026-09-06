@@ -219,6 +219,9 @@
       publish verified callbacks through the provider-neutral event boundary.
 - [x] Restore persisted workflow principal/conversation/idempotency context before
       payment resume and fail closed when workflow ownership is missing.
+- [x] Derive payment-link amount, currency, description, and expiry from the
+      tenant-routed held appointment and persisted service state, requiring an
+      existing workflow execution context.
 - [ ] Wire the resumed payment workflow into the appointment graph's durable
       checkpointed mutation edge and final appointment confirmation.
 

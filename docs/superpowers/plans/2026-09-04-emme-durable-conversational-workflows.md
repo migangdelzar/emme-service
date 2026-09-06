@@ -1074,7 +1074,10 @@ published through a provider-neutral Spring Modulith boundary, persist
 provider-to-workflow correlation at checkout creation, and restore backend-owned
 principal/conversation/idempotency context before invoking payment resume. The listener
 fails closed when the workflow context is absent and performs schema-local context
-lookup without repeating tenant predicates. Final appointment confirmation, checkpoint
+lookup without repeating tenant predicates. The Assistant composition boundary now derives
+payment-link facts from the tenant-routed hold, appointment, and service repositories,
+requiring a persisted workflow execution context before returning an amount, default
+currency, description, and hold expiry. Final appointment confirmation, checkpoint
 integration, and the booking/payment composition root remain for the next slice.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.

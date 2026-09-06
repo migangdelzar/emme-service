@@ -52,4 +52,29 @@ class AppointmentHoldPersistenceAdapterTest {
 
     verify(repository).deleteById(holdId);
   }
+
+  @Test
+  void findsHoldByItsStableIdentifierInTheCurrentTenantSchema() {
+    SpringDataAppointmentHoldRepository repository = mock();
+    AppointmentHoldPersistenceAdapter adapter =
+        new AppointmentHoldPersistenceAdapter(repository, new AppointmentHoldPersistenceMapper());
+    AppointmentHoldEntity entity =
+        new AppointmentHoldEntity(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            Instant.parse("2030-01-01T09:15:00Z"),
+            "hold-1");
+    when(repository.findById(entity.getId())).thenReturn(Optional.of(entity));
+
+    assertThat(adapter.findById(entity.getId()))
+        .contains(
+            new AppointmentHold(
+                entity.getId(),
+                entity.getAppointmentId(),
+                entity.getExpiresAt(),
+                entity.getIdempotencyKey()));
+
+    verify(repository).findById(entity.getId());
+  }
 }

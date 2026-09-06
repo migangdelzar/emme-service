@@ -7,6 +7,8 @@ import java.util.UUID;
 /** Tenant-schema persistence boundary for durable appointment holds. */
 public interface AppointmentHoldRepository {
 
+  Optional<AppointmentHold> findById(UUID holdId);
+
   Optional<AppointmentHold> findByIdempotencyKey(String idempotencyKey);
 
   AppointmentHold save(AppointmentHold hold);

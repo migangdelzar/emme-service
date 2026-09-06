@@ -207,7 +207,9 @@
 - [x] Add the tenant-schema appointment-hold entity, JPA adapter, RLS migration, and
       migration contract coverage.
 - [x] Add tenant-schema payment-link persistence, RLS migration, and migration contract coverage.
-- [ ] Add callback idempotency and checkpointed graph edges.
+- [x] Add tenant-schema provider-to-workflow correlation persistence, RLS migration,
+      and migration contract coverage.
+- [ ] Wire verified callback ownership, idempotent workflow resume, and checkpointed graph edges.
 
 ## Repository framework-first refactoring plan — 2026-09-04
 

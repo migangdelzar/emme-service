@@ -1057,7 +1057,10 @@ and checkpointed graph edges remain. The payment-link repository now persists it
 idempotency key separately from the provider-neutral `PaymentLink` value object, so
 replay uniqueness is durable without widening the shared contract. Composition is
 intentionally deferred until the remaining tenant and provider dependencies are
-established.
+established. Migration `037-ai-workflow-correlations.sql` and its tenant-schema JPA
+adapter now provide provider-reference-to-workflow ownership lookup with tenant/RLS
+uniqueness. Callback verification, idempotent resume, and graph edges remain to be
+wired through that boundary.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.

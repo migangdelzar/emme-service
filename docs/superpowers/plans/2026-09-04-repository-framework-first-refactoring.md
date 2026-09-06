@@ -2711,7 +2711,7 @@ idempotency migrations. Live Liquibase application and PostgreSQL catalog/RLS
 verification remain Docker-gated; no deployed migration was edited in this
 slice.
 
-- [ ] **Step 3: Add only required forward migrations and script fixes**
+- [x] **Step 3: Add only required forward migrations and script fixes**
 
 Use Liquibase for schema changes and keep SQL-specific behavior in the
 database. Align runtime and script validation through tests rather than copying
@@ -2722,13 +2722,24 @@ identifier-safe boundary (`^[A-Za-z][A-Za-z0-9-]{0,62}$`) before registry writes
 No deployed migration was edited; the remaining live Liquibase/catalog/RLS gate
 is still Docker-dependent.
 
-- [ ] **Step 4: Run migration tests and commit**
+- [x] **Step 4: Run migration tests and commit**
 
 ```bash
 ./gradlew :database:test :database:compileJava --no-parallel --no-configuration-cache
 git add database
 git commit -m "test(database): enforce framework-first persistence contracts"
 ```
+
+#### Current slice 23A — Verify tenant migration script contracts
+
+The forward migration/script work is complete for the available non-Docker
+verification lane. Seed slugs are validated before registry writes, checked-in
+migration contracts pass, and shell syntax is valid. No deployed migration was
+edited; PostgreSQL execution remains a runtime gate.
+
+- [x] Run `bash -n database/docker/run-migrations.sh`.
+- [x] Run the full `:database:test` contract suite and `:database:compileJava`.
+- [x] Keep live Liquibase, catalog, and RLS verification Docker-gated.
 
 ### Task 24: Standardize deployment, health, and CI gates
 

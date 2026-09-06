@@ -1,5 +1,6 @@
 package com.emme.tenancy.adapter.in.messaging.consumer;
 
+import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.tenancy.api.event.TenantSchemaReady;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
@@ -37,17 +38,24 @@ public class TenantSchemaProvisioningListener {
   public void onTenantCreated(TenantCreated event) {
     log.info("Provisioning schema for tenant {} (slug={})", event.tenantId(), event.slug());
 
-    try {
-      String schemaName = schemaMigrationPort.migrate(event.tenantId(), event.slug());
-      log.info("Schema {} provisioned for tenant {}", schemaName, event.tenantId());
+    TenantContextHolder.withTenantAndCorrelation(
+        event.tenantId(),
+        "tenant-created:" + event.eventId(),
+        () -> {
+          try {
+            String schemaName = schemaMigrationPort.migrate(event.tenantId(), event.slug());
+            log.info("Schema {} provisioned for tenant {}", schemaName, event.tenantId());
 
-      TenantSchemaReady ready =
-          new TenantSchemaReady(UUID.randomUUID(), event.tenantId(), event.slug(), schemaName);
-      eventPublisher.publishEvent(ready);
-    } catch (Exception e) {
-      log.error("Schema provisioning failed for tenant {}: {}", event.tenantId(), e.getMessage());
-      provisioningRepository.markFailed(event.tenantId(), e.getMessage());
-      throw e;
-    }
+            TenantSchemaReady ready =
+                new TenantSchemaReady(
+                    UUID.randomUUID(), event.tenantId(), event.slug(), schemaName);
+            eventPublisher.publishEvent(ready);
+          } catch (Exception e) {
+            log.error(
+                "Schema provisioning failed for tenant {}: {}", event.tenantId(), e.getMessage());
+            provisioningRepository.markFailed(event.tenantId(), e.getMessage());
+            throw e;
+          }
+        });
   }
 }

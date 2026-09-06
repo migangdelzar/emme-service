@@ -6,6 +6,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.kernel.context.TenantContextHolder;
+import com.emme.kernel.tracing.CorrelationContextHolder;
 import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.tenancy.api.event.TenantSchemaReady;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
@@ -32,7 +34,14 @@ class TenantSchemaProvisioningListenerTest {
     UUID tenantId = UUID.randomUUID();
     TenantCreated event =
         new TenantCreated(UUID.randomUUID(), tenantId, "test-studio", "Test Studio");
-    when(schemaMigrationPort.migrate(tenantId, "test-studio")).thenReturn("test_studio");
+    when(schemaMigrationPort.migrate(tenantId, "test-studio"))
+        .thenAnswer(
+            invocation -> {
+              assertThat(TenantContextHolder.currentTenantOptional()).contains(tenantId);
+              assertThat(CorrelationContextHolder.requireCorrelationId())
+                  .isEqualTo("tenant-created:" + event.eventId());
+              return "test_studio";
+            });
 
     listener.onTenantCreated(event);
 

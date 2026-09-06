@@ -272,6 +272,18 @@
 - [ ] Run live externalized appointment replay and membership persistence checks
       when Kafka and PostgreSQL infrastructure are available.
 
+## Current slice — Task 19L provisioning replay context — 2026-09-06
+
+- [x] Add failing Tenancy and Identity provisioning-listener tests for
+      tenant/correlation restoration.
+- [x] Restore `tenant-created:<eventId>` during tenant schema provisioning.
+- [x] Restore `tenant-schema-ready:<eventId>` during identity realm
+      provisioning.
+- [x] Run focused listener tests, Tenancy/Identity checks, application event
+      contract tests, and Spotless.
+- [ ] Run live provisioning replay and provider/database checks when
+      PostgreSQL, Kafka, and Keycloak infrastructure are available.
+
 ## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
 
 - [x] Inventory remaining tenant-qualified repository and persistence methods.

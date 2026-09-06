@@ -2586,6 +2586,21 @@ request-local Spring Security and preserves the public Identity boundary.
 - [ ] Run live externalized appointment replay and membership persistence gates
       when Kafka and PostgreSQL infrastructure are available.
 
+#### Current slice 19L — Restore provisioning replay context
+
+Tenant schema provisioning and identity realm provisioning now restore the
+event tenant and deterministic correlation IDs before migration/provider work.
+The existing explicit control-plane and provider identifiers remain unchanged;
+this closes context reconstruction for the remaining durable provisioning
+listeners.
+
+- [x] Add failing Tenancy and Identity provisioning replay-context tests.
+- [x] Restore `tenant-created:<eventId>` for schema provisioning.
+- [x] Restore `tenant-schema-ready:<eventId>` for realm provisioning.
+- [x] Run focused listeners, module checks, event-contract tests, and Spotless.
+- [ ] Run live provisioning replay/provider/database gates when PostgreSQL,
+      Kafka, and Keycloak infrastructure are available.
+
 #### Current slice 19A — Keep tenant event publication behind a port
 
 `CreateTenantService` no longer imports Spring event infrastructure. The

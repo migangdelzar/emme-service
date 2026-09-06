@@ -8,6 +8,8 @@ import com.emme.identity.application.port.out.IdentityProviderAdministrationPort
 import com.emme.identity.application.port.out.IdentityRealmProvisioningConfigurationPort;
 import com.emme.identity.application.port.out.IdentityRealmProvisioningSettings;
 import com.emme.identity.application.port.out.TenantIdentityRealmPort;
+import com.emme.kernel.context.TenantContextHolder;
+import com.emme.kernel.tracing.CorrelationContextHolder;
 import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.api.event.TenantSchemaReady;
 import com.emme.tenancy.api.usecase.EnsureTenantMembershipUseCase;
@@ -35,6 +37,15 @@ class TenantRealmProvisioningListenerTest {
         new TenantSchemaReady(UUID.randomUUID(), tenantId, "test-slug", "test_slug");
     IdentityRealmProvisioningSettings settings = provisioningSettings();
     IdentityRealmProvisioningConfigurationPort configuration = () -> settings;
+    org.mockito.Mockito.doAnswer(
+            invocation -> {
+              assertThat(TenantContextHolder.currentTenantOptional()).contains(tenantId);
+              assertThat(CorrelationContextHolder.requireCorrelationId())
+                  .isEqualTo("tenant-schema-ready:" + event.eventId());
+              return null;
+            })
+        .when(administrationPort)
+        .createRealm("emme-test-slug", "test-slug");
 
     TenantRealmProvisioningListener listener =
         new TenantRealmProvisioningListener(

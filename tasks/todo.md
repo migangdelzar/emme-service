@@ -1,5 +1,17 @@
 # Service architecture migration checklist
 
+## Current slice — Task 6U canonical ChatService boundary — 2026-09-06
+
+- [x] Add failing source-architecture coverage for the deprecated ChatService
+      dependency and synthetic legacy response identity.
+- [x] Migrate ChatService constructors and execution to AiChatCompletion with
+      the bound execution context and explicit provider policy.
+- [x] Preserve semantic-cache writes with explicit response, knowledge, policy,
+      and source identity metadata.
+- [x] Run focused canonical-chat tests and the full Assistant unit suite.
+- [ ] Migrate tracing/provider-registry adapters and delete the temporary chat
+      port family once all callers and tests are migrated.
+
 ## Current slice — Task 6Q structured semantic-cache invalidation — 2026-09-06
 
 - [x] Add a failing source-contract test for the raw string invalidation

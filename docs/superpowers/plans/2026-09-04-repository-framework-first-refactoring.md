@@ -500,7 +500,8 @@ keys; no default or hidden provider identity is introduced.
 - [x] Add failing policy tests for canonical request and provider metadata.
 - [x] Migrate grounded and advisor-backed RAG answer composition.
 - [x] Expose canonical selector beans from both chat composition profiles.
-- [ ] Migrate `ChatService`, `RagQueryService`, and tracing/provider adapters.
+- [x] Migrate `RagQueryService` to the canonical request boundary.
+- [ ] Migrate `ChatService` and tracing/provider adapters.
 
 #### Current slice 6T — Migrate the retrieval-service completion fallback
 
@@ -516,7 +517,28 @@ depends on the deprecated Assistant chat port.
 - [x] Mark selector composition beans primary so raw provider capabilities do
       not create ambiguous canonical injections.
 - [x] Run focused RAG service, composition, and web-context tests.
-- [ ] Migrate `ChatService` and delete the remaining temporary chat adapters.
+- [x] Migrate `ChatService` to canonical requests and explicit cache identity.
+- [ ] Migrate tracing/provider registry adapters and delete the remaining
+      temporary chat adapters.
+
+#### Current slice 6U — Migrate the chat service to canonical requests
+
+`ChatService` now depends directly on `AiChatCompletion`. Each model execution
+receives the bound `AiExecutionContext` and the configured provider policy, and
+each semantic-cache write carries the canonical response provider/model plus
+the existing knowledge, policy, and source versions. The service no longer
+branches on `IdentifiedChatCompletionPort` or synthesizes `legacy-provider` /
+`legacy-model` metadata. Tracing, provider-registry adapters, and deletion of
+the temporary chat-port family remain a separate sequential compatibility slice.
+
+- [x] Add failing source-architecture coverage for the deprecated chat service
+      dependency and synthetic legacy response identity.
+- [x] Migrate `ChatService` constructors and execution to `AiChatCompletion`.
+- [x] Preserve semantic-cache writes with explicit response and policy
+      metadata.
+- [x] Run the full Assistant unit suite and focused canonical-chat tests.
+- [ ] Migrate tracing/provider-registry adapters and delete the temporary chat
+      ports after all callers and tests are migrated.
 
 #### Current slice 6L — Keep document retrieval on the canonical embedding port
 

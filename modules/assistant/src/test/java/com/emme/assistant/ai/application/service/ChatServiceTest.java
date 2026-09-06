@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.embedding.EmbeddingService;
+import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.assistant.ai.application.guardrail.GuardrailRejectedException;
 import com.emme.assistant.ai.application.guardrail.InputGuard;
 import com.emme.assistant.ai.application.guardrail.OutputGuard;
@@ -67,7 +69,7 @@ class ChatServiceTest {
     when(model.complete("", "What are your hours?")).thenReturn("Open today.");
     ChatService service =
         new ChatService(
-            model,
+            canonical(model),
             Optional.of(cache),
             Optional.of(router),
             Optional.of(new EmbeddingSemanticQueryFactory(embeddings)),
@@ -84,7 +86,7 @@ class ChatServiceTest {
   @Test
   void rejectsChatWithoutBackendAiExecutionContext() {
     ChatCompletionPort model = mock(ChatCompletionPort.class);
-    ChatService service = new ChatService(model, Optional.empty());
+    ChatService service = new ChatService(canonical(model), Optional.empty());
 
     assertThatThrownBy(() -> service.chat("", "hello"))
         .isInstanceOf(IllegalStateException.class)
@@ -99,7 +101,7 @@ class ChatServiceTest {
     when(cache.lookup("", query)).thenReturn(Optional.of("Open today."));
     ChatService service =
         new ChatService(
-            model,
+            canonical(model),
             Optional.of(cache),
             Optional.empty(),
             Optional.of(new EmbeddingSemanticQueryFactory(embeddingsFor(query))),
@@ -119,7 +121,7 @@ class ChatServiceTest {
     when(model.complete("", INFORMATIONAL_MESSAGE)).thenReturn("Open today.");
     ChatService service =
         new ChatService(
-            model,
+            canonical(model),
             Optional.of(cache),
             Optional.empty(),
             Optional.of(new EmbeddingSemanticQueryFactory(embeddingsFor(query))),
@@ -127,14 +129,20 @@ class ChatServiceTest {
 
     assertThat(inContext(() -> service.chat("", INFORMATIONAL_MESSAGE))).isEqualTo("Open today.");
 
-    verify(cache).store("", query, "Open today.");
+    verify(cache)
+        .store(
+            "",
+            query,
+            "Open today.",
+            new com.emme.assistant.ai.application.semantic.SemanticCacheIdentity(
+                "test", "test-v1", "knowledge-v1", "policy-v1", "source-v1"));
   }
 
   @Test
   void preservesExistingModelBehaviorWhenSemanticCachingIsDisabled() {
     ChatCompletionPort model = mock(ChatCompletionPort.class);
     when(model.complete("context", "hello")).thenReturn("response");
-    ChatService service = new ChatService(model, Optional.empty());
+    ChatService service = new ChatService(canonical(model), Optional.empty());
 
     assertThat(inContext(() -> service.chat("context", "hello"))).isEqualTo("response");
     verify(model).complete("context", "hello");
@@ -149,7 +157,7 @@ class ChatServiceTest {
     when(model.complete("", INFORMATIONAL_MESSAGE)).thenReturn("Open today.");
     ChatService service =
         new ChatService(
-            model,
+            canonical(model),
             Optional.of(cache),
             Optional.empty(),
             Optional.of(new EmbeddingSemanticQueryFactory(embeddingsFor(query))),
@@ -169,7 +177,7 @@ class ChatServiceTest {
     when(model.complete("", INFORMATIONAL_MESSAGE)).thenReturn("Open today.");
     ChatService service =
         new ChatService(
-            model,
+            canonical(model),
             Optional.of(cache),
             Optional.empty(),
             Optional.of(new EmbeddingSemanticQueryFactory(embeddingsFor(query))),
@@ -189,7 +197,7 @@ class ChatServiceTest {
     when(cache.lookup("", query)).thenThrow(failure);
     ChatService service =
         new ChatService(
-            model,
+            canonical(model),
             Optional.of(cache),
             Optional.empty(),
             Optional.of(new EmbeddingSemanticQueryFactory(embeddingsFor(query))),
@@ -207,11 +215,16 @@ class ChatServiceTest {
     SemanticQuery query = informationalQuery();
     when(cache.lookup("", query)).thenReturn(Optional.empty());
     when(model.complete("", INFORMATIONAL_MESSAGE)).thenReturn("Open today.");
-    when(cache.store("", query, "Open today."))
+    when(cache.store(
+            "",
+            query,
+            "Open today.",
+            new com.emme.assistant.ai.application.semantic.SemanticCacheIdentity(
+                "test", "test-v1", "knowledge-v1", "policy-v1", "source-v1")))
         .thenThrow(new IllegalStateException("database unavailable"));
     ChatService service =
         new ChatService(
-            model,
+            canonical(model),
             Optional.of(cache),
             Optional.empty(),
             Optional.of(new EmbeddingSemanticQueryFactory(embeddingsFor(query))),
@@ -235,7 +248,7 @@ class ChatServiceTest {
         .thenReturn(Optional.of(new AiToolResult("getSalonServices", "services", true)));
     ChatService service =
         new ChatService(
-            model,
+            canonical(model),
             Optional.of(cache),
             Optional.of(router),
             Optional.of(new EmbeddingSemanticQueryFactory(embeddings)),
@@ -251,7 +264,7 @@ class ChatServiceTest {
   void executesThroughTheRequiredCanonicalChatPort() {
     ChatCompletionPort model = mock(ChatCompletionPort.class);
     when(model.complete("", "hello")).thenReturn("response");
-    ChatService service = new ChatService(model, Optional.empty());
+    ChatService service = new ChatService(canonical(model), Optional.empty());
 
     assertThat(inContext(() -> service.chat("", "hello"))).isEqualTo("response");
 
@@ -270,13 +283,14 @@ class ChatServiceTest {
                 java.util.Map.of()));
     ChatService service =
         new ChatService(
-            model,
+            canonical(model),
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
             mock(SemanticMetrics.class),
             Optional.of(inputGuard),
-            Optional.<OutputGuard>empty());
+            Optional.<OutputGuard>empty(),
+            Optional.empty());
 
     assertThatThrownBy(() -> inContext(() -> service.chat("", "hello")))
         .isInstanceOf(GuardrailRejectedException.class)
@@ -291,13 +305,14 @@ class ChatServiceTest {
     when(model.complete("", "")).thenReturn("response");
     ChatService service =
         new ChatService(
-            model,
+            canonical(model),
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),
             mock(SemanticMetrics.class),
             Optional.of(inputGuard),
-            Optional.<OutputGuard>empty());
+            Optional.<OutputGuard>empty(),
+            Optional.empty());
 
     assertThat(inContext(() -> service.chat("", ""))).isEqualTo("response");
 
@@ -317,5 +332,15 @@ class ChatServiceTest {
 
   private static <T> T inContext(java.util.function.Supplier<T> action) {
     return AiExecutionContextScope.call(context(), action::get);
+  }
+
+  private static AiChatCompletion canonical(ChatCompletionPort delegate) {
+    return request ->
+        new ChatResponse(
+            delegate.complete(request.conversationContext(), request.userMessage()),
+            "test",
+            "test-v1",
+            0,
+            0);
   }
 }

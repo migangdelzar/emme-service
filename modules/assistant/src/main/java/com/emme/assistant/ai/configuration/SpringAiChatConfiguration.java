@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiToolCallbackProvider;
@@ -82,6 +83,14 @@ public class SpringAiChatConfiguration {
         configuredAdvisors,
         traceRecorder,
         toolCallbackProvider.orElse(null));
+  }
+
+  @Bean(name = "aiChatProviderPolicy")
+  @Primary
+  @ConditionalOnMissingBean(name = "aiChatProviderPolicy")
+  AiChatCompletion.ProviderPolicy chatProviderPolicy(SpringAiChatProperties properties) {
+    return new AiChatCompletion.ProviderPolicy(
+        properties.providers().stream().map(SpringAiChatProperties.Provider::key).toList(), true);
   }
 
   @Bean(name = "aiChatCompletion")

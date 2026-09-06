@@ -1769,3 +1769,16 @@
 - Prevention rule: when a raw provider and a policy/composition adapter share a
   capability, mark the policy owner as primary and add an application-context
   test proving consumers resolve the selector.
+
+## 2026-09-06 — Canonical consumers must preserve response identity explicitly
+
+- Failure mode: migrating a consumer to a canonical completion port while
+  retaining an identified-port branch allowed cache writes to fall back to
+  synthetic provider/model names and the old overloaded cache API.
+- Detection signal: the source-architecture test found the deprecated port,
+  `IdentifiedChatCompletionPort`, and `legacy-provider` / `legacy-model` still
+  present in `ChatService`; the focused behavior test found a three-argument
+  cache-write assertion after the production call had become structured.
+- Prevention rule: canonical consumers must send the bound execution context
+  and provider policy in one request, use provider/model metadata from the
+  canonical response, and construct explicit cache identity for every write.

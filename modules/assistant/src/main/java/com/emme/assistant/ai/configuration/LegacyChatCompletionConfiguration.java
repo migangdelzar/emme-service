@@ -61,4 +61,11 @@ public class LegacyChatCompletionConfiguration {
         scheduler,
         executionProperties.modelAdmissionTimeout());
   }
+
+  @Bean(name = "aiChatProviderPolicy")
+  @Primary
+  @ConditionalOnMissingBean(name = "aiChatProviderPolicy")
+  AiChatCompletion.ProviderPolicy legacyChatProviderPolicy(AiProviderProperties properties) {
+    return new AiChatCompletion.ProviderPolicy(List.of(properties.provider()), true);
+  }
 }

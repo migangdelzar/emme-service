@@ -17,7 +17,11 @@ class ChatCompositionArchitectureTest {
                 "modules/assistant/src/main/java/com/emme/assistant/ai/application/service/ChatService.java"));
 
     assertThat(chatService)
-        .contains("private final ChatCompletionPort chatCompletion")
+        .contains("private final AiChatCompletion chatCompletion")
+        .doesNotContain("ChatCompletionPort")
+        .doesNotContain("IdentifiedChatCompletionPort")
+        .doesNotContain("legacy-provider")
+        .doesNotContain("legacy-model")
         .doesNotContain("AiModelProvider")
         .doesNotContain("executeLegacyChat")
         .doesNotContain("ChatProviderFailurePolicy");

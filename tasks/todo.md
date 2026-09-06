@@ -1,5 +1,17 @@
 # Service architecture migration checklist
 
+## Current slice — Task 6Q structured semantic-cache invalidation — 2026-09-06
+
+- [x] Add a failing source-contract test for the raw string invalidation
+      overload.
+- [x] Migrate `SemanticChatCache` and JDBC tests to explicit
+      `SemanticCacheInvalidation` targets.
+- [x] Remove the string invalidation default and stale test-double override.
+- [x] Run the full Assistant unit suite, integration-test source compilation,
+      and Spotless.
+- [ ] Run live Redis invalidation and PostgreSQL semantic-cache gates when
+      Docker is available.
+
 ## Current slice — Task 6P semantic-cache identity compatibility cleanup — 2026-09-06
 
 - [x] Add a failing source-inventory test for legacy semantic-cache identity

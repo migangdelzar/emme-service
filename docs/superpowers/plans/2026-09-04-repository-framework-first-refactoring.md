@@ -561,6 +561,23 @@ PostgreSQL behavior remain Docker-gated.
       and Spotless.
 - [ ] Run live semantic-cache/vector behavior and PostgreSQL gates with Docker.
 
+#### Current slice 6Q — Use structured semantic-cache invalidation
+
+Semantic-cache invalidation now accepts only the existing structured
+`SemanticCacheInvalidation` target. `SemanticChatCache` supplies the current
+tenant and principal plus the manual dependency marker, so the durable adapter
+does not reconstruct policy from a raw cache-kind string. Live Redis and
+PostgreSQL invalidation behavior remain Docker-gated.
+
+- [x] Add a failing source-contract test for the raw string invalidation
+      overload.
+- [x] Migrate `SemanticChatCache` and JDBC/test callers to structured targets.
+- [x] Remove `SemanticCachePort.invalidate(String)` and the stale recording
+      test-double override.
+- [x] Run the full Assistant unit suite, integration-test source compilation,
+      and Spotless.
+- [ ] Run live semantic-cache invalidation and PostgreSQL gates with Docker.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

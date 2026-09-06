@@ -14,6 +14,7 @@ import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
+import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
 import com.emme.assistant.ai.application.semantic.SemanticMatch;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -304,7 +305,13 @@ class JdbcSemanticAdapterTest {
     when(statement.update()).thenReturn(2);
     JdbcSemanticCacheAdapter adapter = new JdbcSemanticCacheAdapter(jdbc, aiProperties());
 
-    AiExecutionContextScope.run(context(), () -> adapter.invalidate("FAQ"));
+    adapter.invalidate(
+        new SemanticCacheInvalidation(
+            TENANT_ID,
+            PRINCIPAL_ID,
+            "FAQ",
+            com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged.Dependency.MANUAL,
+            "manual"));
 
     ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
     verify(jdbc).sql(sql.capture());

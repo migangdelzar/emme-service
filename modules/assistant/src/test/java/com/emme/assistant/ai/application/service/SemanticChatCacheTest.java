@@ -18,6 +18,7 @@ import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
+import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidation;
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
@@ -524,9 +525,17 @@ class SemanticChatCacheTest {
             "chat-v1",
             java.time.Duration.ofMinutes(5));
 
-    AiExecutionContextScope.run(context(), semanticCache::invalidate);
+    var context = context();
+    AiExecutionContextScope.run(context, semanticCache::invalidate);
 
-    org.mockito.Mockito.verify(durableCache).invalidate("CHAT_INFORMATIONAL");
+    org.mockito.Mockito.verify(durableCache)
+        .invalidate(
+            new SemanticCacheInvalidation(
+                context.tenantId(),
+                context.principalId(),
+                "CHAT_INFORMATIONAL",
+                com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged.Dependency.MANUAL,
+                "manual"));
   }
 
   private static SemanticChatCache cache(

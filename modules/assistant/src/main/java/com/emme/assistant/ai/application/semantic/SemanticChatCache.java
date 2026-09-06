@@ -2,6 +2,7 @@ package com.emme.assistant.ai.application.semantic;
 
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
+import com.emme.ai.contracts.semantic.SemanticCacheDependencyChanged;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
@@ -172,8 +173,14 @@ public final class SemanticChatCache implements SemanticResponseCache {
 
   @Override
   public void invalidate() {
-    AiExecutionContextScope.requireCurrent();
-    cache.invalidate(CACHE_KIND);
+    var context = AiExecutionContextScope.requireCurrent();
+    cache.invalidate(
+        new SemanticCacheInvalidation(
+            context.tenantId(),
+            context.principalId(),
+            CACHE_KIND,
+            SemanticCacheDependencyChanged.Dependency.MANUAL,
+            "manual"));
   }
 
   private void recordLookup(String outcome) {

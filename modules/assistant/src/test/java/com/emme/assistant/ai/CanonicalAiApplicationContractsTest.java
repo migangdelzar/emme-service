@@ -49,6 +49,14 @@ class CanonicalAiApplicationContractsTest {
         .doesNotContain("static SemanticCacheIdentity legacy");
   }
 
+  @Test
+  void semanticCacheInvalidationUsesTheStructuredTenantAwareContract() throws IOException {
+    assertThat(Files.readString(sourceOf(SemanticCachePort.class)))
+        .doesNotContain("invalidate(String cacheKind)");
+    assertThat(Files.readString(sourceOf(SemanticCachePort.class)))
+        .doesNotContain("invalidate(CACHE_KIND)");
+  }
+
   private static Path toolSource(String fileName) {
     String relativePath =
         "modules/assistant/src/main/java/com/emme/assistant/ai/application/tool/" + fileName;

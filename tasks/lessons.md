@@ -1738,3 +1738,14 @@
 - **Prevention rule:** Before deleting a compatibility constructor, search and
   compile production, unit-test, integration-test, and fixture source sets;
   migrate every caller to the explicit contract before the deletion commit.
+
+## 2026-09-06 — Keep cache invalidation targets structured
+
+- **Failure mode:** Semantic-cache invalidation accepted a raw cache-kind string
+  and reconstructed tenant/principal/manual policy inside a default port method.
+- **Detection signal:** The compatibility inventory found one production caller
+  and test doubles still invoking `invalidate(String)` despite the structured
+  `SemanticCacheInvalidation` contract already being available.
+- **Prevention rule:** Cross-cutting invalidation ports must accept explicit
+  tenant, principal, dependency, and version data; callers at the authenticated
+  boundary should construct that value before invoking the adapter.

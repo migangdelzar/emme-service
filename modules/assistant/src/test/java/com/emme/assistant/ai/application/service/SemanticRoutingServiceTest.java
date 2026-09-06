@@ -289,9 +289,6 @@ class SemanticRoutingServiceTest {
       return recordHitResult;
     }
 
-    @Override
-    public void invalidate(String cacheKind) {}
-
     private UUID hitId() {
       return hitId;
     }

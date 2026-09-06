@@ -1036,6 +1036,12 @@ RLS and explicit tenant predicates for control-plane tables. Do not introduce a 
 lookup or a mixed schema/RLS access path. Provider callbacks are signature-verified and
 idempotent. Graph replay cannot repeat a mutation without the business idempotency key.
 
+Current progress: the framework-neutral appointment-hold, payment-link, normalized
+payment-event, and payment-workflow contracts are now present with identifier,
+correlation, expiry, and normalized-status validation. Tenant-scoped persistence,
+idempotent application services, callback ownership checks, and checkpointed graph
+edges remain for the next slices.
+
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.
 - [ ] **Step 3: Implement contracts, tables, and services.** Add tenant-scoped RLS tables with unique business idempotency keys, expiry indexes, provider correlation, and lifecycle constraints. Use existing appointment/payment application services for final mutations.

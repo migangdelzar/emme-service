@@ -1647,3 +1647,9 @@
 - **Prevention rule:** When deleting an interface family, inspect each
   implementer for inherited methods and annotations in the same slice before
   running the broader gate.
+
+## 2026-09-05 — Import contract records from their owning package
+
+- **Failure mode:** A new cross-package contract test referenced appointment and payment records without importing their owning packages.
+- **Detection signal:** Focused test compilation reported every record type as missing even though production sources had compiled.
+- **Prevention rule:** When a contract test lives in a shared workflow package, import each record from its owning bounded-context package before interpreting compiler failures as production defects.

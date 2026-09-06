@@ -4108,6 +4108,16 @@ appointment mutation tools are registered.
       state, filtered tools, timeout, interruption, approval, and state-patch
       boundaries.
 
+## Durable workflow Task 10 — hold-first payment contracts — 2026-09-05
+
+- [x] Write the first failing contract test for trusted hold, payment-link, and
+      normalized provider-event correlations.
+- [x] Add framework-neutral `AppointmentHold`, `PaymentLink`,
+      `PaymentWorkflowEvent`, and `PaymentWorkflow` contracts.
+- [x] Run the focused AI-contracts test.
+- [ ] Add tenant-scoped hold/link persistence, idempotent services, callback
+      correlation, and checkpointed booking/payment graph edges.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

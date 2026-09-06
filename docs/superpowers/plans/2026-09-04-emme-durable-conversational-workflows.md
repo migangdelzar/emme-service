@@ -1046,8 +1046,11 @@ library. The appointments module now also has a tenant-schema hold repository po
 an injected-clock `CreateAppointmentHoldService` that returns an existing hold for a
 replayed idempotency key before reading the appointment and otherwise creates a bounded
 expiry. Its release service delegates to the same repository boundary. Persistence
-adapters, payment-link service, callback ownership checks, and checkpointed graph edges
-remain; composition is intentionally deferred until those tenant and provider
+adapters, callback ownership checks, and checkpointed graph edges remain. The payment
+module now has tenant-schema link/source ports and a `CreatePaymentLinkService` that
+reads amount, currency, description, and expiry from the trusted source port, reuses
+idempotent links, and extracts a provider-neutral checkout URL from provider metadata.
+Composition is intentionally deferred until the tenant persistence and provider
 dependencies are established.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.

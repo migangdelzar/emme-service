@@ -16,6 +16,9 @@ class PaymentApplicationBoundaryTest {
   @Test
   void applicationOwnsPortsAndFocusedServices() {
     assertThat(Files.exists(APPLICATION.resolve("port/out/PaymentRepository.java"))).isTrue();
+    assertThat(Files.exists(APPLICATION.resolve("port/out/PaymentLinkRepository.java"))).isTrue();
+    assertThat(Files.exists(APPLICATION.resolve("port/out/PaymentLinkSourceRepository.java")))
+        .isTrue();
     assertThat(Files.exists(APPLICATION.resolve("port/out/PaymentProvider.java"))).isTrue();
     assertThat(Files.exists(APPLICATION.resolve("service/InitiatePaymentService.java"))).isTrue();
     assertThat(Files.exists(APPLICATION.resolve("service/AuthorizePaymentService.java"))).isTrue();
@@ -27,6 +30,7 @@ class PaymentApplicationBoundaryTest {
         .isTrue();
     assertThat(Files.exists(ROOT.resolve("api/command/CreatePaymentLinkCommand.java"))).isTrue();
     assertThat(Files.exists(ROOT.resolve("api/usecase/CreatePaymentLinkUseCase.java"))).isTrue();
+    assertThat(Files.exists(APPLICATION.resolve("service/CreatePaymentLinkService.java"))).isTrue();
   }
 
   @Test

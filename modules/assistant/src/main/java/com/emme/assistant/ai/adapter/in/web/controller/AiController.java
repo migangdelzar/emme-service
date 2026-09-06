@@ -79,15 +79,6 @@ public class AiController {
         deliveryGuard);
   }
 
-  /** Backwards-compatible constructor for clients that only use the legacy chat endpoint. */
-  public AiController(
-      ChatUseCase chatUseCase,
-      DetectIntentUseCase detectIntent,
-      RagQueryUseCase ragQuery,
-      AiWebExecutionContextFactory contextFactory) {
-    this(chatUseCase, detectIntent, ragQuery, Optional.empty(), contextFactory, Optional.empty());
-  }
-
   private AiController(
       ChatUseCase chatUseCase,
       DetectIntentUseCase detectIntent,

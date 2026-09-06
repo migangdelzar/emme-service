@@ -74,13 +74,22 @@ class AiControllerConversationTest {
   }
 
   @Test
-  void keepsLegacyControllerConstructionAndChatResponseCompatible() {
-    ChatUseCase legacyChat = mock(ChatUseCase.class);
+  void exposesOnlyTheDurableConversationCompositionConstructor() {
+    assertThat(
+            java.util.Arrays.stream(AiController.class.getConstructors())
+                .map(java.lang.reflect.Constructor::getParameterCount))
+        .doesNotContain(4);
+  }
+
+  @Test
+  void keepsControllerConstructionAndChatResponseCompatible() {
+    ChatUseCase chat = mock(ChatUseCase.class);
     DetectIntentUseCase intent = mock(DetectIntentUseCase.class);
     RagQueryUseCase rag = mock(RagQueryUseCase.class);
-    when(legacyChat.chat("", "question")).thenReturn("answer");
+    ProcessConversationUseCase conversations = mock(ProcessConversationUseCase.class);
+    when(chat.chat("", "question")).thenReturn("answer");
     AiController controller =
-        new AiController(legacyChat, intent, rag, new AiWebExecutionContextFactory());
+        new AiController(chat, intent, rag, conversations, new AiWebExecutionContextFactory());
     Jwt jwt = jwt();
     var authentication =
         new UsernamePasswordAuthenticationToken(
@@ -93,7 +102,7 @@ class AiControllerConversationTest {
             () -> controller.chat(new ChatRequest("question", null), null, jwt, authentication));
 
     assertThat(response.getBody()).isEqualTo(new ChatResponse("answer"));
-    verify(legacyChat).chat("", "question");
+    verify(chat).chat("", "question");
   }
 
   @Test

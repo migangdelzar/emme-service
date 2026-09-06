@@ -197,6 +197,14 @@
       boundaries, phase checkpoints, and final enterprise verification commands.
 - [ ] Select execution mode and begin implementation task-by-task.
 
+### Current slice — durable Task 10 appointment hold service — 2026-09-05
+
+- [x] Add the tenant-schema `AppointmentHoldRepository` port without repeating a tenant ID.
+- [x] Add the injected-clock hold service with positive expiry validation and idempotent replay.
+- [x] Add focused hold-creation coverage and run the appointments test plus Spotless.
+- [ ] Add the payment-link service against trusted persisted hold/payment state.
+- [ ] Add tenant-scoped persistence, callback idempotency, and checkpointed graph edges.
+
 ## Repository framework-first refactoring plan — 2026-09-04
 
 ### Current slice — Task 5 structured extraction and tool wiring

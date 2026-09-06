@@ -212,6 +212,16 @@
 - [ ] Run live provider replay/publication-retry checks when PostgreSQL, Google,
       and Modulith runtime infrastructure are available.
 
+## Current slice — Task 21G tenant fixture provider boundary — 2026-09-06
+
+- [x] Add a failing fixture-boundary test for the Identity provider fake in
+      `BaseTenantModuleTest`.
+- [x] Remove that provider setup from the base tenant fixture.
+- [x] Preserve the Identity fixture dependency required by
+      `EntitledTenantModuleTest` feature-flag setup.
+- [x] Run fixture compilation, Identity/Tenancy/Assistant tests, and Spotless.
+- [ ] Run all fixture-consuming module tests after further fixture moves.
+
 ## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
 
 - [x] Inventory remaining tenant-qualified repository and persistence methods.

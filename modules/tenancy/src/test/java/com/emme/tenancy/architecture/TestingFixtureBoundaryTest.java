@@ -58,6 +58,16 @@ class TestingFixtureBoundaryTest {
     assertThat(Files.readString(ENTITLED_TENANT_FIXTURE)).contains("fullSetup");
   }
 
+  @Test
+  void keepsIdentityProviderProvisioningOutOfTheTenantFixture() throws Exception {
+    assertThat(Files.readString(TENANT_BASE_FIXTURE))
+        .doesNotContain("MockIdentityProviderAdministrationConfig")
+        .doesNotContain("com.emme.identity.testing");
+    assertThat(Files.readString(ENTITLED_TENANT_FIXTURE))
+        .contains("com.emme.identity.adapter.out.persistence")
+        .contains("SpringDataFeatureFlagRepository");
+  }
+
   private static Path sourcePath(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     for (int attempt = 0; attempt < 8 && current != null; attempt++) {

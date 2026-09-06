@@ -1,6 +1,5 @@
 package com.emme.tenancy.testing;
 
-import com.emme.identity.testing.MockIdentityProviderAdministrationConfig;
 import com.emme.tenancy.api.command.CreateTenantCommand;
 import com.emme.tenancy.api.query.GetTenantQuery;
 import com.emme.tenancy.api.result.TenantDetails;
@@ -27,11 +26,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
     classes = com.emme.TestApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-@Import({
-  TestSecurityConfig.class,
-  TestBootstrapJdbcConfig.class,
-  MockIdentityProviderAdministrationConfig.class
-})
+@Import({TestSecurityConfig.class, TestBootstrapJdbcConfig.class})
 @ActiveProfiles("test")
 public abstract class BaseTenantModuleTest {
 

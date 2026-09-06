@@ -2824,6 +2824,22 @@ creation, request, and JWT mechanics.
 - [x] Migrate all `fullSetup()` consumers to the entitled fixture.
 - [x] Run the tenancy boundary, representative full-context, and affected fixture compilation checks.
 
+#### Current slice 21G — Remove Identity provider setup from the tenant base fixture
+
+`BaseTenantModuleTest` no longer imports the Identity-owned provider fake. H2
+full-context tests leave realm provisioning disabled, so the base tenant fixture
+now contains only tenant creation, bootstrap, security, request, and JWT
+mechanics. The tenancy fixture still retains its Identity test-fixture dependency
+because `EntitledTenantModuleTest` legitimately uses the Identity feature-flag
+entity and repository for entitlement setup.
+
+- [x] Add a failing fixture-boundary test for the provider-fake import.
+- [x] Remove the Identity provider fake from `BaseTenantModuleTest`.
+- [x] Preserve the Identity fixture dependency required by entitlement setup.
+- [x] Run tenancy boundary, Identity, Tenancy, and Assistant tests plus
+      fixture compilation and Spotless.
+- [ ] Run all fixture-consuming module tests after further fixture moves.
+
 ### Task 22: Remove duplicate Gradle capabilities and dependencies
 
 **Files:**

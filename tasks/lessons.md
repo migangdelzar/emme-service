@@ -2087,3 +2087,15 @@
 - **Prevention rule:** Review advice against source usage and every affected
   classpath; apply only measured removals and record when retaining a dependency
   is the safer decision.
+
+## 2026-09-06 — Separate fixture ownership from fixture dependencies
+
+- **Failure mode:** Removing an Identity test-fixture dependency from the
+  tenancy fixture was broader than removing Identity provider setup from the
+  base fixture.
+- **Detection signal:** `EntitledTenantModuleTest` still imports Identity's
+  feature-flag entity and repository, so fixture compilation failed immediately.
+- **Prevention rule:** When splitting test fixtures, remove only the setup and
+  dependency proven unnecessary by the focused source contract; preserve a
+  dependency still required by another owning fixture and document that
+  ownership explicitly.

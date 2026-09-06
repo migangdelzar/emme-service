@@ -2,6 +2,7 @@ package com.emme.payment.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -40,7 +41,7 @@ class CreatePaymentLinkServiceTest {
         .thenReturn(
             new PaymentProvider.PaymentResult(
                 "provider-payment-1", "PENDING", Map.of("checkout_url", "https://pay.test/1")));
-    when(links.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    when(links.save(any(), eq("payment-1"))).thenAnswer(invocation -> invocation.getArgument(0));
 
     PaymentLink link =
         new CreatePaymentLinkService(links, sources, provider)

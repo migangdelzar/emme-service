@@ -50,7 +50,8 @@ public final class CreatePaymentLinkService implements CreatePaymentLinkUseCase 
             command.workflowId(),
             provider.name(),
             checkoutUrl,
-            source.expiresAt()));
+            source.expiresAt()),
+        command.idempotencyKey());
   }
 
   private static String checkoutUrl(PaymentProvider.PaymentResult result) {

@@ -1053,8 +1053,11 @@ idempotent links, and extracts a provider-neutral checkout URL from provider met
 The appointment module now persists holds through a tenant-schema JPA adapter and
 forward migration `035-appointment-holds.sql` with RLS, expiry/appointment indexes,
 and tenant/idempotency uniqueness. Payment-link persistence, callback ownership checks,
-and checkpointed graph edges remain; composition is intentionally deferred until the
-remaining tenant and provider dependencies are established.
+and checkpointed graph edges remain. The payment-link repository now persists its
+idempotency key separately from the provider-neutral `PaymentLink` value object, so
+replay uniqueness is durable without widening the shared contract. Composition is
+intentionally deferred until the remaining tenant and provider dependencies are
+established.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.

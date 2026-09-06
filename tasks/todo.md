@@ -206,7 +206,8 @@
 - [x] Cover payment-link idempotent replay and provider checkout metadata extraction.
 - [x] Add the tenant-schema appointment-hold entity, JPA adapter, RLS migration, and
       migration contract coverage.
-- [ ] Add tenant-scoped payment-link persistence, callback idempotency, and checkpointed graph edges.
+- [x] Add tenant-schema payment-link persistence, RLS migration, and migration contract coverage.
+- [ ] Add callback idempotency and checkpointed graph edges.
 
 ## Repository framework-first refactoring plan — 2026-09-04
 

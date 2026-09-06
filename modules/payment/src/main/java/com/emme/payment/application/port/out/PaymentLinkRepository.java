@@ -8,5 +8,5 @@ public interface PaymentLinkRepository {
 
   Optional<PaymentLink> findByIdempotencyKey(String idempotencyKey);
 
-  PaymentLink save(PaymentLink link);
+  PaymentLink save(PaymentLink link, String idempotencyKey);
 }

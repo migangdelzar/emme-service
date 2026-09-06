@@ -6,9 +6,9 @@ import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.appointment.AppointmentHold;
 import com.emme.appointments.api.result.AppointmentDetails;
+import com.emme.appointments.api.type.AppointmentStatus;
 import com.emme.appointments.api.usecase.GetAppointmentHoldUseCase;
 import com.emme.appointments.api.usecase.GetAppointmentUseCase;
-import com.emme.appointments.api.type.AppointmentStatus;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowExecutionContextRepository;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.payment.api.port.out.PaymentLinkSourceRepository.PaymentLinkSource;

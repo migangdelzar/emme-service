@@ -3989,6 +3989,14 @@ appointment mutation tools are registered.
 - [x] Run the focused input-guard test and formatting checks.
 - [ ] Continue with the context, tool, grounding, output, and delivery guards.
 
+#### Task 8 context boundary slice
+
+- [x] Add red tests for tenant, principal, deadline, and matching-context
+      decisions.
+- [x] Implement `DefaultContextGuard` with injected-clock deadline checks.
+- [x] Run the focused context-guard test.
+- [ ] Continue with the tool, grounding, output, and delivery guards.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

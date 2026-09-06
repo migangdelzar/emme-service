@@ -63,6 +63,18 @@ keeping customer lifecycle state typed inside Java.
 - [x] Run focused Clients tests and the affected fast quality gate.
 - [ ] Continue finite-state migration in separate owning-module slices.
 
+### Current slice — Calendar status enum boundary
+
+Calendar event-link and synchronization state now retain their existing domain
+enums through application results and the HTTP synchronization response. Their
+stable enum names remain unchanged at serialization boundaries.
+
+- [x] Add a failing convention test for enum-typed Calendar status boundaries.
+- [x] Migrate Calendar result/response models, mappers, and affected fixtures.
+- [x] Run focused Calendar tests and the affected fast quality gate.
+- [ ] Run live Calendar provider/replay checks when PostgreSQL and provider
+      infrastructure are available.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

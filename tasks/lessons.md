@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-09-06 — Keep Calendar state enums at provider-facing read boundaries
+
+- Failure mode: Calendar converted event-link and synchronization state enums
+  to strings in public result models.
+- Detection signal: provider adapter fixtures required raw `SYNCED` values even
+  though Calendar already owned status enums.
+- Prevention rule: retain domain state enums through Calendar application and
+  response mapping; serialize stable names only at external edges.
+
 ## 2026-09-06 — Preserve customer lifecycle enums through read mapping
 
 - Failure mode: the Clients mapper converted `CustomerStatus` to a string

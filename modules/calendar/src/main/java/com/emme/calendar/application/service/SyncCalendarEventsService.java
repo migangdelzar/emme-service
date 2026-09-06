@@ -42,6 +42,6 @@ public class SyncCalendarEventsService implements SyncCalendarEventsUseCase {
     }
     CalendarSyncState saved = repository.save(state);
     return new CalendarSyncStateDetails(
-        saved.id(), saved.tenantId(), saved.provider().name(), saved.status().name());
+        saved.id(), saved.tenantId(), saved.provider().name(), saved.status());
   }
 }

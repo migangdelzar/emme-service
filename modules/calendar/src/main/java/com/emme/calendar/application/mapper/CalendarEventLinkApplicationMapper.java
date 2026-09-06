@@ -15,6 +15,6 @@ public final class CalendarEventLinkApplicationMapper {
         link.provider().name(),
         link.externalEventId(),
         link.etag(),
-        link.status().name());
+        link.status());
   }
 }

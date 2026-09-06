@@ -16,6 +16,7 @@ import com.emme.calendar.api.usecase.FindCalendarEventLinkUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinkSyncedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksDeletedUseCase;
 import com.emme.calendar.api.usecase.MarkCalendarEventLinksFailedUseCase;
+import com.emme.calendar.domain.model.CalendarEventLinkStatus;
 import com.emme.calendar.domain.model.CalendarProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
@@ -42,7 +43,7 @@ class ClientCalendarSyncAdapterTest {
                     CalendarProvider.GOOGLE_CALENDAR.name(),
                     externalEventId,
                     "etag-1",
-                    "SYNCED")));
+                    CalendarEventLinkStatus.SYNCED)));
 
     ClientCalendarSyncAdapter adapter =
         new ClientCalendarSyncAdapter(
@@ -81,7 +82,7 @@ class ClientCalendarSyncAdapterTest {
                     CalendarProvider.GOOGLE_CALENDAR.name(),
                     "event-123",
                     "etag-1",
-                    "SYNCED")));
+                    CalendarEventLinkStatus.SYNCED)));
     GoogleOAuthAdapter oauth = mock(GoogleOAuthAdapter.class);
     when(oauth.getValidAccessToken(tenantId, "user-123", PersonaType.CLIENT))
         .thenReturn("google-token");

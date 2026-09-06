@@ -1,5 +1,14 @@
 # Service architecture migration checklist
 
+## Current slice — Calendar status enum boundary — 2026-09-06
+
+- [x] Add a failing convention test for enum-typed calendar status models.
+- [x] Replace calendar event-link and sync-state status strings with their
+      existing domain enums across public results, HTTP response, and mapping.
+- [x] Migrate affected Calendar fixtures and run focused tests.
+- [ ] Run live calendar provider/replay checks when PostgreSQL and provider
+      infrastructure are available.
+
 ## Current slice — Clients customer status enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed customer status models.

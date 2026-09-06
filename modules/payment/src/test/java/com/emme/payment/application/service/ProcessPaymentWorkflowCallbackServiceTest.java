@@ -13,6 +13,7 @@ import com.emme.payment.api.type.PaymentStatus;
 import com.emme.payment.api.usecase.ProcessPaymentCallbackUseCase;
 import com.emme.payment.application.port.out.PaymentProviderException;
 import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
+import com.emme.payment.application.port.out.PaymentWorkflowEventPublisher;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Map;
@@ -31,6 +32,7 @@ class ProcessPaymentWorkflowCallbackServiceTest {
     ProcessPaymentCallbackUseCase callback = mock(ProcessPaymentCallbackUseCase.class);
     PaymentWorkflowCorrelationRepository correlations =
         mock(PaymentWorkflowCorrelationRepository.class);
+    PaymentWorkflowEventPublisher events = mock(PaymentWorkflowEventPublisher.class);
     when(callback.process(command))
         .thenReturn(
             new PaymentDetails(
@@ -48,7 +50,7 @@ class ProcessPaymentWorkflowCallbackServiceTest {
                     workflowId, "mock", "provider-payment-1")));
 
     PaymentWorkflowEvent event =
-        new ProcessPaymentWorkflowCallbackService(callback, correlations).process(command);
+        new ProcessPaymentWorkflowCallbackService(callback, correlations, events).process(command);
 
     assertThat(event.workflowId()).isEqualTo(workflowId);
     assertThat(event.provider()).isEqualTo("mock");
@@ -56,6 +58,7 @@ class ProcessPaymentWorkflowCallbackServiceTest {
     assertThat(event.providerReference()).isEqualTo("provider-payment-1");
     assertThat(event.status()).isEqualTo("CAPTURED");
     verify(callback).process(command);
+    verify(events).publish(event);
   }
 
   @Test
@@ -82,7 +85,9 @@ class ProcessPaymentWorkflowCallbackServiceTest {
 
     assertThatThrownBy(
             () ->
-                new ProcessPaymentWorkflowCallbackService(callback, correlations).process(command))
+                new ProcessPaymentWorkflowCallbackService(
+                        callback, correlations, mock(PaymentWorkflowEventPublisher.class))
+                    .process(command))
         .isInstanceOf(PaymentProviderException.class)
         .hasMessageContaining("no workflow correlation");
   }

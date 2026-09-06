@@ -2,7 +2,7 @@ package com.emme.payment.adapter.in.webhook;
 
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
-import com.emme.payment.api.usecase.ProcessPaymentCallbackUseCase;
+import com.emme.payment.api.usecase.ProcessPaymentWorkflowCallbackUseCase;
 import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,13 +35,13 @@ class MercadoPagoWebhookController {
   private static final Logger log = LoggerFactory.getLogger(MercadoPagoWebhookController.class);
   private static final String TENANT_HEADER = "X-Tenant-ID";
 
-  private final ProcessPaymentCallbackUseCase processPaymentCallback;
+  private final ProcessPaymentWorkflowCallbackUseCase processPaymentCallback;
   private final String webhookSecret;
   private final ObjectMapper objectMapper;
   private final MercadoPagoWebhookSignatureVerifier signatureVerifier;
 
   MercadoPagoWebhookController(
-      ProcessPaymentCallbackUseCase processPaymentCallback,
+      ProcessPaymentWorkflowCallbackUseCase processPaymentCallback,
       PaymentProperties props,
       ObjectMapper objectMapper,
       MercadoPagoWebhookSignatureVerifier signatureVerifier) {

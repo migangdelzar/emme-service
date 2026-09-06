@@ -2,12 +2,11 @@ package com.emme.payment.adapter.in.webhook;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.ai.contracts.payment.PaymentWorkflowEvent;
 import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
-import com.emme.payment.api.result.PaymentDetails;
-import com.emme.payment.api.usecase.ProcessPaymentCallbackUseCase;
+import com.emme.payment.api.usecase.ProcessPaymentWorkflowCallbackUseCase;
 import com.emme.payment.configuration.PaymentProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.UUID;
@@ -24,7 +23,7 @@ class MercadoPagoWebhookControllerTest {
 
   @Test
   void rejectsMalformedPayloadBeforeCallingTheUseCase() {
-    RecordingCallbackUseCase useCase = new RecordingCallbackUseCase();
+    RecordingWorkflowCallbackUseCase useCase = new RecordingWorkflowCallbackUseCase();
     MercadoPagoWebhookController controller = controller(useCase);
     MockHttpServletRequest request = request("not-json", "request-1", "payment-1");
     sign(request, "payment-1");
@@ -37,7 +36,7 @@ class MercadoPagoWebhookControllerTest {
 
   @Test
   void refusesToProcessWhenWebhookSecretIsMissing() {
-    RecordingCallbackUseCase useCase = new RecordingCallbackUseCase();
+    RecordingWorkflowCallbackUseCase useCase = new RecordingWorkflowCallbackUseCase();
     PaymentProperties properties =
         new PaymentProperties(
             "mercadopago",
@@ -57,7 +56,7 @@ class MercadoPagoWebhookControllerTest {
 
   @Test
   void delegatesOnlyAuthenticatedTenantScopedCallbacks() {
-    RecordingCallbackUseCase useCase = new RecordingCallbackUseCase();
+    RecordingWorkflowCallbackUseCase useCase = new RecordingWorkflowCallbackUseCase();
     MercadoPagoWebhookController controller = controller(useCase);
     MockHttpServletRequest request =
         request("{\"type\":\"payment\",\"data\":{\"id\":\"payment-1\"}}", "request-1", "payment-1");
@@ -70,9 +69,11 @@ class MercadoPagoWebhookControllerTest {
     assertThat(useCase.command.provider()).isEqualTo("mercadopago");
     assertThat(useCase.command.eventId()).isEqualTo("request-1");
     assertThat(useCase.command.payload()).containsEntry("id", "payment-1");
+    assertThat(useCase.event.tenantId()).isEqualTo(TENANT_ID);
+    assertThat(useCase.event.workflowId()).isNotNull();
   }
 
-  private MercadoPagoWebhookController controller(RecordingCallbackUseCase useCase) {
+  private MercadoPagoWebhookController controller(RecordingWorkflowCallbackUseCase useCase) {
     PaymentProperties properties =
         new PaymentProperties(
             "mercadopago",
@@ -112,20 +113,17 @@ class MercadoPagoWebhookControllerTest {
     }
   }
 
-  private static final class RecordingCallbackUseCase implements ProcessPaymentCallbackUseCase {
+  private static final class RecordingWorkflowCallbackUseCase
+      implements ProcessPaymentWorkflowCallbackUseCase {
     private ProcessPaymentCallbackCommand command;
+    private final PaymentWorkflowEvent event =
+        new PaymentWorkflowEvent(
+            TENANT_ID, UUID.randomUUID(), "mercadopago", "request-1", "payment-1", "CAPTURED");
 
     @Override
-    public PaymentDetails process(ProcessPaymentCallbackCommand command) {
+    public PaymentWorkflowEvent process(ProcessPaymentCallbackCommand command) {
       this.command = command;
-      return new PaymentDetails(
-          UUID.randomUUID(),
-          command.tenantId(),
-          "payment-1",
-          BigDecimal.ZERO,
-          "MXN",
-          com.emme.payment.api.type.PaymentStatus.PENDING,
-          java.time.Instant.now());
+      return event;
     }
   }
 }

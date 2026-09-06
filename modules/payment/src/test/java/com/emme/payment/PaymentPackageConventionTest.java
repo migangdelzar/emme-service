@@ -70,6 +70,19 @@ class PaymentPackageConventionTest {
         .isTrue();
   }
 
+  @Test
+  void paymentPersistenceMappersAreSpringCompositionBeans() throws Exception {
+    assertThat(
+            Files.readString(
+                ROOT.resolve("adapter/out/persistence/mapper/PaymentLinkPersistenceMapper.java")))
+        .contains("@Component");
+    assertThat(
+            Files.readString(
+                ROOT.resolve(
+                    "adapter/out/persistence/mapper/PaymentWorkflowCorrelationPersistenceMapper.java")))
+        .contains("@Component");
+  }
+
   private static boolean hasJavaSources(Path directory) {
     if (!Files.isDirectory(directory)) return false;
     try (Stream<Path> paths = Files.walk(directory)) {

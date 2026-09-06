@@ -3,8 +3,10 @@ package com.emme.appointments.adapter.out.persistence.mapper;
 import com.emme.ai.contracts.appointment.AppointmentHold;
 import com.emme.appointments.adapter.out.persistence.entity.AppointmentHoldEntity;
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 
 /** Maps durable appointment holds without exposing JPA types to application contracts. */
+@Component
 public final class AppointmentHoldPersistenceMapper {
 
   public AppointmentHold toDomain(AppointmentHoldEntity entity) {

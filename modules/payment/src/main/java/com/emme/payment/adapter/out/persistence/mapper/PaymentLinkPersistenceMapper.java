@@ -3,8 +3,10 @@ package com.emme.payment.adapter.out.persistence.mapper;
 import com.emme.ai.contracts.payment.PaymentLink;
 import com.emme.payment.adapter.out.persistence.entity.PaymentLinkEntity;
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 
 /** Maps payment-link persistence without exposing JPA types to application contracts. */
+@Component
 public final class PaymentLinkPersistenceMapper {
 
   public PaymentLink toDomain(PaymentLinkEntity entity) {

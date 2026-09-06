@@ -7,8 +7,14 @@ import com.emme.appointments.adapter.out.persistence.entity.AppointmentHoldEntit
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.stereotype.Component;
 
 class AppointmentHoldPersistenceMapperTest {
+
+  @Test
+  void isACompositionBeanForThePersistenceAdapter() {
+    assertThat(AppointmentHoldPersistenceMapper.class.getAnnotation(Component.class)).isNotNull();
+  }
 
   @Test
   void mapsTenantLocalHoldWithoutAddingTenantDataToTheDomainContract() {

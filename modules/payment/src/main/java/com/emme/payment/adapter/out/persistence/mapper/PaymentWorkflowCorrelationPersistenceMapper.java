@@ -3,8 +3,10 @@ package com.emme.payment.adapter.out.persistence.mapper;
 import com.emme.payment.adapter.out.persistence.entity.PaymentWorkflowCorrelationEntity;
 import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 
 /** Maps provider workflow correlations without exposing persistence types to the application. */
+@Component
 public final class PaymentWorkflowCorrelationPersistenceMapper {
 
   public PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation toDomain(

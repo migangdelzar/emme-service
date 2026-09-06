@@ -2513,6 +2513,8 @@ provider exception.
 - [x] Centralize failure marking at the replay boundary and rethrow failures.
 - [x] Preserve tenant/database restoration and successful replay behavior.
 - [x] Run focused Calendar listener/adapter tests and compilation.
+- [x] Run the repository framework checkpoint: `./gradlew check --no-parallel
+      --no-configuration-cache` passed (258 actionable tasks).
 - [ ] Run live provider replay and publication-retry checks when PostgreSQL,
       Google, and Modulith runtime infrastructure are available.
 

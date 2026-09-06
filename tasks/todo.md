@@ -207,6 +207,8 @@
 - [x] Preserve tenant/database context restoration and terminal missing-token
       handling.
 - [x] Run focused Calendar tests, compilation, and formatting checks.
+- [x] Run `./gradlew check --no-parallel --no-configuration-cache` (258
+      actionable tasks passed).
 - [ ] Run live provider replay/publication-retry checks when PostgreSQL, Google,
       and Modulith runtime infrastructure are available.
 

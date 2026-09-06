@@ -1580,3 +1580,13 @@
 - **Prevention rule:** Keep the compatibility bean through the planned caller
   migration slice, then delete it only after production callers, tests, and
   dependency searches are clean.
+## 2026-09-05 — Prepared-query migrations must move failure injection to the query boundary
+
+- **Failure mode:** After removing cache-owned embedding, a cache test kept a
+  mocked resolver and embedding failure, so the intended durable-cache
+  failure/trace path was never exercised.
+- **Detection signal:** Focused tests either produced identical cache keys for
+  different embedding versions or reported zero trace interactions.
+- **Prevention rule:** When ownership moves across a boundary, update fixtures
+  to inject failures at the new owner and use distinct prepared values for
+  identity-sensitive assertions.

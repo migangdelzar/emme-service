@@ -11,23 +11,6 @@ public interface SemanticResponseCache {
 
   Optional<java.util.UUID> store(String conversationContext, SemanticQuery query, String response);
 
-  /**
-   * @deprecated use {@link #lookup(String, SemanticQuery)}.
-   */
-  @Deprecated
-  default Optional<String> lookup(String conversationContext, String userMessage) {
-    throw new UnsupportedOperationException("A prepared semantic query is required");
-  }
-
-  /**
-   * @deprecated use {@link #store(String, SemanticQuery, String)}.
-   */
-  @Deprecated
-  default Optional<java.util.UUID> store(
-      String conversationContext, String userMessage, String response) {
-    throw new UnsupportedOperationException("A prepared semantic query is required");
-  }
-
   /** Stores a response with the provider identity that actually produced it. */
   default Optional<java.util.UUID> store(
       String conversationContext,

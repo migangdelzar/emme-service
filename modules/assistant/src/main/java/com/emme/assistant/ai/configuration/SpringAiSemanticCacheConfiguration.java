@@ -4,7 +4,6 @@ import com.emme.ai.contracts.tenant.AiTenantContextResolver;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.in.messaging.SemanticCacheInvalidationListener;
 import com.emme.assistant.ai.adapter.out.persistence.JacksonSemanticCachePayloadCodec;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
@@ -15,6 +14,7 @@ import com.emme.assistant.ai.application.semantic.SemanticCacheInvalidationServi
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticChatCache;
+import com.emme.assistant.ai.application.semantic.SemanticQueryFactory;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(SemanticCacheProperties.class)
 @ConditionalOnProperty(prefix = "app.ai.semantic-cache", name = "enabled", havingValue = "true")
-@ConditionalOnBean({EmbeddingModelPort.class, SemanticCachePort.class})
+@ConditionalOnBean({SemanticQueryFactory.class, SemanticCachePort.class})
 public class SpringAiSemanticCacheConfiguration {
 
   @Bean
@@ -84,7 +84,6 @@ public class SpringAiSemanticCacheConfiguration {
   @Bean
   @ConditionalOnMissingBean(SemanticResponseCache.class)
   SemanticResponseCache semanticChatCache(
-      EmbeddingModelPort embeddings,
       SemanticCacheResolver resolver,
       SemanticCachePort cache,
       SemanticCachePayloadCodec codec,
@@ -95,7 +94,6 @@ public class SpringAiSemanticCacheConfiguration {
       AiProviderProperties aiProperties,
       AiTraceRecorder traceRecorder) {
     return new SemanticChatCache(
-        embeddings,
         resolver,
         cache,
         codec,

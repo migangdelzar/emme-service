@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.event.NoopSemanticCacheDependencyPublisher;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
@@ -50,7 +49,6 @@ class SpringAiSemanticCacheConfigurationTest {
 
     SemanticResponseCache cache =
         configuration.semanticChatCache(
-            mock(EmbeddingModelPort.class),
             resolver,
             mock(SemanticCachePort.class),
             mock(SemanticCachePayloadCodec.class),

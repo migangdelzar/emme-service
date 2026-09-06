@@ -1,6 +1,5 @@
 package com.emme.assistant.ai.application.semantic;
 
-import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
@@ -39,7 +38,6 @@ public final class SemanticChatCache implements SemanticResponseCache {
 
   private static final String CACHE_KIND = "CHAT_INFORMATIONAL";
 
-  private final EmbeddingService legacyEmbeddings;
   private final SemanticCacheResolver resolver;
   private final SemanticCachePort cache;
   private final SemanticCachePayloadCodec codec;
@@ -55,7 +53,6 @@ public final class SemanticChatCache implements SemanticResponseCache {
   private final AiTraceRecorder traceRecorder;
 
   public SemanticChatCache(
-      EmbeddingService embeddings,
       SemanticCacheResolver resolver,
       SemanticCachePort cache,
       SemanticCachePayloadCodec codec,
@@ -69,7 +66,6 @@ public final class SemanticChatCache implements SemanticResponseCache {
       String locale,
       String quoteTemplateVersion,
       AiTraceRecorder traceRecorder) {
-    this.legacyEmbeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.resolver = Objects.requireNonNull(resolver, "resolver must not be null");
     this.cache = Objects.requireNonNull(cache, "cache must not be null");
     this.codec = Objects.requireNonNull(codec, "codec must not be null");
@@ -125,96 +121,9 @@ public final class SemanticChatCache implements SemanticResponseCache {
     }
   }
 
-  /**
-   * @deprecated use {@link #lookup(String, SemanticQuery)}.
-   */
-  @Override
-  @Deprecated
-  public Optional<String> lookup(String conversationContext, String userMessage) {
-    if (!isEligibleText(conversationContext, userMessage)) {
-      recordLookup("bypass");
-      return Optional.empty();
-    }
-    try {
-      return lookup(
-          conversationContext, new SemanticQuery(userMessage, legacyEmbeddings.embed(userMessage)));
-    } catch (RuntimeException failure) {
-      SemanticFailurePolicy.rethrowSecurityFailure(failure);
-      recordFailure("cache.lookup", failure);
-      recordFallback("cache.lookup", fallbackReason(failure));
-      recordSemanticFailure("cache.lookup", failure);
-      recordLookup("failure");
-      return Optional.empty();
-    }
-  }
-
   @Override
   public Optional<UUID> store(String conversationContext, SemanticQuery query, String response) {
     return store(conversationContext, query, response, identityForCurrentContext());
-  }
-
-  /**
-   * @deprecated use {@link #store(String, SemanticQuery, String)}.
-   */
-  @Override
-  @Deprecated
-  public Optional<UUID> store(String conversationContext, String userMessage, String response) {
-    if (!isEligibleText(conversationContext, userMessage)) {
-      recordWrite("bypass");
-      return Optional.empty();
-    }
-    requireText(response, "response");
-    if (!isSafeResponse(response)) {
-      recordWrite("rejected");
-      return Optional.empty();
-    }
-    try {
-      return store(
-          conversationContext,
-          new SemanticQuery(userMessage, legacyEmbeddings.embed(userMessage)),
-          response);
-    } catch (RuntimeException failure) {
-      SemanticFailurePolicy.rethrowSecurityFailure(failure);
-      recordFailure("cache.store", failure);
-      recordFallback("cache.store", fallbackReason(failure));
-      recordSemanticFailure("cache.store", failure);
-      recordWrite("failure");
-      return Optional.empty();
-    }
-  }
-
-  /**
-   * @deprecated use {@link #store(String, SemanticQuery, String, SemanticCacheIdentity)}.
-   */
-  @Deprecated
-  public Optional<UUID> store(
-      String conversationContext,
-      String userMessage,
-      String response,
-      SemanticCacheIdentity producingIdentity) {
-    if (!isEligibleText(conversationContext, userMessage)) {
-      recordWrite("bypass");
-      return Optional.empty();
-    }
-    requireText(response, "response");
-    if (!isSafeResponse(response)) {
-      recordWrite("rejected");
-      return Optional.empty();
-    }
-    try {
-      return store(
-          conversationContext,
-          new SemanticQuery(userMessage, legacyEmbeddings.embed(userMessage)),
-          response,
-          producingIdentity);
-    } catch (RuntimeException failure) {
-      SemanticFailurePolicy.rethrowSecurityFailure(failure);
-      recordFailure("cache.store", failure);
-      recordFallback("cache.store", fallbackReason(failure));
-      recordSemanticFailure("cache.store", failure);
-      recordWrite("failure");
-      return Optional.empty();
-    }
   }
 
   @Override

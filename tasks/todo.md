@@ -21,8 +21,10 @@
 - [x] Remove the deprecated raw-string proactive route and legacy constructor.
 - [x] Make ChatService invoke semantic tools only with its prepared query.
 - [x] Migrate proactive and ChatService tests to the prepared-query contract.
-- [ ] Remove the remaining deprecated raw-string semantic-cache methods in a
-      separate compatibility slice after all cache callers are migrated.
+- [x] Remove the deprecated raw-string semantic-cache methods and embedding-
+      owning cache constructor.
+- [x] Migrate semantic-cache tests and composition-root wiring to the prepared
+      query contract.
 
 ## Current slice — Assistant context regression — 2026-09-05
 

@@ -551,7 +551,7 @@ callers are migrated.
 - [x] Add a failing API-boundary test for the prepared-only proactive route.
 - [x] Remove the deprecated raw-string route and legacy constructor.
 - [x] Migrate ChatService and proactive-route tests to the shared query.
-- [ ] Remove the remaining semantic-cache raw-string compatibility family.
+- [x] Remove the remaining semantic-cache raw-string compatibility family.
 
 **Files:**
 

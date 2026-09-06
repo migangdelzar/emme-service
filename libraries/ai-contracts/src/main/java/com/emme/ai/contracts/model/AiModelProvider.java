@@ -15,7 +15,7 @@ import java.util.List;
  *     independently. This composite remains only as a compatibility boundary for existing wiring.
  */
 @Deprecated
-public interface AiModelProvider extends EmbeddingModel {
+public interface AiModelProvider {
 
   default String complete(String conversationContext, String userMessage) {
     AiExecutionContextScope.requireCurrent();

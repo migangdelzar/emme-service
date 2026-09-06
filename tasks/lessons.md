@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-09-05 — Scope Gradle test filters to the owning module
+
+- Failure mode: a multi-module Gradle invocation included Assistant test
+  filters for tests that only exist in AI Platform, causing the Assistant task
+  to fail with “No tests found” after the actual changed-module tests passed.
+- Detection signal: the failing task was `:modules:assistant:test`, not a
+  production compilation or assertion failure.
+- Prevention rule: apply each `--tests` selector only to the module that owns
+  the matching class, then run dependent modules with compile-only tasks when
+  they have no matching test source.
+
 ## 2026-09-05 — Verify source-set and package paths before writing plans
 
 - Failure mode: an implementation plan initially placed the existing Twilio

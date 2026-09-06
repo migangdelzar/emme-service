@@ -437,6 +437,20 @@ the library alias directly.
 - [x] Keep Spring AI's provider-internal `ChatModel` imports unchanged.
 - [x] Run AI-contracts, AI-platform, and Assistant focused tests and compile.
 
+#### Current slice 6J — Delete the duplicate library embedding alias
+
+The framework-neutral `com.emme.ai.contracts.model.EmbeddingModel` was only
+inherited by the deprecated composite `AiModelProvider`. Canonical embedding
+callers already use `EmbeddingService`, and Spring AI's
+`org.springframework.ai.embedding.EmbeddingModel` remains a separate
+provider-internal transport type, so the unused library alias can be deleted
+without changing embedding metadata or selection behavior.
+
+- [x] Add a failing source-inventory assertion for the library alias deletion.
+- [x] Remove the alias inheritance from `AiModelProvider`.
+- [x] Keep Spring AI's provider-internal `EmbeddingModel` imports unchanged.
+- [x] Run AI-contracts, AI-platform, and Assistant compilation and focused tests.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

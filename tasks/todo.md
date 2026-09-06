@@ -46,6 +46,18 @@
       migrations only after their policy callers are moved to canonical
       capability contracts.
 
+## Current slice — duplicate library embedding alias cleanup — 2026-09-05
+
+- [x] Add a failing source-inventory assertion for the deprecated library
+      `EmbeddingModel` alias.
+- [x] Remove the alias inheritance from `AiModelProvider`.
+- [x] Preserve Spring AI's provider-internal `EmbeddingModel` construction and
+      registry paths.
+- [x] Run AI-contracts and AI-platform focused tests plus Assistant compilation.
+- [ ] Continue with the composite provider capability migration only after its
+      default chat, embedding, retrieval, and image callers have replacement
+      beans and focused tests.
+
 ## Current slice — Assistant context regression — 2026-09-05
 
 - [x] Reproduce the full Assistant phase-checkpoint failure caused by two

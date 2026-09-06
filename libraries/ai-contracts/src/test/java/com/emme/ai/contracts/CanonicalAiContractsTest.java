@@ -147,6 +147,10 @@ class CanonicalAiContractsTest {
         .doesNotExist();
     assertThat(
             sourcePath(
+                "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/EmbeddingModel.java"))
+        .doesNotExist();
+    assertThat(
+            sourcePath(
                 "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/ChatCompletionPort.java"))
         .doesNotExist();
     assertThat(

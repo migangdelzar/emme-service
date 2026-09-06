@@ -1,10 +1,10 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.provider.springai.RedisSemanticCacheHotStore;
 import com.emme.assistant.ai.adapter.out.provider.springai.RedisSemanticCacheMetadata;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiEmbeddingModelAdapter;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import org.springframework.ai.chat.client.advisor.toolsearch.ToolSearchToolCallingAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -25,7 +25,7 @@ import redis.clients.jedis.RedisClient;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(RedisSemanticProperties.class)
 @ConditionalOnProperty(prefix = "app.ai.redis-semantic", name = "enabled", havingValue = "true")
-@ConditionalOnBean(value = EmbeddingModelPort.class, name = "aiSemanticEmbeddingModel")
+@ConditionalOnBean(value = EmbeddingService.class, name = "aiSemanticEmbeddingModel")
 public class SpringAiRedisSemanticConfiguration {
 
   @Bean(name = "aiRedisSemanticClient", destroyMethod = "close")
@@ -38,7 +38,7 @@ public class SpringAiRedisSemanticConfiguration {
   @ConditionalOnMissingBean(name = "aiRedisSemanticVectorStore")
   RedisVectorStore redisSemanticVectorStore(
       RedisClient redisClient,
-      @Qualifier("aiSemanticEmbeddingModel") EmbeddingModelPort embeddingModel,
+      @Qualifier("aiSemanticEmbeddingModel") EmbeddingService embeddingModel,
       RedisSemanticProperties properties,
       AiProviderProperties aiProperties) {
     requireEmbeddingContract(aiProperties, properties);
@@ -74,7 +74,7 @@ public class SpringAiRedisSemanticConfiguration {
       havingValue = "true")
   RedisVectorStore redisToolVectorStore(
       RedisClient redisClient,
-      @Qualifier("aiSemanticEmbeddingModel") EmbeddingModelPort embeddingModel,
+      @Qualifier("aiSemanticEmbeddingModel") EmbeddingService embeddingModel,
       RedisSemanticProperties properties,
       AiProviderProperties aiProperties) {
     requireEmbeddingContract(aiProperties, properties);
@@ -115,7 +115,7 @@ public class SpringAiRedisSemanticConfiguration {
   }
 
   EmbeddingModel redisEmbeddingModel(
-      EmbeddingModelPort embeddingModel, AiProviderProperties aiProperties) {
+      EmbeddingService embeddingModel, AiProviderProperties aiProperties) {
     return new SpringAiEmbeddingModelAdapter(
         embeddingModel, aiProperties.embeddingModelConfiguration());
   }

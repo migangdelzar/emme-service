@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.application.semantic;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.assistant.ai.api.result.IntentResult;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -9,12 +9,12 @@ import java.util.Optional;
 /** Runs the deterministic vector intent route before any model-based fallback. */
 public final class SemanticIntentRouter {
 
-  private final EmbeddingModelPort embeddings;
+  private final EmbeddingService embeddings;
   private final SemanticIntentClassifier classifier;
   private final String locale;
 
   public SemanticIntentRouter(
-      EmbeddingModelPort embeddings, SemanticIntentClassifier classifier, String locale) {
+      EmbeddingService embeddings, SemanticIntentClassifier classifier, String locale) {
     this.embeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.classifier = Objects.requireNonNull(classifier, "classifier must not be null");
     if (locale == null || locale.isBlank()) {

@@ -7,8 +7,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
 import com.emme.assistant.ai.application.semantic.SemanticIntentClassifier;
 import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
@@ -24,7 +24,7 @@ class SemanticIntentRouterTest {
 
   @Test
   void returnsAValidatedSemanticIntentWithoutCallingAnLlm() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticReferenceSearchPort search = mock(SemanticReferenceSearchPort.class);
     when(embeddings.embed("book Friday afternoon")).thenReturn(QUERY);
     when(search.searchIntents("es-MX", QUERY, 2))
@@ -47,7 +47,7 @@ class SemanticIntentRouterTest {
 
   @Test
   void abstainsWhenTheSemanticGateRejectsTheCandidates() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticReferenceSearchPort search = mock(SemanticReferenceSearchPort.class);
     when(embeddings.embed("maybe Friday")).thenReturn(QUERY);
     when(search.searchIntents("es-MX", QUERY, 2))
@@ -66,7 +66,7 @@ class SemanticIntentRouterTest {
 
   @Test
   void rejectsBlankInputBeforeEmbedding() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticIntentRouter router =
         new SemanticIntentRouter(embeddings, mock(SemanticIntentClassifier.class), "es-MX");
 

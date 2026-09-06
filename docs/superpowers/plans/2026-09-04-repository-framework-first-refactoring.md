@@ -409,6 +409,19 @@ as a separate compatibility family until their callers are migrated.
 - [x] Migrate ChatService and proactive-route tests to the shared query.
 - [x] Remove the remaining semantic-cache raw-string compatibility family.
 
+#### Current slice 6H — Delete the deprecated embedding compatibility port
+
+All Assistant production and test consumers now depend on the provider-neutral
+`EmbeddingService`. The deprecated `EmbeddingModelPort` subtype and its source
+file were removed; Spring composition roots and optional dependencies now use
+the canonical service type directly.
+
+- [x] Add a failing source-inventory test for the deprecated port deletion.
+- [x] Migrate embedding selectors, adapters, routers, and configuration to
+      `EmbeddingService`.
+- [x] Migrate affected tests and delete `EmbeddingModelPort.java`.
+- [x] Run the Assistant unit, integration-source, and Spotless gates.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

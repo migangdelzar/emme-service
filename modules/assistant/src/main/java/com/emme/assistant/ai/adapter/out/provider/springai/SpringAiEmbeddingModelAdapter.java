@@ -1,8 +1,8 @@
 package com.emme.assistant.ai.adapter.out.provider.springai;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -16,11 +16,11 @@ import org.springframework.ai.embedding.EmbeddingResponse;
 /** Adapts the configured application embedding chain to Spring AI's vector-store contract. */
 public final class SpringAiEmbeddingModelAdapter implements EmbeddingModel {
 
-  private final EmbeddingModelPort embeddings;
+  private final EmbeddingService embeddings;
   private final EmbeddingModelConfiguration configuration;
 
   public SpringAiEmbeddingModelAdapter(
-      EmbeddingModelPort embeddings, EmbeddingModelConfiguration configuration) {
+      EmbeddingService embeddings, EmbeddingModelConfiguration configuration) {
     this.embeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.configuration = Objects.requireNonNull(configuration, "configuration must not be null");
   }

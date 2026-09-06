@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiQueryImprover;
@@ -7,7 +8,6 @@ import com.emme.assistant.ai.adapter.out.provider.springai.TenantScopedDocumentR
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
@@ -51,7 +51,7 @@ import org.springframework.core.task.TaskExecutor;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(SpringAiRagProperties.class)
 @ConditionalOnProperty(prefix = "app.ai.spring-rag", name = "enabled", havingValue = "true")
-@ConditionalOnBean({SpringAiChatProperties.class, EmbeddingModelPort.class})
+@ConditionalOnBean({SpringAiChatProperties.class, EmbeddingService.class})
 public class SpringAiRagConfiguration {
 
   @Bean(name = "aiRagTaskExecutor")

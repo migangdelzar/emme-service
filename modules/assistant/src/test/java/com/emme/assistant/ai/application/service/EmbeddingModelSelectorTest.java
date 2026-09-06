@@ -8,10 +8,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
 import com.emme.kernel.context.AiExecutionContext;
@@ -32,8 +32,8 @@ class EmbeddingModelSelectorTest {
 
   @Test
   void returnsThePrimaryProviderResultWithoutCallingFallbacks() {
-    EmbeddingModelPort primary = mock(EmbeddingModelPort.class);
-    EmbeddingModelPort fallback = mock(EmbeddingModelPort.class);
+    EmbeddingService primary = mock(EmbeddingService.class);
+    EmbeddingService fallback = mock(EmbeddingService.class);
     when(primary.embed("book Friday afternoon")).thenReturn(LOCAL_VECTOR);
     EmbeddingModelSelector chain =
         new EmbeddingModelSelector(
@@ -48,8 +48,8 @@ class EmbeddingModelSelectorTest {
 
   @Test
   void usesTheNextProviderOnlyWhenTheCurrentProviderIsUnavailable() {
-    EmbeddingModelPort primary = mock(EmbeddingModelPort.class);
-    EmbeddingModelPort fallback = mock(EmbeddingModelPort.class);
+    EmbeddingService primary = mock(EmbeddingService.class);
+    EmbeddingService fallback = mock(EmbeddingService.class);
     when(primary.embed("quote this design"))
         .thenThrow(new EmbeddingProviderUnavailableException("local unavailable"));
     when(fallback.embed("quote this design")).thenReturn(CLOUD_VECTOR);
@@ -67,8 +67,8 @@ class EmbeddingModelSelectorTest {
 
   @Test
   void doesNotFallbackWhenAProviderReturnsAnInvalidVector() {
-    EmbeddingModelPort primary = mock(EmbeddingModelPort.class);
-    EmbeddingModelPort fallback = mock(EmbeddingModelPort.class);
+    EmbeddingService primary = mock(EmbeddingService.class);
+    EmbeddingService fallback = mock(EmbeddingService.class);
     when(primary.embed("quote this design"))
         .thenThrow(
             new IllegalStateException("Embedding dimension does not match configured dimension"));
@@ -86,7 +86,7 @@ class EmbeddingModelSelectorTest {
 
   @Test
   void rejectsBlankInputBeforeTouchingAnyProvider() {
-    EmbeddingModelPort primary = mock(EmbeddingModelPort.class);
+    EmbeddingService primary = mock(EmbeddingService.class);
     EmbeddingModelSelector chain =
         new EmbeddingModelSelector(List.of(new EmbeddingModelSelector.Provider("local", primary)));
 
@@ -98,8 +98,8 @@ class EmbeddingModelSelectorTest {
 
   @Test
   void reportsWhenEveryProviderIsUnavailable() {
-    EmbeddingModelPort primary = mock(EmbeddingModelPort.class);
-    EmbeddingModelPort fallback = mock(EmbeddingModelPort.class);
+    EmbeddingService primary = mock(EmbeddingService.class);
+    EmbeddingService fallback = mock(EmbeddingService.class);
     when(primary.embed("faq"))
         .thenThrow(new EmbeddingProviderUnavailableException("local unavailable"));
     when(fallback.embed("faq"))
@@ -120,7 +120,7 @@ class EmbeddingModelSelectorTest {
 
   @Test
   void admitsEachProviderAttemptThroughTheExistingModelScheduler() {
-    EmbeddingModelPort primary = mock(EmbeddingModelPort.class);
+    EmbeddingService primary = mock(EmbeddingService.class);
     when(primary.embed("faq")).thenReturn(LOCAL_VECTOR);
     var scheduler = new RecordingScheduler();
     EmbeddingModelSelector chain =
@@ -137,8 +137,8 @@ class EmbeddingModelSelectorTest {
 
   @Test
   void preservesFallbackOrderAndAdmissionForEachEmbeddingAttempt() {
-    EmbeddingModelPort primary = mock(EmbeddingModelPort.class);
-    EmbeddingModelPort fallback = mock(EmbeddingModelPort.class);
+    EmbeddingService primary = mock(EmbeddingService.class);
+    EmbeddingService fallback = mock(EmbeddingService.class);
     when(primary.embed("faq"))
         .thenThrow(new EmbeddingProviderUnavailableException("local unavailable"));
     when(fallback.embed("faq")).thenReturn(CLOUD_VECTOR);

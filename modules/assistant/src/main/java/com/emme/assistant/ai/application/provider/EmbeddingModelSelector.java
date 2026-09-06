@@ -1,9 +1,9 @@
 package com.emme.assistant.ai.application.provider;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /** Ordered embedding-model selection policy with unavailable-provider failover. */
-public final class EmbeddingModelSelector implements EmbeddingModelPort {
+public final class EmbeddingModelSelector implements EmbeddingService {
 
   private final List<Provider> providers;
   private final Optional<ModelExecutionScheduler> scheduler;
@@ -82,7 +82,7 @@ public final class EmbeddingModelSelector implements EmbeddingModelPort {
   }
 
   /** A named provider in the configured failover order. */
-  public record Provider(String key, EmbeddingModelPort model) {
+  public record Provider(String key, EmbeddingService model) {
     public Provider {
       if (key == null || key.isBlank()) {
         throw new IllegalArgumentException("Embedding provider key must not be blank");

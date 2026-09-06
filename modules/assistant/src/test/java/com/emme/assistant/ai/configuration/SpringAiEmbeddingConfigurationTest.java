@@ -8,9 +8,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.platform.configuration.AiProviderProperties;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
@@ -46,7 +46,7 @@ class SpringAiEmbeddingConfigurationTest {
             Map.of("ollamaEmbeddingModel", local, "openAiEmbeddingModel", cloud),
             properties,
             aiProperties(2));
-    EmbeddingModelPort embeddingModel = configuration.embeddingModel(registry);
+    EmbeddingService embeddingModel = configuration.embeddingModel(registry);
 
     assertThat(AiExecutionContextScope.call(context(), () -> embeddingModel.embed("faq")))
         .isEqualTo(
@@ -83,7 +83,7 @@ class SpringAiEmbeddingConfigurationTest {
                 new SpringAiEmbeddingProperties.Provider(
                     "ollamaEmbeddingModel", "local", "ollama-embeddinggemma:300m")));
     SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
-    EmbeddingModelPort embeddingModel =
+    EmbeddingService embeddingModel =
         configuration.embeddingModel(
             configuration.providerRegistry(
                 Map.of("ollamaEmbeddingModel", local), properties, aiProperties(2)));
@@ -108,7 +108,7 @@ class SpringAiEmbeddingConfigurationTest {
                 new SpringAiEmbeddingProperties.Provider(
                     "openAiEmbeddingModel", "cloud", "ollama-embeddinggemma:300m")));
     SpringAiEmbeddingConfiguration configuration = new SpringAiEmbeddingConfiguration();
-    EmbeddingModelPort embeddingModel =
+    EmbeddingService embeddingModel =
         configuration.embeddingModel(
             configuration.providerRegistry(
                 Map.of("ollamaEmbeddingModel", local, "openAiEmbeddingModel", cloud),

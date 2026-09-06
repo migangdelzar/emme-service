@@ -1,11 +1,11 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.ai.platform.configuration.AiProviderProperties;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.documents.api.query.SearchDocumentChunksQuery;
 import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
 import com.emme.kernel.context.AiExecutionContext;
@@ -22,13 +22,13 @@ public final class DocumentKnowledgeRetrievalAdapter implements KnowledgeRetriev
 
   private final AiModelProvider legacyModel;
   private final SearchDocumentChunksUseCase searchDocuments;
-  private final Optional<EmbeddingModelPort> embeddings;
+  private final Optional<EmbeddingService> embeddings;
   private final int embeddingDimensions;
 
   public DocumentKnowledgeRetrievalAdapter(
       AiModelProvider legacyModel,
       SearchDocumentChunksUseCase searchDocuments,
-      Optional<EmbeddingModelPort> embeddings) {
+      Optional<EmbeddingService> embeddings) {
     this(
         legacyModel,
         searchDocuments,
@@ -40,7 +40,7 @@ public final class DocumentKnowledgeRetrievalAdapter implements KnowledgeRetriev
   public DocumentKnowledgeRetrievalAdapter(
       AiModelProvider legacyModel,
       SearchDocumentChunksUseCase searchDocuments,
-      Optional<EmbeddingModelPort> embeddings,
+      Optional<EmbeddingService> embeddings,
       AiProviderProperties aiProperties) {
     this.legacyModel = Objects.requireNonNull(legacyModel, "legacyModel must not be null");
     this.searchDocuments =

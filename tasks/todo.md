@@ -26,6 +26,14 @@
 - [x] Migrate semantic-cache tests and composition-root wiring to the prepared
       query contract.
 
+## Current slice — canonical embedding compatibility cleanup — 2026-09-05
+
+- [x] Add the failing source-inventory test for `EmbeddingModelPort` deletion.
+- [x] Migrate all Assistant production and test callers to `EmbeddingService`.
+- [x] Delete the deprecated embedding compatibility source.
+- [x] Run Assistant tests, integration-test compilation, and Spotless.
+- [ ] Record the final deletion commit SHA in the migration ledger.
+
 ## Current slice — Assistant context regression — 2026-09-05
 
 - [x] Reproduce the full Assistant phase-checkpoint failure caused by two

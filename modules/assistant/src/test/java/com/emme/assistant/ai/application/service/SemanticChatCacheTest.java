@@ -10,8 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.NoopSemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticCacheHotStore;
 import com.emme.assistant.ai.application.port.out.SemanticCachePayloadCodec;
@@ -61,7 +61,7 @@ class SemanticChatCacheTest {
 
   @Test
   void returnsAValidatedCachedInformationalAnswer() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort cache = mock(SemanticCachePort.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
     UUID cacheId = UUID.randomUUID();
@@ -90,7 +90,7 @@ class SemanticChatCacheTest {
 
   @Test
   void bypassesTheCacheForTransactionalMessages() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort cache = mock(SemanticCachePort.class);
     SemanticChatCache semanticCache =
         cache(
@@ -109,7 +109,7 @@ class SemanticChatCacheTest {
 
   @Test
   void storesOnlyEligibleResponsesWithAnExpiringHashedWriteKey() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort cache = mock(SemanticCachePort.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
     when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
@@ -139,7 +139,7 @@ class SemanticChatCacheTest {
 
   @Test
   void includesConfiguredEmbeddingModelNameInTheCacheIdentity() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort cache = mock(SemanticCachePort.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
     when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
@@ -183,7 +183,7 @@ class SemanticChatCacheTest {
 
   @Test
   void includesResponseProviderModelAndDependencyVersionsInTheCacheIdentity() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort cache = mock(SemanticCachePort.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
     when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
@@ -216,7 +216,7 @@ class SemanticChatCacheTest {
 
   @Test
   void includesChannelLocaleQuoteTemplateAndActualProducingModelInTheCacheIdentity() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort cache = mock(SemanticCachePort.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
     when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
@@ -278,7 +278,7 @@ class SemanticChatCacheTest {
 
   @Test
   void separatesCacheWritesByEmbeddingModelAndDimension() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort cache = mock(SemanticCachePort.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
     when(embeddings.embed("What are your hours?"))
@@ -310,7 +310,7 @@ class SemanticChatCacheTest {
 
   @Test
   void confirmsAHotHitAgainstTheDurableCacheBeforeReturningIt() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     SemanticCacheHotStore hotStore = mock(SemanticCacheHotStore.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
@@ -339,7 +339,7 @@ class SemanticChatCacheTest {
 
   @Test
   void fallsBackToTheDurableCacheWhenTheHotProjectionIsUnavailable() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     SemanticCacheHotStore hotStore = mock(SemanticCacheHotStore.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
@@ -369,7 +369,7 @@ class SemanticChatCacheTest {
 
   @Test
   void writesTheDurableEntryBeforeProjectingToTheHotStore() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     SemanticCacheHotStore hotStore = mock(SemanticCacheHotStore.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
@@ -395,7 +395,7 @@ class SemanticChatCacheTest {
 
   @Test
   void doesNotStoreResponsesContainingPrivateOrPaymentData() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
     SemanticChatCache semanticCache =
@@ -416,7 +416,7 @@ class SemanticChatCacheTest {
 
   @Test
   void rejectsAnUnsafePayloadAgainWhenAStoredEntryIsLookedUp() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     SemanticCachePayloadCodec codec = mock(SemanticCachePayloadCodec.class);
     UUID cacheId = UUID.randomUUID();
@@ -442,7 +442,7 @@ class SemanticChatCacheTest {
 
   @Test
   void returnsAnEmptyResultWhenThePreparedQueryIsMissing() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     SemanticChatCache semanticCache =
         cache(
@@ -460,7 +460,7 @@ class SemanticChatCacheTest {
 
   @Test
   void recordsASemanticFailureWhilePreservingTheSafeEmptyFallback() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     AiTraceRecorder traces = mock(AiTraceRecorder.class);
     when(durableCache.find(any(), anyInt()))
@@ -491,7 +491,7 @@ class SemanticChatCacheTest {
 
   @Test
   void returnsAnEmptyResultWhenTheDurableCacheIsUnavailable() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     when(embeddings.embed("What are your hours?")).thenReturn(QUERY);
     when(durableCache.find(any(), anyInt())).thenThrow(new IllegalStateException("database down"));
@@ -513,7 +513,7 @@ class SemanticChatCacheTest {
     SemanticCachePort durableCache = mock(SemanticCachePort.class);
     SemanticChatCache semanticCache =
         cache(
-            mock(EmbeddingModelPort.class),
+            mock(EmbeddingService.class),
             mock(SemanticCacheResolver.class),
             durableCache,
             mock(SemanticCachePayloadCodec.class),
@@ -527,7 +527,7 @@ class SemanticChatCacheTest {
   }
 
   private static SemanticChatCache cache(
-      EmbeddingModelPort embeddings,
+      EmbeddingService embeddings,
       SemanticCacheResolver resolver,
       SemanticCachePort durableCache,
       SemanticCachePayloadCodec codec,
@@ -553,7 +553,7 @@ class SemanticChatCacheTest {
   }
 
   private static SemanticChatCache cache(
-      EmbeddingModelPort embeddings,
+      EmbeddingService embeddings,
       SemanticCacheResolver resolver,
       SemanticCachePort durableCache,
       SemanticCachePayloadCodec codec,
@@ -580,7 +580,7 @@ class SemanticChatCacheTest {
   }
 
   private static SemanticChatCache cache(
-      EmbeddingModelPort embeddings,
+      EmbeddingService embeddings,
       SemanticCacheResolver resolver,
       SemanticCachePort durableCache,
       SemanticCachePayloadCodec codec,
@@ -608,7 +608,7 @@ class SemanticChatCacheTest {
   }
 
   private static SemanticChatCache cache(
-      EmbeddingModelPort embeddings,
+      EmbeddingService embeddings,
       SemanticCacheResolver resolver,
       SemanticCachePort durableCache,
       SemanticCachePayloadCodec codec,
@@ -637,7 +637,7 @@ class SemanticChatCacheTest {
   }
 
   private static SemanticChatCache cache(
-      EmbeddingModelPort embeddings,
+      EmbeddingService embeddings,
       SemanticCacheResolver resolver,
       SemanticCachePort durableCache,
       SemanticCachePayloadCodec codec,
@@ -668,7 +668,7 @@ class SemanticChatCacheTest {
   }
 
   private static SemanticChatCache cache(
-      EmbeddingModelPort embeddings,
+      EmbeddingService embeddings,
       SemanticCacheResolver resolver,
       SemanticCachePort durableCache,
       SemanticCachePayloadCodec codec,

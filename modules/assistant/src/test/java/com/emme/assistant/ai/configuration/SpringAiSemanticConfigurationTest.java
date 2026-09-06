@@ -3,7 +3,7 @@ package com.emme.assistant.ai.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
 import com.emme.assistant.ai.application.semantic.SemanticIntentClassifier;
 import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
@@ -30,7 +30,7 @@ class SpringAiSemanticConfigurationTest {
   void buildsSemanticClassificationFromTheProviderNeutralPorts() {
     SpringAiSemanticConfiguration configuration = new SpringAiSemanticConfiguration();
     SemanticReferenceSearchPort search = mock(SemanticReferenceSearchPort.class);
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     SemanticMatchPolicy policy = new SemanticMatchPolicy(0.88, 0.12);
 
     SemanticIntentClassifier classifier = configuration.semanticIntentClassifier(search, policy);

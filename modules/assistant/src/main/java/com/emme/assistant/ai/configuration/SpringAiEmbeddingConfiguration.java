@@ -1,9 +1,9 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.ai.platform.configuration.SpringAiObservationConventions;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
 import com.emme.assistant.ai.application.semantic.EmbeddingSemanticQueryFactory;
 import com.emme.assistant.ai.application.semantic.SemanticQueryFactory;
@@ -69,7 +69,7 @@ public class SpringAiEmbeddingConfiguration {
 
   @Bean(name = "aiSemanticEmbeddingModel")
   @ConditionalOnMissingBean(name = "aiSemanticEmbeddingModel")
-  EmbeddingModelPort embeddingModel(
+  EmbeddingService embeddingModel(
       SpringAiEmbeddingProviderRegistry registry,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {
@@ -78,7 +78,7 @@ public class SpringAiEmbeddingConfiguration {
         .orElseGet(() -> new EmbeddingModelSelector(registry.providers()));
   }
 
-  EmbeddingModelPort embeddingModel(
+  EmbeddingService embeddingModel(
       SpringAiEmbeddingProviderRegistry registry,
       ModelExecutionScheduler scheduler,
       AiExecutorProperties executionProperties) {
@@ -86,13 +86,13 @@ public class SpringAiEmbeddingConfiguration {
         registry.providers(), scheduler, executionProperties.modelAdmissionTimeout());
   }
 
-  EmbeddingModelPort embeddingModel(SpringAiEmbeddingProviderRegistry registry) {
+  EmbeddingService embeddingModel(SpringAiEmbeddingProviderRegistry registry) {
     return new EmbeddingModelSelector(registry.providers());
   }
 
   @Bean
   @ConditionalOnMissingBean
-  SemanticQueryFactory semanticQueryFactory(EmbeddingModelPort embeddings) {
+  SemanticQueryFactory semanticQueryFactory(EmbeddingService embeddings) {
     return new EmbeddingSemanticQueryFactory(embeddings);
   }
 }

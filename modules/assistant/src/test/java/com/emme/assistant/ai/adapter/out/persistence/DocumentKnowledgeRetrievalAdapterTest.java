@@ -6,11 +6,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.ai.platform.configuration.AiProviderProperties;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -32,7 +32,7 @@ class DocumentKnowledgeRetrievalAdapterTest {
         new DocumentKnowledgeRetrievalAdapter(
             legacyModel,
             mock(SearchDocumentChunksUseCase.class),
-            Optional.<EmbeddingModelPort>empty(),
+            Optional.<EmbeddingService>empty(),
             new AiProviderProperties(
                 "mock",
                 null,
@@ -67,7 +67,7 @@ class DocumentKnowledgeRetrievalAdapterTest {
         new DocumentKnowledgeRetrievalAdapter(
             legacyModel,
             searchDocuments,
-            Optional.<EmbeddingModelPort>empty(),
+            Optional.<EmbeddingService>empty(),
             new AiProviderProperties(
                 "mock",
                 null,

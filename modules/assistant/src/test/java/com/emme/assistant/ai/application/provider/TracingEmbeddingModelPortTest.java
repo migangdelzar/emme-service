@@ -7,8 +7,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
@@ -25,7 +25,7 @@ class TracingEmbeddingModelPortTest {
 
   @Test
   void recordsSuccessfulEmbeddingAttemptsWithoutPersistingVectorValues() {
-    EmbeddingModelPort delegate = mock(EmbeddingModelPort.class);
+    EmbeddingService delegate = mock(EmbeddingService.class);
     when(delegate.embed("faq ana@example.com"))
         .thenReturn(testEmbedding("bge-v1", List.of(0.2f, 0.8f)));
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
@@ -47,7 +47,7 @@ class TracingEmbeddingModelPortTest {
 
   @Test
   void recordsEmbeddingProviderFailureAndPreservesFailoverSemantics() {
-    EmbeddingModelPort delegate = mock(EmbeddingModelPort.class);
+    EmbeddingService delegate = mock(EmbeddingService.class);
     EmbeddingProviderUnavailableException failure =
         new EmbeddingProviderUnavailableException("embedding timeout");
     when(delegate.embed("faq")).thenThrow(failure);

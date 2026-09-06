@@ -7,8 +7,8 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.platform.configuration.AiProviderProperties;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.port.out.EmbeddingProviderUnavailableException;
 import com.emme.assistant.ai.application.provider.EmbeddingModelSelector;
 import java.util.List;
@@ -26,7 +26,7 @@ class SpringAiRedisSemanticConfigurationTest {
     RedisVectorStore vectorStore =
         configuration.redisSemanticVectorStore(
             mock(RedisClient.class),
-            mock(EmbeddingModelPort.class),
+            mock(EmbeddingService.class),
             redisProperties(),
             aiProperties());
 
@@ -39,7 +39,7 @@ class SpringAiRedisSemanticConfigurationTest {
     RedisVectorStore vectorStore =
         configuration.redisToolVectorStore(
             mock(RedisClient.class),
-            mock(EmbeddingModelPort.class),
+            mock(EmbeddingService.class),
             redisProperties(),
             aiProperties());
     ToolIndex toolIndex = configuration.redisToolIndex(vectorStore);
@@ -62,7 +62,7 @@ class SpringAiRedisSemanticConfigurationTest {
             () ->
                 configuration.redisSemanticVectorStore(
                     mock(RedisClient.class),
-                    mock(EmbeddingModelPort.class),
+                    mock(EmbeddingService.class),
                     redisProperties,
                     aiProperties()))
         .isInstanceOf(IllegalArgumentException.class)
@@ -89,13 +89,13 @@ class SpringAiRedisSemanticConfigurationTest {
 
   @Test
   void routesRedisVectorStoreEmbeddingsThroughTheConfiguredModelSelector() {
-    EmbeddingModelPort primary = mock(EmbeddingModelPort.class);
-    EmbeddingModelPort fallback = mock(EmbeddingModelPort.class);
+    EmbeddingService primary = mock(EmbeddingService.class);
+    EmbeddingService fallback = mock(EmbeddingService.class);
     when(primary.embed("faq"))
         .thenThrow(new EmbeddingProviderUnavailableException("primary unavailable"));
     when(fallback.embed("faq"))
         .thenReturn(testEmbedding("ollama-embeddinggemma:300m", List.of(0.2f, 0.8f)));
-    EmbeddingModelPort selector =
+    EmbeddingService selector =
         new EmbeddingModelSelector(
             List.of(
                 new EmbeddingModelSelector.Provider("primary", primary),

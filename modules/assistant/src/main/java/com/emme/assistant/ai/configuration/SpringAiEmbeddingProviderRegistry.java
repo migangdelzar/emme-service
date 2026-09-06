@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.semantic.DistanceMetric;
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
 import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
@@ -112,7 +113,7 @@ public final class SpringAiEmbeddingProviderRegistry {
     return providers;
   }
 
-  private static com.emme.assistant.ai.application.port.out.EmbeddingModelPort applicationPort(
+  private static EmbeddingService applicationPort(
       SpringAiEmbeddingModel model, String providerKey) {
     return text -> {
       try {

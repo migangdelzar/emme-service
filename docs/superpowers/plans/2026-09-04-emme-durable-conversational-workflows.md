@@ -1132,6 +1132,18 @@ promotion evidence.
 
 ### Task 13: Remove compatibility duplicates and run the enterprise gate
 
+#### Current compatibility slice — canonical embedding service
+
+The deprecated Assistant `EmbeddingModelPort` subtype was deleted after all
+embedding callers migrated to the provider-neutral `EmbeddingService`. The
+remaining deprecated chat/provider compatibility families are independent and
+remain tracked for later deletion.
+
+- [x] Add a failing source-inventory test for the deprecated embedding port.
+- [x] Migrate production, composition-root, and test callers to
+      `EmbeddingService`.
+- [x] Delete the compatibility source and run Assistant verification gates.
+
 **Files:**
 
 - Modify/delete deprecated embedding aliases only after repository-wide caller search:

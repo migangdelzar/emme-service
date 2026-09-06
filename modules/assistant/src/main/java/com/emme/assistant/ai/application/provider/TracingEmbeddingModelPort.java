@@ -1,7 +1,7 @@
 package com.emme.assistant.ai.application.provider;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.semantic.EmbeddingVector;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
@@ -13,18 +13,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Records each embedding-provider attempt without persisting vector values. */
-public final class TracingEmbeddingModelPort implements EmbeddingModelPort {
+public final class TracingEmbeddingModelPort implements EmbeddingService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TracingEmbeddingModelPort.class);
 
-  private final EmbeddingModelPort delegate;
+  private final EmbeddingService delegate;
   private final String providerKey;
   private final String modelVersion;
   private final String promptVersion;
   private final AiTraceRecorder recorder;
 
   public TracingEmbeddingModelPort(
-      EmbeddingModelPort delegate,
+      EmbeddingService delegate,
       String providerKey,
       String modelVersion,
       String promptVersion,

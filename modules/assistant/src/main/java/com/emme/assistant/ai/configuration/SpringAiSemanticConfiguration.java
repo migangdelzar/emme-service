@@ -1,6 +1,6 @@
 package com.emme.assistant.ai.configuration;
 
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
 import com.emme.assistant.ai.application.semantic.SemanticIntentClassifier;
@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(SemanticRoutingProperties.class)
 @ConditionalOnProperty(prefix = "app.ai.semantic-routing", name = "enabled", havingValue = "true")
-@ConditionalOnBean({EmbeddingModelPort.class, SemanticReferenceSearchPort.class})
+@ConditionalOnBean({EmbeddingService.class, SemanticReferenceSearchPort.class})
 public class SpringAiSemanticConfiguration {
 
   @Bean
@@ -70,7 +70,7 @@ public class SpringAiSemanticConfiguration {
   @Bean
   @ConditionalOnMissingBean
   SemanticIntentRouter semanticIntentRouter(
-      EmbeddingModelPort embeddings,
+      EmbeddingService embeddings,
       SemanticIntentClassifier classifier,
       SemanticRoutingProperties properties) {
     return new SemanticIntentRouter(embeddings, classifier, properties.locale());

@@ -2,9 +2,7 @@ package com.emme.assistant.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
 import com.emme.assistant.ai.application.tool.AiToolGateway;
 import com.emme.assistant.ai.application.tool.AiToolRisk;
@@ -16,10 +14,13 @@ import org.junit.jupiter.api.Test;
 class CanonicalAiApplicationContractsTest {
 
   @Test
-  void legacyChatAndEmbeddingPortsDeclareTheirTemporaryCompatibilityStatus() {
+  void legacyChatPortDeclaresItsTemporaryCompatibilityStatus() {
     assertThat(ChatCompletionPort.class).hasAnnotation(Deprecated.class);
-    assertThat(EmbeddingModelPort.class).hasAnnotation(Deprecated.class);
-    assertThat(EmbeddingService.class).isAssignableFrom(EmbeddingModelPort.class);
+  }
+
+  @Test
+  void deprecatedEmbeddingPortSourceIsRemovedAfterCanonicalMigration() throws IOException {
+    assertThat(Files.exists(embeddingPortSource())).isFalse();
   }
 
   @Test
@@ -46,5 +47,17 @@ class CanonicalAiApplicationContractsTest {
       current = current.getParent();
     }
     throw new IllegalStateException("Cannot locate source path: " + relativePath);
+  }
+
+  private static Path embeddingPortSource() {
+    String relativePath =
+        "modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/EmbeddingModelPort.java";
+    Path current = Path.of("").toAbsolutePath();
+    while (current != null) {
+      Path candidate = current.resolve(relativePath);
+      if (Files.exists(candidate)) return candidate;
+      current = current.getParent();
+    }
+    return Path.of(relativePath);
   }
 }

@@ -3,8 +3,8 @@ package com.emme.assistant.ai.adapter.out.provider.springai;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.semantic.EmbeddingModelConfiguration;
-import com.emme.assistant.ai.application.port.out.EmbeddingModelPort;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -15,7 +15,7 @@ class SpringAiEmbeddingModelAdapterTest {
   @Test
   @SuppressWarnings({"rawtypes", "unchecked"})
   void rejectsRawVectorsWithAnUnexpectedDimensionBeforeSpringAiUsesThem() {
-    EmbeddingModelPort embeddings = mock(EmbeddingModelPort.class);
+    EmbeddingService embeddings = mock(EmbeddingService.class);
     EmbeddingModel adapter =
         new SpringAiEmbeddingModelAdapter(
             embeddings, new EmbeddingModelConfiguration("embeddinggemma:300m", "v1", 2));

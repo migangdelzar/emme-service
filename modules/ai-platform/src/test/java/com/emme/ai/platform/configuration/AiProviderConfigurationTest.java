@@ -6,12 +6,10 @@ import static org.mockito.Mockito.mock;
 import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.ai.contracts.model.AiChatCompletion;
-import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.platform.adapter.out.provider.mock.MockEmbeddingService;
 import com.emme.ai.platform.adapter.out.provider.mock.MockModelProvider;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
-import com.emme.ai.platform.adapter.out.provider.springai.SpringAiModelProvider;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -30,12 +28,9 @@ class AiProviderConfigurationTest {
         .withBean("ollamaEmbeddingModel", EmbeddingModel.class, () -> mock(EmbeddingModel.class))
         .run(
             context -> {
-              assertThat(context).hasSingleBean(AiModelProvider.class);
               assertThat(context).hasSingleBean(AiChatCompletion.class);
               assertThat(context).hasSingleBean(CaptionImageUseCase.class);
               assertThat(context).hasSingleBean(EmbeddingService.class);
-              assertThat(context.getBean(AiModelProvider.class))
-                  .isInstanceOf(SpringAiModelProvider.class);
             });
   }
 
@@ -46,11 +41,10 @@ class AiProviderConfigurationTest {
         .withUserConfiguration(MockModelProvider.class, MockEmbeddingService.class)
         .run(
             context -> {
-              assertThat(context).hasSingleBean(AiModelProvider.class);
               assertThat(context).hasSingleBean(AiChatCompletion.class);
               assertThat(context).hasSingleBean(CaptionImageUseCase.class);
               assertThat(context).hasSingleBean(EmbeddingService.class);
-              assertThat(context.getBean(AiModelProvider.class))
+              assertThat(context.getBean(AiChatCompletion.class))
                   .isInstanceOf(MockModelProvider.class);
             });
   }
@@ -75,12 +69,13 @@ class AiProviderConfigurationTest {
         .withBean("groqChatClient", ChatClient.class, () -> mock(ChatClient.class))
         .run(
             context -> {
-              assertThat(context).hasSingleBean(AiModelProvider.class);
               assertThat(context).hasSingleBean(AiChatCompletion.class);
               assertThat(context).hasSingleBean(CaptionImageUseCase.class);
               assertThat(context).hasSingleBean(EmbeddingService.class);
-              assertThat(context.getBean(AiModelProvider.class))
-                  .isInstanceOf(SpringAiModelProvider.class);
+              assertThat(context.getBean(AiChatCompletion.class))
+                  .isInstanceOf(
+                      com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatCompletion
+                          .class);
               assertThat(context.getBean("groqChatClient")).isInstanceOf(ChatClient.class);
             });
   }

@@ -42,7 +42,7 @@ class AiCapabilityConventionTest {
             Files.exists(
                 assistantRoot.resolve("adapter/out/provider/ollama/OllamaModelProvider.java")))
         .isFalse();
-    assertThat(Files.exists(contractsRoot.resolve("model/AiModelProvider.java"))).isTrue();
+    assertThat(Files.exists(contractsRoot.resolve("model/AiModelProvider.java"))).isFalse();
     assertThat(
             Files.exists(platformRoot.resolve("adapter/out/provider/mock/MockModelProvider.java")))
         .isTrue();
@@ -56,7 +56,7 @@ class AiCapabilityConventionTest {
     assertThat(
             Files.exists(
                 platformRoot.resolve("adapter/out/provider/springai/SpringAiModelProvider.java")))
-        .isTrue();
+        .isFalse();
     assertThat(Files.exists(assistantRoot.resolve("api/usecase/CaptionImageUseCase.java")))
         .isFalse();
     assertThat(Files.exists(assistantRoot.resolve("api/usecase/EmbedTextUseCase.java"))).isFalse();

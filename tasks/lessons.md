@@ -1614,3 +1614,14 @@
   tests, including empty and provider-specific graceful-degradation cases; keep
   validation strict for required metadata while preserving documented input
   semantics.
+
+## 2026-09-05 — Remove interface-only members with the compatibility family
+
+- **Failure mode:** Removing the deprecated composite interface left an
+  `@Override` annotation on a mock helper that no longer implemented a parent
+  method.
+- **Detection signal:** Focused compilation failed with “method does not
+  override or implement a method from a supertype.”
+- **Prevention rule:** When deleting an interface family, inspect each
+  implementer for inherited methods and annotations in the same slice before
+  running the broader gate.

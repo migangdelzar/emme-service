@@ -4,10 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.kernel.context.AiExecutionContext;
@@ -34,7 +32,6 @@ class ChatServiceProviderFallbackTest {
   @Test
   void doesNotBypassTheCanonicalPortWhenItReportsProviderUnavailability() {
     ChatCompletionPort canonical = mock(ChatCompletionPort.class);
-    AiModelProvider legacy = mock(AiModelProvider.class);
     ChatProviderUnavailableException unavailable =
         new ChatProviderUnavailableException("providers unavailable");
     when(canonical.complete("", "hello")).thenThrow(unavailable);
@@ -45,7 +42,6 @@ class ChatServiceProviderFallbackTest {
         .isSameAs(unavailable);
 
     verify(canonical).complete("", "hello");
-    verifyNoInteractions(legacy);
   }
 
   private static AiExecutionContext context() {

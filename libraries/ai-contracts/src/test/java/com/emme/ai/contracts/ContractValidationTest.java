@@ -29,16 +29,8 @@ class ContractValidationTest {
 
   @Test
   void providerContractsAndAdaptersDoNotOwnIntentRouting() throws IOException {
-    assertThat(
-            readSource(
-                "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/AiModelProvider.java"))
-        .doesNotContain("routeIntent")
-        .doesNotContain("IntentResult")
-        .doesNotContain("intent");
-
     for (String providerSource :
         java.util.List.of(
-            "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java",
             "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/mock/MockModelProvider.java")) {
       assertThat(readSource(providerSource))
           .as("provider transport source: %s", providerSource)

@@ -526,6 +526,23 @@ compatibility family pending final deletion.
 - [ ] Delete `SpringAiModelProvider` and `AiModelProvider` after the remaining
       compatibility bean/test inventory is removed.
 
+#### Current slice 6O — Delete the verified composite provider family
+
+All application capability callers now depend on canonical provider-neutral
+ports. The deprecated `AiModelProvider`, `SpringAiModelProvider`, and mock
+composite inheritance were removed; provider composition and transport tests
+now exercise `AiChatCompletion`, `EmbeddingService`, and
+`CaptionImageUseCase` independently.
+
+- [x] Add a failing repository source-inventory test for the composite family.
+- [x] Remove the deprecated contract, Spring adapter, composite configuration
+      beans, and obsolete provider tests.
+- [x] Remove composite methods from the mock provider while preserving
+      canonical chat and caption behavior.
+- [x] Migrate configuration and Groq transport tests to canonical capabilities.
+- [x] Run contract, AI Platform, Assistant, integration-source, and Spotless
+      verification gates.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

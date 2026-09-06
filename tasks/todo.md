@@ -104,6 +104,17 @@
 - [ ] Delete the remaining composite provider declaration, compatibility mock,
       composition beans, and tests after a final caller/bean inventory.
 
+## Current slice — composite provider family deletion — 2026-09-05
+
+- [x] Add the failing source-inventory test for the deprecated composite family.
+- [x] Delete `AiModelProvider` and `SpringAiModelProvider`.
+- [x] Remove composite configuration beans and mock provider methods.
+- [x] Migrate provider configuration and transport tests to canonical ports.
+- [x] Run contract, AI Platform, all Assistant, integration-source, and
+      Spotless gates.
+- [ ] Continue with the remaining non-provider compatibility families tracked
+      by the framework-first plan.
+
 ## Current slice — Assistant context regression — 2026-09-05
 
 - [x] Reproduce the full Assistant phase-checkpoint failure caused by two

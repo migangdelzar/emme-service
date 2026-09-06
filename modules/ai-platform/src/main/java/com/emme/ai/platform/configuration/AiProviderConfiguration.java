@@ -3,18 +3,15 @@ package com.emme.ai.platform.configuration;
 import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.ai.contracts.model.AiChatCompletion;
-import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.semantic.DistanceMetric;
 import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatCompletion;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
-import com.emme.ai.platform.adapter.out.provider.springai.SpringAiModelProvider;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiVisionModel;
 import com.emme.ai.platform.model.BoundedModelExecutionScheduler;
 import io.micrometer.observation.ObservationRegistry;
-import java.util.Optional;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -161,38 +158,6 @@ public class AiProviderConfiguration {
       throw new UnsupportedOperationException(
           "Provider '" + properties.provider() + "' does not support embeddings");
     };
-  }
-
-  @Bean
-  @ConditionalOnBean(name = {"ollamaChatClient", "ollamaEmbeddingModel"})
-  @ConditionalOnMissingBean(AiModelProvider.class)
-  AiModelProvider ollamaModelProvider(
-      @Qualifier("ollamaChatClient") ChatClient chatClient,
-      @Qualifier("ollamaEmbeddingModel") EmbeddingModel embeddingModel,
-      AiProviderProperties properties) {
-    return new SpringAiModelProvider(
-        new SpringAiChatModel(chatClient, properties.provider(), properties.chat().model()),
-        Optional.of(
-            new SpringAiEmbeddingModel(
-                embeddingModel,
-                properties.provider(),
-                new EmbeddingModelVersion(
-                    properties.embedding().model(),
-                    properties.embedding().modelVersion(),
-                    properties.embedding().dimension(),
-                    DistanceMetric.COSINE,
-                    "query-v1"))),
-        Optional.of(new SpringAiVisionModel(chatClient)));
-  }
-
-  @Bean
-  @ConditionalOnBean(name = "groqChatClient")
-  @ConditionalOnMissingBean(AiModelProvider.class)
-  AiModelProvider groqModelProvider(
-      @Qualifier("groqChatClient") ChatClient chatClient, AiProviderProperties properties) {
-    return new SpringAiModelProvider(
-        new SpringAiChatModel(chatClient, properties.provider(), properties.chat().model()),
-        Optional.empty());
   }
 
   @Bean

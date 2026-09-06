@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.emme.ai.contracts.embedding.EmbeddingService;
 import com.emme.ai.contracts.image.CaptionImageUseCase;
 import com.emme.ai.contracts.model.AiChatCompletion;
-import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.platform.adapter.out.provider.mock.MockEmbeddingService;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiEmbeddingModel;
@@ -40,8 +39,20 @@ class CanonicalAiProviderContractTest {
   }
 
   @Test
-  void legacyCompositeProviderDoesNotBecomeAnEmbeddingServiceBean() {
-    assertThat(EmbeddingService.class.isAssignableFrom(AiModelProvider.class)).isFalse();
+  void deprecatedCompositeProviderFamilyIsRemovedAfterCapabilityMigration() {
+    assertThat(
+            sourcePath(
+                "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/model/AiModelProvider.java"))
+        .doesNotExist();
+    assertThat(
+            sourcePath(
+                "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/springai/SpringAiModelProvider.java"))
+        .doesNotExist();
+    assertThat(
+            readSource(
+                "modules/ai-platform/src/main/java/com/emme/ai/platform/adapter/out/provider/mock/MockModelProvider.java"))
+        .doesNotContain("AiModelProvider")
+        .doesNotContain("List<Float> embed");
   }
 
   @Test
@@ -65,5 +76,13 @@ class CanonicalAiProviderContractTest {
       current = current.getParent();
     }
     throw new IllegalStateException("Cannot locate source path: " + relativePath);
+  }
+
+  private static String readSource(String relativePath) {
+    try {
+      return Files.readString(sourcePath(relativePath));
+    } catch (java.io.IOException exception) {
+      throw new IllegalStateException("Cannot read source path: " + relativePath, exception);
+    }
   }
 }

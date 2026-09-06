@@ -1174,6 +1174,11 @@ and unsupported Groq paths now expose `EmbeddingService` directly with
 versioned vector identity; only the deprecated composite provider declaration,
 compatibility mock, and composition bean/test family remain to be deleted.
 
+The deprecated composite provider family has since been deleted after the
+repository-wide production caller inventory became clean. Canonical chat,
+embedding, image, and retrieval capabilities are now composed independently;
+the remaining compatibility cleanup families are tracked separately.
+
 **Files:**
 
 - Modify/delete deprecated embedding aliases only after repository-wide caller search:

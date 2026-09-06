@@ -1,13 +1,15 @@
 package com.emme.ai.platform.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.emme.ai.contracts.model.AiModelProvider;
+import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationHandler;
 import io.micrometer.observation.ObservationRegistry;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -49,18 +51,28 @@ class AiProviderConfigurationIntegrationTest {
     AiProviderProperties properties =
         properties("groq", "llama-test", server.url("/openai/v1").toString(), "test-groq-key");
 
-    AiModelProvider provider =
-        configuration.groqModelProvider(configuration.groqChatClient(properties), properties);
-    String response = AiExecutionContextScope.call(context(), () -> provider.chat("", "hello"));
+    AiChatCompletion completion =
+        configuration.groqChatCompletion(configuration.groqChatClient(properties), properties);
+    AiExecutionContext context = context();
+    AiChatCompletion.Request request =
+        new AiChatCompletion.Request(
+            "", "hello", context, new AiChatCompletion.ProviderPolicy(List.of("groq"), false));
+    var completionResponse =
+        AiExecutionContextScope.call(context, () -> completion.complete(request));
 
-    assertThat(response).isEqualTo("Hola desde Groq");
-    assertThat(provider.name()).isEqualTo("groq");
-    assertThat(AiExecutionContextScope.call(context(), () -> provider.embed("faq"))).isEmpty();
-    RecordedRequest request = server.takeRequest(5, TimeUnit.SECONDS);
-    assertThat(request).isNotNull();
-    assertThat(request.getPath()).isEqualTo("/openai/v1/chat/completions");
-    assertThat(request.getHeader("Authorization")).isEqualTo("Bearer test-groq-key");
-    assertThat(request.getBody().readUtf8())
+    assertThat(completionResponse.content()).isEqualTo("Hola desde Groq");
+    assertThat(completionResponse.provider()).isEqualTo("groq");
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context, () -> configuration.unsupportedGroqEmbedding(properties).embed("faq")))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage("Provider 'groq' does not support embeddings");
+    RecordedRequest recordedRequest = server.takeRequest(5, TimeUnit.SECONDS);
+    assertThat(recordedRequest).isNotNull();
+    assertThat(recordedRequest.getPath()).isEqualTo("/openai/v1/chat/completions");
+    assertThat(recordedRequest.getHeader("Authorization")).isEqualTo("Bearer test-groq-key");
+    assertThat(recordedRequest.getBody().readUtf8())
         .contains("\"model\":\"llama-test\"")
         .contains("\"content\":\"hello\"");
   }

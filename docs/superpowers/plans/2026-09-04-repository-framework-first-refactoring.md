@@ -2572,6 +2572,20 @@ security state.
 - [ ] Run live Calendar replay/provider retry checks when PostgreSQL, Kafka,
       and Google infrastructure are available.
 
+#### Current slice 19K — Restore appointment membership replay context
+
+The externalized appointment membership consumer now restores the event tenant
+and a deterministic `appointment-created:<eventId>` correlation before calling
+the existing idempotent membership use case. It remains independent of
+request-local Spring Security and preserves the public Identity boundary.
+
+- [x] Add a failing Identity replay-context regression test.
+- [x] Restore tenant and correlation context around membership establishment.
+- [x] Run focused Identity tests, module checks, event-contract tests, and
+      Spotless.
+- [ ] Run live externalized appointment replay and membership persistence gates
+      when Kafka and PostgreSQL infrastructure are available.
+
 #### Current slice 19A — Keep tenant event publication behind a port
 
 `CreateTenantService` no longer imports Spring event infrastructure. The

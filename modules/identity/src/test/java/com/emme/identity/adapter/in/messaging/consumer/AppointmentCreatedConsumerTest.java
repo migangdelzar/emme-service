@@ -5,11 +5,14 @@ import static org.mockito.Mockito.verify;
 import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.identity.api.command.EnsureCustomerMembershipCommand;
 import com.emme.identity.api.usecase.EnsureCustomerMembershipUseCase;
+import com.emme.kernel.context.TenantContextHolder;
+import com.emme.kernel.tracing.CorrelationContextHolder;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,6 +25,18 @@ class AppointmentCreatedConsumerTest {
     UUID customerId = UUID.randomUUID();
     UUID tenantId = UUID.randomUUID();
     AppointmentCreated event = event(tenantId, customerId);
+    Mockito.doAnswer(
+            invocation -> {
+              org.assertj.core.api.Assertions.assertThat(
+                      TenantContextHolder.currentTenantOptional())
+                  .contains(tenantId);
+              org.assertj.core.api.Assertions.assertThat(
+                      CorrelationContextHolder.requireCorrelationId())
+                  .isEqualTo("appointment-created:" + event.eventId());
+              return null;
+            })
+        .when(ensureCustomerMembership)
+        .ensure(new EnsureCustomerMembershipCommand(customerId, tenantId));
 
     new AppointmentCreatedConsumer(ensureCustomerMembership).on(event);
 

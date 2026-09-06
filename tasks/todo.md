@@ -261,6 +261,17 @@
 - [ ] Run live Calendar replay and provider retry checks when PostgreSQL,
       Kafka, and Google infrastructure are available.
 
+## Current slice — Task 19K appointment membership replay context — 2026-09-06
+
+- [x] Add a failing Identity consumer test requiring tenant and correlation
+      context during externalized appointment replay.
+- [x] Restore `appointment-created:<eventId>` around the existing idempotent
+      membership use case without reintroducing request-local security access.
+- [x] Run the focused consumer test, Identity module check, event-contract
+      tests, and Spotless.
+- [ ] Run live externalized appointment replay and membership persistence checks
+      when Kafka and PostgreSQL infrastructure are available.
+
 ## Current slice — Task 18AG tenant-qualified persistence audit — 2026-09-06
 
 - [x] Inventory remaining tenant-qualified repository and persistence methods.

@@ -1,5 +1,16 @@
 # Engineering lessons
 
+## 2026-09-06 — Keep domain enums out of public API records
+
+- **Failure mode:** Lifecycle enum migrations reused domain-package enums in
+  public API records, which caused the framework architecture test to reject
+  public API dependencies on implementation packages.
+- **Detection signal:** The full framework checkpoint reported public API
+  records exposing domain enums across multiple modules.
+- **Prevention rule:** Keep domain enums in domain and persistence models, add
+  API-owned enums for public results and HTTP DTOs, and convert explicitly in
+  application mappers. Run the architecture checkpoint after boundary changes.
+
 ## 2026-09-06 — Keep notification lifecycle enums through HTTP mapping
 
 - Failure mode: Notification converted its public delivery status to a string

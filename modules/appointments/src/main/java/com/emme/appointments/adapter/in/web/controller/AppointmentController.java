@@ -4,6 +4,7 @@ import static com.emme.kernel.context.TenantContextHolder.withCurrentTenant;
 
 import com.emme.appointments.api.result.AppointmentDetails;
 import com.emme.appointments.api.result.AvailableSlot;
+import com.emme.appointments.api.type.AppointmentStatus;
 import com.emme.appointments.api.usecase.CancelAppointmentUseCase;
 import com.emme.appointments.api.usecase.CompleteAppointmentUseCase;
 import com.emme.appointments.api.usecase.ConfirmAppointmentUseCase;
@@ -14,7 +15,6 @@ import com.emme.appointments.api.usecase.ListAppointmentsByDateUseCase;
 import com.emme.appointments.api.usecase.MarkAppointmentNoShowUseCase;
 import com.emme.appointments.api.usecase.RescheduleAppointmentUseCase;
 import com.emme.appointments.api.usecase.StartAppointmentUseCase;
-import com.emme.appointments.domain.model.AppointmentStatus;
 import com.emme.subscriptions.api.command.EnforceEntitlementCommand;
 import com.emme.subscriptions.api.usecase.EnforceEntitlementUseCase;
 import io.swagger.v3.oas.annotations.Operation;

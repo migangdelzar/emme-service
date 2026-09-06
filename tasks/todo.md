@@ -1,5 +1,17 @@
 # Service architecture migration checklist
 
+## Current slice — Public API lifecycle enum boundary correction — 2026-09-06
+
+- [x] Add an API-owned AppointmentStatus enum and a failing public-boundary
+      convention test.
+- [x] Map appointment domain status values explicitly into API results and
+      HTTP responses.
+- [x] Migrate Assistant fixtures that construct appointment public results.
+- [ ] Repeat the same boundary correction for remaining public records that
+      still expose domain lifecycle enums.
+- [ ] Re-run the full framework checkpoint after all affected modules are
+      corrected.
+
 ## Current slice — Appointment status enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed appointment status models.

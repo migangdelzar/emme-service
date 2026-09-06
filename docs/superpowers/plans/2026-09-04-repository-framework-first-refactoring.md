@@ -27,6 +27,19 @@
 - Preserve unrelated worktree changes and stage only files belonging to the current task.
 - Final repository-wide Spotless, Checkstyle, compilation, coverage, integration, startup, E2E, security, and performance gates run after the gradual waves; affected-module gates run before each slice commit.
 
+### Current correction — Public API lifecycle enum boundaries
+
+The public API must not expose domain-package enums. Domain entities and
+application policy retain domain lifecycle enums, while each public module API
+owns the enum serialized in results and HTTP DTOs. Application mappers perform
+an explicit name-preserving conversion at that boundary.
+
+- [x] Prove the regression with the framework architecture checkpoint.
+- [x] Correct the Appointment public boundary and affected cross-module
+      fixtures.
+- [ ] Correct the remaining public records that still expose domain enums.
+- [ ] Re-run the full framework checkpoint after the correction slices.
+
 ### Current slice — Identity membership enum boundary
 
 Identity membership status now uses the existing `MembershipStatus` enum across
@@ -110,8 +123,9 @@ serialization preserves existing document status values.
 
 ### Current slice — Appointment status enum boundary
 
-Appointment status now retains the existing `AppointmentStatus` enum through
-application results, HTTP response DTOs, and list/detail mapping. Stable enum
+Appointment status now uses an API-owned `AppointmentStatus` enum through
+application results, HTTP response DTOs, and list/detail mapping. The
+application boundary explicitly converts the domain enum while stable enum
 names preserve the existing API status values.
 
 - [x] Add a failing convention test for enum-typed Appointment status boundaries.

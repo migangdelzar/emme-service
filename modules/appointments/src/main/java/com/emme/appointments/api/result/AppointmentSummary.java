@@ -1,6 +1,6 @@
 package com.emme.appointments.api.result;
 
-import com.emme.appointments.domain.model.AppointmentStatus;
+import com.emme.appointments.api.type.AppointmentStatus;
 import java.time.Instant;
 import java.util.UUID;
 

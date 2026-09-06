@@ -1,6 +1,7 @@
 package com.emme.appointments.application.mapper;
 
 import com.emme.appointments.api.result.AppointmentDetails;
+import com.emme.appointments.api.type.AppointmentStatus;
 import com.emme.appointments.domain.model.Appointment;
 
 /** Maps Studio domain aggregates to public application read models. */
@@ -20,6 +21,6 @@ public final class AppointmentApplicationMapper {
         artistName,
         appointment.getStartsAt(),
         appointment.getEndsAt(),
-        appointment.getStatus());
+        AppointmentStatus.valueOf(appointment.getStatus().name()));
   }
 }

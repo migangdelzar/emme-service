@@ -1,6 +1,7 @@
 package com.emme.appointments.application.service;
 
 import com.emme.appointments.api.result.AppointmentSummary;
+import com.emme.appointments.api.type.AppointmentStatus;
 import com.emme.appointments.api.usecase.ListAppointmentsUseCase;
 import com.emme.appointments.application.port.out.AppointmentRepository;
 import com.emme.appointments.domain.model.Appointment;
@@ -64,6 +65,6 @@ public class ListAppointmentsService implements ListAppointmentsUseCase {
         customerName,
         serviceName,
         artistName,
-        appointment.getStatus());
+        AppointmentStatus.valueOf(appointment.getStatus().name()));
   }
 }

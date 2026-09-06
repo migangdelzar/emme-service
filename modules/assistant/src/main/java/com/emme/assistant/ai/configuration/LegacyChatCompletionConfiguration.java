@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /** Keeps the pre-Spring-chat provider available through the canonical chat boundary. */
 @Configuration(proxyBeanMethods = false)
@@ -27,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 public class LegacyChatCompletionConfiguration {
 
   @Bean(name = "aiLegacyChatCompletion")
+  @Primary
   @ConditionalOnMissingBean(IdentifiedChatCompletionPort.class)
   ChatModelSelector legacyChatCompletion(
       AiChatCompletion completion,

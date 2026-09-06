@@ -502,6 +502,22 @@ keys; no default or hidden provider identity is introduced.
 - [x] Expose canonical selector beans from both chat composition profiles.
 - [ ] Migrate `ChatService`, `RagQueryService`, and tracing/provider adapters.
 
+#### Current slice 6T — Migrate the retrieval-service completion fallback
+
+`RagQueryService` now invokes `AiChatCompletion` with the bound execution
+context and an explicit provider policy. When Spring chat properties are
+available, the policy preserves the configured provider order and fallback;
+otherwise it uses the configured platform provider. The service no longer
+depends on the deprecated Assistant chat port.
+
+- [x] Add the architecture assertion for the canonical service dependency.
+- [x] Migrate the raw retrieval fallback to `AiChatCompletion.Request`.
+- [x] Preserve configured multi-provider fallback when Spring chat is enabled.
+- [x] Mark selector composition beans primary so raw provider capabilities do
+      not create ambiguous canonical injections.
+- [x] Run focused RAG service, composition, and web-context tests.
+- [ ] Migrate `ChatService` and delete the remaining temporary chat adapters.
+
 #### Current slice 6L — Keep document retrieval on the canonical embedding port
 
 The Assistant document retrieval adapter now requires the provider-neutral

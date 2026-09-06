@@ -2,19 +2,20 @@ package com.emme.assistant.ai.application.service;
 
 import com.emme.ai.contracts.guardrail.GroundingRequest;
 import com.emme.ai.contracts.guardrail.GuardrailAction;
+import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
 import com.emme.assistant.ai.application.guardrail.GroundingGuard;
-import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RetrievalUnavailableException;
 import com.emme.assistant.ai.application.rag.KnowledgeAnswerService;
 import com.emme.assistant.ai.application.rag.KnowledgeRoute;
 import com.emme.assistant.ai.application.semantic.SemanticFailurePolicy;
+import com.emme.assistant.ai.configuration.SpringAiChatProperties;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +31,8 @@ public class RagQueryService implements RagQueryUseCase {
 
   private final AiProviderProperties properties;
   private final KnowledgeRetriever retrieval;
-  private final ChatCompletionPort chatCompletion;
+  private final AiChatCompletion chatCompletion;
+  private final AiChatCompletion.ProviderPolicy providerPolicy;
   private final Optional<RagAnswerPort> ragAnswer;
   private final Optional<KnowledgeAnswerService> knowledgeAnswer;
   private final Optional<GroundingGuard> groundingGuard;
@@ -38,14 +40,14 @@ public class RagQueryService implements RagQueryUseCase {
   public RagQueryService(
       AiProviderProperties properties,
       KnowledgeRetriever retrieval,
-      ChatCompletionPort chatCompletion) {
+      AiChatCompletion chatCompletion) {
     this(properties, retrieval, chatCompletion, Optional.empty(), Optional.empty());
   }
 
   public RagQueryService(
       AiProviderProperties properties,
       KnowledgeRetriever retrieval,
-      ChatCompletionPort chatCompletion,
+      AiChatCompletion chatCompletion,
       Optional<RagAnswerPort> ragAnswer) {
     this(properties, retrieval, chatCompletion, ragAnswer, Optional.empty());
   }
@@ -53,26 +55,59 @@ public class RagQueryService implements RagQueryUseCase {
   public RagQueryService(
       AiProviderProperties properties,
       KnowledgeRetriever retrieval,
-      ChatCompletionPort chatCompletion,
+      AiChatCompletion chatCompletion,
       @Qualifier("aiGroundedRagAnswer") Optional<RagAnswerPort> ragAnswer,
       Optional<KnowledgeAnswerService> knowledgeAnswer) {
     this(properties, retrieval, chatCompletion, ragAnswer, knowledgeAnswer, Optional.empty());
+  }
+
+  public RagQueryService(
+      AiProviderProperties properties,
+      KnowledgeRetriever retrieval,
+      AiChatCompletion chatCompletion,
+      @Qualifier("aiGroundedRagAnswer") Optional<RagAnswerPort> ragAnswer,
+      Optional<KnowledgeAnswerService> knowledgeAnswer,
+      Optional<GroundingGuard> groundingGuard) {
+    this(
+        properties,
+        retrieval,
+        chatCompletion,
+        ragAnswer,
+        knowledgeAnswer,
+        groundingGuard,
+        Optional.empty());
   }
 
   @Autowired
   public RagQueryService(
       AiProviderProperties properties,
       KnowledgeRetriever retrieval,
-      ChatCompletionPort chatCompletion,
+      AiChatCompletion chatCompletion,
       @Qualifier("aiGroundedRagAnswer") Optional<RagAnswerPort> ragAnswer,
       Optional<KnowledgeAnswerService> knowledgeAnswer,
-      Optional<GroundingGuard> groundingGuard) {
+      Optional<GroundingGuard> groundingGuard,
+      Optional<SpringAiChatProperties> chatProperties) {
     this.properties = properties;
     this.retrieval = retrieval;
     this.chatCompletion = chatCompletion;
+    this.providerPolicy = providerPolicy(properties, chatProperties);
     this.ragAnswer = ragAnswer;
     this.knowledgeAnswer = knowledgeAnswer;
     this.groundingGuard = groundingGuard;
+  }
+
+  private static AiChatCompletion.ProviderPolicy providerPolicy(
+      AiProviderProperties properties, Optional<SpringAiChatProperties> chatProperties) {
+    List<String> admittedProviders =
+        chatProperties
+            .filter(configured -> !configured.providers().isEmpty())
+            .map(
+                configured ->
+                    configured.providers().stream()
+                        .map(SpringAiChatProperties.Provider::key)
+                        .toList())
+            .orElseGet(() -> List.of(properties.provider()));
+    return new AiChatCompletion.ProviderPolicy(admittedProviders, true);
   }
 
   @Override
@@ -144,7 +179,10 @@ public class RagQueryService implements RagQueryUseCase {
       if (context.isBlank()) {
         return "No relevant documents were found.";
       }
-      return chatCompletion.complete(context, question);
+      return chatCompletion
+          .complete(
+              new AiChatCompletion.Request(context, question, executionContext, providerPolicy))
+          .content();
     } catch (RuntimeException failure) {
       SemanticFailurePolicy.rethrowSecurityFailure(failure);
       return "Retrieval unavailable.";

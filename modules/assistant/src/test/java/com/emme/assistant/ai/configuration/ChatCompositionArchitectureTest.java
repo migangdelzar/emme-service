@@ -31,7 +31,7 @@ class ChatCompositionArchitectureTest {
                 "modules/assistant/src/main/java/com/emme/assistant/ai/application/service/RagQueryService.java"));
 
     assertThat(ragQueryService)
-        .contains("private final ChatCompletionPort chatCompletion")
+        .contains("private final AiChatCompletion chatCompletion")
         .doesNotContain("AiModelProvider")
         .doesNotContain("ModelExecutionScheduler")
         .doesNotContain("executeLegacy");

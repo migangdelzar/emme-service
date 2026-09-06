@@ -29,6 +29,15 @@
 - [x] Run focused RAG/configuration tests.
 - [ ] Migrate remaining chat consumers and delete deprecated chat ports.
 
+## Current slice — Task 6T canonical retrieval-service boundary — 2026-09-06
+
+- [x] Add failing architecture coverage for the canonical RAG service port.
+- [x] Migrate `RagQueryService` to `AiChatCompletion` requests.
+- [x] Preserve configured Spring provider order and fallback policy.
+- [x] Mark selector composition beans primary over raw provider capabilities.
+- [x] Run focused RAG service, composition, and web-context tests.
+- [ ] Migrate `ChatService`, tracing, and provider registry adapters.
+
 ## Current slice — Task 6P semantic-cache identity compatibility cleanup — 2026-09-06
 
 - [x] Add a failing source-inventory test for legacy semantic-cache identity

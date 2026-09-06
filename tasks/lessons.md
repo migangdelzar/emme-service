@@ -1759,3 +1759,13 @@
 - Prevention rule: when adding a canonical boundary beside a compatibility
   boundary, test both contracts explicitly and preserve the old contract's
   documented behavior until every caller has migrated.
+
+## 2026-09-06 — Canonical capability composition must identify the policy owner
+
+- Failure mode: exposing a canonical provider capability from both the raw mock
+  provider and the selector made Spring injection ambiguous.
+- Detection signal: web-context tests failed with two `AiChatCompletion` beans
+  (`mockModelProvider` and `aiLegacyChatCompletion`).
+- Prevention rule: when a raw provider and a policy/composition adapter share a
+  capability, mark the policy owner as primary and add an application-context
+  test proving consumers resolve the selector.

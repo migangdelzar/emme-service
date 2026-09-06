@@ -13,6 +13,7 @@ import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
+import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -64,6 +65,24 @@ class LegacyChatCompletionConfigurationTest {
         .withBean(AiExecutorProperties.class, () -> new AiExecutorProperties(2, 1, 1))
         .withBean(AiTraceRecorder.class, () -> mock(AiTraceRecorder.class))
         .run(context -> assertThat(context).hasSingleBean(IdentifiedChatCompletionPort.class));
+  }
+
+  @Test
+  void exposesTheConfiguredSelectorAsThePrimaryCanonicalChatCapability() {
+    new ApplicationContextRunner()
+        .withUserConfiguration(LegacyChatCompletionConfiguration.class)
+        .withBean(
+            "legacyAiChatCompletion",
+            AiChatCompletion.class,
+            LegacyChatCompletionConfigurationTest::mockProvider)
+        .withBean(AiProviderProperties.class, LegacyChatCompletionConfigurationTest::properties)
+        .withBean(ModelExecutionScheduler.class, () -> mock(ModelExecutionScheduler.class))
+        .withBean(AiExecutorProperties.class, () -> new AiExecutorProperties(2, 1, 1))
+        .withBean(AiTraceRecorder.class, () -> mock(AiTraceRecorder.class))
+        .run(
+            context ->
+                assertThat(context.getBean(AiChatCompletion.class))
+                    .isInstanceOf(ChatModelSelector.class));
   }
 
   @Test

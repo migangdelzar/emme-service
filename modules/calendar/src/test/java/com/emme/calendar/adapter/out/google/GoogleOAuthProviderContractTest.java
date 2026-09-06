@@ -1,13 +1,13 @@
 package com.emme.calendar.adapter.out.google;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.MockRestServiceServer.bindTo;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.emme.calendar.adapter.out.google.adapter.GoogleOAuthAdapter;
 import com.emme.calendar.adapter.out.google.oauth.TokenEncryptionService;
@@ -59,8 +59,18 @@ class GoogleOAuthProviderContractTest {
         .andExpect(
             content()
                 .formData(
-                    form("refresh_token", "refresh-123", "client_id", "client-123", "client_secret", "secret-123", "grant_type", "refresh_token")))
-        .andRespond(withStatus(HttpStatus.OK).body("{\"access_token\":\"access-456\",\"expires_in\":1800}"));
+                    form(
+                        "refresh_token",
+                        "refresh-123",
+                        "client_id",
+                        "client-123",
+                        "client_secret",
+                        "secret-123",
+                        "grant_type",
+                        "refresh_token")))
+        .andRespond(
+            withStatus(HttpStatus.OK)
+                .body("{\"access_token\":\"access-456\",\"expires_in\":1800}"));
 
     adapter.refreshAccessToken("encrypted-refresh");
     server.verify();
@@ -73,7 +83,11 @@ class GoogleOAuthProviderContractTest {
   private static GoogleOAuthAdapter adapter(
       RestClient.Builder builder, TokenEncryptionService encryption) {
     return new GoogleOAuthAdapter(
-        new GoogleOAuthProperties("client-123", "secret-123", "https://app.test/callback", "12345678901234567890123456789012"),
+        new GoogleOAuthProperties(
+            "client-123",
+            "secret-123",
+            "https://app.test/callback",
+            "12345678901234567890123456789012"),
         encryption,
         mock(SpringDataGoogleOAuthTokenRepository.class),
         new ObjectMapper(),

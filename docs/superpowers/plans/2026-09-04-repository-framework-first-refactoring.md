@@ -2855,8 +2855,9 @@ itself. Existing backend and container workflow validators remain separate.
 - [x] Invoke it from `.github/workflows/ci-backend.yml`.
 - [x] Run backend workflow, container workflow, and deployment-contract checks.
 - [x] Commit and push `9f33de38`.
-- [ ] Run Kubernetes rendering, Compose smoke, and the full repository check at
-      the phase gate.
+- [ ] Run Kubernetes rendering and Compose smoke checks.
+- [x] Run the full repository `./gradlew check` phase gate; 258 actionable tasks
+      passed after the compatibility inventory formatting correction.
 
 - [ ] **Step 4: Run smoke checks and commit**
 

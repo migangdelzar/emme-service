@@ -55,8 +55,10 @@
       backend quality job.
 - [x] Run backend workflow, container workflow, and deployment-contract checks.
 - [x] Commit and push `9f33de38`.
-- [ ] Run Kubernetes/Compose smoke checks and the full repository `check` at
-      the phase gate.
+- [x] Run the full repository `check` at the phase gate — 258 actionable tasks
+      passed.
+- [ ] Run Kubernetes/Compose smoke checks when their runtime environment is
+      available.
 
 ## Current slice — Task 25B unused routing compatibility deletion — 2026-09-06
 
@@ -960,7 +962,8 @@
 - [x] Review generated advice against source usage and affected test classpaths.
 - [x] Retain framework-owned/transitive dependencies and source-set-specific
       test dependencies where the evidence does not justify removal.
-- [ ] Run the full repository quality gate again at the final phase checkpoint.
+- [x] Run the full repository quality gate again at the phase checkpoint —
+      `./gradlew check` passed with 258 actionable tasks.
 
 ### Current slice — Task 19A tenant event boundary
 

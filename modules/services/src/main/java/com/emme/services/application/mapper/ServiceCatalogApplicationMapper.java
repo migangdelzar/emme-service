@@ -1,6 +1,7 @@
 package com.emme.services.application.mapper;
 
 import com.emme.services.api.result.ServiceDetails;
+import com.emme.services.api.type.ServiceStatus;
 import com.emme.services.domain.model.Service;
 
 /** Maps service-catalog domain objects to stable public use-case results. */
@@ -17,6 +18,6 @@ public final class ServiceCatalogApplicationMapper {
         service.getDescription(),
         service.getDurationMinutes(),
         service.getBasePrice(),
-        service.getStatus());
+        ServiceStatus.valueOf(service.getStatus().name()));
   }
 }

@@ -1,6 +1,6 @@
 package com.emme.services.api.result;
 
-import com.emme.services.domain.model.ServiceStatus;
+import com.emme.services.api.type.ServiceStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
 

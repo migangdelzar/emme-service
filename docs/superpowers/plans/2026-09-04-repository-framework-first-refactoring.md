@@ -47,6 +47,8 @@ an explicit name-preserving conversion at that boundary.
       explicit application mapping.
 - [x] Correct the Identity public membership boundary with an API-owned enum
       and explicit application mapping.
+- [x] Correct the Services public boundaries with API-owned enums and explicit
+      application mapping.
 - [ ] Correct the remaining public records that still expose domain enums.
 - [ ] Re-run the full framework checkpoint after the correction slices.
 
@@ -113,9 +115,10 @@ preserves the existing catalog status values.
 
 ### Current slice — Services status enum boundary
 
-Service-catalog and artist lifecycle statuses now retain their existing domain
-enums through application results, HTTP responses, and mapping. Stable enum-name
-serialization preserves the existing status values.
+Service-catalog and artist lifecycle statuses now use API-owned enums through
+application results, HTTP responses, and mapping. The application boundary
+explicitly converts the domain values while stable enum-name serialization
+preserves the existing status values.
 
 - [x] Add a failing convention test for enum-typed Services status boundaries.
 - [x] Migrate Services result/response models and application mappers.

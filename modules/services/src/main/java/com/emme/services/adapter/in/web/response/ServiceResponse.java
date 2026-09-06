@@ -1,7 +1,7 @@
 package com.emme.services.adapter.in.web.response;
 
 import com.emme.services.api.result.ServiceDetails;
-import com.emme.services.domain.model.ServiceStatus;
+import com.emme.services.api.type.ServiceStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
 

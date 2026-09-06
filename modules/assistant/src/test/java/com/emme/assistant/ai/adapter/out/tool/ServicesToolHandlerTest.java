@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import com.emme.assistant.ai.application.tool.AiToolExecutionContext;
 import com.emme.services.api.result.ServiceDetails;
 import com.emme.services.api.usecase.ListActiveServiceCatalogEntriesUseCase;
-import com.emme.services.domain.model.ServiceStatus;
+import com.emme.services.api.type.ServiceStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.List;

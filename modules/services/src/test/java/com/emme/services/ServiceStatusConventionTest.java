@@ -6,14 +6,14 @@ import com.emme.services.adapter.in.web.response.ArtistResponse;
 import com.emme.services.adapter.in.web.response.ServiceResponse;
 import com.emme.services.api.result.ArtistDetails;
 import com.emme.services.api.result.ServiceDetails;
-import com.emme.services.domain.model.ArtistStatus;
-import com.emme.services.domain.model.ServiceStatus;
+import com.emme.services.api.type.ArtistStatus;
+import com.emme.services.api.type.ServiceStatus;
 import org.junit.jupiter.api.Test;
 
 class ServiceStatusConventionTest {
 
   @Test
-  void serviceAndArtistStatusesUseDomainEnumsAcrossPublicBoundaries() {
+  void serviceAndArtistStatusesUseApiOwnedEnumsAcrossPublicBoundaries() {
     assertThat(ServiceDetails.class.getRecordComponents()[7].getType())
         .isEqualTo(ServiceStatus.class);
     assertThat(ServiceResponse.class.getRecordComponents()[7].getType())

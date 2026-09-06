@@ -2,6 +2,7 @@ package com.emme.services.application.mapper;
 
 import com.emme.services.api.result.ArtistCapabilityDetails;
 import com.emme.services.api.result.ArtistDetails;
+import com.emme.services.api.type.ArtistStatus;
 import com.emme.services.domain.model.Artist;
 import com.emme.services.domain.model.ArtistCapability;
 
@@ -11,7 +12,8 @@ public final class ArtistApplicationMapper {
   private ArtistApplicationMapper() {}
 
   public static ArtistDetails toDetails(Artist artist) {
-    return new ArtistDetails(artist.getId(), artist.getName(), artist.getStatus());
+    return new ArtistDetails(
+        artist.getId(), artist.getName(), ArtistStatus.valueOf(artist.getStatus().name()));
   }
 
   public static ArtistCapabilityDetails toDetails(ArtistCapability capability) {

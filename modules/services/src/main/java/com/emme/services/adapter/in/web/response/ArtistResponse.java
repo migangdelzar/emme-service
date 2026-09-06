@@ -1,7 +1,7 @@
 package com.emme.services.adapter.in.web.response;
 
 import com.emme.services.api.result.ArtistDetails;
-import com.emme.services.domain.model.ArtistStatus;
+import com.emme.services.api.type.ArtistStatus;
 import java.util.UUID;
 
 /** HTTP representation of a Studio artist. */

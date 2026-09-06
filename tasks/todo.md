@@ -17,6 +17,8 @@
       explicit application mapping.
 - [x] Correct Identity public membership status boundaries with an API-owned
       enum and explicit application mapping.
+- [x] Correct Services public service and artist status boundaries with
+      API-owned enums and explicit application mapping.
 - [ ] Repeat the same boundary correction for remaining public records that
       still expose domain lifecycle enums.
 - [ ] Re-run the full framework checkpoint after all affected modules are

@@ -13,6 +13,7 @@ import com.emme.assistant.ai.application.workflow.NodeToolPolicy;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -135,6 +136,41 @@ class ConversationWorkflowGraphTest {
                         List.of(profile(ConversationWorkflowGraph.RECEIVE_REQUEST)))))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Missing node policy for node: resolve_authenticated_context");
+  }
+
+  @Test
+  void rejectsAnApprovalPauseFromANodeThatCannotInterrupt() {
+    NodePolicyRegistry defaults = ConversationWorkflowGraph.defaultNodePolicyRegistry();
+    List<NodeProfile> profiles = new ArrayList<>(defaults.profiles().values());
+    profiles.replaceAll(
+        profile ->
+            profile.nodeId().equals(ConversationWorkflowGraph.VALIDATE_BUSINESS_RESULT)
+                ? new NodeProfile(
+                    profile.nodeId(),
+                    profile.modelRole(),
+                    profile.tools(),
+                    profile.memory(),
+                    profile.guardrails(),
+                    profile.maxToolCalls(),
+                    profile.timeout(),
+                    false,
+                    profile.requiresApproval())
+                : profile);
+
+    assertThatThrownBy(
+            () ->
+                runWithContext(
+                    () ->
+                        new ConversationWorkflowGraph(
+                                new TenantAwareCheckpointSaver(new MemorySaver()),
+                                capabilities(new AtomicInteger(), true),
+                                new NodePolicyRegistry(profiles))
+                            .compile()
+                            .invoke(
+                                input(),
+                                RunnableConfig.builder().threadId(WORKFLOW_ID.toString()).build())
+                            .orElseThrow()))
+        .hasRootCauseMessage("Node validate_business_result cannot interrupt for approval");
   }
 
   private static CompiledGraph<AgentState> graph() throws Exception {

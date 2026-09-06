@@ -914,8 +914,10 @@ identifiers, and `NodeProfile` validates bounded timeout/tool-call policy while 
 tool and memory policies defensively copy their allow-lists. The conversation graph
 now validates that its registry contains exactly one policy for every graph node,
 and the LangGraph composition root supplies the default registry without adding a
-bridge dependency. State projection, tool filtering, timeout/interruption/approval
-enforcement, and adapter state-patch validation remain in the next slices.
+bridge dependency. Capability nodes now reject approval or confirmation pauses when
+their profile does not permit interruption, and enforce the configured node timeout.
+State projection, tool filtering, approval semantics, and adapter state-patch
+validation remain in the next slices.
 
 - [ ] **Step 1: Write failing tests.** Prove model-facing nodes require an explicit model/tool/memory/timeout/interruption policy; deterministic nodes declare `NONE`; disallowed tools and memory fields are absent from the projection; timeout and approval policy are enforced.
 - [ ] **Step 2: Run focused tests.** Run `./gradlew :modules:assistant:test --tests '*NodePolicyRegistryTest' --tests '*ConversationWorkflowGraphTest'`; expected failure is missing policy enforcement.

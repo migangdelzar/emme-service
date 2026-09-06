@@ -194,7 +194,16 @@ public final class ConversationWorkflowGraph {
     return state -> {
       AiExecutionContext context = AiExecutionContextScope.requireCurrent();
       verifyIdentity(state, context);
+      NodeProfile profile = nodePolicies.profile(node);
+      long startedAt = System.nanoTime();
       WorkflowStep step = capability.apply(request(state, context));
+      if ((step.needsApproval() || step.needsConfirmation()) && !profile.mayInterrupt()) {
+        String decision = step.needsApproval() ? "approval" : "confirmation";
+        throw new IllegalStateException("Node " + node + " cannot interrupt for " + decision);
+      }
+      if (Duration.ofNanos(System.nanoTime() - startedAt).compareTo(profile.timeout()) > 0) {
+        throw new IllegalStateException("Node " + node + " exceeded its configured timeout");
+      }
       Map<String, Object> update = new HashMap<>(step.updates());
       update.put(STATUS, "RUNNING");
       update.put(LAST_NODE, node);
@@ -317,7 +326,12 @@ public final class ConversationWorkflowGraph {
           default -> NodeModelRole.NONE;
         };
     boolean mayInterrupt =
-        Set.of(WAIT_FOR_APPROVAL, WAIT_FOR_CONFIRMATION, CLARIFICATION_REQUIRED).contains(nodeId);
+        Set.of(
+                VALIDATE_BUSINESS_RESULT,
+                WAIT_FOR_APPROVAL,
+                WAIT_FOR_CONFIRMATION,
+                CLARIFICATION_REQUIRED)
+            .contains(nodeId);
     return new NodeProfile(
         nodeId,
         modelRole,

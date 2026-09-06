@@ -3971,7 +3971,8 @@ appointment mutation tools are registered.
       guard interfaces.
 - [x] Add the injectable ordered guardrail pipeline.
 - [x] Run focused contract, assistant, and Spotless checks.
-- [ ] Continue with concrete guard enforcement and Spring AI advisors in Task 8.
+- [x] Complete concrete guard enforcement, Spring AI advisors, and direct
+      application delivery boundaries in Task 8.
 
 ### Results
 
@@ -4082,7 +4083,18 @@ appointment mutation tools are registered.
       persistence and idempotency completion.
 - [x] Add and compose the Spring AI grounding advisor from retrieved document
       provenance, scores, and source IDs.
-- [ ] Add grounded RAG delivery enforcement and remaining controller/channel
+- [x] Add grounded RAG delivery enforcement and remaining controller/channel
+      boundaries.
+
+## Durable workflow Task 9 — typed node policy contracts — 2026-09-05
+
+- [x] Write the first failing registry test for duplicate and unknown node IDs.
+- [x] Add immutable node model, tool, memory, guardrail, context, result, and
+      registry contracts.
+- [x] Run the focused registry test and confirm the Assistant production package
+      metadata convention remains satisfied.
+- [ ] Register policies for every conversation graph node and enforce projected
+      state, filtered tools, timeout, interruption, approval, and state-patch
       boundaries.
 
 ## Calendar schema-local sync-state slice — 2026-09-05

@@ -836,7 +836,7 @@ recorded as successfully delivered turns.
 The Spring AI RAG advisor chain now also includes a grounding advisor after
 retrieval; it projects Spring AI document provenance into `GroundingRequest`
 and fails closed before generation when the typed grounding decision rejects.
-- [ ] **Step 5: Run, refactor, and commit.**
+- [x] **Step 5: Run, refactor, and commit.**
 
   ```bash
   ./gradlew :modules:assistant:test --tests '*Guard*Test' \
@@ -907,6 +907,12 @@ Deterministic nodes use `modelRole = NodeModelRole.NONE`. A node receives a proj
 tool gateway; no node can request arbitrary memory or the full tool registry. State patches
 are immutable, namespaced, bounded, and JSON-safe before conversion to LangGraph4j
 `AgentState`. The mapping to graph maps exists only in the adapter.
+
+Current progress: the provider-neutral immutable node policy value objects and
+`NodePolicyRegistry` are in place. The registry rejects duplicate and unknown node
+identifiers, and `NodeProfile` validates bounded timeout/tool-call policy while the
+tool and memory policies defensively copy their allow-lists. Graph-node registration,
+state projection, tool filtering, and adapter enforcement remain in the next slices.
 
 - [ ] **Step 1: Write failing tests.** Prove model-facing nodes require an explicit model/tool/memory/timeout/interruption policy; deterministic nodes declare `NONE`; disallowed tools and memory fields are absent from the projection; timeout and approval policy are enforced.
 - [ ] **Step 2: Run focused tests.** Run `./gradlew :modules:assistant:test --tests '*NodePolicyRegistryTest' --tests '*ConversationWorkflowGraphTest'`; expected failure is missing policy enforcement.

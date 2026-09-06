@@ -1050,8 +1050,11 @@ adapters, callback ownership checks, and checkpointed graph edges remain. The pa
 module now has tenant-schema link/source ports and a `CreatePaymentLinkService` that
 reads amount, currency, description, and expiry from the trusted source port, reuses
 idempotent links, and extracts a provider-neutral checkout URL from provider metadata.
-Composition is intentionally deferred until the tenant persistence and provider
-dependencies are established.
+The appointment module now persists holds through a tenant-schema JPA adapter and
+forward migration `035-appointment-holds.sql` with RLS, expiry/appointment indexes,
+and tenant/idempotency uniqueness. Payment-link persistence, callback ownership checks,
+and checkpointed graph edges remain; composition is intentionally deferred until the
+remaining tenant and provider dependencies are established.
 
 - [ ] **Step 1: Write failing tests.** Cover hold creation, duplicate hold idempotency, concurrent collision, expiry, payment-link amount from persisted state, duplicate callback, wrong tenant/workflow callback, successful resume, stale hold recovery, and no direct model mutation.
 - [ ] **Step 2: Run focused tests.** Run appointment/payment unit and migration contract tests; expected failure is missing hold/link contracts and workflow nodes.

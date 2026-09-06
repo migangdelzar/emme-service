@@ -204,7 +204,9 @@
 - [x] Add focused hold-creation coverage and run the appointments test plus Spotless.
 - [x] Add the payment-link service against trusted persisted hold/payment state.
 - [x] Cover payment-link idempotent replay and provider checkout metadata extraction.
-- [ ] Add tenant-scoped persistence, callback idempotency, and checkpointed graph edges.
+- [x] Add the tenant-schema appointment-hold entity, JPA adapter, RLS migration, and
+      migration contract coverage.
+- [ ] Add tenant-scoped payment-link persistence, callback idempotency, and checkpointed graph edges.
 
 ## Repository framework-first refactoring plan — 2026-09-04
 

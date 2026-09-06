@@ -11,9 +11,7 @@ import com.emme.ai.contracts.model.AiChatCompletion;
 import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.ai.contracts.model.ModelCapability;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
-import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
-import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -28,9 +26,10 @@ class ChatModelSelectorTest {
 
   @Test
   void completesCanonicalRequestsUsingTheAdmittedProviderOrder() {
-    ChatCompletionPort local = mock(ChatCompletionPort.class);
-    ChatCompletionPort cloud = mock(ChatCompletionPort.class);
-    when(local.complete("context", "hello")).thenReturn("hola");
+    AiChatCompletion local = mock(AiChatCompletion.class);
+    AiChatCompletion cloud = mock(AiChatCompletion.class);
+    when(local.complete(org.mockito.ArgumentMatchers.any()))
+        .thenReturn(response("hola", "local", "llama-local"));
     ChatModelSelector selector =
         new ChatModelSelector(
             List.of(
@@ -39,15 +38,10 @@ class ChatModelSelectorTest {
     AiExecutionContext context = context();
 
     ChatResponse response =
-        AiExecutionContextScope.call(
+        call(
             context,
-            () ->
-                selector.complete(
-                    new AiChatCompletion.Request(
-                        "context",
-                        "hello",
-                        context,
-                        new AiChatCompletion.ProviderPolicy(List.of("local", "cloud"), true))));
+            selector,
+            request("context", "hello", context, List.of("local", "cloud"), true));
 
     assertThat(response).isEqualTo(new ChatResponse("hola", "local", "llama-local", 0, 0));
     verifyNoInteractions(cloud);
@@ -55,9 +49,9 @@ class ChatModelSelectorTest {
 
   @Test
   void canonicalRequestsWithoutFallbackDoNotTryTheNextAdmittedProvider() {
-    ChatCompletionPort local = mock(ChatCompletionPort.class);
-    ChatCompletionPort cloud = mock(ChatCompletionPort.class);
-    when(local.complete("", "hello"))
+    AiChatCompletion local = mock(AiChatCompletion.class);
+    AiChatCompletion cloud = mock(AiChatCompletion.class);
+    when(local.complete(org.mockito.ArgumentMatchers.any()))
         .thenThrow(new ChatProviderUnavailableException("local unavailable"));
     ChatModelSelector selector =
         new ChatModelSelector(
@@ -68,103 +62,114 @@ class ChatModelSelectorTest {
 
     assertThatThrownBy(
             () ->
-                AiExecutionContextScope.call(
+                call(
                     context,
-                    () ->
-                        selector.complete(
-                            new AiChatCompletion.Request(
-                                "",
-                                "hello",
-                                context,
-                                new AiChatCompletion.ProviderPolicy(
-                                    List.of("local", "cloud"), false)))))
+                    selector,
+                    request("", "hello", context, List.of("local", "cloud"), false)))
         .isInstanceOf(ChatProviderUnavailableException.class);
     verifyNoInteractions(cloud);
   }
 
   @Test
   void returnsTheFirstHealthyProviderResponse() {
-    ChatCompletionPort local = mock(ChatCompletionPort.class);
-    ChatCompletionPort cloud = mock(ChatCompletionPort.class);
-    when(local.complete("", "hello")).thenReturn("hola");
-    ChatModelSelector chain =
+    AiChatCompletion local = mock(AiChatCompletion.class);
+    AiChatCompletion cloud = mock(AiChatCompletion.class);
+    when(local.complete(org.mockito.ArgumentMatchers.any()))
+        .thenReturn(response("hola", "local", "unknown-model"));
+    ChatModelSelector selector =
         new ChatModelSelector(
             List.of(
                 new ChatModelSelector.Provider("local", local),
                 new ChatModelSelector.Provider("cloud", cloud)));
+    AiExecutionContext context = context();
 
-    assertThat(chain.complete("", "hello")).isEqualTo("hola");
+    assertThat(
+            call(context, selector, request("", "hello", context, List.of("local", "cloud"), true)))
+        .isEqualTo(response("hola", "local", "unknown-model"));
     verifyNoInteractions(cloud);
   }
 
   @Test
   void fallsBackOnlyWhenTheCurrentProviderIsUnavailable() {
-    ChatCompletionPort local = mock(ChatCompletionPort.class);
-    ChatCompletionPort cloud = mock(ChatCompletionPort.class);
-    when(local.complete("", "hello"))
+    AiChatCompletion local = mock(AiChatCompletion.class);
+    AiChatCompletion cloud = mock(AiChatCompletion.class);
+    when(local.complete(org.mockito.ArgumentMatchers.any()))
         .thenThrow(new ChatProviderUnavailableException("local unavailable"));
-    when(cloud.complete("", "hello")).thenReturn("hola");
-    ChatModelSelector chain =
+    when(cloud.complete(org.mockito.ArgumentMatchers.any()))
+        .thenReturn(response("hola", "cloud", "unknown-model"));
+    ChatModelSelector selector =
         new ChatModelSelector(
             List.of(
                 new ChatModelSelector.Provider("local", local),
                 new ChatModelSelector.Provider("cloud", cloud)));
+    AiExecutionContext context = context();
 
-    assertThat(chain.complete("", "hello")).isEqualTo("hola");
+    assertThat(
+            call(context, selector, request("", "hello", context, List.of("local", "cloud"), true)))
+        .isEqualTo(response("hola", "cloud", "unknown-model"));
     var invocationOrder = inOrder(local, cloud);
-    invocationOrder.verify(local).complete("", "hello");
-    invocationOrder.verify(cloud).complete("", "hello");
+    invocationOrder.verify(local).complete(org.mockito.ArgumentMatchers.any());
+    invocationOrder.verify(cloud).complete(org.mockito.ArgumentMatchers.any());
   }
 
   @Test
   void reportsWhenEveryProviderIsUnavailable() {
-    ChatCompletionPort local = mock(ChatCompletionPort.class);
-    when(local.complete("", "hello"))
+    AiChatCompletion local = mock(AiChatCompletion.class);
+    when(local.complete(org.mockito.ArgumentMatchers.any()))
         .thenThrow(new ChatProviderUnavailableException("local unavailable"));
-    ChatModelSelector chain =
+    ChatModelSelector selector =
         new ChatModelSelector(List.of(new ChatModelSelector.Provider("local", local)));
+    AiExecutionContext context = context();
 
-    assertThatThrownBy(() -> chain.complete("", "hello"))
+    assertThatThrownBy(
+            () -> call(context, selector, request("", "hello", context, List.of("local"), true)))
         .isInstanceOf(ChatProviderUnavailableException.class)
         .hasMessage("All configured chat providers are unavailable: local");
   }
 
   @Test
   void admitsEachProviderAttemptThroughTheExistingModelScheduler() {
-    ChatCompletionPort local = mock(ChatCompletionPort.class);
-    when(local.complete("", "hello")).thenReturn("hola");
+    AiChatCompletion local = mock(AiChatCompletion.class);
+    when(local.complete(org.mockito.ArgumentMatchers.any()))
+        .thenReturn(response("hola", "local", "unknown-model"));
     var scheduler = new RecordingScheduler();
-    ChatModelSelector chain =
+    ChatModelSelector selector =
         new ChatModelSelector(
             List.of(new ChatModelSelector.Provider("local", local)),
             scheduler,
             Duration.ofSeconds(1));
+    AiExecutionContext context = context();
 
-    String response = AiExecutionContextScope.call(context(), () -> chain.complete("", "hello"));
+    ChatResponse response =
+        call(context, selector, request("", "hello", context, List.of("local"), true));
 
-    assertThat(response).isEqualTo("hola");
+    assertThat(response.content()).isEqualTo("hola");
     assertThat(scheduler.capabilities).containsExactly(ModelCapability.GENERATION);
   }
 
   @Test
   void reportsTheProviderAndModelThatProducedTheResponse() {
-    ChatCompletionPort local = mock(ChatCompletionPort.class);
-    when(local.complete("", "hello")).thenReturn("hola");
-    ChatModelSelector chain =
+    AiChatCompletion local = mock(AiChatCompletion.class);
+    when(local.complete(org.mockito.ArgumentMatchers.any()))
+        .thenReturn(response("hola", "local", "ignored-by-selector"));
+    ChatModelSelector selector =
         new ChatModelSelector(List.of(new ChatModelSelector.Provider("local", local, "llama-3")));
+    AiExecutionContext context = context();
 
-    assertThat(chain.completeWithIdentity("", "hello"))
-        .isEqualTo(
-            new IdentifiedChatCompletionPort.ChatCompletionResult("hola", "local", "llama-3"));
+    ChatResponse result =
+        call(context, selector, request("", "hello", context, List.of("local"), true));
+
+    assertThat(result).isEqualTo(new ChatResponse("hola", "local", "llama-3", 0, 0));
   }
 
   @Test
   void preservesFallbackIdentityAndAdmissionForEachAttempt() {
-    ChatCompletionPort primary = mock(ChatCompletionPort.class);
-    ChatCompletionPort fallback = mock(ChatCompletionPort.class);
-    when(primary.complete("", "hello"))
+    AiChatCompletion primary = mock(AiChatCompletion.class);
+    AiChatCompletion fallback = mock(AiChatCompletion.class);
+    when(primary.complete(org.mockito.ArgumentMatchers.any()))
         .thenThrow(new ChatProviderUnavailableException("local unavailable"));
-    when(fallback.complete("", "hello")).thenReturn("hola");
+    when(fallback.complete(org.mockito.ArgumentMatchers.any()))
+        .thenReturn(response("hola", "cloud", "ignored-by-selector"));
     var scheduler = new RecordingScheduler();
     ChatModelSelector selector =
         new ChatModelSelector(
@@ -173,34 +178,62 @@ class ChatModelSelectorTest {
                 new ChatModelSelector.Provider("cloud", fallback, "gpt-cloud")),
             scheduler,
             Duration.ofSeconds(1));
+    AiExecutionContext context = context();
 
-    var result =
-        AiExecutionContextScope.call(context(), () -> selector.completeWithIdentity("", "hello"));
+    ChatResponse result =
+        call(context, selector, request("", "hello", context, List.of("local", "cloud"), true));
 
-    assertThat(result)
-        .isEqualTo(
-            new IdentifiedChatCompletionPort.ChatCompletionResult("hola", "cloud", "gpt-cloud"));
+    assertThat(result).isEqualTo(new ChatResponse("hola", "cloud", "gpt-cloud", 0, 0));
     assertThat(scheduler.capabilities)
         .containsExactly(ModelCapability.GENERATION, ModelCapability.GENERATION);
     var invocationOrder = inOrder(primary, fallback);
-    invocationOrder.verify(primary).complete("", "hello");
-    invocationOrder.verify(fallback).complete("", "hello");
+    invocationOrder.verify(primary).complete(org.mockito.ArgumentMatchers.any());
+    invocationOrder.verify(fallback).complete(org.mockito.ArgumentMatchers.any());
   }
 
   @Test
   void propagatesNonFallbackChatFailuresWithoutTryingAnotherModel() {
-    ChatCompletionPort primary = mock(ChatCompletionPort.class);
-    ChatCompletionPort fallback = mock(ChatCompletionPort.class);
+    AiChatCompletion primary = mock(AiChatCompletion.class);
+    AiChatCompletion fallback = mock(AiChatCompletion.class);
     IllegalArgumentException invalidRequest = new IllegalArgumentException("invalid request");
-    when(primary.complete("", "hello")).thenThrow(invalidRequest);
+    when(primary.complete(org.mockito.ArgumentMatchers.any())).thenThrow(invalidRequest);
     ChatModelSelector selector =
         new ChatModelSelector(
             List.of(
                 new ChatModelSelector.Provider("local", primary),
                 new ChatModelSelector.Provider("cloud", fallback)));
+    AiExecutionContext context = context();
 
-    assertThatThrownBy(() -> selector.complete("", "hello")).isSameAs(invalidRequest);
+    assertThatThrownBy(
+            () ->
+                call(
+                    context,
+                    selector,
+                    request("", "hello", context, List.of("local", "cloud"), true)))
+        .isSameAs(invalidRequest);
     verifyNoInteractions(fallback);
+  }
+
+  private static ChatResponse call(
+      AiExecutionContext context, ChatModelSelector selector, AiChatCompletion.Request request) {
+    return AiExecutionContextScope.call(context, () -> selector.complete(request));
+  }
+
+  private static AiChatCompletion.Request request(
+      String conversationContext,
+      String userMessage,
+      AiExecutionContext context,
+      List<String> providers,
+      boolean fallbackAllowed) {
+    return new AiChatCompletion.Request(
+        conversationContext,
+        userMessage,
+        context,
+        new AiChatCompletion.ProviderPolicy(providers, fallbackAllowed));
+  }
+
+  private static ChatResponse response(String content, String provider, String model) {
+    return new ChatResponse(content, provider, model, 0, 0);
   }
 
   private static AiExecutionContext context() {

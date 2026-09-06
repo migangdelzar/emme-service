@@ -12,7 +12,6 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
-import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
@@ -37,17 +36,23 @@ class LegacyChatCompletionConfigurationTest {
         .thenReturn(new ChatResponse("response", "mock", "mock-v1", 0, 0));
     LegacyChatCompletionConfiguration configuration = new LegacyChatCompletionConfiguration();
 
-    IdentifiedChatCompletionPort port =
+    AiChatCompletion port =
         configuration.legacyChatCompletion(
             provider, properties(), scheduler, new AiExecutorProperties(2, 1, 1), recorder);
 
+    AiExecutionContext context = context();
     var result =
-        AiExecutionContextScope.call(context(), () -> port.completeWithIdentity("", "hello"));
+        AiExecutionContextScope.call(
+            context,
+            () ->
+                port.complete(
+                    new AiChatCompletion.Request(
+                        "",
+                        "hello",
+                        context,
+                        new AiChatCompletion.ProviderPolicy(java.util.List.of("mock"), true))));
 
-    assertThat(result)
-        .isEqualTo(
-            new IdentifiedChatCompletionPort.ChatCompletionResult(
-                "response", "mock", "legacy-model"));
+    assertThat(result).isEqualTo(new ChatResponse("response", "mock", "legacy-model", 0, 0));
     verify(provider).complete(org.mockito.ArgumentMatchers.any());
     verify(recorder).recordModelExecution(org.mockito.ArgumentMatchers.any());
   }
@@ -64,7 +69,10 @@ class LegacyChatCompletionConfigurationTest {
         .withBean(ModelExecutionScheduler.class, () -> mock(ModelExecutionScheduler.class))
         .withBean(AiExecutorProperties.class, () -> new AiExecutorProperties(2, 1, 1))
         .withBean(AiTraceRecorder.class, () -> mock(AiTraceRecorder.class))
-        .run(context -> assertThat(context).hasSingleBean(IdentifiedChatCompletionPort.class));
+        .run(
+            context ->
+                assertThat(context.getBean(AiChatCompletion.class))
+                    .isInstanceOf(ChatModelSelector.class));
   }
 
   @Test
@@ -101,7 +109,6 @@ class LegacyChatCompletionConfigurationTest {
         .run(
             context ->
                 assertThat(context)
-                    .hasSingleBean(IdentifiedChatCompletionPort.class)
                     .hasBean("aiChatCompletion")
                     .doesNotHaveBean("aiLegacyChatCompletion"));
   }
@@ -133,7 +140,6 @@ class LegacyChatCompletionConfigurationTest {
         .run(
             context ->
                 assertThat(context)
-                    .hasSingleBean(IdentifiedChatCompletionPort.class)
                     .hasBean("aiChatCompletion")
                     .doesNotHaveBean("aiLegacyChatCompletion"));
   }
@@ -181,8 +187,8 @@ class LegacyChatCompletionConfigurationTest {
   @org.springframework.context.annotation.Configuration(proxyBeanMethods = false)
   static class SpringChatRoot {
     @org.springframework.context.annotation.Bean(name = "aiChatCompletion")
-    IdentifiedChatCompletionPort aiChatCompletion() {
-      return mock(IdentifiedChatCompletionPort.class);
+    AiChatCompletion aiChatCompletion() {
+      return mock(AiChatCompletion.class);
     }
   }
 }

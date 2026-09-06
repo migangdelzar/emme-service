@@ -17,7 +17,6 @@ import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.application.guardrail.GroundingGuard;
-import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
 import com.emme.assistant.ai.application.provider.RagAnswerPolicy;
@@ -48,17 +47,17 @@ class RagQueryServiceTest {
   @Test
   void queriesThroughTheCanonicalKnowledgeRetrieverPort() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     when(retrieval.search(any(), any()))
         .thenReturn(
             List.of(
                 new RetrievedDocument(
                     "source-1", "The premium is monthly.", java.util.Map.of(), 0.91)));
-    when(chat.complete("The premium is monthly.", "What is the premium?"))
-        .thenReturn("It is monthly.");
+    when(chat.complete(any()))
+        .thenReturn(new ChatResponse("It is monthly.", "test", "test-v1", 0, 0));
 
     assertThat(inContext(tenantId, () -> service.query("What is the premium?")))
         .isEqualTo("It is monthly.");
@@ -67,31 +66,31 @@ class RagQueryServiceTest {
   @Test
   void embedsSearchesAndAnswersUsingRankedDocumentContext() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     when(retrieval.search(any(), any()))
         .thenReturn(
             List.of(
                 new RetrievedDocument(
                     "source-1", "The premium is monthly.", java.util.Map.of(), 0.91)));
-    when(chat.complete("The premium is monthly.", "What is the premium?"))
-        .thenReturn("It is monthly.");
+    when(chat.complete(any()))
+        .thenReturn(new ChatResponse("It is monthly.", "test", "test-v1", 0, 0));
 
     String answer = inContext(tenantId, () -> service.query("What is the premium?"));
 
     assertThat(answer).isEqualTo("It is monthly.");
     verify(retrieval).search(any(), any());
-    verify(chat).complete("The premium is monthly.", "What is the premium?");
+    verify(chat).complete(any());
   }
 
   @Test
   void usesKeywordOnlySearchWhenEmbeddingIsUnavailable() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     when(retrieval.search(any(), any())).thenReturn(List.of());
 
@@ -99,16 +98,15 @@ class RagQueryServiceTest {
 
     assertThat(answer).isEqualTo("No relevant documents were found.");
     verify(retrieval).search(any(), any());
-    verify(chat, never()).complete(any(), any());
+    verify(chat, never()).complete(any());
   }
 
   @Test
   void keepsTheCannedResponseInMockMode() {
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
     RagQueryService service =
-        new RagQueryService(
-            new AiProviderProperties("mock", null, null, true), retrieval, canonical(chat));
+        new RagQueryService(new AiProviderProperties("mock", null, null, true), retrieval, chat);
 
     String answer = inContext(UUID.randomUUID(), () -> service.query("hello"));
 
@@ -119,9 +117,9 @@ class RagQueryServiceTest {
 
   @Test
   void rejectsAQueryWhenTheBackendAiContextIsMissing() {
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.query("hello"))
         .isInstanceOf(IllegalStateException.class)
@@ -130,9 +128,9 @@ class RagQueryServiceTest {
 
   @Test
   void rejectsBlankQuestionsBeforeSearchingOrCompleting() {
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     org.assertj.core.api.Assertions.assertThatThrownBy(
             () -> inContext(UUID.randomUUID(), () -> service.query("  ")))
@@ -144,9 +142,9 @@ class RagQueryServiceTest {
   @Test
   void usesTheTenantFromTheBackendContextWhenSearchingDocuments() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     when(retrieval.search(any(), any())).thenReturn(List.of());
 
@@ -162,53 +160,52 @@ class RagQueryServiceTest {
   @Test
   void usesTheCanonicalChatPort() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     when(retrieval.search(any(), any()))
         .thenReturn(
             List.of(
                 new RetrievedDocument(
                     "source-1", "The premium is monthly.", java.util.Map.of(), 0.91)));
-    when(chat.complete("The premium is monthly.", "What is the premium?"))
-        .thenReturn("It is monthly.");
+    when(chat.complete(any()))
+        .thenReturn(new ChatResponse("It is monthly.", "test", "test-v1", 0, 0));
 
     assertThat(inContext(tenantId, () -> service.query("What is the premium?")))
         .isEqualTo("It is monthly.");
     verify(retrieval).search(any(), any());
-    verify(chat).complete("The premium is monthly.", "What is the premium?");
+    verify(chat).complete(any());
   }
 
   @Test
   void returnsBoundedUnavailableWithoutBypassingTheCanonicalChatBoundary() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     when(retrieval.search(any(), any()))
         .thenReturn(
             List.of(
                 new RetrievedDocument(
                     "source-1", "The premium is monthly.", java.util.Map.of(), 0.91)));
-    when(chat.complete("The premium is monthly.", "What is the premium?"))
+    when(chat.complete(any()))
         .thenThrow(new ChatProviderUnavailableException("all configured providers unavailable"));
 
     assertThat(inContext(tenantId, () -> service.query("What is the premium?")))
         .isEqualTo("Retrieval unavailable.");
-    verify(chat).complete("The premium is monthly.", "What is the premium?");
+    verify(chat).complete(any());
   }
 
   @Test
   void doesNotReenterRetrievalWhenTheConfiguredRagProviderIsUnavailable() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     RagAnswerPort ragAnswer = mock(RagAnswerPort.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
     RagQueryService service =
-        new RagQueryService(
-            realProperties(), retrieval, canonical(chat), java.util.Optional.of(ragAnswer));
+        new RagQueryService(realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
     when(ragAnswer.answer("hello"))
         .thenThrow(new ChatProviderUnavailableException("all providers unavailable"));
 
@@ -222,8 +219,8 @@ class RagQueryServiceTest {
   void returnsExplicitRetrievalUnavailableWhenVectorEmbeddingFails() {
     UUID tenantId = UUID.randomUUID();
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    AiChatCompletion chat = mock(AiChatCompletion.class);
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     when(retrieval.search(any(), any())).thenThrow(new IllegalStateException("vector unavailable"));
     assertThat(inContext(tenantId, () -> service.query("hello")))
@@ -236,8 +233,8 @@ class RagQueryServiceTest {
   void returnsExplicitRetrievalUnavailableWhenVectorSearchFails() {
     UUID tenantId = UUID.randomUUID();
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    AiChatCompletion chat = mock(AiChatCompletion.class);
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     when(retrieval.search(any(), any()))
         .thenThrow(new IllegalStateException("pgvector unavailable"));
@@ -251,8 +248,8 @@ class RagQueryServiceTest {
   void doesNotHideSecurityFailuresFromVectorSearch() {
     UUID tenantId = UUID.randomUUID();
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
-    RagQueryService service = new RagQueryService(realProperties(), retrieval, canonical(chat));
+    AiChatCompletion chat = mock(AiChatCompletion.class);
+    RagQueryService service = new RagQueryService(realProperties(), retrieval, chat);
 
     when(retrieval.search(any(), any())).thenThrow(new SecurityException("tenant denied"));
 
@@ -267,12 +264,11 @@ class RagQueryServiceTest {
   @Test
   void prefersTheConfiguredSpringRagAnswerPortWhenAvailable() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     RagAnswerPort ragAnswer = mock(RagAnswerPort.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
     RagQueryService service =
-        new RagQueryService(
-            realProperties(), retrieval, canonical(chat), java.util.Optional.of(ragAnswer));
+        new RagQueryService(realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
     when(ragAnswer.answer("Which cancellation rules apply?"))
         .thenReturn("The salon requires 24 hours.");
 
@@ -285,39 +281,29 @@ class RagQueryServiceTest {
   @Test
   void executesTheConfiguredRagCompositionThroughTheSpringAiAdvisor() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
-    AiChatCompletion completions =
-        request ->
-            new ChatResponse(
-                chat.complete(request.conversationContext(), request.userMessage()),
-                "test",
-                "test-v1",
-                0,
-                0);
     RagAnswerPort ragAnswer =
-        new RagAnswerPolicy(
-            completions, new AiChatCompletion.ProviderPolicy(List.of("test"), true));
+        new RagAnswerPolicy(chat, new AiChatCompletion.ProviderPolicy(List.of("test"), true));
     RagQueryService service =
-        new RagQueryService(
-            realProperties(), retrieval, canonical(chat), java.util.Optional.of(ragAnswer));
-    when(chat.complete("", "What is the premium?")).thenReturn("It is monthly.");
+        new RagQueryService(realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
+    when(chat.complete(any()))
+        .thenReturn(new ChatResponse("It is monthly.", "test", "test-v1", 0, 0));
 
     assertThat(inContext(tenantId, () -> service.query("What is the premium?")))
         .isEqualTo("It is monthly.");
     verifyNoInteractions(retrieval);
-    verify(chat).complete("", "What is the premium?");
+    verify(chat).complete(any());
   }
 
   @Test
   void returnsExplicitRetrievalUnavailableWhenTheConfiguredRagAnswerPortCannotRetrieve() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     RagAnswerPort ragAnswer = mock(RagAnswerPort.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
     RagQueryService service =
-        new RagQueryService(
-            realProperties(), retrieval, canonical(chat), java.util.Optional.of(ragAnswer));
+        new RagQueryService(realProperties(), retrieval, chat, java.util.Optional.of(ragAnswer));
     when(ragAnswer.answer("hello")).thenThrow(new RetrievalUnavailableException());
 
     assertThat(inContext(tenantId, () -> service.query("hello")))
@@ -329,7 +315,7 @@ class RagQueryServiceTest {
   @Test
   void prefersTheBoundedKnowledgeAnswerServiceWhenConfigured() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
     KnowledgeAnswerService knowledgeAnswer = mock(KnowledgeAnswerService.class);
     AiExecutionContext context = context(tenantId);
@@ -345,7 +331,7 @@ class RagQueryServiceTest {
         new RagQueryService(
             realProperties(),
             retrieval,
-            canonical(chat),
+            chat,
             java.util.Optional.empty(),
             java.util.Optional.of(knowledgeAnswer));
 
@@ -358,7 +344,7 @@ class RagQueryServiceTest {
   @Test
   void returnsNoAnswerWhenGroundingGuardRejectsTheKnowledgeAnswer() {
     UUID tenantId = UUID.randomUUID();
-    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    AiChatCompletion chat = mock(AiChatCompletion.class);
     KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
     KnowledgeAnswerService knowledgeAnswer = mock(KnowledgeAnswerService.class);
     GroundingGuard grounding = mock(GroundingGuard.class);
@@ -379,7 +365,7 @@ class RagQueryServiceTest {
         new RagQueryService(
             realProperties(),
             retrieval,
-            canonical(chat),
+            chat,
             java.util.Optional.empty(),
             java.util.Optional.of(knowledgeAnswer),
             java.util.Optional.of(grounding));
@@ -392,16 +378,6 @@ class RagQueryServiceTest {
 
   private static <T> T inContext(UUID tenantId, java.util.function.Supplier<T> action) {
     return AiExecutionContextScope.call(context(tenantId), action::get);
-  }
-
-  private static AiChatCompletion canonical(ChatCompletionPort delegate) {
-    return request ->
-        new ChatResponse(
-            delegate.complete(request.conversationContext(), request.userMessage()),
-            "test",
-            "test-v1",
-            0,
-            0);
   }
 
   private static AiExecutionContext context(UUID tenantId) {

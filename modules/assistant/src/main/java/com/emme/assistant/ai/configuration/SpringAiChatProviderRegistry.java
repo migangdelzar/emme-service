@@ -1,9 +1,11 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.ai.platform.adapter.out.provider.springai.SpringAiChatModel;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.provider.ChatProviderFailurePolicy;
-import com.emme.assistant.ai.application.provider.TracingChatCompletionPort;
+import com.emme.assistant.ai.application.provider.TracingAiChatCompletion;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.assistant.ai.application.trace.NoopAiTraceRecorder;
 import java.util.HashSet;
@@ -77,8 +79,8 @@ public final class SpringAiChatProviderRegistry {
                               toolCallbackProvider);
                   return new ChatModelSelector.Provider(
                       configured.key(),
-                      new TracingChatCompletionPort(
-                          applicationPort(model, configured.key()),
+                      new TracingAiChatCompletion(
+                          applicationPort(model, configured.key(), configured.modelVersion()),
                           configured.key(),
                           configured.modelVersion(),
                           "chat-v1",
@@ -91,11 +93,16 @@ public final class SpringAiChatProviderRegistry {
     }
   }
 
-  private static com.emme.assistant.ai.application.port.out.ChatCompletionPort applicationPort(
-      SpringAiChatModel model, String providerKey) {
-    return (conversationContext, userMessage) -> {
+  private static AiChatCompletion applicationPort(
+      SpringAiChatModel model, String providerKey, String modelVersion) {
+    return request -> {
       try {
-        return model.complete(conversationContext, userMessage);
+        return new ChatResponse(
+            model.complete(request.conversationContext(), request.userMessage()),
+            providerKey,
+            modelVersion,
+            0,
+            0);
       } catch (RuntimeException failure) {
         throw ChatProviderFailurePolicy.preserveInputOrUnavailable(providerKey, failure);
       }

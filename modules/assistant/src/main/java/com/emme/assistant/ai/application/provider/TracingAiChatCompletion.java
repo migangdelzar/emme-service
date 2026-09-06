@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.application.provider;
 
-import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
+import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTracePersistenceFailureReporter;
@@ -12,18 +13,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Records each provider attempt without changing provider failure semantics. */
-public final class TracingChatCompletionPort implements ChatCompletionPort {
+public final class TracingAiChatCompletion implements AiChatCompletion {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TracingChatCompletionPort.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TracingAiChatCompletion.class);
 
-  private final ChatCompletionPort delegate;
+  private final AiChatCompletion delegate;
   private final String providerKey;
   private final String modelVersion;
   private final String promptVersion;
   private final AiTraceRecorder recorder;
 
-  public TracingChatCompletionPort(
-      ChatCompletionPort delegate,
+  public TracingAiChatCompletion(
+      AiChatCompletion delegate,
       String providerKey,
       String modelVersion,
       String promptVersion,
@@ -36,15 +37,16 @@ public final class TracingChatCompletionPort implements ChatCompletionPort {
   }
 
   @Override
-  public String complete(String conversationContext, String userMessage) {
+  public ChatResponse complete(Request request) {
+    Objects.requireNonNull(request, "request must not be null");
     String requestPayload =
         "conversationContext="
-            + String.valueOf(conversationContext)
+            + request.conversationContext()
             + "\nuserMessage="
-            + userMessage;
+            + request.userMessage();
     long startedAt = System.nanoTime();
     try {
-      String response = delegate.complete(conversationContext, userMessage);
+      ChatResponse response = delegate.complete(request);
       record(
           new AiModelExecutionTrace(
               UUID.randomUUID(),
@@ -60,7 +62,7 @@ public final class TracingChatCompletionPort implements ChatCompletionPort {
               null,
               null,
               requestPayload,
-              response,
+              response.content(),
               null,
               null));
       return response;

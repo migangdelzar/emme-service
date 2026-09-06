@@ -476,18 +476,15 @@ conversation context and the existing mock empty-message HTTP behavior.
 
 #### Current slice 6R — Add the canonical chat request to provider selection
 
-`ChatModelSelector` now implements the canonical `AiChatCompletion` contract in
-addition to the temporary Assistant chat port. Canonical requests validate the
-bound execution context, honor the ordered admitted-provider policy, preserve
-the explicit fallback flag, and return provider/model metadata. The temporary
-string API remains only while its consumers are migrated in the next slice;
-its no-context behavior is preserved so this bridge does not change existing
-callers unexpectedly.
+`ChatModelSelector` implements the canonical `AiChatCompletion` contract.
+Canonical requests validate the bound execution context, honor the ordered
+admitted-provider policy, preserve the explicit fallback flag, and return
+provider/model metadata.
 
 - [x] Add failing selector tests for canonical provider admission and fallback.
 - [x] Implement canonical request selection and provider/model response metadata.
 - [x] Preserve the existing no-context behavior of the temporary string API.
-- [ ] Migrate all Assistant consumers and delete the temporary chat ports.
+- [x] Migrate all Assistant consumers and delete the temporary chat ports.
 
 #### Current slice 6S — Route RAG answer policy through canonical chat
 
@@ -501,7 +498,7 @@ keys; no default or hidden provider identity is introduced.
 - [x] Migrate grounded and advisor-backed RAG answer composition.
 - [x] Expose canonical selector beans from both chat composition profiles.
 - [x] Migrate `RagQueryService` to the canonical request boundary.
-- [ ] Migrate `ChatService` and tracing/provider adapters.
+- [x] Migrate `ChatService` and tracing/provider adapters.
 
 #### Current slice 6T — Migrate the retrieval-service completion fallback
 
@@ -518,7 +515,7 @@ depends on the deprecated Assistant chat port.
       not create ambiguous canonical injections.
 - [x] Run focused RAG service, composition, and web-context tests.
 - [x] Migrate `ChatService` to canonical requests and explicit cache identity.
-- [ ] Migrate tracing/provider registry adapters and delete the remaining
+- [x] Migrate tracing/provider registry adapters and delete the remaining
       temporary chat adapters.
 
 #### Current slice 6U — Migrate the chat service to canonical requests
@@ -527,9 +524,10 @@ depends on the deprecated Assistant chat port.
 receives the bound `AiExecutionContext` and the configured provider policy, and
 each semantic-cache write carries the canonical response provider/model plus
 the existing knowledge, policy, and source versions. The service no longer
-branches on `IdentifiedChatCompletionPort` or synthesizes `legacy-provider` /
-`legacy-model` metadata. Tracing, provider-registry adapters, and deletion of
-the temporary chat-port family remain a separate sequential compatibility slice.
+branches on a deprecated chat port or synthesizes `legacy-provider` /
+`legacy-model` metadata. Tracing and provider-registry adapters were migrated
+in the follow-up deletion slice below so the service boundary remained
+independently reviewable.
 
 - [x] Add failing source-architecture coverage for the deprecated chat service
       dependency and synthetic legacy response identity.
@@ -537,8 +535,23 @@ the temporary chat-port family remain a separate sequential compatibility slice.
 - [x] Preserve semantic-cache writes with explicit response and policy
       metadata.
 - [x] Run the full Assistant unit suite and focused canonical-chat tests.
-- [ ] Migrate tracing/provider-registry adapters and delete the temporary chat
+- [x] Migrate tracing/provider-registry adapters and delete the temporary chat
       ports after all callers and tests are migrated.
+
+#### Current slice 6V — Delete the temporary chat completion port family
+
+All Assistant production adapters and tests now use `AiChatCompletion.Request`
+and `ChatResponse`. The temporary Assistant `ChatCompletionPort`,
+`IdentifiedChatCompletionPort`, and tracing adapter were deleted after a source
+inventory proved that no caller, bean, or test still depended on them.
+
+- [x] Add a failing source-inventory test for the temporary chat port files.
+- [x] Migrate ChatService and RagQueryService test doubles to canonical requests.
+- [x] Migrate selector, tracing, and provider-registry composition adapters.
+- [x] Delete the temporary chat port family and legacy tracing test name.
+- [x] Run focused tests, Assistant compilation, and source architecture checks.
+- [ ] Run live provider/trace behavior gates when Docker-backed dependencies are
+      available.
 
 #### Current slice 6L — Keep document retrieval on the canonical embedding port
 

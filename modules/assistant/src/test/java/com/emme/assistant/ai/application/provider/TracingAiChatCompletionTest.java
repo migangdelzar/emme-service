@@ -2,37 +2,41 @@ package com.emme.assistant.ai.application.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
+import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.trace.AiExecutionStatus;
 import com.emme.assistant.ai.application.trace.AiModelExecutionTrace;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-class TracingChatCompletionPortTest {
+class TracingAiChatCompletionTest {
 
   @Test
   void recordsSuccessfulModelExecutionWithBackendCorrelation() {
-    ChatCompletionPort delegate = mock(ChatCompletionPort.class);
-    when(delegate.complete("context", "hello ana@example.com")).thenReturn("Hi");
+    AiChatCompletion delegate = mock(AiChatCompletion.class);
+    when(delegate.complete(org.mockito.ArgumentMatchers.any()))
+        .thenReturn(new ChatResponse("Hi", "local-ollama", "gemma-v1", 0, 0));
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
-    TracingChatCompletionPort port =
-        new TracingChatCompletionPort(delegate, "local-ollama", "gemma-v1", "chat-v1", recorder);
+    TracingAiChatCompletion port =
+        new TracingAiChatCompletion(delegate, "local-ollama", "gemma-v1", "chat-v1", recorder);
 
-    String result =
+    ChatResponse result =
         AiExecutionContextScope.call(
-            context(), () -> port.complete("context", "hello ana@example.com"));
+            context(), () -> port.complete(request("context", "hello ana@example.com")));
 
-    assertThat(result).isEqualTo("Hi");
+    assertThat(result).isEqualTo(new ChatResponse("Hi", "local-ollama", "gemma-v1", 0, 0));
     ArgumentCaptor<AiModelExecutionTrace> trace =
         ArgumentCaptor.forClass(AiModelExecutionTrace.class);
     verify(recorder).recordModelExecution(trace.capture());
@@ -48,16 +52,18 @@ class TracingChatCompletionPortTest {
 
   @Test
   void recordsProviderFailureAndRethrowsTheProviderFailure() {
-    ChatCompletionPort delegate = mock(ChatCompletionPort.class);
+    AiChatCompletion delegate = mock(AiChatCompletion.class);
     ChatProviderUnavailableException failure =
         new ChatProviderUnavailableException("connection refused");
-    when(delegate.complete("context", "hello")).thenThrow(failure);
+    when(delegate.complete(org.mockito.ArgumentMatchers.any())).thenThrow(failure);
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
-    TracingChatCompletionPort port =
-        new TracingChatCompletionPort(delegate, "cloud", "cloud-v1", "chat-v1", recorder);
+    TracingAiChatCompletion port =
+        new TracingAiChatCompletion(delegate, "cloud", "cloud-v1", "chat-v1", recorder);
 
     assertThatThrownBy(
-            () -> AiExecutionContextScope.call(context(), () -> port.complete("context", "hello")))
+            () ->
+                AiExecutionContextScope.call(
+                    context(), () -> port.complete(request("context", "hello"))))
         .isSameAs(failure);
 
     ArgumentCaptor<AiModelExecutionTrace> trace =
@@ -69,17 +75,28 @@ class TracingChatCompletionPortTest {
 
   @Test
   void doesNotMakeARequestFailWhenTracePersistenceFails() {
-    ChatCompletionPort delegate = mock(ChatCompletionPort.class);
-    when(delegate.complete("context", "hello")).thenReturn("Hi");
+    AiChatCompletion delegate = mock(AiChatCompletion.class);
+    when(delegate.complete(org.mockito.ArgumentMatchers.any()))
+        .thenReturn(new ChatResponse("Hi", "local", "model-v1", 0, 0));
     AiTraceRecorder recorder = mock(AiTraceRecorder.class);
-    org.mockito.Mockito.doThrow(new IllegalStateException("database down"))
+    doThrow(new IllegalStateException("database down"))
         .when(recorder)
         .recordModelExecution(org.mockito.ArgumentMatchers.any());
-    TracingChatCompletionPort port =
-        new TracingChatCompletionPort(delegate, "local", "model-v1", "chat-v1", recorder);
+    TracingAiChatCompletion port =
+        new TracingAiChatCompletion(delegate, "local", "model-v1", "chat-v1", recorder);
 
-    assertThat(AiExecutionContextScope.call(context(), () -> port.complete("context", "hello")))
-        .isEqualTo("Hi");
+    assertThat(
+            AiExecutionContextScope.call(
+                context(), () -> port.complete(request("context", "hello"))))
+        .isEqualTo(new ChatResponse("Hi", "local", "model-v1", 0, 0));
+  }
+
+  private static AiChatCompletion.Request request(String conversationContext, String userMessage) {
+    return new AiChatCompletion.Request(
+        conversationContext,
+        userMessage,
+        context(),
+        new AiChatCompletion.ProviderPolicy(List.of("local-ollama", "cloud", "local"), true));
   }
 
   private static AiExecutionContext context() {

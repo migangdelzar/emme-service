@@ -2,7 +2,6 @@ package com.emme.assistant.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
@@ -16,8 +15,9 @@ import org.junit.jupiter.api.Test;
 class CanonicalAiApplicationContractsTest {
 
   @Test
-  void legacyChatPortDeclaresItsTemporaryCompatibilityStatus() {
-    assertThat(ChatCompletionPort.class).hasAnnotation(Deprecated.class);
+  void temporaryChatPortSourcesAreRemovedAfterCanonicalMigration() throws IOException {
+    assertThat(sourcePath("ChatCompletionPort.java")).doesNotExist();
+    assertThat(sourcePath("IdentifiedChatCompletionPort.java")).doesNotExist();
   }
 
   @Test
@@ -84,6 +84,18 @@ class CanonicalAiApplicationContractsTest {
   private static Path embeddingPortSource() {
     String relativePath =
         "modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/EmbeddingModelPort.java";
+    Path current = Path.of("").toAbsolutePath();
+    while (current != null) {
+      Path candidate = current.resolve(relativePath);
+      if (Files.exists(candidate)) return candidate;
+      current = current.getParent();
+    }
+    return Path.of(relativePath);
+  }
+
+  private static Path sourcePath(String fileName) {
+    String relativePath =
+        "modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/" + fileName;
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {
       Path candidate = current.resolve(relativePath);

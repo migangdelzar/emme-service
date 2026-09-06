@@ -1782,3 +1782,16 @@
 - Prevention rule: canonical consumers must send the bound execution context
   and provider policy in one request, use provider/model metadata from the
   canonical response, and construct explicit cache identity for every write.
+
+## 2026-09-06 — Delete compatibility ports only after source-set migration
+
+- **Failure mode:** Production adapters had moved to the canonical chat
+  capability, but Assistant tests still depended on the deprecated
+  string-returning port and its identity wrapper.
+- **Detection signal:** A repository-wide source search found legacy imports in
+  ChatService, RagQueryService, and contract tests after focused composition
+  tests were green.
+- **Prevention rule:** Before deleting a compatibility interface, search and
+  compile every production, unit-test, integration-test, fixture, bean, and
+  source-inventory caller; migrate test doubles to the canonical request/result
+  shape, then let a deletion test prove the old files are absent.

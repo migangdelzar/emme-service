@@ -10,10 +10,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.model.AiChatCompletion;
+import com.emme.ai.contracts.model.ChatResponse;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
-import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
 import com.emme.assistant.ai.application.provider.ChatModelSelector;
 import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContext;
@@ -67,10 +68,14 @@ class SpringAiChatConfigurationTest {
             Map.of("missingCredential", missingCredentialClient, "fallback", fallbackClient),
             properties);
 
+    AiExecutionContext context = context();
     assertThat(
             AiExecutionContextScope.call(
-                context(), () -> new ChatModelSelector(registry.providers()).complete("", "hello")))
-        .isEqualTo("hola");
+                context,
+                () ->
+                    new ChatModelSelector(registry.providers())
+                        .complete(request(context, List.of("groq", "ollama")))))
+        .isEqualTo(new ChatResponse("hola", "ollama", "ollama-v1", 0, 0));
   }
 
   @Test
@@ -91,11 +96,14 @@ class SpringAiChatConfigurationTest {
         new SpringAiChatProviderRegistry(
             Map.of("schemaFailure", schemaFailureClient, "fallback", fallbackClient), properties);
 
+    AiExecutionContext context = context();
     assertThatThrownBy(
             () ->
                 AiExecutionContextScope.call(
-                    context(),
-                    () -> new ChatModelSelector(registry.providers()).complete("", "hello")))
+                    context,
+                    () ->
+                        new ChatModelSelector(registry.providers())
+                            .complete(request(context, List.of("groq", "ollama")))))
         .isSameAs(schemaFailure);
   }
 
@@ -116,7 +124,7 @@ class SpringAiChatConfigurationTest {
             List.of(new TenantSecurityAdvisor(), new PromptVersionAdvisor("chat-v1")),
             mock(AiTraceRecorder.class));
 
-    IdentifiedChatCompletionPort port =
+    AiChatCompletion port =
         new SpringAiChatConfiguration()
             .chatCompletionPort(registry, Optional.empty(), new AiExecutorProperties(2, 1, 1));
 
@@ -141,15 +149,16 @@ class SpringAiChatConfigurationTest {
         new SpringAiChatProviderRegistry(
             Map.of("localChatClient", local, "cloudChatClient", cloud), properties);
 
+    AiExecutionContext context = context();
     assertThat(
             AiExecutionContextScope.call(
-                context(),
+                context,
                 () ->
                     configuration
                         .chatCompletionPort(
                             registry, Optional.empty(), new AiExecutorProperties(2, 1, 1))
-                        .complete("", "hello")))
-        .isEqualTo("hola");
+                        .complete(request(context, List.of("local", "cloud")))))
+        .isEqualTo(new ChatResponse("hola", "cloud", "cloud-v1", 0, 0));
     var invocationOrder = inOrder(local, cloud);
     invocationOrder.verify(local).prompt();
     invocationOrder.verify(cloud).prompt();
@@ -174,13 +183,16 @@ class SpringAiChatConfigurationTest {
     SpringAiChatProviderRegistry registry =
         new SpringAiChatProviderRegistry(Map.of("localChatClient", client), properties);
 
+    AiExecutionContext context = context();
     var result =
         AiExecutionContextScope.call(
-            context(),
-            () -> new ChatModelSelector(registry.providers()).completeWithIdentity("", "hello"));
+            context,
+            () ->
+                new ChatModelSelector(registry.providers())
+                    .complete(request(context, List.of("local-ollama"))));
 
     assertThat(result.provider()).isEqualTo("local-ollama");
-    assertThat(result.model()).isEqualTo("ollama-chat");
+    assertThat(result.modelVersion()).isEqualTo("ollama-chat");
   }
 
   @Test
@@ -243,5 +255,11 @@ class SpringAiChatConfigurationTest {
     UUID id = UUID.randomUUID();
     return new AiExecutionContext(
         UUID.randomUUID(), UUID.randomUUID(), Set.of("ROLE_CLIENT"), id, id, "trace-1", "idem-1");
+  }
+
+  private static AiChatCompletion.Request request(
+      AiExecutionContext context, List<String> providers) {
+    return new AiChatCompletion.Request(
+        "", "hello", context, new AiChatCompletion.ProviderPolicy(providers, true));
   }
 }

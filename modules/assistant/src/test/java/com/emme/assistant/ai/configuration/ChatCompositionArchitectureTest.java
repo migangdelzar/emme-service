@@ -61,7 +61,7 @@ class ChatCompositionArchitectureTest {
         .contains("havingValue = \"false\"")
         .contains("matchIfMissing = true")
         .contains("ChatModelSelector legacyChatCompletion")
-        .contains("new TracingChatCompletionPort");
+        .contains("new TracingAiChatCompletion");
   }
 
   @Test
@@ -72,6 +72,34 @@ class ChatCompositionArchitectureTest {
                 "modules/assistant/src/main/java/com/emme/assistant/ai/configuration/LegacyChatCompletionConfiguration.java"));
 
     assertThat(legacyChat).doesNotContain("AiModelProvider");
+  }
+
+  @Test
+  void keepsProviderSelectionAndTracingOnTheCanonicalChatBoundary() throws IOException {
+    String selector =
+        Files.readString(
+            sourcePath(
+                "modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/ChatModelSelector.java"));
+    String tracing =
+        Files.readString(
+            sourcePath(
+                "modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/TracingAiChatCompletion.java"));
+    String registry =
+        Files.readString(
+            sourcePath(
+                "modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiChatProviderRegistry.java"));
+
+    assertThat(selector)
+        .contains("implements AiChatCompletion")
+        .contains("record Provider(String key, AiChatCompletion model")
+        .doesNotContain("IdentifiedChatCompletionPort")
+        .doesNotContain("ChatCompletionPort");
+    assertThat(tracing)
+        .contains("implements AiChatCompletion")
+        .doesNotContain("ChatCompletionPort");
+    assertThat(registry)
+        .contains("private static AiChatCompletion applicationPort")
+        .doesNotContain("ChatCompletionPort");
   }
 
   private static Path sourcePath(String relativePath) {

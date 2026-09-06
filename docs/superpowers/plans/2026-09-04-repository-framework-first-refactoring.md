@@ -39,6 +39,8 @@ an explicit name-preserving conversion at that boundary.
       fixtures.
 - [x] Correct the Calendar public boundaries with API-owned enums and explicit
       application mapping.
+- [x] Correct the Catalog public boundary with an API-owned enum and explicit
+      application mapping.
 - [ ] Correct the remaining public records that still expose domain enums.
 - [ ] Re-run the full framework checkpoint after the correction slices.
 
@@ -93,8 +95,9 @@ unchanged at serialization boundaries.
 
 ### Current slice — Catalog status enum boundary
 
-Catalog item status now uses the existing `CatalogItemStatus` enum through the
-application result and HTTP response mappings. Stable enum-name serialization
+Catalog item status now uses an API-owned `CatalogItemStatus` enum through the
+application result and HTTP response mappings. The application boundary
+explicitly converts the domain value while stable enum-name serialization
 preserves the existing catalog status values.
 
 - [x] Add a failing convention test for enum-typed Catalog status boundaries.

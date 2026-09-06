@@ -1,6 +1,6 @@
 package com.emme.catalog.api.result;
 
-import com.emme.catalog.domain.model.CatalogItemStatus;
+import com.emme.catalog.api.type.CatalogItemStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
 

@@ -2,6 +2,7 @@ package com.emme.catalog.application.mapper;
 
 import com.emme.catalog.api.result.CatalogItemDetails;
 import com.emme.catalog.api.result.CatalogItemImageDetails;
+import com.emme.catalog.api.type.CatalogItemStatus;
 import com.emme.catalog.domain.model.CatalogItem;
 import com.emme.catalog.domain.model.CatalogItemImage;
 
@@ -18,7 +19,7 @@ public final class CatalogApplicationMapper {
         item.getPriceNotes(),
         item.getDurationMinutes(),
         item.getMaterials(),
-        item.getStatus());
+        CatalogItemStatus.valueOf(item.getStatus().name()));
   }
 
   public static CatalogItemImageDetails toResult(CatalogItemImage image) {

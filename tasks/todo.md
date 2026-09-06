@@ -3980,6 +3980,15 @@ appointment mutation tools are registered.
   decisions before invoking later stages.
 - The focused tests were red before implementation and green after it.
 
+#### Task 8 input boundary slice
+
+- [x] Add red tests for blank, oversized, prompt-injection, idempotency, and
+      bounded ordinary input.
+- [x] Implement `DefaultInputGuard` with configurable byte and attachment
+      limits and deterministic decisions.
+- [x] Run the focused input-guard test and formatting checks.
+- [ ] Continue with the context, tool, grounding, output, and delivery guards.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

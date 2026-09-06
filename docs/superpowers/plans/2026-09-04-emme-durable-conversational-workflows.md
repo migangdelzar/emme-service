@@ -808,6 +808,11 @@ safe deterministic decision. Streaming responses are buffered until required che
   Expected result: assertions fail for the newly required boundaries.
 - [ ] **Step 3: Implement concrete guards and advisors.** Keep each guard focused, inject every dependency, use backend context, enforce bounded sizes, and map guard decisions to clarification/block/escalation without exposing sensitive evidence.
 - [ ] **Step 4: Wire ordered advisors.** Preserve tenant-security → prompt-version → retrieval → output/grounding ordering and retain Spring AI observations/customizers.
+
+Current progress: typed input/output guard advisors are now composed into the
+Spring AI chat and RAG chains with tenant-security → input → prompt-version →
+retrieval → output precedence. Application-service delivery invocation and the
+grounding advisor remain before this task can be marked complete.
 - [ ] **Step 5: Run, refactor, and commit.**
 
   ```bash

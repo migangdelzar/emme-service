@@ -3,6 +3,8 @@ package com.emme.assistant.ai.configuration;
 import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiToolCallbackProvider;
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.InputGuardAdvisor;
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.OutputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.IdentifiedChatCompletionPort;
@@ -61,11 +63,18 @@ public class SpringAiChatConfiguration {
       SpringAiChatProperties properties,
       TenantSecurityAdvisor tenantSecurityAdvisor,
       PromptVersionAdvisor promptVersionAdvisor,
+      InputGuardAdvisor inputGuardAdvisor,
+      OutputGuardAdvisor outputGuardAdvisor,
       AiTraceRecorder traceRecorder,
       Optional<SpringAiToolCallbackProvider> toolCallbackProvider,
       Optional<ToolSearchToolCallingAdvisor> toolSearchAdvisor) {
     List<Advisor> configuredAdvisors =
-        new ArrayList<>(List.of(tenantSecurityAdvisor, promptVersionAdvisor));
+        new ArrayList<>(
+            List.of(
+                tenantSecurityAdvisor,
+                inputGuardAdvisor,
+                promptVersionAdvisor,
+                outputGuardAdvisor));
     if (toolCallbackProvider.isPresent() && toolSearchAdvisor.isPresent()) {
       configuredAdvisors.add(toolSearchAdvisor.orElseThrow());
     }

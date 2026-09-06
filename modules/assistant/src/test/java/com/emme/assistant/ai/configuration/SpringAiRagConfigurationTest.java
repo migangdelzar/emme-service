@@ -118,6 +118,10 @@ class SpringAiRagConfigurationTest {
             new com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor(),
             new com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor(
                 "rag-v1"),
+            new SpringAiAdvisorConfiguration()
+                .inputGuardAdvisor(new SpringAiAdvisorConfiguration().inputGuard()),
+            new SpringAiAdvisorConfiguration()
+                .outputGuardAdvisor(new SpringAiAdvisorConfiguration().outputGuard()),
             mock(RetrievalAugmentationAdvisor.class),
             mock(AiTraceRecorder.class),
             java.util.Optional.empty(),

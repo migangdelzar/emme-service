@@ -4051,6 +4051,15 @@ appointment mutation tools are registered.
 - [x] Run the focused advisor test and diff validation.
 - [ ] Add output and grounding advisors and wire advisor ordering.
 
+#### Task 8 output/advisor composition slice
+
+- [x] Add a red output-advisor test for blocked and allowed model responses.
+- [x] Add `OutputGuardAdvisor` and typed post-model rejection handling.
+- [x] Wire input/output advisors into Spring AI chat and RAG advisor chains.
+- [x] Run the combined guard, advisor, and configuration checkpoint.
+- [ ] Add grounding advisor and invoke guardrails from application delivery
+      boundaries.
+
 ## Calendar schema-local sync-state slice — 2026-09-05
 
 - [x] Add red repository and adapter tests for provider-only sync-state lookup.

@@ -1,5 +1,7 @@
 package com.emme.assistant.ai.configuration;
 
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.InputGuardAdvisor;
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.OutputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.guardrail.ContextGuard;
@@ -103,5 +105,17 @@ public class SpringAiAdvisorConfiguration {
       DeliveryGuard delivery) {
     return new com.emme.assistant.ai.application.guardrail.DefaultGuardrailPipeline(
         input, context, tool, grounding, output, delivery);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  InputGuardAdvisor inputGuardAdvisor(InputGuard inputGuard) {
+    return new InputGuardAdvisor(inputGuard);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  OutputGuardAdvisor outputGuardAdvisor(OutputGuard outputGuard) {
+    return new OutputGuardAdvisor(outputGuard);
   }
 }

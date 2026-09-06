@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.InputGuardAdvisor;
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.OutputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.guardrail.ContextGuard;
@@ -66,6 +68,20 @@ class SpringAiAdvisorConfigurationTest {
     assertThat(delivery).isInstanceOf(DefaultDeliveryGuard.class);
     assertThat(configuration.guardrailPipeline(input, context, tool, grounding, output, delivery))
         .isInstanceOf(GuardrailPipeline.class);
+  }
+
+  @Test
+  void exposesInputAndOutputAdvisorsWithGuardrailPrecedence() {
+    SpringAiAdvisorConfiguration configuration = new SpringAiAdvisorConfiguration();
+    InputGuard input = configuration.inputGuard();
+    OutputGuard output = configuration.outputGuard();
+
+    InputGuardAdvisor inputAdvisor = configuration.inputGuardAdvisor(input);
+    OutputGuardAdvisor outputAdvisor = configuration.outputGuardAdvisor(output);
+
+    assertThat(inputAdvisor.getOrder()).isLessThan(configuration.promptVersionAdvisor().getOrder());
+    assertThat(outputAdvisor.getOrder())
+        .isGreaterThan(configuration.promptVersionAdvisor().getOrder());
   }
 
   private static AiToolDefinition toolDefinition() {

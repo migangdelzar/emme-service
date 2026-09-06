@@ -5,6 +5,8 @@ import com.emme.ai.contracts.model.ModelExecutionScheduler;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.assistant.ai.adapter.out.provider.springai.SpringAiQueryImprover;
 import com.emme.assistant.ai.adapter.out.provider.springai.TenantScopedDocumentRetriever;
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.InputGuardAdvisor;
+import com.emme.assistant.ai.adapter.out.provider.springai.advisor.OutputGuardAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.PromptVersionAdvisor;
 import com.emme.assistant.ai.adapter.out.provider.springai.advisor.TenantSecurityAdvisor;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
@@ -136,13 +138,20 @@ public class SpringAiRagConfiguration {
       SpringAiChatProperties chatProperties,
       TenantSecurityAdvisor tenantSecurityAdvisor,
       PromptVersionAdvisor promptVersionAdvisor,
+      InputGuardAdvisor inputGuardAdvisor,
+      OutputGuardAdvisor outputGuardAdvisor,
       RetrievalAugmentationAdvisor retrievalAugmentationAdvisor,
       AiTraceRecorder traceRecorder,
       Optional<ModelExecutionScheduler> scheduler,
       AiExecutorProperties executionProperties) {
     List<Advisor> advisors =
         SpringAiAdvisorConfiguration.orderedAdvisors(
-            List.of(tenantSecurityAdvisor, promptVersionAdvisor, retrievalAugmentationAdvisor));
+            List.of(
+                tenantSecurityAdvisor,
+                inputGuardAdvisor,
+                promptVersionAdvisor,
+                retrievalAugmentationAdvisor,
+                outputGuardAdvisor));
     var registry =
         new SpringAiChatProviderRegistry(chatClients, chatProperties, advisors, traceRecorder);
     ChatCompletionPort completions =

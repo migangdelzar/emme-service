@@ -1820,3 +1820,14 @@
 - **Prevention rule:** Add a failing source-path deletion assertion, remove the
   obsolete contract test with the family, and compile downstream consumers
   before recording the family as deleted in the migration ledger.
+
+## 2026-09-06 — Remove test-only compatibility constructors separately
+
+- **Failure mode:** A public controller constructor remained only to support a
+  unit test for a pre-durable composition, making the supported construction
+  surface broader than the active Spring composition.
+- **Detection signal:** Reflection showed the four-argument constructor had no
+  production or bean caller; only one test instantiated it.
+- **Prevention rule:** Prove constructor usage across all source sets, add an
+  API-surface test first, migrate the isolated test to the active composition,
+  and preserve endpoint behavior before deleting the shortcut.

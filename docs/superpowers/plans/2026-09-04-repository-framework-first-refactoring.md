@@ -2842,6 +2842,22 @@ active boundaries. A source-inventory assertion now protects the deletion.
 - [x] Commit and push `8b603cbf`.
 - [ ] Run any live provider behavior gates when Docker is available.
 
+#### Current slice 25C — Remove unused controller construction shortcut
+
+The Assistant web controller’s four-argument constructor existed only for a
+unit test that exercised the non-durable chat endpoint. Spring uses the
+durable-conversation composition constructor, so the shortcut was removed
+without changing `/api/ai/chat` behavior.
+
+- [x] Add a failing reflection test proving only the durable composition
+  constructors remain.
+- [x] Migrate the isolated controller test to the durable constructor.
+- [x] Remove the unused four-argument compatibility constructor.
+- [x] Run the full Assistant unit suite, integration-test source compilation,
+  and Spotless.
+- [x] Commit and push `3a67ee68`.
+- [ ] Run live web/application startup gates when Docker is available.
+
 #### Current slice 13D — Validate Hibernate schema identifiers at the provider boundary
 
 Completed in this slice:

@@ -13,6 +13,19 @@
 - [ ] Run Docker-backed provider behavior gates when infrastructure is
       available.
 
+## Current slice — Task 25C unused controller constructor cleanup — 2026-09-06
+
+- [x] Add a failing reflection test for the unused four-argument controller
+      constructor.
+- [x] Migrate the isolated chat test to the durable composition constructor.
+- [x] Remove the test-only compatibility constructor without changing the
+      `/api/ai/chat` endpoint behavior.
+- [x] Run the full Assistant unit suite, integration-source compilation, and
+      Spotless.
+- [x] Commit and push `3a67ee68`.
+- [ ] Run Docker-backed web/application startup gates when infrastructure is
+      available.
+
 ## Current slice — Task 6V temporary chat port deletion — 2026-09-06
 
 - [x] Add a failing source-inventory test for the temporary chat port files.

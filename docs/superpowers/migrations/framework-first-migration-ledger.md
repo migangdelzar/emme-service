@@ -349,6 +349,7 @@ gone.
 | `modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |
 | `modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |
 | `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/routing/*` and `tool/ToolRisk.java` | Deleted | Deprecated intent-routing and tool-risk contracts removed in `8b603cbf` on 2026-09-06; source inventory found no production, test, bean, or build callers beyond the retired contract test |
+| `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/in/web/controller/AiController.java` four-argument constructor | Deleted | Test-only compatibility constructor removed in `3a67ee68` on 2026-09-06; Spring uses the durable six-argument composition and no other callers existed |
 
 The payment workflow source and correlation boundaries are public payment API
 ports (`payment.api.port.out`). Assistant composition depends only on those

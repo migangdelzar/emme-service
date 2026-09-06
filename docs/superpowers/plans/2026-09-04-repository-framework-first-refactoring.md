@@ -54,7 +54,11 @@ an explicit name-preserving conversion at that boundary.
 - [x] Correct the Tenancy public tenant and provisioning-status boundaries
       with API-owned enums and explicit application mapping.
 - [x] Correct the remaining public records that exposed domain enums.
-- [ ] Re-run the full framework checkpoint after the correction slices.
+- [x] Re-run the full framework checkpoint after the correction slices.
+
+Checkpoint result: `./gradlew check --no-parallel --no-configuration-cache`
+passed after the public API enum-boundary corrections; live Docker-backed
+gates remain environment-gated.
 
 ### Current slice — Identity membership enum boundary
 

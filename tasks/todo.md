@@ -25,8 +25,9 @@
       API-owned enums and explicit application mapping.
 - [x] Correct the remaining public records that exposed domain lifecycle
       enums.
-- [ ] Re-run the full framework checkpoint after all affected modules are
-      corrected.
+- [x] Re-run the full framework checkpoint after all affected modules are
+      corrected. `./gradlew check --no-parallel --no-configuration-cache`
+      passed; live Docker-backed gates remain environment-gated.
 
 ## Current slice — Appointment status enum boundary — 2026-09-06
 

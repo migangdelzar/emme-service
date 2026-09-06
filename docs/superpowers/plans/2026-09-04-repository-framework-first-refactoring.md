@@ -43,6 +43,8 @@ an explicit name-preserving conversion at that boundary.
       application mapping.
 - [x] Correct the Clients public boundary with an API-owned enum and explicit
       application mapping.
+- [x] Correct the Documents public boundary with an API-owned enum and
+      explicit application mapping.
 - [ ] Correct the remaining public records that still expose domain enums.
 - [ ] Re-run the full framework checkpoint after the correction slices.
 
@@ -120,8 +122,9 @@ serialization preserves the existing status values.
 
 ### Current slice — Documents status enum boundary
 
-Document lifecycle status now retains the existing `DocumentStatus` enum through
-the application result, HTTP response, and mapping boundaries. Stable enum-name
+Document lifecycle status now uses an API-owned `DocumentStatus` enum through
+the application result, HTTP response, and mapping boundaries. The application
+boundary explicitly converts the domain value while stable enum-name
 serialization preserves existing document status values.
 
 - [x] Add a failing convention test for enum-typed Documents status boundaries.

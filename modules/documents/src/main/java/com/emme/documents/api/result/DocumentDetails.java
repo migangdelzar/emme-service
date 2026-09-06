@@ -1,6 +1,6 @@
 package com.emme.documents.api.result;
 
-import com.emme.documents.domain.model.DocumentStatus;
+import com.emme.documents.api.type.DocumentStatus;
 import java.util.UUID;
 
 /** Stable public representation of a document. */

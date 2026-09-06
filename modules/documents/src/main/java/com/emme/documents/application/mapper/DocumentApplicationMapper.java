@@ -2,6 +2,7 @@ package com.emme.documents.application.mapper;
 
 import com.emme.documents.api.result.DocumentChunkDetails;
 import com.emme.documents.api.result.DocumentDetails;
+import com.emme.documents.api.type.DocumentStatus;
 import com.emme.documents.domain.model.Document;
 import com.emme.documents.domain.model.DocumentChunk;
 
@@ -16,7 +17,7 @@ public final class DocumentApplicationMapper {
         document.tenantId(),
         document.name(),
         document.sourceType(),
-        document.status(),
+        DocumentStatus.valueOf(document.status().name()),
         document.version());
   }
 

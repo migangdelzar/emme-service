@@ -1,6 +1,6 @@
 package com.emme.documents.adapter.in.web.response;
 
-import com.emme.documents.domain.model.DocumentStatus;
+import com.emme.documents.api.type.DocumentStatus;
 import java.util.UUID;
 
 /** HTTP representation of a document, independent of JPA. */

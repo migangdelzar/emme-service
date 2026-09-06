@@ -67,6 +67,19 @@ class SpringAiAdapterConsolidationArchitectureTest {
     }
   }
 
+  @Test
+  void documentRetrievalUsesTheCanonicalEmbeddingService() throws IOException {
+    String retrievalAdapter =
+        read(
+            sourcePath(
+                "modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/persistence/DocumentKnowledgeRetrievalAdapter.java"));
+
+    assertThat(retrievalAdapter)
+        .contains("EmbeddingService")
+        .doesNotContain("AiModelProvider")
+        .doesNotContain("legacyModel");
+  }
+
   private static String read(Path path) throws IOException {
     return Files.readString(path);
   }

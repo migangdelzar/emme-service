@@ -474,6 +474,23 @@ conversation context and the existing mock empty-message HTTP behavior.
 - [ ] Migrate remaining composite embedding, image, and retrieval callers
       before deleting `SpringAiModelProvider`.
 
+#### Current slice 6L — Keep document retrieval on the canonical embedding port
+
+The Assistant document retrieval adapter now requires the provider-neutral
+`EmbeddingService` directly. Its compatibility fallback through
+`AiModelProvider` was removed after the canonical embedding composition was
+already available; vector dimension validation, tenant context binding, and
+ranked score propagation remain unchanged. The platform composite provider is
+still retained for the remaining image and embedding adapters.
+
+- [x] Add a failing architecture test for the retrieval adapter's composite
+      provider dependency.
+- [x] Inject `EmbeddingService` directly and remove the legacy vector fallback.
+- [x] Update retrieval tests to use versioned canonical embedding vectors.
+- [x] Run the full Assistant unit suite and integration-source compilation.
+- [ ] Migrate the remaining platform embedding and image callers before
+      deleting `SpringAiModelProvider`.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

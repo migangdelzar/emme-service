@@ -7,16 +7,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.emme.ai.contracts.embedding.EmbeddingService;
-import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.RetrievedDocument;
+import com.emme.ai.contracts.semantic.DistanceMetric;
+import com.emme.ai.contracts.semantic.EmbeddingModelVersion;
+import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.documents.api.usecase.SearchDocumentChunksUseCase;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -25,14 +26,13 @@ import org.mockito.ArgumentCaptor;
 class DocumentKnowledgeRetrievalAdapterTest {
 
   @Test
-  void rejectsLegacyVectorsThatDoNotMatchTheConfiguredCatalogDimension() {
-    AiModelProvider legacyModel = mock(AiModelProvider.class);
-    when(legacyModel.embed("question")).thenReturn(Collections.nCopies(1024, 0.0f));
+  void rejectsVectorsThatDoNotMatchTheConfiguredCatalogDimension() {
+    EmbeddingService embeddings = mock(EmbeddingService.class);
+    when(embeddings.embed("question")).thenReturn(embedding(Collections.nCopies(1024, 0.0f), 1024));
     DocumentKnowledgeRetrievalAdapter adapter =
         new DocumentKnowledgeRetrievalAdapter(
-            legacyModel,
+            embeddings,
             mock(SearchDocumentChunksUseCase.class),
-            Optional.<EmbeddingService>empty(),
             new AiProviderProperties(
                 "mock",
                 null,
@@ -52,8 +52,8 @@ class DocumentKnowledgeRetrievalAdapterTest {
 
   @Test
   void searchesDocumentChunksForTheExplicitTenantContext() {
-    AiModelProvider legacyModel = mock(AiModelProvider.class);
-    when(legacyModel.embed("question")).thenReturn(Collections.nCopies(768, 0.0f));
+    EmbeddingService embeddings = mock(EmbeddingService.class);
+    when(embeddings.embed("question")).thenReturn(embedding(Collections.nCopies(768, 0.0f), 768));
     var searchDocuments = mock(SearchDocumentChunksUseCase.class);
     UUID tenantId = UUID.randomUUID();
     AiExecutionContext context = context(tenantId);
@@ -65,9 +65,8 @@ class DocumentKnowledgeRetrievalAdapterTest {
                     UUID.randomUUID(), documentId, 0, "The answer is here.", "fingerprint", 0.92)));
     DocumentKnowledgeRetrievalAdapter adapter =
         new DocumentKnowledgeRetrievalAdapter(
-            legacyModel,
+            embeddings,
             searchDocuments,
-            Optional.<EmbeddingService>empty(),
             new AiProviderProperties(
                 "mock",
                 null,
@@ -103,5 +102,12 @@ class DocumentKnowledgeRetrievalAdapterTest {
     UUID id = UUID.randomUUID();
     return new AiExecutionContext(
         tenantId, UUID.randomUUID(), Set.of("client"), id, id, "trace-" + id, "idem-" + id);
+  }
+
+  private static EmbeddingVector embedding(List<Float> values, int dimension) {
+    return new EmbeddingVector(
+        values,
+        new EmbeddingModelVersion(
+            "embeddinggemma", "v1", dimension, DistanceMetric.COSINE, "query-v1"));
   }
 }

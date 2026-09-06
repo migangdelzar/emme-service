@@ -1158,6 +1158,11 @@ and retrieval callers that still need migration.
 - [ ] Migrate the remaining composite capability callers before deleting the
       composite provider.
 
+The document retrieval adapter has since been moved to the canonical
+`EmbeddingService` boundary. Its tenant binding, dimension validation, and
+score-preservation behavior remain covered; platform embedding and image
+adapters still block composite-provider deletion.
+
 **Files:**
 
 - Modify/delete deprecated embedding aliases only after repository-wide caller search:

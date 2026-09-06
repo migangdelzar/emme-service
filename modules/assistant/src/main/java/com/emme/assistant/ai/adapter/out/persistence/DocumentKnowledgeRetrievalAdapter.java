@@ -1,7 +1,6 @@
 package com.emme.assistant.ai.adapter.out.persistence;
 
 import com.emme.ai.contracts.embedding.EmbeddingService;
-import com.emme.ai.contracts.model.AiModelProvider;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
@@ -12,7 +11,6 @@ import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,32 +18,23 @@ import org.springframework.stereotype.Component;
 @Component
 public final class DocumentKnowledgeRetrievalAdapter implements KnowledgeRetriever {
 
-  private final AiModelProvider legacyModel;
+  private final EmbeddingService embeddings;
   private final SearchDocumentChunksUseCase searchDocuments;
-  private final Optional<EmbeddingService> embeddings;
   private final int embeddingDimensions;
 
   public DocumentKnowledgeRetrievalAdapter(
-      AiModelProvider legacyModel,
-      SearchDocumentChunksUseCase searchDocuments,
-      Optional<EmbeddingService> embeddings) {
-    this(
-        legacyModel,
-        searchDocuments,
-        embeddings,
-        new AiProviderProperties(null, null, null, false));
+      EmbeddingService embeddings, SearchDocumentChunksUseCase searchDocuments) {
+    this(embeddings, searchDocuments, new AiProviderProperties(null, null, null, false));
   }
 
   @Autowired
   public DocumentKnowledgeRetrievalAdapter(
-      AiModelProvider legacyModel,
+      EmbeddingService embeddings,
       SearchDocumentChunksUseCase searchDocuments,
-      Optional<EmbeddingService> embeddings,
       AiProviderProperties aiProperties) {
-    this.legacyModel = Objects.requireNonNull(legacyModel, "legacyModel must not be null");
+    this.embeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.searchDocuments =
         Objects.requireNonNull(searchDocuments, "searchDocuments must not be null");
-    this.embeddings = Objects.requireNonNull(embeddings, "embeddings must not be null");
     this.embeddingDimensions =
         Objects.requireNonNull(aiProperties, "aiProperties must not be null").embeddingDimension();
   }
@@ -54,10 +43,7 @@ public final class DocumentKnowledgeRetrievalAdapter implements KnowledgeRetriev
   public List<RetrievedDocument> search(KnowledgeQuery query, AiExecutionContext context) {
     Objects.requireNonNull(query, "query must not be null");
     var boundContext = requireBoundContext(context);
-    List<Float> vector =
-        embeddings
-            .map(model -> model.embed(query.text()).values())
-            .orElseGet(() -> legacyModel.embed(query.text()));
+    List<Float> vector = embeddings.embed(query.text()).values();
     if (vector.size() != embeddingDimensions) {
       throw new IllegalArgumentException("Embedding dimensions must match document_chunk schema");
     }

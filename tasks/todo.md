@@ -71,6 +71,17 @@
 - [ ] Continue with embedding, image, and retrieval caller migrations before
       deleting `SpringAiModelProvider`.
 
+## Current slice — canonical document retrieval embedding boundary — 2026-09-05
+
+- [x] Add the failing architecture test for retrieval's composite-provider
+      dependency.
+- [x] Inject `EmbeddingService` directly into document retrieval.
+- [x] Remove the legacy vector fallback and migrate retrieval fixtures to
+      versioned canonical vectors.
+- [x] Run the full Assistant test suite and integration-source compilation.
+- [ ] Continue with the remaining platform embedding and image callers before
+      deleting `SpringAiModelProvider`.
+
 ## Current slice — Assistant context regression — 2026-09-05
 
 - [x] Reproduce the full Assistant phase-checkpoint failure caused by two

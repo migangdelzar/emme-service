@@ -4068,6 +4068,8 @@ appointment mutation tools are registered.
       constructor while preserving unit-test convenience constructors.
 - [x] Apply output checks to proactive, cached, and normal responses.
 - [x] Run the full `ChatServiceTest` suite and diff validation.
+- [x] Preserve actual retrieved source IDs in `GroundedAnswer` for grounding
+      provenance checks.
 - [ ] Add grounded RAG delivery enforcement and remaining controller/channel
       boundaries.
 

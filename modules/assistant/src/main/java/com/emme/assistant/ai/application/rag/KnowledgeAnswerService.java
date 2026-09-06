@@ -105,7 +105,12 @@ public final class KnowledgeAnswerService {
         String response =
             answer.answer(
                 new KnowledgeQuery(candidate, query.locale(), query.limit()), documents, context);
-        return new GroundedAnswer(response, route, lastDecision, true);
+        return new GroundedAnswer(
+            response,
+            route,
+            lastDecision,
+            true,
+            documents.stream().map(RetrievedDocument::sourceId).toList());
       }
       if (attempts >= improvementPolicy.maximumAttempts()) {
         break;

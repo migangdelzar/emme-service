@@ -57,6 +57,7 @@ class KnowledgeAnswerServiceTest {
 
     assertThat(result.text()).isEqualTo("We are open today.");
     assertThat(result.grounded()).isTrue();
+    assertThat(result.sourceIds()).containsExactly("faq-a", "faq-b");
     verify(retrieval).search(QUERY, CONTEXT);
     verify(answer).answer(QUERY, documents, CONTEXT);
     verifyNoInteractions(improver);

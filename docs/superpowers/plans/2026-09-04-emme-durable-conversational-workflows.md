@@ -812,7 +812,9 @@ safe deterministic decision. Streaming responses are buffered until required che
 Current progress: typed input/output guard advisors are now composed into the
 Spring AI chat and RAG chains with tenant-security → input → prompt-version →
 retrieval → output precedence. Application-service delivery invocation and the
-grounding advisor remain before this task can be marked complete.
+grounding advisor remain before this task can be marked complete. Grounded RAG
+results now preserve the actual retrieved source IDs so grounding checks can
+evaluate provenance without synthesizing evidence.
 
 The direct `ChatService` path now also accepts optional typed input/output
 guards, checks input before semantic shortcuts, and validates proactive, cached,

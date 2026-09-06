@@ -64,6 +64,6 @@ public class ListAppointmentsService implements ListAppointmentsUseCase {
         customerName,
         serviceName,
         artistName,
-        appointment.getStatus().name());
+        appointment.getStatus());
   }
 }

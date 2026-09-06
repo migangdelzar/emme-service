@@ -1,5 +1,14 @@
 # Service architecture migration checklist
 
+## Current slice — Appointment status enum boundary — 2026-09-06
+
+- [x] Add a failing convention test for enum-typed appointment status models.
+- [x] Replace appointment status strings with `AppointmentStatus` across public
+      results, HTTP response DTOs, and application mapping.
+- [x] Run focused Appointments tests and the affected fast quality gate.
+- [ ] Run live PostgreSQL appointment concurrency/migration checks when Docker
+      is available.
+
 ## Current slice — Documents status enum boundary — 2026-09-06
 
 - [x] Add a failing convention test for enum-typed document status models.

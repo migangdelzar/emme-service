@@ -20,6 +20,6 @@ public final class AppointmentApplicationMapper {
         artistName,
         appointment.getStartsAt(),
         appointment.getEndsAt(),
-        appointment.getStatus().name());
+        appointment.getStatus());
   }
 }

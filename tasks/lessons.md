@@ -1,5 +1,14 @@
 # Engineering lessons
 
+## 2026-09-06 — Keep appointment lifecycle enums through API DTOs
+
+- Failure mode: Appointments converted `AppointmentStatus` to a string in
+  result mappers and the controller response DTO.
+- Detection signal: a boundary convention test found raw status components in
+  both appointment read models.
+- Prevention rule: preserve the domain appointment enum through application and
+  HTTP mapping, with stable-name serialization at the external edge.
+
 ## 2026-09-06 — Keep document lifecycle enums through read models
 
 - Failure mode: Documents converted `DocumentStatus` to a string before

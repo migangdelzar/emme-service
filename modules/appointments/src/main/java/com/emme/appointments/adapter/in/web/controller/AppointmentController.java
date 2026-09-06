@@ -14,6 +14,7 @@ import com.emme.appointments.api.usecase.ListAppointmentsByDateUseCase;
 import com.emme.appointments.api.usecase.MarkAppointmentNoShowUseCase;
 import com.emme.appointments.api.usecase.RescheduleAppointmentUseCase;
 import com.emme.appointments.api.usecase.StartAppointmentUseCase;
+import com.emme.appointments.domain.model.AppointmentStatus;
 import com.emme.subscriptions.api.command.EnforceEntitlementCommand;
 import com.emme.subscriptions.api.usecase.EnforceEntitlementUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -210,7 +211,7 @@ public class AppointmentController {
       String artistName,
       Instant startsAt,
       Instant endsAt,
-      String status) {
+      AppointmentStatus status) {
     public static AppointmentResponse from(AppointmentDetails a) {
       return new AppointmentResponse(
           a.id(),

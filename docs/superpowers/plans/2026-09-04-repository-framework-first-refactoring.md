@@ -108,6 +108,18 @@ serialization preserves existing document status values.
 - [x] Run focused Documents tests and the affected fast quality gate.
 - [ ] Continue finite-state migration in separate owning-module slices.
 
+### Current slice — Appointment status enum boundary
+
+Appointment status now retains the existing `AppointmentStatus` enum through
+application results, HTTP response DTOs, and list/detail mapping. Stable enum
+names preserve the existing API status values.
+
+- [x] Add a failing convention test for enum-typed Appointment status boundaries.
+- [x] Migrate Appointment result models, controller DTO, and application mappers.
+- [x] Run focused Appointments tests and the affected fast quality gate.
+- [ ] Run live PostgreSQL appointment concurrency and migration checks when
+      Docker is available.
+
 ## 1. Scope and execution strategy
 
 This plan is the executable companion to the repository-wide design. It is

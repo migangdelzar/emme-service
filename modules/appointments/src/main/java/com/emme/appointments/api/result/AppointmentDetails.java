@@ -1,5 +1,6 @@
 package com.emme.appointments.api.result;
 
+import com.emme.appointments.domain.model.AppointmentStatus;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -14,4 +15,4 @@ public record AppointmentDetails(
     String artistName,
     Instant startsAt,
     Instant endsAt,
-    String status) {}
+    AppointmentStatus status) {}

@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.emme.assistant.ai.api.command.ProcessConversationCommand;
 import com.emme.assistant.ai.api.result.ProcessConversationResult;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
+import com.emme.assistant.ai.application.guardrail.DeliveryGuard;
 import com.emme.assistant.ai.application.port.out.ConversationMemoryPort;
 import com.emme.assistant.ai.application.port.out.ConversationTurnIdempotencyPort;
 import com.emme.kernel.context.AiExecutionContext;
@@ -103,6 +104,37 @@ class ProcessConversationServiceTest {
         .containsEntry(
             key(CONVERSATION_ID, IDEMPOTENCY_KEY),
             new ProcessConversationResult(CONVERSATION_ID, WORKFLOW_ID, "answer"));
+  }
+
+  @Test
+  void rejectsTheResponseBeforePersistingAssistantMemoryWhenDeliveryIsBlocked() {
+    ConversationMemoryPort memory = mock(ConversationMemoryPort.class);
+    ChatUseCase chat = mock(ChatUseCase.class);
+    Idempotency idempotency = new Idempotency();
+    DeliveryGuard delivery = mock(DeliveryGuard.class);
+    ProcessConversationService service =
+        new ProcessConversationService(memory, chat, idempotency, delivery);
+    AiExecutionContext context = context();
+    when(memory.load(CONVERSATION_ID, context))
+        .thenReturn(new ConversationMemoryPort.ConversationSnapshot(CONVERSATION_ID, List.of()));
+    when(chat.chat("", "question")).thenReturn("answer");
+    when(delivery.check(any(), eq(context)))
+        .thenReturn(
+            new com.emme.ai.contracts.guardrail.GuardrailDecision(
+                com.emme.ai.contracts.guardrail.GuardrailAction.BLOCK,
+                "delivery.rejected",
+                Map.of()));
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.call(
+                    context, () -> service.process(commandFor(CONVERSATION_ID))))
+        .isInstanceOf(com.emme.assistant.ai.application.guardrail.GuardrailRejectedException.class);
+    org.mockito.Mockito.verify(memory)
+        .appendUserMessage(CONVERSATION_ID, "question", IDEMPOTENCY_KEY, context);
+    org.mockito.Mockito.verify(memory, org.mockito.Mockito.never())
+        .appendAssistantMessage(any(), any(), any(), any());
+    assertThat(idempotency.completed).isEmpty();
   }
 
   @Test

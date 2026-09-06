@@ -1,9 +1,13 @@
 package com.emme.assistant.ai.application.service;
 
+import com.emme.ai.contracts.guardrail.DeliveryRequest;
+import com.emme.ai.contracts.guardrail.GuardrailAction;
 import com.emme.assistant.ai.api.command.ProcessConversationCommand;
 import com.emme.assistant.ai.api.result.ProcessConversationResult;
 import com.emme.assistant.ai.api.usecase.ChatUseCase;
 import com.emme.assistant.ai.api.usecase.ProcessConversationUseCase;
+import com.emme.assistant.ai.application.guardrail.DeliveryGuard;
+import com.emme.assistant.ai.application.guardrail.GuardrailRejectedException;
 import com.emme.assistant.ai.application.port.out.ConversationMemoryPort;
 import com.emme.assistant.ai.application.port.out.ConversationTurnIdempotencyPort;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowPort;
@@ -12,6 +16,7 @@ import com.emme.assistant.ai.domain.workflow.ConversationWorkflowStatus;
 import com.emme.assistant.api.result.ConversationEventDetails;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.ObjectProvider;
@@ -32,6 +37,7 @@ public class ProcessConversationService implements ProcessConversationUseCase {
   private final ChatUseCase chat;
   private final ConversationTurnIdempotencyPort idempotency;
   private final ConversationWorkflowPort workflow;
+  private final java.util.Optional<DeliveryGuard> deliveryGuard;
 
   @Autowired
   public ProcessConversationService(
@@ -39,14 +45,33 @@ public class ProcessConversationService implements ProcessConversationUseCase {
       ChatUseCase chat,
       ConversationTurnIdempotencyPort idempotency,
       ObjectProvider<ConversationWorkflowPort> workflow) {
-    this(memory, chat, idempotency, workflow.getIfAvailable(() -> COMPLETED_WORKFLOW));
+    this(
+        memory,
+        chat,
+        idempotency,
+        workflow.getIfAvailable(() -> COMPLETED_WORKFLOW),
+        java.util.Optional.empty());
   }
 
   public ProcessConversationService(
       ConversationMemoryPort memory,
       ChatUseCase chat,
       ConversationTurnIdempotencyPort idempotency) {
-    this(memory, chat, idempotency, COMPLETED_WORKFLOW);
+    this(memory, chat, idempotency, COMPLETED_WORKFLOW, java.util.Optional.empty());
+  }
+
+  public ProcessConversationService(
+      ConversationMemoryPort memory,
+      ChatUseCase chat,
+      ConversationTurnIdempotencyPort idempotency,
+      DeliveryGuard deliveryGuard) {
+    this(
+        memory,
+        chat,
+        idempotency,
+        COMPLETED_WORKFLOW,
+        java.util.Optional.of(
+            Objects.requireNonNull(deliveryGuard, "deliveryGuard must not be null")));
   }
 
   public ProcessConversationService(
@@ -54,10 +79,20 @@ public class ProcessConversationService implements ProcessConversationUseCase {
       ChatUseCase chat,
       ConversationTurnIdempotencyPort idempotency,
       ConversationWorkflowPort workflow) {
+    this(memory, chat, idempotency, workflow, java.util.Optional.empty());
+  }
+
+  private ProcessConversationService(
+      ConversationMemoryPort memory,
+      ChatUseCase chat,
+      ConversationTurnIdempotencyPort idempotency,
+      ConversationWorkflowPort workflow,
+      java.util.Optional<DeliveryGuard> deliveryGuard) {
     this.memory = Objects.requireNonNull(memory, "memory must not be null");
     this.chat = Objects.requireNonNull(chat, "chat must not be null");
     this.idempotency = Objects.requireNonNull(idempotency, "idempotency must not be null");
     this.workflow = Objects.requireNonNull(workflow, "workflow must not be null");
+    this.deliveryGuard = Objects.requireNonNull(deliveryGuard, "deliveryGuard must not be null");
   }
 
   @Override
@@ -109,6 +144,8 @@ public class ProcessConversationService implements ProcessConversationUseCase {
           workflow.ownsResponse()
               ? workflowSnapshot.response()
               : chat.chat(conversationContext(snapshot), command.message());
+      requireValidAssistantResponse(response);
+      checkDelivery(response, context);
       ProcessConversationResult result =
           validateCompletedResult(
               new ProcessConversationResult(
@@ -185,6 +222,27 @@ public class ProcessConversationService implements ProcessConversationUseCase {
     if (response.indexOf('\u0000') >= 0) {
       throw new IllegalStateException(
           "AI conversation response contains invalid control characters");
+    }
+  }
+
+  private void checkDelivery(String response, AiExecutionContext context) {
+    if (deliveryGuard.isEmpty()) {
+      return;
+    }
+    var decision =
+        deliveryGuard
+            .orElseThrow()
+            .check(
+                new DeliveryRequest(
+                    context.channel().name().toLowerCase(Locale.ROOT),
+                    response,
+                    context.channel() == com.emme.kernel.context.Channel.WHATSAPP
+                        ? 4096
+                        : Integer.MAX_VALUE,
+                    false),
+                context);
+    if (decision.action() != GuardrailAction.DELIVER) {
+      throw new GuardrailRejectedException(decision);
     }
   }
 

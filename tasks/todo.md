@@ -4078,6 +4078,8 @@ appointment mutation tools are registered.
       the channel's 4,096-character text limit.
 - [x] Enforce the typed delivery guard inside the web execution context for
       legacy chat, durable conversation, and RAG responses.
+- [x] Enforce the typed delivery guard before durable assistant-response
+      persistence and idempotency completion.
 - [ ] Add grounded RAG delivery enforcement and remaining controller/channel
       boundaries.
 

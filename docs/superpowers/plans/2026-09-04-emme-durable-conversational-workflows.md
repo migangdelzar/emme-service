@@ -830,6 +830,9 @@ and sending a reply, using the channel's 4,096-character text limit.
 The web controller now checks the same typed delivery boundary inside the
 trusted execution scope for legacy chat, durable conversation, and RAG
 responses; web does not impose an arbitrary application character cap.
+The durable conversation service also checks delivery before persisting the
+assistant response or completing idempotency, so blocked responses cannot be
+recorded as successfully delivered turns.
 - [ ] **Step 5: Run, refactor, and commit.**
 
   ```bash

@@ -1841,3 +1841,13 @@
 - **Prevention rule:** Enable Hibernate statistics only in the repository-test
   profile, flush pending writes before clearing statistics, and assert the
   exact read-query count for each aggregate list path.
+
+## 2026-09-06 — Keep generic fixture boundaries executable
+
+- **Failure mode:** Fixture ownership can regress silently after a feature setup
+  is moved out of the generic testing library.
+- **Detection signal:** The repository had tenancy-owned boundary tests but no
+  generic-library test scanning fixture source and build dependencies together.
+- **Prevention rule:** Keep a source and build-file architecture test in the
+  generic testing library so feature package/provider leakage fails at the
+  owning boundary.

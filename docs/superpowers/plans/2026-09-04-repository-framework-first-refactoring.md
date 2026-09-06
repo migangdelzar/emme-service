@@ -2447,6 +2447,22 @@ boundary as the application listener.
 - [ ] Remove remaining feature-specific setup from `BaseSpringModuleTest` in a
       dependency-safe follow-up slice.
 
+#### Current slice 21F — Guard generic fixture dependencies
+
+The generic testing library now has an executable architecture test that scans
+all test-fixture Java sources and its build file for identity, salon,
+subscription, tenancy, Keycloak, Google client, and feature-module references.
+The existing tenancy-owned fixtures remain the owners of tenant provisioning
+and entitlement setup.
+
+- [x] Add `TestingFixtureDependencyTest` before changing fixture ownership.
+- [x] Verify generic fixture sources contain no feature package or provider
+      client references.
+- [x] Verify the generic testing build has no feature-module dependencies.
+- [x] Run the testing-library tests, fixture compilation, and Spotless.
+- [x] Commit and push `16cf9a48`.
+- [ ] Run all fixture-consuming module tests after any further fixture moves.
+
 #### Current slice 21D — Move tenant-aware full-context setup to tenancy fixtures
 
 The full-context base class and H2 bootstrap configuration are now owned by

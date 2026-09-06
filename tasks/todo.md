@@ -12,6 +12,16 @@
 - [ ] Run live PostgreSQL tenant-routing and optimistic-lock conflict gates
       when Docker is available.
 
+## Current slice — Task 21F generic fixture dependency guard — 2026-09-06
+
+- [x] Add `TestingFixtureDependencyTest` for generic fixture source and build
+      dependency boundaries.
+- [x] Verify no identity, salon, subscription, tenancy, Keycloak, Google client,
+      or feature-module references leak into `libraries/testing`.
+- [x] Run testing-library tests, fixture compilation, and Spotless.
+- [x] Commit and push `16cf9a48`.
+- [ ] Run all fixture-consuming module tests after future ownership moves.
+
 ## Current slice — Task 25B unused routing compatibility deletion — 2026-09-06
 
 - [x] Add a failing source-inventory assertion for the deprecated

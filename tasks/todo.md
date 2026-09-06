@@ -88,6 +88,7 @@
       backend quality job.
 - [x] Run backend workflow, container workflow, and deployment-contract checks.
 - [x] Commit and push `9f33de38`.
+- [x] Render all Kubernetes overlays and validate JVM/native Compose configs.
 - [x] Run the full repository `check` at the phase gate — 258 actionable tasks
       passed.
 - [ ] Run Kubernetes/Compose smoke checks when their runtime environment is

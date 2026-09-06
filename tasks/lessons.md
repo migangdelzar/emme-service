@@ -1658,3 +1658,14 @@
 - Failure mode: treating a tenant-schema table's `tenant_id` column as if it selected the schema.
 - Detection signal: review question about whether `appointment_hold` belongs to the tenant schema.
 - Prevention rule: document that connection checkout selects the tenant schema; retain a tenant column only when it is an intentional existing RLS/uniqueness defense, and never pass it through ordinary schema-local repository methods.
+
+## 2026-09-06 — Run architecture gates after adding application services
+
+- **Failure mode:** New hold, release, and payment-workflow application services
+  initially lacked the repository-required transaction annotation, and Assistant
+  composition referenced Payment internals across a module boundary.
+- **Detection signal:** The application architecture tests reported missing
+  `@Transactional` policy and cross-module dependencies on `payment.application`.
+- **Prevention rule:** Add transaction policy and public API contracts in the
+  same TDD slice as every new application service; run the application
+  architecture/convention gate before committing the slice.

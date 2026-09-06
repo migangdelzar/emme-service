@@ -893,31 +893,39 @@ application ports.
 - [x] Run the focused LangGraph configuration test suite.
 - [ ] Run live startup and checkpoint coverage when Docker is available.
 
-- [ ] **Step 1: Write failing configuration/security tests**
+- [x] **Step 1: Write failing configuration/security tests**
 
 Test disabled graph startup, one graph bean per capability, unauthorized
 checkpoint read, cross-tenant workflow ID, duplicate checkpoint update,
 malformed thread ID, resume without checkpoint, and authorized staff resume.
 
-- [ ] **Step 2: Run tests to verify the current behavior**
+The non-Docker boundary is covered by focused configuration, checkpoint,
+namespace, cross-tenant, duplicate-update, missing-checkpoint, and staff-resume
+tests.
+
+- [x] **Step 2: Run tests to verify the current behavior**
 
 ```bash
 ./gradlew :modules:assistant:test --tests '*LangGraph*' --tests '*Checkpoint*' --no-parallel --no-configuration-cache
 ```
 
-- [ ] **Step 3: Implement the minimum composition/name cleanup**
+- [x] **Step 3: Implement the minimum composition/name cleanup**
 
 Keep `JdbcClient` and the tenant-aware decorator. Move generic library types
 behind the adapter, remove duplicate resume adapter logic only when the tests
 prove no separate policy is lost, and use capability-qualified bean names.
 
-- [ ] **Step 4: Run tests, compile, and commit**
+- [x] **Step 4: Run tests, compile, and commit**
 
 ```bash
 ./gradlew :modules:assistant:test :modules:assistant:compileJava --no-parallel --no-configuration-cache
 git add modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiLangGraphConfiguration.java modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow modules/assistant/src/test/java/com/emme/assistant/ai/configuration/SpringAiLangGraphConfigurationTest.java modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/workflow
 git commit -m "refactor(ai): simplify LangGraph workflow composition"
 ```
+
+The non-Docker Task 8 security/configuration gate passed on 2026-09-06. Live
+PostgreSQL checkpoint security/resume and startup evidence remain queued until
+Docker is available.
 
 ## 6. Phase D — AI persistence with JPA-first decisions
 

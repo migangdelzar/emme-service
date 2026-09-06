@@ -10,7 +10,7 @@ import com.emme.appointments.application.port.out.AppointmentRepository;
 import com.emme.appointments.domain.model.Appointment;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowExecutionContextRepository;
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.payment.application.port.out.PaymentLinkSourceRepository.PaymentLinkSource;
+import com.emme.payment.api.port.out.PaymentLinkSourceRepository.PaymentLinkSource;
 import com.emme.services.application.port.out.ServiceRepository;
 import java.math.BigDecimal;
 import java.time.Instant;

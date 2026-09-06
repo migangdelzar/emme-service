@@ -1,12 +1,10 @@
-package com.emme.payment.application.port.out;
+package com.emme.payment.api.port.out;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Tenant-schema correlation boundary between verified provider references and durable workflows.
- */
+/** Public workflow boundary for verified provider-to-workflow ownership. */
 public interface PaymentWorkflowCorrelationRepository {
 
   Optional<PaymentWorkflowCorrelation> findByProviderAndProviderReference(

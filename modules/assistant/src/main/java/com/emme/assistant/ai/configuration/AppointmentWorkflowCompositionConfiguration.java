@@ -16,12 +16,8 @@ import com.emme.assistant.ai.adapter.out.workflow.AppointmentRescheduleWorkflow;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowAppointmentRepository;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowCheckpointRepository;
 import com.emme.assistant.ai.application.port.out.WorkflowCheckpointRepository;
+import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
 import com.emme.payment.api.usecase.CreatePaymentLinkUseCase;
-import com.emme.payment.application.port.out.PaymentLinkRepository;
-import com.emme.payment.application.port.out.PaymentLinkSourceRepository;
-import com.emme.payment.application.port.out.PaymentProvider;
-import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
-import com.emme.payment.application.service.CreatePaymentLinkService;
 import java.time.Clock;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -48,15 +44,6 @@ public class AppointmentWorkflowCompositionConfiguration {
       @Qualifier("appointmentWorkflowClock") Clock appointmentWorkflowClock) {
     return new CreateAppointmentHoldService(
         appointments, holds, appointmentWorkflowClock, properties.holdDuration());
-  }
-
-  @Bean
-  CreatePaymentLinkUseCase paymentLinkUseCase(
-      PaymentLinkRepository links,
-      PaymentLinkSourceRepository sources,
-      PaymentProvider provider,
-      PaymentWorkflowCorrelationRepository correlations) {
-    return new CreatePaymentLinkService(links, sources, provider, correlations);
   }
 
   @Bean

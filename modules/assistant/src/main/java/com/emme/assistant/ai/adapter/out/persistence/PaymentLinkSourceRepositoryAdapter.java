@@ -5,7 +5,7 @@ import com.emme.appointments.application.port.out.AppointmentHoldRepository;
 import com.emme.appointments.application.port.out.AppointmentRepository;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowExecutionContextRepository;
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.payment.application.port.out.PaymentLinkSourceRepository;
+import com.emme.payment.api.port.out.PaymentLinkSourceRepository;
 import com.emme.services.application.port.out.ServiceRepository;
 import java.util.Objects;
 import java.util.Optional;

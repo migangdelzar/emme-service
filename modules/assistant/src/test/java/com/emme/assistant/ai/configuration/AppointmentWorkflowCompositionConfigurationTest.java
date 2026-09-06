@@ -15,11 +15,9 @@ import com.emme.assistant.ai.adapter.out.workflow.AppointmentCancellationWorkflo
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentPaymentWorkflow;
 import com.emme.assistant.ai.adapter.out.workflow.AppointmentRescheduleWorkflow;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowCheckpointRepository;
+import com.emme.payment.api.port.out.PaymentLinkSourceRepository;
+import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
 import com.emme.payment.api.usecase.CreatePaymentLinkUseCase;
-import com.emme.payment.application.port.out.PaymentLinkRepository;
-import com.emme.payment.application.port.out.PaymentLinkSourceRepository;
-import com.emme.payment.application.port.out.PaymentProvider;
-import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
@@ -30,10 +28,9 @@ class AppointmentWorkflowCompositionConfigurationTest {
           .withUserConfiguration(AppointmentWorkflowCompositionConfiguration.class)
           .withBean(AppointmentRepository.class, () -> mock(AppointmentRepository.class))
           .withBean(AppointmentHoldRepository.class, () -> mock(AppointmentHoldRepository.class))
-          .withBean(PaymentLinkRepository.class, () -> mock(PaymentLinkRepository.class))
+          .withBean(CreatePaymentLinkUseCase.class, () -> mock(CreatePaymentLinkUseCase.class))
           .withBean(
               PaymentLinkSourceRepository.class, () -> mock(PaymentLinkSourceRepository.class))
-          .withBean(PaymentProvider.class, () -> mock(PaymentProvider.class))
           .withBean(
               PaymentWorkflowCorrelationRepository.class,
               () -> mock(PaymentWorkflowCorrelationRepository.class))

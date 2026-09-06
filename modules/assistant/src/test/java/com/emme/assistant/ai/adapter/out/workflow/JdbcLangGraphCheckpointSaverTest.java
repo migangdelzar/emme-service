@@ -86,6 +86,7 @@ class JdbcLangGraphCheckpointSaverTest {
                     .contains("INSERT INTO ai_workflow_checkpoint")
                     .contains("workflow_namespace")
                     .contains("next_node_name")
+                    .contains("version = ai_workflow_checkpoint.version + 1")
                     .contains(
                         "ON CONFLICT (tenant_id, workflow_id, workflow_namespace, node_name,"
                             + " node_execution_key)")

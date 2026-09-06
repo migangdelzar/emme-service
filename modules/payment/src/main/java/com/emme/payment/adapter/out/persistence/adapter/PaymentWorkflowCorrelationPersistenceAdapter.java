@@ -4,7 +4,7 @@ import com.emme.kernel.context.TenantContextHolder;
 import com.emme.payment.adapter.out.persistence.entity.PaymentWorkflowCorrelationEntity;
 import com.emme.payment.adapter.out.persistence.mapper.PaymentWorkflowCorrelationPersistenceMapper;
 import com.emme.payment.adapter.out.persistence.repository.SpringDataPaymentWorkflowCorrelationRepository;
-import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
+import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;

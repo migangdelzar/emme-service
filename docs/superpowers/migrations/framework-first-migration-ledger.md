@@ -347,6 +347,12 @@ gone.
 | `modules/notification/src/main/java/com/emme/notification/configuration/NotificationHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |
 | `modules/calendar/src/main/java/com/emme/calendar/configuration/GoogleHttpClient.java` | Deleted | HTTP-13 completed in `e976a397` on 2026-09-05; RestClient transport tests pass and no production/build references remain |
 
+The payment workflow source and correlation boundaries are public payment API
+ports (`payment.api.port.out`). Assistant composition depends only on those
+contracts; payment-owned persistence and provider ports remain internal to the
+payment module. The former application-port aliases were deleted after the
+cross-module architecture gate passed on 2026-09-06.
+
 ## Calendar event-link cardinality slice — 2026-09-05
 
 - [x] Add a test-driven migration contract for the singular

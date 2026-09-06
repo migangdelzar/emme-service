@@ -1,11 +1,11 @@
-package com.emme.payment.application.port.out;
+package com.emme.payment.api.port.out;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Reads trusted, tenant-local payment facts assembled from the held appointment state. */
+/** Public workflow input boundary for trusted, tenant-local payment facts. */
 public interface PaymentLinkSourceRepository {
 
   Optional<PaymentLinkSource> findByWorkflowIdAndHoldId(UUID workflowId, UUID holdId);

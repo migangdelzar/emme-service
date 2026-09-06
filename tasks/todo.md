@@ -922,7 +922,8 @@
 - [x] Reject empty checkpoint namespaces before database access.
 - [x] Centralize namespace validation in the provider-neutral tenant-aware
       checkpoint boundary.
-- [ ] Complete remaining checkpoint security and malformed-thread integration gates.
+- [x] Complete the non-Docker checkpoint security and malformed-thread gates;
+      live PostgreSQL proof remains Docker-gated.
 
 ### Current slice — Task 8C LangGraph JDBC binding
 
@@ -967,6 +968,21 @@
 - [x] Run the focused LangGraph configuration test suite.
 - [ ] Run live startup and checkpoint coverage with Docker.
 
+### Current slice — Task 8H non-Docker security/configuration closure — 2026-09-06
+
+- [x] Verify disabled LangGraph startup and exactly one named graph bean per enabled
+      capability.
+- [x] Verify unauthorized and cross-tenant checkpoint reads fail closed.
+- [x] Verify duplicate checkpoint updates retain atomic upsert/version semantics.
+- [x] Verify malformed namespaces, missing checkpoints, and authorized staff resume.
+- [x] Move Assistant payment workflow dependencies to public Payment API ports and
+      keep payment persistence/provider mechanisms module-private.
+- [x] Add missing transaction policy and package metadata discovered by the architecture gate.
+- [x] Run Assistant LangGraph/checkpoint tests, payment/Assistant focused tests, application
+      architecture/convention tests, Spotless, and `git diff --check`.
+- [ ] Run PostgreSQL/Testcontainers startup, checkpoint security, and resume gates when Docker
+      is available.
+
 ### Remaining repository-wide framework-first work
 
 - [x] Finish Spring AI metadata-contract and hybrid-search capability
@@ -976,7 +992,8 @@
       semantic, Redis metadata, and hybrid-search slices.
 - [ ] Run a runtime hybrid-search benchmark with Docker-backed PostgreSQL data
       before changing the ranking implementation or storage layout.
-- [ ] Complete LangGraph boundary simplification and checkpoint security tests.
+- [x] Complete the non-Docker LangGraph boundary simplification and checkpoint security tests.
+- [ ] Run live PostgreSQL/Testcontainers LangGraph startup, authorization, and resume gates.
 - [x] Classify stable AI quote/trace persistence; retain `JdbcClient` where atomic,
       JSONB, idempotency, or versioned SQL is simpler than JPA.
 - [x] Evaluate design-image metadata CRUD; retain `JdbcClient` because JPA adds indirection without reducing code.

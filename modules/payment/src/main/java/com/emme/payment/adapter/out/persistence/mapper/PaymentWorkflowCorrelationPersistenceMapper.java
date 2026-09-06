@@ -1,7 +1,7 @@
 package com.emme.payment.adapter.out.persistence.mapper;
 
 import com.emme.payment.adapter.out.persistence.entity.PaymentWorkflowCorrelationEntity;
-import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
+import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 

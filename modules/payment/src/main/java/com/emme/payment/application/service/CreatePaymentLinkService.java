@@ -2,17 +2,19 @@ package com.emme.payment.application.service;
 
 import com.emme.ai.contracts.payment.PaymentLink;
 import com.emme.payment.api.command.CreatePaymentLinkCommand;
+import com.emme.payment.api.port.out.PaymentLinkSourceRepository;
+import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
 import com.emme.payment.api.usecase.CreatePaymentLinkUseCase;
 import com.emme.payment.application.port.out.PaymentLinkRepository;
-import com.emme.payment.application.port.out.PaymentLinkSourceRepository;
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
-import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Creates an idempotent checkout link from trusted persisted payment facts. */
+@Transactional
 public final class CreatePaymentLinkService implements CreatePaymentLinkUseCase {
 
   private final PaymentLinkRepository links;

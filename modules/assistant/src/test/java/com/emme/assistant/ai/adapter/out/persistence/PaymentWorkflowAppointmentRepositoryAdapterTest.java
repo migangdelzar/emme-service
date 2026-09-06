@@ -8,7 +8,7 @@ import com.emme.ai.contracts.appointment.AppointmentHold;
 import com.emme.appointments.application.port.out.AppointmentHoldRepository;
 import com.emme.assistant.ai.application.port.out.PaymentWorkflowAppointmentRepository;
 import com.emme.kernel.context.TenantContextHolder;
-import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
+import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;

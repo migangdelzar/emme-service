@@ -11,13 +11,15 @@ import org.junit.jupiter.api.Test;
 class PaymentApplicationBoundaryTest {
 
   private static final Path ROOT = sourcePath("modules/payment/src/main/java/com/emme/payment");
+  private static final Path API = ROOT.resolve("api");
   private static final Path APPLICATION = ROOT.resolve("application");
 
   @Test
   void applicationOwnsPortsAndFocusedServices() {
     assertThat(Files.exists(APPLICATION.resolve("port/out/PaymentRepository.java"))).isTrue();
     assertThat(Files.exists(APPLICATION.resolve("port/out/PaymentLinkRepository.java"))).isTrue();
-    assertThat(Files.exists(APPLICATION.resolve("port/out/PaymentLinkSourceRepository.java")))
+    assertThat(Files.exists(API.resolve("port/out/PaymentLinkSourceRepository.java"))).isTrue();
+    assertThat(Files.exists(API.resolve("port/out/PaymentWorkflowCorrelationRepository.java")))
         .isTrue();
     assertThat(Files.exists(APPLICATION.resolve("port/out/PaymentProvider.java"))).isTrue();
     assertThat(Files.exists(APPLICATION.resolve("service/InitiatePaymentService.java"))).isTrue();

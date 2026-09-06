@@ -11,8 +11,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Creates tenant-local appointment holds with an idempotent business key. */
+@Transactional
 public final class CreateAppointmentHoldService implements CreateAppointmentHoldUseCase {
 
   private final AppointmentRepository appointments;

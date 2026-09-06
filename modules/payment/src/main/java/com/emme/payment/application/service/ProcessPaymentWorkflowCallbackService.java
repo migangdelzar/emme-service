@@ -2,18 +2,20 @@ package com.emme.payment.application.service;
 
 import com.emme.ai.contracts.payment.PaymentWorkflowEvent;
 import com.emme.payment.api.command.ProcessPaymentCallbackCommand;
+import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
+import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation;
 import com.emme.payment.api.result.PaymentDetails;
 import com.emme.payment.api.usecase.ProcessPaymentCallbackUseCase;
 import com.emme.payment.api.usecase.ProcessPaymentWorkflowCallbackUseCase;
 import com.emme.payment.application.port.out.PaymentProviderException;
-import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository;
-import com.emme.payment.application.port.out.PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation;
 import com.emme.payment.application.port.out.PaymentWorkflowEventPublisher;
 import java.util.Objects;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Converts the payment callback result into the provider-neutral workflow event contract. */
 @Service
+@Transactional
 public final class ProcessPaymentWorkflowCallbackService
     implements ProcessPaymentWorkflowCallbackUseCase {
 

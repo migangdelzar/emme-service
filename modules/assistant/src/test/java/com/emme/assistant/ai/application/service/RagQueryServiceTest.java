@@ -8,10 +8,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.emme.ai.contracts.guardrail.GuardrailAction;
+import com.emme.ai.contracts.guardrail.GuardrailDecision;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.ai.platform.configuration.AiProviderProperties;
+import com.emme.assistant.ai.application.guardrail.GroundingGuard;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
@@ -332,6 +335,41 @@ class RagQueryServiceTest {
     assertThat(AiExecutionContextScope.call(context, () -> service.query(query.text())))
         .isEqualTo(grounded.text());
     verify(knowledgeAnswer).answer(query, KnowledgeRoute.GENERAL, context);
+    verifyNoInteractions(chat, retrieval);
+  }
+
+  @Test
+  void returnsNoAnswerWhenGroundingGuardRejectsTheKnowledgeAnswer() {
+    UUID tenantId = UUID.randomUUID();
+    ChatCompletionPort chat = mock(ChatCompletionPort.class);
+    KnowledgeRetriever retrieval = mock(KnowledgeRetriever.class);
+    KnowledgeAnswerService knowledgeAnswer = mock(KnowledgeAnswerService.class);
+    GroundingGuard grounding = mock(GroundingGuard.class);
+    AiExecutionContext context = context(tenantId);
+    KnowledgeQuery query = new KnowledgeQuery("Which cancellation rules apply?", "es-MX", 5);
+    GroundedAnswer ungrounded =
+        new GroundedAnswer(
+            "The salon requires 24 hours.",
+            KnowledgeRoute.GENERAL,
+            new RetrievalQualityDecision(false, 0.20, 0.01, 0.19, 1, 0, false, "INSUFFICIENT"),
+            false);
+    when(knowledgeAnswer.answer(query, KnowledgeRoute.GENERAL, context)).thenReturn(ungrounded);
+    when(grounding.check(any(), any()))
+        .thenReturn(
+            new GuardrailDecision(
+                GuardrailAction.NO_ANSWER, "grounding.rejected", java.util.Map.of()));
+    RagQueryService service =
+        new RagQueryService(
+            realProperties(),
+            retrieval,
+            chat,
+            java.util.Optional.empty(),
+            java.util.Optional.of(knowledgeAnswer),
+            java.util.Optional.of(grounding));
+
+    assertThat(AiExecutionContextScope.call(context, () -> service.query(query.text())))
+        .isEqualTo("No relevant documents were found.");
+    verify(grounding).check(any(), any());
     verifyNoInteractions(chat, retrieval);
   }
 

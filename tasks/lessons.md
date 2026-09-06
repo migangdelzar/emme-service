@@ -1,5 +1,27 @@
 # Engineering lessons
 
+## 2026-09-05 — Run full Spring context checkpoints after constructor changes
+
+- Failure mode: adding a guardrail-aware constructor left the previous required
+  `@Autowired` constructor annotated, so unit tests passed but every Spring
+  application context failed to create `ChatService`.
+- Detection signal: the full Assistant test checkpoint reported
+  `Invalid autowire-marked constructor` while focused service tests were green.
+- Prevention rule: every class with compatibility constructors must have an
+  explicit one-`@Autowired` constructor test and a Spring context checkpoint
+  after changing dependency injection signatures.
+
+## 2026-09-05 — Preserve established blank-message compatibility at service boundaries
+
+- Failure mode: applying the new direct input guard to blank messages changed
+  the existing mock chat HTTP contract from a graceful response to an
+  exception.
+- Detection signal: the full Assistant checkpoint failed only
+  `AiModuleTest.shouldHandleEmptyMessageGracefully` with `input.blank`.
+- Prevention rule: keep legacy compatibility behavior at the application
+  service boundary while enforcing blank-input policy in the provider advisor
+  and standalone guard tests for real model paths.
+
 ## 2026-09-05 — Scope Gradle test filters to the owning module
 
 - Failure mode: a multi-module Gradle invocation included Assistant test

@@ -25,8 +25,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class ChatServiceTest {
+
+  @Test
+  void exposesOnlyOneSpringAutowiredConstructor() {
+    assertThat(
+            java.util.Arrays.stream(ChatService.class.getDeclaredConstructors())
+                .filter(constructor -> constructor.isAnnotationPresent(Autowired.class)))
+        .hasSize(1);
+  }
 
   private static final String INFORMATIONAL_MESSAGE = "What are your hours?";
 
@@ -273,6 +282,26 @@ class ChatServiceTest {
         .isInstanceOf(GuardrailRejectedException.class)
         .hasMessage("AI input rejected by guardrail: input.blocked");
     verifyNoInteractions(model);
+  }
+
+  @Test
+  void preservesBlankMessageCompatibilityWithoutInvokingTheDirectInputGuard() {
+    ChatCompletionPort model = mock(ChatCompletionPort.class);
+    InputGuard inputGuard = mock(InputGuard.class);
+    when(model.complete("", "")).thenReturn("response");
+    ChatService service =
+        new ChatService(
+            model,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            mock(SemanticMetrics.class),
+            Optional.of(inputGuard),
+            Optional.<OutputGuard>empty());
+
+    assertThat(inContext(() -> service.chat("", ""))).isEqualTo("response");
+
+    verifyNoInteractions(inputGuard);
   }
 
   private static AiExecutionContext context() {

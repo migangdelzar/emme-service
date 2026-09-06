@@ -4070,6 +4070,10 @@ appointment mutation tools are registered.
 - [x] Run the full `ChatServiceTest` suite and diff validation.
 - [x] Preserve actual retrieved source IDs in `GroundedAnswer` for grounding
       provenance checks.
+- [x] Apply `GroundingGuard` to the bounded `RagQueryService` answer path and
+      return the deterministic no-answer response when provenance is rejected.
+- [x] Keep compatibility constructors single-autowired and standalone Spring
+      chat configuration usable when optional guardrail advisors are absent.
 - [ ] Add grounded RAG delivery enforcement and remaining controller/channel
       boundaries.
 

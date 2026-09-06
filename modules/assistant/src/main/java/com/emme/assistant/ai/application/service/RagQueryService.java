@@ -1,10 +1,13 @@
 package com.emme.assistant.ai.application.service;
 
+import com.emme.ai.contracts.guardrail.GroundingRequest;
+import com.emme.ai.contracts.guardrail.GuardrailAction;
 import com.emme.ai.contracts.rag.KnowledgeQuery;
 import com.emme.ai.contracts.rag.KnowledgeRetriever;
 import com.emme.ai.contracts.rag.RetrievedDocument;
 import com.emme.ai.platform.configuration.AiProviderProperties;
 import com.emme.assistant.ai.api.usecase.RagQueryUseCase;
+import com.emme.assistant.ai.application.guardrail.GroundingGuard;
 import com.emme.assistant.ai.application.port.out.ChatCompletionPort;
 import com.emme.assistant.ai.application.port.out.ChatProviderUnavailableException;
 import com.emme.assistant.ai.application.port.out.RagAnswerPort;
@@ -23,12 +26,14 @@ import org.springframework.stereotype.Service;
 public class RagQueryService implements RagQueryUseCase {
 
   private static final String DEFAULT_LOCALE = "es-MX";
+  private static final String NO_RELEVANT_DOCUMENTS = "No relevant documents were found.";
 
   private final AiProviderProperties properties;
   private final KnowledgeRetriever retrieval;
   private final ChatCompletionPort chatCompletion;
   private final Optional<RagAnswerPort> ragAnswer;
   private final Optional<KnowledgeAnswerService> knowledgeAnswer;
+  private final Optional<GroundingGuard> groundingGuard;
 
   public RagQueryService(
       AiProviderProperties properties,
@@ -45,18 +50,29 @@ public class RagQueryService implements RagQueryUseCase {
     this(properties, retrieval, chatCompletion, ragAnswer, Optional.empty());
   }
 
-  @Autowired
   public RagQueryService(
       AiProviderProperties properties,
       KnowledgeRetriever retrieval,
       ChatCompletionPort chatCompletion,
       @Qualifier("aiGroundedRagAnswer") Optional<RagAnswerPort> ragAnswer,
       Optional<KnowledgeAnswerService> knowledgeAnswer) {
+    this(properties, retrieval, chatCompletion, ragAnswer, knowledgeAnswer, Optional.empty());
+  }
+
+  @Autowired
+  public RagQueryService(
+      AiProviderProperties properties,
+      KnowledgeRetriever retrieval,
+      ChatCompletionPort chatCompletion,
+      @Qualifier("aiGroundedRagAnswer") Optional<RagAnswerPort> ragAnswer,
+      Optional<KnowledgeAnswerService> knowledgeAnswer,
+      Optional<GroundingGuard> groundingGuard) {
     this.properties = properties;
     this.retrieval = retrieval;
     this.chatCompletion = chatCompletion;
     this.ragAnswer = ragAnswer;
     this.knowledgeAnswer = knowledgeAnswer;
+    this.groundingGuard = groundingGuard;
   }
 
   @Override
@@ -72,13 +88,29 @@ public class RagQueryService implements RagQueryUseCase {
     }
     if (knowledgeAnswer.isPresent()) {
       try {
-        return knowledgeAnswer
-            .orElseThrow()
-            .answer(
-                new KnowledgeQuery(question, DEFAULT_LOCALE, 5),
-                KnowledgeRoute.GENERAL,
-                executionContext)
-            .text();
+        var groundedAnswer =
+            knowledgeAnswer
+                .orElseThrow()
+                .answer(
+                    new KnowledgeQuery(question, DEFAULT_LOCALE, 5),
+                    KnowledgeRoute.GENERAL,
+                    executionContext);
+        if (groundingGuard.isPresent()) {
+          var decision =
+              groundingGuard
+                  .orElseThrow()
+                  .check(
+                      new GroundingRequest(
+                          groundedAnswer.grounded(),
+                          groundedAnswer.retrieval().topScore(),
+                          groundedAnswer.retrieval().margin(),
+                          groundedAnswer.sourceIds()),
+                      executionContext);
+          if (decision.action() != GuardrailAction.ALLOW) {
+            return NO_RELEVANT_DOCUMENTS;
+          }
+        }
+        return groundedAnswer.text();
       } catch (RuntimeException failure) {
         SemanticFailurePolicy.rethrowSecurityFailure(failure);
         if (failure instanceof ChatProviderUnavailableException

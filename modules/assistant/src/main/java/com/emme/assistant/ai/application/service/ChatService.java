@@ -57,7 +57,6 @@ public class ChatService implements ChatUseCase {
     this(chatCompletion, semanticCache, proactiveToolRouter, Optional.empty(), metrics);
   }
 
-  @Autowired
   public ChatService(
       ChatCompletionPort chatCompletion,
       Optional<SemanticResponseCache> semanticCache,
@@ -161,7 +160,7 @@ public class ChatService implements ChatUseCase {
   }
 
   private void checkInput(com.emme.kernel.context.AiExecutionContext context, String userMessage) {
-    if (inputGuard.isEmpty()) {
+    if (inputGuard.isEmpty() || userMessage == null || userMessage.isBlank()) {
       return;
     }
     GuardrailDecision decision =

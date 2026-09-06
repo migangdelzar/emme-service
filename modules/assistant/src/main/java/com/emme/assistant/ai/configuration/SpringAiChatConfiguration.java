@@ -63,18 +63,15 @@ public class SpringAiChatConfiguration {
       SpringAiChatProperties properties,
       TenantSecurityAdvisor tenantSecurityAdvisor,
       PromptVersionAdvisor promptVersionAdvisor,
-      InputGuardAdvisor inputGuardAdvisor,
-      OutputGuardAdvisor outputGuardAdvisor,
+      Optional<InputGuardAdvisor> inputGuardAdvisor,
+      Optional<OutputGuardAdvisor> outputGuardAdvisor,
       AiTraceRecorder traceRecorder,
       Optional<SpringAiToolCallbackProvider> toolCallbackProvider,
       Optional<ToolSearchToolCallingAdvisor> toolSearchAdvisor) {
     List<Advisor> configuredAdvisors =
-        new ArrayList<>(
-            List.of(
-                tenantSecurityAdvisor,
-                inputGuardAdvisor,
-                promptVersionAdvisor,
-                outputGuardAdvisor));
+        new ArrayList<>(List.of(tenantSecurityAdvisor, promptVersionAdvisor));
+    inputGuardAdvisor.ifPresent(configuredAdvisors::add);
+    outputGuardAdvisor.ifPresent(configuredAdvisors::add);
     if (toolCallbackProvider.isPresent() && toolSearchAdvisor.isPresent()) {
       configuredAdvisors.add(toolSearchAdvisor.orElseThrow());
     }

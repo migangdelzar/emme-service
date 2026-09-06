@@ -819,7 +819,12 @@ evaluate provenance without synthesizing evidence.
 The direct `ChatService` path now also accepts optional typed input/output
 guards, checks input before semantic shortcuts, and validates proactive, cached,
 and normal responses before returning them. Grounded RAG and controller/channel
-delivery boundaries remain outstanding.
+delivery boundaries remain outstanding. `RagQueryService` now projects the
+bounded retrieval decision and actual source IDs into `GroundingGuard` and
+returns the deterministic no-answer response for rejected grounding. The
+compatibility constructor path remains single-autowired, blank mock messages
+retain their established graceful behavior, and the standalone Spring chat
+root tolerates absent optional guardrail advisors.
 - [ ] **Step 5: Run, refactor, and commit.**
 
   ```bash

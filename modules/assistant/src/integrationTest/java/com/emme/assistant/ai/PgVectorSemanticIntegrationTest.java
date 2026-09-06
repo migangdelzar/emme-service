@@ -10,6 +10,7 @@ import com.emme.assistant.ai.adapter.out.persistence.JdbcAiToolIdempotencyStore;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticCacheAdapter;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcSemanticReferenceSearchAdapter;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
+import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.tool.AiToolResult;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -44,6 +45,8 @@ class PgVectorSemanticIntegrationTest {
   private static final UUID PRINCIPAL_ID = UUID.randomUUID();
   private static final UUID CONVERSATION_ID = UUID.randomUUID();
   private static final UUID WORKFLOW_ID = UUID.randomUUID();
+  private static final SemanticCacheIdentity CACHE_IDENTITY =
+      new SemanticCacheIdentity("mock", "mock-model", "knowledge-v1", "policy-v1", "source-v1");
 
   @Container
   static final PostgreSQLContainer<?> POSTGRES =
@@ -210,7 +213,8 @@ class PgVectorSemanticIntegrationTest {
             "{\"answer\":\"We are open\"}",
             java.time.Instant.now().plusSeconds(60),
             query,
-            "cache-integration-1");
+            "cache-integration-1",
+            CACHE_IDENTITY);
     AiExecutionContext context =
         new AiExecutionContext(
             TENANT_ID,
@@ -227,7 +231,9 @@ class PgVectorSemanticIntegrationTest {
             context,
             () ->
                 semanticCache.find(
-                    new SemanticCachePort.Lookup("FAQ", "catalog-v1", "prompt-v1", query), 2));
+                    new SemanticCachePort.Lookup(
+                        "FAQ", "catalog-v1", "prompt-v1", query, CACHE_IDENTITY),
+                    2));
 
     assertThat(matches)
         .singleElement()

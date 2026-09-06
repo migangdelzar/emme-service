@@ -10,6 +10,7 @@ import com.emme.ai.contracts.semantic.EmbeddingVector;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticMetrics;
 import com.emme.assistant.ai.application.port.out.SemanticReferenceSearchPort;
+import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.semantic.SemanticCachePolicy;
 import com.emme.assistant.ai.application.semantic.SemanticCacheResolver;
 import com.emme.assistant.ai.application.semantic.SemanticDecision;
@@ -27,6 +28,9 @@ import org.junit.jupiter.api.Test;
 class SemanticRoutingServiceTest {
 
   private static final EmbeddingVector QUERY = testEmbedding("embedding-v1", List.of(1.0f, 0.0f));
+  private static final SemanticCacheIdentity CACHE_IDENTITY =
+      new SemanticCacheIdentity(
+          "test-provider", "test-model", "knowledge-v1", "policy-v1", "source-v1");
 
   @Test
   void classifiesIntentOnlyWhenScoreAndMarginPass() {
@@ -75,12 +79,14 @@ class SemanticRoutingServiceTest {
         new SemanticCacheResolver(cache, new SemanticCachePolicy(0.95));
 
     var hit =
-        resolver.lookup(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY));
+        resolver.lookup(
+            new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY, CACHE_IDENTITY));
 
     assertThat(hit).isPresent();
     assertThat(hit.orElseThrow().responsePayload()).isEqualTo("cached answer");
     assertThat(cache.lookup)
-        .isEqualTo(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY));
+        .isEqualTo(
+            new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY, CACHE_IDENTITY));
     assertThat(cache.hitId()).isEqualTo(hit.orElseThrow().id());
   }
 
@@ -93,7 +99,9 @@ class SemanticRoutingServiceTest {
         new SemanticCacheResolver(cache, new SemanticCachePolicy(0.95));
 
     assertThat(
-            resolver.lookup(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY)))
+            resolver.lookup(
+                new SemanticCachePort.Lookup(
+                    "FAQ", "catalog-v4", "prompt-v2", QUERY, CACHE_IDENTITY)))
         .isEmpty();
   }
 
@@ -108,7 +116,9 @@ class SemanticRoutingServiceTest {
         new SemanticCacheResolver(cache, new SemanticCachePolicy(0.95, 0.05));
 
     assertThat(
-            resolver.lookup(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY)))
+            resolver.lookup(
+                new SemanticCachePort.Lookup(
+                    "FAQ", "catalog-v4", "prompt-v2", QUERY, CACHE_IDENTITY)))
         .isEmpty();
   }
 
@@ -121,7 +131,9 @@ class SemanticRoutingServiceTest {
         new SemanticCacheResolver(cache, new SemanticCachePolicy(0.95, 0.05));
 
     assertThat(
-            resolver.lookup(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY)))
+            resolver.lookup(
+                new SemanticCachePort.Lookup(
+                    "FAQ", "catalog-v4", "prompt-v2", QUERY, CACHE_IDENTITY)))
         .isEmpty();
   }
 
@@ -135,7 +147,9 @@ class SemanticRoutingServiceTest {
         new SemanticCacheResolver(cache, new SemanticCachePolicy(0.95));
 
     assertThat(
-            resolver.lookup(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY)))
+            resolver.lookup(
+                new SemanticCachePort.Lookup(
+                    "FAQ", "catalog-v4", "prompt-v2", QUERY, CACHE_IDENTITY)))
         .isEmpty();
   }
 
@@ -150,7 +164,8 @@ class SemanticRoutingServiceTest {
     SemanticCacheResolver resolver =
         new SemanticCacheResolver(cache, new SemanticCachePolicy(0.90, 0.10), metrics);
 
-    resolver.lookup(new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY));
+    resolver.lookup(
+        new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY, CACHE_IDENTITY));
 
     assertThat(metrics.scoreOperation).isEqualTo("cache");
     assertThat(metrics.top1).isEqualTo(0.97);

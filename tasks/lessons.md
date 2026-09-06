@@ -1728,3 +1728,13 @@
 - **Prevention rule:** Any class-based Spring transactional application service
   must remain proxyable, or use an interface-based proxy configuration; run a
   real application context test after adding the service bean.
+
+## 2026-09-06 — Migrate compatibility constructors across all test source sets
+
+- **Failure mode:** Removing semantic-cache identity fallback constructors made
+  unit tests pass but left pgvector integration-test sources uncompilable.
+- **Detection signal:** `compileIntegrationTestJava` reported the old
+  `Lookup`/`Put` arities after the focused unit suite was green.
+- **Prevention rule:** Before deleting a compatibility constructor, search and
+  compile production, unit-test, integration-test, and fixture source sets;
+  migrate every caller to the explicit contract before the deletion commit.

@@ -36,6 +36,9 @@ class JdbcSemanticAdapterTest {
   private static final UUID WORKFLOW_ID = UUID.randomUUID();
   private static final EmbeddingVector QUERY =
       testEmbedding(EmbeddingModelDefaults.MODEL_VERSION, java.util.Collections.nCopies(768, 0.0f));
+  private static final SemanticCacheIdentity CACHE_IDENTITY =
+      new SemanticCacheIdentity(
+          "test-provider", "test-model", "knowledge-v1", "policy-v1", "source-v1");
 
   @Test
   void referenceSearchUsesAuthenticatedTenantAndEmbeddingVersion() throws Exception {
@@ -191,7 +194,8 @@ class JdbcSemanticAdapterTest {
             "{\"answer\":\"We are open\"}",
             Instant.parse("2030-01-01T00:00:00Z"),
             QUERY,
-            "cache-write-refresh");
+            "cache-write-refresh",
+            CACHE_IDENTITY);
 
     AiExecutionContextScope.call(context(), () -> adapter.put(write));
 
@@ -245,7 +249,9 @@ class JdbcSemanticAdapterTest {
     assertThatThrownBy(
             () ->
                 cache.find(
-                    new SemanticCachePort.Lookup("FAQ", "catalog-v4", "prompt-v2", QUERY), 2))
+                    new SemanticCachePort.Lookup(
+                        "FAQ", "catalog-v4", "prompt-v2", QUERY, CACHE_IDENTITY),
+                    2))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("No AI execution context");
   }
@@ -281,7 +287,8 @@ class JdbcSemanticAdapterTest {
             "{\"answer\":\"We are open\"}",
             Instant.parse("2030-01-01T00:00:00Z"),
             testEmbedding("other-model", java.util.Collections.nCopies(768, 0.0f)),
-            "cache-write-2");
+            "cache-write-2",
+            CACHE_IDENTITY);
 
     assertThatThrownBy(() -> AiExecutionContextScope.call(context(), () -> adapter.put(write)))
         .isInstanceOf(IllegalArgumentException.class)

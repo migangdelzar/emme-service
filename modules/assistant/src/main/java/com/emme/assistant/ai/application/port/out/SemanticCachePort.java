@@ -44,12 +44,6 @@ public interface SemanticCachePort {
       String promptVersion,
       EmbeddingVector query,
       SemanticCacheIdentity identity) {
-
-    public Lookup(
-        String cacheKind, String contextFingerprint, String promptVersion, EmbeddingVector query) {
-      this(cacheKind, contextFingerprint, promptVersion, query, SemanticCacheIdentity.legacy());
-    }
-
     public Lookup {
       requireText(cacheKind, "cacheKind");
       requireText(contextFingerprint, "contextFingerprint");
@@ -84,28 +78,6 @@ public interface SemanticCachePort {
       EmbeddingVector query,
       String writeIdempotencyKey,
       SemanticCacheIdentity identity) {
-
-    public Put(
-        String cacheKind,
-        String queryText,
-        String contextFingerprint,
-        String promptVersion,
-        String responsePayload,
-        Instant expiresAt,
-        EmbeddingVector query,
-        String writeIdempotencyKey) {
-      this(
-          cacheKind,
-          queryText,
-          contextFingerprint,
-          promptVersion,
-          responsePayload,
-          expiresAt,
-          query,
-          writeIdempotencyKey,
-          SemanticCacheIdentity.legacy());
-    }
-
     public Put {
       requireText(cacheKind, "cacheKind");
       requireText(queryText, "queryText");

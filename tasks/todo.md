@@ -1,5 +1,18 @@
 # Service architecture migration checklist
 
+## Current slice — Task 6P semantic-cache identity compatibility cleanup — 2026-09-06
+
+- [x] Add a failing source-inventory test for legacy semantic-cache identity
+      fallbacks.
+- [x] Migrate unit and pgvector integration fixtures to explicit cache identity
+      metadata.
+- [x] Remove the legacy `Lookup`/`Put` constructors and
+      `SemanticCacheIdentity.legacy()` factory.
+- [x] Run the full Assistant unit suite, integration-test source compilation,
+      and Spotless.
+- [ ] Run Redis/vector and PostgreSQL semantic-cache runtime gates when Docker
+      is available.
+
 ## Current slice — Task 8I Modulith workflow API boundary — 2026-09-06
 
 - [x] Add the failing appointment public hold-query and owner-side composition

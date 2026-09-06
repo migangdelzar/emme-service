@@ -44,6 +44,9 @@ class SemanticChatCacheTest {
       new SemanticQuery("What are your hours?", QUERY);
   private static final SemanticQuery TRANSACTIONAL_QUERY =
       new SemanticQuery("Book me Friday at 5pm", QUERY);
+  private static final SemanticCacheIdentity CACHE_IDENTITY =
+      new SemanticCacheIdentity(
+          "test-provider", "test-model", "knowledge-v1", "policy-v1", "source-v1");
 
   @Test
   void exposesOnlyPreparedSemanticCacheOperations() {
@@ -477,7 +480,7 @@ class SemanticChatCacheTest {
             Optional.empty(),
             mock(com.emme.assistant.ai.application.port.out.SemanticMetrics.class),
             new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration("embedding", "v1", 2),
-            SemanticCacheIdentity.legacy(),
+            CACHE_IDENTITY,
             "es-MX",
             "quote-template-v1",
             traces);
@@ -546,7 +549,7 @@ class SemanticChatCacheTest {
         NoopSemanticMetrics.INSTANCE,
         new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration(
             "embedding", "embedding-v1", 2),
-        SemanticCacheIdentity.legacy(),
+        CACHE_IDENTITY,
         "es-MX",
         "quote-template-v1",
         NoopAiTraceRecorder.INSTANCE);
@@ -573,7 +576,7 @@ class SemanticChatCacheTest {
         NoopSemanticMetrics.INSTANCE,
         new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration(
             "embedding", "embedding-v1", 2),
-        SemanticCacheIdentity.legacy(),
+        CACHE_IDENTITY,
         "es-MX",
         "quote-template-v1",
         NoopAiTraceRecorder.INSTANCE);
@@ -601,7 +604,7 @@ class SemanticChatCacheTest {
         hotStore,
         metrics,
         embeddingConfiguration,
-        SemanticCacheIdentity.legacy(),
+        CACHE_IDENTITY,
         "es-MX",
         "quote-template-v1",
         NoopAiTraceRecorder.INSTANCE);

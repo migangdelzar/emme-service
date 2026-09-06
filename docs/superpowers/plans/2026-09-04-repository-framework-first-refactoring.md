@@ -543,6 +543,24 @@ now exercise `AiChatCompletion`, `EmbeddingService`, and
 - [x] Run contract, AI Platform, Assistant, integration-source, and Spotless
       verification gates.
 
+#### Current slice 6P — Remove semantic-cache identity fallbacks
+
+The semantic-cache port no longer provides constructors that silently assign a
+legacy identity. All cache lookups and writes now carry explicit response,
+knowledge, policy, and source identity metadata; unit and pgvector integration
+fixtures were migrated to state that contract directly. Redis/vector and live
+PostgreSQL behavior remain Docker-gated.
+
+- [x] Add a failing source-inventory test for the legacy identity factory and
+      overloaded cache constructors.
+- [x] Migrate Assistant unit and pgvector integration fixtures to explicit
+      `SemanticCacheIdentity` values.
+- [x] Remove `SemanticCacheIdentity.legacy()` and the legacy `Lookup`/`Put`
+      constructors.
+- [x] Run the full Assistant unit suite, integration-test source compilation,
+      and Spotless.
+- [ ] Run live semantic-cache/vector behavior and PostgreSQL gates with Docker.
+
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 
 Completed in this slice:

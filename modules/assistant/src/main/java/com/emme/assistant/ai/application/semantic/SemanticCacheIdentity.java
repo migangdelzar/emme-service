@@ -41,18 +41,6 @@ public record SemanticCacheIdentity(
     quoteTemplateVersion = requireText(quoteTemplateVersion, "quoteTemplateVersion");
   }
 
-  public static SemanticCacheIdentity legacy() {
-    return new SemanticCacheIdentity(
-        "legacy-provider",
-        "legacy-model",
-        "legacy-knowledge",
-        "legacy-policy",
-        "legacy-source",
-        "INTERNAL",
-        "es-MX",
-        "quote-template-v1");
-  }
-
   private static String requireText(String value, String field) {
     Objects.requireNonNull(value, field + " must not be null");
     if (value.isBlank()) {

@@ -40,6 +40,9 @@ class RedisSemanticCacheHotStoreTest {
   private static final UUID WORKFLOW_ID = UUID.randomUUID();
   private static final EmbeddingVector QUERY =
       testEmbedding("embeddinggemma-v1", List.of(1.0f, 0.0f));
+  private static final SemanticCacheIdentity CACHE_IDENTITY =
+      new SemanticCacheIdentity(
+          "test-provider", "test-model", "knowledge-v1", "policy-v1", "source-v1");
 
   @Test
   void exposesOneCanonicalConstructionPath() {
@@ -69,7 +72,8 @@ class RedisSemanticCacheHotStoreTest {
             context(),
             () ->
                 hotStore.find(
-                    new SemanticCachePort.Lookup("CHAT_INFORMATIONAL", "ctx", "chat-v1", QUERY),
+                    new SemanticCachePort.Lookup(
+                        "CHAT_INFORMATIONAL", "ctx", "chat-v1", QUERY, CACHE_IDENTITY),
                     "What are your hours?",
                     2));
 
@@ -105,7 +109,8 @@ class RedisSemanticCacheHotStoreTest {
             () ->
                 hotStore(vectorStore)
                     .find(
-                        new SemanticCachePort.Lookup("CHAT_INFORMATIONAL", "ctx", "chat-v1", QUERY),
+                        new SemanticCachePort.Lookup(
+                            "CHAT_INFORMATIONAL", "ctx", "chat-v1", QUERY, CACHE_IDENTITY),
                         "What are your hours?",
                         2));
 
@@ -173,7 +178,8 @@ class RedisSemanticCacheHotStoreTest {
             "{\"text\":\"We are open.\"}",
             Instant.parse("2026-08-29T12:01:30Z"),
             QUERY,
-            "write-key");
+            "write-key",
+            CACHE_IDENTITY);
 
     AiExecutionContextScope.run(context(), () -> hotStore.put(durableId, write));
 
@@ -188,7 +194,8 @@ class RedisSemanticCacheHotStoreTest {
     org.assertj.core.api.Assertions.assertThatThrownBy(
             () ->
                 hotStore.find(
-                    new SemanticCachePort.Lookup("CHAT_INFORMATIONAL", "ctx", "chat-v1", QUERY),
+                    new SemanticCachePort.Lookup(
+                        "CHAT_INFORMATIONAL", "ctx", "chat-v1", QUERY, CACHE_IDENTITY),
                     "hours",
                     1))
         .isInstanceOf(IllegalStateException.class)

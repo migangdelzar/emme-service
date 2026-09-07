@@ -4901,6 +4901,25 @@ Completed in this slice:
 - Known Testcontainers shutdown-hook JDBC warnings remain non-failing teardown
   diagnostics when PostgreSQL closes before Spring JPA/Modulith destruction.
 
+## Current slice — remove unused workflow-request compatibility constructor — 2026-09-06
+
+- [x] Add a failing reflection contract test for the three-argument
+      `WorkflowRequest` constructor.
+- [x] Migrate the remaining split-line test caller to the profile-aware
+      four-argument constructor.
+- [x] Remove the unused compatibility constructor.
+- [x] Run focused Assistant contract/capability tests, Java compilation,
+      integration-test compilation, and Spotless.
+- [ ] Continue the remaining framework-first persistence, Redis, and event
+      recovery gates.
+
+### Results
+
+- The focused contract test first failed because the compatibility constructor
+  was present, then passed after its deletion.
+- The remaining test caller was found by compilation after the constructor
+  removal and migrated without changing workflow behavior.
+
 ## Current slice — Task 13F PostgreSQL tenant datasource startup — 2026-09-06
 
 - [x] Verify the worktree and read the repository instructions and Task 13

@@ -35,7 +35,7 @@ class LangGraphQuoteWorkflowCapabilityTest {
             () ->
                 capability.execute(
                     new ConversationWorkflowCapabilities.WorkflowRequest(
-                        "quote this design", context, Map.of())));
+                        "quote this design", context, Map.of(), null)));
 
     assertThat(result.updates()).containsEntry("quoteWorkflowStatus", "QUOTE_READY");
     assertThat(result.needsApproval()).isFalse();

@@ -2,6 +2,7 @@ package com.emme.assistant.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.WorkflowRequest;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
@@ -10,6 +11,7 @@ import com.emme.assistant.ai.application.tool.AiToolRisk;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 class CanonicalAiApplicationContractsTest {
@@ -61,6 +63,12 @@ class CanonicalAiApplicationContractsTest {
         .doesNotContain("invalidate(String cacheKind)");
     assertThat(Files.readString(sourceOf(SemanticCachePort.class)))
         .doesNotContain("invalidate(CACHE_KIND)");
+  }
+
+  @Test
+  void workflowRequestsExposeOnlyTheProfileAwareConstructor() {
+    assertThat(Arrays.stream(WorkflowRequest.class.getDeclaredConstructors()))
+        .noneMatch(constructor -> constructor.getParameterCount() == 3);
   }
 
   private static Path toolSource(String fileName) {

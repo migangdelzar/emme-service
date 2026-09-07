@@ -2223,3 +2223,13 @@
   `NoSuchFileException` under `build/spring-modulith-docs`.
 - **Prevention rule:** Architecture inventories must enumerate stable source and
   build-script roots explicitly and exclude mutable generated output.
+
+## 2026-09-06 — Let compilation complete compatibility caller inventories
+
+- **Failure mode:** A caller to a compatibility constructor was missed by a
+  narrow single-line search because the invocation was split across lines.
+- **Detection signal:** Removing the constructor caused the integration-test
+  compilation to report the exact remaining call site.
+- **Prevention rule:** Pair symbol searches with focused compilation after
+  every compatibility deletion; compiler errors are the authoritative final
+  caller inventory for Java overload removal.

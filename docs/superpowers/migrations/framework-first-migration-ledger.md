@@ -363,6 +363,15 @@ contracts; payment-owned persistence and provider ports remain internal to the
 payment module. The former application-port aliases were deleted after the
 cross-module architecture gate passed on 2026-09-06.
 
+## Workflow request compatibility cleanup — 2026-09-06
+
+`ConversationWorkflowCapabilities.WorkflowRequest` no longer exposes its
+three-argument compatibility constructor. Caller and bean searches found only
+the profile-aware four-argument contract in production composition; the one
+split-line test caller was migrated before removal. The focused contract test,
+Assistant compilation, integration-test compilation, and Spotless pass on
+current framework slice commit.
+
 ## Calendar event-link cardinality slice — 2026-09-05
 
 - [x] Add a test-driven migration contract for the singular

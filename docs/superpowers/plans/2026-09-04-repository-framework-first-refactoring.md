@@ -3850,3 +3850,20 @@ standalone test execution cannot race with mutable Spring Modulith build output.
       application tests.
 - [ ] Run the remaining PostgreSQL optimistic-lock conflict matrix.
 - [ ] Continue Redis outage/recovery and listener retry/replay evidence.
+
+## Current slice 6Z — Remove the unused workflow-request compatibility constructor — 2026-09-06
+
+The generic workflow capability request now exposes only the profile-aware
+constructor. Repository-wide caller and bean searches found no production or
+test caller that omitted the `NodeProfile`; the remaining three-argument
+constructor was compatibility surface without an active consumer. A focused
+reflection contract test was added before deletion, and the one split-line test
+caller was migrated to the canonical constructor.
+
+- [x] Add a failing contract test for the legacy three-argument constructor.
+- [x] Migrate the remaining test caller to the four-argument request contract.
+- [x] Delete the unused compatibility constructor.
+- [x] Run the focused Assistant contract/capability tests, Java compilation,
+      integration-test compilation, and Spotless.
+- [ ] Continue the remaining framework-first persistence, Redis, and event
+      recovery gates.

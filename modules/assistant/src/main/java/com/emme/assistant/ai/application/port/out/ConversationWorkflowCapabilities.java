@@ -56,11 +56,6 @@ public record ConversationWorkflowCapabilities(
   public record WorkflowRequest(
       String message, AiExecutionContext context, Map<String, Object> state, NodeProfile profile) {
 
-    /** Compatibility constructor for direct capability callers outside the graph adapter. */
-    public WorkflowRequest(String message, AiExecutionContext context, Map<String, Object> state) {
-      this(message, context, state, null);
-    }
-
     public WorkflowRequest {
       Objects.requireNonNull(message, "message must not be null");
       Objects.requireNonNull(context, "context must not be null");

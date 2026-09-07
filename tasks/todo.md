@@ -4923,3 +4923,19 @@ Completed in this slice:
 - `TenantRestIntTest` passes all five tests against PostgreSQL 16 with pgvector.
 - Duplicate provisioning remains idempotent for the original tenant owner;
   invalid schema input fails with `Invalid tenant schema name` before migration.
+
+## Current slice — Task 19M Kafka profile datasource boundary — 2026-09-06
+
+- [x] Add a failing profile parity test for the Kafka core datasource.
+- [x] Override inherited `spring.datasource.core.*` settings with the embedded
+      H2 database used by the Kafka integration profile.
+- [x] Run `KafkaEventStreamingIntegrationTest` with the isolated `colima-emme`
+      Docker profile.
+- [ ] Continue listener idempotency, retry, and external replay coverage.
+
+### Results
+
+- Kafka event-streaming integration tests pass (2/2), including stable topic
+  and tenant partition-key assertions.
+- The profile no longer attempts to connect to host PostgreSQL during context
+  startup.

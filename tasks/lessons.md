@@ -2153,3 +2153,16 @@
   dependency proven unnecessary by the focused source contract; preserve a
   dependency still required by another owning fixture and document that
   ownership explicitly.
+
+## 2026-09-06 — Override inherited datasource namespaces in embedded profiles
+
+- **Failure mode:** The Kafka integration profile declared an H2 datasource,
+  but the inherited production `spring.datasource.core.url` still activated
+  the custom PostgreSQL core datasource and attempted `localhost:5432`.
+- **Detection signal:** The Kafka Testcontainers broker started, but the
+  application context failed before tests with a PostgreSQL connection-refused
+  error.
+- **Prevention rule:** When a profile uses an embedded database, override every
+  namespaced datasource property consumed by custom configuration (including
+  `spring.datasource.core.url`), and keep a profile parity test asserting that
+  override.

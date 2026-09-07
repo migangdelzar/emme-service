@@ -101,6 +101,14 @@ class PlatformApplicationParityTest {
                 .contains("tenant:\n    provisioning:\n      enabled: false"));
   }
 
+  @Test
+  void kafkaProfileUsesItsEmbeddedDatabaseForCoreDatasource() throws IOException {
+    assertThat(
+            readSource(
+                "applications/emme-platform/src/integrationTest/resources/application-kafka-test.yml"))
+        .contains("core:\n      url: jdbc:h2:mem:emme-kafka");
+  }
+
   private static Path sourcePath(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {

@@ -3764,3 +3764,17 @@ boundary was changed.
       `23P01`.
 - [ ] Run the deployed Liquibase migration path and remaining PostgreSQL
       routing/optimistic-lock gates.
+
+## Current slice 19M — Kafka profile datasource boundary — 2026-09-06
+
+The Kafka integration profile now overrides the inherited namespaced core
+datasource with its embedded H2 database. This keeps the application context
+independent of a host PostgreSQL instance while Kafka remains Testcontainers
+backed.
+
+- [x] Add a failing profile parity test for the core datasource override.
+- [x] Configure the Kafka profile's core datasource as H2.
+- [x] Run both Kafka event-streaming integration tests against the isolated
+      `colima-emme` Docker profile.
+- [ ] Continue the remaining listener idempotency, retry, and external replay
+      evidence.

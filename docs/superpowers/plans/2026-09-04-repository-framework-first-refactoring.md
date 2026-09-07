@@ -4237,3 +4237,19 @@ in each schema; no tenant predicate was added to ordinary schema-local methods.
 - [x] Run the focused live test and affected Appointments checks.
 - [ ] Continue the remaining aggregate persistence, control-plane, deployment,
       and final compatibility gates.
+
+## Current slice 18AN — Verify live payment-link tenant idempotency — 2026-09-07
+
+The durable payment-link JPA adapter now has live PostgreSQL evidence for its
+tenant-schema boundary. The same idempotency key is accepted independently in
+two tenant schemas and each schema returns only its own provider-neutral link.
+The persistence port remains schema-local; explicit tenant/provider keys stay
+in the database for uniqueness and callback safety.
+
+- [x] Add a live integration test for payment-link persistence and idempotency.
+- [x] Verify identical idempotency keys are independent across tenant schemas.
+- [x] Declare the direct AI-contracts dependency required by the custom
+      payment integration source set.
+- [x] Run the focused live test and affected Payment checks.
+- [ ] Continue the remaining aggregate persistence, control-plane, deployment,
+      and final compatibility gates.

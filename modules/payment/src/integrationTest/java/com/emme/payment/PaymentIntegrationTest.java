@@ -3,7 +3,9 @@ package com.emme.payment;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.TestApplication;
+import com.emme.ai.contracts.payment.PaymentLink;
 import com.emme.kernel.context.TenantContextHolder;
+import com.emme.payment.application.port.out.PaymentLinkRepository;
 import com.emme.payment.application.port.out.PaymentRepository;
 import com.emme.payment.application.port.out.PaymentWebhookEventRepository;
 import com.emme.payment.domain.model.Payment;
@@ -37,6 +39,7 @@ class PaymentIntegrationTest {
 
   @Autowired private DataSource dataSource;
 
+  @Autowired private PaymentLinkRepository paymentLinks;
   @Autowired private PaymentWebhookEventRepository webhookEvents;
 
   @Autowired private PaymentRepository payments;
@@ -104,6 +107,26 @@ class PaymentIntegrationTest {
                 .get()
                 .extracting(Payment::tenantId)
                 .isEqualTo(tenantA));
+  }
+
+  @Test
+  @DisplayName("Payment-link idempotency keys are scoped to the tenant schema")
+  void paymentLinkIdempotencyIsScopedToTheTenantSchema() {
+    UUID tenantA = provisionTenant("payment-link-a");
+    UUID tenantB = provisionTenant("payment-link-b");
+    String idempotencyKey = "payment-retry-" + UUID.randomUUID();
+    PaymentLink linkA = paymentLink("https://payments.test/a", "2031-01-01T10:00:00Z");
+    PaymentLink linkB = paymentLink("https://payments.test/b", "2031-01-01T11:00:00Z");
+
+    TenantContextHolder.withTenantOverride(tenantA, () -> paymentLinks.save(linkA, idempotencyKey));
+    TenantContextHolder.withTenantOverride(tenantB, () -> paymentLinks.save(linkB, idempotencyKey));
+
+    TenantContextHolder.withTenantOverride(
+        tenantA,
+        () -> assertThat(paymentLinks.findByIdempotencyKey(idempotencyKey)).contains(linkA));
+    TenantContextHolder.withTenantOverride(
+        tenantB,
+        () -> assertThat(paymentLinks.findByIdempotencyKey(idempotencyKey)).contains(linkB));
   }
 
   @Test
@@ -189,5 +212,14 @@ class PaymentIntegrationTest {
     provisioningRepository.requestProvisioning(tenantId, slug, schemaName);
     assertThat(schemaMigrationPort.migrate(tenantId, slug)).isEqualTo(schemaName);
     return tenantId;
+  }
+
+  private static PaymentLink paymentLink(String checkoutUrl, String expiresAt) {
+    return new PaymentLink(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        "test-provider",
+        checkoutUrl,
+        java.time.Instant.parse(expiresAt));
   }
 }

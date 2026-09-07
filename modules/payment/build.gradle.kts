@@ -22,6 +22,7 @@ dependencies {
   testRuntimeOnly(libs.h2)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
+  add("integrationTestImplementation", project(":libraries:ai-contracts"))
   add("integrationTestImplementation", project(":modules:shared"))
   add("integrationTestImplementation", project(":libraries:kernel"))
   add("integrationTestImplementation", project(":database"))

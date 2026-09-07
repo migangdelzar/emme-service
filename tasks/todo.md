@@ -5359,6 +5359,24 @@ Completed in this slice:
 - No production adapter or application contract change was required; only the
   integration test classpath and runtime evidence were extended.
 
+## Current slice — Task 18AN payment-link tenant idempotency — 2026-09-07
+
+- [x] Verify payment-link persistence uses the selected tenant schema.
+- [x] Verify identical payment idempotency keys are independent across tenant
+      schemas.
+- [x] Verify each schema returns its own provider-neutral checkout link.
+- [x] Add the direct AI-contracts dependency required by the custom payment
+      integration source set.
+- [x] Run the full Payment check and live integration suite.
+- [ ] Continue remaining aggregate persistence, deployment, and compatibility
+      gates.
+
+### Results
+
+- Live PostgreSQL evidence passes for the payment-link JPA adapter.
+- No production contract or tenant boundary changed; the test confirms the
+  existing tenant-scoped uniqueness and schema routing behavior.
+
 ## Current slice — Task 18AM appointment-hold tenant idempotency — 2026-09-07
 
 - [x] Verify appointment-hold persistence uses the selected tenant schema.

@@ -4098,3 +4098,19 @@ behavior outside the persistence verification.
 - [x] Run Notification integration tests, compilation, Checkstyle, and
       Spotless.
 - [ ] Continue the remaining Calendar and aggregate persistence runtime matrix.
+
+## Current slice 18AG — Verify live Calendar sync persistence — 2026-09-06
+
+Calendar sync-state persistence now has live PostgreSQL evidence for tenant
+schema routing and optimistic locking. The gate also exposed a domain/schema
+invariant mismatch: a newly active state used a null sync token while the
+deployed migration requires the non-null empty-token representation. The
+domain factory and JPA default now agree with the migration; no migration was
+edited.
+
+- [x] Add a live tenant A/B visibility test for Calendar sync state.
+- [x] Add a two-transaction stale-version conflict test.
+- [x] Align new sync-state creation with `sync_token NOT NULL DEFAULT ''`.
+- [x] Run Calendar unit/integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue the remaining aggregate persistence runtime matrix.

@@ -31,7 +31,7 @@ public final class CalendarSyncState {
 
   public static CalendarSyncState active(UUID tenantId, CalendarProvider provider) {
     return new CalendarSyncState(
-        UUID.randomUUID(), tenantId, provider, null, null, CalendarSyncStatus.ACTIVE);
+        UUID.randomUUID(), tenantId, provider, "", null, CalendarSyncStatus.ACTIVE);
   }
 
   public static CalendarSyncState restore(

@@ -5359,6 +5359,25 @@ Completed in this slice:
 - No production adapter or application contract change was required; only the
   integration test classpath and runtime evidence were extended.
 
+## Current slice — Task 18 Calendar sync-state persistence gate — 2026-09-06
+
+- [x] Verify Calendar sync-state JPA persistence is isolated by the routed
+      tenant schema.
+- [x] Verify two concurrent sync-state updates produce one optimistic-lock
+      winner and one `OptimisticLockingFailureException`.
+- [x] Align the domain's initial sync token with the deployed non-null schema
+      contract.
+- [x] Run Calendar unit/integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue the remaining aggregate persistence runtime evidence.
+
+### Results
+
+- The live Calendar integration test passes with PostgreSQL and the isolated
+  `colima-emme` Docker profile.
+- The gate found and fixed the null `sync_token` persistence mismatch; no
+  deployed migration was edited.
+
 ## Current slice — Task 18 Notification live persistence gate — 2026-09-06
 
 - [x] Verify Notification JPA persistence is isolated by the routed tenant

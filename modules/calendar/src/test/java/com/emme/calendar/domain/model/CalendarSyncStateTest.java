@@ -1,11 +1,20 @@
 package com.emme.calendar.domain.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class CalendarSyncStateTest {
+
+  @Test
+  void startsWithTheDatabaseCompatibleEmptySyncToken() {
+    CalendarSyncState state =
+        CalendarSyncState.active(UUID.randomUUID(), CalendarProvider.GOOGLE_CALENDAR);
+
+    assertThat(state.syncToken()).isEmpty();
+  }
 
   @Test
   void doesNotMarkFailedStateAsStale() {

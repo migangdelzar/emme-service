@@ -21,7 +21,7 @@ public class CalendarSyncStateEntity extends TenantOwnedEntity {
   private CalendarProvider provider;
 
   @Column(name = "sync_token", length = 255)
-  private String syncToken;
+  private String syncToken = "";
 
   @Column(name = "last_synced_at")
   private Instant lastSyncedAt;

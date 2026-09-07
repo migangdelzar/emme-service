@@ -98,6 +98,7 @@ class SchemaOwnershipTest {
       List<String> offenders =
           files
               .filter(p -> p.toString().endsWith(".java"))
+              .filter(p -> !hasPathSegment(p, "build"))
               .filter(
                   p -> {
                     String module = root.relativize(p).getName(0).toString();
@@ -118,6 +119,15 @@ class SchemaOwnershipTest {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+  }
+
+  private static boolean hasPathSegment(Path path, String segment) {
+    for (Path part : path) {
+      if (segment.equals(part.toString())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static String moduleOf(JavaClass clazz) {

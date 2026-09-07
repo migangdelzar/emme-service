@@ -59,7 +59,7 @@ class AppointmentIntegrationTest {
 
   @BeforeEach
   void installDatabaseExtensions() {
-    bootstrapJdbc.sql("CREATE EXTENSION IF NOT EXISTS vector SCHEMA emme_core").update();
+    bootstrapJdbc.sql("CREATE EXTENSION IF NOT EXISTS vector").update();
   }
 
   @Test

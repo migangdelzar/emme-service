@@ -5440,6 +5440,21 @@ Completed in this slice:
   issue: `SchemaOwnershipTest` scans generated `build/spotless-clean` files and
   reports false `emme_core` offenders. Fix that source-scan boundary separately.
 
+## Current slice — Task 22 generated-source scan boundary — 2026-09-07
+
+- [x] Reproduce the schema-ownership architecture failure after Spotless.
+- [x] Exclude generated `build` paths from the architecture source scan.
+- [x] Remove `SCHEMA emme_core` from integration-only vector extension setup.
+- [x] Run the focused `SchemaOwnershipTest.emmeCoreIsNotReferencedOutsideOwningModules`.
+- [ ] Re-run the full platform and repository gates at the next phase checkpoint.
+
+### Results
+
+- The focused schema-ownership test now passes against both checked-in and
+  generated-source-containing worktrees.
+- No production ownership or tenant routing rule changed; only test fixtures
+  and the architecture scanner were corrected.
+
 ## Current slice — Task 18 Payment live persistence gate — 2026-09-06
 
 - [x] Verify Payment JPA persistence is isolated by the routed tenant schema.

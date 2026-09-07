@@ -4446,3 +4446,17 @@ platform `check` attempt exposed a pre-existing architecture-test issue: the
 source scan includes generated `build/spotless-clean` Java files and reports
 false `emme_core` ownership offenders. That cleanup is tracked separately from
 the deployment manifest change.
+
+## Current slice 22B — Bound schema ownership scans to checked-in source — 2026-09-07
+
+The schema-ownership architecture test now excludes generated `build` paths
+when scanning module Java sources. The checked-in integration fixtures were also
+made schema-neutral when enabling the PostgreSQL vector extension, so the test
+does not confuse a database-level extension prerequisite with ownership of the
+`emme_core` schema.
+
+- [x] Add the failing architecture-test evidence from the platform check.
+- [x] Exclude generated build directories from the source scan.
+- [x] Remove `SCHEMA emme_core` from four integration-only extension setup calls.
+- [x] Run the focused schema-ownership architecture test.
+- [ ] Re-run the full platform and repository gates at the next phase checkpoint.

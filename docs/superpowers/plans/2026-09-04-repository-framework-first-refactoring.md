@@ -4163,3 +4163,21 @@ conversation-specific tenant predicate or provider type was added.
 - [x] Run Assistant unit/integration tests, compilation, Checkstyle, and
       Spotless.
 - [ ] Continue the remaining aggregate persistence and RLS behavioral matrix.
+
+## Current slice 18AK — Verify live Documents persistence — 2026-09-06
+
+Documents metadata persistence now has live PostgreSQL evidence for
+tenant-schema routing and optimistic locking. The gate also fixed a real JPA
+mapping collision: the business `document_version` property used the same
+Java property name as the inherited `Long` JPA `@Version`; the business field
+is now explicitly named `documentVersion` while its database column and
+domain-level `version()` contract remain unchanged.
+
+- [x] Add a live tenant A/B visibility test for Document persistence.
+- [x] Add a two-transaction stale-version conflict test.
+- [x] Keep `document_version` distinct from inherited JPA optimistic locking.
+- [x] Add only the integration-test dependencies required by the existing
+      TestApplication, tenant migration resources, JPA, and bootstrap JDBC.
+- [x] Run Documents unit/integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue the remaining aggregate persistence and RLS behavioral matrix.

@@ -44,7 +44,7 @@ public class DocumentPersistenceAdapter implements DocumentRepository {
     entity.setStatus(
         com.emme.documents.adapter.out.persistence.entity.DocumentStatus.valueOf(
             document.status().name()));
-    entity.setVersion(document.version());
+    entity.setDocumentVersion(document.version());
     return documents.save(entity).toDomain();
   }
 

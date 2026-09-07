@@ -26,7 +26,7 @@ public class DocumentEntity extends TenantOwnedEntity {
 
   /** Business revision, distinct from the inherited JPA optimistic-lock version. */
   @Column(name = "document_version", nullable = false)
-  private int version = 1;
+  private int documentVersion = 1;
 
   protected DocumentEntity() {}
 
@@ -42,7 +42,7 @@ public class DocumentEntity extends TenantOwnedEntity {
     this.name = document.name();
     this.sourceType = document.sourceType();
     this.status = DocumentStatus.valueOf(document.status().name());
-    this.version = document.version();
+    this.documentVersion = document.version();
   }
 
   public static DocumentEntity from(Document document) {
@@ -56,7 +56,7 @@ public class DocumentEntity extends TenantOwnedEntity {
         name,
         sourceType,
         com.emme.documents.domain.model.DocumentStatus.valueOf(status.name()),
-        version,
+        documentVersion,
         getCreatedAt());
   }
 
@@ -84,11 +84,11 @@ public class DocumentEntity extends TenantOwnedEntity {
     this.status = status;
   }
 
-  public int getVersion() {
-    return version;
+  public int getDocumentVersion() {
+    return documentVersion;
   }
 
-  public void setVersion(int version) {
-    this.version = version;
+  public void setDocumentVersion(int documentVersion) {
+    this.documentVersion = documentVersion;
   }
 }

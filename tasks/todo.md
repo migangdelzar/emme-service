@@ -5397,6 +5397,23 @@ Completed in this slice:
 - Tenant A/B schema routing and the shared JPA `@Version` conflict behavior are
   now runtime-verified without changing Assistant production persistence code.
 
+## Current slice — Task 18 Documents live persistence gate — 2026-09-06
+
+- [x] Verify Document JPA persistence is isolated by the routed tenant schema.
+- [x] Verify two concurrent Document updates produce one optimistic-lock
+      winner and one `OptimisticLockingFailureException`.
+- [x] Separate the business `document_version` property from inherited JPA
+      `@Version` state without changing the database column or domain API.
+- [x] Run Documents integration tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue remaining aggregate persistence and RLS behavioral evidence.
+
+### Results
+
+- The live Documents integration tests pass with PostgreSQL and the isolated
+  `colima-emme` Docker profile.
+- The gate found and fixed a Hibernate `Integer`/`Long` property collision in
+  `DocumentEntity`; no migration was edited.
+
 ## Current slice — Task 18 Calendar sync-state persistence gate — 2026-09-06
 
 - [x] Verify Calendar sync-state JPA persistence is isolated by the routed

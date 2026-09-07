@@ -2256,3 +2256,14 @@
 - **Prevention rule:** When a live fixture needs a related aggregate, create it
   through that aggregate's existing repository; use bootstrap JDBC only for
   database-level prerequisites such as extensions and tenant provisioning.
+
+## 2026-09-06 — Avoid JPA business-property collisions with inherited version state
+
+- **Failure mode:** A document entity declared a business `version` property
+  with `Integer` while its mapped superclass declared the JPA optimistic-lock
+  `version` as `Long`.
+- **Detection signal:** The first real PostgreSQL insert failed in Hibernate
+  with `ClassCastException: Integer cannot be cast to Long`.
+- **Prevention rule:** Give business revision fields distinct Java property
+  names from inherited JPA infrastructure fields; preserve the SQL column name
+  explicitly when the deployed schema already uses that contract.

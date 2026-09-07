@@ -90,6 +90,22 @@ class LangGraphQuoteWorkflowResumeAdapterTest {
   }
 
   @Test
+  void rejectsResumeWhenTheAuthenticatedContextIsNotStaff() {
+    CompiledGraph<AgentState> graph = mock(CompiledGraph.class);
+    LangGraphQuoteWorkflowResumeAdapter adapter = new LangGraphQuoteWorkflowResumeAdapter(graph);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.run(
+                    nonStaffContext(),
+                    () -> adapter.resume(WORKFLOW_ID, QuoteReviewDecisionType.APPROVED)))
+        .isInstanceOf(SecurityException.class)
+        .hasMessage("Staff role is required to resume a quote workflow");
+
+    verifyNoInteractions(graph);
+  }
+
+  @Test
   void rejectsResumeWhenTheQuoteWorkflowCheckpointDoesNotExist() throws Exception {
     CompiledGraph<AgentState> graph = mock(CompiledGraph.class);
     org.mockito.Mockito.when(graph.lastStateOf(any(RunnableConfig.class)))
@@ -112,6 +128,17 @@ class LangGraphQuoteWorkflowResumeAdapterTest {
         TENANT_ID,
         PRINCIPAL_ID,
         Set.of("tenant_staff"),
+        CONVERSATION_ID,
+        WORKFLOW_ID,
+        "trace-1",
+        "review-1");
+  }
+
+  private static AiExecutionContext nonStaffContext() {
+    return new AiExecutionContext(
+        TENANT_ID,
+        PRINCIPAL_ID,
+        Set.of("tenant_client"),
         CONVERSATION_ID,
         WORKFLOW_ID,
         "trace-1",

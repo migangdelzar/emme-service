@@ -1,6 +1,7 @@
 package com.emme.assistant.ai.adapter.out.workflow;
 
 import com.emme.assistant.ai.application.port.out.QuoteWorkflowResumePort;
+import com.emme.assistant.ai.application.security.AiStaffRolePolicy;
 import com.emme.assistant.ai.domain.workflow.QuoteReviewDecisionType;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
@@ -31,6 +32,9 @@ public final class LangGraphQuoteWorkflowResumeAdapter implements QuoteWorkflowR
     AiExecutionContext context = AiExecutionContextScope.requireCurrent();
     if (!context.workflowId().equals(workflowId)) {
       throw new IllegalArgumentException("workflowId does not match AI execution context");
+    }
+    if (!AiStaffRolePolicy.isStaff(context.roles())) {
+      throw new SecurityException("Staff role is required to resume a quote workflow");
     }
     if (decision == QuoteReviewDecisionType.REJECTED) {
       return;

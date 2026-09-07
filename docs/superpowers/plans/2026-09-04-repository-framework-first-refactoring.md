@@ -4305,3 +4305,19 @@ boundary without changing the webhook port or migration.
       Checkstyle, and Spotless.
 - [ ] Continue the remaining aggregate persistence, control-plane, deployment,
       and final compatibility gates.
+
+## Current slice 8L — Enforce staff authorization at quote workflow resume — 2026-09-07
+
+The quote LangGraph resume adapter now applies the shared `AiStaffRolePolicy`
+at the workflow boundary, before rejected or approved decisions can reach the
+graph. This closes a direct-port authorization gap while preserving the
+existing controller and application-service checks; non-staff callers now fail
+closed without invoking LangGraph.
+
+- [x] Add a failing adapter test for non-staff direct resume.
+- [x] Apply the shared staff-role policy before all quote decisions.
+- [x] Preserve workflow-context identity validation and rejected-decision
+      behavior for authorized staff.
+- [x] Run focused workflow tests, full Assistant checks, integration-source
+      compilation, Checkstyle, and Spotless.
+- [ ] Run the remaining Docker-backed checkpoint security/resume phase gate.

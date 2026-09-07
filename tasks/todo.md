@@ -5607,3 +5607,19 @@ Completed in this slice:
   `colima-emme` Docker profile.
 - The test now exercises actual schema routing; no production or migration
   change was necessary.
+
+## Current slice — Task 8 quote workflow resume authorization — 2026-09-07
+
+- [x] Add a failing direct-adapter test for non-staff quote workflow resume.
+- [x] Enforce `AiStaffRolePolicy` at the LangGraph quote resume boundary.
+- [x] Verify authorized approval/edit/rejection behavior remains intact.
+- [x] Run focused workflow tests, Assistant check, integration-source
+      compilation, Checkstyle, and Spotless.
+- [ ] Run the remaining Docker-backed checkpoint security/resume phase gate.
+
+### Results
+
+- Direct quote workflow resume now fails closed for non-staff contexts before
+  calling the graph.
+- The policy is shared with the quote review service and conversation resume
+  path; no duplicate role vocabulary was introduced.

@@ -2803,8 +2803,9 @@ operations that are not smaller through `StringRedisTemplate`.
       `StringRedisTemplate`.
 - [x] Run the tenancy check, including Spotless, Checkstyle, compilation, and
       tests.
-- [ ] Continue Redis outage/eviction and semantic metadata integration gates
-      with Docker-enabled Redis.
+- [x] Verify Redis eviction and semantic metadata behavior with Docker-enabled
+      Redis.
+- [ ] Continue Redis outage and recovery behavior with Docker-enabled Redis.
 
 #### Current slice 20B — Fail closed when the distributed login limiter is unavailable
 
@@ -2818,6 +2819,11 @@ for deployments that do not configure Redis. The provider-neutral
 - [x] Return a rejected decision for `RedisConnectionFailureException`.
 - [x] Run the identity Redis test and the assistant Redis/semantic matrix.
 - [ ] Run live Redis outage and recovery behavior with Docker.
+
+The live Redis semantic projection test now also deletes the projected Redis
+document and verifies that the hot lookup returns a miss. Durable PostgreSQL
+state remains unaffected; the distributed login limiter outage path still needs
+an end-to-end recovery test.
 
 ### Task 21: Split generic and feature-specific test fixtures
 

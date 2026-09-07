@@ -173,6 +173,42 @@ class RedisSemanticIntegrationTest {
         .isEmpty();
   }
 
+  @Test
+  void treatsAnEvictedHotProjectionAsAMiss() {
+    UUID durableId = UUID.randomUUID();
+    SemanticCachePort.Put write =
+        new SemanticCachePort.Put(
+            "CHAT_INFORMATIONAL",
+            "What are your hours?",
+            "context-v1:empty",
+            "chat-v1",
+            "{\"text\":\"We are open.\"}",
+            Instant.now().plusSeconds(60),
+            QUERY,
+            "integration-eviction-1",
+            new SemanticCacheIdentity(
+                "ollama", "gemma4:e4b-mlx", "knowledge-v1", "policy-v1", "source-v1"));
+    AiExecutionContext context = context(TENANT_ID);
+
+    AiExecutionContextScope.run(context, () -> hotStore.put(durableId, write));
+    redisClient.del(PREFIX + "cache-" + durableId);
+
+    assertThat(
+            AiExecutionContextScope.call(
+                context,
+                () ->
+                    hotStore.find(
+                        new SemanticCachePort.Lookup(
+                            "CHAT_INFORMATIONAL",
+                            "context-v1:empty",
+                            "chat-v1",
+                            QUERY,
+                            write.identity()),
+                        "What are your hours?",
+                        2)))
+        .isEmpty();
+  }
+
   private static AiExecutionContext context(UUID tenantId) {
     return new AiExecutionContext(
         tenantId,

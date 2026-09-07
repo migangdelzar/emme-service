@@ -5223,6 +5223,19 @@ Completed in this slice:
 - No tenant-schema query was changed to repeat `tenant_id`; routing remains at
   connection checkout.
 
+## Current slice — Task 20 live Redis eviction gate — 2026-09-06
+
+- [x] Write a focused live test for removal of a Redis hot projection.
+- [x] Verify an evicted projection returns a safe semantic-cache miss.
+- [x] Preserve durable PostgreSQL ownership and tenant/principal metadata.
+- [ ] Add live distributed-login-limiter outage and recovery coverage.
+
+### Results
+
+- `RedisSemanticIntegrationTest.treatsAnEvictedHotProjectionAsAMiss` passed
+  against Redis 8 with the isolated Docker profile.
+- No production Redis or semantic-cache contract change was required.
+
 ## Current slice — Task 19 live Kafka externalization gate — 2026-09-06
 
 - [x] Verify approved events are published to stable Kafka topics.

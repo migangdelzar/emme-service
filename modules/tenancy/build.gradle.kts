@@ -54,5 +54,6 @@ dependencies {
   add("integrationTestImplementation", project(":database"))
   add("integrationTestImplementation", project(":libraries:kernel"))
   add("integrationTestImplementation", libs.spring.jdbc)
+  add("integrationTestImplementation", libs.spring.boot.starter.data.jpa)
   add("integrationTestImplementation", libs.jackson.databind)
 }

@@ -2267,3 +2267,14 @@
 - **Prevention rule:** Give business revision fields distinct Java property
   names from inherited JPA infrastructure fields; preserve the SQL column name
   explicitly when the deployed schema already uses that contract.
+
+## 2026-09-07 — Test PostgreSQL RLS with a non-superuser role
+
+- **Failure mode:** A live RLS test used the Testcontainers bootstrap user and
+  expected `FORCE ROW LEVEL SECURITY` to filter rows, but PostgreSQL
+  superusers bypass RLS unconditionally.
+- **Detection signal:** The mismatched-tenant read still returned one row even
+  though the forward migration had applied forced RLS.
+- **Prevention rule:** Use the bootstrap role only for provisioning and grants;
+  verify tenant RLS behavior through a dedicated `NOSUPERUSER` runtime role and
+  assert PostgreSQL SQLSTATE `42501` for mismatched writes.

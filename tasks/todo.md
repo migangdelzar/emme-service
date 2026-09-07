@@ -5359,6 +5359,31 @@ Completed in this slice:
 - No production adapter or application contract change was required; only the
   integration test classpath and runtime evidence were extended.
 
+## Current slice — Task 23B tenant RLS enforcement gate — 2026-09-07
+
+- [x] Add a failing migration contract for application-role RLS enforcement.
+- [x] Add forward migration `040-force-tenant-row-security.sql` for all
+      tenant data tables with existing policies.
+- [x] Preserve schema-per-tenant routing and the existing `tenant_id` columns;
+      RLS is defense-in-depth inside a selected tenant schema.
+- [x] Verify a non-superuser runtime role cannot read or write another tenant's
+      rows when the session tenant setting does not match the row.
+- [x] Run the full Tenancy integration suite and database tests with the
+      isolated `colima-emme` PostgreSQL profile.
+- [x] Run affected compilation, Spotless, `git diff --check`, and status checks.
+- [ ] Continue remaining aggregate persistence, deployment, and compatibility
+      gates.
+
+### Results
+
+- The forward migration forces existing tenant RLS policies for application
+  table owners and uses `IF EXISTS` for optional historical tables.
+- Live PostgreSQL evidence passes: tenant B sees zero rows in tenant A's
+  schema, tenant A sees its row, and a mismatched insert fails with SQLSTATE
+  `42501`.
+- The live test uses a dedicated non-superuser role because PostgreSQL
+  superusers always bypass RLS, including forced RLS.
+
 ## Current slice — Task 18 Catalog live persistence gate — 2026-09-06
 
 - [x] Verify Catalog item JPA persistence is isolated by the routed tenant

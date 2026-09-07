@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.emme.TestApplication;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.adapter.out.client.database.TenantSchemaName;
+import com.emme.tenancy.adapter.out.client.database.TenantScopedDataSource;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
 import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
 import com.emme.tenancy.domain.model.TenantProvisioningState;
@@ -20,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
  * Pilot integration test proving:
@@ -44,6 +47,8 @@ class TenantRestIntTest {
   @Autowired private TenantProvisioningRepository provisioningRepository;
 
   @Autowired private TenantSchemaMigrationPort schemaMigrationPort;
+
+  @Autowired private PostgreSQLContainer<?> postgresContainer;
 
   @Autowired
   @Qualifier("bootstrapJdbcClient")
@@ -154,6 +159,63 @@ class TenantRestIntTest {
     }
   }
 
+  @Test
+  @DisplayName("Tenant RLS rejects a mismatched tenant context inside the routed schema")
+  void tenantRlsRejectsMismatchedTenantContextInsideRoutedSchema() throws Exception {
+    UUID tenantId = UUID.randomUUID();
+    UUID otherTenantId = UUID.randomUUID();
+    String slug = "rls-behavior-" + UUID.randomUUID().toString().replace('-', 'a');
+    String expectedSchema = TenantSchemaName.fromSlug(slug);
+
+    bootstrapJdbcClient.sql("CREATE EXTENSION IF NOT EXISTS vector SCHEMA emme_core").update();
+    provisioningRepository.requestProvisioning(tenantId, slug, expectedSchema);
+    assertThat(schemaMigrationPort.migrate(tenantId, slug)).isEqualTo(expectedSchema);
+
+    String runtimeRole = "tenant_rls_runtime";
+    String runtimePassword = "tenant_rls_runtime";
+    bootstrapJdbcClient
+        .sql(
+            "DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '"
+                + runtimeRole
+                + "') THEN CREATE ROLE "
+                + runtimeRole
+                + " LOGIN PASSWORD '"
+                + runtimePassword
+                + "' NOSUPERUSER NOCREATEDB NOCREATEROLE; END IF; END $$")
+        .update();
+    bootstrapJdbcClient
+        .sql("GRANT USAGE ON SCHEMA \"" + expectedSchema + "\" TO " + runtimeRole)
+        .update();
+    bootstrapJdbcClient
+        .sql("GRANT SELECT, INSERT ON TABLE \"" + expectedSchema + "\".customer TO " + runtimeRole)
+        .update();
+    DataSource runtimeDataSource =
+        new TenantScopedDataSource(
+            new DriverManagerDataSource(
+                postgresContainer.getJdbcUrl(), runtimeRole, runtimePassword),
+            ignored -> expectedSchema);
+
+    TenantContextHolder.withTenantOverride(
+        tenantId,
+        () -> {
+          try (Connection connection = runtimeDataSource.getConnection()) {
+            insertCustomer(connection, tenantId);
+            setCurrentTenant(connection, otherTenantId);
+            assertThat(countCustomers(connection)).isZero();
+            setCurrentTenant(connection, tenantId);
+            try {
+              insertCustomer(connection, otherTenantId);
+              throw new AssertionError("Mismatched tenant row was accepted");
+            } catch (java.sql.SQLException failure) {
+              assertThat(failure.getSQLState()).isEqualTo("42501");
+            }
+            assertThat(countCustomers(connection)).isEqualTo(1);
+          } catch (java.sql.SQLException failure) {
+            throw new IllegalStateException("Tenant RLS behavior check failed", failure);
+          }
+        });
+  }
+
   private static boolean hasRls(Connection connection, String schema, String table)
       throws java.sql.SQLException {
     try (var statement =
@@ -194,6 +256,33 @@ class TenantRestIntTest {
       statement.setObject(1, appointmentId);
       statement.setString(2, externalEventId.toString());
       statement.executeUpdate();
+    }
+  }
+
+  private static void insertCustomer(Connection connection, UUID tenantId)
+      throws java.sql.SQLException {
+    try (var statement =
+        connection.prepareStatement("INSERT INTO customer (tenant_id, name) VALUES (?, ?)")) {
+      statement.setObject(1, tenantId);
+      statement.setString(2, "RLS customer");
+      statement.executeUpdate();
+    }
+  }
+
+  private static void setCurrentTenant(Connection connection, UUID tenantId)
+      throws java.sql.SQLException {
+    try (var statement = connection.prepareStatement("SELECT set_config(?, ?, false)")) {
+      statement.setString(1, "app.current_tenant_id");
+      statement.setString(2, tenantId.toString());
+      statement.executeQuery();
+    }
+  }
+
+  private static int countCustomers(Connection connection) throws java.sql.SQLException {
+    try (var statement = connection.prepareStatement("SELECT COUNT(*) FROM customer");
+        var result = statement.executeQuery()) {
+      assertThat(result.next()).isTrue();
+      return result.getInt(1);
     }
   }
 

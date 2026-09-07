@@ -4199,3 +4199,24 @@ constraint remains covered by its dedicated concurrency gate.
 - [x] Run Appointments unit/integration tests, compilation, Checkstyle, and
       Spotless.
 - [ ] Continue the remaining aggregate persistence and RLS behavioral matrix.
+
+## Current slice 23B — Enforce tenant RLS for application roles — 2026-09-07
+
+Tenant schemas remain the primary isolation boundary: connections still select
+the tenant schema and set `app.current_tenant_id` at checkout. This slice adds
+forward-only migration `040-force-tenant-row-security.sql`, applying existing
+tenant policies to the table owner as well. `IF EXISTS` keeps the migration
+safe for tenant schemas whose optional historical tables are absent. A live
+non-superuser PostgreSQL test verifies both reads and writes reject a mismatched
+tenant context inside one routed schema.
+
+- [x] Add a failing migration contract for the forward RLS hardening migration.
+- [x] Add `040-force-tenant-row-security.sql` without editing deployed scripts.
+- [x] Include the migration in the Studio Liquibase changelog.
+- [x] Add live PostgreSQL read/write RLS isolation evidence using a dedicated
+      non-superuser runtime role.
+- [x] Run the focused migration contract and live tenancy test.
+- [x] Run the full Tenancy integration suite, database tests, affected
+      compilation, and Spotless checks.
+- [ ] Continue the remaining aggregate persistence, control-plane, deployment,
+      and final compatibility gates.

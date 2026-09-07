@@ -116,3 +116,6 @@ databaseChangeLog:
   - include:
       file: releases/0.1.0/039-ai-payment-workflow-status.sql
       relativeToChangelogFile: true
+  - include:
+      file: releases/0.1.0/040-force-tenant-row-security.sql
+      relativeToChangelogFile: true

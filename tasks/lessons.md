@@ -2420,3 +2420,15 @@
 - **Prevention rule:** Before narrowing an integration context, verify the
   module's source-set classpath; prefer existing test annotations and exported
   framework APIs over adding hidden configuration-class dependencies.
+
+## 2026-09-07 — Model void workflow ports with void test helpers
+
+- **Failure mode:** A live resume test tried to pass a `void` workflow-port
+  operation through a value-returning tenant/context helper and introduced
+  private checked-exception callback types.
+- **Detection signal:** Integration-test compilation reported incompatible type
+  inference for the lambda even though the adapter contract was correct, and
+  review identified duplicated test infrastructure in the integration test.
+- **Prevention rule:** Keep dedicated `void` context helpers for command-style
+  workflow ports, and place reusable context helpers in test-fixture libraries
+  while reusing existing functional callback types.

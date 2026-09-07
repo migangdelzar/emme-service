@@ -4557,3 +4557,21 @@ so unrelated feature adapters do not obscure the startup boundary.
 - [x] Run focused LangGraph integration tests and Assistant compilation.
 - [ ] Run the remaining Docker-backed LangGraph authorization/resume matrix at
       the phase gate.
+
+## Current slice 8N — Verify live quote resume authorization and tenant isolation — 2026-09-07
+
+The live quote workflow gate now exercises the real PostgreSQL checkpoint saver
+and compiled quote graph. A tenant-owned paused checkpoint cannot be resumed by
+the client principal, an authorized staff context resumes it to `QUOTE_READY`,
+and the same workflow identifier selected through another tenant schema has no
+accessible checkpoint. No workflow port, tenant predicate, or migration was
+changed.
+
+- [x] Create a real paused quote checkpoint in a provisioned tenant schema.
+- [x] Reject direct non-staff quote resume before graph mutation.
+- [x] Resume the quote graph through an authorized staff context.
+- [x] Verify the terminal `QUOTE_READY` state in PostgreSQL.
+- [x] Verify another tenant cannot resume the workflow checkpoint.
+- [x] Run the focused live test and Assistant integration-test compilation.
+- [ ] Continue the remaining database, event-recovery, deployment, and
+      compatibility framework gates.

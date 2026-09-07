@@ -6,6 +6,7 @@ group = "com.emme"
 
 dependencies {
 implementation(platform(project(":platform")))
+  testFixturesImplementation(project(":libraries:kernel"))
   testFixturesImplementation(platform(project(":platform")))
   testFixturesImplementation(libs.spring.boot.starter.test)
   testFixturesImplementation(libs.spring.boot.starter.web)

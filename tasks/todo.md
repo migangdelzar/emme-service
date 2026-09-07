@@ -5936,3 +5936,21 @@ Completed in this slice:
 - The broader full application context remains intentionally outside this
   focused composition test because unrelated feature adapters require separate
   provider fixtures.
+
+## Current slice — Task 8 live quote resume authorization and tenant isolation — 2026-09-07
+
+- [x] Persist a paused quote graph checkpoint through the real JDBC saver.
+- [x] Reject non-staff resume before graph mutation.
+- [x] Resume to `QUOTE_READY` with an authorized staff context.
+- [x] Reject the same workflow ID through another tenant schema.
+- [x] Run the focused live test, Assistant compilation, unit checks, and
+      Spotless.
+- [ ] Continue remaining database, event-recovery, deployment, and
+      compatibility framework gates.
+
+### Results
+
+- The live quote workflow resume test passes with the isolated `colima-emme`
+  Docker profile.
+- Staff authorization is verified at the direct LangGraph adapter boundary,
+  while schema-per-tenant routing prevents cross-tenant checkpoint access.

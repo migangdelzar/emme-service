@@ -2312,3 +2312,15 @@
 - **Prevention rule:** Custom integration fixtures must declare direct
   dependencies on every owning aggregate module whose repository ports or
   domain records they use; do not rely on unrelated production transitives.
+
+## 2026-09-07 — Default-context idempotency tests can give false tenant confidence
+
+- **Failure mode:** A webhook claim test passed with random tenant IDs but no
+  provisioned schemas or tenant context, so it did not verify schema routing.
+- **Detection signal:** The fixture called the repository directly from the
+  default context instead of using the same tenant provisioning and routing
+  pattern as production.
+- **Prevention rule:** Any tenant-isolation or idempotency integration test must
+  provision real tenant schemas and wrap every repository operation in the
+  routed tenant context; explicit tenant columns alone are not sufficient
+  evidence.

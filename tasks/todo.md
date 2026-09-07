@@ -5590,3 +5590,20 @@ Completed in this slice:
   `colima-emme` Docker profile.
 - Provider-neutral workflow correlation lookups remain schema-local while
   callback provider references remain explicit persistence keys.
+
+## Current slice — Task 18 Payment webhook claim isolation — 2026-09-07
+
+- [x] Provision tenant A and tenant B schemas for webhook claim testing.
+- [x] Verify duplicate claims are rejected within the same tenant schema.
+- [x] Verify the same provider/event tuple is independently claimable in the
+      second tenant schema.
+- [x] Run Payment integration tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue remaining aggregate persistence, control-plane, deployment, and
+      compatibility evidence.
+
+### Results
+
+- The live Payment webhook claim test passes with PostgreSQL and the isolated
+  `colima-emme` Docker profile.
+- The test now exercises actual schema routing; no production or migration
+  change was necessary.

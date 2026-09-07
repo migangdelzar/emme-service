@@ -94,12 +94,22 @@ class PaymentIntegrationTest {
   @Test
   @DisplayName("PostgreSQL claim is tenant-scoped and replay-safe")
   void webhookClaimIsTenantScopedAndReplaySafe() {
-    UUID tenantId = UUID.randomUUID();
-    UUID otherTenantId = UUID.randomUUID();
+    UUID tenantId = provisionTenant("payment-webhook-a");
+    UUID otherTenantId = provisionTenant("payment-webhook-b");
 
-    assertThat(webhookEvents.claim(tenantId, "stripe", "evt-integration-1")).isTrue();
-    assertThat(webhookEvents.claim(tenantId, "stripe", "evt-integration-1")).isFalse();
-    assertThat(webhookEvents.claim(otherTenantId, "stripe", "evt-integration-1")).isTrue();
+    assertThat(
+            TenantContextHolder.withTenantOverride(
+                tenantId, () -> webhookEvents.claim(tenantId, "stripe", "evt-integration-1")))
+        .isTrue();
+    assertThat(
+            TenantContextHolder.withTenantOverride(
+                tenantId, () -> webhookEvents.claim(tenantId, "stripe", "evt-integration-1")))
+        .isFalse();
+    assertThat(
+            TenantContextHolder.withTenantOverride(
+                otherTenantId,
+                () -> webhookEvents.claim(otherTenantId, "stripe", "evt-integration-1")))
+        .isTrue();
   }
 
   @Test

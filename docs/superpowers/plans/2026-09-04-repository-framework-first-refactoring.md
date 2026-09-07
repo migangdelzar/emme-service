@@ -4287,3 +4287,21 @@ workflow lookups never cross the selected schema.
 - [x] Run the focused live test, full Payment checks, and Spotless.
 - [ ] Continue the remaining aggregate persistence, control-plane, deployment,
       and final compatibility gates.
+
+## Current slice 18AP — Verify live Payment webhook claim isolation — 2026-09-07
+
+The Payment webhook idempotency integration gate now provisions two real tenant
+schemas and executes claims inside each routed tenant context. The same
+provider/event tuple is rejected on retry within one schema but can be claimed
+independently in the other schema, verifying the existing atomic uniqueness
+boundary without changing the webhook port or migration.
+
+- [x] Replace the default-context webhook claim fixture with provisioned tenant
+      schemas.
+- [x] Verify same-tenant duplicate delivery returns `false`.
+- [x] Verify the identical provider/event tuple is claimable in another tenant
+      schema.
+- [x] Run the focused live test, full Payment checks, integration tests,
+      Checkstyle, and Spotless.
+- [ ] Continue the remaining aggregate persistence, control-plane, deployment,
+      and final compatibility gates.

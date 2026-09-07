@@ -6082,10 +6082,12 @@ Completed in this slice:
 - [x] Add a unit regression for `RedisSystemException` transport failures.
 - [x] Make Redis limiter outages fail closed for connection resets.
 - [x] Run focused Identity unit and live Redis restart tests.
-- [ ] Rerun the aggregate non-Kafka integration gate.
+- [x] Rerun the aggregate non-Kafka integration gate.
 
 ### Results
 
 - The limiter now catches Redis-specific system failures in addition to
   connection-failure and timeout exceptions.
 - Focused unit and live outage/recovery verification pass.
+- Aggregate `integrationTest` passes with Docker; Hikari/PostgreSQL teardown
+  warnings occur only while isolated test containers stop.

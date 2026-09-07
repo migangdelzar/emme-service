@@ -4733,10 +4733,13 @@ failure as unavailable and returns the existing fail-closed result.
 - [x] Extend fail-closed handling to `RedisSystemException`.
 - [x] Run the focused Identity unit suite.
 - [x] Run the live Redis outage/restart test.
-- [ ] Rerun the aggregate non-Kafka integration gate.
+- [x] Rerun the aggregate non-Kafka integration gate.
 
 ### Results
 
 - Focused `RedisLoginAttemptRateLimiterTest` passes.
 - Live `RedisLoginAttemptRateLimiterLiveTest` passes against the Colima Redis
   container, including outage and recovery.
+- Aggregate `integrationTest` passes with the Colima Docker profile; the
+  recurring Hikari/PostgreSQL messages are shutdown-time container teardown
+  warnings after successful module tasks.

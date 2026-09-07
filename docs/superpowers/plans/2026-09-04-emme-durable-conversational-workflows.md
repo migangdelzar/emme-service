@@ -544,14 +544,26 @@ The proactive semantic tool boundary now accepts only a prepared
 `SemanticQuery`. ChatService prepares the query once when semantic shortcuts
 are configured and passes that same value to the tool route. The deprecated
 raw-string route and its embedding-owning constructor were removed after
-focused API, routing, and ChatService tests were migrated. The semantic-cache
-raw-string overloads remain as a separate compatibility family until their
-callers are migrated.
+focused API, routing, and ChatService tests were migrated. The remaining
+semantic-cache identity fallback was removed in the follow-up compatibility
+slice after its test callers were migrated.
 
 - [x] Add a failing API-boundary test for the prepared-only proactive route.
 - [x] Remove the deprecated raw-string route and legacy constructor.
 - [x] Migrate ChatService and proactive-route tests to the shared query.
 - [x] Remove the remaining semantic-cache raw-string compatibility family.
+
+#### Follow-up compatibility slice — explicit response-cache identity — 2026-09-07
+
+`SemanticResponseCache` now exposes only the four-argument write contract, so
+every cache write carries the identity of the response producer and its
+knowledge, policy, and source dependencies. The old three-argument write and
+its ambient-context fallback were removed after the Assistant fixtures were
+migrated.
+
+- [x] Add a failing reflection contract for explicit producing identity.
+- [x] Delete the three-argument response-cache write.
+- [x] Migrate unit callers and verify Assistant compilation and tests.
 
 **Files:**
 

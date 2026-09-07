@@ -132,7 +132,9 @@ class SemanticChatCacheTest {
             "chat-v1",
             java.time.Duration.ofMinutes(5));
 
-    assertThat(semanticCache.store("", INFORMATIONAL_QUERY, "We are open from 9 to 6."))
+    assertThat(
+            semanticCache.store(
+                "", INFORMATIONAL_QUERY, "We are open from 9 to 6.", CACHE_IDENTITY))
         .contains(cacheId);
 
     var write = org.mockito.ArgumentCaptor.forClass(SemanticCachePort.Put.class);
@@ -163,7 +165,7 @@ class SemanticChatCacheTest {
             new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration(
                 "custom-embedding", "embedding-v1", 2));
 
-    semanticCache.store("", INFORMATIONAL_QUERY, "We are open.");
+    semanticCache.store("", INFORMATIONAL_QUERY, "We are open.", CACHE_IDENTITY);
     SemanticChatCache otherModelCache =
         cache(
             embeddings,
@@ -177,7 +179,7 @@ class SemanticChatCacheTest {
             mock(com.emme.assistant.ai.application.port.out.SemanticMetrics.class),
             new com.emme.ai.contracts.semantic.EmbeddingModelConfiguration(
                 "other-embedding", "embedding-v1", 2));
-    otherModelCache.store("", INFORMATIONAL_QUERY, "We are open.");
+    otherModelCache.store("", INFORMATIONAL_QUERY, "We are open.", CACHE_IDENTITY);
 
     var write = org.mockito.ArgumentCaptor.forClass(SemanticCachePort.Put.class);
     verify(cache, org.mockito.Mockito.times(2)).put(write.capture());
@@ -211,7 +213,7 @@ class SemanticChatCacheTest {
                 "custom-embedding", "embedding-v1", 2),
             identity);
 
-    semanticCache.store("", INFORMATIONAL_QUERY, "We are open.");
+    semanticCache.store("", INFORMATIONAL_QUERY, "We are open.", identity);
 
     var write = org.mockito.ArgumentCaptor.forClass(SemanticCachePort.Put.class);
     verify(cache).put(write.capture());
@@ -299,12 +301,13 @@ class SemanticChatCacheTest {
             "chat-v1",
             java.time.Duration.ofMinutes(5));
 
-    semanticCache.store("", INFORMATIONAL_QUERY, "We are open.");
+    semanticCache.store("", INFORMATIONAL_QUERY, "We are open.", CACHE_IDENTITY);
     semanticCache.store(
         "",
         new SemanticQuery(
             "What are your hours?", testEmbedding("embedding-v2", List.of(1.0f, 0.0f, 0.0f))),
-        "We are open.");
+        "We are open.",
+        CACHE_IDENTITY);
 
     var writes = org.mockito.ArgumentCaptor.forClass(SemanticCachePort.Put.class);
     verify(cache, org.mockito.Mockito.times(2)).put(writes.capture());
@@ -392,7 +395,8 @@ class SemanticChatCacheTest {
             java.time.Duration.ofMinutes(5),
             Optional.of(hotStore));
 
-    assertThat(semanticCache.store("", INFORMATIONAL_QUERY, "We are open.")).contains(cacheId);
+    assertThat(semanticCache.store("", INFORMATIONAL_QUERY, "We are open.", CACHE_IDENTITY))
+        .contains(cacheId);
 
     org.mockito.Mockito.verify(hotStore).put(org.mockito.Mockito.eq(cacheId), any());
   }
@@ -412,7 +416,9 @@ class SemanticChatCacheTest {
             "chat-v1",
             java.time.Duration.ofMinutes(5));
 
-    assertThat(semanticCache.store("", INFORMATIONAL_QUERY, "Pay with card 4111 1111 1111 1111"))
+    assertThat(
+            semanticCache.store(
+                "", INFORMATIONAL_QUERY, "Pay with card 4111 1111 1111 1111", CACHE_IDENTITY))
         .isEmpty();
 
     verifyNoInteractions(embeddings, durableCache, codec);

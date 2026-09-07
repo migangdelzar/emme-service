@@ -9,16 +9,12 @@ public interface SemanticResponseCache {
 
   Optional<String> lookup(String conversationContext, SemanticQuery query);
 
-  Optional<java.util.UUID> store(String conversationContext, SemanticQuery query, String response);
-
   /** Stores a response with the provider identity that actually produced it. */
-  default Optional<java.util.UUID> store(
+  Optional<java.util.UUID> store(
       String conversationContext,
       SemanticQuery query,
       String response,
-      SemanticCacheIdentity producingIdentity) {
-    return store(conversationContext, query, response);
-  }
+      SemanticCacheIdentity producingIdentity);
 
   /** Invalidates the current authenticated principal's informational cache entries. */
   void invalidate();

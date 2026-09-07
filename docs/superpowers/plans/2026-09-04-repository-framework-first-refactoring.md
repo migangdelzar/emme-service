@@ -854,6 +854,22 @@ PostgreSQL behavior remain Docker-gated.
       and Spotless.
 - [x] Run live semantic-cache/vector behavior and PostgreSQL gates with Docker.
 
+#### Current slice 6R — Remove the semantic-response-cache identity fallback — 2026-09-07
+
+The response-cache port now requires the producing `SemanticCacheIdentity` on
+every write. The previous three-argument write delegated to ambient context,
+which allowed callers to omit response, knowledge, policy, and source identity.
+Production ChatService already supplied the explicit identity; remaining unit
+fixtures were migrated before the compatibility method was deleted.
+
+- [x] Add a failing API contract test for three-argument cache writes.
+- [x] Remove the implicit-identity `SemanticResponseCache.store` overload.
+- [x] Migrate all Assistant cache fixtures to explicit identities.
+- [x] Run focused semantic-cache and contract tests, Assistant check,
+      integration-test compilation, Checkstyle, and Spotless.
+- [ ] Run live Redis/vector semantic-cache behavior gates at the next Docker
+      phase checkpoint.
+
 #### Current slice 6Q — Use structured semantic-cache invalidation
 
 Semantic-cache invalidation now accepts only the existing structured

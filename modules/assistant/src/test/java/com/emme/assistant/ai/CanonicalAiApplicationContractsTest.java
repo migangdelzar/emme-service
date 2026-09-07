@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.WorkflowRequest;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
+import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
 import com.emme.assistant.ai.application.tool.AiToolGateway;
@@ -63,6 +64,14 @@ class CanonicalAiApplicationContractsTest {
         .doesNotContain("invalidate(String cacheKind)");
     assertThat(Files.readString(sourceOf(SemanticCachePort.class)))
         .doesNotContain("invalidate(CACHE_KIND)");
+  }
+
+  @Test
+  void semanticResponseCacheWritesRequireExplicitProducingIdentity() {
+    assertThat(
+            Arrays.stream(SemanticResponseCache.class.getDeclaredMethods())
+                .filter(method -> method.getName().equals("store")))
+        .allMatch(method -> method.getParameterCount() == 4);
   }
 
   @Test

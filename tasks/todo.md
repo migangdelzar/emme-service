@@ -479,6 +479,23 @@
 - [ ] Run Redis/vector and PostgreSQL semantic-cache runtime gates when Docker
       is available.
 
+## Current slice — Task 6R explicit semantic-response-cache identity — 2026-09-07
+
+- [x] Add a failing contract test proving cache writes require four arguments.
+- [x] Remove the three-argument response-cache write that derived identity
+      from ambient context.
+- [x] Migrate all Assistant semantic-cache fixtures to explicit identities.
+- [x] Run focused semantic-cache tests, Assistant check, integration-source
+      compilation, Checkstyle, and Spotless.
+- [ ] Run live Redis/vector semantic-cache behavior at the next Docker phase
+      checkpoint.
+
+### Results
+
+- `SemanticResponseCache` has no implicit identity fallback remaining.
+- Production `ChatService` was already on the explicit identity path; only
+  test fixtures required migration.
+
 ## Current slice — Task 8I Modulith workflow API boundary — 2026-09-06
 
 - [x] Add the failing appointment public hold-query and owner-side composition

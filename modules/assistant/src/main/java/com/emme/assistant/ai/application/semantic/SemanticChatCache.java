@@ -123,11 +123,6 @@ public final class SemanticChatCache implements SemanticResponseCache {
   }
 
   @Override
-  public Optional<UUID> store(String conversationContext, SemanticQuery query, String response) {
-    return store(conversationContext, query, response, identityForCurrentContext());
-  }
-
-  @Override
   public Optional<UUID> store(
       String conversationContext,
       SemanticQuery query,

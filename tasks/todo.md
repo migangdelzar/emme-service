@@ -5118,6 +5118,24 @@ Completed in this slice:
   and one optimistic-lock failure.
 - No production persistence or application contract change was required.
 
+## Current slice — Task 16G live Salon optimistic locking — 2026-09-06
+
+- [x] Add a focused two-transaction optimistic-lock integration test.
+- [x] Coordinate both writers after loading the same persisted version.
+- [x] Verify exactly one successful update and one
+      `OptimisticLockingFailureException`.
+- [x] Keep the version implementation in the persistence superclass and out of
+      the provider-neutral Salon contract.
+- [x] Run the focused live test and affected Salon checks.
+- [ ] Continue remaining aggregate optimistic-lock evidence and the persistence
+      audit before closing Task 16/18.
+
+### Results
+
+- The live PostgreSQL race passes with exactly one committed business-profile
+  update and one optimistic-lock failure.
+- No production persistence or application contract change was required.
+
 ## Current slice — Task 16F live Services optimistic locking — 2026-09-06
 
 - [x] Add a focused two-transaction optimistic-lock integration test.

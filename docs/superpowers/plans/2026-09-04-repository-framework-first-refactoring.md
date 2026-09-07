@@ -4643,6 +4643,20 @@ vector/index and atomic limiter operations.
 - [x] Run the focused Assistant and Identity Docker-backed Redis checkpoint.
 - [ ] Continue event-delivery, deployment, and final compatibility gates.
 
+## Current slice 19R — Verify the deferred Kafka delivery boundary — 2026-09-07
+
+The explicitly opted-in Kafka Testcontainers gate passes for the test-local
+externalized event. The record reaches its stable topic with the tenant ID as
+the partition key and the expected payload marker. Production business facts
+remain Spring Modulith-internal and Kafka remains deferred unless an external
+delivery boundary is intentionally enabled.
+
+- [x] Start the Kafka Testcontainer through the explicit deferred-test profile.
+- [x] Publish the test-local externalized event through Modulith externalization.
+- [x] Verify stable topic, tenant partition key, and payload delivery.
+- [x] Keep production Kafka activation deferred.
+- [ ] Continue deployment, CI, and final compatibility gates.
+
 ## Current slice 6Q — Verify AI compatibility cleanup closure — 2026-09-07
 
 The repository-wide production inventory contains none of the retired AI

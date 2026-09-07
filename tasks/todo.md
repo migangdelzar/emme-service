@@ -6015,6 +6015,19 @@ Completed in this slice:
   `colima-emme` Docker profile; PostgreSQL remains authoritative for durable
   state.
 
+## Current slice — Task 19 deferred Kafka delivery checkpoint — 2026-09-07
+
+- [x] Run the explicit opt-in Kafka Testcontainers test.
+- [x] Verify the stable test topic and tenant partition key.
+- [x] Verify the expected externalized payload marker.
+- [x] Keep production business events Modulith-internal and Kafka deferred.
+- [ ] Continue deployment, CI, and final compatibility gates.
+
+### Results
+
+- `KafkaEventStreamingIntegrationTest` passes with
+  `-Pemme.kafka-deferred=true` and the isolated `colima-emme` Docker profile.
+
 ## Current slice — Phase G live aggregate persistence checkpoint — 2026-09-07
 
 - [x] Run live Clients, Services, and Salon persistence suites.

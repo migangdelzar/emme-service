@@ -1692,18 +1692,21 @@ context startup does not perform network calls.
 - [x] Make custom core/bootstrap datasource composition consume service
       connection details.
 - [x] Align tenant resolver activation with the datasource composition phase.
-- [x] Run the PostgreSQL-backed tenant context startup gate with the isolated
-      `colima-emme` Docker profile.
+- [x] Run the PostgreSQL-backed tenant context startup and tenant-schema
+      migration/routing gate with the isolated `colima-emme` Docker profile.
 - [x] Run affected library and Tenancy checks, including Spotless and
       Checkstyle.
-- [ ] Add the remaining live duplicate/failure, Liquibase migration, and
-      dedicated tenant schema-routing assertions to the PostgreSQL gate.
+- [ ] Add the remaining live duplicate/failure behavior assertions to the
+      PostgreSQL gate.
 
-The focused startup gate passes. It emits shutdown-hook warnings after test
-completion because Testcontainers closes the PostgreSQL backend before Spring's
-JPA/Modulith shutdown callback runs; this is a test-runtime lifecycle ordering
-limitation and does not fail the gate. The remaining live migration and
-schema-routing evidence stays open for a follow-up slice.
+The focused startup and migration/routing gate passes. The test uses the
+pgvector PostgreSQL 16 fixture because the Studio changelog creates vector
+columns; AGE remains optional and guarded by its migration. The adapter sets
+the validated tenant schema, `emme_core`, and `public` on its managed
+connection, and configures Liquibase's parsed dollar-quoted PostgreSQL changes
+without modifying deployed migration files. The test emits no failing
+application assertions; remaining duplicate/failure behavior stays open for a
+follow-up slice.
 
 ## 8. Phase F — External provider clients
 

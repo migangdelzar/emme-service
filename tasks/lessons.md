@@ -15,6 +15,21 @@
   registered PostgreSQL container. Do not make a custom resolver depend on a
   later-produced client bean through an early condition.
 
+## 2026-09-06 — Validate full Liquibase tenant migrations with required extensions
+
+- **Failure mode:** A live tenant migration test initially used plain
+  PostgreSQL and then failed on vector columns; after switching to pgvector it
+  exposed dollar-quoted PostgreSQL blocks being split by the current Liquibase
+  parser.
+- **Detection signal:** PostgreSQL reported `type "vector" does not exist`,
+  followed by Liquibase reporting an unterminated `DO $$` block.
+- **Prevention rule:** Run tenant-schema migrations against the same extension
+  capability required by the checked-in changelog, set the validated tenant plus
+  core schemas on the migration connection, and configure parsed
+  dollar-quoted changes at the adapter boundary without rewriting deployed
+  migration files. Keep migration contract tests and a real Testcontainers
+  migration gate together.
+
 ## 2026-09-06 — Keep domain enums out of public API records
 
 - **Failure mode:** Lifecycle enum migrations reused domain-package enums in

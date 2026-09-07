@@ -18,7 +18,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @Profile("integration-test")
 public class PostgresContainerConfiguration {
 
-  private static final String IMAGE = "postgres:16-alpine";
+  private static final String IMAGE = "pgvector/pgvector:pg16";
   private static final String DATABASE = "emme_test";
   private static final String USERNAME = "emme";
   private static final String PASSWORD = "emme";

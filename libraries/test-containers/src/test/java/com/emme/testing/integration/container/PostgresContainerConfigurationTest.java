@@ -16,6 +16,7 @@ class PostgresContainerConfigurationTest {
   void createsNonReusableContainersForIsolatedIntegrationRuns() {
     PostgreSQLContainer<?> container = new PostgresContainerConfiguration().postgresContainer();
 
+    assertThat(container.getImage().toString()).contains("imageName=pgvector/pgvector:pg16");
     assertThat(container.isShouldBeReused()).isFalse();
   }
 

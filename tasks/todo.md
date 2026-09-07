@@ -4861,13 +4861,15 @@ Completed in this slice:
       `colima-emme`.
 - [x] Run `:libraries:test-containers:check`, `:libraries:testing:check`, and
       `:modules:tenancy:check`.
-- [ ] Run remaining live Liquibase, duplicate/failure, and tenant schema
-      routing checks in subsequent Task 13 slices.
+- [x] Run the full Studio Liquibase tenant migration and verify tenant schema
+      routing through the tenant-scoped datasource.
+- [ ] Run remaining live duplicate/failure behavior checks in subsequent Task
+      13 slices.
 
 ### Results
 
-- `TenantRestIntTest` passes against PostgreSQL 16 under
-  `DOCKER_HOST=unix:///Users/miguelangeldelgadillozarate/.colima/emme/docker.sock`.
+- `TenantRestIntTest` passes against PostgreSQL 16 with pgvector under
+      `DOCKER_HOST=unix:///Users/miguelangeldelgadillozarate/.colima/emme/docker.sock`.
 - Affected checks pass: 70 actionable tasks, including compilation, unit tests,
   Spotless, and Checkstyle.
 - The live test logs non-failing shutdown-hook I/O warnings because the

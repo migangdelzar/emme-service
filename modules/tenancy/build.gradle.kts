@@ -51,5 +51,8 @@ dependencies {
   // Integration tests: dep on own testFixtures + TestApplication
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
+  add("integrationTestImplementation", project(":database"))
+  add("integrationTestImplementation", project(":libraries:kernel"))
+  add("integrationTestImplementation", libs.spring.jdbc)
   add("integrationTestImplementation", libs.jackson.databind)
 }

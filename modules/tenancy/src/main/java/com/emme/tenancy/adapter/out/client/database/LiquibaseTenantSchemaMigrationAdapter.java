@@ -5,6 +5,8 @@ import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
 import java.sql.Statement;
 import java.util.UUID;
 import liquibase.Liquibase;
+import liquibase.change.AbstractSQLChange;
+import liquibase.changelog.ChangeSet;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
@@ -31,6 +33,8 @@ public final class LiquibaseTenantSchemaMigrationAdapter implements TenantSchema
           connection -> {
             try (Statement statement = connection.createStatement()) {
               statement.execute("CREATE SCHEMA IF NOT EXISTS \"" + schemaName + "\"");
+              statement.execute(
+                  "SET search_path TO \"%s\", emme_core, public".formatted(schemaName));
             }
 
             Database database =
@@ -43,12 +47,24 @@ public final class LiquibaseTenantSchemaMigrationAdapter implements TenantSchema
                     STUDIO_CHANGELOG,
                     new ClassLoaderResourceAccessor(Thread.currentThread().getContextClassLoader()),
                     database)) {
+              enablePostgresDollarQuotedChanges(liquibase.getDatabaseChangeLog());
               liquibase.update("dev");
             }
           });
       return schemaName;
     } catch (RuntimeException exception) {
       throw new IllegalStateException("Failed to migrate tenant schema: " + schemaName, exception);
+    }
+  }
+
+  private static void enablePostgresDollarQuotedChanges(
+      liquibase.changelog.DatabaseChangeLog changeLog) {
+    for (ChangeSet changeSet : changeLog.getChangeSets()) {
+      changeSet.getChanges().stream()
+          .filter(AbstractSQLChange.class::isInstance)
+          .map(AbstractSQLChange.class::cast)
+          .filter(change -> change.getSql() != null && change.getSql().contains("DO $$"))
+          .forEach(change -> change.setSplitStatements(false));
     }
   }
 }

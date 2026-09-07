@@ -822,9 +822,9 @@ and normal responses before returning them. Grounded RAG and controller/channel
 delivery boundaries remain outstanding. `RagQueryService` now projects the
 bounded retrieval decision and actual source IDs into `GroundingGuard` and
 returns the deterministic no-answer response for rejected grounding. The
-compatibility constructor path remains single-autowired, blank mock messages
-retain their established graceful behavior, and the standalone Spring chat
-root tolerates absent optional guardrail advisors.
+The Spring chat root remains single-autowired, blank mock messages retain their
+established graceful behavior, and the standalone Spring chat root tolerates
+absent optional guardrail advisors.
 The WhatsApp application boundary now checks `DeliveryGuard` before recording
 and sending a reply, using the channel's 4,096-character text limit.
 The web controller now checks the same typed delivery boundary inside the

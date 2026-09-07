@@ -4777,7 +4777,8 @@ appointment mutation tools are registered.
 - [x] Run the focused registry test and confirm the Assistant production package
       metadata convention remains satisfied.
 - [x] Require the conversation graph to receive exactly one registered policy
-      for every graph node, while preserving the test-only constructor path.
+      for every graph node; direct-call compatibility construction was removed
+      after all callers migrated to the profile-aware request.
 - [x] Enforce the node interruption policy before an approval or confirmation
       pause is returned to LangGraph.
 - [x] Add provider-neutral allow-list projections for node tool keys and memory

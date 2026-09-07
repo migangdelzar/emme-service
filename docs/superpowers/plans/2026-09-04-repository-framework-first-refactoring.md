@@ -2551,6 +2551,22 @@ later approved external-consumer boundary.
 - [x] Run the focused platform event test, compilation, and Spotless.
 - [ ] Remove active Kafka provider configuration in the next sequential slice.
 
+#### Current slice 19O — Defer active Kafka provider configuration
+
+Base, production, and ordinary test profiles no longer bind Kafka provider
+properties or enable event externalization. The application-only Kafka
+properties record and obsolete test were removed, while the reusable messaging
+capability and explicit Kafka test profile remain available for a future
+approved external-consumer boundary. The default integration task excludes
+Kafka streaming verification unless explicitly opted in.
+
+- [x] Add and run the failing active-profile Kafka safety contract.
+- [x] Remove active Kafka and event-externalization profile settings.
+- [x] Remove unused application-only Kafka property code and CI selector.
+- [x] Add the explicit deferred-test Gradle property/exclusion.
+- [x] Run focused platform tests, compilation, and Spotless.
+- [ ] Convert Kafka streaming verification to a test-local externalized event.
+
 #### Current slice 19D — Give durable Modulith listeners stable identities
 
 Provisioning and calendar listeners now declare explicit Modulith listener IDs,

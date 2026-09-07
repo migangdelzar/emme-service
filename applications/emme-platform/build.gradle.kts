@@ -108,6 +108,15 @@ sourceSets.named("integrationTest") {
   runtimeClasspath += sourceSets.main.get().output
 }
 
+val kafkaDeferred =
+  providers.gradleProperty("emme.kafka-deferred").map(String::toBoolean).orElse(false)
+
+tasks.named<Test>("integrationTest") {
+  if (!kafkaDeferred.get()) {
+    exclude("**/KafkaEventStreamingIntegrationTest.class")
+  }
+}
+
 tasks.register<Test>("e2eTest") {
   description = "Runs black-box E2E flow tests against deployed environment"
   group = "verification"

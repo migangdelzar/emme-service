@@ -162,7 +162,6 @@ jobs:
           --tests com.emme.SchemaOwnershipTest
           --tests com.emme.EventContractArchitectureTest
           --tests com.emme.EventContractTest
-          --tests com.emme.KafkaEventStreamingPropertiesTest
           --tests com.emme.ApiVersionConventionTest
           --no-daemon --no-configuration-cache --stacktrace
 

@@ -12,6 +12,15 @@ Kafka-named contract test is now `EventContractTest`. The focused contract test,
 platform compilation, and Spotless checks pass. Active Kafka profile and
 provider configuration removal remains the next slice.
 
+## Current verification — active Kafka provider configuration removal (2026-09-07)
+
+The base, production, and ordinary test application profiles no longer bind
+Kafka provider settings or enable event externalization. The application-only
+Kafka properties record and its obsolete unit test were removed, and the
+default integration task excludes the deferred Kafka streaming test. Focused
+profile/event tests, application compilation, and Spotless pass. The explicit
+Kafka profile and opt-in integration path remain for Task 3.
+
 ## Current verification — payment workflow duplicate delivery (2026-09-07)
 
 The live Assistant integration gate now races two identical payment workflow
@@ -190,7 +199,7 @@ git commit -m "refactor(events): classify initial facts as Modulith-only"
 - Consumes: Task 1’s internal event classification and existing Modulith JDBC configuration.
 - Produces: application profiles that do not bind Kafka provider properties or require broker credentials.
 
-- [ ] **Step 1: Add a failing profile-safety test**
+- [x] **Step 1: Add a failing profile-safety test**
 
 Extend `PlatformApplicationParityTest` with a source-level contract that reads the base, production, and test profiles and asserts that active profiles do not contain Kafka provider configuration:
 
@@ -213,7 +222,7 @@ void mvpProfilesDoNotActivateKafkaProvider() throws IOException {
 }
 ```
 
-- [ ] **Step 2: Run the profile-safety test to verify it fails**
+- [x] **Step 2: Run the profile-safety test to verify it fails**
 
 Run:
 
@@ -223,7 +232,7 @@ Run:
 
 Expected: FAIL because `application.yml` and `application-production.yml` currently define Kafka provider settings and production defaults Kafka to enabled.
 
-- [ ] **Step 3: Remove active Kafka profile settings**
+- [x] **Step 3: Remove active Kafka profile settings**
 
 Remove the `spring.kafka` and `app.messaging.kafka` blocks from `application.yml` and `application-production.yml`. Remove the disabled externalization block from `application-test.yml`; retain its Modulith JDBC test schema settings. Keep the explicit `application-kafka-test.yml` profile for the deferred test path.
 
@@ -242,11 +251,11 @@ tasks.named<Test>("integrationTest") {
 
 This keeps the reusable capability dormant without making Kafka a normal runtime provider.
 
-- [ ] **Step 4: Remove unused application-only Kafka property code**
+- [x] **Step 4: Remove unused application-only Kafka property code**
 
 Delete `KafkaEventStreamingProperties.java` and `KafkaEventStreamingPropertiesTest.java`. Kafka provider validation is no longer part of the active application configuration; future activation will reintroduce it with an external-consumer contract and environment-specific validation.
 
-- [ ] **Step 5: Run focused tests and compile**
+- [x] **Step 5: Run focused tests and compile**
 
 Run:
 
@@ -261,7 +270,7 @@ Run:
 
 Expected: PASS with zero failures and no application profile requiring Kafka.
 
-- [ ] **Step 6: Commit the provider-configuration change**
+- [x] **Step 6: Commit the provider-configuration change**
 
 ```bash
 git add applications/emme-platform/build.gradle.kts \

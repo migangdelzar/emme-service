@@ -102,6 +102,23 @@ class PlatformApplicationParityTest {
   }
 
   @Test
+  void mvpProfilesDoNotActivateKafkaProvider() throws IOException {
+    List<String> profiles =
+        List.of(
+            "applications/emme-platform/src/main/resources/application.yml",
+            "applications/emme-platform/src/main/resources/application-production.yml",
+            "applications/emme-platform/src/main/resources/application-test.yml");
+
+    profiles.forEach(
+        profile ->
+            assertThat(readSource(profile))
+                .as("Kafka provider must remain deferred in %s", profile)
+                .doesNotContain("EMME_KAFKA_EVENTS_ENABLED:true")
+                .doesNotContain("app:\n  messaging:\n    kafka:")
+                .doesNotContain("spring:\n  kafka:"));
+  }
+
+  @Test
   void kafkaProfileUsesItsEmbeddedDatabaseForCoreDatasource() throws IOException {
     assertThat(
             readSource(

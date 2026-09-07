@@ -20,8 +20,6 @@ app:
     enabled: false
   modulith:
     events:
-      externalization:
-        enabled: false
       jdbc:
         schema-initialization:
           enabled: true

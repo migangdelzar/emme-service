@@ -20,6 +20,26 @@
 - The six current events are internal; live deferred Kafka verification remains
   intentionally separate and opt-in.
 
+## Current slice — Defer active Kafka provider configuration — 2026-09-07
+
+- [x] Add the failing profile-safety contract.
+- [x] Remove Kafka provider and event-externalization settings from active
+      application profiles.
+- [x] Delete the unused application Kafka properties record and test.
+- [x] Exclude the deferred Kafka integration test by default, with explicit
+      `-Pemme.kafka-deferred=true` opt-in.
+- [x] Run focused platform tests, compilation, and Spotless.
+- [x] Commit and push the slice.
+- [ ] Convert Kafka streaming verification to a test-local externalized event.
+
+### Results
+
+- `PlatformApplicationParityTest` and `EventContractTest` pass, as do platform
+  Java/test compilation and Spotless.
+- The default integration task excludes `KafkaEventStreamingIntegrationTest`;
+  invoking only that excluded test correctly reports no matching tests.
+- Kafka remains available only through the explicit deferred profile/capability.
+
 ## Current slice — Task 17 live appointment collision gate — 2026-09-06
 
 - [x] Start an isolated `colima-emme` Docker profile after the stale default

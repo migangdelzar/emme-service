@@ -4220,3 +4220,20 @@ tenant context inside one routed schema.
       compilation, and Spotless checks.
 - [ ] Continue the remaining aggregate persistence, control-plane, deployment,
       and final compatibility gates.
+
+## Current slice 18AM — Verify live appointment-hold tenant idempotency — 2026-09-07
+
+The durable appointment-hold JPA adapter now has live PostgreSQL evidence for
+its schema-local boundary. The same idempotency key is accepted independently
+in two tenant schemas, while each tenant can only retrieve its own hold. The
+hold's foreign-key fixture is created through the owning Appointment repository
+in each schema; no tenant predicate was added to ordinary schema-local methods.
+
+- [x] Add a live integration test for hold persistence and idempotency lookup.
+- [x] Verify the same idempotency key is isolated per tenant schema.
+- [x] Verify cross-tenant hold IDs and lookups are not visible through the
+      selected schema.
+- [x] Add the missing explicit AI-contracts integration-test dependency.
+- [x] Run the focused live test and affected Appointments checks.
+- [ ] Continue the remaining aggregate persistence, control-plane, deployment,
+      and final compatibility gates.

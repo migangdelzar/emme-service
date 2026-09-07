@@ -26,6 +26,7 @@ dependencies {
   add("integrationTestRuntimeOnly", project(":modules:ai-platform"))
   add("integrationTestImplementation", project(":modules:clients"))
   add("integrationTestImplementation", project(":modules:services"))
+  add("integrationTestImplementation", project(":libraries:ai-contracts"))
   add("integrationTestImplementation", project(":modules:shared"))
   add("integrationTestImplementation", project(":libraries:kernel"))
   add("integrationTestImplementation", project(":database"))

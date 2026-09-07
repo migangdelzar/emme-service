@@ -2278,3 +2278,25 @@
 - **Prevention rule:** Use the bootstrap role only for provisioning and grants;
   verify tenant RLS behavior through a dedicated `NOSUPERUSER` runtime role and
   assert PostgreSQL SQLSTATE `42501` for mismatched writes.
+
+## 2026-09-07 — Build custom integration fixtures from owning aggregates
+
+- **Failure mode:** An appointment-hold integration fixture used random
+  appointment IDs even though the deployed hold migration enforces a foreign
+  key to the tenant-local appointment table.
+- **Detection signal:** PostgreSQL rejected the hold insert with
+  `appointment_hold_appointment_id_fkey`.
+- **Prevention rule:** Create referenced records through their owning
+  provider-neutral repositories in the same tenant context before testing a
+  dependent persistence adapter.
+
+## 2026-09-07 — Declare direct contracts on custom integration source sets
+
+- **Failure mode:** The appointment integration source set used the shared
+  `AppointmentHold` contract through a production transitive dependency that
+  was not present on its own compile classpath.
+- **Detection signal:** Integration-test compilation reported that
+  `com.emme.ai.contracts.appointment.AppointmentHold` was unavailable.
+- **Prevention rule:** Declare every direct contract library used by a custom
+  integration source set explicitly, even when production code already depends
+  on that library transitively.

@@ -5359,6 +5359,27 @@ Completed in this slice:
 - No production adapter or application contract change was required; only the
   integration test classpath and runtime evidence were extended.
 
+## Current slice — Task 18AM appointment-hold tenant idempotency — 2026-09-07
+
+- [x] Verify appointment-hold persistence uses the selected tenant schema.
+- [x] Verify identical idempotency keys are independent across tenant schemas.
+- [x] Verify each tenant cannot retrieve the other tenant's hold by ID or key.
+- [x] Create each hold's referenced appointment through the owning Appointment
+      repository in the matching tenant schema.
+- [x] Add the direct AI-contracts dependency required by the custom integration
+      source set.
+- [x] Run the focused live test and continue the affected Appointments checks.
+- [ ] Continue remaining aggregate persistence, deployment, and compatibility
+      gates.
+
+### Results
+
+- Live PostgreSQL evidence passes for the appointment-hold JPA adapter.
+- The test demonstrates why `tenant_id` remains part of the tenant-schema
+  table: RLS and the `(tenant_id, idempotency_key)` uniqueness boundary remain
+  explicit defense-in-depth even when schema routing provides the primary
+  isolation boundary.
+
 ## Current slice — Task 23B tenant RLS enforcement gate — 2026-09-07
 
 - [x] Add a failing migration contract for application-role RLS enforcement.

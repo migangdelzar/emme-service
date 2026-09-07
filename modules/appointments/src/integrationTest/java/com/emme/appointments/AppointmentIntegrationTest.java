@@ -3,6 +3,8 @@ package com.emme.appointments;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.TestApplication;
+import com.emme.ai.contracts.appointment.AppointmentHold;
+import com.emme.appointments.application.port.out.AppointmentHoldRepository;
 import com.emme.appointments.application.port.out.AppointmentRepository;
 import com.emme.appointments.domain.model.Appointment;
 import com.emme.clients.application.port.out.CustomerRepository;
@@ -42,6 +44,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class AppointmentIntegrationTest {
 
   @Autowired private DataSource dataSource;
+  @Autowired private AppointmentHoldRepository appointmentHolds;
   @Autowired private AppointmentRepository appointments;
   @Autowired private CustomerRepository customers;
   @Autowired private ServiceRepository services;
@@ -86,6 +89,46 @@ class AppointmentIntegrationTest {
                 .get()
                 .extracting(Appointment::getTenantId)
                 .isEqualTo(tenantA));
+  }
+
+  @Test
+  @DisplayName("Appointment hold idempotency keys are scoped to the tenant schema")
+  void appointmentHoldIdempotencyIsScopedToTheTenantSchema() {
+    UUID tenantA = provisionTenant("appointment-hold-a");
+    UUID tenantB = provisionTenant("appointment-hold-b");
+    String idempotencyKey = "hold-retry-" + UUID.randomUUID();
+    Appointment appointmentA =
+        TenantContextHolder.withTenantOverride(tenantA, () -> createAppointment(tenantA));
+    Appointment appointmentB =
+        TenantContextHolder.withTenantOverride(tenantB, () -> createAppointment(tenantB));
+    AppointmentHold holdA =
+        new AppointmentHold(
+            UUID.randomUUID(),
+            appointmentA.getId(),
+            Instant.parse("2031-01-01T10:00:00Z"),
+            idempotencyKey);
+    AppointmentHold holdB =
+        new AppointmentHold(
+            UUID.randomUUID(),
+            appointmentB.getId(),
+            Instant.parse("2031-01-01T11:00:00Z"),
+            idempotencyKey);
+
+    TenantContextHolder.withTenantOverride(tenantA, () -> appointmentHolds.save(holdA));
+    TenantContextHolder.withTenantOverride(tenantB, () -> appointmentHolds.save(holdB));
+
+    TenantContextHolder.withTenantOverride(
+        tenantA,
+        () -> {
+          assertThat(appointmentHolds.findByIdempotencyKey(idempotencyKey)).contains(holdA);
+          assertThat(appointmentHolds.findById(holdB.holdId())).isEmpty();
+        });
+    TenantContextHolder.withTenantOverride(
+        tenantB,
+        () -> {
+          assertThat(appointmentHolds.findByIdempotencyKey(idempotencyKey)).contains(holdB);
+          assertThat(appointmentHolds.findById(holdA.holdId())).isEmpty();
+        });
   }
 
   @Test

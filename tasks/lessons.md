@@ -2233,3 +2233,16 @@
 - **Prevention rule:** Pair symbol searches with focused compilation after
   every compatibility deletion; compiler errors are the authoritative final
   caller inventory for Java overload removal.
+
+## 2026-09-06 — Custom integration source sets need explicit framework dependencies
+
+- **Failure mode:** A new Clients integration test compiled against the module
+  source set but could not resolve JPA, JdbcClient, kernel context, or tenant
+  migration resources.
+- **Detection signal:** Integration-test compilation reported missing
+  `JpaRepository`, `JdbcClient`, `TenantContextHolder`, and the runtime later
+  reported a missing Liquibase changelog.
+- **Prevention rule:** For custom integration source sets, declare the direct
+  framework, shared-kernel, and database-resource dependencies required by the
+  test; do not assume normal test dependencies or production transitives are
+  inherited.

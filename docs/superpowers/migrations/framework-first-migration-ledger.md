@@ -454,3 +454,17 @@ CatalogItem previously reconstructed a versioned `TenantOwnedEntity` with a
 domain-assigned ID for every save. The adapter now follows the same managed
 update boundary as the other mutable tenant aggregates. Catalog images are
 create/delete-only and were deliberately not expanded with unused update code.
+
+## Clients live tenant-routing evidence — 2026-09-06
+
+- [x] Add a focused PostgreSQL integration test for JPA customer visibility.
+- [x] Provision two tenant schemas through the tenancy-owned ports.
+- [x] Verify a customer written under tenant A is absent under tenant B and
+      visible again under tenant A.
+- [x] Keep the test classpath explicit for database resources, JPA, JdbcClient,
+      shared, kernel, and test fixtures.
+- [ ] Run the corresponding Services/Salon routing and optimistic-lock matrix.
+
+The live test confirms schema-per-tenant connection checkout for the Clients
+aggregate. It does not add ordinary `tenant_id` predicates or alter the
+provider-neutral application contract.

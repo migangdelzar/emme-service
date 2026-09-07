@@ -3880,3 +3880,19 @@ violation after the bounded deadlock retry.
 - [x] Verify the overlap race has exactly one successful writer.
 - [x] Verify the losing writer observes PostgreSQL exclusion SQLSTATE `23P01`.
 - [ ] Run the remaining tenant-routing and optimistic-lock aggregate matrix.
+
+## Current slice 16B — Verify live Clients tenant-schema JPA routing — 2026-09-06
+
+The Clients aggregate already uses a module-private Spring Data repository and
+framework-free mapping. This slice adds live PostgreSQL evidence that the JPA
+repository uses the tenant selected at connection checkout: a customer written
+under tenant A is absent from tenant B and available again under tenant A.
+
+- [x] Add a focused Clients integration test with two provisioned tenant schemas.
+- [x] Add only the integration-test dependencies required for the existing
+      TestApplication, tenant migration resources, JPA, and bootstrap JdbcClient.
+- [x] Verify tenant A/B visibility through the live PostgreSQL path.
+- [x] Run Clients unit tests, Java compilation, integration-test compilation,
+      focused integration test, and Spotless.
+- [ ] Continue Services and Salon live tenant-routing and optimistic-lock
+      evidence before closing Task 16.

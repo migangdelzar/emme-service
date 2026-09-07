@@ -5041,3 +5041,21 @@ Completed in this slice:
 - The full Assistant integration suite passes all 25 tests. It emits known
   non-failing shutdown I/O warnings when the PostgreSQL container closes before
   Spring's JPA/Modulith destruction callbacks.
+
+## Current slice — Task 16B live Clients tenant-schema JPA routing — 2026-09-06
+
+- [x] Add a focused Clients integration test with two provisioned tenant schemas.
+- [x] Add only the integration-test dependencies required for the existing
+      TestApplication, tenant migration resources, JPA, and bootstrap JdbcClient.
+- [x] Verify tenant A/B visibility through the live PostgreSQL path.
+- [x] Run Clients unit tests, Java compilation, integration-test compilation,
+      focused integration test, and Spotless.
+- [ ] Continue Services and Salon live tenant-routing and optimistic-lock
+      evidence before closing Task 16.
+
+### Results
+
+- The live PostgreSQL test passes: a customer persisted under tenant A is not
+  visible under tenant B and is visible again under tenant A.
+- Clients unit tests, compilation, integration-test compilation, and Spotless
+  pass.

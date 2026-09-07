@@ -3778,6 +3778,19 @@ composition support for Catalog's required capability.
 - [ ] Continue the remaining PostgreSQL aggregate and provider integration
       gates.
 
+## Current slice 21I — Catalog integration composition boundary — 2026-09-06
+
+Catalog's full-context PostgreSQL integration test now receives the canonical
+AI image capability on its custom integration-test runtime classpath. Its
+existing normal test runtime dependency remains unchanged, and no production
+Catalog/provider coupling was introduced.
+
+- [x] Add the AI platform to Catalog's `integrationTestRuntimeOnly`
+      configuration.
+- [x] Run the Catalog PostgreSQL integration context and connectivity tests.
+- [ ] Continue the remaining PostgreSQL aggregate and provider integration
+      gates.
+
 ## Current slice 19M — Kafka profile datasource boundary — 2026-09-06
 
 The Kafka integration profile now overrides the inherited namespaced core

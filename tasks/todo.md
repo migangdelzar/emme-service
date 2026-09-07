@@ -4954,6 +4954,18 @@ Completed in this slice:
 - The production Booking dependency graph remains free of an AI platform
   dependency; only its integration-test runtime uses the provider module.
 
+## Current slice — Task 21I Catalog integration composition boundary — 2026-09-06
+
+- [x] Add the AI platform to Catalog's `integrationTestRuntimeOnly` classpath.
+- [x] Run `:modules:catalog:integrationTest` against PostgreSQL 16.
+- [ ] Continue the remaining PostgreSQL aggregate and provider gates.
+
+### Results
+
+- Catalog integration tests pass (2/2).
+- The provider remains test-only composition support; Catalog production code
+  still depends only on the provider-neutral image contract.
+
 ## Current slice — Task 6X/8J semantic schema and ownership runtime fixes — 2026-09-06
 
 - [x] Align the pgvector semantic-cache fixture with the complete response

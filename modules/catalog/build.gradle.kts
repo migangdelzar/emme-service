@@ -17,6 +17,7 @@ dependencies {
   implementation(libs.jackson.databind)
   testImplementation(testFixtures(project(":modules:tenancy")))
   testRuntimeOnly(project(":modules:ai-platform"))
+  add("integrationTestRuntimeOnly", project(":modules:ai-platform"))
   testImplementation(libs.spring.boot.webmvc.test)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))

@@ -99,6 +99,52 @@ class TenantRestIntTest {
   }
 
   @Test
+  @DisplayName("Calendar event links reject duplicate appointment-provider rows")
+  void calendarEventLinkCardinalityIsEnforcedByTheTenantMigration() throws Exception {
+    UUID tenantId = UUID.randomUUID();
+    String slug = "calendar-cardinality-" + UUID.randomUUID().toString().replace('-', 'a');
+    String expectedSchema = TenantSchemaName.fromSlug(slug);
+    UUID appointmentId = UUID.randomUUID();
+    UUID firstEventId = UUID.randomUUID();
+    UUID secondEventId = UUID.randomUUID();
+
+    bootstrapJdbcClient.sql("CREATE EXTENSION IF NOT EXISTS vector SCHEMA emme_core").update();
+    provisioningRepository.requestProvisioning(tenantId, slug, expectedSchema);
+    assertThat(schemaMigrationPort.migrate(tenantId, slug)).isEqualTo(expectedSchema);
+
+    TenantContextHolder.withTenantOverride(
+        tenantId,
+        () -> {
+          try (Connection connection = tenantScopedDataSource.getConnection()) {
+            insertCalendarEventLink(connection, appointmentId, firstEventId);
+            try {
+              insertCalendarEventLink(connection, appointmentId, secondEventId);
+              throw new AssertionError("Duplicate calendar event link was accepted");
+            } catch (java.sql.SQLException duplicate) {
+              assertThat(duplicate.getSQLState()).isEqualTo("23505");
+            }
+          } catch (java.sql.SQLException failure) {
+            throw new IllegalStateException(
+                "Calendar event-link cardinality check failed", failure);
+          }
+        });
+  }
+
+  private static void insertCalendarEventLink(
+      Connection connection, UUID appointmentId, UUID externalEventId)
+      throws java.sql.SQLException {
+    try (var statement =
+        connection.prepareStatement(
+            "INSERT INTO calendar_event_link "
+                + "(tenant_id, appointment_id, provider, external_event_id) "
+                + "VALUES (current_setting('app.current_tenant_id')::uuid, ?, 'GOOGLE_CALENDAR', ?)")) {
+      statement.setObject(1, appointmentId);
+      statement.setString(2, externalEventId.toString());
+      statement.executeUpdate();
+    }
+  }
+
+  @Test
   @DisplayName("Duplicate tenant provisioning keeps the original registry owner")
   void duplicateProvisioningKeepsOriginalRegistryOwner() {
     UUID originalTenantId = UUID.randomUUID();

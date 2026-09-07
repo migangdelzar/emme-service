@@ -5263,6 +5263,20 @@ Completed in this slice:
 - Listener duplicate/retry recovery remains open because the current gate only
   proves external publication and routing keys.
 
+## Current slice — Task 18 Calendar cardinality live gate — 2026-09-06
+
+- [x] Apply the Calendar event-link migration through real tenant provisioning.
+- [x] Verify one appointment/provider link is accepted.
+- [x] Verify the duplicate appointment/provider link is rejected with SQLSTATE
+      `23505`.
+- [x] Run the focused Tenancy integration test against PostgreSQL.
+- [ ] Continue the remaining RLS/catalog and deployment migration gates.
+
+### Results
+
+- The tenant-schema migration path now has runtime evidence for Calendar
+  event-link cardinality; tenant routing remains connection-checkout based.
+
 ## Current slice — Task 19 duplicate membership delivery — 2026-09-06
 
 - [x] Add a failing service test for a concurrent duplicate result.

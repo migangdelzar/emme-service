@@ -3575,8 +3575,12 @@ boundary.
 - [x] Add duplicate-data preflight and the unique constraint migration.
 - [x] Include the migration in the studio Liquibase changelog.
 - [x] Run migration catalog and focused database contract tests.
-- [ ] Run the migration against PostgreSQL/Testcontainers and verify existing
-      deployment data has no duplicate appointment/provider links.
+- [x] Run the migration against PostgreSQL/Testcontainers and verify duplicate
+      appointment/provider links are rejected.
+
+`TenantRestIntTest` now provisions a real tenant schema through the Liquibase
+adapter and verifies that the second Calendar event link for the same
+appointment and provider fails with PostgreSQL SQLSTATE `23505`.
 
 ## 12. Subagent-driven execution protocol
 

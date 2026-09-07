@@ -836,6 +836,15 @@ recorded as successfully delivered turns.
 The Spring AI RAG advisor chain now also includes a grounding advisor after
 retrieval; it projects Spring AI document provenance into `GroundingRequest`
 and fails closed before generation when the typed grounding decision rejects.
+
+**Live PostgreSQL persistence slice (2026-09-06):** The conversation checkpoint
+and quote idempotency integration fixtures now provision tenant schemas through
+the tenancy ports and use the routed `tenantJdbcClient`. The shared datasource
+conditions were made independent of component-scan ordering, while
+`TenantIdentifierResolver` explicitly binds to `bootstrapJdbcClient` to avoid a
+core/tenant client construction cycle. Both focused tests pass against
+PostgreSQL 16 with pgvector. The broader authorization/resume matrix and final
+Docker phase gate remain open.
 - [x] **Step 5: Run, refactor, and commit.**
 
   ```bash

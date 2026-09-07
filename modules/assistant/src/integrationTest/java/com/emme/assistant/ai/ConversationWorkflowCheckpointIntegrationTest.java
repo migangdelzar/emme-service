@@ -19,64 +19,53 @@ import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.type.ChannelType;
+import com.emme.tenancy.adapter.out.client.database.TenantSchemaName;
+import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
+import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
 import com.emme.testing.integration.annotation.PostgresIntegrationTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import javax.sql.DataSource;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 @SpringBootTest(classes = TestApplication.class)
 @PostgresIntegrationTest
 class ConversationWorkflowCheckpointIntegrationTest {
 
-  private static final UUID SETUP_TENANT = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  @Autowired
+  @Qualifier("tenantJdbcClient")
+  private JdbcClient jdbc;
 
-  @Autowired private JdbcClient jdbc;
+  @Autowired
+  @Qualifier("bootstrapJdbcClient")
+  private JdbcClient bootstrapJdbc;
+
   @Autowired private ObjectMapper objectMapper;
   @Autowired private StartConversationUseCase startConversation;
-  @Autowired private DataSource dataSource;
-
-  @BeforeEach
-  void applyWorkflowMigrations() {
-    TenantContextHolder.withTenantOverride(
-        SETUP_TENANT,
-        () -> {
-          jdbc.sql(
-                  """
-                  CREATE OR REPLACE FUNCTION current_tenant_id()
-                  RETURNS UUID
-                  LANGUAGE sql
-                  STABLE
-                  AS 'SELECT nullif(current_setting(''app.current_tenant_id'', true), '''')::UUID'
-                  """)
-              .update();
-          new ResourceDatabasePopulator(
-                  new ClassPathResource("db/emme-studio/releases/0.1.0/016-ai-quote-workflow.sql"),
-                  new ClassPathResource(
-                      "db/emme-studio/releases/0.1.0/017-ai-workflow-checkpoint-next-node.sql"),
-                  new ClassPathResource(
-                      "db/emme-studio/releases/0.1.0/026-conversation-workflow-resume.sql"))
-              .execute(dataSource);
-        });
-  }
+  @Autowired private TenantProvisioningRepository provisioningRepository;
+  @Autowired private TenantSchemaMigrationPort schemaMigrationPort;
 
   @Test
   void resumesAfterGraphRecreationAndRejectsAnotherTenant() throws Exception {
     UUID tenantA = UUID.randomUUID();
     UUID tenantB = UUID.randomUUID();
     UUID principal = UUID.randomUUID();
+    provisionTenant(tenantA);
+    provisionTenant(tenantB);
     UUID conversation =
-        startConversation
-            .start(new StartConversationCommand(tenantA, UUID.randomUUID(), ChannelType.WEB_CHAT))
-            .id();
+        TenantContextHolder.withTenantOverride(
+            tenantA,
+            () ->
+                startConversation
+                    .start(
+                        new StartConversationCommand(
+                            tenantA, UUID.randomUUID(), ChannelType.WEB_CHAT))
+                    .id());
     UUID workflow = UUID.randomUUID();
     AiExecutionContext tenantAContext = context(tenantA, principal, conversation, workflow);
     ProcessConversationCommand start =
@@ -152,6 +141,14 @@ class ConversationWorkflowCheckpointIntegrationTest {
             new ConversationWorkflowCapabilities.WorkflowStep(
                 Map.of("response", "Your request is ready."), false, false, null),
         request -> empty);
+  }
+
+  private void provisionTenant(UUID tenantId) {
+    String slug = "workflow-" + tenantId.toString().replace('-', 'a');
+    String schemaName = TenantSchemaName.fromSlug(slug);
+    bootstrapJdbc.sql("CREATE EXTENSION IF NOT EXISTS vector SCHEMA emme_core").update();
+    provisioningRepository.requestProvisioning(tenantId, slug, schemaName);
+    assertThat(schemaMigrationPort.migrate(tenantId, slug)).isEqualTo(schemaName);
   }
 
   private static AiExecutionContext context(

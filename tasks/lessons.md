@@ -1,5 +1,29 @@
 # Engineering lessons
 
+## 2026-09-06 — Qualify control-plane JDBC when a tenant client is primary
+
+- **Failure mode:** Adding the primary `tenantJdbcClient` caused
+  `TenantIdentifierResolver` to select it through an unqualified `JdbcClient`
+  constructor parameter, creating a datasource/resolver cycle.
+- **Detection signal:** The live Assistant PostgreSQL context failed while
+  creating `tenantScopedDataSource`, with `tenantIdentifierResolver` already in
+  creation.
+- **Prevention rule:** Qualify every control-plane datasource/client dependency
+  as `bootstrapJdbcClient` when a tenant-scoped client is also present; do not
+  rely on primary-bean selection across tenancy boundaries.
+
+## 2026-09-06 — Avoid order-sensitive bean-presence conditions for shared roots
+
+- **Failure mode:** Class- and method-level `@ConditionalOnBean` checks for the
+  tenant routing chain were evaluated before the definitions were available in
+  the larger Assistant context, silently omitting `tenantJdbcClient`.
+- **Detection signal:** `tenantRoutingDataSource` and `tenantScopedDataSource`
+  existed, but the expected tenant JDBC bean did not.
+- **Prevention rule:** For shared composition roots, gate activation on stable
+  PostgreSQL configuration or service-connection inputs, then inject the
+  already-defined boundary; do not make one scanned configuration depend on a
+  later scanned bean definition.
+
 ## 2026-09-06 — Custom datasource conditions must account for service connections
 
 - **Failure mode:** Custom tenancy datasource and Hibernate resolver beans were

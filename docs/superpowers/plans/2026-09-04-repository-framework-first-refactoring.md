@@ -3644,6 +3644,31 @@ dedicated migrations and Docker-backed tests.
 ./gradlew spotlessCheck checkstyleMain jacocoTestCoverageVerification dependencyAnalysis --no-parallel --no-configuration-cache
 ```
 
+## Current slice 8I — Live PostgreSQL LangGraph tenant persistence — 2026-09-06
+
+The live conversation-checkpoint and quote-idempotency fixtures now provision
+their own tenant schemas through the tenancy ports and use the routed
+`tenantJdbcClient`. The shared datasource conditions no longer depend on
+order-sensitive class-level bean checks, and the Hibernate tenant resolver
+explicitly uses `bootstrapJdbcClient`; this prevents a primary tenant client
+from recursively constructing the control-plane resolver.
+
+- [x] Provision real tenant schemas through the tenancy provisioning and
+      migration ports in both LangGraph persistence fixtures.
+- [x] Bind workflow persistence to the schema-routed `tenantJdbcClient`.
+- [x] Preserve the conversation foreign-key parent in the tenant schema for
+      quote workflow integration setup.
+- [x] Run live conversation checkpoint and quote idempotency tests against
+      PostgreSQL 16 with pgvector.
+- [x] Run affected Tenancy and Assistant unit/configuration tests, compilation,
+      and Spotless.
+- [ ] Run the remaining live LangGraph authorization/resume matrix, including
+      duplicate delivery and cross-tenant workflow cases, at the phase gate.
+
+The live evidence confirms schema-per-tenant routing; it does not close the
+remaining PostgreSQL checkpoint/security matrix or the other Docker-backed
+framework gates.
+
 ## 14. Definition of done
 
 - [ ] Every task has a failing test or explicit inventory/architecture test before implementation.

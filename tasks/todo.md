@@ -4564,6 +4564,34 @@ appointment mutation tools are registered.
   abstraction leaked into the identity application layer.
 - The full repository `check` passes after the slice (`255 actionable tasks`).
 
+## Current slice — Task 8I/13G live LangGraph tenant persistence — 2026-09-06
+
+- [x] Provision tenant schemas through the tenancy-owned provisioning and
+      migration ports in the conversation checkpoint and quote idempotency
+      integration fixtures.
+- [x] Bind both fixtures to the routed `tenantJdbcClient` and preserve the
+      tenant-schema conversation foreign-key parent.
+- [x] Replace order-sensitive datasource bean conditions with deterministic
+      PostgreSQL/service-connection activation.
+- [x] Bind `TenantIdentifierResolver` explicitly to `bootstrapJdbcClient` so
+      the primary tenant client cannot create a dependency cycle.
+- [x] Run live PostgreSQL 16/pgvector conversation checkpoint and quote
+      idempotency tests with the isolated `colima-emme` Docker profile.
+- [x] Run focused resolver/configuration tests, Assistant and Tenancy
+      compilation, and Spotless.
+- [ ] Run the remaining live LangGraph authorization/resume matrix and the
+      broader Docker-backed framework gates.
+
+### Results
+
+- `ConversationWorkflowCheckpointIntegrationTest` passes with tenant schema
+  provisioning, graph checkpoint persistence, graph recreation, and tenant
+  authorization behavior.
+- `QuoteWorkflowIdempotencyIntegrationTest` passes with tenant schema
+  provisioning, durable idempotency reuse, and principal ownership rejection.
+- No production application port or tenant identifier contract changed; the
+  fix only makes the existing core/tenant datasource composition explicit.
+
 ## Deployment configuration cleanup slice — 2026-09-05
 
 - [x] Verify the active E2E Compose overlay before removing its stale backup.

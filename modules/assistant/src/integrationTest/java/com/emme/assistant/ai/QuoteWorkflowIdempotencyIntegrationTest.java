@@ -9,46 +9,32 @@ import com.emme.assistant.ai.domain.workflow.QuoteWorkflow;
 import com.emme.kernel.context.AiExecutionContext;
 import com.emme.kernel.context.AiExecutionContextScope;
 import com.emme.kernel.context.TenantContextHolder;
+import com.emme.tenancy.adapter.out.client.database.TenantSchemaName;
+import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
+import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
 import com.emme.testing.integration.annotation.PostgresIntegrationTest;
 import java.util.Set;
 import java.util.UUID;
-import javax.sql.DataSource;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 @SpringBootTest(classes = TestApplication.class)
 @PostgresIntegrationTest
 class QuoteWorkflowIdempotencyIntegrationTest {
 
-  private static final UUID SETUP_TENANT = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  @Autowired
+  @Qualifier("tenantJdbcClient")
+  private JdbcClient jdbc;
 
-  @Autowired private JdbcClient jdbc;
-  @Autowired private DataSource dataSource;
+  @Autowired
+  @Qualifier("bootstrapJdbcClient")
+  private JdbcClient bootstrapJdbc;
 
-  @BeforeEach
-  void applyWorkflowMigration() {
-    TenantContextHolder.withTenantOverride(
-        SETUP_TENANT,
-        () -> {
-          jdbc.sql(
-                  """
-                  CREATE OR REPLACE FUNCTION current_tenant_id()
-                  RETURNS UUID
-                  LANGUAGE sql
-                  STABLE
-                  AS 'SELECT nullif(current_setting(''app.current_tenant_id'', true), '''')::UUID'
-                  """)
-              .update();
-          new ResourceDatabasePopulator(
-                  new ClassPathResource("db/emme-studio/releases/0.1.0/016-ai-quote-workflow.sql"))
-              .execute(dataSource);
-        });
-  }
+  @Autowired private TenantProvisioningRepository provisioningRepository;
+  @Autowired private TenantSchemaMigrationPort schemaMigrationPort;
 
   @Test
   void returnsTheDurableWorkflowForARepeatedIdempotencyKeyAndRejectsAnotherPrincipal() {
@@ -59,6 +45,8 @@ class QuoteWorkflowIdempotencyIntegrationTest {
     UUID retryWorkflowId = UUID.randomUUID();
     UUID foreignWorkflowId = UUID.randomUUID();
     String idempotencyKey = "quote-integration-" + UUID.randomUUID();
+    provisionTenant(tenantId);
+    createConversation(tenantId, conversationId, principalId);
     JdbcQuoteWorkflowRepository repository = new JdbcQuoteWorkflowRepository(jdbc);
 
     AiExecutionContext firstContext =
@@ -125,6 +113,27 @@ class QuoteWorkflowIdempotencyIntegrationTest {
         workflowId,
         "trace-" + UUID.randomUUID(),
         idempotencyKey);
+  }
+
+  private void provisionTenant(UUID tenantId) {
+    String slug = "quote-" + tenantId.toString().replace('-', 'a');
+    String schemaName = TenantSchemaName.fromSlug(slug);
+    bootstrapJdbc.sql("CREATE EXTENSION IF NOT EXISTS vector SCHEMA emme_core").update();
+    provisioningRepository.requestProvisioning(tenantId, slug, schemaName);
+    assertThat(schemaMigrationPort.migrate(tenantId, slug)).isEqualTo(schemaName);
+  }
+
+  private void createConversation(UUID tenantId, UUID conversationId, UUID participantId) {
+    TenantContextHolder.withTenantOverride(
+        tenantId,
+        () ->
+            jdbc.sql(
+                    "INSERT INTO conversation (id, tenant_id, participant_id, channel) "
+                        + "VALUES (:id, :tenantId, :participantId, 'WEB_CHAT')")
+                .param("id", conversationId)
+                .param("tenantId", tenantId)
+                .param("participantId", participantId)
+                .update());
   }
 
   private static <T> T withContext(AiExecutionContext context, ThrowingSupplier<T> action) {

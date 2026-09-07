@@ -12,10 +12,21 @@ import java.util.UUID;
 import org.hibernate.cfg.AvailableSettings;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 @SuppressWarnings("unchecked")
 class TenantIdentifierResolverTest {
+
+  @Test
+  void bindsSchemaLookupToTheBootstrapJdbcClient() throws Exception {
+    var constructor = TenantIdentifierResolver.class.getConstructor(JdbcClient.class);
+
+    assertThat(constructor.getParameterAnnotations()[0][0].annotationType())
+        .isEqualTo(Qualifier.class);
+    assertThat(((Qualifier) constructor.getParameterAnnotations()[0][0]).value())
+        .isEqualTo("bootstrapJdbcClient");
+  }
 
   @Test
   void registersTheSpringManagedResolverInstanceWithHibernate() {

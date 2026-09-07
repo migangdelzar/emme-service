@@ -9,6 +9,7 @@ import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -29,7 +30,7 @@ public class TenantIdentifierResolver
   private final JdbcClient bootstrapJdbc;
   private final Map<UUID, String> schemaCache = new ConcurrentHashMap<>();
 
-  public TenantIdentifierResolver(JdbcClient bootstrapJdbc) {
+  public TenantIdentifierResolver(@Qualifier("bootstrapJdbcClient") JdbcClient bootstrapJdbc) {
     this.bootstrapJdbc = Objects.requireNonNull(bootstrapJdbc, "bootstrapJdbc must not be null");
   }
 

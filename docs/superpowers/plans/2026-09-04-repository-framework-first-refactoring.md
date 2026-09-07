@@ -1658,7 +1658,7 @@ and `[Hibernate multi-tenancy settings](https://docs.hibernate.org/orm/7.3/javad
       normal profile has no standalone `spring.datasource.url`; retain a
       dedicated bootstrap data source when an explicit URL is configured.
 - [x] Verify tenancy tests, application compilation, Checkstyle, and Spotless.
-- [ ] Validate non-H2 startup against a PostgreSQL/Testcontainers environment.
+- [x] Validate non-H2 startup against a PostgreSQL/Testcontainers environment.
 
 #### Current slice 13E — Preserve tenant provisioning idempotency
 
@@ -1672,8 +1672,7 @@ authoritative identity.
       tenant ID.
 - [x] Return the existing registry tenant ID for duplicate slugs.
 - [x] Verify focused tenancy provisioning tests and compilation.
-- [ ] Run duplicate/failure behavior against PostgreSQL/Testcontainers when
-      Docker is available.
+- [x] Run duplicate/failure behavior against PostgreSQL/Testcontainers.
 
 #### Current slice 13F — Verify PostgreSQL tenant datasource startup
 
@@ -2685,6 +2684,7 @@ an explicit stable Modulith identifier.
 - [x] Add a failing listener test with no `SecurityContext`.
 - [x] Remove request-local authentication from the durable consumer.
 - [x] Preserve the provider-neutral membership use-case boundary.
+- [x] Verify the live Kafka externalization and tenant partition-key gate.
 - [ ] Add live duplicate-delivery/replay coverage to the Kafka integration gate.
 
 **Files:**

@@ -5222,3 +5222,16 @@ Completed in this slice:
   scenarios with the isolated Docker profile.
 - No tenant-schema query was changed to repeat `tenant_id`; routing remains at
   connection checkout.
+
+## Current slice — Task 19 live Kafka externalization gate — 2026-09-06
+
+- [x] Verify approved events are published to stable Kafka topics.
+- [x] Verify tenant and appointment partition keys are preserved.
+- [x] Verify serialized payload markers for Tenant and Appointment events.
+- [ ] Add live duplicate-delivery and listener publication-retry assertions.
+
+### Results
+
+- `KafkaEventStreamingIntegrationTest` passed with the isolated Docker profile.
+- Listener duplicate/retry recovery remains open because the current gate only
+  proves external publication and routing keys.

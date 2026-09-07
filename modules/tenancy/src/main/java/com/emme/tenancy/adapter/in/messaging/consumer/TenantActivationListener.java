@@ -1,5 +1,6 @@
 package com.emme.tenancy.adapter.in.messaging.consumer;
 
+import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.api.event.TenantActivated;
 import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
@@ -29,23 +30,33 @@ public class TenantActivationListener {
   @ApplicationModuleListener(id = "tenancy.tenant-realm-ready.activation")
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void onTenantRealmReady(TenantRealmReady event) {
-    log.info("Activating tenant {} — schema + realm ready", event.tenantId());
-
-    if (!provisioningRepository.claimActivation(event.tenantId())) {
-      log.info("Tenant {} is already active; ignoring duplicate activation", event.tenantId());
-      return;
-    }
-
-    String schemaName = provisioningRepository.findSchemaName(event.tenantId());
-    TenantActivated activated =
-        new TenantActivated(
-            UUID.randomUUID(), event.tenantId(), event.slug(), schemaName, event.keycloakRealm());
-    eventPublisher.publishEvent(activated);
-
-    log.info(
-        "Tenant {} activated. Schema={}, Realm={}",
+    TenantContextHolder.withTenantAndCorrelation(
         event.tenantId(),
-        schemaName,
-        event.keycloakRealm());
+        "tenant-realm-ready:" + event.eventId(),
+        () -> {
+          log.info("Activating tenant {} — schema + realm ready", event.tenantId());
+
+          if (!provisioningRepository.claimActivation(event.tenantId())) {
+            log.info(
+                "Tenant {} is already active; ignoring duplicate activation", event.tenantId());
+            return;
+          }
+
+          String schemaName = provisioningRepository.findSchemaName(event.tenantId());
+          TenantActivated activated =
+              new TenantActivated(
+                  UUID.randomUUID(),
+                  event.tenantId(),
+                  event.slug(),
+                  schemaName,
+                  event.keycloakRealm());
+          eventPublisher.publishEvent(activated);
+
+          log.info(
+              "Tenant {} activated. Schema={}, Realm={}",
+              event.tenantId(),
+              schemaName,
+              event.keycloakRealm());
+        });
   }
 }

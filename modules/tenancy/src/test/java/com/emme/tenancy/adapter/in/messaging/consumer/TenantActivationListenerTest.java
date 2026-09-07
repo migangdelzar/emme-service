@@ -6,6 +6,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.emme.kernel.context.TenantContextHolder;
+import com.emme.kernel.tracing.CorrelationContextHolder;
+import com.emme.kernel.tracing.CorrelationId;
 import com.emme.tenancy.api.event.TenantActivated;
 import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
@@ -65,5 +68,33 @@ class TenantActivationListenerTest {
 
     verify(eventPublisher, times(1))
         .publishEvent(org.mockito.ArgumentMatchers.any(TenantActivated.class));
+  }
+
+  @Test
+  void onTenantRealmReady_reconstructsTenantAndCorrelationContextForActivationWork() {
+    UUID tenantId = UUID.randomUUID();
+    TenantRealmReady event = new TenantRealmReady(UUID.randomUUID(), tenantId, "slug", "emme-slug");
+    String correlationId = "tenant-realm-ready:" + event.eventId();
+    when(provisioningRepository.claimActivation(tenantId)).thenReturn(true);
+    when(provisioningRepository.findSchemaName(tenantId))
+        .thenAnswer(
+            invocation -> {
+              assertThat(TenantContextHolder.currentTenantOptional()).contains(tenantId);
+              assertThat(CorrelationContextHolder.requireCorrelationId()).isEqualTo(correlationId);
+              return "tenant_slug";
+            });
+    org.mockito.Mockito.doAnswer(
+            invocation -> {
+              assertThat(TenantContextHolder.currentTenantOptional()).contains(tenantId);
+              assertThat(CorrelationContextHolder.requireCorrelationId()).isEqualTo(correlationId);
+              return null;
+            })
+        .when(eventPublisher)
+        .publishEvent(org.mockito.ArgumentMatchers.any(TenantActivated.class));
+
+    listener.onTenantRealmReady(event);
+
+    assertThat(TenantContextHolder.currentTenantOptional()).isEmpty();
+    assertThat(CorrelationId.get()).isNull();
   }
 }

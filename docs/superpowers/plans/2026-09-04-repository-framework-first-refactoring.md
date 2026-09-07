@@ -4482,6 +4482,8 @@ control-plane state and is not selected through an ordinary tenant schema.
 - [x] Add the provider-neutral `claimActivation` repository operation.
 - [x] Implement the JPA conditional update for non-active registry rows.
 - [x] Preserve the listener transaction around claim and event publication.
+- [x] Restore the event tenant and deterministic correlation context around
+      activation claim, lookup, and publication work.
 - [x] Add a live concurrent activation-claim race.
 - [x] Run tenancy unit tests, the focused live race, compilation, and Spotless.
 - [ ] Add publication-failure rollback evidence for tenant activation.

@@ -4813,3 +4813,36 @@ migration contract tests.
 - PostgreSQL, Redis, Keycloak, and the JVM application became healthy in the
   named Compose smoke project; `/actuator/health` returned `UP`.
 - Unauthenticated `/v3/api-docs` returned the expected `401`.
+
+## Current slice 19S/21J/25D — Complete implementation wave and validation checkpoint — 2026-09-07
+
+The concurrent implementation wave completed three independent framework-first
+slices. Tenant activation now reconstructs tenant and correlation context before
+claiming and publishing; generic test fixtures no longer carry tenancy pooling
+configuration; and the Assistant compatibility inventory now guards the one
+remaining live `SemanticIntentRouter.route(String)` caller instead of deleting a
+used API. Cache raw-string overloads and semantic identity fallbacks remain
+absent.
+
+- [x] Implement and push the tenancy replay-context slice.
+- [x] Implement and push the generic-fixture ownership slice.
+- [x] Inventory and guard the remaining Assistant semantic compatibility boundary.
+- [x] Run affected tests, compilation, and Spotless.
+- [x] Run the full Gradle `check` gate.
+- [x] Run the separate Assistant, Calendar/Tenancy, Database, Deployment, and
+      Provider validation wave.
+- [ ] Add live publication-failure recovery and listener-retry evidence.
+- [ ] Complete Kubernetes runtime smoke checks; the configured API endpoint
+      remains unreachable (`kubectl cluster-info` connection refused).
+- [ ] Continue final compatibility and enterprise runtime gates.
+
+### Results
+
+- Remote tip is `e88b26a9`; all implementation commits are pushed.
+- Affected framework checks pass, and `./gradlew check --no-parallel
+  --no-configuration-cache` passes with 269 actionable tasks.
+- Validation agents report passing Assistant, Calendar/Tenancy, Database,
+  provider HTTP, deployment-contract, migration, and Kafka-deferred checks.
+- No tenant-schema repository contract was changed to add or remove tenant IDs;
+  control-plane identifiers remain explicit and schema-local routing remains at
+  connection checkout.

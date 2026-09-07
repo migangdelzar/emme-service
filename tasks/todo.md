@@ -6176,3 +6176,27 @@ Completed in this slice:
   `spotlessApply`, and `spotlessCheck` passed.
 - No Assistant production source was deleted because the router boundary still
   has a production caller and Spring bean construction path.
+
+## Current slice 19S/21J/25D — Implementation and validation checkpoint — 2026-09-07
+
+- [x] Complete the concurrent tenancy replay-context implementation slice.
+- [x] Complete the generic fixture ownership/configuration slice.
+- [x] Inventory the remaining Assistant semantic compatibility caller without
+      deleting a live API.
+- [x] Run affected tests, compilation, Spotless, and the full Gradle check.
+- [x] Run the separate framework validation wave.
+- [ ] Add live publication-failure recovery and listener-retry evidence.
+- [ ] Complete Kubernetes runtime smoke checks; the configured API endpoint is
+      unreachable from this environment.
+- [ ] Continue final framework compatibility and enterprise runtime gates.
+
+### Results
+
+- Tenant activation reconstructs tenant/correlation context before its durable
+  claim and event publication.
+- Tenancy pooling properties are owned by the tenancy test fixture rather than
+  generic testing profiles.
+- `SemanticIntentRouter.route(String)` remains only because `DetectIntentService`
+  and its configuration still use it; cache raw-string overloads and identity
+  fallbacks are gone.
+- Full `./gradlew check --no-parallel --no-configuration-cache` passes.

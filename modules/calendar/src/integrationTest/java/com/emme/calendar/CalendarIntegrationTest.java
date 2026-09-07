@@ -3,10 +3,13 @@ package com.emme.calendar;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.TestApplication;
+import com.emme.calendar.adapter.out.persistence.entity.GoogleSpreadsheetLinkEntity;
+import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleSpreadsheetLinkRepository;
 import com.emme.calendar.api.type.GoogleOAuthPersona;
 import com.emme.calendar.application.port.out.CalendarSyncStateRepository;
 import com.emme.calendar.application.port.out.GoogleOAuthPort;
 import com.emme.calendar.application.port.out.GoogleOAuthTokens;
+import com.emme.calendar.application.port.out.GoogleSpreadsheetLinkQueryPort;
 import com.emme.calendar.domain.model.CalendarProvider;
 import com.emme.calendar.domain.model.CalendarSyncState;
 import com.emme.kernel.context.TenantContextHolder;
@@ -40,6 +43,8 @@ class CalendarIntegrationTest {
   @Autowired private DataSource dataSource;
   @Autowired private CalendarSyncStateRepository syncStates;
   @Autowired private GoogleOAuthPort googleOAuth;
+  @Autowired private GoogleSpreadsheetLinkQueryPort spreadsheetLinks;
+  @Autowired private SpringDataGoogleSpreadsheetLinkRepository spreadsheetLinkRepository;
   @Autowired private TenantProvisioningRepository provisioningRepository;
   @Autowired private TenantSchemaMigrationPort schemaMigrationPort;
   @Autowired private PlatformTransactionManager transactionManager;
@@ -118,6 +123,40 @@ class CalendarIntegrationTest {
         () ->
             assertThat(googleOAuth.isConnected(tenantB, userId, GoogleOAuthPersona.CLIENT))
                 .isTrue());
+  }
+
+  @Test
+  @DisplayName("Google spreadsheet links are isolated by tenant schema")
+  void googleSpreadsheetLinksUseTheTenantSelectedSchema() {
+    UUID tenantA = provisionTenant("calendar-sheets-a");
+    UUID tenantB = provisionTenant("calendar-sheets-b");
+    String spreadsheetId = "spreadsheet-" + UUID.randomUUID();
+
+    TenantContextHolder.withTenantOverride(
+        tenantA,
+        () ->
+            spreadsheetLinkRepository.save(
+                new GoogleSpreadsheetLinkEntity(
+                    tenantA, spreadsheetId, "https://sheets.test/a", "APPOINTMENTS")));
+    TenantContextHolder.withTenantOverride(
+        tenantB,
+        () ->
+            spreadsheetLinkRepository.save(
+                new GoogleSpreadsheetLinkEntity(
+                    tenantB, spreadsheetId, "https://sheets.test/b", "APPOINTMENTS")));
+
+    TenantContextHolder.withTenantOverride(
+        tenantA,
+        () ->
+            assertThat(spreadsheetLinks.findAll())
+                .extracting(details -> details.spreadsheetUrl())
+                .containsExactly("https://sheets.test/a"));
+    TenantContextHolder.withTenantOverride(
+        tenantB,
+        () ->
+            assertThat(spreadsheetLinks.findAll())
+                .extracting(details -> details.spreadsheetUrl())
+                .containsExactly("https://sheets.test/b"));
   }
 
   @Test

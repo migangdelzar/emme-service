@@ -2335,3 +2335,13 @@
 - **Prevention rule:** Keep explicit tenant and provider business-key fields
   where they define credential ownership or callback safety, even when the
   physical tenant schema also enforces isolation.
+
+## 2026-09-07 — Build live fixtures from deployed check constraints
+
+- **Failure mode:** A spreadsheet-link live fixture used a human-readable
+  lowercase export type that the deployed migration rejects.
+- **Detection signal:** PostgreSQL returned a `DataIntegrityViolationException`
+  for `google_spreadsheet_link_export_type_check` before the routing assertion.
+- **Prevention rule:** Before creating live rows, read the migration's CHECK,
+  enum, and foreign-key values and use those exact persisted representations in
+  integration fixtures.

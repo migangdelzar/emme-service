@@ -4339,3 +4339,21 @@ the provider business-key contract.
       Checkstyle, and Spotless.
 - [ ] Continue the remaining aggregate persistence, control-plane, deployment,
       and final compatibility gates.
+
+## Current slice 18AR — Verify live Google spreadsheet-link tenant isolation — 2026-09-07
+
+Google spreadsheet-link persistence now has live PostgreSQL evidence for
+tenant-schema routing. The test stores the same provider spreadsheet ID in two
+tenant schemas and reads links through the provider-neutral query port, proving
+that each schema returns only its own URL. The fixture uses the deployed
+`APPOINTMENTS` export-type contract.
+
+- [x] Add a live integration test for spreadsheet-link persistence.
+- [x] Verify identical provider spreadsheet IDs are independent across tenant
+      schemas.
+- [x] Read through `GoogleSpreadsheetLinkQueryPort` under each routed schema.
+- [x] Align the fixture with the deployed export-type check constraint.
+- [x] Run the focused live test, full Calendar checks, integration tests,
+      Checkstyle, and Spotless.
+- [ ] Continue the remaining aggregate persistence, control-plane, deployment,
+      and final compatibility gates.

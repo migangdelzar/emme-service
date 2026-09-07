@@ -5641,3 +5641,20 @@ Completed in this slice:
   isolated `colima-emme` Docker profile.
 - No production or migration change was required; the test records evidence
   for the existing provider-key boundary.
+
+## Current slice — Task 18 Google spreadsheet-link tenant isolation — 2026-09-07
+
+- [x] Provision two tenant schemas for spreadsheet-link persistence testing.
+- [x] Persist the same provider spreadsheet ID independently in both schemas.
+- [x] Read through the provider-neutral spreadsheet-link query port.
+- [x] Use the deployed `APPOINTMENTS` export-type constraint value.
+- [x] Run Calendar integration tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue remaining aggregate persistence, control-plane, deployment, and
+      compatibility evidence.
+
+### Results
+
+- The live Calendar spreadsheet-link integration test passes with PostgreSQL
+  and the isolated `colima-emme` Docker profile.
+- No production or migration change was required; schema-local query routing
+  is now runtime-verified.

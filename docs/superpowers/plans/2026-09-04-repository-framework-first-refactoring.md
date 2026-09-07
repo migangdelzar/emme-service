@@ -4148,3 +4148,18 @@ foreign-key relationship without introducing a consuming-module JDBC boundary.
 - [x] Run Catalog unit/integration tests, compilation, Checkstyle, and
       Spotless.
 - [ ] Continue the remaining aggregate persistence and RLS behavioral matrix.
+
+## Current slice 18AJ — Verify live Assistant conversation persistence — 2026-09-06
+
+Assistant conversation persistence now has live PostgreSQL evidence for
+tenant-schema routing and optimistic locking. The test exercises the existing
+provider-neutral `ConversationRepository` and managed JPA entity path; no
+conversation-specific tenant predicate or provider type was added.
+
+- [x] Add a live tenant A/B visibility test for Conversation persistence.
+- [x] Add a two-transaction stale-version conflict test.
+- [x] Preserve tenant selection at connection checkout and the existing
+      managed-entity update path.
+- [x] Run Assistant unit/integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue the remaining aggregate persistence and RLS behavioral matrix.

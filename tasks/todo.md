@@ -5378,6 +5378,25 @@ Completed in this slice:
   now runtime-verified; no Catalog production adapter or contract change was
   required.
 
+## Current slice — Task 18 Assistant conversation persistence gate — 2026-09-06
+
+- [x] Verify Conversation JPA persistence is isolated by the routed tenant
+      schema.
+- [x] Verify two concurrent Conversation updates produce one optimistic-lock
+      winner and one `OptimisticLockingFailureException`.
+- [x] Preserve the provider-neutral Conversation repository and managed-entity
+      update path.
+- [x] Run Assistant unit/integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue remaining aggregate persistence and RLS behavioral evidence.
+
+### Results
+
+- The live Assistant conversation integration tests pass with PostgreSQL and
+  the isolated `colima-emme` Docker profile.
+- Tenant A/B schema routing and the shared JPA `@Version` conflict behavior are
+  now runtime-verified without changing Assistant production persistence code.
+
 ## Current slice — Task 18 Calendar sync-state persistence gate — 2026-09-06
 
 - [x] Verify Calendar sync-state JPA persistence is isolated by the routed

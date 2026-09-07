@@ -6000,3 +6000,20 @@ Completed in this slice:
 
 - Canonical AI compatibility verification passes; no additional production
   deletion was justified because the retired families are already absent.
+
+## Current slice — Phase G live aggregate persistence checkpoint — 2026-09-07
+
+- [x] Run live Clients, Services, and Salon persistence suites.
+- [x] Run live Appointments, Payment, Notification, Calendar, and Subscription
+      suites.
+- [x] Run live Catalog, Documents, and Assistant suites.
+- [x] Verify the affected tenant-routing, optimistic-lock, idempotency,
+      collision, and provider-key contracts against PostgreSQL.
+- [ ] Continue event-recovery, Redis, deployment, and final compatibility gates.
+
+### Results
+
+- All eleven affected module integration tasks completed successfully with the
+  isolated `colima-emme` PostgreSQL profile.
+- Shutdown pool warnings were emitted during container teardown, after the
+  Gradle integration tasks had completed successfully.

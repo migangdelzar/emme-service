@@ -4610,6 +4610,23 @@ do not gain redundant tenant predicates.
 - [ ] Continue remaining persistence, event-recovery, deployment, and
       compatibility framework gates.
 
+## Current slice Phase G — Complete live aggregate persistence checkpoint — 2026-09-07
+
+The PostgreSQL integration checkpoint passes for the converted tenant-schema
+aggregates and their specialized persistence boundaries: Clients, Services,
+Salon, Appointments, Payment, Notification, Calendar, Subscriptions, Catalog,
+Documents, and Assistant. The suites verify live schema routing and the
+available optimistic-lock, idempotency, collision, and provider-key invariants;
+the existing specialized SQL paths remain unchanged. Test shutdown can emit
+pool warnings while isolated containers are removed after successful tests.
+
+- [x] Run Clients, Services, and Salon tenant-routing/optimistic-lock suites.
+- [x] Run Appointments collision and persistence suites.
+- [x] Run Payment, Notification, Calendar, and Subscription suites.
+- [x] Run Catalog, Documents, and Assistant persistence/workflow suites.
+- [x] Complete the affected PostgreSQL integration checkpoint.
+- [ ] Continue event-recovery, Redis, deployment, and final compatibility gates.
+
 ## Current slice 6Q — Verify AI compatibility cleanup closure — 2026-09-07
 
 The repository-wide production inventory contains none of the retired AI

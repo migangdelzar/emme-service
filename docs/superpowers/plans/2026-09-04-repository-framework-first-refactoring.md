@@ -4083,3 +4083,18 @@ lookups and webhook claims remain explicit business/control-plane operations.
 - [x] Run Payment integration tests, compilation, Checkstyle, and Spotless.
 - [ ] Continue the remaining Calendar, Notification, and aggregate persistence
       runtime matrix.
+
+## Current slice 18AF — Verify live Notification persistence — 2026-09-06
+
+Notification's existing JPA persistence adapter now has live PostgreSQL
+evidence for tenant-schema routing and optimistic locking. The test exercises
+the domain's delivery-state transition and keeps notification delivery/provider
+behavior outside the persistence verification.
+
+- [x] Add a live tenant A/B visibility test for Notification persistence.
+- [x] Add a two-transaction stale-version conflict test.
+- [x] Keep the provider-neutral Notification repository and managed-entity
+      update path unchanged.
+- [x] Run Notification integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue the remaining Calendar and aggregate persistence runtime matrix.

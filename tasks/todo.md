@@ -5358,3 +5358,21 @@ Completed in this slice:
   `colima-emme` Docker profile.
 - No production adapter or application contract change was required; only the
   integration test classpath and runtime evidence were extended.
+
+## Current slice — Task 18 Notification live persistence gate — 2026-09-06
+
+- [x] Verify Notification JPA persistence is isolated by the routed tenant
+      schema.
+- [x] Verify two concurrent Notification updates produce one optimistic-lock
+      winner and one `OptimisticLockingFailureException`.
+- [x] Preserve delivery-state transitions and provider boundaries.
+- [x] Run Notification integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue Calendar and remaining aggregate persistence runtime evidence.
+
+### Results
+
+- The live Notification integration test passes with PostgreSQL and the
+  isolated `colima-emme` Docker profile.
+- No production adapter or application contract change was required; only the
+  integration test classpath and runtime evidence were extended.

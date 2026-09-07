@@ -21,6 +21,11 @@ dependencies {
   testImplementation(libs.okhttp.mockwebserver)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
+  add("integrationTestImplementation", project(":modules:shared"))
+  add("integrationTestImplementation", project(":libraries:kernel"))
+  add("integrationTestImplementation", project(":database"))
+  add("integrationTestImplementation", libs.spring.boot.starter.data.jpa)
+  add("integrationTestImplementation", libs.spring.jdbc)
   add("integrationTestImplementation", libs.spring.boot.restclient)
   add("integrationTestImplementation", libs.okhttp.mockwebserver)
 }

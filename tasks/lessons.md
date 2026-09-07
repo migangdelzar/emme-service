@@ -2456,3 +2456,15 @@
 - **Prevention rule:** Add a failing source-boundary assertion, inventory all
   callers and build references, then delete the duplicate and compile every
   affected test source set.
+
+## 2026-09-07 — Treat wrapped Redis transport failures as outages
+
+- **Failure mode:** A Redis restart surfaced a Lettuce connection reset as
+  `RedisSystemException`, bypassing narrower connection-failure and timeout
+  catches in the login limiter.
+- **Detection signal:** The aggregate live integration gate failed with a
+  `RedisSystemException` at the atomic Lua script call while the outage policy
+  required a fail-closed response.
+- **Prevention rule:** For disposable Redis coordination paths, test both direct
+  connection failures and wrapped provider transport exceptions; return the
+  fail-closed result for Redis-specific system failures.

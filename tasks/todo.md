@@ -6075,3 +6075,17 @@ Completed in this slice:
 - Shared checked-exception context helpers remain in `libraries/testing` and
   reuse `libraries/functional`; the duplicate tenancy wrapper is gone.
 - The source-boundary test passes and no repository caller remains.
+
+## Current slice — Redis limiter connection-reset recovery (2026-09-07)
+
+- [x] Reproduce the aggregate integration failure in the live limiter test.
+- [x] Add a unit regression for `RedisSystemException` transport failures.
+- [x] Make Redis limiter outages fail closed for connection resets.
+- [x] Run focused Identity unit and live Redis restart tests.
+- [ ] Rerun the aggregate non-Kafka integration gate.
+
+### Results
+
+- The limiter now catches Redis-specific system failures in addition to
+  connection-failure and timeout exceptions.
+- Focused unit and live outage/recovery verification pass.

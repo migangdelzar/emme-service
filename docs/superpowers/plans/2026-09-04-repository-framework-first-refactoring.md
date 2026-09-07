@@ -4719,3 +4719,24 @@ from returning.
 - The only prior reference was the fixture itself; no caller, bean, test, or
   build dependency remained.
 - The focused inventory suite and affected compilation pass after deletion.
+
+## Current slice 20C — Fail closed on Redis connection resets — 2026-09-07
+
+The aggregate non-Kafka integration gate exposed a restart-time Redis failure
+that escaped the limiter's existing `RedisConnectionFailureException` and
+timeout handling. Lettuce surfaced the connection reset as
+`RedisSystemException`; the limiter now treats that Redis-specific system
+failure as unavailable and returns the existing fail-closed result.
+
+- [x] Reproduce the connection-reset failure in the live Redis limiter test.
+- [x] Add a focused unit regression for wrapped Redis transport failure.
+- [x] Extend fail-closed handling to `RedisSystemException`.
+- [x] Run the focused Identity unit suite.
+- [x] Run the live Redis outage/restart test.
+- [ ] Rerun the aggregate non-Kafka integration gate.
+
+### Results
+
+- Focused `RedisLoginAttemptRateLimiterTest` passes.
+- Live `RedisLoginAttemptRateLimiterLiveTest` passes against the Colima Redis
+  container, including outage and recovery.

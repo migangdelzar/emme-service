@@ -4,6 +4,7 @@ import com.emme.identity.application.port.out.LoginAttemptRateLimiter;
 import java.util.List;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
@@ -33,7 +34,9 @@ public class RedisLoginAttemptRateLimiter implements LoginAttemptRateLimiter {
     try {
       Long count = redis.execute(ACQUIRE_SCRIPT, List.of(key), Long.toString(windowMs));
       return count != null && count <= maxAttempts;
-    } catch (RedisConnectionFailureException | QueryTimeoutException ignored) {
+    } catch (RedisConnectionFailureException
+        | QueryTimeoutException
+        | RedisSystemException ignored) {
       return false;
     }
   }

@@ -852,7 +852,7 @@ PostgreSQL behavior remain Docker-gated.
       constructors.
 - [x] Run the full Assistant unit suite, integration-test source compilation,
       and Spotless.
-- [ ] Run live semantic-cache/vector behavior and PostgreSQL gates with Docker.
+- [x] Run live semantic-cache/vector behavior and PostgreSQL gates with Docker.
 
 #### Current slice 6Q — Use structured semantic-cache invalidation
 
@@ -869,7 +869,7 @@ PostgreSQL invalidation behavior remain Docker-gated.
       test-double override.
 - [x] Run the full Assistant unit suite, integration-test source compilation,
       and Spotless.
-- [ ] Run live semantic-cache invalidation and PostgreSQL gates with Docker.
+- [x] Run live semantic-cache invalidation and PostgreSQL gates with Docker.
 
 #### Current slice 6B — Redis hot-projection hardening and construction simplification
 

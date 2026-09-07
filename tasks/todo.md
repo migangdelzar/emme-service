@@ -5154,6 +5154,25 @@ Completed in this slice:
   one optimistic-lock failure.
 - No production persistence or application contract change was required.
 
+## Current slice — Task 6 live semantic and hybrid-search gates — 2026-09-06
+
+- [x] Run the live hybrid-search tenant and embedding-maintenance tests.
+- [x] Run the live pgvector semantic-cache and intent-routing tests.
+- [x] Run the live Redis semantic projection test.
+- [x] Run the live PostgreSQL semantic invalidation and trace test.
+- [x] Run the live RAG quality integration test.
+- [ ] Complete the remaining measured hybrid-search optimization evidence if a
+      comparable Spring AI vector-store path becomes available.
+
+### Results
+
+- All focused shared and Assistant integration tests passed with the isolated
+  Docker profile.
+- PostgreSQL remains authoritative for semantic cache state and hybrid search;
+  Redis remains an evictable hot projection.
+- The current direct SQL hybrid-search adapter remains justified for combined
+  FTS, pgvector, RRF, tenant filtering, and stable scores.
+
 ## Current slice — Phase F provider HTTP migration verification — 2026-09-06
 
 - [x] Verify Identity, Calendar, Notification, and Payment unit tests and Java

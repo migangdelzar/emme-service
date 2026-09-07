@@ -2387,3 +2387,24 @@
   `TenantContextHolder` even though the inventory assertion passed.
 - **Prevention rule:** Analyze Gradle dependency counts by configuration and
   validate the affected source-set classpath before deleting a declaration.
+
+## 2026-09-07 — Update event tests when transport classification changes
+
+- **Failure mode:** The full event checkpoint failed because an Assistant unit
+  test still required `@Externalized` on a business event intentionally moved
+  to the internal Modulith boundary.
+- **Detection signal:** The test's reflection assertion returned a null
+  annotation immediately after the event-contract migration.
+- **Prevention rule:** When an event changes delivery classification, search all
+  reflection, publication, topic, and listener tests for the old transport
+  contract and migrate them in the same verification slice.
+
+## 2026-09-07 — Keep intentionally empty deferred test tasks non-blocking
+
+- **Failure mode:** Excluding the only application integration test caused the
+  aggregate Gradle integration task to fail with no discovered tests.
+- **Detection signal:** The default `integrationTest` phase failed after the
+  Kafka test was correctly excluded, before any non-Kafka test failure.
+- **Prevention rule:** For a source set intentionally empty under a documented
+  feature exclusion, disable only its no-discovered-tests failure while keeping
+  discovery strict for all real integration suites.

@@ -9,7 +9,6 @@ import com.emme.assistant.api.event.LearningCandidateEvaluationRequested;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.modulith.events.Externalized;
 
 class SpringLearningCandidateEvaluationEventPublisherTest {
 
@@ -37,12 +36,8 @@ class SpringLearningCandidateEvaluationEventPublisherTest {
   }
 
   @Test
-  void usesTheExistingDurableModulithPublicationBoundary() {
-    Externalized externalized =
-        LearningCandidateEvaluationRequested.class.getAnnotation(Externalized.class);
-
-    assertThat(externalized).isNotNull();
-    assertThat(externalized.value())
-        .isEqualTo("emme.ai.learning-candidate-evaluation-requested::#{#this.tenantId()}");
+  void keepsTheLearningEvaluationEventInternalToModulith() {
+    assertThat(LearningCandidateEvaluationRequested.class.getAnnotations())
+        .noneMatch(annotation -> annotation.annotationType().getName().endsWith("Externalized"));
   }
 }

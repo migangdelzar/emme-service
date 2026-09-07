@@ -96,6 +96,22 @@
 - Remaining Kafka references are explicitly deferred capability, test, or
   reactivation guidance.
 
+## Current slice — Modulith phase checkpoint corrections — 2026-09-07
+
+- [x] Update the stale Assistant learning-event test after removing production
+      `@Externalized` metadata.
+- [x] Keep the deferred-only application integration source set from failing
+      the aggregate gate when its Kafka test is excluded.
+- [x] Re-run the focused regression and full affected unit/integration gates.
+- [ ] Commit and push the correction slice.
+
+### Results
+
+- Assistant, Appointments, Identity, Tenancy, Subscriptions, and platform unit
+  suites passed after the stale event assertion was corrected.
+- The aggregate `integrationTest` gate passed with Kafka streaming excluded;
+  PostgreSQL-backed non-Kafka integration suites completed successfully.
+
 ## Current slice — Task 17 live appointment collision gate — 2026-09-06
 
 - [x] Start an isolated `colima-emme` Docker profile after the stale default

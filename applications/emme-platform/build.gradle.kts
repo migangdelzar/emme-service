@@ -114,6 +114,7 @@ val kafkaDeferred =
 tasks.named<Test>("integrationTest") {
   if (!kafkaDeferred.get()) {
     exclude("**/KafkaEventStreamingIntegrationTest.class")
+    failOnNoDiscoveredTests = false
   }
 }
 

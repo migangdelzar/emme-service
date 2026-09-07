@@ -2480,3 +2480,15 @@
 - **Prevention rule:** Reuse `libraries/functional` throwing callbacks through
   `libraries/testing` context helpers; add a source-inventory assertion before
   removing the final local copies.
+
+## 2026-09-07 — Scope application coverage to owned behavior
+
+- **Failure mode:** A clean application JaCoCo gate failed at 15.8% because the
+  thin deployable application counted its untestable `main` bootstrap entrypoint
+  while module behavior is covered in the owning modules.
+- **Detection signal:** The clean report contained only three application
+  classes and showed `EmmeApplication` and `JacksonConfiguration` uncovered;
+  rerunning from `clean` reproduced the same result.
+- **Prevention rule:** Keep the coverage threshold unchanged, exclude only
+  composition-root/operational bootstrap classes with an architecture test,
+  and add direct tests for every remaining application-owned behavior.

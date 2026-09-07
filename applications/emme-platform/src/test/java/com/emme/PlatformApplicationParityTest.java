@@ -53,6 +53,15 @@ class PlatformApplicationParityTest {
   }
 
   @Test
+  void applicationCoverageExcludesOnlyTheBootstrapEntrypoint() throws IOException {
+    String buildConfiguration = readSource("applications/emme-platform/build.gradle.kts");
+
+    assertThat(buildConfiguration)
+        .contains("exclude(\"com/emme/EmmeApplication.class\")")
+        .doesNotContain("exclude(\"com/emme/configuration/JacksonConfiguration.class\")");
+  }
+
+  @Test
   void everyMaterializedApplicationConfigurationPackageHasLocalMetadata() throws IOException {
     Path configurationPackage =
         sourcePath("applications/emme-platform/src/main/java/com/emme/configuration");

@@ -4764,3 +4764,24 @@ production modules and avoiding another helper family.
 
 - No Assistant unit test defines `CheckedSupplier` or `runWithContext`.
 - Focused tests and `:modules:assistant:test` pass.
+
+## Current slice 24D — Make application coverage gate honest — 2026-09-07
+
+The clean application coverage gate failed because the deployable application
+is a thin composition root: its `main` method is bootstrap wiring and its only
+remaining owned behavior, Jackson configuration, was not covered. The fix
+preserves the existing 70% JaCoCo threshold, excludes only the bootstrap
+entrypoint alongside the already-excluded operational container probe, and
+adds focused coverage for the owned Jackson mapper configuration.
+
+- [x] Reproduce the clean application coverage failure.
+- [x] Add a failing parity test for the narrow bootstrap exclusion.
+- [x] Add focused Jackson configuration coverage.
+- [x] Run clean application `coverageCheck` and affected formatting checks.
+- [ ] Continue remaining event-recovery, deployment-runtime, and final
+      compatibility gates.
+
+### Results
+
+- `:applications:emme-platform:coverageCheck` passes after a clean build.
+- No business module classes or coverage thresholds were excluded or lowered.

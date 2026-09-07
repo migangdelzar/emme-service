@@ -6064,6 +6064,25 @@ Completed in this slice:
 - Assistant unit tests no longer define private `CheckedSupplier` or
   `runWithContext` duplicates.
 - Focused workflow/quote-review tests and the full Assistant unit suite pass.
+
+## Current slice — Make application coverage gate honest — 2026-09-07
+
+- [x] Reproduce the clean application coverage failure.
+- [x] Add a failing test requiring a bootstrap-only coverage exclusion.
+- [x] Add Jackson configuration coverage without changing runtime behavior.
+- [x] Keep the existing 70% threshold and exclude no business classes.
+- [x] Run clean application `coverageCheck`, Spotless, and diff checks.
+- [ ] Continue remaining framework-first runtime and compatibility gates.
+
+### Results
+
+- `EmmeApplication` is excluded from the application JaCoCo report and
+  verification as composition-root bootstrap wiring; `ContainerHealthCheck`
+  remains excluded as operational tooling.
+- `JacksonConfigurationTest` verifies Java-time serialization through the
+  application-owned mapper.
+- Clean `:applications:emme-platform:coverageCheck` passes at the existing
+  threshold.
 ## Current slice — Stabilize framework inventory gate (2026-09-07)
 
 - [x] Reproduce the repository-root source scan race against generated build

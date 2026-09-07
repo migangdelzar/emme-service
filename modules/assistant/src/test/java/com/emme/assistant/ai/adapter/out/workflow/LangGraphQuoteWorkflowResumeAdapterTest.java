@@ -106,6 +106,22 @@ class LangGraphQuoteWorkflowResumeAdapterTest {
   }
 
   @Test
+  void rejectsARejectedDecisionFromANonStaffContextBeforeGraphMutation() {
+    CompiledGraph<AgentState> graph = mock(CompiledGraph.class);
+    LangGraphQuoteWorkflowResumeAdapter adapter = new LangGraphQuoteWorkflowResumeAdapter(graph);
+
+    assertThatThrownBy(
+            () ->
+                AiExecutionContextScope.run(
+                    nonStaffContext(),
+                    () -> adapter.resume(WORKFLOW_ID, QuoteReviewDecisionType.REJECTED)))
+        .isInstanceOf(SecurityException.class)
+        .hasMessage("Staff role is required to resume a quote workflow");
+
+    verifyNoInteractions(graph);
+  }
+
+  @Test
   void rejectsResumeWhenTheQuoteWorkflowCheckpointDoesNotExist() throws Exception {
     CompiledGraph<AgentState> graph = mock(CompiledGraph.class);
     org.mockito.Mockito.when(graph.lastStateOf(any(RunnableConfig.class)))

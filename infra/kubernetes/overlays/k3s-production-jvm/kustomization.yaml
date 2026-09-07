@@ -34,14 +34,6 @@ patches:
             secretKeyRef:
               name: emme-secrets
               key: google-token-encryption-key
-      - op: add
-        path: /spec/template/spec/containers/0/env/-
-        value:
-          name: KAFKA_SASL_JAAS_CONFIG
-          valueFrom:
-            secretKeyRef:
-              name: emme-secrets
-              key: kafka-sasl-jaas-config
       - op: replace
         path: /spec/replicas
         value: 2

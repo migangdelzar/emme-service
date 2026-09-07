@@ -376,7 +376,7 @@ git commit -m "test(events): gate Kafka verification behind explicit opt-in"
 - Consumes: the provider-disabled application profiles from Task 2.
 - Produces: local, production, and normal CI paths with no Kafka container creation or broker-secret dependency.
 
-- [ ] **Step 1: Add the failing deployment/configuration checks**
+- [x] **Step 1: Add the failing deployment/configuration checks**
 
 Before changing the activation points, run the existing checks and record the current Kafka activation evidence:
 
@@ -388,7 +388,10 @@ kubectl kustomize infra/kubernetes/overlays/k3s-production-native >/dev/null
 
 Expected: the Compose contract currently proves Kafka is enabled by its optional overlay, and the production overlays currently contain Kafka secret patches.
 
-- [ ] **Step 2: Comment and gate optional Kafka container activation**
+The pre-change Compose contract and both production Kustomize renders passed;
+the new parity check then failed on the existing Kafka secret injection.
+
+- [x] **Step 2: Comment and gate optional Kafka container activation**
 
 Keep `compose.environment-kafka.yaml` as a documented deferred overlay, but make its header state that it is not part of the Emme Nails default runtime. Keep its `depends_on` and broker healthcheck intact for explicit future validation.
 
@@ -396,7 +399,7 @@ In `.github/workflows/ci-backend.yml`, replace the removed `KafkaEventContractTe
 
 Remove or comment the unused `KAFKA_SASL_JAAS_CONFIG` secret patch operations from both production Kustomize overlays. Do not remove the shared secret key if another deployment artifact still owns it; only remove the application pod injection that is no longer consumed.
 
-- [ ] **Step 3: Verify default container/deployment paths**
+- [x] **Step 3: Verify default container/deployment paths**
 
 Run:
 
@@ -411,7 +414,12 @@ kubectl kustomize infra/kubernetes/overlays/k3s-production-native >/dev/null
 
 Expected: default Compose and both Kustomize overlays render successfully without creating a Kafka service or injecting Kafka credentials. The optional Kafka Compose contract remains runnable only when explicitly invoked.
 
-- [ ] **Step 4: Commit the deployment gating change**
+The repository provides `docker-compose` rather than the `docker compose`
+subcommand; the equivalent JVM/native config checks passed. Both Kustomize
+renders and the deployment-contract validator passed, and the optional Kafka
+Compose contract still passes when invoked explicitly.
+
+- [x] **Step 4: Commit the deployment gating change**
 
 ```bash
 git add deployment/compose/compose.environment-kafka.yaml \

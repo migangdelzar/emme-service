@@ -1,4 +1,7 @@
-# Optional Kafka event-streaming environment.
+# Deferred Kafka event-streaming environment.
+# This overlay is not part of the default Emme Nails runtime. Use it only for
+# explicit externalization contract validation after an external consumer is
+# approved.
 # Combine with the shared base and one runtime overlay when validating the
 # deployed Spring Modulith externalizer locally:
 # docker compose -f compose.yaml -f compose.runtime-jvm.yaml \

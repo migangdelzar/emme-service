@@ -57,6 +57,26 @@
   `apache/kafka-native:3.8.0` exited with code 126 during Testcontainers
   startup. This is the remaining environment-gated evidence for this slice.
 
+## Current slice — Defer Kafka deployment activation — 2026-09-07
+
+- [x] Add the failing production-overlay Kafka secret contract.
+- [x] Document the Kafka Compose overlay as explicitly deferred.
+- [x] Remove unused Kafka secret injection from production JVM/native overlays.
+- [x] Keep normal CI Compose/Kubernetes validation active and defer the Kafka
+      Compose contract invocation.
+- [x] Run platform tests, compilation, Spotless, Compose, Kustomize, and the
+      deployment-contract validator.
+- [x] Commit and push the slice.
+- [ ] Align the architecture/ADR/AI documentation in the next slice.
+
+### Results
+
+- Platform parity/event tests, Java/test compilation, and Spotless passed.
+- `docker-compose` JVM/native config rendering, both production Kustomize
+  renders, and `node scripts/validate-deployment-contracts.mjs` passed.
+- The explicit Kafka Compose contract still passes; it is no longer part of the
+  default CI validation path.
+
 ## Current slice — Task 17 live appointment collision gate — 2026-09-06
 
 - [x] Start an isolated `colima-emme` Docker profile after the stale default

@@ -231,7 +231,7 @@ jobs:
             -f deployment/compose/compose.runtime-jvm.yaml config --quiet
           docker compose -f deployment/compose/compose.yaml \
             -f deployment/compose/compose.runtime-native.yaml config --quiet
-          node deployment/compose/compose.kafka.contract.test.mjs
+          # Kafka Compose contract is deferred until an external consumer is approved.
           node deployment/compose/compose.age.contract.test.mjs
       - name: Validate Terraform
         working-directory: infra/terraform

@@ -2580,6 +2580,23 @@ while `-Pemme.kafka-deferred=true` retains an explicit opt-in path.
 - [ ] Run the opt-in Kafka Testcontainer test successfully when the broker image
       is runnable; current image startup exits with code 126.
 
+#### Current slice 19Q — Defer Kafka deployment activation
+
+The optional Kafka Compose overlay is explicitly documented as deferred, CI no
+longer invokes its contract by default, and production Kubernetes overlays no
+longer inject the unused Kafka SASL secret into the application pod. The
+optional Compose contract remains runnable explicitly; default JVM/native
+Compose and production Kustomize rendering pass.
+
+- [x] Add the failing deployment parity check for Kafka secret injection.
+- [x] Keep the Kafka Compose overlay and healthcheck intact but deferred.
+- [x] Remove Kafka secret injection from both production overlays.
+- [x] Keep ordinary CI Compose/Kubernetes checks active and Kafka contract
+      invocation deferred.
+- [x] Run affected platform tests, compilation, Spotless, Compose, Kustomize,
+      and deployment-contract checks.
+- [ ] Run the full Modulith-first phase gate after documentation alignment.
+
 #### Current slice 19D — Give durable Modulith listeners stable identities
 
 Provisioning and calendar listeners now declare explicit Modulith listener IDs,

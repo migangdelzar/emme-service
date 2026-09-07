@@ -136,6 +136,21 @@ class PlatformApplicationParityTest {
         .doesNotContain("replace-with-32-char-secure-key!!");
   }
 
+  @Test
+  void productionKubernetesOverlaysDoNotInjectDeferredKafkaSecrets() {
+    List<String> overlays =
+        List.of(
+            "infra/kubernetes/overlays/k3s-production-jvm/kustomization.yaml",
+            "infra/kubernetes/overlays/k3s-production-native/kustomization.yaml");
+
+    overlays.forEach(
+        overlay ->
+            assertThat(readSource(overlay))
+                .as("Deferred Kafka secrets must not be injected by %s", overlay)
+                .doesNotContain("KAFKA_SASL_JAAS_CONFIG")
+                .doesNotContain("kafka-sasl-jaas-config"));
+  }
+
   private static Path sourcePath(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {

@@ -6226,3 +6226,24 @@ Completed in this slice:
   and its configuration still use it; cache raw-string overloads and identity
   fallbacks are gone.
 - Full `./gradlew check --no-parallel --no-configuration-cache` passes.
+
+## Current slice 19T/25E — Publication recovery and intent-boundary evidence — 2026-09-07
+
+- [x] Add real transaction-boundary coverage for failed `TenantActivated`
+      publication and successful retry.
+- [x] Run the live Colima-backed PostgreSQL test and correct its test-only slug
+      length defect.
+- [x] Confirm the remaining `SemanticIntentRouter.route(String)` method is the
+      standalone `/intent` boundary and not the chat-shortcut compatibility API.
+- [x] Run affected checks and push all changes.
+- [ ] Complete Kubernetes runtime smoke checks; the configured API endpoint is
+      unreachable from this environment.
+- [ ] Continue final framework compatibility and enterprise runtime gates.
+
+### Results
+
+- The activation claim rolls back on synchronous publication failure and the
+  next delivery publishes exactly once successfully.
+- The live test passes against PostgreSQL through the Colima Docker socket.
+- No unsafe claim-reset operation, migration, enum change, or tenant-schema
+  routing change was introduced.

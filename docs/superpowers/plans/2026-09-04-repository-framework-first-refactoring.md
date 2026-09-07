@@ -4838,7 +4838,8 @@ absent.
 
 ### Results
 
-- Remote tip is `e88b26a9`; all implementation commits are pushed.
+- Remote tip at this checkpoint was `e88b26a9`; all implementation commits
+  from that wave were pushed.
 - Affected framework checks pass, and `./gradlew check --no-parallel
   --no-configuration-cache` passes with 269 actionable tasks.
 - Validation agents report passing Assistant, Calendar/Tenancy, Database,
@@ -4846,3 +4847,29 @@ absent.
 - No tenant-schema repository contract was changed to add or remove tenant IDs;
   control-plane identifiers remain explicit and schema-local routing remains at
   connection checkout.
+
+## Current slice 19T/25E — Prove activation publication recovery and preserve intent boundary — 2026-09-07
+
+The tenant activation retry invariant is now covered at the real transaction
+boundary: a failed `TenantActivated` publication rolls back the `ACTIVE` claim,
+and a retry can claim and publish successfully. The Assistant raw-string intent
+route remains intentionally separate from the prepared chat-shortcut query;
+its standalone `/intent` callers are protected by a source contract and no
+legacy overload was removed.
+
+- [x] Add transaction-boundary publication-failure rollback/retry coverage.
+- [x] Run the live Colima-backed PostgreSQL retry test.
+- [x] Correct the test-only schema slug length and rerun the live test.
+- [x] Document the intentional standalone intent-route boundary.
+- [x] Run affected checks and push all changes.
+- [ ] Complete the remaining Kubernetes runtime smoke gate.
+- [ ] Continue final compatibility and enterprise runtime gates.
+
+### Results
+
+- `tenantActivatedPublicationFailureRollsBackClaimForRetry` passes against the
+  Colima Docker PostgreSQL environment.
+- The test uses the existing `REQUIRES_NEW` transaction and adds no unsafe
+  compensating claim reset.
+- The final pushed test correction is `c9314e9a`; remote history also contains
+  the Assistant boundary commits `b08f77e0` and `78ee4801`.

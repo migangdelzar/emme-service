@@ -109,6 +109,16 @@ class PlatformApplicationParityTest {
         .contains("core:\n      url: jdbc:h2:mem:emme-kafka");
   }
 
+  @Test
+  void kubernetesBaseDeploymentDoesNotContainSecretPlaceholders() {
+    String deployment = readSource("infra/kubernetes/base/backend-deployment.yaml");
+
+    assertThat(deployment)
+        .doesNotContain("APP_GOOGLE_OAUTH_CLIENT_ID")
+        .doesNotContain("APP_GOOGLE_OAUTH_CLIENT_SECRET")
+        .doesNotContain("replace-with-32-char-secure-key!!");
+  }
+
   private static Path sourcePath(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {

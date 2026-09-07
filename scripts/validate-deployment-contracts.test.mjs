@@ -11,5 +11,7 @@ assert.match(deployment, /path: \/actuator\/health\/readiness/);
 assert.match(deployment, /runAsNonRoot: true/);
 assert.match(migrationJob, /name: emme-secrets/);
 assert.match(migrationJob, /key: postgres-password/);
+assert.doesNotMatch(deployment, /APP_GOOGLE_OAUTH_/);
+assert.doesNotMatch(deployment, /replace-with-32-char-secure-key!!/);
 
 console.log('Deployment contract passed.');

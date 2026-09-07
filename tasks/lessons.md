@@ -2366,3 +2366,14 @@
 - **Prevention rule:** For externally retried lifecycle events, use one
   conditional database transition that returns the winner, and publish only
   after that claim in the same transaction.
+
+## 2026-09-07 — Exclude generated output from source architecture scans
+
+- **Failure mode:** A platform architecture test walked module directories after
+  Spotless generated `build/spotless-clean` sources and treated those copies as
+  production source ownership violations.
+- **Detection signal:** The test reported `emme_core` offenders only under
+  `*/build/spotless-clean/spotlessJava/src/integrationTest` while checked-in
+  source paths remained valid.
+- **Prevention rule:** Repository source scans must exclude generated build
+  directories explicitly and inspect only checked-in source trees.

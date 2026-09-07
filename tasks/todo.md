@@ -5415,6 +5415,31 @@ Completed in this slice:
 - Duplicate activation handling no longer relies on a read-then-write race;
   explicit `tenant_id` remains because the registry is control-plane state.
 
+## Current slice — Task 24 Kubernetes secret placeholders — 2026-09-07
+
+- [x] Add a failing platform deployment-contract test for secret placeholders.
+- [x] Remove obsolete `APP_GOOGLE_OAUTH_*` base environment entries.
+- [x] Remove the literal encryption-key placeholder.
+- [x] Adjust production overlay patches after the base environment cleanup.
+- [x] Extend the Node deployment validator with forbidden-fragment checks.
+- [x] Render K3d JVM/native and K3s production JVM/native overlays.
+- [x] Run the Node validator and platform parity test.
+- [ ] Complete Kubernetes runtime smoke checks in the deployment environment.
+- [ ] Continue remaining event-recovery, database, CI, and compatibility gates.
+
+### Results
+
+- `node scripts/validate-deployment-contracts.test.mjs` and
+  `node scripts/validate-deployment-contracts.mjs` pass.
+- All four Kustomize overlays render successfully after the base environment
+  list was reduced.
+- Production Secret-backed database and Google token-encryption configuration
+  remains unchanged; no secret value was added to source control.
+- The focused platform parity test, Java compilation, and Spotless checks pass.
+- A broader platform `check` exposed a separate existing architecture-test
+  issue: `SchemaOwnershipTest` scans generated `build/spotless-clean` files and
+  reports false `emme_core` offenders. Fix that source-scan boundary separately.
+
 ## Current slice — Task 18 Payment live persistence gate — 2026-09-06
 
 - [x] Verify Payment JPA persistence is isolated by the routed tenant schema.

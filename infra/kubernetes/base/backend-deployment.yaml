@@ -27,14 +27,6 @@ spec:
               value: "prod"
             - name: JAVA_TOOL_OPTIONS
               value: "-XX:+UseZGC -XX:MaxRAMPercentage=75"
-            - name: APP_GOOGLE_OAUTH_CLIENT_ID
-              value: ""
-            - name: APP_GOOGLE_OAUTH_CLIENT_SECRET
-              value: ""
-            - name: APP_GOOGLE_OAUTH_REDIRECT_URI
-              value: "https://dev.emme.lat/api/google/oauth/callback"
-            - name: APP_GOOGLE_OAUTH_ENCRYPTION_KEY
-              value: "replace-with-32-char-secure-key!!"
           resources:
             requests:
               memory: "512Mi"

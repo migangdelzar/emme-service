@@ -18,14 +18,6 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
         value: "production"
-      - op: remove
-        path: /spec/template/spec/containers/0/env/5
-      - op: remove
-        path: /spec/template/spec/containers/0/env/4
-      - op: remove
-        path: /spec/template/spec/containers/0/env/3
-      - op: remove
-        path: /spec/template/spec/containers/0/env/2
       - op: add
         path: /spec/template/spec/containers/0/env/-
         value:

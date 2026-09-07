@@ -15,9 +15,20 @@ const required = [
   ['migration job reads the database password', migrationJob, 'key: postgres-password'],
 ];
 
+const forbidden = [
+  ['obsolete Google OAuth environment names', deployment, 'APP_GOOGLE_OAUTH_'],
+  ['Google OAuth encryption-key placeholder', deployment, 'replace-with-32-char-secure-key!!'],
+];
+
 for (const [description, source, fragment] of required) {
   if (!source.includes(fragment)) {
     throw new Error(`Deployment contract is missing ${description}: ${fragment}`);
+  }
+}
+
+for (const [description, source, fragment] of forbidden) {
+  if (source.includes(fragment)) {
+    throw new Error(`Deployment contract contains ${description}: ${fragment}`);
   }
 }
 

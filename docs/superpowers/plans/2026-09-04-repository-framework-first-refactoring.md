@@ -4422,3 +4422,27 @@ control-plane state and is not selected through an ordinary tenant schema.
 - [ ] Add publication-failure rollback evidence for tenant activation.
 - [ ] Continue remaining event-recovery, database, deployment, and final
       compatibility gates.
+
+## Current slice 24B — Remove Kubernetes secret placeholders — 2026-09-07
+
+The Kubernetes base backend deployment no longer contains obsolete Google OAuth
+environment names or a literal encryption-key placeholder. Production overlays
+were adjusted to match the reduced base environment list, while their existing
+Secret-backed database and encryption-key values remain intact. Local defaults
+continue to come from application configuration rather than deployment literals.
+
+- [x] Add a failing platform deployment-contract test for secret placeholders.
+- [x] Remove obsolete `APP_GOOGLE_OAUTH_*` base environment entries.
+- [x] Remove the literal encryption-key placeholder.
+- [x] Adjust production overlay patches after the base environment cleanup.
+- [x] Extend the Node deployment validator with forbidden-fragment checks.
+- [x] Render all K3d and K3s Kustomize overlays.
+- [x] Run deployment validator, platform parity tests, and affected checks.
+- [ ] Complete Kubernetes runtime smoke checks in the deployment environment.
+- [ ] Continue remaining event-recovery, database, CI, and compatibility gates.
+
+The focused platform parity and compilation/Spotless checks pass. A broader
+platform `check` attempt exposed a pre-existing architecture-test issue: the
+source scan includes generated `build/spotless-clean` Java files and reports
+false `emme_core` ownership offenders. That cleanup is tracked separately from
+the deployment manifest change.

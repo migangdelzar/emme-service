@@ -5359,6 +5359,27 @@ Completed in this slice:
   changing schema-per-tenant connection routing or ordinary repository
   tenant predicates.
 
+## Current slice — Task 19 live payment duplicate delivery — 2026-09-07
+
+- [x] Add a live concurrent duplicate-delivery integration test.
+- [x] Exercise the real tenant-routed workflow context and atomic checkpoint
+      claim adapters.
+- [x] Verify exactly one callback resumes the workflow.
+- [x] Verify the durable workflow reaches `SUCCEEDED`.
+- [x] Run the focused Assistant integration test with the isolated Docker
+      profile.
+- [ ] Add live publication-failure recovery and listener retry evidence.
+- [ ] Continue remaining database, event-recovery, deployment, and final
+      compatibility gates.
+
+### Results
+
+- `PaymentWorkflowDuplicateDeliveryIntegrationTest` passed: two concurrent
+  identical payment events resulted in one workflow resume and one terminal
+  durable update.
+- The existing atomic `WAITING_FOR_PAYMENT` claim remains the duplicate-delivery
+  boundary; no provider-specific or extra tenant identifier was introduced.
+
 ## Current slice — Task 18 Payment live persistence gate — 2026-09-06
 
 - [x] Verify Payment JPA persistence is isolated by the routed tenant schema.

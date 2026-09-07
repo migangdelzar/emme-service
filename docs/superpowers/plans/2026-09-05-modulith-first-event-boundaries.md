@@ -4,6 +4,14 @@
 
 **Goal:** Make Spring Modulith the only active asynchronous event provider for the initial Emme Nails runtime and defer Kafka provider/container activation until a real external consumer exists.
 
+## Current verification — payment workflow duplicate delivery (2026-09-07)
+
+The live Assistant integration gate now races two identical payment workflow
+events through the Spring Modulith listener boundary and the tenant-routed
+PostgreSQL checkpoint claim. Exactly one callback resumes and records the
+terminal workflow state; the duplicate is safely ignored. Publication-failure
+recovery and listener retry remain open follow-up evidence.
+
 **Architecture:** Keep the modular monolith and the PostgreSQL-backed Spring Modulith event publication registry. Current event records remain internal facts and are consumed with `@ApplicationModuleListener`; Kafka build/test artifacts remain dormant and are enabled only through an explicit deferred-test or external-consumer decision.
 
 **Tech Stack:** Java 25, Gradle, Spring Boot 4.1.x, Spring Modulith 2.1.x, PostgreSQL, Liquibase, JUnit 5, AssertJ, Testcontainers, Docker Compose, Kubernetes/Kustomize, GitHub Actions.

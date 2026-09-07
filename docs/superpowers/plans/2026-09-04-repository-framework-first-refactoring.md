@@ -4374,3 +4374,20 @@ defense-in-depth session-context boundary.
 - [x] Run the focused live test and full Tenancy checks, integration tests,
       Checkstyle, and Spotless.
 - [ ] Continue remaining database catalog/migration and final framework gates.
+
+## Current slice 19D — Verify live payment workflow duplicate delivery — 2026-09-07
+
+The payment workflow listener now has live PostgreSQL evidence for concurrent
+duplicate delivery. Two identical callbacks race through the real listener,
+tenant-routed execution-context lookup, and atomic checkpoint claim; exactly one
+callback resumes the workflow and records the terminal state while the duplicate
+is ignored. No event contract, tenant predicate, or migration change was needed.
+
+- [x] Add a live concurrent duplicate-delivery integration test.
+- [x] Exercise the real tenant-routed execution-context and checkpoint adapters.
+- [x] Verify exactly one workflow resume occurs.
+- [x] Verify the durable workflow reaches `SUCCEEDED`.
+- [x] Run the focused Assistant integration test.
+- [ ] Add live publication-failure recovery and listener retry evidence.
+- [ ] Continue remaining database, event-recovery, deployment, and final
+      compatibility gates.

@@ -6150,3 +6150,29 @@ Completed in this slice:
   healthy PostgreSQL, Redis, Keycloak, and application services.
 - `/actuator/health` returns `UP`; unauthenticated API documentation correctly
   returns `401`.
+
+## Current slice — Assistant semantic compatibility boundary inventory (2026-09-07)
+
+- [x] Inspect durable workflow Task 6 and framework-first Task 25 inventory.
+- [x] Search Assistant semantic router/cache callers, tests, and configuration.
+- [x] Add a source contract for the exact remaining string router boundary.
+- [x] Run the red contract check, then focused Assistant tests, compile, and Spotless.
+- [x] Commit and push the bounded inventory slice.
+
+### Working Notes
+
+- The proactive raw-string route, semantic-cache raw-string overloads, cache
+  identity fallbacks, and string invalidation overload are already absent.
+- `SemanticIntentRouter.route(String message)` remains used by
+  `DetectIntentService`; its bean is supplied by `SpringAiSemanticConfiguration`.
+- Cache methods consume `SemanticQuery` or structured `SemanticCachePort` records;
+  cache-kind/query-text strings are persisted metadata, not legacy overloads.
+
+### Results
+
+- Red contract: `CanonicalAiApplicationContractsTest` failed on the expected
+  remaining `SemanticIntentRouter.route(String message)` declaration.
+- Green verification: full `:modules:assistant:test`, Java/test compilation,
+  `spotlessApply`, and `spotlessCheck` passed.
+- No Assistant production source was deleted because the router boundary still
+  has a production caller and Spring bean construction path.

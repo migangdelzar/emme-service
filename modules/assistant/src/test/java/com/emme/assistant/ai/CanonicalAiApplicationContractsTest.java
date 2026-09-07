@@ -6,9 +6,13 @@ import com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabiliti
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
 import com.emme.assistant.ai.application.semantic.SemanticCacheIdentity;
+import com.emme.assistant.ai.application.semantic.SemanticChatCache;
+import com.emme.assistant.ai.application.semantic.SemanticIntentRouter;
+import com.emme.assistant.ai.application.service.DetectIntentService;
 import com.emme.assistant.ai.application.tool.AiToolDefinition;
 import com.emme.assistant.ai.application.tool.AiToolGateway;
 import com.emme.assistant.ai.application.tool.AiToolRisk;
+import com.emme.assistant.ai.configuration.SpringAiSemanticConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -72,6 +76,22 @@ class CanonicalAiApplicationContractsTest {
             Arrays.stream(SemanticResponseCache.class.getDeclaredMethods())
                 .filter(method -> method.getName().equals("store")))
         .allMatch(method -> method.getParameterCount() == 4);
+  }
+
+  @Test
+  void semanticCompatibilityInventoryRecordsTheRemainingRouterBoundary() throws IOException {
+    assertThat(Files.readString(sourceOf(SemanticIntentRouter.class)))
+        .contains("route(String message)");
+    assertThat(Files.readString(sourceOf(DetectIntentService.class)))
+        .contains("router.route(message)");
+    assertThat(Files.readString(sourceOf(SpringAiSemanticConfiguration.class)))
+        .contains("SemanticIntentRouter semanticIntentRouter");
+    assertThat(Files.readString(sourceOf(SemanticResponseCache.class)))
+        .doesNotContain("lookup(String conversationContext, String")
+        .doesNotContain("store(String conversationContext, String");
+    assertThat(Files.readString(sourceOf(SemanticChatCache.class)))
+        .doesNotContain("lookup(String conversationContext, String")
+        .doesNotContain("store(String conversationContext, String");
   }
 
   @Test

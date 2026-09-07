@@ -494,3 +494,15 @@ ordinary schema-local query was changed to repeat a tenant predicate.
 The live test confirms schema-per-tenant connection checkout for the Salon
 singleton path. No ordinary schema-local query was changed to repeat a tenant
 predicate.
+
+## Clients live optimistic-lock evidence — 2026-09-06
+
+- [x] Coordinate two transactions that load one customer version.
+- [x] Perform concurrent updates through the Spring Data repository.
+- [x] Verify exactly one writer commits and one receives
+      `OptimisticLockingFailureException`.
+- [x] Keep optimistic locking in the shared JPA mapped superclass.
+- [ ] Run the corresponding Services/Salon and remaining aggregate matrix.
+
+The runtime result validates the existing `@Version` persistence invariant
+without exposing persistence-version details through the customer contract.

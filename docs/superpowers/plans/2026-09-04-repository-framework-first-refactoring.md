@@ -3932,3 +3932,20 @@ visible through tenant B's schema and is returned again under tenant A.
       focused integration test, and Spotless.
 - [ ] Continue the optimistic-lock matrix and remaining persistence audit before
       closing Task 16/18.
+
+## Current slice 16E — Verify live Clients optimistic locking — 2026-09-06
+
+The Clients integration test now coordinates two PostgreSQL transactions that
+load the same customer version and update it concurrently. The existing shared
+JPA `@Version` mapping rejects the losing update while allowing exactly one
+writer to commit.
+
+- [x] Add a focused two-transaction optimistic-lock integration test.
+- [x] Coordinate both writers after loading the same persisted version.
+- [x] Verify exactly one successful update and one
+      `OptimisticLockingFailureException`.
+- [x] Keep the version implementation in the persistence superclass and out of
+      the provider-neutral customer contract.
+- [x] Run the focused live test and affected Clients checks.
+- [ ] Continue Services, Salon, and remaining aggregate optimistic-lock
+      evidence before closing Task 16/18.

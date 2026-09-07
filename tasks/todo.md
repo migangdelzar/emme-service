@@ -5099,3 +5099,21 @@ Completed in this slice:
   is not visible under tenant B and is visible again under tenant A.
 - Salon unit tests, compilation, integration-test compilation, and Spotless
   pass.
+
+## Current slice — Task 16E live Clients optimistic locking — 2026-09-06
+
+- [x] Add a focused two-transaction optimistic-lock integration test.
+- [x] Coordinate both writers after loading the same persisted version.
+- [x] Verify exactly one successful update and one
+      `OptimisticLockingFailureException`.
+- [x] Keep the version implementation in the persistence superclass and out of
+      the provider-neutral customer contract.
+- [x] Run the focused live test and affected Clients checks.
+- [ ] Continue Services, Salon, and remaining aggregate optimistic-lock
+      evidence before closing Task 16/18.
+
+### Results
+
+- The live PostgreSQL race passes with exactly one committed customer update
+  and one optimistic-lock failure.
+- No production persistence or application contract change was required.

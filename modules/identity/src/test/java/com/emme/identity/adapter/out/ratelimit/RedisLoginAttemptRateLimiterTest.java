@@ -39,6 +39,14 @@ class RedisLoginAttemptRateLimiterTest {
     assertThat(limiter.tryAcquire("identity:login", 5, 60_000L)).isFalse();
   }
 
+  @Test
+  void rejectsAnAttemptWhenRedisCommandTimesOut() {
+    when(redis.execute(anyScript(), eq(List.of("identity:login")), eq("60000")))
+        .thenThrow(new org.springframework.dao.QueryTimeoutException("Redis command timed out"));
+
+    assertThat(limiter.tryAcquire("identity:login", 5, 60_000L)).isFalse();
+  }
+
   @SuppressWarnings("unchecked")
   private static RedisScript<Long> anyScript() {
     return (RedisScript<Long>) any(RedisScript.class);

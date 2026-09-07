@@ -33,6 +33,7 @@ dependencies {
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
   add("integrationTestImplementation", libs.spring.boot.restclient)
+  add("integrationTestImplementation", libs.spring.boot.starter.data.redis)
   add("integrationTestImplementation", libs.jackson.databind)
   add("integrationTestImplementation", libs.okhttp.mockwebserver)
 }

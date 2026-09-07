@@ -2810,20 +2810,24 @@ operations that are not smaller through `StringRedisTemplate`.
 #### Current slice 20B — Fail closed when the distributed login limiter is unavailable
 
 The Redis-backed login-attempt limiter now returns `false` when Spring Data
-Redis reports a connection failure. This keeps the security boundary fail
-closed during an outage while preserving the existing process-local fallback
-for deployments that do not configure Redis. The provider-neutral
-`LoginAttemptRateLimiter` port and atomic Lua counter remain unchanged.
+Redis reports a connection failure or command timeout. This keeps the security
+boundary fail-closed during an outage while preserving the existing
+process-local fallback for deployments that do not configure Redis. The
+provider-neutral `LoginAttemptRateLimiter` port and atomic Lua counter remain
+unchanged.
 
 - [x] Add a failing Redis outage test.
-- [x] Return a rejected decision for `RedisConnectionFailureException`.
+- [x] Return a rejected decision for `RedisConnectionFailureException` and
+      `QueryTimeoutException`.
 - [x] Run the identity Redis test and the assistant Redis/semantic matrix.
-- [ ] Run live Redis outage and recovery behavior with Docker.
+- [x] Run live Redis outage and recovery behavior with Docker.
 
 The live Redis semantic projection test now also deletes the projected Redis
 document and verifies that the hot lookup returns a miss. Durable PostgreSQL
-state remains unaffected; the distributed login limiter outage path still needs
-an end-to-end recovery test.
+state remains unaffected. The live identity limiter test stops and restarts
+Redis, verifies fail-closed behavior during the outage, and verifies recovery
+after restart; the production adapter handles both connection failures and
+command timeouts.
 
 ### Task 21: Split generic and feature-specific test fixtures
 

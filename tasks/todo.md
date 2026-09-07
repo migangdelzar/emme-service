@@ -5262,3 +5262,18 @@ Completed in this slice:
 - `KafkaEventStreamingIntegrationTest` passed with the isolated Docker profile.
 - Listener duplicate/retry recovery remains open because the current gate only
   proves external publication and routing keys.
+
+## Current slice — Task 20 live Redis outage/recovery gate — 2026-09-06
+
+- [x] Add a focused timeout regression test.
+- [x] Verify fail-closed behavior during a live Redis stop.
+- [x] Verify limiter recovery after Redis restart.
+- [x] Preserve TTL behavior for accepted attempts.
+- [ ] Continue remaining Modulith duplicate/retry, Kubernetes smoke, and final
+      release gates.
+
+### Results
+
+- `QueryTimeoutException` is now treated as Redis unavailability at the
+  security boundary.
+- The live Redis stop/restart test passes with a one-second client timeout.

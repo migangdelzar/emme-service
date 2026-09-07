@@ -5,13 +5,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.emme.TestApplication;
 import com.emme.kernel.context.TenantContextHolder;
+import com.emme.tenancy.adapter.in.messaging.consumer.TenantActivationListener;
 import com.emme.tenancy.adapter.out.client.database.TenantSchemaName;
 import com.emme.tenancy.adapter.out.client.database.TenantScopedDataSource;
+import com.emme.tenancy.api.event.TenantActivated;
+import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
 import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
 import com.emme.tenancy.domain.model.TenantProvisioningState;
 import com.emme.testing.integration.annotation.PostgresIntegrationTest;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -19,14 +23,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -52,6 +60,8 @@ class TenantRestIntTest {
   @Autowired private TenantProvisioningRepository provisioningRepository;
 
   @Autowired private TenantSchemaMigrationPort schemaMigrationPort;
+
+  @Autowired private PlatformTransactionManager transactionManager;
 
   @Autowired private PostgreSQLContainer<?> postgresContainer;
 
@@ -408,6 +418,46 @@ class TenantRestIntTest {
     assertThat(provisioningRepository.claimActivation(tenantId)).isTrue();
     assertThat(provisioningRepository.findStatus(tenantId).status())
         .isEqualTo(TenantProvisioningState.ACTIVE);
+  }
+
+  @Test
+  @DisplayName("Failed TenantActivated publication rolls back the activation claim for retry")
+  void tenantActivatedPublicationFailureRollsBackClaimForRetry() {
+    UUID tenantId = UUID.randomUUID();
+    String slug = "activation-publication-retry-" + UUID.randomUUID().toString().replace('-', 'a');
+    String schemaName = TenantSchemaName.fromSlug(slug);
+    provisioningRepository.requestProvisioning(tenantId, slug, schemaName);
+
+    TenantRealmReady realmReady =
+        new TenantRealmReady(UUID.randomUUID(), tenantId, slug, "emme-" + slug);
+    List<TenantActivated> published = new ArrayList<>();
+    AtomicBoolean firstPublication = new AtomicBoolean(true);
+    ApplicationEventPublisher publisher =
+        event -> {
+          if (firstPublication.getAndSet(false)) {
+            throw new IllegalStateException("simulated TenantActivated publication failure");
+          }
+          published.add((TenantActivated) event);
+        };
+    TenantActivationListener listener =
+        new TenantActivationListener(provisioningRepository, publisher);
+    TransactionTemplate transaction = new TransactionTemplate(transactionManager);
+
+    assertThatThrownBy(
+            () ->
+                transaction.executeWithoutResult(status -> listener.onTenantRealmReady(realmReady)))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("simulated TenantActivated publication failure");
+    assertThat(provisioningRepository.findStatus(tenantId).status())
+        .as("the failed publication must not consume the activation claim")
+        .isEqualTo(TenantProvisioningState.PROVISIONING);
+
+    transaction.executeWithoutResult(status -> listener.onTenantRealmReady(realmReady));
+
+    assertThat(provisioningRepository.findStatus(tenantId).status())
+        .isEqualTo(TenantProvisioningState.ACTIVE);
+    assertThat(published).hasSize(1);
+    assertThat(published.getFirst().tenantId()).isEqualTo(tenantId);
   }
 
   private boolean claimActivation(UUID tenantId, CountDownLatch start) {

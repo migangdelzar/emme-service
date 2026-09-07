@@ -3765,6 +3765,19 @@ boundary was changed.
 - [ ] Run the deployed Liquibase migration path and remaining PostgreSQL
       routing/optimistic-lock gates.
 
+## Current slice 21H — Booking integration composition boundary — 2026-09-06
+
+Booking's full-context PostgreSQL integration test now receives the canonical
+AI image capability from the integration-test runtime classpath. The production
+Booking dependency graph remains provider-neutral; the AI platform is test-only
+composition support for Catalog's required capability.
+
+- [x] Add the provider module to Booking's `integrationTestRuntimeOnly`
+      configuration.
+- [x] Run the Booking PostgreSQL integration context and connectivity tests.
+- [ ] Continue the remaining PostgreSQL aggregate and provider integration
+      gates.
+
 ## Current slice 19M — Kafka profile datasource boundary — 2026-09-06
 
 The Kafka integration profile now overrides the inherited namespaced core

@@ -4940,6 +4940,20 @@ Completed in this slice:
 - The profile no longer attempts to connect to host PostgreSQL during context
   startup.
 
+## Current slice — Task 21H Booking integration composition boundary — 2026-09-06
+
+- [x] Provide the canonical image capability to Booking integration tests via
+      `integrationTestRuntimeOnly`.
+- [x] Run `:modules:booking:integrationTest` against PostgreSQL 16.
+- [ ] Continue the remaining PostgreSQL aggregate, Redis, Kafka, and provider
+      gates.
+
+### Results
+
+- Booking integration tests pass (2/2).
+- The production Booking dependency graph remains free of an AI platform
+  dependency; only its integration-test runtime uses the provider module.
+
 ## Current slice — Task 6X/8J semantic schema and ownership runtime fixes — 2026-09-06
 
 - [x] Align the pgvector semantic-cache fixture with the complete response

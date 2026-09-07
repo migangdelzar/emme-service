@@ -2189,3 +2189,16 @@
 - **Prevention rule:** Even when connection checkout selects the tenant schema,
   AI boundary adapters must compare returned aggregate ownership with the
   authenticated execution context before reading or mutating it.
+
+## 2026-09-06 — Put integration-only providers on the integration runtime
+
+- **Failure mode:** Booking's integration test depended on Catalog services
+  requiring `CaptionImageUseCase`, but the AI platform was declared only on the
+  normal test runtime configuration.
+- **Detection signal:** The full-context integration test failed with no
+  qualifying `CaptionImageUseCase` bean even though the provider module was
+  present in the module's test dependencies.
+- **Prevention rule:** For custom source sets, declare provider test modules on
+  the matching `integrationTestRuntimeOnly` or `integrationTestImplementation`
+  configuration; verify the actual integration runtime classpath rather than
+  assuming `testRuntimeOnly` is inherited.

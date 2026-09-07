@@ -12,6 +12,7 @@ dependencies {
   implementation(project(":modules:clients"))
   implementation(project(":modules:staffing"))
   implementation(project(":modules:catalog"))
+  add("integrationTestRuntimeOnly", project(":modules:ai-platform"))
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
 }

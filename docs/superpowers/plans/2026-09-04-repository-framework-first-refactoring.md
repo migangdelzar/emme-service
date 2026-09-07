@@ -3205,8 +3205,10 @@ script with a disposable PostgreSQL environment.
 
 The existing per-capability migration contracts and the new
 `MigrationCatalogContractTest` cover the checked-in Liquibase catalog and
-required AI/PostgreSQL invariants. Invalid slug/schema execution and live
-catalog/RLS behavior remain Docker-gated.
+required AI/PostgreSQL invariants. Invalid slug/schema execution is covered
+by the tenant integration suite; representative live catalog/RLS behavior is
+now also covered against PostgreSQL, while broader behavioral RLS isolation
+remains a follow-up gate.
 
 - [x] **Step 2: Run the database contract suite**
 
@@ -3216,9 +3218,9 @@ catalog/RLS behavior remain Docker-gated.
 
 The existing migration-contract suite passes. It covers the AI job, semantic,
 quote, learning, AGE, design-image, appointment-collision, and event
-idempotency migrations. Live Liquibase application and PostgreSQL catalog/RLS
-verification remain Docker-gated; no deployed migration was edited in this
-slice.
+idempotency migrations. The tenant integration suite separately verifies live
+Liquibase application and representative PostgreSQL catalog/RLS state; no
+deployed migration was edited in this slice.
 
 - [x] **Step 3: Add only required forward migrations and script fixes**
 
@@ -3228,8 +3230,9 @@ unsafe SQL interpolation into application code.
 
 The 2026-09-06 script slice tightened seed-slug validation to the PostgreSQL
 identifier-safe boundary (`^[A-Za-z][A-Za-z0-9-]{0,62}$`) before registry writes.
-No deployed migration was edited; the remaining live Liquibase/catalog/RLS gate
-is still Docker-dependent.
+No deployed migration was edited. The live tenant integration suite now
+applies the real Liquibase path and verifies RLS is enabled with the
+`tenant_isolation` policy on representative tenant tables.
 
 - [x] **Step 4: Run migration tests and commit**
 
@@ -3248,7 +3251,23 @@ edited; PostgreSQL execution remains a runtime gate.
 
 - [x] Run `bash -n database/docker/run-migrations.sh`.
 - [x] Run the full `:database:test` contract suite and `:database:compileJava`.
-- [x] Keep live Liquibase, catalog, and RLS verification Docker-gated.
+- [x] Keep broader behavioral RLS isolation and remaining catalog coverage as
+      Docker-backed follow-up gates.
+
+#### Current slice 23B — Verify live tenant RLS catalog — 2026-09-06
+
+The real tenant-schema Liquibase migration now has PostgreSQL catalog evidence
+for representative tenant data tables. The test verifies both the table-level
+RLS flag and the expected `tenant_isolation` policy after provisioning; it
+does not claim that every table or every session-variable isolation behavior
+has been exhaustively tested.
+
+- [x] Apply the tenant migration through the live provisioning boundary.
+- [x] Verify RLS is enabled on representative tenant data tables.
+- [x] Verify the `tenant_isolation` policy exists on those tables.
+- [x] Run the focused Tenancy integration test and affected checks.
+- [ ] Add broader behavioral RLS isolation coverage with explicit tenant
+      session context before closing the database/RLS phase.
 
 ### Task 24: Standardize deployment, health, and CI gates
 

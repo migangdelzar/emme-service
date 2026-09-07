@@ -5324,3 +5324,20 @@ Completed in this slice:
 - `QueryTimeoutException` is now treated as Redis unavailability at the
   security boundary.
 - The live Redis stop/restart test passes with a one-second client timeout.
+
+## Current slice — Task 23 live tenant RLS catalog gate — 2026-09-06
+
+- [x] Apply the tenant Liquibase migration through real PostgreSQL provisioning.
+- [x] Verify RLS is enabled on representative tenant-schema data tables.
+- [x] Verify each representative table has the `tenant_isolation` policy.
+- [x] Run the focused Tenancy integration test and affected checks.
+- [ ] Add broader behavioral RLS isolation coverage before closing the database
+      and RLS phase.
+
+### Results
+
+- `TenantRestIntTest.tenantDataTablesHaveRowLevelSecurityPolicies` passed with
+  the isolated `colima-emme` Docker profile.
+- The evidence confirms the database migration catalog for RLS without
+  changing schema-per-tenant connection routing or ordinary repository
+  tenant predicates.

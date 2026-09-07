@@ -11,6 +11,7 @@ import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
 import com.emme.tenancy.domain.model.TenantProvisioningState;
 import com.emme.testing.integration.annotation.PostgresIntegrationTest;
 import java.sql.Connection;
+import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.DisplayName;
@@ -128,6 +129,58 @@ class TenantRestIntTest {
                 "Calendar event-link cardinality check failed", failure);
           }
         });
+  }
+
+  @Test
+  @DisplayName("Tenant migrations enable RLS policies on tenant data tables")
+  void tenantDataTablesHaveRowLevelSecurityPolicies() throws Exception {
+    UUID tenantId = UUID.randomUUID();
+    String slug = "rls-catalog-" + UUID.randomUUID().toString().replace('-', 'a');
+    String expectedSchema = TenantSchemaName.fromSlug(slug);
+
+    bootstrapJdbcClient.sql("CREATE EXTENSION IF NOT EXISTS vector SCHEMA emme_core").update();
+    provisioningRepository.requestProvisioning(tenantId, slug, expectedSchema);
+    assertThat(schemaMigrationPort.migrate(tenantId, slug)).isEqualTo(expectedSchema);
+
+    try (Connection connection = dataSource.getConnection()) {
+      for (String table : List.of("appointment", "calendar_event_link", "ai_semantic_cache")) {
+        assertThat(hasRls(connection, expectedSchema, table))
+            .as("RLS is enabled for %s.%s", expectedSchema, table)
+            .isTrue();
+        assertThat(hasTenantPolicy(connection, expectedSchema, table))
+            .as("tenant policy exists for %s.%s", expectedSchema, table)
+            .isTrue();
+      }
+    }
+  }
+
+  private static boolean hasRls(Connection connection, String schema, String table)
+      throws java.sql.SQLException {
+    try (var statement =
+        connection.prepareStatement(
+            "SELECT relrowsecurity FROM pg_class c "
+                + "JOIN pg_namespace n ON n.oid = c.relnamespace "
+                + "WHERE n.nspname = ? AND c.relname = ?")) {
+      statement.setString(1, schema);
+      statement.setString(2, table);
+      try (var result = statement.executeQuery()) {
+        return result.next() && result.getBoolean(1);
+      }
+    }
+  }
+
+  private static boolean hasTenantPolicy(Connection connection, String schema, String table)
+      throws java.sql.SQLException {
+    try (var statement =
+        connection.prepareStatement(
+            "SELECT EXISTS (SELECT 1 FROM pg_policies "
+                + "WHERE schemaname = ? AND tablename = ? AND policyname = 'tenant_isolation')")) {
+      statement.setString(1, schema);
+      statement.setString(2, table);
+      try (var result = statement.executeQuery()) {
+        return result.next() && result.getBoolean(1);
+      }
+    }
   }
 
   private static void insertCalendarEventLink(

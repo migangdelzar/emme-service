@@ -21,6 +21,12 @@ default integration task excludes the deferred Kafka streaming test. Focused
 profile/event tests, application compilation, and Spotless pass. The explicit
 Kafka profile and opt-in integration path remain for Task 3.
 
+The deferred integration test now publishes only a test-local
+`TestExternalizedEvent` on `emme.test.kafka-event`. Its source compiles and is
+explicitly gated, but the live Kafka run is blocked by the Testcontainers image
+startup failure (`apache/kafka-native:3.8.0`, exit code 126) in the current
+environment.
+
 ## Current verification — payment workflow duplicate delivery (2026-09-07)
 
 The live Assistant integration gate now races two identical payment workflow
@@ -296,7 +302,7 @@ git commit -m "refactor(config): defer Kafka provider activation"
 - Consumes: the deferred `emme.kafka-deferred` Gradle property and the existing `kafka-test` profile.
 - Produces: a Kafka integration test that exercises only a test-local externalized event, never a production business event.
 
-- [ ] **Step 1: Write the failing deferred-test contract**
+- [x] **Step 1: Write the failing deferred-test contract**
 
 Change the integration test so it publishes a test-only record declared inside the `com.emme` test package:
 
@@ -316,13 +322,16 @@ Run the explicitly selected test before adding the Gradle exclusion:
   --no-parallel --no-configuration-cache
 ```
 
+The explicit run reached Kafka Testcontainer startup but could not execute the
+test because `apache/kafka-native:3.8.0` exited with code 126.
+
 Expected: FAIL until the test-only event and updated topic expectations are implemented. If Docker is unavailable, preserve the container startup error as an environment prerequisite and continue with the non-container checks.
 
-- [ ] **Step 2: Implement the deferred-only test path**
+- [x] **Step 2: Implement the deferred-only test path**
 
 Keep `application-kafka-test.yml` explicitly enabling Modulith externalization and JDBC schema initialization. Ensure the `integrationTest` task excludes `KafkaEventStreamingIntegrationTest` unless `-Pemme.kafka-deferred=true` is supplied. Do not annotate any production event to make this test pass.
 
-- [ ] **Step 3: Verify default integration does not create Kafka**
+- [x] **Step 3: Verify default integration does not create Kafka**
 
 Run:
 

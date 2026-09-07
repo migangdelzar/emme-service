@@ -2567,6 +2567,19 @@ Kafka streaming verification unless explicitly opted in.
 - [x] Run focused platform tests, compilation, and Spotless.
 - [ ] Convert Kafka streaming verification to a test-local externalized event.
 
+#### Current slice 19P — Keep Kafka verification explicitly deferred
+
+Kafka streaming verification now publishes only a test-local
+`TestExternalizedEvent` to `emme.test.kafka-event`; production business events
+remain Modulith-internal. The default integration task excludes the Kafka test,
+while `-Pemme.kafka-deferred=true` retains an explicit opt-in path.
+
+- [x] Replace production business-event publication with the test-local event.
+- [x] Preserve stable topic, tenant partition key, and payload assertions.
+- [x] Compile the integration source set and run Spotless.
+- [ ] Run the opt-in Kafka Testcontainer test successfully when the broker image
+      is runnable; current image startup exits with code 126.
+
 #### Current slice 19D — Give durable Modulith listeners stable identities
 
 Provisioning and calendar listeners now declare explicit Modulith listener IDs,

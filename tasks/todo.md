@@ -40,6 +40,23 @@
   invoking only that excluded test correctly reports no matching tests.
 - Kafka remains available only through the explicit deferred profile/capability.
 
+## Current slice — Explicit deferred Kafka verification — 2026-09-07
+
+- [x] Replace production business-event publication with a test-local
+      `TestExternalizedEvent`.
+- [x] Preserve topic, tenant key, and payload assertions.
+- [x] Verify integration-test compilation and Spotless.
+- [ ] Run the explicit Kafka Testcontainer test when the broker image starts.
+- [x] Commit and push the non-Docker portion of the slice.
+
+### Results
+
+- `:applications:emme-platform:compileIntegrationTestJava` and platform
+  Spotless checks pass.
+- The explicit live run failed before test execution because
+  `apache/kafka-native:3.8.0` exited with code 126 during Testcontainers
+  startup. This is the remaining environment-gated evidence for this slice.
+
 ## Current slice — Task 17 live appointment collision gate — 2026-09-06
 
 - [x] Start an isolated `colima-emme` Docker profile after the stale default

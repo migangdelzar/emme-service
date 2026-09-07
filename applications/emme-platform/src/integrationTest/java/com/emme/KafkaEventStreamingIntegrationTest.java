@@ -2,14 +2,8 @@ package com.emme;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.emme.appointments.api.event.AppointmentCancelled;
-import com.emme.appointments.api.event.AppointmentCreated;
-import com.emme.appointments.api.event.AppointmentRescheduled;
-import com.emme.tenancy.api.event.TenantCreated;
 import com.emme.testing.integration.annotation.KafkaIntegrationTest;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -25,6 +19,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.modulith.events.Externalized;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
@@ -75,28 +70,24 @@ class KafkaEventStreamingIntegrationTest {
   }
 
   @Test
-  void externalizedApplicationEventIsPublishedToItsStableKafkaTopic() {
+  void testOnlyExternalizedEventIsPublishedToItsStableKafkaTopic() {
     String tenantId = UUID.randomUUID().toString();
     String appointmentId = UUID.randomUUID().toString();
     new TransactionTemplate(transactionManager)
         .execute(
             ignored -> {
               events.publishEvent(
-                  new AppointmentCancelled(
-                      UUID.randomUUID(),
-                      UUID.fromString(tenantId),
-                      UUID.fromString(appointmentId),
-                      java.time.Instant.now()));
+                  new TestExternalizedEvent(UUID.fromString(tenantId), appointmentId));
               return null;
             });
 
     try (Consumer<String, String> consumer = consumer(kafka.getBootstrapServers())) {
-      consumer.subscribe(java.util.List.of("emme.studio.appointment-cancelled"));
+      consumer.subscribe(java.util.List.of("emme.test.kafka-event"));
       ConsumerRecord<String, String> record = null;
       long deadline = System.nanoTime() + Duration.ofSeconds(15).toNanos();
       while (record == null && System.nanoTime() < deadline) {
         for (ConsumerRecord<String, String> candidate : consumer.poll(Duration.ofMillis(500))) {
-          if (candidate.topic().equals("emme.studio.appointment-cancelled")) {
+          if (candidate.topic().equals("emme.test.kafka-event")) {
             record = candidate;
             break;
           }
@@ -109,79 +100,8 @@ class KafkaEventStreamingIntegrationTest {
     }
   }
 
-  @Test
-  void everyApprovedExternalizedEventIsPublishedWithItsCatalogRouting() {
-    UUID tenantId = UUID.randomUUID();
-    UUID appointmentId = UUID.randomUUID();
-    Instant eventTime = Instant.now();
-    List<EventExpectation> expectations =
-        List.of(
-            new EventExpectation(
-                new TenantCreated(
-                    UUID.randomUUID(), tenantId, "streaming-salon", "Streaming Salon"),
-                "emme.tenancy.tenant-created",
-                tenantId.toString(),
-                "streaming-salon"),
-            new EventExpectation(
-                new AppointmentCreated(
-                    UUID.randomUUID(),
-                    tenantId,
-                    appointmentId,
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
-                    eventTime,
-                    eventTime.plusSeconds(3_600),
-                    eventTime),
-                "emme.studio.appointment-created",
-                tenantId.toString(),
-                appointmentId.toString()),
-            new EventExpectation(
-                new AppointmentRescheduled(
-                    UUID.randomUUID(),
-                    tenantId,
-                    appointmentId,
-                    eventTime,
-                    eventTime.plusSeconds(3_600),
-                    eventTime.plusSeconds(7_200),
-                    eventTime.plusSeconds(10_800),
-                    eventTime),
-                "emme.studio.appointment-rescheduled",
-                tenantId.toString(),
-                appointmentId.toString()),
-            new EventExpectation(
-                new AppointmentCancelled(UUID.randomUUID(), tenantId, appointmentId, eventTime),
-                "emme.studio.appointment-cancelled",
-                tenantId.toString(),
-                appointmentId.toString()));
-
-    new TransactionTemplate(transactionManager)
-        .execute(
-            ignored -> {
-              expectations.forEach(expectation -> events.publishEvent(expectation.event()));
-              return null;
-            });
-
-    try (Consumer<String, String> consumer = consumer(kafka.getBootstrapServers())) {
-      consumer.subscribe(expectations.stream().map(EventExpectation::topic).toList());
-      java.util.Map<String, ConsumerRecord<String, String>> records = new java.util.HashMap<>();
-      long deadline = System.nanoTime() + Duration.ofSeconds(20).toNanos();
-      while (records.size() < expectations.size() && System.nanoTime() < deadline) {
-        for (ConsumerRecord<String, String> record : consumer.poll(Duration.ofMillis(500))) {
-          records.putIfAbsent(record.topic(), record);
-        }
-      }
-
-      for (EventExpectation expectation : expectations) {
-        ConsumerRecord<String, String> record = records.get(expectation.topic());
-        assertThat(record).as("Kafka event was not published: " + expectation.topic()).isNotNull();
-        assertThat(record.key()).isEqualTo(expectation.key());
-        assertThat(record.value()).contains(expectation.payloadMarker());
-      }
-    }
-  }
-
-  private record EventExpectation(Object event, String topic, String key, String payloadMarker) {}
+  @Externalized("emme.test.kafka-event::#{#this.tenantId()}")
+  private record TestExternalizedEvent(UUID tenantId, String marker) {}
 
   private static Consumer<String, String> consumer(String bootstrapServers) {
     var properties = new java.util.HashMap<String, Object>();

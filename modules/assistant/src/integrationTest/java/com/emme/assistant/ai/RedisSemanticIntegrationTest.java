@@ -126,7 +126,7 @@ class RedisSemanticIntegrationTest {
             new SemanticCacheIdentity(
                 "ollama", "gemma4:e4b-mlx", "knowledge-v1", "policy-v1", "source-v1"));
 
-    AiExecutionContext context = context(TENANT_ID);
+    AiExecutionContext context = context(TENANT_ID, UUID.randomUUID());
     AiExecutionContextScope.run(context, () -> hotStore.put(durableId, write));
 
     assertThat(redisClient.jsonGet(PREFIX + "cache-" + durableId)).isNotNull();
@@ -210,9 +210,13 @@ class RedisSemanticIntegrationTest {
   }
 
   private static AiExecutionContext context(UUID tenantId) {
+    return context(tenantId, PRINCIPAL_ID);
+  }
+
+  private static AiExecutionContext context(UUID tenantId, UUID principalId) {
     return new AiExecutionContext(
         tenantId,
-        PRINCIPAL_ID,
+        principalId,
         Set.of("ROLE_CLIENT"),
         CONVERSATION_ID,
         WORKFLOW_ID,

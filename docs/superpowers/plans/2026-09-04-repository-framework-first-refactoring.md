@@ -4609,3 +4609,19 @@ do not gain redundant tenant predicates.
 - [x] Run the focused Tenancy integration gate against PostgreSQL.
 - [ ] Continue remaining persistence, event-recovery, deployment, and
       compatibility framework gates.
+
+## Current slice 6Q — Verify AI compatibility cleanup closure — 2026-09-07
+
+The repository-wide production inventory contains none of the retired AI
+compatibility families: legacy chat ports, the composite model provider,
+Assistant embedding aliases, semantic-cache identity fallbacks, or the removed
+RAG search contract. Remaining references are test assertions that enforce
+their absence. Canonical contract, platform, and Assistant architecture tests
+all pass.
+
+- [x] Search production sources for retired AI compatibility declarations and callers.
+- [x] Confirm remaining references are deletion/source-boundary assertions only.
+- [x] Run canonical AI-contract and AI-platform compatibility tests.
+- [x] Run Assistant contract and architecture tests.
+- [ ] Continue remaining persistence, event-recovery, deployment, and
+      compatibility framework gates.

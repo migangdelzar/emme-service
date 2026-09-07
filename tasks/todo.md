@@ -5986,3 +5986,17 @@ Completed in this slice:
 
 - `TenantRestIntTest` passes against the isolated `colima-emme` PostgreSQL
   profile, covering provisioning, routing, cardinality, and RLS contracts.
+
+## Current slice — Task 6 AI compatibility cleanup verification — 2026-09-07
+
+- [x] Inventory retired AI compatibility declarations and production callers.
+- [x] Confirm only deletion/source-boundary assertions retain legacy names.
+- [x] Run AI-contract, AI-platform, and Assistant compatibility/architecture
+      tests.
+- [ ] Continue remaining persistence, event-recovery, deployment, and
+      compatibility framework gates.
+
+### Results
+
+- Canonical AI compatibility verification passes; no additional production
+  deletion was justified because the retired families are already absent.

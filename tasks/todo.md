@@ -5263,6 +5263,22 @@ Completed in this slice:
 - Listener duplicate/retry recovery remains open because the current gate only
   proves external publication and routing keys.
 
+## Current slice — Task 19 duplicate membership delivery — 2026-09-06
+
+- [x] Add a failing service test for a concurrent duplicate result.
+- [x] Use an atomic `createIfAbsent` persistence operation.
+- [x] Remove the unused customer-membership mapper.
+- [x] Verify two concurrent PostgreSQL membership ensures leave one row.
+- [x] Run the full Identity unit suite, integration compilation, and Spotless.
+- [ ] Continue Modulith listener retry/publication recovery evidence.
+
+### Results
+
+- Customer membership idempotency now relies on the control-plane primary key
+  and PostgreSQL `ON CONFLICT DO NOTHING`, avoiding check-then-insert races.
+- Ordinary tenant-schema routing remains unchanged; membership keeps its
+  explicit tenant key because it is authorization/control-plane data.
+
 ## Current slice — Task 20 live Redis outage/recovery gate — 2026-09-06
 
 - [x] Add a focused timeout regression test.

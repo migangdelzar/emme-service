@@ -1895,8 +1895,11 @@ routing.
 - [x] Run the full Clients, Services, and Salon module tests, compilation, and
       Spotless checks.
 - [x] Commit and push `4c02eb92`, `1ad62cb6`, and `783c6d73`.
-- [ ] Add/execute live PostgreSQL tenant-routing and optimistic-lock conflict
-      evidence when Docker is available.
+- [x] Add/execute live PostgreSQL tenant-routing and optimistic-lock conflict
+      evidence with Docker.
+
+The live Clients, Services, and Salon Testcontainers matrices now verify both
+tenant-schema routing and two-transaction optimistic-lock conflicts.
 
 ### Task 17: Make appointment collision handling concurrency-safe
 
@@ -1924,7 +1927,8 @@ routing.
 - [x] Keep collision ports tenant-scoped and remove unused non-tenant overloads/list-query methods.
 - [x] Add a forward Liquibase migration with a PostgreSQL GiST exclusion constraint and active-appointment preflight.
 - [x] Add migration contract coverage and a Testcontainers concurrency test asserting one commit and one `23P01` exclusion violation.
-- [ ] Run the Testcontainers concurrency test with Docker available and verify it against the deployed migration path.
+- [x] Run the Testcontainers concurrency test with Docker available and verify
+      it against the deployed migration path.
 
 - [x] **Step 1: Write failing collision and concurrency tests**
 
@@ -1944,11 +1948,11 @@ Prefer a Spring Data existence/projection query and transaction lock. Add a
 PostgreSQL migration only if a database exclusion/range invariant is necessary;
 never rely on a Java pre-check alone for concurrent booking.
 
-- [ ] **Step 4: Run unit/integration tests, compile, and commit**
+- [x] **Step 4: Run unit/integration tests, compile, and commit**
 
-The unit and H2 repository tests pass. The live PostgreSQL concurrency gate is
-written but could not start because Docker is unavailable in the current
-environment; Task 17 remains open until that gate runs successfully.
+The unit, H2 repository, and live PostgreSQL concurrency gates pass. The live
+test applies the deployed appointment-holds migration, commits one overlapping
+insert, and rejects the competing transaction with SQLSTATE `23P01`.
 
 The focused collision/repository tests and `:modules:appointments:compileJava`
 passed on 2026-09-06. The remaining Task 17 evidence is the live PostgreSQL
@@ -2481,6 +2485,23 @@ the behavior-based name; tracing and failover behavior are unchanged.
 ## 10. Phase H — Events, Redis, libraries, and build foundations
 
 ### Task 19: Standardize Modulith events and Kafka boundaries
+
+#### Current slice 19M — Make duplicate membership delivery atomic
+
+Customer membership establishment now uses an atomic persistence operation with
+`ON CONFLICT (customer_id, tenant_id) DO NOTHING`. Sequential and concurrent
+duplicate appointment deliveries therefore remain idempotent without turning a
+primary-key race into a listener failure. Membership is control-plane data, so
+the explicit tenant key remains part of its identity; this does not change
+tenant-schema routing for ordinary business data.
+
+- [x] Add a failing service test for a concurrent duplicate result.
+- [x] Replace check-then-save with an atomic create-if-absent repository port.
+- [x] Remove the unused membership persistence mapper.
+- [x] Verify two concurrent membership ensures leave one row in PostgreSQL.
+- [x] Run the Identity unit suite, integration compilation, and Spotless.
+- [ ] Run full Modulith listener retry/publication recovery against the deployed
+      event publication registry.
 
 #### Current slice 19F — Make tenant activation duplicate-safe
 

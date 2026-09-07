@@ -158,9 +158,6 @@ class IdentityPackageConventionTest {
   private static final Path CUSTOMER_MEMBERSHIP_REPOSITORY =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/repository/SpringDataCustomerMembershipRepository.java");
-  private static final Path CUSTOMER_MEMBERSHIP_MAPPER =
-      sourcePath(
-          "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/mapper/CustomerMembershipPersistenceMapper.java");
   private static final Path CUSTOMER_MEMBERSHIP_ADAPTER =
       sourcePath(
           "modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/adapter/CustomerMembershipPersistenceAdapter.java");
@@ -631,7 +628,6 @@ class IdentityPackageConventionTest {
     assertThat(Files.exists(CUSTOMER_MEMBERSHIP_ENTITY)).isTrue();
     assertThat(Files.exists(CUSTOMER_MEMBERSHIP_ID)).isTrue();
     assertThat(Files.exists(CUSTOMER_MEMBERSHIP_REPOSITORY)).isTrue();
-    assertThat(Files.exists(CUSTOMER_MEMBERSHIP_MAPPER)).isTrue();
     assertThat(Files.exists(CUSTOMER_MEMBERSHIP_ADAPTER)).isTrue();
     assertThat(Files.exists(CUSTOMER_MEMBERSHIP_CONSUMER)).isTrue();
     assertThat(Files.exists(LEGACY_CUSTOMER_MEMBERSHIP_ENTITY)).isFalse();

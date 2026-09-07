@@ -1,6 +1,5 @@
 package com.emme.identity.adapter.out.persistence.adapter;
 
-import com.emme.identity.adapter.out.persistence.mapper.CustomerMembershipPersistenceMapper;
 import com.emme.identity.adapter.out.persistence.repository.SpringDataCustomerMembershipRepository;
 import com.emme.identity.application.port.out.CustomerMembershipRepository;
 import com.emme.identity.domain.model.CustomerMembership;
@@ -12,13 +11,9 @@ import org.springframework.stereotype.Component;
 public class CustomerMembershipPersistenceAdapter implements CustomerMembershipRepository {
 
   private final SpringDataCustomerMembershipRepository repository;
-  private final CustomerMembershipPersistenceMapper mapper;
 
-  public CustomerMembershipPersistenceAdapter(
-      SpringDataCustomerMembershipRepository repository,
-      CustomerMembershipPersistenceMapper mapper) {
+  public CustomerMembershipPersistenceAdapter(SpringDataCustomerMembershipRepository repository) {
     this.repository = repository;
-    this.mapper = mapper;
   }
 
   @Override
@@ -27,7 +22,9 @@ public class CustomerMembershipPersistenceAdapter implements CustomerMembershipR
   }
 
   @Override
-  public CustomerMembership save(CustomerMembership membership) {
-    return mapper.toDomain(repository.save(mapper.toEntity(membership)));
+  public boolean createIfAbsent(CustomerMembership membership) {
+    return repository.insertIfAbsent(
+            membership.customerId(), membership.tenantId(), membership.createdAt())
+        == 1;
   }
 }

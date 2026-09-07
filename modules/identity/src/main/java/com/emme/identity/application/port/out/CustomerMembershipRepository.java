@@ -8,5 +8,6 @@ public interface CustomerMembershipRepository {
 
   boolean existsByCustomerIdAndTenantId(UUID customerId, UUID tenantId);
 
-  CustomerMembership save(CustomerMembership membership);
+  /** Atomically creates the membership and returns whether this call inserted it. */
+  boolean createIfAbsent(CustomerMembership membership);
 }

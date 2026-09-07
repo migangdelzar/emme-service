@@ -28,12 +28,14 @@ class EnsureCustomerMembershipServiceTest {
     UUID customerId = UUID.randomUUID();
     UUID tenantId = UUID.randomUUID();
     when(repository.existsByCustomerIdAndTenantId(customerId, tenantId)).thenReturn(false);
+    when(repository.createIfAbsent(any(CustomerMembership.class))).thenReturn(true);
 
     service.ensureForCustomer(customerId, tenantId);
 
     ArgumentCaptor<CustomerMembership> membership =
         ArgumentCaptor.forClass(CustomerMembership.class);
-    verify(repository).save(membership.capture());
+
+    verify(repository).createIfAbsent(membership.capture());
     assertThat(membership.getValue().customerId()).isEqualTo(customerId);
     assertThat(membership.getValue().tenantId()).isEqualTo(tenantId);
     assertThat(membership.getValue().createdAt()).isNotNull();
@@ -47,6 +49,18 @@ class EnsureCustomerMembershipServiceTest {
 
     service.ensureForCustomer(customerId, tenantId);
 
-    verify(repository, never()).save(any(CustomerMembership.class));
+    verify(repository, never()).createIfAbsent(any(CustomerMembership.class));
+  }
+
+  @Test
+  void treatsAConcurrentDuplicateAsAlreadyEnsured() {
+    UUID customerId = UUID.randomUUID();
+    UUID tenantId = UUID.randomUUID();
+    when(repository.existsByCustomerIdAndTenantId(customerId, tenantId)).thenReturn(false);
+    when(repository.createIfAbsent(any(CustomerMembership.class))).thenReturn(false);
+
+    service.ensureForCustomer(customerId, tenantId);
+
+    verify(repository).createIfAbsent(any(CustomerMembership.class));
   }
 }

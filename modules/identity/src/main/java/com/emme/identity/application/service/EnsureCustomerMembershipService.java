@@ -33,7 +33,9 @@ public class EnsureCustomerMembershipService implements EnsureCustomerMembership
       return;
     }
 
-    repository.save(new CustomerMembership(customerId, tenantId));
-    log.info("Auto-created membership for customer {} in tenant {}", customerId, tenantId);
+    CustomerMembership membership = new CustomerMembership(customerId, tenantId);
+    if (repository.createIfAbsent(membership)) {
+      log.info("Auto-created membership for customer {} in tenant {}", customerId, tenantId);
+    }
   }
 }

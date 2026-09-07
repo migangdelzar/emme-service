@@ -5079,3 +5079,23 @@ Completed in this slice:
   visible under tenant B and is visible again under tenant A.
 - Services unit tests, compilation, integration-test compilation, and Spotless
   pass.
+
+## Current slice — Task 16D live Salon tenant-schema JPA routing — 2026-09-06
+
+- [x] Add a focused Salon integration test with two provisioned tenant schemas.
+- [x] Add explicit integration-test dependencies for the existing application,
+      tenant migration resources, JPA, JdbcClient, shared, and kernel support.
+- [x] Keep pgvector setup database-level and outside the `emme_core` ownership
+      boundary.
+- [x] Verify tenant A/B visibility through the live PostgreSQL path.
+- [x] Run Salon unit tests, Java compilation, integration-test compilation,
+      focused integration test, and Spotless.
+- [ ] Continue the optimistic-lock matrix and remaining persistence audit before
+      closing Task 16/18.
+
+### Results
+
+- The live PostgreSQL test passes: a business profile persisted under tenant A
+  is not visible under tenant B and is visible again under tenant A.
+- Salon unit tests, compilation, integration-test compilation, and Spotless
+  pass.

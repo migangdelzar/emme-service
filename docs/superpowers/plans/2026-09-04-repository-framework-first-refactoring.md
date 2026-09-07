@@ -3914,3 +3914,21 @@ readable again under tenant A.
       focused integration test, and Spotless.
 - [ ] Continue Salon live tenant-routing and the optimistic-lock matrix before
       closing Task 16.
+
+## Current slice 16D — Verify live Salon tenant-schema JPA routing — 2026-09-06
+
+The Salon aggregate already uses module-private Spring Data repositories and
+framework-free mapping. This slice adds live PostgreSQL evidence for the
+singleton business-profile path: a profile written under tenant A is not
+visible through tenant B's schema and is returned again under tenant A.
+
+- [x] Add a focused Salon integration test with two provisioned tenant schemas.
+- [x] Add explicit integration-test dependencies for the existing application,
+      tenant migration resources, JPA, JdbcClient, shared, and kernel support.
+- [x] Keep pgvector setup database-level and outside the `emme_core` ownership
+      boundary.
+- [x] Verify tenant A/B visibility through the live PostgreSQL path.
+- [x] Run Salon unit tests, Java compilation, integration-test compilation,
+      focused integration test, and Spotless.
+- [ ] Continue the optimistic-lock matrix and remaining persistence audit before
+      closing Task 16/18.

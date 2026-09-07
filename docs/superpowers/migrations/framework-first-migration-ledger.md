@@ -480,3 +480,17 @@ provider-neutral application contract.
 
 The live test confirms schema-per-tenant connection checkout for Services. No
 ordinary schema-local query was changed to repeat a tenant predicate.
+
+## Salon live tenant-routing evidence — 2026-09-06
+
+- [x] Add a focused PostgreSQL integration test for JPA business-profile
+      visibility.
+- [x] Provision two tenant schemas through the tenancy-owned ports.
+- [x] Verify a profile written under tenant A is absent under tenant B and
+      visible again under tenant A.
+- [x] Keep pgvector setup at the database level and outside `emme_core`.
+- [ ] Run the remaining optimistic-lock matrix and persistence audit.
+
+The live test confirms schema-per-tenant connection checkout for the Salon
+singleton path. No ordinary schema-local query was changed to repeat a tenant
+predicate.

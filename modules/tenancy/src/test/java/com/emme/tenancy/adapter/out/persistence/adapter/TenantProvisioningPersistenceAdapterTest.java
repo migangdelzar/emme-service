@@ -78,4 +78,19 @@ class TenantProvisioningPersistenceAdapterTest {
     assertThat(new TenantProvisioningPersistenceAdapter(repository).claimActivation(tenantId))
         .isTrue();
   }
+
+  @Test
+  void claimActivation_returnsFalseWhenTheConditionalUpdateClaimsNoRow() {
+    var repository = mock(SpringDataTenantRegistryRepository.class);
+    UUID tenantId = UUID.randomUUID();
+    when(repository.claimActivation(
+            org.mockito.ArgumentMatchers.eq(tenantId),
+            org.mockito.ArgumentMatchers.eq(TenantProvisioningState.ACTIVE),
+            org.mockito.ArgumentMatchers.eq("0.1.0"),
+            org.mockito.ArgumentMatchers.any()))
+        .thenReturn(0);
+
+    assertThat(new TenantProvisioningPersistenceAdapter(repository).claimActivation(tenantId))
+        .isFalse();
+  }
 }

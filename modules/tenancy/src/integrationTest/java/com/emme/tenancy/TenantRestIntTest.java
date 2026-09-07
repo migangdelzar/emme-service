@@ -394,6 +394,22 @@ class TenantRestIntTest {
         .isEqualTo(TenantProvisioningState.ACTIVE);
   }
 
+  @Test
+  @DisplayName("Failed tenant activation remains retryable")
+  void failedTenantActivationCanBeClaimedAgain() {
+    UUID tenantId = UUID.randomUUID();
+    String slug = "activation-retry-" + UUID.randomUUID().toString().replace('-', 'a');
+    String schemaName = TenantSchemaName.fromSlug(slug);
+    provisioningRepository.requestProvisioning(tenantId, slug, schemaName);
+    provisioningRepository.markFailed(tenantId, "realm provisioning failed");
+
+    assertThat(provisioningRepository.findStatus(tenantId).status())
+        .isEqualTo(TenantProvisioningState.FAILED);
+    assertThat(provisioningRepository.claimActivation(tenantId)).isTrue();
+    assertThat(provisioningRepository.findStatus(tenantId).status())
+        .isEqualTo(TenantProvisioningState.ACTIVE);
+  }
+
   private boolean claimActivation(UUID tenantId, CountDownLatch start) {
     try {
       if (!start.await(10, TimeUnit.SECONDS)) {

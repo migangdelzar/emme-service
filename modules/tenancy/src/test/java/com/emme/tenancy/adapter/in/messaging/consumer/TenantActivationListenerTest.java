@@ -2,6 +2,7 @@ package com.emme.tenancy.adapter.in.messaging.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,5 +51,19 @@ class TenantActivationListenerTest {
 
     verify(provisioningRepository, never()).findSchemaName(tenantId);
     verify(eventPublisher, never()).publishEvent(org.mockito.ArgumentMatchers.any());
+  }
+
+  @Test
+  void onTenantRealmReady_publishesOnlyForTheWinningDuplicateDelivery() {
+    UUID tenantId = UUID.randomUUID();
+    TenantRealmReady event = new TenantRealmReady(UUID.randomUUID(), tenantId, "slug", "emme-slug");
+    when(provisioningRepository.claimActivation(tenantId)).thenReturn(true, false);
+    when(provisioningRepository.findSchemaName(tenantId)).thenReturn("tenant_slug");
+
+    listener.onTenantRealmReady(event);
+    listener.onTenantRealmReady(event);
+
+    verify(eventPublisher, times(1))
+        .publishEvent(org.mockito.ArgumentMatchers.any(TenantActivated.class));
   }
 }

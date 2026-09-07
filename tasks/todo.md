@@ -5206,3 +5206,19 @@ Completed in this slice:
   Notification, and Payment.
 - No ordinary production provider adapter imports OkHttp, and no deleted
   provider HTTP wrapper reference remains.
+
+## Current slice — Task 13 live PostgreSQL tenancy gate — 2026-09-06
+
+- [x] Verify PostgreSQL-backed application context startup.
+- [x] Verify real tenant schema migration and connection routing.
+- [x] Verify duplicate provisioning preserves the original registry owner.
+- [x] Verify invalid schema migration fails before database work.
+- [ ] Continue remaining framework-first database, event-recovery, Redis,
+      deployment, and compatibility gates.
+
+### Results
+
+- `TenantRestIntTest` passed all startup, routing, duplicate, and invalid-schema
+  scenarios with the isolated Docker profile.
+- No tenant-schema query was changed to repeat `tenant_id`; routing remains at
+  connection checkout.

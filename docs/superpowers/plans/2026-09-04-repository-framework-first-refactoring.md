@@ -1697,7 +1697,7 @@ context startup does not perform network calls.
       migration/routing gate with the isolated `colima-emme` Docker profile.
 - [x] Run affected library and Tenancy checks, including Spotless and
       Checkstyle.
-- [ ] Add the remaining live duplicate/failure behavior assertions to the
+- [x] Add the remaining live duplicate/failure behavior assertions to the
       PostgreSQL gate.
 
 The focused startup and migration/routing gate passes. The test uses the
@@ -1708,6 +1708,9 @@ connection, and configures Liquibase's parsed dollar-quoted PostgreSQL changes
 without modifying deployed migration files. The test emits no failing
 application assertions; remaining duplicate/failure behavior stays open for a
 follow-up slice.
+
+The live gate now also covers duplicate provisioning preserving the original
+registry owner and invalid schema migration failing before database work.
 
 ## 8. Phase F — External provider clients
 

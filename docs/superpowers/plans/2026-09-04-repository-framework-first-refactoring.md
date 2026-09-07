@@ -4114,3 +4114,19 @@ edited.
 - [x] Run Calendar unit/integration tests, compilation, Checkstyle, and
       Spotless.
 - [ ] Continue the remaining aggregate persistence runtime matrix.
+
+## Current slice 18AH — Verify live Subscription persistence — 2026-09-06
+
+Subscription's tenant-schema singleton JPA path now has live PostgreSQL
+evidence for schema routing and optimistic locking. The lookup remains
+schema-local (`findFirstByOrderByCreatedAtAsc`), while the explicit tenant
+identity stays on the domain and persistence record for RLS and authorization
+invariants.
+
+- [x] Add a live tenant A/B visibility test for Subscription persistence.
+- [x] Add a two-transaction stale-version conflict test.
+- [x] Keep the schema-local singleton lookup free of a redundant tenant
+      predicate.
+- [x] Run Subscription integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue the remaining aggregate persistence runtime matrix.

@@ -5378,6 +5378,25 @@ Completed in this slice:
 - The gate found and fixed the null `sync_token` persistence mismatch; no
   deployed migration was edited.
 
+## Current slice — Task 18 Subscription persistence gate — 2026-09-06
+
+- [x] Verify Subscription JPA persistence is isolated by the routed tenant
+      schema.
+- [x] Verify two concurrent Subscription updates produce one optimistic-lock
+      winner and one `OptimisticLockingFailureException`.
+- [x] Preserve the schema-local singleton lookup without a redundant tenant
+      predicate.
+- [x] Run Subscription integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue remaining aggregate persistence runtime evidence.
+
+### Results
+
+- The live Subscription integration test passes with PostgreSQL and the
+  isolated `colima-emme` Docker profile.
+- No production adapter or application contract change was required; only the
+  integration test source set and runtime evidence were extended.
+
 ## Current slice — Task 18 Notification live persistence gate — 2026-09-06
 
 - [x] Verify Notification JPA persistence is isolated by the routed tenant

@@ -4391,3 +4391,16 @@ is ignored. No event contract, tenant predicate, or migration change was needed.
 - [ ] Add live publication-failure recovery and listener retry evidence.
 - [ ] Continue remaining database, event-recovery, deployment, and final
       compatibility gates.
+
+## Current slice 23D — Verify live forced tenant RLS — 2026-09-07
+
+The tenant migration catalog gate now verifies at runtime that representative
+tenant tables are not only RLS-enabled and policy-protected but also marked
+`FORCE ROW LEVEL SECURITY`. This confirms the forward migration's owner-safe
+defense-in-depth behavior while leaving schema selection at connection checkout.
+
+- [x] Extend the live RLS catalog test to inspect `pg_class.relforcerowsecurity`.
+- [x] Verify `appointment`, `calendar_event_link`, and `ai_semantic_cache` are
+      forced-RLS tables after tenant provisioning.
+- [x] Run the focused live Tenancy integration test.
+- [ ] Continue broader database catalog, deployment, and final framework gates.

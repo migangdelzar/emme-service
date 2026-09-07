@@ -155,6 +155,9 @@ class TenantRestIntTest {
         assertThat(hasTenantPolicy(connection, expectedSchema, table))
             .as("tenant policy exists for %s.%s", expectedSchema, table)
             .isTrue();
+        assertThat(hasForcedRls(connection, expectedSchema, table))
+            .as("RLS is forced for %s.%s", expectedSchema, table)
+            .isTrue();
       }
     }
   }
@@ -236,6 +239,21 @@ class TenantRestIntTest {
     try (var statement =
         connection.prepareStatement(
             "SELECT relrowsecurity FROM pg_class c "
+                + "JOIN pg_namespace n ON n.oid = c.relnamespace "
+                + "WHERE n.nspname = ? AND c.relname = ?")) {
+      statement.setString(1, schema);
+      statement.setString(2, table);
+      try (var result = statement.executeQuery()) {
+        return result.next() && result.getBoolean(1);
+      }
+    }
+  }
+
+  private static boolean hasForcedRls(Connection connection, String schema, String table)
+      throws java.sql.SQLException {
+    try (var statement =
+        connection.prepareStatement(
+            "SELECT relforcerowsecurity FROM pg_class c "
                 + "JOIN pg_namespace n ON n.oid = c.relnamespace "
                 + "WHERE n.nspname = ? AND c.relname = ?")) {
       statement.setString(1, schema);

@@ -5380,6 +5380,21 @@ Completed in this slice:
 - The existing atomic `WAITING_FOR_PAYMENT` claim remains the duplicate-delivery
   boundary; no provider-specific or extra tenant identifier was introduced.
 
+## Current slice — Task 23 live forced tenant RLS — 2026-09-07
+
+- [x] Extend the live RLS catalog test to inspect `pg_class.relforcerowsecurity`.
+- [x] Verify representative tenant tables are forced-RLS after provisioning.
+- [x] Run the focused live Tenancy integration test with the isolated Docker
+      profile.
+- [ ] Continue broader database catalog, deployment, and final framework gates.
+
+### Results
+
+- The provisioned tenant schema reports forced RLS for `appointment`,
+  `calendar_event_link`, and `ai_semantic_cache`.
+- Tenant-schema connection checkout remains the primary boundary; forced RLS is
+  defense in depth for database sessions and owners.
+
 ## Current slice — Task 18 Payment live persistence gate — 2026-09-06
 
 - [x] Verify Payment JPA persistence is isolated by the routed tenant schema.

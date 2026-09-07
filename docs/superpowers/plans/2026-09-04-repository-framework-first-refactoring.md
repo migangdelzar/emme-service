@@ -4321,3 +4321,21 @@ closed without invoking LangGraph.
 - [x] Run focused workflow tests, full Assistant checks, integration-source
       compilation, Checkstyle, and Spotless.
 - [ ] Run the remaining Docker-backed checkpoint security/resume phase gate.
+
+## Current slice 18AQ — Verify live Calendar OAuth tenant isolation — 2026-09-07
+
+Calendar OAuth credential persistence now has live PostgreSQL evidence for its
+tenant-schema boundary. The test stores the same user/persona credential key in
+two provisioned tenant schemas and verifies each routed schema reports only its
+own connection. The explicit tenant/user/persona lookup remains intentional as
+the provider business-key contract.
+
+- [x] Add a live integration test for Calendar OAuth credential persistence.
+- [x] Verify identical user/persona credentials are independent across tenant
+      schemas.
+- [x] Verify a routed schema cannot resolve the other tenant's credential.
+- [x] Preserve explicit tenant/provider business-key lookup semantics.
+- [x] Run the focused live test, full Calendar checks, integration tests,
+      Checkstyle, and Spotless.
+- [ ] Continue the remaining aggregate persistence, control-plane, deployment,
+      and final compatibility gates.

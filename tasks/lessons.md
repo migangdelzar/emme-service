@@ -2324,3 +2324,14 @@
   provision real tenant schemas and wrap every repository operation in the
   routed tenant context; explicit tenant columns alone are not sufficient
   evidence.
+
+## 2026-09-07 — Preserve explicit provider business keys inside tenant schemas
+
+- **Failure mode:** A schema-per-tenant review could incorrectly treat every
+  tenant-qualified provider lookup as redundant and remove the tenant/user/
+  persona key from OAuth access.
+- **Detection signal:** The persistence audit classified Calendar OAuth lookup
+  as a provider business-key operation rather than ordinary aggregate CRUD.
+- **Prevention rule:** Keep explicit tenant and provider business-key fields
+  where they define credential ownership or callback safety, even when the
+  physical tenant schema also enforces isolation.

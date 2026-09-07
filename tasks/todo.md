@@ -5623,3 +5623,21 @@ Completed in this slice:
   calling the graph.
 - The policy is shared with the quote review service and conversation resume
   path; no duplicate role vocabulary was introduced.
+
+## Current slice — Task 18 Calendar OAuth tenant isolation — 2026-09-07
+
+- [x] Provision two tenant schemas for OAuth credential persistence testing.
+- [x] Verify identical user/persona credentials are stored independently per
+      tenant schema.
+- [x] Verify the selected schema cannot resolve the other tenant's credential.
+- [x] Preserve explicit tenant/user/persona provider business-key lookups.
+- [x] Run Calendar integration tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue remaining aggregate persistence, control-plane, deployment, and
+      compatibility evidence.
+
+### Results
+
+- The live Calendar OAuth persistence test passes with PostgreSQL and the
+  isolated `colima-emme` Docker profile.
+- No production or migration change was required; the test records evidence
+  for the existing provider-key boundary.

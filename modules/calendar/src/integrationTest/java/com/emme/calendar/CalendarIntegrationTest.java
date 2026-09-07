@@ -3,7 +3,10 @@ package com.emme.calendar;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.TestApplication;
+import com.emme.calendar.api.type.GoogleOAuthPersona;
 import com.emme.calendar.application.port.out.CalendarSyncStateRepository;
+import com.emme.calendar.application.port.out.GoogleOAuthPort;
+import com.emme.calendar.application.port.out.GoogleOAuthTokens;
 import com.emme.calendar.domain.model.CalendarProvider;
 import com.emme.calendar.domain.model.CalendarSyncState;
 import com.emme.kernel.context.TenantContextHolder;
@@ -36,6 +39,7 @@ class CalendarIntegrationTest {
 
   @Autowired private DataSource dataSource;
   @Autowired private CalendarSyncStateRepository syncStates;
+  @Autowired private GoogleOAuthPort googleOAuth;
   @Autowired private TenantProvisioningRepository provisioningRepository;
   @Autowired private TenantSchemaMigrationPort schemaMigrationPort;
   @Autowired private PlatformTransactionManager transactionManager;
@@ -87,6 +91,33 @@ class CalendarIntegrationTest {
                 .get()
                 .extracting(CalendarSyncState::id)
                 .isEqualTo(saved.id()));
+  }
+
+  @Test
+  @DisplayName("Google OAuth credentials are isolated by tenant schema")
+  void googleOAuthCredentialsUseTheTenantSelectedSchema() {
+    UUID tenantA = provisionTenant("calendar-oauth-a");
+    UUID tenantB = provisionTenant("calendar-oauth-b");
+    String userId = "calendar-oauth-user";
+    GoogleOAuthTokens tokens =
+        new GoogleOAuthTokens("access-token", "refresh-token", "calendar", 3600, "user@test");
+
+    TenantContextHolder.withTenantOverride(
+        tenantA, () -> googleOAuth.storeToken(tenantA, userId, GoogleOAuthPersona.CLIENT, tokens));
+    TenantContextHolder.withTenantOverride(
+        tenantB, () -> googleOAuth.storeToken(tenantB, userId, GoogleOAuthPersona.CLIENT, tokens));
+
+    TenantContextHolder.withTenantOverride(
+        tenantA,
+        () -> {
+          assertThat(googleOAuth.isConnected(tenantA, userId, GoogleOAuthPersona.CLIENT)).isTrue();
+          assertThat(googleOAuth.isConnected(tenantB, userId, GoogleOAuthPersona.CLIENT)).isFalse();
+        });
+    TenantContextHolder.withTenantOverride(
+        tenantB,
+        () ->
+            assertThat(googleOAuth.isConnected(tenantB, userId, GoogleOAuthPersona.CLIENT))
+                .isTrue());
   }
 
   @Test

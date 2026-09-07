@@ -7,7 +7,7 @@
 - [x] Add the minimal failing source/architecture contract for the safe migration, or document intentional retention.
 - [x] Complete the Assistant-only TDD migration/contract slice.
 - [x] Run focused semantic tests, Assistant compile, and Spotless.
-- [ ] Commit and push the slice.
+- [x] Commit and push the slice.
 
 ### Results
 

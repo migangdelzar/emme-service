@@ -4672,3 +4672,27 @@ all pass.
 - [x] Run Assistant contract and architecture tests.
 - [ ] Continue remaining persistence, event-recovery, deployment, and
       compatibility framework gates.
+
+## Current slice 24C — Stabilize the framework inventory gate — 2026-09-07
+
+The phase checkpoint exposed a race in `RepositoryFrameworkFirstInventoryTest`:
+walking the repository root could encounter a generated Spring Modulith
+documentation directory while another test removed or regenerated it. The
+inventory now discovers only stable checked-in production source roots before
+walking them, preserving the same JDBC ledger assertions without depending on
+concurrent build output.
+
+- [x] Reproduce the full-check source-inventory race.
+- [x] Restrict the inventory to production `src/main/java` roots.
+- [x] Run the focused inventory test and affected Spotless checks.
+- [x] Run the full Gradle check.
+- [x] Run backend, container, deployment, AGE, Kafka, and E2E Compose
+      contract validators.
+- [ ] Continue remaining event-recovery, deployment-runtime, and final
+      compatibility gates.
+
+### Results
+
+- `RepositoryFrameworkFirstInventoryTest` passes after the stable-root scan.
+- `./gradlew check --no-parallel --no-configuration-cache` passes.
+- All six workflow and Compose contract validators pass.

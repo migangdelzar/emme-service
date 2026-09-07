@@ -2432,3 +2432,15 @@
 - **Prevention rule:** Keep dedicated `void` context helpers for command-style
   workflow ports, and place reusable context helpers in test-fixture libraries
   while reusing existing functional callback types.
+
+## 2026-09-07 — Bound source inventories to stable production roots
+
+- **Failure mode:** A framework inventory test walked the repository root while
+  Spring Modulith generated and removed files under `build/`, producing a
+  `NoSuchFileException` during the full check.
+- **Detection signal:** The failure occurred at `Files.walk` for a generated
+  `build/spring-modulith-docs` path, although the checked-in production source
+  tree was unchanged.
+- **Prevention rule:** Discover explicit production `src/main/java` roots and
+  walk those stable trees; do not walk the repository root and filter generated
+  output afterward.

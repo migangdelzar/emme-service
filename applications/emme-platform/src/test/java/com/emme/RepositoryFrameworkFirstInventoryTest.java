@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -59,12 +60,13 @@ class RepositoryFrameworkFirstInventoryTest {
             sourcePath("docs/superpowers/migrations/framework-first-migration-ledger.md"));
     Path repository = sourcePath("");
 
-    try (Stream<Path> files = Files.walk(repository.resolve("modules").getParent())) {
-      files
-          .filter(path -> path.toString().contains("src/main/java"))
-          .filter(path -> path.toString().endsWith(".java"))
-          .filter(this::containsJdbcReference)
-          .forEach(path -> assertThat(ledger).contains(repository.relativize(path).toString()));
+    for (Path sourceRoot : productionSourceRoots(repository)) {
+      try (Stream<Path> files = Files.walk(sourceRoot)) {
+        files
+            .filter(path -> path.toString().endsWith(".java"))
+            .filter(this::containsJdbcReference)
+            .forEach(path -> assertThat(ledger).contains(repository.relativize(path).toString()));
+      }
     }
   }
 
@@ -197,6 +199,27 @@ class RepositoryFrameworkFirstInventoryTest {
     } catch (IOException exception) {
       throw new IllegalStateException("Cannot read " + path, exception);
     }
+  }
+
+  private static List<Path> productionSourceRoots(Path repository) throws IOException {
+    List<Path> roots = new ArrayList<>();
+    for (String parent : List.of("", "modules", "libraries", "applications", "database", "tools")) {
+      Path container = repository.resolve(parent);
+      Path directSourceRoot = container.resolve("src/main/java");
+      if (Files.isDirectory(directSourceRoot)) {
+        roots.add(directSourceRoot);
+      }
+      if (!Files.isDirectory(container)) {
+        continue;
+      }
+      try (Stream<Path> children = Files.list(container)) {
+        children
+            .map(child -> child.resolve("src/main/java"))
+            .filter(Files::isDirectory)
+            .forEach(roots::add);
+      }
+    }
+    return roots;
   }
 
   private static long countExactDependency(String relativePath, String dependency)

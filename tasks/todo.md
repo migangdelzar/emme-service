@@ -6044,3 +6044,19 @@ Completed in this slice:
   isolated `colima-emme` PostgreSQL profile.
 - Shutdown pool warnings were emitted during container teardown, after the
   Gradle integration tasks had completed successfully.
+## Current slice — Stabilize framework inventory gate (2026-09-07)
+
+- [x] Reproduce the repository-root source scan race against generated build
+      output.
+- [x] Limit framework inventory scanning to stable production source roots.
+- [x] Run focused inventory test and application Spotless checks.
+- [x] Run full Gradle check.
+- [x] Run backend, container, deployment, AGE, Kafka, and E2E Compose
+      validators.
+- [ ] Continue remaining framework-first runtime and compatibility gates.
+
+### Results
+
+- The inventory test now scans discovered `src/main/java` roots instead of
+  walking concurrent build output.
+- Full Gradle check and all workflow/Compose validators passed.

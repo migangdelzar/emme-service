@@ -1,5 +1,20 @@
 # Engineering lessons
 
+## 2026-09-06 — Custom datasource conditions must account for service connections
+
+- **Failure mode:** Custom tenancy datasource and Hibernate resolver beans were
+  guarded by parse-phase property/bean conditions. Spring Boot's PostgreSQL
+  `@ServiceConnection` supplied connection details later, so the application
+  started without the core datasource or tenant identifier resolver.
+- **Detection signal:** The live Testcontainers context failed first without an
+  `entityManagerFactory`, then with Hibernate reporting that no tenant
+  identifier was configured.
+- **Prevention rule:** When a module owns custom datasource composition, consume
+  the typed `JdbcConnectionDetails` boundary explicitly and activate the
+  configuration for both explicit non-H2 datasource properties and the
+  registered PostgreSQL container. Do not make a custom resolver depend on a
+  later-produced client bean through an early condition.
+
 ## 2026-09-06 — Keep domain enums out of public API records
 
 - **Failure mode:** Lifecycle enum migrations reused domain-package enums in

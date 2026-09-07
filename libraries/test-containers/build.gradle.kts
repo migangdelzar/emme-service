@@ -11,6 +11,7 @@ tasks.withType<PublishToMavenLocal>().configureEach { enabled = false }
 dependencies {
     implementation(platform(project(":platform")))
     implementation("org.springframework:spring-context")
+    implementation("org.springframework.boot:spring-boot-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework.boot:spring-boot-test-autoconfigure")
     implementation("org.springframework.boot:spring-boot-testcontainers")

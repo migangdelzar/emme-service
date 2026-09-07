@@ -1,6 +1,7 @@
 package com.emme.testing.integration.container;
 
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,12 @@ public class PostgresContainerConfiguration {
         .withPassword(PASSWORD);
   }
 
+  @Bean
+  JdbcConnectionDetails postgresJdbcConnectionDetails(PostgreSQLContainer<?> container) {
+    return new ContainerJdbcConnectionDetails(
+        container.getJdbcUrl(), container.getUsername(), container.getPassword());
+  }
+
   /**
    * Keeps the JDBC publication registry alive until after tenant pools and the PostgreSQL container
    * are available.
@@ -56,5 +63,24 @@ public class PostgresContainerConfiguration {
         }
       }
     };
+  }
+
+  private record ContainerJdbcConnectionDetails(String jdbcUrl, String username, String password)
+      implements JdbcConnectionDetails {
+
+    @Override
+    public String getJdbcUrl() {
+      return jdbcUrl;
+    }
+
+    @Override
+    public String getUsername() {
+      return username;
+    }
+
+    @Override
+    public String getPassword() {
+      return password;
+    }
   }
 }

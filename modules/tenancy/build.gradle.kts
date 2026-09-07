@@ -51,4 +51,5 @@ dependencies {
   // Integration tests: dep on own testFixtures + TestApplication
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
+  add("integrationTestImplementation", libs.jackson.databind)
 }

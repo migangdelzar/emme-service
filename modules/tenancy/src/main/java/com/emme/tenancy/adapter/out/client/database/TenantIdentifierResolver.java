@@ -9,13 +9,17 @@ import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.ConfigurationCondition.ConfigurationPhase;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnBean(name = "bootstrapJdbcClient")
+@Conditional(TenantIdentifierResolver.TenantDatabaseCondition.class)
 public class TenantIdentifierResolver
     implements CurrentTenantIdentifierResolver<String>, HibernatePropertiesCustomizer {
 
@@ -66,5 +70,20 @@ public class TenantIdentifierResolver
   @Override
   public boolean validateExistingCurrentSessions() {
     return true;
+  }
+
+  static class TenantDatabaseCondition extends AnyNestedCondition {
+
+    TenantDatabaseCondition() {
+      super(ConfigurationPhase.REGISTER_BEAN);
+    }
+
+    @ConditionalOnExpression(
+        "('${spring.datasource.url:}' != '' && !'${spring.datasource.url:}'.contains('h2')) || "
+            + "('${spring.datasource.core.url:}' != '' && !'${spring.datasource.core.url:}'.contains('h2'))")
+    static class ExplicitTenantDatabase {}
+
+    @ConditionalOnBean(name = "postgresContainer")
+    static class ServiceConnectionTenantDatabase {}
   }
 }

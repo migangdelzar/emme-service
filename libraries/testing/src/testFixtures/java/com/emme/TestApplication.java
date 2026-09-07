@@ -1,14 +1,17 @@
 package com.emme;
 
+import com.emme.testing.TestSecurityConfig;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.TypeExcludeFilter;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
+@Import(TestSecurityConfig.class)
 @ComponentScan(
     basePackages = "com.emme",
     excludeFilters = {

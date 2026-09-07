@@ -23,6 +23,10 @@ spring:
           enabled: true
   liquibase:
     enabled: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration
+      - org.springframework.boot.security.oauth2.client.autoconfigure.reactive.OAuth2ClientAutoConfiguration
 
 app:
   tenant:

@@ -1674,6 +1674,37 @@ authoritative identity.
 - [ ] Run duplicate/failure behavior against PostgreSQL/Testcontainers when
       Docker is available.
 
+#### Current slice 13F — Verify PostgreSQL tenant datasource startup
+
+The shared PostgreSQL Testcontainers fixture now publishes the container's
+`JdbcConnectionDetails` to custom tenancy datasource composition. This is
+necessary because the tenancy module owns the application `DataSource` beans,
+so Spring Boot's normal datasource auto-configuration cannot consume the
+service-connection details on its behalf. Bootstrap JDBC and Hibernate tenant
+resolution activate for either an explicit PostgreSQL datasource configuration
+or the registered PostgreSQL test container; H2 remains outside this boundary.
+The full test application also supplies its deterministic security/Jackson
+fixtures while the integration profile disables OAuth2 client discovery, so
+context startup does not perform network calls.
+
+- [x] Add a focused fixture test for published PostgreSQL JDBC connection
+      details.
+- [x] Make custom core/bootstrap datasource composition consume service
+      connection details.
+- [x] Align tenant resolver activation with the datasource composition phase.
+- [x] Run the PostgreSQL-backed tenant context startup gate with the isolated
+      `colima-emme` Docker profile.
+- [x] Run affected library and Tenancy checks, including Spotless and
+      Checkstyle.
+- [ ] Add the remaining live duplicate/failure, Liquibase migration, and
+      dedicated tenant schema-routing assertions to the PostgreSQL gate.
+
+The focused startup gate passes. It emits shutdown-hook warnings after test
+completion because Testcontainers closes the PostgreSQL backend before Spring's
+JPA/Modulith shutdown callback runs; this is a test-runtime lifecycle ordering
+limitation and does not fail the gate. The remaining live migration and
+schema-routing evidence stays open for a follow-up slice.
+
 ## 8. Phase F — External provider clients
 
 The executable provider-HTTP plan is now maintained separately at

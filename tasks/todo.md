@@ -4845,3 +4845,35 @@ Completed in this slice:
 - No application port or provider-specific dependency was changed.
 - Docker-backed PostgreSQL verification remains open because the local Colima
   Docker daemon is unavailable.
+
+## Current slice — Task 13F PostgreSQL tenant datasource startup — 2026-09-06
+
+- [x] Verify the worktree and read the repository instructions and Task 13
+      acceptance section.
+- [x] Publish Testcontainers PostgreSQL `JdbcConnectionDetails` for custom
+      tenancy datasource composition.
+- [x] Align core/bootstrap datasource and Hibernate resolver activation with
+      explicit PostgreSQL configuration or the PostgreSQL test container.
+- [x] Keep the shared full-context test composition deterministic by importing
+      `TestSecurityConfig` and disabling OAuth2 client auto-discovery in the
+      PostgreSQL integration profile.
+- [x] Run the focused live `TenantRestIntTest` using Docker profile
+      `colima-emme`.
+- [x] Run `:libraries:test-containers:check`, `:libraries:testing:check`, and
+      `:modules:tenancy:check`.
+- [ ] Run remaining live Liquibase, duplicate/failure, and tenant schema
+      routing checks in subsequent Task 13 slices.
+
+### Results
+
+- `TenantRestIntTest` passes against PostgreSQL 16 under
+  `DOCKER_HOST=unix:///Users/miguelangeldelgadillozarate/.colima/emme/docker.sock`.
+- Affected checks pass: 70 actionable tasks, including compilation, unit tests,
+  Spotless, and Checkstyle.
+- The live test logs non-failing shutdown-hook I/O warnings because the
+  Testcontainers backend closes before Spring's JPA/Modulith destruction
+  callback. This remains a test lifecycle follow-up, not a production routing
+  failure.
+- The framework-first phase is not complete: live Task 13 migration/routing,
+  Task 6 Redis/vector, Task 8 PostgreSQL checkpoint, and other Docker/provider
+  gates remain pending.

@@ -3784,8 +3784,8 @@ backed.
 Live Assistant integration exposed and fixed two framework-boundary regressions:
 the hand-built pgvector cache fixture lagged the forward response-identity
 migration, and the AI conversation-memory adapter did not recheck the tenant ID
-returned by a schema-local lookup. The Apache AGE gate remains pending because
-the configured `apache/age:release_PG17_1.6.0` image digest could not be pulled.
+returned by a schema-local lookup. The configured Apache AGE image became
+available in the isolated Docker profile and its graph integration now passes.
 
 - [x] Align the pgvector semantic-cache integration fixture with the
       `channel`, `locale`, and `quote_template_version` migration columns.
@@ -3793,4 +3793,4 @@ the configured `apache/age:release_PG17_1.6.0` image digest could not be pulled.
       a different authenticated tenant.
 - [x] Run the focused PostgreSQL semantic-cache and conversation-isolation
       integration tests.
-- [ ] Re-run AGE graph integration after the configured image is available.
+- [x] Run AGE graph integration after the configured image became available.

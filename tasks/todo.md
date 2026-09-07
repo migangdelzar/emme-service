@@ -4946,12 +4946,12 @@ Completed in this slice:
       identity migration columns.
 - [x] Enforce returned conversation ownership at the AI memory boundary.
 - [x] Run focused PostgreSQL semantic-cache and conversation-isolation tests.
-- [ ] Re-run `AgeGraphIntegrationTest` after the configured AGE image digest is
-      available; Docker reported the remote `apache/age:release_PG17_1.6.0`
-      digest as not found.
+- [x] Re-run `AgeGraphIntegrationTest` after the configured AGE image became
+      available.
 
 ### Results
 
 - Focused Assistant integration tests pass.
-- The full Assistant integration run reached 25 tests but had three failures:
-  the two fixed regressions above and one AGE container initialization failure.
+- The full Assistant integration suite passes all 25 tests. It emits known
+  non-failing shutdown I/O warnings when the PostgreSQL container closes before
+  Spring's JPA/Modulith destruction callbacks.

@@ -1411,8 +1411,8 @@ the remaining compatibility cleanup families are tracked separately.
       response identity migration.
 - [x] Conversation memory rejects an aggregate whose returned tenant identity
       differs from the authenticated AI execution context.
-- [ ] Apache AGE graph integration remains pending until the configured AGE
-      image digest can be pulled by Docker.
+- [x] Apache AGE graph integration passes after the configured image became
+      available in the isolated Docker profile.
 
 ## 11. Reference Documentation
 

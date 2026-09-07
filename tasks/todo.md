@@ -5153,3 +5153,22 @@ Completed in this slice:
 - The live PostgreSQL race passes with exactly one committed service update and
   one optimistic-lock failure.
 - No production persistence or application contract change was required.
+
+## Current slice — Phase F provider HTTP migration verification — 2026-09-06
+
+- [x] Verify Identity, Calendar, Notification, and Payment unit tests and Java
+      compilation.
+- [x] Verify the four capability-specific MockWebServer transport tests.
+- [x] Verify provider-boundary architecture inventory and repository inventory.
+- [x] Verify Spotless for all migrated provider modules.
+- [x] Reconcile the dedicated HTTP plan and migration ledger.
+- [ ] Continue remaining Redis, event-recovery, database, deployment, and final
+      compatibility gates.
+
+### Results
+
+- Provider module tests and compilation pass.
+- The real-transport integration matrix passes for Keycloak, Google,
+  Notification, and Payment.
+- No ordinary production provider adapter imports OkHttp, and no deleted
+  provider HTTP wrapper reference remains.

@@ -363,6 +363,24 @@ contracts; payment-owned persistence and provider ports remain internal to the
 payment module. The former application-port aliases were deleted after the
 cross-module architecture gate passed on 2026-09-06.
 
+## External provider HTTP migration completion — 2026-09-06
+
+- [x] Identity Keycloak adapters use the named `identityRestClient`.
+- [x] Notification providers use the named `notificationRestClient`.
+- [x] Payment providers use the named `paymentRestClient`.
+- [x] Google OAuth, Calendar, Sheets, and sync adapters use the named
+      `googleRestClient`.
+- [x] Provider contract tests use `MockRestServiceServer`.
+- [x] Keycloak, Google, Notification, and Payment real-transport tests pass.
+- [x] `GoogleHttpClient`, `NotificationHttpClient`, and `PaymentHttpClient` are
+      deleted with no source or build references.
+- [x] Retained OkHttp usage is limited to E2E and transport-test ownership.
+
+The migration preserves provider-specific authentication, request encoding,
+signing, idempotency, timeout, retry, and error behavior without introducing a
+universal HTTP abstraction or leaking Spring HTTP types through application
+ports.
+
 ## Workflow request compatibility cleanup — 2026-09-06
 
 `ConversationWorkflowCapabilities.WorkflowRequest` no longer exposes its

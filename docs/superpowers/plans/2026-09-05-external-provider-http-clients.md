@@ -512,17 +512,25 @@ Transport risk: virtual threads improve blocking-call scalability but do not eli
 
 ## 10. Definition of done
 
-- [ ] Every production migration task began with a failing focused test or explicit architecture/inventory test.
-- [ ] All migrated provider contract tests use MockRestServiceServer for request/response semantics.
-- [ ] At least one real-transport MockWebServer test exists per capability, without duplicating provider contracts.
-- [ ] Keycloak, Google, Notification, and Payment request/auth/error semantics are unchanged.
-- [ ] SES signing uses the exact bytes sent over the wire.
-- [ ] Stripe idempotency, Google 410 delete handling, FCM token chaining, and payment operation support are explicitly covered.
-- [ ] No application/domain port depends on Spring HTTP or OkHttp types.
-- [ ] Deleted wrappers have no remaining production/test/build references.
-- [ ] Retained OkHttp dependencies are documented by E2E or transport-test ownership.
-- [ ] Module tests, compilation, Spotless, Checkstyle, and repository architecture tests pass.
-- [ ] Changes are committed atomically and pushed to `feat/ai-platform-foundation`.
+- [x] Every production migration task began with a failing focused test or explicit architecture/inventory test.
+- [x] All migrated provider contract tests use MockRestServiceServer for request/response semantics.
+- [x] At least one real-transport MockWebServer test exists per capability, without duplicating provider contracts.
+- [x] Keycloak, Google, Notification, and Payment request/auth/error semantics are unchanged.
+- [x] SES signing uses the exact bytes sent over the wire.
+- [x] Stripe idempotency, Google 410 delete handling, FCM token chaining, and payment operation support are explicitly covered.
+- [x] No application/domain port depends on Spring HTTP or OkHttp types.
+- [x] Deleted wrappers have no remaining production/test/build references.
+- [x] Retained OkHttp dependencies are documented by E2E or transport-test ownership.
+- [x] Module tests, compilation, Spotless, Checkstyle, and repository architecture tests pass.
+- [x] Changes are committed atomically and pushed to `feat/ai-platform-foundation`.
+
+### Execution status — 2026-09-06
+
+HTTP-02 through HTTP-13 are implemented in the branch. Identity, Notification,
+Payment, and Calendar use capability-scoped Spring `RestClient` beans; provider
+contracts cover request/auth/error behavior; the four real-transport tests pass;
+and the obsolete OkHttp provider wrappers have been deleted. The focused module
+test/compile/Spotless run and provider transport matrix both pass.
 
 ## 11. Authoritative references
 

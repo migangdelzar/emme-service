@@ -3983,3 +3983,21 @@ writer to commit.
 - [x] Run the focused live test and affected Salon checks.
 - [ ] Continue remaining aggregate optimistic-lock evidence and the persistence
       audit before closing Task 16/18.
+
+## Current slice Phase F — Verify external provider HTTP migration — 2026-09-06
+
+The dedicated provider HTTP plan is implemented in the branch. Identity,
+Notification, Payment, and Calendar outbound adapters use capability-scoped
+Spring `RestClient` beans; provider-specific request, authentication, signing,
+idempotency, timeout, and error semantics remain at the adapter boundary. The
+obsolete provider HTTP wrappers are deleted, while E2E and transport-test
+OkHttp usage remains intentionally isolated.
+
+- [x] Verify Identity, Calendar, Notification, and Payment unit tests and Java
+      compilation.
+- [x] Verify the four capability-specific MockWebServer transport tests.
+- [x] Verify provider-boundary architecture inventory and repository inventory.
+- [x] Verify Spotless for all migrated provider modules.
+- [x] Reconcile the dedicated HTTP plan and migration ledger.
+- [ ] Continue remaining Redis, event-recovery, database, deployment, and final
+      compatibility gates.

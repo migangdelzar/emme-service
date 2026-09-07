@@ -512,7 +512,7 @@ git commit -m "docs(events): record Modulith-first MVP policy"
 - Consumes: the finished event classification, profile, deferred-test, deployment, and documentation changes.
 - Produces: a repository state ready for a later external-consumer Kafka activation decision.
 
-- [ ] **Step 1: Run focused module and application tests**
+- [x] **Step 1: Run focused module and application tests**
 
 ```bash
 ./gradlew :modules:assistant:test \
@@ -526,7 +526,10 @@ git commit -m "docs(events): record Modulith-first MVP policy"
 
 Expected: PASS with zero failures and zero skipped tests in the ordinary unit suites.
 
-- [ ] **Step 2: Run the normal integration suite without Kafka**
+Passed after updating one stale Assistant annotation assertion; the six module
+test suites and platform tests completed successfully.
+
+- [x] **Step 2: Run the normal integration suite without Kafka**
 
 ```bash
 ./gradlew integrationTest \
@@ -535,7 +538,11 @@ Expected: PASS with zero failures and zero skipped tests in the ordinary unit su
 
 Expected: all non-Kafka integration tests use their existing containers and the Kafka streaming test is excluded unless `-Pemme.kafka-deferred=true` is supplied.
 
-- [ ] **Step 3: Run build, formatting, and architecture checks**
+Passed with the isolated `colima-emme` Docker socket. The aggregate completed
+all non-Kafka module integration suites; the application deferred source set was
+empty by design and accepted that exclusion.
+
+- [x] **Step 3: Run build, formatting, and architecture checks**
 
 ```bash
 ./gradlew :applications:emme-platform:compileJava \
@@ -546,7 +553,10 @@ Expected: all non-Kafka integration tests use their existing containers and the 
 
 Expected: compilation, formatting, architecture tests, and Checkstyle/quality tasks pass with no Kafka provider required.
 
-- [ ] **Step 4: Run explicit deferred Kafka verification when Docker is available**
+Passed: platform compilation/check, architecture tests, Checkstyle, and
+repository `spotlessCheck` completed successfully.
+
+- [x] **Step 4: Run explicit deferred Kafka verification when Docker is available**
 
 ```bash
 ./gradlew integrationTest \
@@ -557,7 +567,11 @@ Expected: compilation, formatting, architecture tests, and Checkstyle/quality ta
 
 Expected: the test-only externalized event reaches Kafka with its stable topic, tenant key, and payload. This is an opt-in future-capability check, not part of the initial runtime gate.
 
-- [ ] **Step 5: Verify no active production Kafka provider remains**
+Attempted with `-Pemme.kafka-deferred=true`; execution reached Testcontainers
+startup but the `apache/kafka-native:3.8.0` container exited with code 126, so
+topic/key/payload delivery remains environment-gated.
+
+- [x] **Step 5: Verify no active production Kafka provider remains**
 
 ```bash
 rg -n "@Externalized|EMME_KAFKA_EVENTS_ENABLED:true|spring.kafka:|app.messaging.kafka:|KAFKA_BOOTSTRAP_SERVERS|KAFKA_SASL_JAAS_CONFIG" \
@@ -566,7 +580,11 @@ rg -n "@Externalized|EMME_KAFKA_EVENTS_ENABLED:true|spring.kafka:|app.messaging.
 
 Expected: no production event record is annotated with `@Externalized`; no active application profile or deployment injects Kafka settings. Remaining matches must be limited to explicitly deferred test/build/container artifacts and documentation.
 
-- [ ] **Step 6: Update plan status and commit verification evidence**
+Passed. The only matches are the explicit deferred Compose overlay and its
+contract test. No main event, application orchestration package, or module main
+source imports Kafka types.
+
+- [x] **Step 6: Update plan status and commit verification evidence**
 
 Mark each completed task with `[x]`, add the actual command results to the plan’s execution notes, then commit only the plan-status and verification changes:
 
@@ -577,12 +595,15 @@ git commit -m "docs(events): record Modulith-first verification"
 
 ## Definition of Done
 
-- [ ] All six current business events are internal Spring Modulith events.
-- [ ] The initial application has no active Kafka provider configuration.
-- [ ] PostgreSQL and the Modulith JDBC publication registry remain the durable internal async boundary.
-- [ ] Kafka container creation is deferred from default Compose, Kubernetes, and CI execution.
-- [ ] Deferred Kafka verification remains explicit and runnable with `-Pemme.kafka-deferred=true`.
-- [ ] No domain or application orchestration package imports Kafka types.
+- [x] All six current business events are internal Spring Modulith events.
+- [x] The initial application has no active Kafka provider configuration.
+- [x] PostgreSQL and the Modulith JDBC publication registry remain the durable internal async boundary.
+- [x] Kafka container creation is deferred from default Compose, Kubernetes, and CI execution.
+- [x] Deferred Kafka verification remains explicit and runnable with `-Pemme.kafka-deferred=true`.
+- [x] No domain or application orchestration package imports Kafka types.
+
+The opt-in live Kafka delivery assertion remains open until the broker image
+starts successfully in the environment.
 - [ ] Canonical architecture, ADR, AI, and execution-plan documents agree on the policy.
 - [ ] Unit, integration, compile, formatting, and architecture checks pass with zero ordinary-test failures or skips.
 - [ ] Changes are committed in logical units and pushed to `feat/ai-platform-foundation`.

@@ -2595,7 +2595,12 @@ Compose and production Kustomize rendering pass.
       invocation deferred.
 - [x] Run affected platform tests, compilation, Spotless, Compose, Kustomize,
       and deployment-contract checks.
-- [ ] Run the full Modulith-first phase gate after documentation alignment.
+- [x] Run the full Modulith-first phase gate after documentation alignment.
+
+The phase gate passed for affected unit tests, non-Kafka integration tests,
+application quality checks, deployment rendering, and active-provider scans.
+Only opt-in Kafka delivery remains environment-gated because the Kafka native
+test image exits with code 126 at startup.
 
 #### Current slice 19D — Give durable Modulith listeners stable identities
 

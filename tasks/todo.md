@@ -112,6 +112,22 @@
 - The aggregate `integrationTest` gate passed with Kafka streaming excluded;
   PostgreSQL-backed non-Kafka integration suites completed successfully.
 
+## Current slice — Modulith-first phase checkpoint — 2026-09-07
+
+- [x] Run the affected unit and application test checkpoint.
+- [x] Run the aggregate non-Kafka integration checkpoint.
+- [x] Run application check, architecture, Checkstyle, and Spotless gates.
+- [x] Scan for active production Kafka annotations/configuration/imports.
+- [x] Record the explicit Kafka Testcontainer startup limitation.
+- [x] Commit and push the verification evidence.
+
+### Results
+
+- Affected unit suites, all non-Kafka integration suites, application quality
+  checks, and active-provider scans passed.
+- The explicit Kafka path remains opt-in but cannot complete because
+  `apache/kafka-native:3.8.0` exits with code 126 during Testcontainers startup.
+
 ## Current slice — Task 17 live appointment collision gate — 2026-09-06
 
 - [x] Start an isolated `colima-emme` Docker profile after the stale default

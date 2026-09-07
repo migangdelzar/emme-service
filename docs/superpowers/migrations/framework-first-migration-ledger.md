@@ -468,3 +468,15 @@ create/delete-only and were deliberately not expanded with unused update code.
 The live test confirms schema-per-tenant connection checkout for the Clients
 aggregate. It does not add ordinary `tenant_id` predicates or alter the
 provider-neutral application contract.
+
+## Services live tenant-routing evidence — 2026-09-06
+
+- [x] Add a focused PostgreSQL integration test for JPA service visibility.
+- [x] Provision two tenant schemas through the tenancy-owned ports.
+- [x] Verify a service written under tenant A is absent under tenant B and
+      visible again under tenant A.
+- [x] Keep pgvector setup at the database level and outside `emme_core`.
+- [ ] Run the corresponding Salon routing and optimistic-lock matrix.
+
+The live test confirms schema-per-tenant connection checkout for Services. No
+ordinary schema-local query was changed to repeat a tenant predicate.

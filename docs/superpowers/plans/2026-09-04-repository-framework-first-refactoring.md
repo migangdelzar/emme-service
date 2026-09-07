@@ -3896,3 +3896,21 @@ under tenant A is absent from tenant B and available again under tenant A.
       focused integration test, and Spotless.
 - [ ] Continue Services and Salon live tenant-routing and optimistic-lock
       evidence before closing Task 16.
+
+## Current slice 16C — Verify live Services tenant-schema JPA routing — 2026-09-06
+
+The Services aggregate already uses a module-private Spring Data repository and
+framework-free mapping. This slice adds live PostgreSQL evidence that a service
+written under tenant A is not visible through tenant B's selected schema and is
+readable again under tenant A.
+
+- [x] Add a focused Services integration test with two provisioned tenant schemas.
+- [x] Add explicit integration-test dependencies for the existing application,
+      tenant migration resources, JPA, JdbcClient, shared, and kernel support.
+- [x] Keep pgvector setup database-level and outside the `emme_core` ownership
+      boundary.
+- [x] Verify tenant A/B visibility through the live PostgreSQL path.
+- [x] Run Services unit tests, Java compilation, integration-test compilation,
+      focused integration test, and Spotless.
+- [ ] Continue Salon live tenant-routing and the optimistic-lock matrix before
+      closing Task 16.

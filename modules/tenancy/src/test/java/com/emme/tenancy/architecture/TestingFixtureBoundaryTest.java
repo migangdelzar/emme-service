@@ -17,6 +17,10 @@ class TestingFixtureBoundaryTest {
   private static final Path ENTITLED_TENANT_FIXTURE =
       TENANCY_FIXTURE_ROOT.resolve("EntitledTenantModuleTest.java");
   private static final Path TENANCY_BUILD_FILE = sourcePath("modules/tenancy/build.gradle.kts");
+  private static final Path GENERIC_TEST_RESOURCES =
+      sourcePath("libraries/testing/src/testFixtures/resources");
+  private static final Path TENANCY_TEST_PROFILE =
+      sourcePath("modules/tenancy/src/testFixtures/resources/application-tenancy-test.yml");
   private static final Path TENANCY_BOOTSTRAP_FIXTURE =
       sourcePath(
           "modules/tenancy/src/testFixtures/java/com/emme/testing/TestBootstrapJdbcConfig.java");
@@ -66,6 +70,22 @@ class TestingFixtureBoundaryTest {
     assertThat(Files.readString(ENTITLED_TENANT_FIXTURE))
         .contains("com.emme.identity.adapter.out.persistence")
         .contains("SpringDataFeatureFlagRepository");
+  }
+
+  @Test
+  void keepsTenantPoolingConfigurationInTheTenancyFixture() throws Exception {
+    for (String profile : new String[] {"repository", "resttest", "test", "web"}) {
+      assertThat(
+              Files.readString(GENERIC_TEST_RESOURCES.resolve("application-" + profile + ".yml")))
+          .as("generic test profile: %s", profile)
+          .doesNotContain("global-max-connections")
+          .doesNotContain("emme.tenancy.pooling");
+    }
+    assertThat(TENANCY_TEST_PROFILE).exists();
+    assertThat(Files.readString(TENANCY_TEST_PROFILE))
+        .contains("global-max-connections: 20")
+        .contains("default-database-id:");
+    assertThat(Files.readString(TENANT_BASE_FIXTURE)).contains("tenancy-test");
   }
 
   private static Path sourcePath(String relativePath) {

@@ -70,16 +70,6 @@ app:
       service-account-json-base64: ""
     calendar-id: test-calendar
 
-emme:
-  tenancy:
-    pooling:
-      global-max-connections: 20
-      idle-timeout-minutes: 1
-      eviction-check-interval-seconds: 5
-      default-min-pool-size: 2
-      default-max-pool-size: 5
-      default-database-id: "00000000-0000-0000-0000-000000000000"
-
 logging:
   level:
     com.emme: DEBUG

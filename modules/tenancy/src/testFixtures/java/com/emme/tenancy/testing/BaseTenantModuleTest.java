@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
     webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @Import({TestSecurityConfig.class, TestBootstrapJdbcConfig.class})
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "tenancy-test"})
 public abstract class BaseTenantModuleTest {
 
   @Autowired protected MockMvc mockMvc;

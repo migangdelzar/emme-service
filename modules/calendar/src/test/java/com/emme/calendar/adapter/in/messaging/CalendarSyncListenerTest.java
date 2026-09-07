@@ -1,8 +1,10 @@
 package com.emme.calendar.adapter.in.messaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.emme.appointments.api.event.AppointmentCreated;
@@ -44,5 +46,31 @@ class CalendarSyncListenerTest {
     assertThat(event.getValue().tenantId()).isEqualTo(tenantId);
     assertThat(event.getValue().databaseId()).isEqualTo(databaseId);
     assertThat(event.getValue().eventId()).isEqualTo(eventId);
+  }
+
+  @Test
+  void rethrowsDatabaseResolutionFailuresSoTheAppointmentReplayCanRetry() {
+    ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
+    ResolveTenantDatabaseIdUseCase databaseResolver = mock(ResolveTenantDatabaseIdUseCase.class);
+    UUID tenantId = UUID.randomUUID();
+    RuntimeException databaseFailure = new IllegalStateException("Database unavailable");
+    when(databaseResolver.resolve(tenantId)).thenThrow(databaseFailure);
+    CalendarSyncListener listener = new CalendarSyncListener(publisher, databaseResolver);
+
+    assertThatThrownBy(
+            () ->
+                listener.onAppointmentCreated(
+                    new AppointmentCreated(
+                        UUID.randomUUID(),
+                        tenantId,
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        Instant.parse("2026-09-06T10:00:00Z"),
+                        Instant.parse("2026-09-06T11:00:00Z"),
+                        Instant.parse("2026-09-06T09:00:00Z"))))
+        .isSameAs(databaseFailure);
+    verifyNoInteractions(publisher);
   }
 }

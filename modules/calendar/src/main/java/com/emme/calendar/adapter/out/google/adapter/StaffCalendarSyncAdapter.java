@@ -112,11 +112,25 @@ public class StaffCalendarSyncAdapter {
       }
     } catch (Exception exception) {
       log.error("Calendar sync failed for appointment {}", event.appointmentId(), exception);
-      markCalendarEventLinksFailed.markFailed(event.tenantId(), event.appointmentId());
+      markFailedAfterFailure(event, exception);
       if (exception instanceof RuntimeException runtimeException) {
         throw runtimeException;
       }
       throw new IllegalStateException("Calendar sync failed", exception);
+    }
+  }
+
+  private void markFailedAfterFailure(CalendarSyncRequested event, Throwable originalFailure) {
+    try {
+      markCalendarEventLinksFailed.markFailed(event.tenantId(), event.appointmentId());
+    } catch (RuntimeException failureMarkingFailure) {
+      log.error(
+          "Failed to mark calendar links as failed for appointment {}",
+          event.appointmentId(),
+          failureMarkingFailure);
+      if (failureMarkingFailure != originalFailure) {
+        originalFailure.addSuppressed(failureMarkingFailure);
+      }
     }
   }
 

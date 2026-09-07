@@ -2,6 +2,7 @@ package com.emme.calendar.adapter.out.google.adapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -132,6 +133,134 @@ class StaffCalendarSyncAdapterTest {
                         Instant.parse("2026-09-05T11:00:00Z"),
                         null)))
         .isSameAs(providerFailure);
+    verify(markFailed).markFailed(tenantId, appointmentId);
+  }
+
+  @Test
+  void rethrowsTheOriginalProviderFailureWhenFailureMarkingAlsoFails() {
+    UUID tenantId = UUID.randomUUID();
+    UUID databaseId = UUID.randomUUID();
+    UUID appointmentId = UUID.randomUUID();
+    RuntimeException providerFailure = new IllegalStateException("Google unavailable");
+    RuntimeException failureMarkingFailure = new IllegalStateException("Database unavailable");
+    FindCalendarEventLinkUseCase findEventLink = mock(FindCalendarEventLinkUseCase.class);
+    when(findEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR.name()))
+        .thenReturn(Optional.empty());
+    SpringDataGoogleOAuthTokenRepository tokenRepository =
+        mock(SpringDataGoogleOAuthTokenRepository.class);
+    GoogleOAuthTokenEntity token = mock(GoogleOAuthTokenEntity.class);
+    when(token.getPersonaType()).thenReturn(PersonaType.STAFF);
+    when(token.getUserId()).thenReturn("staff-user");
+    when(tokenRepository.findAll()).thenReturn(List.of(token));
+    GoogleOAuthAdapter oauthAdapter = mock(GoogleOAuthAdapter.class);
+    when(oauthAdapter.getValidAccessToken(tenantId, "staff-user", PersonaType.STAFF))
+        .thenReturn("access-token");
+    RestClient httpClient = mock(RestClient.class);
+    when(httpClient.post()).thenThrow(providerFailure);
+    MarkCalendarEventLinksFailedUseCase markFailed =
+        mock(MarkCalendarEventLinksFailedUseCase.class);
+    doAnswer(
+            invocation -> {
+              assertThat(TenantContextHolder.currentTenantOptional()).contains(tenantId);
+              assertThat(TenantContextHolder.currentDatabaseOptional()).contains(databaseId);
+              throw failureMarkingFailure;
+            })
+        .when(markFailed)
+        .markFailed(tenantId, appointmentId);
+
+    StaffCalendarSyncAdapter adapter =
+        new StaffCalendarSyncAdapter(
+            oauthAdapter,
+            tokenRepository,
+            findEventLink,
+            mock(FindCalendarEventLinksUseCase.class),
+            mock(CreateCalendarEventLinkUseCase.class),
+            mock(MarkCalendarEventLinkSyncedUseCase.class),
+            mock(MarkCalendarEventLinksDeletedUseCase.class),
+            markFailed,
+            mock(CalendarProperties.class),
+            new ObjectMapper(),
+            httpClient);
+
+    assertThatThrownBy(
+            () ->
+                adapter.onCalendarSyncRequested(
+                    new CalendarSyncRequested(
+                        UUID.randomUUID(),
+                        tenantId,
+                        databaseId,
+                        appointmentId,
+                        "CREATE",
+                        "Appointment",
+                        null,
+                        Instant.parse("2026-09-05T10:00:00Z"),
+                        Instant.parse("2026-09-05T11:00:00Z"),
+                        null)))
+        .isSameAs(providerFailure)
+        .hasSuppressedException(failureMarkingFailure);
+    assertThat(TenantContextHolder.currentTenantOptional()).isEmpty();
+    assertThat(TenantContextHolder.currentDatabaseOptional()).isEmpty();
+    verify(markFailed).markFailed(tenantId, appointmentId);
+  }
+
+  @Test
+  void marksLinksFailedAndRethrowsPersistenceFailuresInsideTheRestoredContext() {
+    UUID tenantId = UUID.randomUUID();
+    UUID databaseId = UUID.randomUUID();
+    UUID appointmentId = UUID.randomUUID();
+    UUID eventId = UUID.randomUUID();
+    RuntimeException persistenceFailure =
+        new IllegalStateException("Calendar database unavailable");
+    FindCalendarEventLinkUseCase findEventLink = mock(FindCalendarEventLinkUseCase.class);
+    when(findEventLink.find(appointmentId, CalendarProvider.GOOGLE_CALENDAR.name()))
+        .thenThrow(persistenceFailure);
+    MarkCalendarEventLinksFailedUseCase markFailed =
+        mock(MarkCalendarEventLinksFailedUseCase.class);
+    doAnswer(
+            invocation -> {
+              assertThat(TenantContextHolder.currentTenantOptional()).contains(tenantId);
+              assertThat(TenantContextHolder.currentDatabaseOptional()).contains(databaseId);
+              assertThat(CorrelationContextHolder.requireCorrelationId())
+                  .isEqualTo("calendar-sync:" + eventId);
+              return null;
+            })
+        .when(markFailed)
+        .markFailed(tenantId, appointmentId);
+
+    StaffCalendarSyncAdapter adapter =
+        new StaffCalendarSyncAdapter(
+            mock(GoogleOAuthAdapter.class),
+            mock(SpringDataGoogleOAuthTokenRepository.class),
+            findEventLink,
+            mock(FindCalendarEventLinksUseCase.class),
+            mock(CreateCalendarEventLinkUseCase.class),
+            mock(MarkCalendarEventLinkSyncedUseCase.class),
+            mock(MarkCalendarEventLinksDeletedUseCase.class),
+            markFailed,
+            mock(CalendarProperties.class),
+            new ObjectMapper(),
+            RestClient.builder().build());
+
+    assertThatThrownBy(
+            () ->
+                adapter.onCalendarSyncRequested(
+                    new CalendarSyncRequested(
+                        eventId,
+                        tenantId,
+                        databaseId,
+                        appointmentId,
+                        "CREATE",
+                        "Appointment",
+                        null,
+                        Instant.parse("2026-09-05T10:00:00Z"),
+                        Instant.parse("2026-09-05T11:00:00Z"),
+                        null)))
+        .isSameAs(persistenceFailure);
+    assertThat(TenantContextHolder.currentTenantOptional()).isEmpty();
+    assertThat(TenantContextHolder.currentDatabaseOptional()).isEmpty();
+    assertThatThrownBy(CorrelationContextHolder::requireCorrelationId)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("No correlation context");
     verify(markFailed).markFailed(tenantId, appointmentId);
   }
 }

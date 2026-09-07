@@ -2377,3 +2377,13 @@
   source paths remained valid.
 - **Prevention rule:** Repository source scans must exclude generated build
   directories explicitly and inspect only checked-in source trees.
+
+## 2026-09-07 — Distinguish dependency scopes before removing duplicates
+
+- **Failure mode:** A dependency inventory counted production and custom
+  integration configurations together and suggested removing an integration
+  dependency that the fixture's direct imports require.
+- **Detection signal:** Removing the line made integration compilation fail on
+  `TenantContextHolder` even though the inventory assertion passed.
+- **Prevention rule:** Analyze Gradle dependency counts by configuration and
+  validate the affected source-set classpath before deleting a declaration.

@@ -203,6 +203,10 @@ class RepositoryFrameworkFirstInventoryTest {
       throws IOException {
     return Files.readString(sourcePath(relativePath))
         .lines()
+        .filter(
+            line ->
+                line.trim().startsWith("implementation")
+                    || line.trim().startsWith("testImplementation"))
         .filter(line -> line.contains(dependency))
         .count();
   }

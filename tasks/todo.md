@@ -5455,6 +5455,23 @@ Completed in this slice:
 - No production ownership or tenant routing rule changed; only test fixtures
   and the architecture scanner were corrected.
 
+## Current slice — Task 22 dependency-scope inventory — 2026-09-07
+
+- [x] Reproduce the inventory failure for Catalog's production and integration
+      dependency declarations.
+- [x] Confirm Catalog integration tests directly require `libraries:kernel`.
+- [x] Restore the required integration dependency.
+- [x] Scope duplicate counting to `implementation` and `testImplementation`.
+- [x] Verify Catalog integration compilation and the focused inventory test.
+- [ ] Re-run the full platform and repository gates at the next phase checkpoint.
+
+### Results
+
+- Catalog integration-test compilation passes with its explicit kernel
+  dependency intact.
+- The inventory test now detects duplicates within the configuration family it
+  guards instead of rejecting legitimate custom source-set dependencies.
+
 ## Current slice — Task 18 Payment live persistence gate — 2026-09-06
 
 - [x] Verify Payment JPA persistence is isolated by the routed tenant schema.

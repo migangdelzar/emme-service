@@ -4460,3 +4460,19 @@ does not confuse a database-level extension prerequisite with ownership of the
 - [x] Remove `SCHEMA emme_core` from four integration-only extension setup calls.
 - [x] Run the focused schema-ownership architecture test.
 - [ ] Re-run the full platform and repository gates at the next phase checkpoint.
+
+## Current slice 22C — Distinguish production and integration dependencies — 2026-09-07
+
+The framework inventory test now counts duplicate dependency declarations only
+within the production/test configurations it is intended to guard. Catalog's
+explicit integration `libraries:kernel` dependency is retained because its
+live fixture directly imports `TenantContextHolder`; removing it broke
+integration-test compilation. This preserves source-classpath correctness while
+continuing to detect duplicate declarations in one configuration family.
+
+- [x] Reproduce the inventory failure for Catalog's two configuration scopes.
+- [x] Confirm the integration fixture directly needs `libraries:kernel`.
+- [x] Restore the required integration dependency.
+- [x] Scope the inventory count to `implementation` and `testImplementation`.
+- [x] Verify Catalog integration compilation and the focused inventory test.
+- [ ] Re-run the full platform and repository gates at the next phase checkpoint.

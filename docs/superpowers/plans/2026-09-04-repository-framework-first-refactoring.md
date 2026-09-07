@@ -4068,3 +4068,18 @@ OkHttp usage remains intentionally isolated.
 - [x] Reconcile the dedicated HTTP plan and migration ledger.
 - [ ] Continue remaining Redis, event-recovery, database, deployment, and final
       compatibility gates.
+
+## Current slice 18AE — Verify live Payment persistence — 2026-09-06
+
+Payment's existing JPA persistence adapter now has live PostgreSQL evidence for
+both tenant-schema routing and optimistic locking. The test uses the routed
+tenant context and the framework-managed version column; provider-reference
+lookups and webhook claims remain explicit business/control-plane operations.
+
+- [x] Add a live tenant A/B visibility test for Payment persistence.
+- [x] Add a two-transaction stale-version conflict test.
+- [x] Keep the provider-neutral Payment repository and managed-entity update
+      path unchanged.
+- [x] Run Payment integration tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue the remaining Calendar, Notification, and aggregate persistence
+      runtime matrix.

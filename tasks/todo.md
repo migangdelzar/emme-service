@@ -5341,3 +5341,20 @@ Completed in this slice:
 - The evidence confirms the database migration catalog for RLS without
   changing schema-per-tenant connection routing or ordinary repository
   tenant predicates.
+
+## Current slice — Task 18 Payment live persistence gate — 2026-09-06
+
+- [x] Verify Payment JPA persistence is isolated by the routed tenant schema.
+- [x] Verify two concurrent Payment updates produce one optimistic-lock
+      winner and one `OptimisticLockingFailureException`.
+- [x] Keep provider-reference and webhook operations' explicit business keys.
+- [x] Run Payment integration tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue Calendar, Notification, and remaining aggregate persistence
+      runtime evidence.
+
+### Results
+
+- The live Payment integration test passes with PostgreSQL and the isolated
+  `colima-emme` Docker profile.
+- No production adapter or application contract change was required; only the
+  integration test classpath and runtime evidence were extended.

@@ -2345,3 +2345,13 @@
 - **Prevention rule:** Before creating live rows, read the migration's CHECK,
   enum, and foreign-key values and use those exact persisted representations in
   integration fixtures.
+
+## 2026-09-07 — Exercise RLS on both CRUD and idempotency tables
+
+- **Failure mode:** A representative RLS test covered only ordinary customer
+  CRUD and could miss a policy or grant regression on durable webhook claims.
+- **Detection signal:** The migration catalog contained multiple tenant tables,
+  including atomic idempotency state with separate operational importance.
+- **Prevention rule:** Broaden live RLS checks across at least one ordinary
+  aggregate table and one durable claim/idempotency table, asserting both
+  filtered reads and rejected mismatched writes with a non-superuser.

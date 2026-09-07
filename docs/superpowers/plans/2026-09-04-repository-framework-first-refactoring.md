@@ -4357,3 +4357,20 @@ that each schema returns only its own URL. The fixture uses the deployed
       Checkstyle, and Spotless.
 - [ ] Continue the remaining aggregate persistence, control-plane, deployment,
       and final compatibility gates.
+
+## Current slice 23C — Verify tenant RLS behavior across durable webhook state — 2026-09-07
+
+The live RLS behavior gate now covers both ordinary customer data and durable
+Payment webhook idempotency state inside one routed tenant schema. A dedicated
+non-superuser sees no rows under a mismatched session tenant and receives
+PostgreSQL `42501` for mismatched writes; the correct session tenant retains
+read/write access. The database remains schema-per-tenant first, with RLS as a
+defense-in-depth session-context boundary.
+
+- [x] Grant the runtime role access to the durable webhook table.
+- [x] Verify mismatched reads return no customer or webhook rows.
+- [x] Verify mismatched writes fail with SQLSTATE `42501` for both tables.
+- [x] Verify the correct tenant session can still read its rows.
+- [x] Run the focused live test and full Tenancy checks, integration tests,
+      Checkstyle, and Spotless.
+- [ ] Continue remaining database catalog/migration and final framework gates.

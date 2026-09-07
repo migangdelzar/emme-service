@@ -187,7 +187,13 @@ class TenantRestIntTest {
         .sql("GRANT USAGE ON SCHEMA \"" + expectedSchema + "\" TO " + runtimeRole)
         .update();
     bootstrapJdbcClient
-        .sql("GRANT SELECT, INSERT ON TABLE \"" + expectedSchema + "\".customer TO " + runtimeRole)
+        .sql(
+            "GRANT SELECT, INSERT ON TABLE \""
+                + expectedSchema
+                + "\".customer, \""
+                + expectedSchema
+                + "\".payment_webhook_event TO "
+                + runtimeRole)
         .update();
     DataSource runtimeDataSource =
         new TenantScopedDataSource(
@@ -200,8 +206,10 @@ class TenantRestIntTest {
         () -> {
           try (Connection connection = runtimeDataSource.getConnection()) {
             insertCustomer(connection, tenantId);
+            insertWebhookEvent(connection, tenantId, "stripe", "event-a");
             setCurrentTenant(connection, otherTenantId);
             assertThat(countCustomers(connection)).isZero();
+            assertThat(countWebhookEvents(connection)).isZero();
             setCurrentTenant(connection, tenantId);
             try {
               insertCustomer(connection, otherTenantId);
@@ -209,7 +217,14 @@ class TenantRestIntTest {
             } catch (java.sql.SQLException failure) {
               assertThat(failure.getSQLState()).isEqualTo("42501");
             }
+            try {
+              insertWebhookEvent(connection, otherTenantId, "stripe", "event-b");
+              throw new AssertionError("Mismatched webhook row was accepted");
+            } catch (java.sql.SQLException failure) {
+              assertThat(failure.getSQLState()).isEqualTo("42501");
+            }
             assertThat(countCustomers(connection)).isEqualTo(1);
+            assertThat(countWebhookEvents(connection)).isEqualTo(1);
           } catch (java.sql.SQLException failure) {
             throw new IllegalStateException("Tenant RLS behavior check failed", failure);
           }
@@ -256,6 +271,32 @@ class TenantRestIntTest {
       statement.setObject(1, appointmentId);
       statement.setString(2, externalEventId.toString());
       statement.executeUpdate();
+    }
+  }
+
+  private static void insertWebhookEvent(
+      Connection connection, UUID tenantId, String provider, String eventId)
+      throws java.sql.SQLException {
+    try (var statement =
+        connection.prepareStatement(
+            "INSERT INTO payment_webhook_event "
+                + "(tenant_id, provider, event_id) VALUES (?, ?, ?)")) {
+      statement.setObject(1, tenantId);
+      statement.setString(2, provider);
+      statement.setString(3, eventId);
+      statement.executeUpdate();
+    }
+  }
+
+  private static int countWebhookEvents(Connection connection) throws java.sql.SQLException {
+    try (var statement =
+        connection.prepareStatement("SELECT COUNT(*) FROM payment_webhook_event")) {
+      try (var result = statement.executeQuery()) {
+        if (!result.next()) {
+          throw new java.sql.SQLException("Webhook event count query returned no row");
+        }
+        return result.getInt(1);
+      }
     }
   }
 

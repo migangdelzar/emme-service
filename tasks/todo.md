@@ -5658,3 +5658,19 @@ Completed in this slice:
   and the isolated `colima-emme` Docker profile.
 - No production or migration change was required; schema-local query routing
   is now runtime-verified.
+
+## Current slice — Task 23 tenant RLS behavioral coverage — 2026-09-07
+
+- [x] Extend the non-superuser RLS fixture to durable payment webhook state.
+- [x] Verify mismatched reads are filtered for customer and webhook rows.
+- [x] Verify mismatched writes fail with PostgreSQL SQLSTATE `42501`.
+- [x] Verify the correct tenant session retains access to both tables.
+- [x] Run Tenancy integration tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue remaining database catalog/migration and final framework gates.
+
+### Results
+
+- The live RLS behavior test passes with PostgreSQL and the isolated
+  `colima-emme` Docker profile.
+- RLS is now runtime-verified on both ordinary tenant data and durable webhook
+  idempotency state without changing the forward migration.

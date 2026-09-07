@@ -4,6 +4,14 @@
 
 **Goal:** Make Spring Modulith the only active asynchronous event provider for the initial Emme Nails runtime and defer Kafka provider/container activation until a real external consumer exists.
 
+## Current verification — internal event classification (2026-09-07)
+
+The six current business event records are now Spring Modulith-internal facts.
+Their transport-specific `@Externalized` metadata was removed, and the former
+Kafka-named contract test is now `EventContractTest`. The focused contract test,
+platform compilation, and Spotless checks pass. Active Kafka profile and
+provider configuration removal remains the next slice.
+
 ## Current verification — payment workflow duplicate delivery (2026-09-07)
 
 The live Assistant integration gate now races two identical payment workflow
@@ -94,7 +102,7 @@ environment.
 - Consumes: existing immutable event records and current `@Externalized` declarations.
 - Produces: an internal event contract in which all six current events have no `Externalized` annotation and remain publishable through Spring Modulith.
 
-- [ ] **Step 1: Write the failing contract test**
+- [x] **Step 1: Write the failing contract test**
 
 Rename the test class to `EventContractTest` and replace the Kafka-routing assertions with an explicit internal-event set. Add this focused assertion before removing annotations:
 
@@ -115,7 +123,7 @@ void currentEventsRemainInternalUntilAnExternalConsumerIsApproved() {
 
 Keep the existing record immutability, stable identifier, framework-type exclusion, and unsupported Rabbit/AMQP assertions. Remove assertions that require business events to be externalized.
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run:
 
@@ -125,7 +133,7 @@ Run:
 
 Expected: FAIL because the six current event records still have `@Externalized` annotations and the old class name may still be referenced by CI.
 
-- [ ] **Step 3: Remove external transport metadata from the six event records**
+- [x] **Step 3: Remove external transport metadata from the six event records**
 
 For each listed event, remove the import and annotation while preserving the record fields, validation, event IDs, tenant IDs, timestamps, and public package location. For example:
 
@@ -141,7 +149,7 @@ public record AppointmentCreated(/* existing immutable fields */) {}
 
 Do not replace the annotations with Kafka or Spring Kafka imports. The event publisher ports and Spring Modulith listeners remain unchanged in this task.
 
-- [ ] **Step 4: Run the contract test to verify it passes**
+- [x] **Step 4: Run the contract test to verify it passes**
 
 Run:
 
@@ -151,7 +159,7 @@ Run:
 
 Expected: PASS with zero skipped tests.
 
-- [ ] **Step 5: Commit the event classification change**
+- [x] **Step 5: Commit the event classification change**
 
 ```bash
 git add modules/tenancy/src/main/java/com/emme/tenancy/api/event/TenantCreated.java \

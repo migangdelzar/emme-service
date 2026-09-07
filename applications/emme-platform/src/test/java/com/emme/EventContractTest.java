@@ -22,22 +22,19 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.modulith.events.Externalized;
 
-class KafkaEventContractTest {
+class EventContractTest {
 
   @Test
-  void externalizedEventsDeclareStableTopicAndTenantPartitionKey() {
-    assertThat(externalizedTarget(TenantActivated.class))
-        .isEqualTo("emme.tenancy.tenant-activated::#{#this.tenantId()}");
-    assertThat(externalizedTarget(TenantCreated.class))
-        .isEqualTo("emme.tenancy.tenant-created::#{#this.tenantId()}");
-    assertThat(externalizedTarget(AppointmentCreated.class))
-        .isEqualTo("emme.studio.appointment-created::#{#this.tenantId()}");
-    assertThat(externalizedTarget(AppointmentCancelled.class))
-        .isEqualTo("emme.studio.appointment-cancelled::#{#this.tenantId()}");
-    assertThat(externalizedTarget(AppointmentRescheduled.class))
-        .isEqualTo("emme.studio.appointment-rescheduled::#{#this.tenantId()}");
-    assertThat(externalizedTarget(LearningCandidateEvaluationRequested.class))
-        .isEqualTo("emme.ai.learning-candidate-evaluation-requested::#{#this.tenantId()}");
+  void currentEventsRemainInternalUntilAnExternalConsumerIsApproved() {
+    assertThat(
+            List.of(
+                TenantCreated.class,
+                TenantActivated.class,
+                AppointmentCreated.class,
+                AppointmentCancelled.class,
+                AppointmentRescheduled.class,
+                LearningCandidateEvaluationRequested.class))
+        .allMatch(eventType -> !eventType.isAnnotationPresent(Externalized.class));
   }
 
   @Test
@@ -54,7 +51,7 @@ class KafkaEventContractTest {
   }
 
   @Test
-  void externalizedEventsExposeStableEventIdentifiers() {
+  void currentEventsExposeStableEventIdentifiers() {
     assertThat(TenantActivated.class.getRecordComponents())
         .anyMatch(
             component ->
@@ -70,7 +67,7 @@ class KafkaEventContractTest {
   }
 
   @Test
-  void onlyApprovedPublicFactsAreExternalized() {
+  void currentPublicFactsRemainInternal() {
     List<Class<?>> allApiEvents =
         List.of(
             CalendarSyncRequested.class,
@@ -82,21 +79,11 @@ class KafkaEventContractTest {
             TenantActivated.class,
             TenantCreated.class);
 
-    assertThat(allApiEvents.stream().filter(type -> type.isAnnotationPresent(Externalized.class)))
-        .containsExactlyInAnyOrder(
-            TenantActivated.class,
-            AppointmentCreated.class,
-            AppointmentCancelled.class,
-            AppointmentRescheduled.class,
-            LearningCandidateEvaluationRequested.class,
-            TenantCreated.class);
-
-    assertThat(List.of(CalendarSyncRequested.class, NotificationDelivered.class))
-        .allMatch(type -> !type.isAnnotationPresent(Externalized.class));
+    assertThat(allApiEvents).allMatch(type -> !type.isAnnotationPresent(Externalized.class));
   }
 
   @Test
-  void externalizedPayloadsDoNotExposeFrameworkOrPersistenceTypes() {
+  void eventPayloadsDoNotExposeFrameworkOrPersistenceTypes() {
     assertThat(
             List.of(
                     TenantActivated.class,
@@ -130,10 +117,7 @@ class KafkaEventContractTest {
       }
       try (var paths = Files.walk(sourceRoot)) {
         for (Path path :
-            paths
-                .filter(Files::isRegularFile)
-                .filter(KafkaEventContractTest::isTextFile)
-                .toList()) {
+            paths.filter(Files::isRegularFile).filter(EventContractTest::isTextFile).toList()) {
           String content = Files.readString(path).toLowerCase();
           for (String forbiddenToken : forbiddenTokens) {
             assertThat(content)
@@ -200,9 +184,5 @@ class KafkaEventContractTest {
         || name.endsWith(".yaml")
         || name.endsWith(".xml")
         || name.endsWith(".properties");
-  }
-
-  private static String externalizedTarget(Class<?> eventType) {
-    return eventType.getAnnotation(Externalized.class).value();
   }
 }

@@ -3,10 +3,8 @@ package com.emme.assistant.api.event;
 import com.emme.ai.contracts.learning.LearningCandidateEvaluationRequest;
 import java.util.Objects;
 import java.util.UUID;
-import org.springframework.modulith.events.Externalized;
 
 /** Safe application event that starts offline evaluation of a governed learning candidate. */
-@Externalized("emme.ai.learning-candidate-evaluation-requested::#{#this.tenantId()}")
 public record LearningCandidateEvaluationRequested(LearningCandidateEvaluationRequest request) {
 
   public LearningCandidateEvaluationRequested {

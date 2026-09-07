@@ -1,5 +1,25 @@
 # Service architecture migration checklist
 
+## Current slice — Modulith-internal event classification — 2026-09-07
+
+- [x] Add and run the failing internal-event contract test.
+- [x] Remove transport metadata from the six current business event records.
+- [x] Rename the Kafka-specific contract test and update CI selection.
+- [x] Run the focused platform event test, compilation, and Spotless.
+- [x] Commit and push the slice.
+- [ ] Remove active Kafka provider configuration in the next slice.
+
+### Results
+
+- `./gradlew :applications:emme-platform:test --tests com.emme.EventContractTest
+  :applications:emme-platform:compileJava
+  :applications:emme-platform:compileTestJava
+  :applications:emme-platform:spotlessApply
+  :applications:emme-platform:spotlessCheck --no-parallel
+  --no-configuration-cache` passed.
+- The six current events are internal; live deferred Kafka verification remains
+  intentionally separate and opt-in.
+
 ## Current slice — Task 17 live appointment collision gate — 2026-09-06
 
 - [x] Start an isolated `colima-emme` Docker profile after the stale default

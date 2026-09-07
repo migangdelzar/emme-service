@@ -2537,6 +2537,20 @@ runtime-gated.
 - [ ] Run live duplicate-delivery/publication-retry checks when PostgreSQL and
       Kafka are available.
 
+#### Current slice 19N — Classify current facts as Modulith-internal
+
+The six current business event records are now internal Spring Modulith facts;
+they no longer carry `@Externalized` transport metadata. The event contract
+test was renamed from its Kafka-specific name to `EventContractTest` and now
+guards the internal-event policy. Kafka remains a deferred capability for a
+later approved external-consumer boundary.
+
+- [x] Add the failing internal-event contract assertion before implementation.
+- [x] Remove `@Externalized` from tenant, appointment, and learning events.
+- [x] Rename the contract test and update its CI selector.
+- [x] Run the focused platform event test, compilation, and Spotless.
+- [ ] Remove active Kafka provider configuration in the next sequential slice.
+
 #### Current slice 19D — Give durable Modulith listeners stable identities
 
 Provisioning and calendar listeners now declare explicit Modulith listener IDs,

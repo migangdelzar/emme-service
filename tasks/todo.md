@@ -5277,6 +5277,23 @@ Completed in this slice:
 - The tenant-schema migration path now has runtime evidence for Calendar
   event-link cardinality; tenant routing remains connection-checkout based.
 
+## Current slice — Tasks 8, 16, 17, and 18 live-gate reconciliation — 2026-09-06
+
+- [x] Re-run focused LangGraph configuration/security tests.
+- [x] Verify live Clients, Services, and Salon tenant routing and optimistic
+      locking.
+- [x] Verify live appointment overlap exclusion enforcement.
+- [x] Verify live Calendar appointment/provider cardinality enforcement.
+- [ ] Continue remaining LangGraph capability-startup/payment gates, aggregate
+      persistence/RLS gates, and Modulith publication recovery.
+
+### Results
+
+- The focused LangGraph suite passes; live checkpoint/resume and cross-tenant
+  evidence remain recorded separately as passing Docker-backed gates.
+- The foundational tenant-schema JPA optimistic-lock matrix and appointment
+  exclusion race pass with the isolated Docker profile.
+
 ## Current slice — Task 19 duplicate membership delivery — 2026-09-06
 
 - [x] Add a failing service test for a concurrent duplicate result.

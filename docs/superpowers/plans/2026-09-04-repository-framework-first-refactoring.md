@@ -1178,7 +1178,8 @@ LangGraphQuoteWorkflow            quote adapter
 The checkpoint saver now distinguishes a genuinely new workflow from an
 existing workflow ID that is not accessible to the authenticated tenant,
 conversation, or principal. The latter is rejected instead of being returned
-as an empty checkpoint history. The live PostgreSQL proof remains Docker-gated.
+as an empty checkpoint history. The live PostgreSQL proof passes with the
+conversation checkpoint and quote idempotency integration fixtures.
 
 - [x] Add focused regression coverage for an inaccessible existing workflow ID.
 - [x] Reject cross-tenant workflow IDs before returning checkpoint history.
@@ -3939,7 +3940,7 @@ under tenant A is absent from tenant B and available again under tenant A.
 - [x] Verify tenant A/B visibility through the live PostgreSQL path.
 - [x] Run Clients unit tests, Java compilation, integration-test compilation,
       focused integration test, and Spotless.
-- [ ] Continue Services and Salon live tenant-routing and optimistic-lock
+- [x] Continue Services and Salon live tenant-routing and optimistic-lock
       evidence before closing Task 16.
 
 ## Current slice 16C — Verify live Services tenant-schema JPA routing — 2026-09-06
@@ -3957,7 +3958,7 @@ readable again under tenant A.
 - [x] Verify tenant A/B visibility through the live PostgreSQL path.
 - [x] Run Services unit tests, Java compilation, integration-test compilation,
       focused integration test, and Spotless.
-- [ ] Continue Salon live tenant-routing and the optimistic-lock matrix before
+- [x] Continue Salon live tenant-routing and the optimistic-lock matrix before
       closing Task 16.
 
 ## Current slice 16D — Verify live Salon tenant-schema JPA routing — 2026-09-06
@@ -3975,8 +3976,9 @@ visible through tenant B's schema and is returned again under tenant A.
 - [x] Verify tenant A/B visibility through the live PostgreSQL path.
 - [x] Run Salon unit tests, Java compilation, integration-test compilation,
       focused integration test, and Spotless.
-- [ ] Continue the optimistic-lock matrix and remaining persistence audit before
-      closing Task 16/18.
+- [x] Continue the foundational optimistic-lock matrix before closing Task
+      16/18.
+- [ ] Continue the remaining aggregate persistence audit.
 
 ## Current slice 16E — Verify live Clients optimistic locking — 2026-09-06
 
@@ -3992,8 +3994,9 @@ writer to commit.
 - [x] Keep the version implementation in the persistence superclass and out of
       the provider-neutral customer contract.
 - [x] Run the focused live test and affected Clients checks.
-- [ ] Continue Services, Salon, and remaining aggregate optimistic-lock
-      evidence before closing Task 16/18.
+- [x] Continue Services and Salon optimistic-lock evidence before closing Task
+      16/18.
+- [ ] Continue remaining aggregate optimistic-lock evidence.
 
 ## Current slice 16F — Verify live Services optimistic locking — 2026-09-06
 
@@ -4009,8 +4012,8 @@ writer to commit.
 - [x] Keep the version implementation in the persistence superclass and out of
       the provider-neutral Services contract.
 - [x] Run the focused live test and affected Services checks.
-- [ ] Continue Salon and remaining aggregate optimistic-lock evidence before
-      closing Task 16/18.
+- [x] Continue Salon optimistic-lock evidence before closing Task 16/18.
+- [ ] Continue remaining aggregate optimistic-lock evidence.
 
 ## Current slice 16G — Verify live Salon optimistic locking — 2026-09-06
 

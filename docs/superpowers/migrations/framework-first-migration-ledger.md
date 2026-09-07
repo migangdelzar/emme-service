@@ -506,3 +506,16 @@ predicate.
 
 The runtime result validates the existing `@Version` persistence invariant
 without exposing persistence-version details through the customer contract.
+
+## Services live optimistic-lock evidence — 2026-09-06
+
+- [x] Coordinate two transactions that load one service version.
+- [x] Perform concurrent updates through the Spring Data repository.
+- [x] Verify exactly one writer commits and one receives
+      `OptimisticLockingFailureException`.
+- [x] Keep optimistic locking in the shared JPA mapped superclass.
+- [ ] Run the corresponding Salon and remaining aggregate matrix.
+
+The runtime result validates the existing versioned persistence invariant for
+Services without exposing persistence-version details through the application
+contract.

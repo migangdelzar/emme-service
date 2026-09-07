@@ -3949,3 +3949,20 @@ writer to commit.
 - [x] Run the focused live test and affected Clients checks.
 - [ ] Continue Services, Salon, and remaining aggregate optimistic-lock
       evidence before closing Task 16/18.
+
+## Current slice 16F — Verify live Services optimistic locking — 2026-09-06
+
+The Services integration test now coordinates two PostgreSQL transactions that
+load the same service version and update it concurrently. The existing shared
+JPA `@Version` mapping rejects the losing update while allowing exactly one
+writer to commit.
+
+- [x] Add a focused two-transaction optimistic-lock integration test.
+- [x] Coordinate both writers after loading the same persisted version.
+- [x] Verify exactly one successful update and one
+      `OptimisticLockingFailureException`.
+- [x] Keep the version implementation in the persistence superclass and out of
+      the provider-neutral Services contract.
+- [x] Run the focused live test and affected Services checks.
+- [ ] Continue Salon and remaining aggregate optimistic-lock evidence before
+      closing Task 16/18.

@@ -4939,3 +4939,19 @@ Completed in this slice:
   and tenant partition-key assertions.
 - The profile no longer attempts to connect to host PostgreSQL during context
   startup.
+
+## Current slice — Task 6X/8J semantic schema and ownership runtime fixes — 2026-09-06
+
+- [x] Align the pgvector semantic-cache fixture with the complete response
+      identity migration columns.
+- [x] Enforce returned conversation ownership at the AI memory boundary.
+- [x] Run focused PostgreSQL semantic-cache and conversation-isolation tests.
+- [ ] Re-run `AgeGraphIntegrationTest` after the configured AGE image digest is
+      available; Docker reported the remote `apache/age:release_PG17_1.6.0`
+      digest as not found.
+
+### Results
+
+- Focused Assistant integration tests pass.
+- The full Assistant integration run reached 25 tests but had three failures:
+  the two fixed regressions above and one AGE container initialization failure.

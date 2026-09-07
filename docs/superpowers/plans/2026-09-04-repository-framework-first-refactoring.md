@@ -3778,3 +3778,19 @@ backed.
       `colima-emme` Docker profile.
 - [ ] Continue the remaining listener idempotency, retry, and external replay
       evidence.
+
+## Current slice 6X/8J — Semantic schema and conversation ownership runtime fixes — 2026-09-06
+
+Live Assistant integration exposed and fixed two framework-boundary regressions:
+the hand-built pgvector cache fixture lagged the forward response-identity
+migration, and the AI conversation-memory adapter did not recheck the tenant ID
+returned by a schema-local lookup. The Apache AGE gate remains pending because
+the configured `apache/age:release_PG17_1.6.0` image digest could not be pulled.
+
+- [x] Align the pgvector semantic-cache integration fixture with the
+      `channel`, `locale`, and `quote_template_version` migration columns.
+- [x] Reject conversation-memory access when the returned aggregate belongs to
+      a different authenticated tenant.
+- [x] Run the focused PostgreSQL semantic-cache and conversation-isolation
+      integration tests.
+- [ ] Re-run AGE graph integration after the configured image is available.

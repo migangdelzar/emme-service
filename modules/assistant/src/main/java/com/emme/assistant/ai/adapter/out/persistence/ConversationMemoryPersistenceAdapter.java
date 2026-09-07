@@ -106,11 +106,16 @@ public class ConversationMemoryPersistenceAdapter implements ConversationMemoryP
 
   private ConversationDetails requireAccessibleConversation(
       UUID conversationId, AiExecutionContext context) {
-    return conversations
-        .get(new GetConversationQuery(context.tenantId(), conversationId))
-        .orElseThrow(
-            () ->
-                new SecurityException(
-                    "Conversation is not accessible for the authenticated tenant"));
+    ConversationDetails conversation =
+        conversations
+            .get(new GetConversationQuery(context.tenantId(), conversationId))
+            .orElseThrow(
+                () ->
+                    new SecurityException(
+                        "Conversation is not accessible for the authenticated tenant"));
+    if (!context.tenantId().equals(conversation.tenantId())) {
+      throw new SecurityException("Conversation is not accessible for the authenticated tenant");
+    }
+    return conversation;
   }
 }

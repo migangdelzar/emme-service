@@ -2166,3 +2166,26 @@
   namespaced datasource property consumed by custom configuration (including
   `spring.datasource.core.url`), and keep a profile parity test asserting that
   override.
+
+## 2026-09-06 — Keep hand-built PostgreSQL fixtures aligned with migrations
+
+- **Failure mode:** The pgvector integration fixture created `ai_semantic_cache`
+  from an older local definition while the adapter already required the
+  versioned response identity columns.
+- **Detection signal:** The live write failed with PostgreSQL error `42703`
+  because `channel` did not exist, although the deployed forward migration
+  already added it.
+- **Prevention rule:** When a persistence contract gains migration columns,
+  update every hand-built integration fixture in the same slice and run the
+  real PostgreSQL adapter test.
+
+## 2026-09-06 — Recheck returned aggregate ownership at AI boundaries
+
+- **Failure mode:** A schema-local JPA lookup ignored a query tenant argument,
+  so an AI memory adapter accepted a conversation returned from a different
+  tenant context.
+- **Detection signal:** The live cross-tenant memory test expected a
+  `SecurityException`, but the lookup returned the other tenant's aggregate.
+- **Prevention rule:** Even when connection checkout selects the tenant schema,
+  AI boundary adapters must compare returned aggregate ownership with the
+  authenticated execution context before reading or mutating it.

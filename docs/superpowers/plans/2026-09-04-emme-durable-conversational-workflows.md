@@ -1405,6 +1405,15 @@ the remaining compatibility cleanup families are tracked separately.
 - [ ] Deprecated duplicates are removed only after caller inventory and replacement evidence.
 - [ ] All plan/document/code changes are committed and pushed to `feat/ai-platform-foundation`.
 
+## Runtime evidence update — 2026-09-06
+
+- [x] PostgreSQL semantic-cache integration fixture aligned with the complete
+      response identity migration.
+- [x] Conversation memory rejects an aggregate whose returned tenant identity
+      differs from the authenticated AI execution context.
+- [ ] Apache AGE graph integration remains pending until the configured AGE
+      image digest can be pulled by Docker.
+
 ## 11. Reference Documentation
 
 - [Durable workflow design](../specs/2026-09-04-emme-durable-conversational-workflows-design.md)

@@ -5414,6 +5414,27 @@ Completed in this slice:
 - The gate found and fixed a Hibernate `Integer`/`Long` property collision in
   `DocumentEntity`; no migration was edited.
 
+## Current slice — Task 18 Appointment live persistence gate — 2026-09-07
+
+- [x] Verify Appointment JPA persistence is isolated by the routed tenant
+      schema.
+- [x] Verify two concurrent Appointment updates produce one optimistic-lock
+      winner and one `OptimisticLockingFailureException`.
+- [x] Create related customer, service, and artist rows through their owning
+      repository ports.
+- [x] Preserve the PostgreSQL exclusion-constraint boundary for collision
+      enforcement.
+- [x] Run Appointments integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue remaining aggregate persistence and RLS behavioral evidence.
+
+### Results
+
+- The live Appointment integration tests pass with PostgreSQL and the isolated
+  `colima-emme` Docker profile.
+- Ordinary tenant-schema JPA routing and inherited `@Version` behavior are
+  runtime-verified independently from the existing overlap race test.
+
 ## Current slice — Task 18 Calendar sync-state persistence gate — 2026-09-06
 
 - [x] Verify Calendar sync-state JPA persistence is isolated by the routed

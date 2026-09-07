@@ -4181,3 +4181,21 @@ domain-level `version()` contract remain unchanged.
 - [x] Run Documents unit/integration tests, compilation, Checkstyle, and
       Spotless.
 - [ ] Continue the remaining aggregate persistence and RLS behavioral matrix.
+
+## Current slice 18AL — Verify live Appointment persistence — 2026-09-07
+
+Appointment ordinary persistence now has live PostgreSQL evidence for
+tenant-schema routing and optimistic locking. The test creates the required
+customer, service, and artist through their owning repositories, then exercises
+the provider-neutral Appointment repository; the separate PostgreSQL overlap
+constraint remains covered by its dedicated concurrency gate.
+
+- [x] Add a live tenant A/B visibility test for Appointment persistence.
+- [x] Add a two-transaction stale-version conflict test.
+- [x] Create related customer, service, and artist records through owning
+      repository ports.
+- [x] Preserve the PostgreSQL exclusion-constraint boundary for collision
+      enforcement.
+- [x] Run Appointments unit/integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue the remaining aggregate persistence and RLS behavioral matrix.

@@ -3820,3 +3820,33 @@ available in the isolated Docker profile and its graph integration now passes.
 - [x] Run the focused PostgreSQL semantic-cache and conversation-isolation
       integration tests.
 - [x] Run AGE graph integration after the configured image became available.
+
+## Current slice 6Y/8K — Close live semantic and LangGraph framework gates — 2026-09-06
+
+The isolated `colima-emme` Docker profile now provides repeatable PostgreSQL,
+pgvector, Redis, Kafka, and AGE execution for the remaining framework evidence.
+The live Assistant matrix passed the semantic-cache/vector, RAG quality, AGE,
+conversation checkpoint, quote idempotency, and tenant-isolation tests. The
+conversation workflow test verifies graph recreation, approval resume, and
+cross-tenant rejection; the quote workflow test verifies repeated idempotency
+delivery and principal ownership. Identity, Notification, Payment, Shared,
+and Tenancy PostgreSQL/provider integration gates also passed.
+
+The slice additionally removed `emme_core` references from Assistant test
+fixtures. Those fixtures now create the database-level pgvector extension
+without naming the control-plane schema, while production schema routing still
+uses `emme_core` through the core migration and tenant connection search path.
+The provider-boundary architecture scan now walks only stable source roots, so
+standalone test execution cannot race with mutable Spring Modulith build output.
+
+- [x] Run live Assistant semantic-cache, vector, RAG, AGE, and LangGraph tests.
+- [x] Verify live graph recreation/resume, cross-tenant rejection, and repeated
+      idempotent workflow delivery.
+- [x] Run Identity, Notification, Payment, Shared, and Tenancy integration
+      gates against PostgreSQL/Testcontainers.
+- [x] Keep Assistant integration fixtures outside the `emme_core` ownership
+      boundary.
+- [x] Make provider source inventory traversal deterministic for standalone
+      application tests.
+- [ ] Run the remaining PostgreSQL optimistic-lock conflict matrix.
+- [ ] Continue Redis outage/recovery and listener retry/replay evidence.

@@ -2202,3 +2202,24 @@
   the matching `integrationTestRuntimeOnly` or `integrationTestImplementation`
   configuration; verify the actual integration runtime classpath rather than
   assuming `testRuntimeOnly` is inherited.
+
+## 2026-09-06 — Keep test schema prerequisites outside ownership scans
+
+- **Failure mode:** A tenant-schema integration fixture added a control-plane
+  schema name solely to install a database-level extension, and the repository
+  schema ownership guard rejected the test source.
+- **Detection signal:** `SchemaOwnershipTest` reported Assistant integration
+  files as `emme_core` offenders even though no tenant data was persisted there.
+- **Prevention rule:** Keep test-only database prerequisites expressed at the
+  database level or behind an owning test fixture; do not add control-plane
+  schema literals to consuming-module tests.
+
+## 2026-09-06 — Source architecture scans must avoid mutable build output
+
+- **Failure mode:** A repository-wide source walk raced with Spring Modulith
+  documentation generation and attempted to traverse a directory removed by
+  another Gradle task.
+- **Detection signal:** A standalone application test failed with
+  `NoSuchFileException` under `build/spring-modulith-docs`.
+- **Prevention rule:** Architecture inventories must enumerate stable source and
+  build-script roots explicitly and exclude mutable generated output.

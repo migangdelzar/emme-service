@@ -118,7 +118,7 @@ class QuoteWorkflowIdempotencyIntegrationTest {
   private void provisionTenant(UUID tenantId) {
     String slug = "quote-" + tenantId.toString().replace('-', 'a');
     String schemaName = TenantSchemaName.fromSlug(slug);
-    bootstrapJdbc.sql("CREATE EXTENSION IF NOT EXISTS vector SCHEMA emme_core").update();
+    bootstrapJdbc.sql("CREATE EXTENSION IF NOT EXISTS vector").update();
     provisioningRepository.requestProvisioning(tenantId, slug, schemaName);
     assertThat(schemaMigrationPort.migrate(tenantId, slug)).isEqualTo(schemaName);
   }

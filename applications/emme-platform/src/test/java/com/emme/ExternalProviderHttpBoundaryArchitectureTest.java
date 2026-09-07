@@ -54,7 +54,7 @@ class ExternalProviderHttpBoundaryArchitectureTest {
     Path repository = sourcePath("settings.gradle.kts").getParent();
     Set<String> productionReferences = new LinkedHashSet<>();
 
-    try (Stream<Path> paths = Files.walk(repository)) {
+    try (Stream<Path> paths = stableRepositorySources(repository)) {
       paths
           .filter(this::isStableProductionSource)
           .filter(this::containsOkHttpReference)
@@ -66,6 +66,21 @@ class ExternalProviderHttpBoundaryArchitectureTest {
     assertThat(productionReferences)
         .as("every production OkHttp reference must have an ordered provider migration task")
         .containsExactlyInAnyOrderElementsOf(PROVIDER_PRODUCTION_ALLOWLIST);
+  }
+
+  private static Stream<Path> stableRepositorySources(Path repository) {
+    return Stream.concat(
+            Stream.of(repository.resolve("applications"), repository.resolve("modules")),
+            Stream.of(repository.resolve("libraries")))
+        .filter(Files::isDirectory)
+        .flatMap(
+            root -> {
+              try {
+                return Files.walk(root);
+              } catch (IOException exception) {
+                throw new IllegalStateException("Cannot inspect source root " + root, exception);
+              }
+            });
   }
 
   @Test

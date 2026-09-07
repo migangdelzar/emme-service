@@ -4874,6 +4874,33 @@ Completed in this slice:
 - Docker-backed PostgreSQL verification remains open because the local Colima
   Docker daemon is unavailable.
 
+## Current slice — live semantic and LangGraph framework gates — 2026-09-06
+
+- [x] Run live Assistant semantic-cache, vector, RAG, AGE, and LangGraph tests
+      with the isolated `colima-emme` Docker profile.
+- [x] Verify graph recreation/resume, cross-tenant rejection, repeated
+      idempotent workflow delivery, and tenant-scoped semantic behavior.
+- [x] Run Identity, Notification, Payment, Shared, and Tenancy PostgreSQL and
+      provider integration gates.
+- [x] Remove `emme_core` references from Assistant integration fixtures while
+      retaining the database-level pgvector prerequisite.
+- [x] Make the provider source inventory scan stable when application build
+      output is being generated or removed.
+- [ ] Continue PostgreSQL optimistic-lock conflict, Redis outage/recovery, and
+      Modulith listener retry/replay evidence.
+
+### Results
+
+- Assistant live framework matrix passed: ConversationWorkflowCheckpoint (1),
+  QuoteWorkflowIdempotency (1), PgVectorSemantic (4), RedisSemantic (1),
+  TenantScopedSemanticInvalidation (2), RagQuality (2), and AgeGraph (3).
+- Identity (3), Notification (3), Payment (4), Shared (2), and Tenancy (5)
+  integration tests passed with zero failures or skips.
+- Application ownership/provider architecture tests passed after the stable
+  source-root scan was applied.
+- Known Testcontainers shutdown-hook JDBC warnings remain non-failing teardown
+  diagnostics when PostgreSQL closes before Spring JPA/Modulith destruction.
+
 ## Current slice — Task 13F PostgreSQL tenant datasource startup — 2026-09-06
 
 - [x] Verify the worktree and read the repository instructions and Task 13

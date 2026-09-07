@@ -1,5 +1,7 @@
 package com.emme.assistant.ai;
 
+import static com.emme.testing.context.ExecutionTestContext.runWithBridgedContext;
+import static com.emme.testing.context.ExecutionTestContext.withBridgedContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.ai.contracts.job.AiJobRequest;
@@ -7,8 +9,6 @@ import com.emme.ai.contracts.job.AiJobType;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcAiJobStatusStore;
 import com.emme.assistant.ai.domain.job.AiJobStatus;
 import com.emme.kernel.context.AiExecutionContext;
-import com.emme.kernel.context.AiExecutionContextBridge;
-import com.emme.kernel.context.AiExecutionContextScope;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -133,7 +133,7 @@ class AiJobReconciliationClaimIntegrationTest {
     AiExecutionContext context = context(TENANT_ID, "claim-race");
     AiJobRequest request =
         new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
-    runWithContext(context, () -> store.enqueue(request));
+    runWithBridgedContext(context, () -> store.enqueue(request));
     assertThat(
             adminJdbc.queryForMap(
                 "SELECT tenant_id, status, available_at FROM ai_job_state WHERE job_id = ?",
@@ -151,7 +151,7 @@ class AiJobReconciliationClaimIntegrationTest {
 
     try (var executor = Executors.newFixedThreadPool(2)) {
       Callable<List<AiJobRequest>> claim =
-          () -> withContext(context, () -> store.claimAvailable(1));
+          () -> withBridgedContext(context, () -> store.claimAvailable(1));
       Future<List<AiJobRequest>> first = executor.submit(claim);
       Future<List<AiJobRequest>> second = executor.submit(claim);
 
@@ -178,11 +178,13 @@ class AiJobReconciliationClaimIntegrationTest {
     AiJobRequest second =
         new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "second", secondContext);
 
-    runWithContext(firstContext, () -> store.enqueue(first));
-    runWithContext(secondContext, () -> store.enqueue(second));
+    runWithBridgedContext(firstContext, () -> store.enqueue(first));
+    runWithBridgedContext(secondContext, () -> store.enqueue(second));
 
-    List<AiJobRequest> firstClaim = withContext(firstContext, () -> store.claimAvailable(10));
-    List<AiJobRequest> secondClaim = withContext(secondContext, () -> store.claimAvailable(10));
+    List<AiJobRequest> firstClaim =
+        withBridgedContext(firstContext, () -> store.claimAvailable(10));
+    List<AiJobRequest> secondClaim =
+        withBridgedContext(secondContext, () -> store.claimAvailable(10));
     assertThat(firstClaim).extracting(AiJobRequest::jobId).containsExactly(first.jobId());
     assertThat(secondClaim).extracting(AiJobRequest::jobId).containsExactly(second.jobId());
   }
@@ -197,14 +199,14 @@ class AiJobReconciliationClaimIntegrationTest {
     AiJobRequest firstRequest =
         new AiJobRequest(firstJobId, AiJobType.GRAPH_PROJECTION, "first", context);
 
-    runWithContext(context, () -> store.enqueue(secondRequest));
-    runWithContext(context, () -> store.enqueue(firstRequest));
+    runWithBridgedContext(context, () -> store.enqueue(secondRequest));
+    runWithBridgedContext(context, () -> store.enqueue(firstRequest));
     adminJdbc.update(
         "UPDATE ai_job_state SET created_at='2026-01-01T00:00:00Z'::timestamptz, available_at='2026-01-01T00:00:00Z'::timestamptz WHERE job_id IN (?, ?)",
         firstJobId,
         secondJobId);
 
-    assertThat(withContext(context, () -> store.claimAvailable(2)))
+    assertThat(withBridgedContext(context, () -> store.claimAvailable(2)))
         .extracting(AiJobRequest::jobId)
         .containsExactly(firstJobId, secondJobId);
   }
@@ -214,25 +216,25 @@ class AiJobReconciliationClaimIntegrationTest {
     AiExecutionContext context = context(TENANT_ID, "retry-progression");
     AiJobRequest request =
         new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
-    runWithContext(context, () -> store.enqueue(request));
+    runWithBridgedContext(context, () -> store.enqueue(request));
 
-    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+    assertThat(withBridgedContext(context, () -> store.claimAndLoad(request.jobId(), context)))
         .isPresent();
-    runWithContext(context, () -> store.fail(request.jobId(), "FIRST_FAILURE", context));
+    runWithBridgedContext(context, () -> store.fail(request.jobId(), "FIRST_FAILURE", context));
     assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
     assertThat(backoffSecondsFor(request.jobId())).isEqualTo(1.0);
 
     makeDue(request.jobId());
-    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+    assertThat(withBridgedContext(context, () -> store.claimAndLoad(request.jobId(), context)))
         .isPresent();
-    runWithContext(context, () -> store.fail(request.jobId(), "SECOND_FAILURE", context));
+    runWithBridgedContext(context, () -> store.fail(request.jobId(), "SECOND_FAILURE", context));
     assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
     assertThat(backoffSecondsFor(request.jobId())).isEqualTo(2.0);
 
     makeDue(request.jobId());
-    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+    assertThat(withBridgedContext(context, () -> store.claimAndLoad(request.jobId(), context)))
         .isPresent();
-    runWithContext(context, () -> store.fail(request.jobId(), "THIRD_FAILURE", context));
+    runWithBridgedContext(context, () -> store.fail(request.jobId(), "THIRD_FAILURE", context));
 
     assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.DEAD_LETTER.name());
     assertThat(lastErrorFor(request.jobId())).isEqualTo("THIRD_FAILURE");
@@ -243,10 +245,11 @@ class AiJobReconciliationClaimIntegrationTest {
     AiExecutionContext context = context(TENANT_ID, "rejected-claim");
     AiJobRequest request =
         new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
-    runWithContext(context, () -> store.enqueue(request));
-    assertThat(withContext(context, () -> store.claimAvailable(1))).hasSize(1);
+    runWithBridgedContext(context, () -> store.enqueue(request));
+    assertThat(withBridgedContext(context, () -> store.claimAvailable(1))).hasSize(1);
 
-    runWithContext(context, () -> store.defer(request.jobId(), context, Duration.ofSeconds(1)));
+    runWithBridgedContext(
+        context, () -> store.defer(request.jobId(), context, Duration.ofSeconds(1)));
 
     assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
     assertThat(backoffSecondsFor(request.jobId())).isBetween(0.9, 1.1);
@@ -258,33 +261,37 @@ class AiJobReconciliationClaimIntegrationTest {
     AiExecutionContext context = context(TENANT_ID, "rejection-does-not-consume-attempts");
     AiJobRequest request =
         new AiJobRequest(UUID.randomUUID(), AiJobType.GRAPH_PROJECTION, "payload", context);
-    runWithContext(context, () -> store.enqueue(request));
+    runWithBridgedContext(context, () -> store.enqueue(request));
 
     for (int rejection = 0; rejection < 3; rejection++) {
-      assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+      assertThat(withBridgedContext(context, () -> store.claimAndLoad(request.jobId(), context)))
           .isPresent();
-      runWithContext(context, () -> store.defer(request.jobId(), context, Duration.ofSeconds(1)));
+      runWithBridgedContext(
+          context, () -> store.defer(request.jobId(), context, Duration.ofSeconds(1)));
       makeDue(request.jobId());
     }
 
     assertThat(attemptsFor(request.jobId())).isZero();
 
-    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+    assertThat(withBridgedContext(context, () -> store.claimAndLoad(request.jobId(), context)))
         .isPresent();
-    runWithContext(context, () -> store.fail(request.jobId(), "FIRST_REAL_FAILURE", context));
+    runWithBridgedContext(
+        context, () -> store.fail(request.jobId(), "FIRST_REAL_FAILURE", context));
     assertThat(attemptsFor(request.jobId())).isEqualTo(1);
     assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
 
     makeDue(request.jobId());
-    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+    assertThat(withBridgedContext(context, () -> store.claimAndLoad(request.jobId(), context)))
         .isPresent();
-    runWithContext(context, () -> store.fail(request.jobId(), "SECOND_REAL_FAILURE", context));
+    runWithBridgedContext(
+        context, () -> store.fail(request.jobId(), "SECOND_REAL_FAILURE", context));
     assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.RETRYING.name());
 
     makeDue(request.jobId());
-    assertThat(withContext(context, () -> store.claimAndLoad(request.jobId(), context)))
+    assertThat(withBridgedContext(context, () -> store.claimAndLoad(request.jobId(), context)))
         .isPresent();
-    runWithContext(context, () -> store.fail(request.jobId(), "THIRD_REAL_FAILURE", context));
+    runWithBridgedContext(
+        context, () -> store.fail(request.jobId(), "THIRD_REAL_FAILURE", context));
     assertThat(statusFor(context, request.jobId())).isEqualTo(AiJobStatus.DEAD_LETTER.name());
   }
 
@@ -297,16 +304,6 @@ class AiJobReconciliationClaimIntegrationTest {
         UUID.randomUUID(),
         "trace-" + key,
         "idempotency-" + key);
-  }
-
-  private static <T> T withContext(AiExecutionContext context, Callable<T> action) {
-    return AiExecutionContextScope.call(
-        context, () -> AiExecutionContextBridge.callCurrent(() -> action.call()));
-  }
-
-  private static void runWithContext(AiExecutionContext context, Runnable action) {
-    AiExecutionContextScope.run(
-        context, () -> AiExecutionContextBridge.runCurrent(() -> action.run()));
   }
 
   private String statusFor(AiExecutionContext context, UUID jobId) {

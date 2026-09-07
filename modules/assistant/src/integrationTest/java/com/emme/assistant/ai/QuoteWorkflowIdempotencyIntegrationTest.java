@@ -1,5 +1,7 @@
 package com.emme.assistant.ai;
 
+import static com.emme.testing.context.ExecutionTestContext.withContext;
+import static com.emme.testing.context.ExecutionTestContext.withTenant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -7,8 +9,6 @@ import com.emme.TestApplication;
 import com.emme.assistant.ai.adapter.out.persistence.JdbcQuoteWorkflowRepository;
 import com.emme.assistant.ai.domain.workflow.QuoteWorkflow;
 import com.emme.kernel.context.AiExecutionContext;
-import com.emme.kernel.context.AiExecutionContextScope;
-import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.adapter.out.client.database.TenantSchemaName;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
 import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
@@ -124,7 +124,7 @@ class QuoteWorkflowIdempotencyIntegrationTest {
   }
 
   private void createConversation(UUID tenantId, UUID conversationId, UUID participantId) {
-    TenantContextHolder.withTenantOverride(
+    withTenant(
         tenantId,
         () ->
             jdbc.sql(
@@ -134,15 +134,5 @@ class QuoteWorkflowIdempotencyIntegrationTest {
                 .param("tenantId", tenantId)
                 .param("participantId", participantId)
                 .update());
-  }
-
-  private static <T> T withContext(AiExecutionContext context, ThrowingSupplier<T> action) {
-    return TenantContextHolder.withTenantOverride(
-        context.tenantId(), () -> AiExecutionContextScope.call(context, action::get));
-  }
-
-  @FunctionalInterface
-  private interface ThrowingSupplier<T> {
-    T get() throws Exception;
   }
 }

@@ -5954,3 +5954,21 @@ Completed in this slice:
   Docker profile.
 - Staff authorization is verified at the direct LangGraph adapter boundary,
   while schema-per-tenant routing prevents cross-tenant checkpoint access.
+
+## Current slice — Task 8 live authorization/resume phase gate — 2026-09-07
+
+- [x] Run conversation checkpoint recreation and cross-tenant rejection.
+- [x] Run quote idempotency, authorization, and tenant-isolation checks.
+- [x] Run enabled and disabled LangGraph startup checks.
+- [x] Replace repeated Assistant integration context helpers with the shared
+      `libraries/testing` fixture utility.
+- [x] Run the Docker-backed integration matrix, compilation, and Spotless.
+- [ ] Continue remaining database, event-recovery, deployment, and
+      compatibility framework gates.
+
+### Results
+
+- The LangGraph authorization/resume phase gate passes with the isolated
+  `colima-emme` PostgreSQL profile.
+- The source inventory no longer finds private checked-exception context
+  wrappers in Assistant integration tests.

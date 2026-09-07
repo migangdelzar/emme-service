@@ -4575,3 +4575,21 @@ changed.
 - [x] Run the focused live test and Assistant integration-test compilation.
 - [ ] Continue the remaining database, event-recovery, deployment, and
       compatibility framework gates.
+
+## Current slice 8O — Complete the live LangGraph authorization/resume gate — 2026-09-07
+
+The Docker-backed LangGraph gate now passes across the available checkpoint,
+resume, idempotency, and startup contexts. The Assistant integration tests use
+the shared `libraries/testing` execution-context fixture; no private checked-
+exception callback or tenant-context wrapper remains in those tests. The
+isolated PostgreSQL profile reported successful Gradle completion. Shutdown
+logs may contain connection warnings while the test container is torn down;
+they do not affect test results.
+
+- [x] Run conversation checkpoint recreation and cross-tenant rejection.
+- [x] Run quote idempotency and authorized/non-authorized resume checks.
+- [x] Run enabled and disabled LangGraph startup composition checks.
+- [x] Move repeated Assistant integration context helpers to shared fixtures.
+- [x] Run the focused integration suite with Docker and compile/Spotless checks.
+- [ ] Continue remaining database, event-recovery, deployment, and
+      compatibility framework gates.

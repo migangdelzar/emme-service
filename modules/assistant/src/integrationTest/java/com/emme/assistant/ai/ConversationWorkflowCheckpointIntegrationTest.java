@@ -1,5 +1,7 @@
 package com.emme.assistant.ai;
 
+import static com.emme.testing.context.ExecutionTestContext.withContext;
+import static com.emme.testing.context.ExecutionTestContext.withTenant;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -16,8 +18,6 @@ import com.emme.assistant.ai.domain.workflow.ConversationWorkflowStatus;
 import com.emme.assistant.api.command.StartConversationCommand;
 import com.emme.assistant.api.usecase.StartConversationUseCase;
 import com.emme.kernel.context.AiExecutionContext;
-import com.emme.kernel.context.AiExecutionContextScope;
-import com.emme.kernel.context.TenantContextHolder;
 import com.emme.kernel.type.ChannelType;
 import com.emme.tenancy.adapter.out.client.database.TenantSchemaName;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
@@ -58,7 +58,7 @@ class ConversationWorkflowCheckpointIntegrationTest {
     provisionTenant(tenantA);
     provisionTenant(tenantB);
     UUID conversation =
-        TenantContextHolder.withTenantOverride(
+        withTenant(
             tenantA,
             () ->
                 startConversation
@@ -74,7 +74,7 @@ class ConversationWorkflowCheckpointIntegrationTest {
     var paused = withContext(tenantAContext, () -> adapter().startOrResume(start, tenantAContext));
     assertThat(paused.status()).isEqualTo(ConversationWorkflowStatus.WAITING_FOR_APPROVAL);
     String persistedStatus =
-        TenantContextHolder.withTenantOverride(
+        withTenant(
             tenantA,
             () ->
                 jdbc.sql(
@@ -173,15 +173,5 @@ class ConversationWorkflowCheckpointIntegrationTest {
         workflowId,
         "trace-workflow-review",
         "workflow-review-turn");
-  }
-
-  private static <T> T withContext(AiExecutionContext context, ThrowingSupplier<T> action) {
-    return TenantContextHolder.withTenantOverride(
-        context.tenantId(), () -> AiExecutionContextScope.call(context, action::get));
-  }
-
-  @FunctionalInterface
-  private interface ThrowingSupplier<T> {
-    T get() throws Exception;
   }
 }

@@ -1,10 +1,10 @@
 package com.emme.assistant.ai.adapter.out.workflow;
 
+import static com.emme.testing.context.ExecutionTestContext.withContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.emme.kernel.context.AiExecutionContext;
-import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Set;
 import java.util.UUID;
 import org.bsc.langgraph4j.RunnableConfig;
@@ -25,12 +25,12 @@ class TenantAwareCheckpointSaverTest {
     RunnableConfig config = configFor(WORKFLOW_ID);
     Checkpoint checkpoint = checkpoint("checkpoint-1");
 
-    RunnableConfig returned = runWithContext(() -> saver.put(config, checkpoint));
+    RunnableConfig returned = withContext(context(), () -> saver.put(config, checkpoint));
 
     assertThat(returned.threadId()).contains(WORKFLOW_ID.toString());
-    assertThat(runWithContext(() -> saver.get(config)).orElseThrow().getId())
+    assertThat(withContext(context(), () -> saver.get(config)).orElseThrow().getId())
         .isEqualTo(checkpoint.getId());
-    assertThat(runWithContext(() -> saver.list(config)))
+    assertThat(withContext(context(), () -> saver.list(config)))
         .extracting(Checkpoint::getId)
         .containsExactly(checkpoint.getId());
   }
@@ -40,7 +40,7 @@ class TenantAwareCheckpointSaverTest {
     TenantAwareCheckpointSaver saver = new TenantAwareCheckpointSaver(new MemorySaver());
     RunnableConfig config = configFor(UUID.randomUUID());
 
-    assertThatThrownBy(() -> runWithContext(() -> saver.get(config)))
+    assertThatThrownBy(() -> withContext(context(), () -> saver.get(config)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Checkpoint thread does not match AI workflow context");
   }
@@ -58,7 +58,7 @@ class TenantAwareCheckpointSaverTest {
   void rejectsCheckpointAccessWithoutAWorkflowThreadId() {
     TenantAwareCheckpointSaver saver = new TenantAwareCheckpointSaver(new MemorySaver());
 
-    assertThatThrownBy(() -> runWithContext(() -> saver.get(RunnableConfig.empty())))
+    assertThatThrownBy(() -> withContext(context(), () -> saver.get(RunnableConfig.empty())))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Checkpoint thread does not match AI workflow context");
   }
@@ -70,7 +70,7 @@ class TenantAwareCheckpointSaverTest {
     RunnableConfig malformedConfig =
         RunnableConfig.builder().threadId(WORKFLOW_ID + ":invalid:namespace").build();
 
-    assertThatThrownBy(() -> runWithContext(() -> saver.get(malformedConfig)))
+    assertThatThrownBy(() -> withContext(context(), () -> saver.get(malformedConfig)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Checkpoint thread namespace must not contain ':'");
   }
@@ -88,21 +88,14 @@ class TenantAwareCheckpointSaverTest {
         .build();
   }
 
-  private static <T> T runWithContext(CheckedSupplier<T> action) {
-    AiExecutionContext context =
-        new AiExecutionContext(
-            TENANT_ID,
-            PRINCIPAL_ID,
-            Set.of("CLIENT"),
-            CONVERSATION_ID,
-            WORKFLOW_ID,
-            "trace-1",
-            "idempotency-1");
-    return AiExecutionContextScope.call(context, action::get);
-  }
-
-  @FunctionalInterface
-  private interface CheckedSupplier<T> {
-    T get() throws Exception;
+  private static AiExecutionContext context() {
+    return new AiExecutionContext(
+        TENANT_ID,
+        PRINCIPAL_ID,
+        Set.of("CLIENT"),
+        CONVERSATION_ID,
+        WORKFLOW_ID,
+        "trace-1",
+        "idempotency-1");
   }
 }

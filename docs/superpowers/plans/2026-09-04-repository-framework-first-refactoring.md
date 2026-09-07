@@ -4743,3 +4743,24 @@ failure as unavailable and returns the existing fail-closed result.
 - Aggregate `integrationTest` passes with the Colima Docker profile; the
   recurring Hikari/PostgreSQL messages are shutdown-time container teardown
   warnings after successful module tasks.
+
+## Current slice 21D — Consolidate workflow test context helpers — 2026-09-07
+
+The remaining Assistant workflow unit tests carried private checked callback
+interfaces and context-binding wrappers even though the shared testing
+fixture already provided those capabilities. The tests now use
+`libraries/testing` `ExecutionTestContext`; its callbacks reuse the existing
+`libraries/functional` throwing interfaces, keeping test infrastructure out of
+production modules and avoiding another helper family.
+
+- [x] Add a failing source-boundary regression test for local context helpers.
+- [x] Migrate workflow and quote-review unit tests to shared test helpers.
+- [x] Run focused workflow/service tests and the full Assistant unit suite.
+- [x] Run Assistant Spotless and diff checks.
+- [ ] Continue remaining event-recovery, deployment-runtime, and final
+      compatibility gates.
+
+### Results
+
+- No Assistant unit test defines `CheckedSupplier` or `runWithContext`.
+- Focused tests and `:modules:assistant:test` pass.

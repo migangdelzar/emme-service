@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.application.service;
 
+import static com.emme.testing.context.ExecutionTestContext.withContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -12,8 +13,8 @@ import com.emme.assistant.ai.domain.workflow.QuoteReviewDecisionType;
 import com.emme.assistant.ai.domain.workflow.QuoteReviewTask;
 import com.emme.assistant.ai.domain.workflow.QuoteWorkflow;
 import com.emme.assistant.ai.domain.workflow.QuoteWorkflowState;
+import com.emme.functional.throwing.ThrowingSupplier;
 import com.emme.kernel.context.AiExecutionContext;
-import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -123,7 +124,7 @@ class ReviewQuoteServiceTest {
             "review-inbound");
 
     ReviewQuoteResult result =
-        AiExecutionContextScope.call(
+        withContext(
             inboundContext,
             () ->
                 service.review(
@@ -145,8 +146,8 @@ class ReviewQuoteServiceTest {
         0);
   }
 
-  private static <T> T runAsStaff(CheckedSupplier<T> action) {
-    return run(
+  private static <T> T runAsStaff(ThrowingSupplier<T, ? extends Throwable> action) {
+    return withContext(
         new AiExecutionContext(
             TENANT_ID,
             STAFF_ID,
@@ -158,8 +159,8 @@ class ReviewQuoteServiceTest {
         action);
   }
 
-  private static <T> T runAsClient(CheckedSupplier<T> action) {
-    return run(
+  private static <T> T runAsClient(ThrowingSupplier<T, ? extends Throwable> action) {
+    return withContext(
         new AiExecutionContext(
             TENANT_ID,
             CLIENT_ID,
@@ -169,14 +170,6 @@ class ReviewQuoteServiceTest {
             "trace-client",
             "review-1"),
         action);
-  }
-
-  private static <T> T run(AiExecutionContext context, CheckedSupplier<T> action) {
-    return AiExecutionContextScope.call(context, action::get);
-  }
-
-  private interface CheckedSupplier<T> {
-    T get();
   }
 
   private static final class RecordingReviews implements QuoteReviewRepository {

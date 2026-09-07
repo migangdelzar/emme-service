@@ -2468,3 +2468,15 @@
 - **Prevention rule:** For disposable Redis coordination paths, test both direct
   connection failures and wrapped provider transport exceptions; return the
   fail-closed result for Redis-specific system failures.
+
+## 2026-09-07 — Keep checked context helpers in shared test libraries
+
+- **Failure mode:** Assistant workflow tests duplicated checked callback
+  interfaces and context-binding wrappers, allowing behavior and exception
+  semantics to drift between tests.
+- **Detection signal:** A source-boundary test found private `CheckedSupplier`
+  and `runWithContext` declarations after integration tests had already moved
+  to `libraries/testing`.
+- **Prevention rule:** Reuse `libraries/functional` throwing callbacks through
+  `libraries/testing` context helpers; add a source-inventory assertion before
+  removing the final local copies.

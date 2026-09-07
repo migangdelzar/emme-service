@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
@@ -171,6 +172,32 @@ class AssistantPackageConventionTest {
         .contains("@NotNull ActionType actionType")
         .contains("@NotBlank String details")
         .contains("@NotNull Instant expiresAt");
+  }
+
+  @Test
+  void reusesSharedExecutionContextHelpersInTests() throws IOException {
+    Path conventionTest =
+        sourcePath(
+            "modules/assistant/src/test/java/com/emme/assistant/AssistantPackageConventionTest.java");
+    for (String sourceRoot :
+        List.of("modules/assistant/src/test/java", "modules/assistant/src/integrationTest/java")) {
+      try (Stream<Path> paths = Files.walk(sourcePath(sourceRoot))) {
+        for (Path path :
+            paths
+                .filter(candidate -> candidate.toString().endsWith(".java"))
+                .filter(candidate -> !candidate.equals(conventionTest))
+                .toList()) {
+          assertThat(Files.readString(path))
+              .as("assistant test source: %s", path)
+              .doesNotContain("interface CheckedSupplier")
+              .doesNotContain("private interface ThrowingSupplier")
+              .doesNotContain("private interface ThrowingRunnable")
+              .doesNotContain("private static <T> T withContext(")
+              .doesNotContain("private static <T> T runWithContext(")
+              .doesNotContain("private static <T> T withTenant(");
+        }
+      }
+    }
   }
 
   private static boolean hasJavaSources(Path directory) {

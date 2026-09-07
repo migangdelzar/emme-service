@@ -6044,6 +6044,26 @@ Completed in this slice:
   isolated `colima-emme` PostgreSQL profile.
 - Shutdown pool warnings were emitted during container teardown, after the
   Gradle integration tasks had completed successfully.
+
+## Current slice — Consolidate workflow test context helpers — 2026-09-07
+
+- [x] Add a failing Assistant source-boundary test for local checked suppliers
+      and context wrappers.
+- [x] Migrate workflow and quote-review unit tests to the shared testing
+      fixture and functional callback interfaces.
+- [x] Run the affected workflow/service tests and the full Assistant unit
+      suite.
+- [x] Run Assistant Spotless and `git diff --check`.
+- [ ] Continue remaining framework-first runtime and compatibility gates.
+
+### Results
+
+- `ExecutionTestContext` in `libraries/testing` is now the single test helper
+  for AI context binding, tenant overrides, and checked callbacks; the callback
+  interfaces remain in `libraries/functional`.
+- Assistant unit tests no longer define private `CheckedSupplier` or
+  `runWithContext` duplicates.
+- Focused workflow/quote-review tests and the full Assistant unit suite pass.
 ## Current slice — Stabilize framework inventory gate (2026-09-07)
 
 - [x] Reproduce the repository-root source scan race against generated build

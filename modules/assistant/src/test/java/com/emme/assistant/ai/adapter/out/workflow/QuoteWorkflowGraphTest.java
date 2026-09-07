@@ -1,9 +1,9 @@
 package com.emme.assistant.ai.adapter.out.workflow;
 
+import static com.emme.testing.context.ExecutionTestContext.withContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.kernel.context.AiExecutionContext;
-import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -26,7 +26,8 @@ class QuoteWorkflowGraphTest {
     CompiledGraph<AgentState> graph = graph();
 
     AgentState result =
-        runWithContext(
+        withContext(
+            context(),
             () ->
                 graph
                     .invoke(
@@ -42,7 +43,8 @@ class QuoteWorkflowGraphTest {
     CompiledGraph<AgentState> graph = graph();
 
     AgentState result =
-        runWithContext(
+        withContext(
+            context(),
             () ->
                 graph
                     .invoke(
@@ -58,13 +60,15 @@ class QuoteWorkflowGraphTest {
     CompiledGraph<AgentState> graph = graph();
     RunnableConfig config = RunnableConfig.builder().threadId(WORKFLOW_ID.toString()).build();
 
-    runWithContext(() -> graph.invoke(Map.of("needsReview", true), config).orElseThrow());
+    withContext(context(), () -> graph.invoke(Map.of("needsReview", true), config).orElseThrow());
     RunnableConfig approvedConfig =
-        runWithContext(
+        withContext(
+            context(),
             () -> graph.updateState(config, Map.of("needsReview", false), "approval_gate"));
 
     AgentState result =
-        runWithContext(() -> graph.invoke(GraphInput.resume(), approvedConfig).orElseThrow());
+        withContext(
+            context(), () -> graph.invoke(GraphInput.resume(), approvedConfig).orElseThrow());
 
     assertThat(result.<String>value("status")).contains("QUOTE_READY");
   }
@@ -73,21 +77,14 @@ class QuoteWorkflowGraphTest {
     return new QuoteWorkflowGraph(new TenantAwareCheckpointSaver(new MemorySaver())).compile();
   }
 
-  private static <T> T runWithContext(CheckedSupplier<T> action) {
-    AiExecutionContext context =
-        new AiExecutionContext(
-            TENANT_ID,
-            PRINCIPAL_ID,
-            Set.of("CLIENT"),
-            CONVERSATION_ID,
-            WORKFLOW_ID,
-            "trace-1",
-            "idempotency-1");
-    return AiExecutionContextScope.call(context, action::get);
-  }
-
-  @FunctionalInterface
-  private interface CheckedSupplier<T> {
-    T get() throws Exception;
+  private static AiExecutionContext context() {
+    return new AiExecutionContext(
+        TENANT_ID,
+        PRINCIPAL_ID,
+        Set.of("CLIENT"),
+        CONVERSATION_ID,
+        WORKFLOW_ID,
+        "trace-1",
+        "idempotency-1");
   }
 }

@@ -1,5 +1,6 @@
 package com.emme.assistant.ai.adapter.out.workflow;
 
+import static com.emme.testing.context.ExecutionTestContext.withContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -12,7 +13,6 @@ import com.emme.assistant.ai.application.workflow.NodePolicyRegistry;
 import com.emme.assistant.ai.application.workflow.NodeProfile;
 import com.emme.assistant.ai.application.workflow.NodeToolPolicy;
 import com.emme.kernel.context.AiExecutionContext;
-import com.emme.kernel.context.AiExecutionContextScope;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,19 +40,20 @@ class ConversationWorkflowGraphTest {
     CompiledGraph<AgentState> graph = graph(capabilities(new AtomicInteger(), true));
     RunnableConfig config = RunnableConfig.builder().threadId(WORKFLOW_ID.toString()).build();
 
-    AgentState paused = runWithContext(() -> graph.invoke(input(), config).orElseThrow());
+    AgentState paused = withContext(context(), () -> graph.invoke(input(), config).orElseThrow());
 
     assertThat(paused.<String>value("status")).contains("WAITING_FOR_APPROVAL");
 
     RunnableConfig approved =
-        runWithContext(
+        withContext(
+            context(),
             () ->
                 graph.updateState(
                     config,
                     Map.of(ConversationWorkflowGraph.DECISION, "APPROVE"),
                     ConversationWorkflowGraph.APPROVAL_GATE));
     AgentState resumed =
-        runWithContext(() -> graph.invoke(GraphInput.resume(), approved).orElseThrow());
+        withContext(context(), () -> graph.invoke(GraphInput.resume(), approved).orElseThrow());
 
     assertThat(resumed.<String>value("status")).contains("SUCCEEDED");
   }
@@ -62,7 +63,8 @@ class ConversationWorkflowGraphTest {
     CompiledGraph<AgentState> graph = graph();
 
     AgentState result =
-        runWithContext(
+        withContext(
+            context(),
             () ->
                 graph
                     .invoke(
@@ -83,17 +85,19 @@ class ConversationWorkflowGraphTest {
     CompiledGraph<AgentState> compiled = graph.compile();
     RunnableConfig config = RunnableConfig.builder().threadId(WORKFLOW_ID.toString()).build();
 
-    AgentState paused = runWithContext(() -> compiled.invoke(input(), config).orElseThrow());
+    AgentState paused =
+        withContext(context(), () -> compiled.invoke(input(), config).orElseThrow());
     assertThat(paused.<String>value("status")).contains("WAITING_FOR_APPROVAL");
 
     RunnableConfig approved =
-        runWithContext(
+        withContext(
+            context(),
             () ->
                 compiled.updateState(
                     config,
                     Map.of(ConversationWorkflowGraph.DECISION, "APPROVE"),
                     ConversationWorkflowGraph.APPROVAL_GATE));
-    runWithContext(() -> compiled.invoke(GraphInput.resume(), approved).orElseThrow());
+    withContext(context(), () -> compiled.invoke(GraphInput.resume(), approved).orElseThrow());
 
     assertThat(calls.intent()).hasValue(1);
     assertThat(calls.decomposition()).hasValue(1);
@@ -114,7 +118,8 @@ class ConversationWorkflowGraphTest {
               new TenantAwareCheckpointSaver(new MemorySaver()), terminalCapabilities(terminal));
 
       AgentState result =
-          runWithContext(
+          withContext(
+              context(),
               () ->
                   graph
                       .compile()
@@ -161,7 +166,8 @@ class ConversationWorkflowGraphTest {
 
     assertThatThrownBy(
             () ->
-                runWithContext(
+                withContext(
+                    context(),
                     () ->
                         new ConversationWorkflowGraph(
                                 new TenantAwareCheckpointSaver(new MemorySaver()),
@@ -194,7 +200,8 @@ class ConversationWorkflowGraphTest {
             defaults.responseComposition(),
             defaults.quoteWorkflow());
 
-    runWithContext(
+    withContext(
+        context(),
         () ->
             graph(capabilities)
                 .invoke(input(), RunnableConfig.builder().threadId(WORKFLOW_ID.toString()).build())
@@ -305,22 +312,15 @@ class ConversationWorkflowGraphTest {
         defaults.quoteWorkflow());
   }
 
-  private static <T> T runWithContext(CheckedSupplier<T> action) {
-    AiExecutionContext context =
-        new AiExecutionContext(
-            TENANT_ID,
-            PRINCIPAL_ID,
-            Set.of("CLIENT"),
-            CONVERSATION_ID,
-            WORKFLOW_ID,
-            "trace-2",
-            "idempotency-2");
-    return AiExecutionContextScope.call(context, action::get);
-  }
-
-  @FunctionalInterface
-  private interface CheckedSupplier<T> {
-    T get() throws Exception;
+  private static AiExecutionContext context() {
+    return new AiExecutionContext(
+        TENANT_ID,
+        PRINCIPAL_ID,
+        Set.of("CLIENT"),
+        CONVERSATION_ID,
+        WORKFLOW_ID,
+        "trace-2",
+        "idempotency-2");
   }
 
   private record InvocationCounts(

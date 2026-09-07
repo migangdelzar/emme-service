@@ -5554,3 +5554,22 @@ Completed in this slice:
   isolated `colima-emme` Docker profile.
 - No production adapter or application contract change was required; only the
   integration test classpath and runtime evidence were extended.
+
+## Current slice — Task 18 Payment workflow correlation isolation — 2026-09-07
+
+- [x] Verify Payment workflow correlation persistence is isolated by the routed
+      tenant schema.
+- [x] Verify the same provider reference is independent across tenant schemas.
+- [x] Create referenced appointment holds through owning aggregate repositories.
+- [x] Declare direct custom integration-source dependencies for appointments,
+      clients, and services.
+- [x] Run Payment integration tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue remaining aggregate persistence, control-plane, deployment, and
+      compatibility evidence.
+
+### Results
+
+- The live Payment integration tests pass with PostgreSQL and the isolated
+  `colima-emme` Docker profile.
+- Provider-neutral workflow correlation lookups remain schema-local while
+  callback provider references remain explicit persistence keys.

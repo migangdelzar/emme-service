@@ -3,17 +3,29 @@ package com.emme.payment;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.emme.TestApplication;
+import com.emme.ai.contracts.appointment.AppointmentHold;
 import com.emme.ai.contracts.payment.PaymentLink;
+import com.emme.appointments.application.port.out.AppointmentHoldRepository;
+import com.emme.appointments.application.port.out.AppointmentRepository;
+import com.emme.appointments.domain.model.Appointment;
+import com.emme.clients.application.port.out.CustomerRepository;
+import com.emme.clients.domain.model.Customer;
 import com.emme.kernel.context.TenantContextHolder;
+import com.emme.payment.api.port.out.PaymentWorkflowCorrelationRepository;
 import com.emme.payment.application.port.out.PaymentLinkRepository;
 import com.emme.payment.application.port.out.PaymentRepository;
 import com.emme.payment.application.port.out.PaymentWebhookEventRepository;
 import com.emme.payment.domain.model.Payment;
+import com.emme.services.application.port.out.ArtistRepository;
+import com.emme.services.application.port.out.ServiceRepository;
+import com.emme.services.domain.model.Artist;
+import com.emme.services.domain.model.Service;
 import com.emme.tenancy.adapter.out.client.database.TenantSchemaName;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
 import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
 import com.emme.testing.integration.annotation.PostgresIntegrationTest;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -39,6 +51,12 @@ class PaymentIntegrationTest {
 
   @Autowired private DataSource dataSource;
 
+  @Autowired private AppointmentHoldRepository appointmentHolds;
+  @Autowired private AppointmentRepository appointments;
+  @Autowired private CustomerRepository customers;
+  @Autowired private ArtistRepository artists;
+  @Autowired private ServiceRepository services;
+  @Autowired private PaymentWorkflowCorrelationRepository correlations;
   @Autowired private PaymentLinkRepository paymentLinks;
   @Autowired private PaymentWebhookEventRepository webhookEvents;
 
@@ -127,6 +145,44 @@ class PaymentIntegrationTest {
     TenantContextHolder.withTenantOverride(
         tenantB,
         () -> assertThat(paymentLinks.findByIdempotencyKey(idempotencyKey)).contains(linkB));
+  }
+
+  @Test
+  @DisplayName("Payment workflow provider references are scoped to the tenant schema")
+  void paymentWorkflowCorrelationIsScopedToTheTenantSchema() {
+    UUID tenantA = provisionTenant("payment-correlation-a");
+    UUID tenantB = provisionTenant("payment-correlation-b");
+    AppointmentHold holdA = createHold(tenantA);
+    AppointmentHold holdB = createHold(tenantB);
+    String providerReference = "provider-reference-" + UUID.randomUUID();
+    PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation correlationA =
+        new PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation(
+            UUID.randomUUID(), "test-provider", providerReference, holdA.holdId());
+    PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation correlationB =
+        new PaymentWorkflowCorrelationRepository.PaymentWorkflowCorrelation(
+            UUID.randomUUID(), "test-provider", providerReference, holdB.holdId());
+
+    TenantContextHolder.withTenantOverride(tenantA, () -> correlations.save(correlationA));
+    TenantContextHolder.withTenantOverride(tenantB, () -> correlations.save(correlationB));
+
+    TenantContextHolder.withTenantOverride(
+        tenantA,
+        () -> {
+          assertThat(
+                  correlations.findByProviderAndProviderReference(
+                      "test-provider", providerReference))
+              .contains(correlationA);
+          assertThat(correlations.findByWorkflowId(correlationB.workflowId())).isEmpty();
+        });
+    TenantContextHolder.withTenantOverride(
+        tenantB,
+        () -> {
+          assertThat(
+                  correlations.findByProviderAndProviderReference(
+                      "test-provider", providerReference))
+              .contains(correlationB);
+          assertThat(correlations.findByWorkflowId(correlationA.workflowId())).isEmpty();
+        });
   }
 
   @Test
@@ -221,5 +277,40 @@ class PaymentIntegrationTest {
         "test-provider",
         checkoutUrl,
         java.time.Instant.parse(expiresAt));
+  }
+
+  private AppointmentHold createHold(UUID tenantId) {
+    return TenantContextHolder.withTenantOverride(
+        tenantId,
+        () -> {
+          UUID customerId = customers.save(new Customer(tenantId, "Payment customer")).getId();
+          UUID serviceId =
+              services
+                  .save(
+                      new Service(
+                          tenantId,
+                          "PAY-" + UUID.randomUUID().toString().substring(0, 8),
+                          "Payment service",
+                          60,
+                          BigDecimal.TEN))
+                  .getId();
+          UUID artistId = artists.save(new Artist(tenantId, "Payment artist")).getId();
+          Instant startsAt = Instant.parse("2031-02-01T10:00:00Z");
+          Appointment appointment =
+              appointments.save(
+                  new Appointment(
+                      tenantId,
+                      customerId,
+                      serviceId,
+                      artistId,
+                      startsAt,
+                      startsAt.plusSeconds(3600)));
+          return appointmentHolds.save(
+              new AppointmentHold(
+                  UUID.randomUUID(),
+                  appointment.getId(),
+                  startsAt.plusSeconds(1800),
+                  "hold-" + UUID.randomUUID()));
+        });
   }
 }

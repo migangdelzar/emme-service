@@ -4253,3 +4253,21 @@ in the database for uniqueness and callback safety.
 - [x] Run the focused live test and affected Payment checks.
 - [ ] Continue the remaining aggregate persistence, control-plane, deployment,
       and final compatibility gates.
+
+## Current slice 18AO — Verify live payment workflow correlation isolation — 2026-09-07
+
+Payment workflow callback correlation now has live PostgreSQL evidence for its
+tenant-schema boundary. The test stores the same provider and provider
+reference independently in two tenant schemas, with real tenant-local
+appointment holds satisfying the correlation foreign key, and verifies that
+workflow lookups never cross the selected schema.
+
+- [x] Add a live integration test for payment workflow correlation persistence.
+- [x] Verify identical provider references are independent across tenant
+      schemas.
+- [x] Build the appointment-hold fixture through owning aggregate repositories.
+- [x] Declare the direct appointments, clients, and services dependencies
+      required by the custom Payment integration source set.
+- [x] Run the focused live test, full Payment checks, and Spotless.
+- [ ] Continue the remaining aggregate persistence, control-plane, deployment,
+      and final compatibility gates.

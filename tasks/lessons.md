@@ -2300,3 +2300,15 @@
 - **Prevention rule:** Declare every direct contract library used by a custom
   integration source set explicitly, even when production code already depends
   on that library transitively.
+
+## 2026-09-07 — Declare owning aggregate dependencies for integration fixtures
+
+- **Failure mode:** A Payment integration fixture needed tenant-local
+  appointment, customer, service, artist, and hold records but its custom
+  source set did not directly expose the owning modules.
+- **Detection signal:** Integration-test compilation reported missing
+  provider-neutral repository and domain types until the owning module
+  dependencies were declared.
+- **Prevention rule:** Custom integration fixtures must declare direct
+  dependencies on every owning aggregate module whose repository ports or
+  domain records they use; do not rely on unrelated production transitives.

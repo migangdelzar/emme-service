@@ -1,5 +1,11 @@
 # Engineering lessons
 
+## 2026-09-07 — Preserve the active branch during planning
+
+- Failure mode: creating a new feature branch during architecture planning without explicit authorization changed the user's working context.
+- Detection signal: the user immediately requested restoration to the previous branch.
+- Prevention rule: remain on the active branch unless the user explicitly asks for branch creation or isolation; inspect and preserve pre-existing work before any branch operation.
+
 ## 2026-09-06 — Qualify control-plane JDBC when a tenant client is primary
 
 - **Failure mode:** Adding the primary `tenantJdbcClient` caused

@@ -6,7 +6,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-/** Runs the deterministic vector intent route before any model-based fallback. */
+/**
+ * Runs deterministic vector classification for standalone intent requests.
+ *
+ * <p>The raw message boundary is intentional: this use case is distinct from the prepared {@link
+ * SemanticQuery} used by chat shortcuts.
+ */
 public final class SemanticIntentRouter {
 
   private final EmbeddingService embeddings;

@@ -2,6 +2,7 @@ package com.emme.assistant.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.emme.assistant.ai.api.usecase.DetectIntentUseCase;
 import com.emme.assistant.ai.application.port.out.ConversationWorkflowCapabilities.WorkflowRequest;
 import com.emme.assistant.ai.application.port.out.SemanticCachePort;
 import com.emme.assistant.ai.application.port.out.SemanticResponseCache;
@@ -79,11 +80,17 @@ class CanonicalAiApplicationContractsTest {
   }
 
   @Test
-  void semanticCompatibilityInventoryRecordsTheRemainingRouterBoundary() throws IOException {
+  void standaloneIntentClassificationRetainsItsRawMessageBoundary() throws IOException {
     assertThat(Files.readString(sourceOf(SemanticIntentRouter.class)))
-        .contains("route(String message)");
+        .contains("route(String message)")
+        .contains("standalone intent requests")
+        .contains("raw message boundary is intentional")
+        .contains("prepared")
+        .contains("chat shortcuts");
     assertThat(Files.readString(sourceOf(DetectIntentService.class)))
         .contains("router.route(message)");
+    assertThat(Files.readString(sourceOf(DetectIntentUseCase.class)))
+        .contains("IntentResult detect(String message)");
     assertThat(Files.readString(sourceOf(SpringAiSemanticConfiguration.class)))
         .contains("SemanticIntentRouter semanticIntentRouter");
     assertThat(Files.readString(sourceOf(SemanticResponseCache.class)))

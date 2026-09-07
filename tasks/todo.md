@@ -1,5 +1,31 @@
 # Service architecture migration checklist
 
+## Current slice — Assistant semantic route compatibility — 2026-09-07
+
+- [x] Inventory `route(String)` production and test callers.
+- [x] Decide whether raw-string routing is legacy or the normal classification path.
+- [x] Add the minimal failing source/architecture contract for the safe migration, or document intentional retention.
+- [x] Complete the Assistant-only TDD migration/contract slice.
+- [x] Run focused semantic tests, Assistant compile, and Spotless.
+- [ ] Commit and push the slice.
+
+### Results
+
+- `route(String)` is intentionally retained for standalone `DetectIntentUseCase`
+  classification. The production caller is `DetectIntentService`; the endpoint
+  caller is `AiController`; workflow capability tests delegate to the same
+  intent-detection use case. Direct test callers are six `DetectIntentServiceTest`
+  stubs/verifications, three `SemanticIntentRouterTest` behavior calls, and the
+  source contract.
+- `SemanticQuery` remains the prepared query for chat shortcuts. No provider
+  policy was moved into an application contract, and no overload or caller was
+  migrated.
+- RED: the tightened source contract failed because the intentional boundary
+  documentation was absent. GREEN: the contract passed after the router Javadoc
+  was added; focused semantic tests then passed.
+- Verification passed: focused semantic tests, `:modules:assistant:compileJava`,
+  `:modules:assistant:spotlessApply`, and `:modules:assistant:spotlessCheck`.
+
 ## Current slice — Modulith-internal event classification — 2026-09-07
 
 - [x] Add and run the failing internal-event contract test.

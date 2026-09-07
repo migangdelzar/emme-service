@@ -14,6 +14,8 @@ public interface TenantProvisioningRepository {
 
   List<TenantProvisioningRequest> findPending();
 
+  boolean claimActivation(UUID tenantId);
+
   void markActive(UUID tenantId);
 
   void markFailed(UUID tenantId, String error);

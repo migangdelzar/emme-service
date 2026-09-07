@@ -5395,6 +5395,26 @@ Completed in this slice:
 - Tenant-schema connection checkout remains the primary boundary; forced RLS is
   defense in depth for database sessions and owners.
 
+## Current slice — Task 19 atomic tenant activation — 2026-09-07
+
+- [x] Add a failing listener test for a lost activation claim.
+- [x] Add the provider-neutral `claimActivation` repository operation.
+- [x] Implement the JPA conditional update for non-active registry rows.
+- [x] Preserve the listener transaction around claim and event publication.
+- [x] Add a live concurrent activation-claim race.
+- [x] Run tenancy unit tests, the focused live race, compilation, Checkstyle,
+      and Spotless.
+- [ ] Add publication-failure rollback evidence for tenant activation.
+- [ ] Continue remaining event-recovery, database, deployment, and final
+      compatibility gates.
+
+### Results
+
+- Two concurrent claims against one control-plane registry row produced exactly
+  one winner and left the tenant `ACTIVE`.
+- Duplicate activation handling no longer relies on a read-then-write race;
+  explicit `tenant_id` remains because the registry is control-plane state.
+
 ## Current slice — Task 18 Payment live persistence gate — 2026-09-06
 
 - [x] Verify Payment JPA persistence is isolated by the routed tenant schema.

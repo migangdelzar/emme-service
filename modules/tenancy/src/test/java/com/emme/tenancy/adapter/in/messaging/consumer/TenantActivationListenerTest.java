@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 import com.emme.tenancy.api.event.TenantActivated;
 import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
-import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,33 +28,26 @@ class TenantActivationListenerTest {
   void onTenantRealmReady_activatesAndPublishes() {
     UUID tenantId = UUID.randomUUID();
     TenantRealmReady event = new TenantRealmReady(UUID.randomUUID(), tenantId, "slug", "emme-slug");
-    when(provisioningRepository.findStatus(tenantId))
-        .thenReturn(
-            new TenantProvisioningRepository.TenantProvisioningStatus(
-                TenantProvisioningState.PROVISIONING, "tenant_slug", null, null));
+    when(provisioningRepository.claimActivation(tenantId)).thenReturn(true);
     when(provisioningRepository.findSchemaName(tenantId)).thenReturn("tenant_slug");
 
     listener.onTenantRealmReady(event);
 
-    verify(provisioningRepository).markActive(tenantId);
+    verify(provisioningRepository).claimActivation(tenantId);
     ArgumentCaptor<TenantActivated> captor = ArgumentCaptor.forClass(TenantActivated.class);
     verify(eventPublisher).publishEvent(captor.capture());
     assertThat(captor.getValue().keycloakRealm()).isEqualTo("emme-slug");
   }
 
   @Test
-  void onTenantRealmReady_skipsAlreadyActiveTenant() {
+  void onTenantRealmReady_skipsWhenActivationClaimIsNotWon() {
     UUID tenantId = UUID.randomUUID();
-    when(provisioningRepository.findStatus(tenantId))
-        .thenReturn(
-            new TenantProvisioningRepository.TenantProvisioningStatus(
-                TenantProvisioningState.ACTIVE, "tenant_slug", null, null));
+    when(provisioningRepository.claimActivation(tenantId)).thenReturn(false);
     var listener = new TenantActivationListener(provisioningRepository, eventPublisher);
 
     listener.onTenantRealmReady(
         new TenantRealmReady(UUID.randomUUID(), tenantId, "slug", "emme-slug"));
 
-    verify(provisioningRepository, never()).markActive(tenantId);
     verify(provisioningRepository, never()).findSchemaName(tenantId);
     verify(eventPublisher, never()).publishEvent(org.mockito.ArgumentMatchers.any());
   }

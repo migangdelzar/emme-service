@@ -2355,3 +2355,14 @@
 - **Prevention rule:** Broaden live RLS checks across at least one ordinary
   aggregate table and one durable claim/idempotency table, asserting both
   filtered reads and rejected mismatched writes with a non-superuser.
+
+## 2026-09-07 — Claim lifecycle transitions atomically before publishing events
+
+- **Failure mode:** Tenant activation read the current status and then saved
+  `ACTIVE`, allowing concurrent duplicate realm-ready deliveries to publish two
+  activation events.
+- **Detection signal:** A source audit found the listener's read-then-write
+  sequence and the registry had no optimistic-lock version.
+- **Prevention rule:** For externally retried lifecycle events, use one
+  conditional database transition that returns the winner, and publish only
+  after that claim in the same transaction.

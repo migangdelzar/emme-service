@@ -3,7 +3,6 @@ package com.emme.tenancy.adapter.in.messaging.consumer;
 import com.emme.tenancy.api.event.TenantActivated;
 import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
-import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +31,10 @@ public class TenantActivationListener {
   public void onTenantRealmReady(TenantRealmReady event) {
     log.info("Activating tenant {} — schema + realm ready", event.tenantId());
 
-    if (TenantProvisioningState.ACTIVE.equals(
-        provisioningRepository.findStatus(event.tenantId()).status())) {
+    if (!provisioningRepository.claimActivation(event.tenantId())) {
       log.info("Tenant {} is already active; ignoring duplicate activation", event.tenantId());
       return;
     }
-
-    provisioningRepository.markActive(event.tenantId());
 
     String schemaName = provisioningRepository.findSchemaName(event.tenantId());
     TenantActivated activated =

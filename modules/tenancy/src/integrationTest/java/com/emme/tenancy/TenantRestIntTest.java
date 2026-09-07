@@ -14,6 +14,11 @@ import com.emme.testing.integration.annotation.PostgresIntegrationTest;
 import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -363,6 +368,42 @@ class TenantRestIntTest {
     assertThatThrownBy(() -> provisioningRepository.findStatus(duplicateTenantId))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Tenant registry not found: " + duplicateTenantId);
+  }
+
+  @Test
+  @DisplayName("Concurrent tenant activation claims publish only one activation opportunity")
+  void concurrentActivationClaimsHaveOneWinner() throws Exception {
+    UUID tenantId = UUID.randomUUID();
+    String slug = "activation-race-" + UUID.randomUUID().toString().replace('-', 'a');
+    String schemaName = TenantSchemaName.fromSlug(slug);
+    provisioningRepository.requestProvisioning(tenantId, slug, schemaName);
+    CountDownLatch start = new CountDownLatch(1);
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+
+    try {
+      Future<Boolean> first = executor.submit(() -> claimActivation(tenantId, start));
+      Future<Boolean> second = executor.submit(() -> claimActivation(tenantId, start));
+      start.countDown();
+
+      assertThat(first.get(10, TimeUnit.SECONDS) ^ second.get(10, TimeUnit.SECONDS)).isTrue();
+    } finally {
+      executor.shutdownNow();
+    }
+
+    assertThat(provisioningRepository.findStatus(tenantId).status())
+        .isEqualTo(TenantProvisioningState.ACTIVE);
+  }
+
+  private boolean claimActivation(UUID tenantId, CountDownLatch start) {
+    try {
+      if (!start.await(10, TimeUnit.SECONDS)) {
+        throw new IllegalStateException("Timed out waiting for activation claim race");
+      }
+      return provisioningRepository.claimActivation(tenantId);
+    } catch (InterruptedException interrupted) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("Interrupted during activation claim race", interrupted);
+    }
   }
 
   @Test

@@ -50,6 +50,13 @@ public class TenantProvisioningPersistenceAdapter implements TenantProvisioningR
   }
 
   @Override
+  public boolean claimActivation(UUID tenantId) {
+    return repository.claimActivation(
+            tenantId, TenantProvisioningState.ACTIVE, "0.1.0", Instant.now())
+        == 1;
+  }
+
+  @Override
   public void markActive(UUID tenantId) {
     repository
         .findByTenantId(tenantId)

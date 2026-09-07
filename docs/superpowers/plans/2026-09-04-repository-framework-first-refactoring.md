@@ -4404,3 +4404,21 @@ defense-in-depth behavior while leaving schema selection at connection checkout.
       forced-RLS tables after tenant provisioning.
 - [x] Run the focused live Tenancy integration test.
 - [ ] Continue broader database catalog, deployment, and final framework gates.
+
+## Current slice 19E — Atomically claim tenant activation — 2026-09-07
+
+Tenant realm-ready handling now claims activation with one conditional control-
+plane update. Duplicate deliveries cannot both transition a registry row or
+publish `TenantActivated`; `PROVISIONING` and `FAILED` remain retryable, while
+`ACTIVE` is a no-op. The registry keeps its explicit `tenant_id` because it is
+control-plane state and is not selected through an ordinary tenant schema.
+
+- [x] Add a failing listener test for a lost activation claim.
+- [x] Add the provider-neutral `claimActivation` repository operation.
+- [x] Implement the JPA conditional update for non-active registry rows.
+- [x] Preserve the listener transaction around claim and event publication.
+- [x] Add a live concurrent activation-claim race.
+- [x] Run tenancy unit tests, the focused live race, compilation, and Spotless.
+- [ ] Add publication-failure rollback evidence for tenant activation.
+- [ ] Continue remaining event-recovery, database, deployment, and final
+      compatibility gates.

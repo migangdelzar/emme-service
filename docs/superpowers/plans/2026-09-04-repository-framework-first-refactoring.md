@@ -4130,3 +4130,21 @@ invariants.
 - [x] Run Subscription integration tests, compilation, Checkstyle, and
       Spotless.
 - [ ] Continue the remaining aggregate persistence runtime matrix.
+
+## Current slice 18AI — Verify live Catalog persistence — 2026-09-06
+
+Catalog item persistence now has live PostgreSQL evidence for tenant-schema
+routing and optimistic locking. The fixture creates its required Service
+through the existing Services repository, so the gate exercises the real
+foreign-key relationship without introducing a consuming-module JDBC boundary.
+
+- [x] Add a live tenant A/B visibility test for Catalog item persistence.
+- [x] Add a two-transaction stale-version conflict test.
+- [x] Keep Catalog's provider-neutral repository and managed-entity update path
+      unchanged.
+- [x] Add only the integration-test dependencies required by the existing
+      TestApplication, Services aggregate, tenant migration resources, JPA, and
+      bootstrap JdbcClient.
+- [x] Run Catalog unit/integration tests, compilation, Checkstyle, and
+      Spotless.
+- [ ] Continue the remaining aggregate persistence and RLS behavioral matrix.

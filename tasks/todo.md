@@ -5359,6 +5359,25 @@ Completed in this slice:
 - No production adapter or application contract change was required; only the
   integration test classpath and runtime evidence were extended.
 
+## Current slice — Task 18 Catalog live persistence gate — 2026-09-06
+
+- [x] Verify Catalog item JPA persistence is isolated by the routed tenant
+      schema.
+- [x] Verify two concurrent Catalog item updates produce one optimistic-lock
+      winner and one `OptimisticLockingFailureException`.
+- [x] Create the Catalog item's required Service through the existing Services
+      repository instead of adding a consuming-module JDBC boundary.
+- [x] Run Catalog integration tests, compilation, Checkstyle, and Spotless.
+- [ ] Continue remaining aggregate persistence and RLS behavioral evidence.
+
+### Results
+
+- The live Catalog integration tests pass with PostgreSQL and the isolated
+  `colima-emme` Docker profile.
+- Tenant A/B schema routing and the shared JPA `@Version` conflict behavior are
+  now runtime-verified; no Catalog production adapter or contract change was
+  required.
+
 ## Current slice — Task 18 Calendar sync-state persistence gate — 2026-09-06
 
 - [x] Verify Calendar sync-state JPA persistence is isolated by the routed

@@ -21,4 +21,10 @@ dependencies {
   testImplementation(libs.spring.boot.webmvc.test)
   add("integrationTestImplementation", testFixtures(project(":modules:tenancy")))
   add("integrationTestImplementation", testFixtures(project(":libraries:testing")))
+  add("integrationTestImplementation", project(":modules:shared"))
+  add("integrationTestImplementation", project(":modules:services"))
+  add("integrationTestImplementation", project(":libraries:kernel"))
+  add("integrationTestImplementation", project(":database"))
+  add("integrationTestImplementation", libs.spring.boot.starter.data.jpa)
+  add("integrationTestImplementation", libs.spring.jdbc)
 }

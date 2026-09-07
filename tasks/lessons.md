@@ -2246,3 +2246,13 @@
   framework, shared-kernel, and database-resource dependencies required by the
   test; do not assume normal test dependencies or production transitives are
   inherited.
+
+## 2026-09-06 — Reuse owning repositories in cross-aggregate integration fixtures
+
+- **Failure mode:** A Catalog integration fixture assumed the AI-specific
+  `tenantJdbcClient` bean was available and failed during context injection.
+- **Detection signal:** The focused test reported no qualifying
+  `tenantJdbcClient` bean before reaching the persistence assertion.
+- **Prevention rule:** When a live fixture needs a related aggregate, create it
+  through that aggregate's existing repository; use bootstrap JDBC only for
+  database-level prerequisites such as extensions and tenant provisioning.

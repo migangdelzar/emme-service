@@ -1,12 +1,14 @@
 package com.emme.tenancy;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.emme.TestApplication;
 import com.emme.kernel.context.TenantContextHolder;
 import com.emme.tenancy.adapter.out.client.database.TenantSchemaName;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
 import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
+import com.emme.tenancy.domain.model.TenantProvisioningState;
 import com.emme.testing.integration.annotation.PostgresIntegrationTest;
 import java.sql.Connection;
 import java.util.UUID;
@@ -94,5 +96,33 @@ class TenantRestIntTest {
             }
           }
         });
+  }
+
+  @Test
+  @DisplayName("Duplicate tenant provisioning keeps the original registry owner")
+  void duplicateProvisioningKeepsOriginalRegistryOwner() {
+    UUID originalTenantId = UUID.randomUUID();
+    UUID duplicateTenantId = UUID.randomUUID();
+    String slug = "duplicate-" + UUID.randomUUID().toString().replace('-', 'a');
+    String schemaName = TenantSchemaName.fromSlug(slug);
+
+    assertThat(provisioningRepository.requestProvisioning(originalTenantId, slug, schemaName))
+        .isEqualTo(originalTenantId);
+    assertThat(provisioningRepository.requestProvisioning(duplicateTenantId, slug, schemaName))
+        .isEqualTo(originalTenantId);
+
+    assertThat(provisioningRepository.findStatus(originalTenantId).status())
+        .isEqualTo(TenantProvisioningState.PROVISIONING);
+    assertThatThrownBy(() -> provisioningRepository.findStatus(duplicateTenantId))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Tenant registry not found: " + duplicateTenantId);
+  }
+
+  @Test
+  @DisplayName("Invalid tenant schema migration fails before database work")
+  void invalidTenantSchemaMigrationFailsBeforeDatabaseWork() {
+    assertThatThrownBy(() -> schemaMigrationPort.migrate(UUID.randomUUID(), ""))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Invalid tenant schema name");
   }
 }

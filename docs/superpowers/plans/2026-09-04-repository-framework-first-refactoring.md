@@ -3669,6 +3669,20 @@ The live evidence confirms schema-per-tenant routing; it does not close the
 remaining PostgreSQL checkpoint/security matrix or the other Docker-backed
 framework gates.
 
+## Current slice 13H — Live tenant provisioning duplicate and failure behavior — 2026-09-06
+
+The live PostgreSQL tenancy contract now covers duplicate registry requests and
+invalid schema migration input. A duplicate request returns the original
+tenant registry owner without creating a second control-plane record; invalid
+schema input is rejected before tenant database work begins.
+
+- [x] Verify duplicate provisioning preserves the original registry owner.
+- [x] Verify invalid schema migration fails before database work.
+- [x] Run the focused live `TenantRestIntTest` against PostgreSQL 16 with
+      pgvector.
+- [ ] Run the remaining live LangGraph authorization/resume and PostgreSQL
+      optimistic-lock matrices at the phase gate.
+
 ## 14. Definition of done
 
 - [ ] Every task has a failing test or explicit inventory/architecture test before implementation.

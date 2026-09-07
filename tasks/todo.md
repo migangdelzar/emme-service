@@ -4907,3 +4907,19 @@ Completed in this slice:
 - The framework-first phase is not complete: live Task 13 migration/routing,
   Task 6 Redis/vector, Task 8 PostgreSQL checkpoint, and other Docker/provider
   gates remain pending.
+
+## Current slice — Task 13H live provisioning duplicate/failure behavior — 2026-09-06
+
+- [x] Add live PostgreSQL coverage for duplicate tenant provisioning.
+- [x] Add live PostgreSQL composition coverage for invalid schema migration
+      rejection before database work.
+- [x] Run `:modules:tenancy:integrationTest --tests '*TenantRestIntTest'`
+      with the isolated `colima-emme` Docker profile.
+- [ ] Continue the remaining framework-first live authorization, optimistic
+      locking, Redis, Kafka, and provider gates.
+
+### Results
+
+- `TenantRestIntTest` passes all five tests against PostgreSQL 16 with pgvector.
+- Duplicate provisioning remains idempotent for the original tenant owner;
+  invalid schema input fails with `Invalid tenant schema name` before migration.

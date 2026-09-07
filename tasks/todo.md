@@ -6060,3 +6060,18 @@ Completed in this slice:
 - The inventory test now scans discovered `src/main/java` roots instead of
   walking concurrent build output.
 - Full Gradle check and all workflow/Compose validators passed.
+
+## Current slice — Remove obsolete tenancy test-context wrapper (2026-09-07)
+
+- [x] Search for all `TenantTestContext` callers and dependency references.
+- [x] Add the failing source-boundary regression test.
+- [x] Delete the unused tenancy fixture after the red test.
+- [x] Compile tenancy fixtures and Assistant integration tests.
+- [x] Run the focused inventory suite and `git diff --check`.
+- [ ] Continue remaining framework-first runtime and compatibility gates.
+
+### Results
+
+- Shared checked-exception context helpers remain in `libraries/testing` and
+  reuse `libraries/functional`; the duplicate tenancy wrapper is gone.
+- The source-boundary test passes and no repository caller remains.

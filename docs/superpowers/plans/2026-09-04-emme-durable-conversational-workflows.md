@@ -565,6 +565,11 @@ migrated.
 - [x] Delete the three-argument response-cache write.
 - [x] Migrate unit callers and verify Assistant compilation and tests.
 
+The remaining duplicate tenancy test-context wrapper was also removed after
+the repository-wide caller inventory proved it unused. Shared test execution
+context helpers now live in `libraries/testing` and reuse the existing
+`libraries/functional` checked-callback contracts.
+
 **Files:**
 
 - Modify: `modules/assistant/src/main/java/com/emme/assistant/ai/application/tool/SemanticProactiveToolRouter.java`

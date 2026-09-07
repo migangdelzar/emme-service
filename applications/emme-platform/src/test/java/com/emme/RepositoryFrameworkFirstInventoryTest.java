@@ -71,6 +71,17 @@ class RepositoryFrameworkFirstInventoryTest {
   }
 
   @Test
+  void deprecatedTenantContextFixtureIsReplacedByTheSharedExecutionFixture() {
+    assertThat(
+            Files.exists(
+                sourcePath("")
+                    .resolve(
+                        "modules/tenancy/src/testFixtures/java/com/emme/testing/tenancy/context/TenantTestContext.java")))
+        .as("tenant test context wrapper should not duplicate libraries/testing helpers")
+        .isFalse();
+  }
+
+  @Test
   void knownModuleBuildsDeclareSharedDependenciesOnlyOnce() throws IOException {
     assertThat(countExactDependency("modules/booking/build.gradle.kts", "libraries:kernel"))
         .isEqualTo(1);

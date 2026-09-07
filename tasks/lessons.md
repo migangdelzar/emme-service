@@ -2444,3 +2444,15 @@
 - **Prevention rule:** Discover explicit production `src/main/java` roots and
   walk those stable trees; do not walk the repository root and filter generated
   output afterward.
+
+## 2026-09-07 — Remove duplicate test fixtures only after repository-wide proof
+
+- **Failure mode:** A tenancy-owned context wrapper duplicated the shared
+  checked-exception execution fixture and could have remained as stale test
+  infrastructure after callers migrated.
+- **Detection signal:** A repository-wide source/build/test search found the
+  wrapper declaration and documentation only, with no caller or dependency
+  reference.
+- **Prevention rule:** Add a failing source-boundary assertion, inventory all
+  callers and build references, then delete the duplicate and compile every
+  affected test source set.

@@ -4696,3 +4696,26 @@ concurrent build output.
 - `RepositoryFrameworkFirstInventoryTest` passes after the stable-root scan.
 - `./gradlew check --no-parallel --no-configuration-cache` passes.
 - All six workflow and Compose contract validators pass.
+
+## Current slice 25B — Remove the obsolete tenant test-context wrapper — 2026-09-07
+
+The Assistant integration tests already use the shared
+`libraries/testing` `ExecutionTestContext`, which delegates checked callbacks
+to the existing `libraries/functional` types. A repository-wide caller search
+found no use of the older `modules/tenancy` `TenantTestContext`; it has been
+removed, and a source-boundary regression test prevents the duplicate fixture
+from returning.
+
+- [x] Search all source, build, and test paths for `TenantTestContext` callers.
+- [x] Add a failing source-boundary test for the obsolete fixture.
+- [x] Remove the unused tenancy-owned wrapper.
+- [x] Compile tenancy fixtures and Assistant integration tests.
+- [x] Run the focused framework inventory suite and diff checks.
+- [ ] Continue remaining event-recovery, deployment-runtime, and final
+      compatibility gates.
+
+### Results
+
+- The only prior reference was the fixture itself; no caller, bean, test, or
+  build dependency remained.
+- The focused inventory suite and affected compilation pass after deletion.

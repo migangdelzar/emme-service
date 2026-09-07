@@ -20,7 +20,8 @@ DeploymentProvider
 Kafka is not part of the default low-cost Compose stack. When validating the
 Spring Modulith externalizer locally, add
 `deployment/compose/compose.environment-kafka.yaml` to the base and JVM
-runtime files. The overlay enables event externalization, starts a pinned
+runtime files. The overlay is an explicit deferred-test environment: it enables
+event externalization only for the test-local contract, starts a pinned
 single-node KRaft broker, and gates the application on Kafka health.
 
 ```bash
@@ -32,8 +33,9 @@ docker compose \
 ```
 
 This overlay is disposable verification infrastructure, not a production Kafka
-topology. Production uses an external SASL broker configured through the
-protected secret boundary described in [Secrets](secrets.md).
+topology. Production does not activate Kafka until an external consumer and the
+broker/replay gate are approved. The protected secret boundary described in
+[Secrets](secrets.md) remains reserved for that future activation.
 
 ## JVM and native runtime overlays
 

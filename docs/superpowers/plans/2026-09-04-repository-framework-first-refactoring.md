@@ -2202,7 +2202,7 @@ for re-export remains explicit because it resolves a provider/business key.
 
 #### Push-gate correction — stabilize source contract traversal
 
-The application push gate exposed a race in `KafkaEventContractTest`: walking
+The application push gate exposed a race in the event contract test: walking
 the entire `applications` tree allowed concurrent Spring Modulith documentation
 generation to remove `build/spring-modulith-docs` during traversal. The test now
 enumerates stable `src/main` and build-script roots, preserving dependency
@@ -2770,19 +2770,19 @@ The existing durable webhook claim and tenant validation remain unchanged.
 - [x] Run focused assistant tests and architecture checks.
 - [ ] Complete listener duplicate-delivery and external Kafka boundary tests.
 
-#### Current slice 19C — Make externalized appointment replay independent of web security
+#### Current slice 19C — Make appointment replay independent of web security
 
-`AppointmentCreated` is an externalized public fact and may be delivered by
-Kafka after the originating request has completed. The Identity consumer now
-uses the event's `customerId` and `tenantId` directly, so replay does not depend
-on a request-local Spring Security context. The existing membership use case is
-idempotent, preserving safe duplicate delivery behavior. The listener also has
-an explicit stable Modulith identifier.
+`AppointmentCreated` is a public internal fact and may be delivered by the
+durable Modulith publication registry after the originating request has
+completed. The Identity consumer uses the event's `customerId` and `tenantId`
+directly, so replay does not depend on a request-local Spring Security context.
+The existing membership use case is idempotent, preserving safe duplicate
+delivery behavior. The listener also has an explicit stable Modulith identifier.
 
 - [x] Add a failing listener test with no `SecurityContext`.
 - [x] Remove request-local authentication from the durable consumer.
 - [x] Preserve the provider-neutral membership use-case boundary.
-- [x] Verify the live Kafka externalization and tenant partition-key gate.
+- [ ] Verify a future approved externalization and tenant partition-key gate.
 - [ ] Add live duplicate-delivery/replay coverage to the Kafka integration gate.
 
 **Files:**

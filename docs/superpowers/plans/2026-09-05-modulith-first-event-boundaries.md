@@ -27,6 +27,10 @@ explicitly gated, but the live Kafka run is blocked by the Testcontainers image
 startup failure (`apache/kafka-native:3.8.0`, exit code 126) in the current
 environment.
 
+The architecture event, deployment, vision, ADR, and AI documents now state the
+same Modulith-first policy: current events are internal, Kafka is retained but
+deferred, and externalization requires an approved independent boundary.
+
 ## Current verification — payment workflow duplicate delivery (2026-09-07)
 
 The live Assistant integration gate now races two identical payment workflow
@@ -92,6 +96,8 @@ The deferred profile remains available and is not part of the default runtime:
 ### Documentation and traceability
 
 - Modify: `docs/architecture/01-backend/events.md`
+- Modify: `docs/architecture/04-delivery/deployment.md`
+- Modify: `docs/vision.md`
 - Modify: `docs/adr/0005-spring-modulith-kafka-event-streaming.md`
 - Modify: `docs/adr/0006-mvp-low-cost-runtime-boundary.md`
 - Modify: `docs/ai-platform/technical-specification.md`
@@ -183,7 +189,6 @@ git add modules/tenancy/src/main/java/com/emme/tenancy/api/event/TenantCreated.j
   modules/appointments/src/main/java/com/emme/appointments/api/event/AppointmentCancelled.java \
   modules/appointments/src/main/java/com/emme/appointments/api/event/AppointmentRescheduled.java \
   modules/assistant/src/main/java/com/emme/assistant/api/event/LearningCandidateEvaluationRequested.java \
-  applications/emme-platform/src/test/java/com/emme/KafkaEventContractTest.java \
   applications/emme-platform/src/test/java/com/emme/EventContractTest.java
 git commit -m "refactor(events): classify initial facts as Modulith-only"
 ```
@@ -445,7 +450,7 @@ git commit -m "chore(delivery): defer Kafka containers and deployment wiring"
 - Consumes: the approved design at `docs/superpowers/specs/2026-09-05-modulith-first-event-boundaries-design.md`.
 - Produces: one consistent written policy for internal Modulith events, deferred Kafka activation, and future external consumers.
 
-- [ ] **Step 1: Write the documentation consistency checks**
+- [x] **Step 1: Write the documentation consistency checks**
 
 Use repository searches as the failing documentation gate:
 
@@ -456,7 +461,10 @@ rg -n "Kafka externalization disabled|Kafka is used only|Modulith is the interna
 
 Expected: the search identifies statements that currently describe Kafka as active for selected v1 events or production by default.
 
-- [ ] **Step 2: Update the canonical event policy**
+The pre-change search identified the stale first-stream catalog, production
+default, and learning-event descriptions.
+
+- [x] **Step 2: Update the canonical event policy**
 
 Document that all current events are internal unless an external consumer is approved. State that `@Externalized` is reserved for a real deployment boundary, while the JDBC Modulith publication registry remains the initial durable async mechanism.
 
@@ -464,7 +472,7 @@ Update ADR-0005 to record Kafka as a retained but deferred capability for the in
 
 Update the AI technical specification and implementation plan so `LearningCandidateEvaluationRequested` is described as an internal Modulith event, not an active Kafka contract. Update the framework-first plan’s event task to point to this focused plan and its explicit Kafka gate.
 
-- [ ] **Step 3: Verify documentation consistency**
+- [x] **Step 3: Verify documentation consistency**
 
 Run:
 
@@ -476,7 +484,11 @@ git diff --check
 
 Expected: canonical documents consistently state Modulith-first behavior; any remaining Kafka references clearly describe the deferred capability or explicit reactivation path.
 
-- [ ] **Step 4: Commit the documentation change**
+The final search contains only event names, the explicit deferred policy, and
+the plan's verification commands; no canonical document describes Kafka as an
+active initial-runtime provider.
+
+- [x] **Step 4: Commit the documentation change**
 
 ```bash
 git add docs/architecture/01-backend/events.md \

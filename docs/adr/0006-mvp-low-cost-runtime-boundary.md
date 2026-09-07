@@ -30,9 +30,9 @@ The MVP uses:
   tenant/security state, and rate limiting;
 - Identity, Tenancy, Customer, Catalog, Calendar-local behavior, and Studio
   appointment operations as the first validated business path;
-- Kafka externalization disabled by default in local/test profiles, while the
-  Spring Modulith + Kafka capability remains available for the later streaming
-  rollout;
+- Kafka externalization disabled in local, test, and production profiles, while
+  the Spring Modulith + Kafka capability remains available for a later
+  approved external-consumer rollout;
 - Payment, Notification, Assistant, Documents, external calendar
   synchronization, Kubernetes, multi-region deployment, and service extraction
   outside the MVP runtime boundary;
@@ -60,8 +60,9 @@ graceful shutdown. The JVM image provides a reversible baseline.
 ### Make Kafka mandatory for local and MVP startup
 
 Rejected. Spring Modulith's JDBC publication registry and Kafka externalizer are
-available, but local and MVP profiles must remain usable without a broker until
-the deployment broker gate is accepted.
+available, but local, test, and production profiles must remain usable without
+a broker until an external consumer and the deployment broker gate are
+approved.
 
 ## Consequences
 

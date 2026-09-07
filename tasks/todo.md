@@ -77,6 +77,25 @@
 - The explicit Kafka Compose contract still passes; it is no longer part of the
   default CI validation path.
 
+## Current slice — Modulith-first documentation alignment — 2026-09-07
+
+- [x] Run the pre-change documentation consistency search.
+- [x] Align backend event architecture and deployment documentation.
+- [x] Align ADR-0005 and ADR-0006 with the deferred Kafka decision.
+- [x] Align AI technical specification and implementation plan for internal
+      `LearningCandidateEvaluationRequested` delivery.
+- [x] Align the framework-first event task with the focused Modulith plan.
+- [x] Run the final consistency search and `git diff --check`.
+- [ ] Commit and push the documentation slice.
+
+### Results
+
+- Canonical documentation now states that current events use the durable
+  Modulith publication registry and that Kafka requires a future approved
+  external-consumer boundary.
+- Remaining Kafka references are explicitly deferred capability, test, or
+  reactivation guidance.
+
 ## Current slice — Task 17 live appointment collision gate — 2026-09-06
 
 - [x] Start an isolated `colima-emme` Docker profile after the stale default

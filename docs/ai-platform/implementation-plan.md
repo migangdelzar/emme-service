@@ -270,11 +270,11 @@ yet expose the required durable projection events.
   offline dataset/safety/regression/shadow gates, and a separate canary gate
   before `PROMOTED`. Optimistic PostgreSQL state updates prevent concurrent
   workers from overwriting a candidate.
-- Admitted candidates now dispatch a stable, tenant-partitionable
+- Admitted candidates now dispatch a stable internal
   `LearningCandidateEvaluationRequested` event through Spring Modulith's
-  durable publication registry. The envelope contains only trusted IDs and
-  correlation metadata; candidate content remains in PostgreSQL and the
-  evaluator remains asynchronous/offline.
+  durable publication registry. It is not currently externalized to Kafka;
+  the envelope contains only trusted IDs and correlation metadata, candidate
+  content remains in PostgreSQL, and the evaluator remains asynchronous/offline.
 - The offline `tools/ai-evaluation` package now provides a Python 3.13 Ragas
   scaffold. It redacts PII before evaluation, keeps tenant/principal metadata
   out of Ragas inputs, emits advisory regression/shadow metrics, and never

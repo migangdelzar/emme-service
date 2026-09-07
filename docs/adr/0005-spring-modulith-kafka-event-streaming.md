@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Status | Accepted |
+| Status | Accepted as a deferred capability |
 | Date | 2026-08-02 |
 | Owners | EMME service maintainers |
-| Supersedes | The Kafka-deferred statements in the initial v1 requirements |
+| Supersedes | The assumption that Kafka is active for the initial MVP event set |
 
 ## Context
 
@@ -16,13 +16,16 @@ directly with `KafkaTemplate` from application services would couple business
 workflows to Kafka and bypass the Modulith publication lifecycle.
 
 The Clara challenge uses Spring Modulith `@Externalized` event contracts with
-Kafka topics and tenant-aware keys. EMME needs the same model while preserving
-the module boundary rule: domain and application code must not depend on Kafka.
+Kafka topics and tenant-aware keys. EMME retains that future model while
+preserving the module boundary rule: domain and application code must not
+depend on Kafka. The initial runtime has no approved independent event
+consumer, so its current business facts remain internal Spring Modulith events.
 
 ## Decision
 
-Use Spring Modulith's Kafka externalization support with the JDBC event
-publication registry:
+Retain Spring Modulith's Kafka externalization capability behind an explicit
+future boundary, while using the JDBC event publication registry for the
+initial runtime:
 
 1. Add `spring-modulith-events-kafka` and Spring Kafka through the
    capability-driven `emme.messaging` convention plugin.
@@ -30,38 +33,39 @@ publication registry:
    the `event_publication` schema through Liquibase.
 3. Publish application facts inside the producer transaction through
    `ApplicationEventPublisher` or an application-owned event publisher port.
-4. Mark only stable, public `api.event` records with `@Externalized`.
+4. Mark a stable, public `api.event` record with `@Externalized` only after an
+   independently deployed consumer or equivalent delivery boundary is
+   approved. Current business event records remain unannotated.
 5. Use `topic::key` routing, with tenant identity as the key for tenant-scoped
    events. This preserves ordering per tenant without forcing one global Kafka
    partition.
-6. Configure producer acknowledgements, idempotence, bounded retries,
-   compression, and serialized externalization.
-7. Treat broker delivery as at-least-once. Every consumer owns idempotency,
-   retry, poison-message, and replay behavior.
+6. When the capability is activated, configure producer acknowledgements,
+   idempotence, bounded retries, compression, and serialized externalization.
+7. When activated, treat broker delivery as at-least-once. Every consumer owns
+   idempotency, retry, poison-message, and replay behavior.
 
 ```mermaid
 flowchart LR
     UC[Use-case service] -->|publish completed fact| APP[Spring application event]
     APP --> REG[JDBC event publication registry]
-    REG -->|after commit| EXT[Spring Modulith Kafka externalizer]
-    EXT -->|topic + tenant key| K[Kafka]
-    K --> CON[Inbound messaging consumer]
+    REG -->|after commit| CON[Internal Modulith listener]
     CON --> IDEM[Consumer idempotency boundary]
     IDEM --> USE[Receiving use case]
+    REG -.->|approved boundary only| EXT[Deferred Kafka externalizer]
+    EXT -.->|topic + tenant key| K[Kafka broker]
+    K -.-> CON
 ```
 
 ## Scope of externalization
 
-Externalized in the first slice:
+No business event is externalized in the initial runtime. The explicit deferred
+Kafka integration test uses a test-local event:
 
-- `TenantCreated` → `emme.tenancy.tenant-created`
-- `AppointmentCreatedEvent` → `emme.studio.appointment-created`
-- `AppointmentCancelledEvent` → `emme.studio.appointment-cancelled`
-- `AppointmentRescheduledEvent` → `emme.studio.appointment-rescheduled`
+- `TestExternalizedEvent` → `emme.test.kafka-event`
 
-Local-only events remain local. In particular, internal calendar coordination
-and dashboard/SSE events are not automatically streamed merely because they are
-Java records.
+All current business events remain local. In particular, tenant, appointment,
+learning, calendar coordination, and dashboard/SSE events are not streamed
+merely because they are Java records under `api/event`.
 
 ## Alternatives considered
 
@@ -76,11 +80,12 @@ Rejected for v1. It remains an intentionally unsupported transport. Kafka is the
 single selected event-streaming transport so operational and contract policy do
 not split across two brokers.
 
-### Spring Modulith local events only
+### Spring Modulith local events only for the initial runtime
 
-Rejected for the selected externally consumable facts. Local events remain the
-right mechanism for in-process module reactions, but they do not provide the
-independent broker stream required by the platform direction.
+Chosen for the current runtime. Local events are the right mechanism for
+in-process module reactions and the JDBC publication registry provides durable
+retryable delivery. Kafka remains available when an independently consumable
+broker stream is actually required.
 
 ### Debezium CDC
 
@@ -101,8 +106,8 @@ Positive:
 
 Trade-offs:
 
-- Kafka is now a v1 operational dependency for environments that enable event
-  streaming.
+- Kafka is not an initial-runtime operational dependency. It remains a deferred
+  capability with an explicit opt-in profile and integration test.
 - Delivery is at least once, not exactly once; consumers must deduplicate.
 - Public event payloads require compatibility governance and retention policy.
 - The native Spring Modulith externalizer is an event-publication-registry-backed
@@ -111,11 +116,11 @@ Trade-offs:
 
 ## Verification
 
-- `KafkaEventContractTest` verifies immutable event records and stable routing
-  declarations.
-- `KafkaEventStreamingIntegrationTest` starts a real Kafka container, publishes
-  inside a committed transaction, and verifies topic, tenant key, and JSON
-  payload.
+- `EventContractTest` verifies immutable internal event records and prevents
+  accidental production externalization.
+- `KafkaEventStreamingIntegrationTest` uses a test-local externalized event;
+  when explicitly enabled, it starts a real Kafka container and verifies topic,
+  tenant key, and JSON payload.
 - The Liquibase `013-event-publication` migration owns the PostgreSQL registry
   schema used by production validation.
 - Architecture rules continue to prohibit Kafka imports from `domain` and

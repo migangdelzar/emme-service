@@ -32,14 +32,17 @@ EMME Modulith is the first production-oriented version of EMME: a multi-tenant S
 - Direct Meta WhatsApp Cloud API and a web-chat adapter sharing one conversation core.
 - Spring AI orchestration, multimodal normalization, tool calling, tenant-isolated hybrid RAG, and a derived Apache AGE graph projection.
 - PostgreSQL with pgvector as the durable source of truth; Redis for expiring coordination data.
-- Spring Modulith's JDBC publication registry with Kafka externalization for durable cross-module and integration event streaming.
+- Spring Modulith's JDBC publication registry for durable internal event
+  delivery, with Kafka retained as a deferred capability for approved external
+  consumers.
 - Liquibase, Kubernetes/Kustomize, Terraform, GitHub Actions, observability, JUnit, H2, Testcontainers, Playwright, and Locust.
 
 ## Explicitly Deferred
 
 - Independently deployed microservices and an internal API gateway process.
 - Quarkus, Micronaut, gRPC, protobuf, Python AI services, and TypeScript AI bridges.
-- RabbitMQ and AMQP-based externalization; Kafka is the selected event-streaming transport for v1.
+- RabbitMQ and AMQP-based externalization; Kafka remains the selected future
+  event-streaming transport when an external delivery boundary is approved.
 - GraphQL, gRPC, service mesh, Argo CD, External Secrets Operator, schema-per-tenant, dedicated databases, fiscal/CFDI, and veterinary workflows.
 
 ## Success Definition

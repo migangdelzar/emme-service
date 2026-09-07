@@ -173,12 +173,13 @@ workers cannot overwrite one another. The asynchronous evaluator and versioned
 embedding-index promotion worker remain a subsequent phase.
 Admitted candidates are dispatched through the framework-neutral
 `LearningCandidateEvaluationRequester` port. The assistant adapter publishes a
-stable `LearningCandidateEvaluationRequested` Spring Modulith event using the
-existing durable publication registry, partitioned by the backend tenant. The
-event contains only trusted candidate/context identifiers and correlation
-metadata; the candidate text and evidence remain in tenant-filtered PostgreSQL
-and are loaded by the offline evaluator. Rejected candidates do not dispatch
-evaluation work.
+stable internal `LearningCandidateEvaluationRequested` Spring Modulith event
+using the existing durable publication registry, partitioned by the backend
+tenant. It is not an active Kafka contract; externalization remains reserved
+for a separately approved consumer boundary. The event contains only trusted
+candidate/context identifiers and correlation metadata; the candidate text and
+evidence remain in tenant-filtered PostgreSQL and are loaded by the offline
+evaluator. Rejected candidates do not dispatch evaluation work.
 
 The repository also contains an offline Python 3.13 Ragas scaffold at
 `tools/ai-evaluation`. It accepts anonymized JSONL samples, redacts common PII

@@ -35,16 +35,16 @@ flowchart LR
     MAPPER --> BROKER[Broker schema]
 ```
 
-## EMME default: Spring Modulith plus Kafka
+## EMME default: Spring Modulith, Kafka deferred
 
-EMME uses Spring Modulith's event publication registry as the durable publication
-boundary and Kafka as the external transport. The application includes
-`spring-modulith-events-kafka`, the JDBC publication registry, and Spring Kafka.
-Only stable public facts under `module.api.event` are annotated with
-`@Externalized`; internal domain events and local-only coordination events stay
-inside the Modulith.
+EMME uses Spring Modulith's JDBC event publication registry as the durable
+internal publication boundary. The reusable Kafka capability remains available
+for a separately approved external consumer, but the initial runtime does not
+bind Kafka provider configuration and no current business event is annotated
+with `@Externalized`.
 
-The annotation declares the logical Kafka topic and tenant partition key:
+When a future external boundary is approved, `@Externalized` declares the
+logical Kafka topic and tenant partition key:
 
 ```java
 @Externalized("emme.studio.appointment-created::#{#this.tenantId()}")
@@ -57,21 +57,26 @@ preserve per-tenant ordering while allowing independent partitions. Topic names,
 keys, payload versions, ownership, retention, and consumers are part of the
 event contract.
 
-### Initial external event catalog
+### Current event catalog
 
 | Owner | Public event | Topic | Partition key | Delivery | Current consumer boundary |
 |---|---|---|---|---|---|
-| `tenancy` | `TenantCreated` | `emme.tenancy.tenant-created` | `tenantId` | Durable Kafka | `identity.adapter.in.messaging.consumer` |
-| `studio` | `AppointmentCreatedEvent` | `emme.studio.appointment-created` | `tenantId` | Durable Kafka | Identity, Calendar, Studio dashboard |
-| `studio` | `AppointmentCancelledEvent` | `emme.studio.appointment-cancelled` | `tenantId` | Durable Kafka | Calendar, Studio dashboard |
-| `studio` | `AppointmentRescheduledEvent` | `emme.studio.appointment-rescheduled` | `tenantId` | Durable Kafka | Calendar |
+| `tenancy` | `TenantCreated` | — | — | Local Modulith only | Identity provisioning |
+| `tenancy` | `TenantActivated` | — | — | Local Modulith only | Subscription and identity provisioning |
+| `studio` | `AppointmentCreatedEvent` | — | — | Local Modulith only | Identity membership, Calendar |
+| `studio` | `AppointmentCancelledEvent` | — | — | Local Modulith only | Calendar |
+| `studio` | `AppointmentRescheduledEvent` | — | — | Local Modulith only | Calendar |
 | `calendar` | `CalendarSyncRequested` | — | — | Local Modulith only | Calendar Google adapter |
 | `notification` | `NotificationDelivered` | — | — | Local application event | Studio dashboard |
+| `assistant` | `LearningCandidateEvaluationRequested` | — | — | Local Modulith only | Offline evaluation workflow |
 | `studio` | `DashboardEvent` | — | — | Web/SSE projection only | Browser subscribers |
 
-The four Kafka rows are the approved first-stream contract. The remaining rows
-are intentionally local projections or coordination facts; they must not acquire
-`@Externalized` merely because they live under `api/event`.
+All current business events are internal facts. They are durable through the
+Spring Modulith JDBC publication registry and consumed in-process; none is an
+active Kafka contract. A future event may be externalized only when an
+independently deployed consumer, replay requirement, partitioning need, or
+other approved delivery boundary exists. An event must not acquire
+`@Externalized` merely because it lives under `api/event`.
 
 ### Durable after-commit flow
 
@@ -90,21 +95,17 @@ sequenceDiagram
     participant U as Use case
     participant TX as Database transaction
     participant REG as JDBC publication registry
-    participant K as Kafka externalizer
-    participant B as Kafka broker
     participant H as Consumer handler
     participant OBS as Metrics + operations
 
     U->>TX: Mutate aggregate
     U->>REG: Register completed fact
     TX-->>REG: Commit state + publication record
-    REG->>K: Deliver externalized event after commit
-    K->>B: Publish topic + tenant key
-    B-->>K: Acknowledge
-    K->>REG: Mark publication complete
-    B->>H: Deliver at least once
+    REG->>H: Deliver internal event after commit
+    H->>REG: Mark publication complete
     H->>H: Deduplicate + handle
     H->>OBS: Outcome / retry / failure
+    REG-.->H: Approved external facts may use Kafka later
 ```
 
 ## Event rules
@@ -121,7 +122,7 @@ sequenceDiagram
 - Do not inject `KafkaTemplate` into domain or application services. Kafka belongs to the infrastructure/composition boundary; application services publish through `ApplicationEventPublisher` or an application-owned event port.
 - Do not annotate every event automatically. `@Externalized` is an explicit public-streaming decision, not a replacement for local Modulith listeners.
 
-Spring application-event publication is synchronous by default. `@ApplicationModuleListener` is Spring Modulith's shortcut for asynchronous transactional consumption; with the configured persistent registry, listener entries are recorded in the original business transaction and remain recoverable. Kafka externalization is the default durable transport for independently consumable facts. See the [official event reference](https://docs.spring.io/spring-modulith/reference/events.html).
+Spring application-event publication is synchronous by default. `@ApplicationModuleListener` is Spring Modulith's shortcut for asynchronous transactional consumption; with the configured persistent registry, listener entries are recorded in the original business transaction and remain recoverable. Kafka externalization is a retained, explicitly deferred capability for independently consumable facts; it is not the default MVP transport. See the [official event reference](https://docs.spring.io/spring-modulith/reference/events.html).
 
 ## Event contract and delivery
 
@@ -164,13 +165,12 @@ Every published event documents:
 - [x] Metrics, trace/causation IDs, and operational replay procedures exist;
   broker-outage chaos remains a deployment-environment acceptance test.
 
-### Kafka production checklist
+### Deferred Kafka activation checklist
 
-- [x] `spring.kafka.bootstrap-servers` is supplied from deployment configuration; production has no localhost fallback.
-- [x] Producers use `acks=all`, idempotence, bounded retries, compression, and typed transport policy.
-- [x] Topic creation and retention remain deployment-owned rather than application-startup behavior.
-- [x] Each tenant-scoped event uses a stable tenant key; current consumers tolerate duplicate delivery through idempotent use cases or existing-state checks.
-- [x] Kafka contract tests cover the externalized catalog, immutable payloads, topic/key declarations, and framework-type exclusion.
-- [x] Integration tests run against a real Kafka container and verify topic, key, JSON payload, and after-commit delivery.
+- [x] Default local, test, production, and CI paths do not require Kafka configuration or broker credentials.
+- [x] The reusable Kafka capability and explicit test profile remain available for a future approved boundary.
+- [x] The deferred integration test uses only a test-local `@Externalized` event and a stable tenant key.
+- [ ] Approve an independently deployed consumer or equivalent delivery boundary before externalizing a business event.
+- [ ] Re-enable production provider configuration, topic ownership, and live broker/replay evidence for that approved boundary.
 
 Use the [application template](../../templates/modulith-application-template.md) for project-wide event governance and the [module template](../../templates/module-package-structure-template.md) for module approval evidence.

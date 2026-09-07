@@ -38,6 +38,14 @@ class AppointmentCollisionMigrationContractTest {
         .contains("releases/0.1.0/033-appointment-overlap-constraint.sql");
   }
 
+  @Test
+  void preservesTheOverlapValidationBlockAsOneStatement() throws IOException {
+    assertThat(resource(MIGRATION))
+        .startsWith(
+            "-- liquibase formatted sql\n"
+                + "-- changeset emme:033-appointment-overlap-constraint splitStatements:false");
+  }
+
   private static String resource(String path) throws IOException {
     try (InputStream stream =
         AppointmentCollisionMigrationContractTest.class

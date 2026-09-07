@@ -91,6 +91,14 @@ class AiSemanticSearchMigrationContractTest {
   }
 
   @Test
+  void preservesPostgresDollarQuotedBlockAsOneStatement() throws IOException {
+    assertThat(resource(DIMENSION_MIGRATION))
+        .startsWith(
+            "-- liquibase formatted sql\n"
+                + "-- changeset emme:021-ai-embeddinggemma-dimension splitStatements:false");
+  }
+
+  @Test
   void addsAnIdempotencyKeyForDurableCacheWrites() throws IOException {
     String sql = resource(IDEMPOTENCY_MIGRATION);
 
@@ -214,6 +222,14 @@ class AiSemanticSearchMigrationContractTest {
         .contains("ALTER COLUMN embedding TYPE vector(768)")
         .contains("idx_chunk_embedding")
         .contains("existing catalog embeddings must be reindexed");
+  }
+
+  @Test
+  void preservesCatalogDollarQuotedBlockAsOneStatement() throws IOException {
+    assertThat(resource(CATALOG_DIMENSION_MIGRATION))
+        .startsWith(
+            "-- liquibase formatted sql\n"
+                + "-- changeset emme:031-ai-catalog-embedding-dimension splitStatements:false");
   }
 
   @Test

@@ -1,5 +1,5 @@
 -- liquibase formatted sql
--- changeset emme:034-calendar-event-link-cardinality
+-- changeset emme:034-calendar-event-link-cardinality splitStatements:false
 -- comment: Enforce one provider link per appointment in each tenant schema.
 
 DO $$

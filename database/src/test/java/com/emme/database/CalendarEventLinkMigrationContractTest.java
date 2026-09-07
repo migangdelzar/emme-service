@@ -26,6 +26,14 @@ class CalendarEventLinkMigrationContractTest {
         .contains("releases/0.1.0/034-calendar-event-link-cardinality.sql");
   }
 
+  @Test
+  void preservesTheDuplicateValidationBlockAsOneStatement() throws IOException {
+    assertThat(resource(MIGRATION))
+        .startsWith(
+            "-- liquibase formatted sql\n"
+                + "-- changeset emme:034-calendar-event-link-cardinality splitStatements:false");
+  }
+
   private static String resource(String path) throws IOException {
     try (InputStream stream =
         CalendarEventLinkMigrationContractTest.class.getClassLoader().getResourceAsStream(path)) {

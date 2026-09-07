@@ -1,5 +1,5 @@
 -- liquibase formatted sql
--- changeset emme:024-ai-age-graph
+-- changeset emme:024-ai-age-graph splitStatements:false
 -- comment: Optional Apache AGE registry for a disposable tenant-scoped graph projection.
 
 -- The normal pgvector image does not ship AGE. This guarded bootstrap keeps AGE

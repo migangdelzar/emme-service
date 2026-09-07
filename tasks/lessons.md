@@ -2492,3 +2492,15 @@
 - **Prevention rule:** Keep the coverage threshold unchanged, exclude only
   composition-root/operational bootstrap classes with an architecture test,
   and add direct tests for every remaining application-owned behavior.
+
+## 2026-09-07 — Protect Liquibase dollar-quoted PostgreSQL blocks
+
+- **Failure mode:** Liquibase 5 split PostgreSQL `DO $$...$$` migration bodies
+  at internal semicolons, causing fresh tenant provisioning to fail with an
+  unterminated dollar quote.
+- **Detection signal:** The JVM Compose migration job failed before application
+  startup, while the same block executed successfully when sent directly by
+  `psql`.
+- **Prevention rule:** Any formatted SQL changeset containing a PostgreSQL
+  dollar-quoted block must declare `splitStatements:false` and have a migration
+  contract test asserting that parser metadata.

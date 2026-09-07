@@ -32,6 +32,14 @@ class AiAgeMigrationContractTest {
         .contains("releases/0.1.0/024-ai-age-graph.sql");
   }
 
+  @Test
+  void preservesTheOptionalAgeBootstrapBlockAsOneStatement() throws IOException {
+    assertThat(resource(MIGRATION))
+        .startsWith(
+            "-- liquibase formatted sql\n"
+                + "-- changeset emme:024-ai-age-graph splitStatements:false");
+  }
+
   private static String resource(String name) throws IOException {
     try (InputStream stream =
         AiAgeMigrationContractTest.class.getClassLoader().getResourceAsStream(name)) {

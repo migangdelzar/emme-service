@@ -1,5 +1,5 @@
 -- liquibase formatted sql
--- changeset emme:033-appointment-overlap-constraint
+-- changeset emme:033-appointment-overlap-constraint splitStatements:false
 -- comment: Enforce one active appointment per tenant, artist and time range.
 
 CREATE EXTENSION IF NOT EXISTS btree_gist;

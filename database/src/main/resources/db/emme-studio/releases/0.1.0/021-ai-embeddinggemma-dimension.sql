@@ -1,5 +1,5 @@
 -- liquibase formatted sql
--- changeset emme:021-ai-embeddinggemma-dimension
+-- changeset emme:021-ai-embeddinggemma-dimension splitStatements:false
 -- comment: Move semantic AI indexes to the verified EmbeddingGemma 768-dimensional profile.
 
 DO $$

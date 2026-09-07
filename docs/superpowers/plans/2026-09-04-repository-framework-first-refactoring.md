@@ -4785,3 +4785,29 @@ adds focused coverage for the owned Jackson mapper configuration.
 
 - `:applications:emme-platform:coverageCheck` passes after a clean build.
 - No business module classes or coverage thresholds were excluded or lowered.
+
+## Current slice 23D — Make Liquibase dollar-quoted migrations executable — 2026-09-07
+
+The JVM Compose smoke gate found that Liquibase 5 split PostgreSQL `DO $$...$$`
+blocks in four studio migrations, preventing tenant provisioning before the
+application could start. The affected changesets are on the current unreleased
+branch, so the minimal parser metadata fix is applied in place and guarded by
+migration contract tests.
+
+- [x] Reproduce the tenant migration failure in the JVM Compose smoke stack.
+- [x] Add failing contract tests for every affected studio changeset.
+- [x] Mark all PostgreSQL dollar-quoted studio changesets with
+      `splitStatements:false`.
+- [x] Rebuild the migration image and verify tenant migrations complete.
+- [x] Start the full JVM Compose stack and verify application health.
+- [ ] Continue remaining event-recovery, Kubernetes-runtime, and compatibility
+      gates.
+
+### Results
+
+- Guarded changesets `021`, `024`, `031`, `033`, and `034` now execute as single
+  Liquibase statements; existing core changeset `012` was already correct.
+- Database migration contract tests pass and the migration job exits `0`.
+- PostgreSQL, Redis, Keycloak, and the JVM application became healthy in the
+  named Compose smoke project; `/actuator/health` returned `UP`.
+- Unauthenticated `/v3/api-docs` returned the expected `401`.

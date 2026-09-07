@@ -6130,3 +6130,23 @@ Completed in this slice:
 - Focused unit and live outage/recovery verification pass.
 - Aggregate `integrationTest` passes with Docker; Hikari/PostgreSQL teardown
   warnings occur only while isolated test containers stop.
+
+## Current slice — Liquibase dollar-quoted migration execution — 2026-09-07
+
+- [x] Reproduce the JVM Compose tenant migration failure.
+- [x] Add focused migration contract tests before the parser metadata changes.
+- [x] Protect all affected studio PostgreSQL `DO $$...$$` changesets from
+      Liquibase statement splitting.
+- [x] Rebuild the migration image and rerun tenant migrations.
+- [x] Start the complete JVM Compose stack and verify health endpoints.
+- [ ] Continue remaining event-recovery, Kubernetes-runtime, and final
+      compatibility gates.
+
+### Results
+
+- Migration contract tests pass for semantic dimension, AGE bootstrap, catalog
+  dimension, appointment collision, and calendar-link cardinality changesets.
+- The migration job exits successfully and the full JVM Compose stack reports
+  healthy PostgreSQL, Redis, Keycloak, and application services.
+- `/actuator/health` returns `UP`; unauthenticated API documentation correctly
+  returns `401`.

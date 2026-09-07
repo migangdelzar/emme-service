@@ -1,5 +1,5 @@
 -- liquibase formatted sql
--- changeset emme:031-ai-catalog-embedding-dimension
+-- changeset emme:031-ai-catalog-embedding-dimension splitStatements:false
 -- comment: Align catalog search vectors with the canonical configured 768-dimensional embedding space.
 
 DO $$

@@ -2408,3 +2408,15 @@
 - **Prevention rule:** For a source set intentionally empty under a documented
   feature exclusion, disable only its no-discovered-tests failure while keeping
   discovery strict for all real integration suites.
+
+## 2026-09-07 — Keep focused integration contexts on exported test APIs
+
+- **Failure mode:** A focused Spring Boot integration context was narrowed with
+  direct imports of Boot JDBC auto-configuration classes that are not exported
+  on the module's integration-test compile classpath.
+- **Detection signal:** Integration-test compilation failed on the auto-
+  configuration imports even though the same behavior worked through the
+  repository's existing `@EnableAutoConfiguration` test setup.
+- **Prevention rule:** Before narrowing an integration context, verify the
+  module's source-set classpath; prefer existing test annotations and exported
+  framework APIs over adding hidden configuration-class dependencies.

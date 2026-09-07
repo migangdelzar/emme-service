@@ -4541,3 +4541,19 @@ continuing to detect duplicate declarations in one configuration family.
 - [x] Scope the inventory count to `implementation` and `testImplementation`.
 - [x] Verify Catalog integration compilation and the focused inventory test.
 - [ ] Re-run the full platform and repository gates at the next phase checkpoint.
+
+## Current slice 8M — Verify live LangGraph startup composition — 2026-09-07
+
+Focused Boot integration contexts now exercise the actual LangGraph composition
+root against the PostgreSQL Testcontainer. Enabled startup creates one named
+conversation graph and one named quote graph plus the tenant-aware checkpoint
+store; disabled startup creates none of those beans. The test supplies only the
+explicit capability and infrastructure ports required by the narrowed context,
+so unrelated feature adapters do not obscure the startup boundary.
+
+- [x] Add live enabled-startup coverage for conversation and quote capabilities.
+- [x] Add live disabled-startup coverage for checkpoint and compiled graph beans.
+- [x] Verify the enabled context exposes exactly two compiled graphs.
+- [x] Run focused LangGraph integration tests and Assistant compilation.
+- [ ] Run the remaining Docker-backed LangGraph authorization/resume matrix at
+      the phase gate.

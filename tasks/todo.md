@@ -5915,3 +5915,24 @@ Completed in this slice:
   `colima-emme` Docker profile.
 - RLS is now runtime-verified on both ordinary tenant data and durable webhook
   idempotency state without changing the forward migration.
+
+## Current slice — Task 8 live LangGraph startup composition — 2026-09-07
+
+- [x] Start a focused enabled LangGraph Boot context against PostgreSQL.
+- [x] Verify one named compiled graph per enabled capability.
+- [x] Start a focused disabled LangGraph Boot context against PostgreSQL.
+- [x] Verify no checkpoint or compiled graph beans exist when disabled.
+- [x] Run focused LangGraph integration tests, Assistant compilation, and
+      Spotless.
+- [ ] Continue the remaining Docker-backed LangGraph authorization/resume
+      matrix and broader framework gates.
+
+### Results
+
+- Live enabled and disabled startup contexts pass with the isolated
+  `colima-emme` Docker profile.
+- The focused context imports only the LangGraph composition root and explicit
+  infrastructure/capability fixtures; no production feature wiring changed.
+- The broader full application context remains intentionally outside this
+  focused composition test because unrelated feature adapters require separate
+  provider fixtures.

@@ -6001,6 +6001,20 @@ Completed in this slice:
 - Canonical AI compatibility verification passes; no additional production
   deletion was justified because the retired families are already absent.
 
+## Current slice — Phase H live Redis and semantic hot-state checkpoint — 2026-09-07
+
+- [x] Verify semantic hot-store tenant/principal isolation and eviction misses.
+- [x] Verify tenant-scoped invalidation and pgvector durable behavior.
+- [x] Verify the identity limiter fails closed during Redis outage and recovers.
+- [x] Run the focused Assistant and Identity Docker-backed Redis checkpoint.
+- [ ] Continue event-delivery, deployment, and final compatibility gates.
+
+### Results
+
+- Redis semantic and identity integration suites pass with the isolated
+  `colima-emme` Docker profile; PostgreSQL remains authoritative for durable
+  state.
+
 ## Current slice — Phase G live aggregate persistence checkpoint — 2026-09-07
 
 - [x] Run live Clients, Services, and Salon persistence suites.

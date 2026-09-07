@@ -4627,6 +4627,22 @@ pool warnings while isolated containers are removed after successful tests.
 - [x] Complete the affected PostgreSQL integration checkpoint.
 - [ ] Continue event-recovery, Redis, deployment, and final compatibility gates.
 
+## Current slice Phase H — Complete live Redis and semantic hot-state checkpoint — 2026-09-07
+
+The Docker-backed Redis checkpoint passes for semantic hot projection tenant
+isolation, eviction-as-miss behavior, tenant invalidation, pgvector durability,
+and login-rate-limit outage/restart recovery. Redis remains disposable: durable
+PostgreSQL state and idempotency authority are not replaced by hot state, and
+the tested native Redis primitives remain limited to the provider-required
+vector/index and atomic limiter operations.
+
+- [x] Verify semantic hot-store tenant/principal isolation and expiration.
+- [x] Verify evicted projections safely return misses.
+- [x] Verify tenant-scoped invalidation and pgvector durable behavior.
+- [x] Verify the identity limiter fails closed during outage and recovers.
+- [x] Run the focused Assistant and Identity Docker-backed Redis checkpoint.
+- [ ] Continue event-delivery, deployment, and final compatibility gates.
+
 ## Current slice 6Q — Verify AI compatibility cleanup closure — 2026-09-07
 
 The repository-wide production inventory contains none of the retired AI

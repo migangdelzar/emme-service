@@ -5972,3 +5972,17 @@ Completed in this slice:
   `colima-emme` PostgreSQL profile.
 - The source inventory no longer finds private checked-exception context
   wrappers in Assistant integration tests.
+
+## Current slice — Task 13 live tenancy runtime gate — 2026-09-07
+
+- [x] Verify real Liquibase tenant migration and schema checkout routing.
+- [x] Verify duplicate provisioning and invalid schema behavior.
+- [x] Verify calendar event-link uniqueness and tenant RLS behavior.
+- [x] Run the focused Tenancy PostgreSQL integration test.
+- [ ] Continue remaining persistence, event-recovery, deployment, and
+      compatibility framework gates.
+
+### Results
+
+- `TenantRestIntTest` passes against the isolated `colima-emme` PostgreSQL
+  profile, covering provisioning, routing, cardinality, and RLS contracts.

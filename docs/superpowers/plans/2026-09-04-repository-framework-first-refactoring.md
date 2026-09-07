@@ -4593,3 +4593,19 @@ they do not affect test results.
 - [x] Run the focused integration suite with Docker and compile/Spotless checks.
 - [ ] Continue remaining database, event-recovery, deployment, and
       compatibility framework gates.
+
+## Current slice 13I — Verify live tenant provisioning and schema routing — 2026-09-07
+
+The PostgreSQL tenancy runtime gate now passes through the real provisioning,
+Liquibase migration, connection-checkout routing, duplicate-request, invalid
+schema, calendar-cardinality, and RLS paths. This confirms the schema-per-tenant
+boundary at runtime; ordinary tenant-schema operations remain schema-local and
+do not gain redundant tenant predicates.
+
+- [x] Run Liquibase migration and verify tenant-schema checkout routing.
+- [x] Verify duplicate provisioning preserves the original registry owner.
+- [x] Verify invalid schema identifiers fail before tenant database work.
+- [x] Verify calendar event-link uniqueness and tenant RLS behavior.
+- [x] Run the focused Tenancy integration gate against PostgreSQL.
+- [ ] Continue remaining persistence, event-recovery, deployment, and
+      compatibility framework gates.

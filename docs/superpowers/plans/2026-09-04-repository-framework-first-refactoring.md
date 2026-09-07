@@ -3626,6 +3626,12 @@ and replacement evidence.
 - [x] Generic test fixtures no longer depend on feature modules.
 - [x] Duplicate Gradle declarations and unused placeholder capabilities are removed.
 
+The Phase F/Tasks 20–22 checkpoint was rerun on 2026-09-06. Full Gradle
+`check`, backend/container/deployment workflow validators, and AGE/Kafka/E2E
+Compose contract tests pass. Provider HTTP behavior, Redis eviction, and
+Kafka publication/partition-key evidence are complete; Redis outage recovery
+and Modulith listener duplicate/retry evidence remain open.
+
 ```bash
 ./gradlew test compileJava \
   :modules:assistant:computeAdvice :modules:booking:computeAdvice \

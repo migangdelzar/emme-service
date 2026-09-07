@@ -5236,6 +5236,20 @@ Completed in this slice:
   against Redis 8 with the isolated Docker profile.
 - No production Redis or semantic-cache contract change was required.
 
+## Current slice — Phase F/Tasks 20–22 checkpoint — 2026-09-06
+
+- [x] Run the full repository `./gradlew check`.
+- [x] Run backend, container, and deployment workflow validators.
+- [x] Run AGE, Kafka, and E2E Compose contract tests.
+- [ ] Run live Redis outage/recovery, Modulith duplicate/retry, Kubernetes
+      smoke, and final release gates.
+
+### Results
+
+- Full Gradle check passed with 264 actionable tasks.
+- All requested workflow and Compose contract validators passed.
+- No new source changes were required by the checkpoint.
+
 ## Current slice — Task 19 live Kafka externalization gate — 2026-09-06
 
 - [x] Verify approved events are published to stable Kafka topics.

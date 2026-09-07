@@ -424,7 +424,9 @@ class TenantRestIntTest {
   @DisplayName("Failed TenantActivated publication rolls back the activation claim for retry")
   void tenantActivatedPublicationFailureRollsBackClaimForRetry() {
     UUID tenantId = UUID.randomUUID();
-    String slug = "activation-publication-retry-" + UUID.randomUUID().toString().replace('-', 'a');
+    String slug =
+        "activation-publication-retry-"
+            + UUID.randomUUID().toString().replace("-", "").substring(0, 24);
     String schemaName = TenantSchemaName.fromSlug(slug);
     provisioningRepository.requestProvisioning(tenantId, slug, schemaName);
 

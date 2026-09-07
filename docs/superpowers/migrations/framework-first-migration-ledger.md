@@ -372,6 +372,14 @@ split-line test caller was migrated before removal. The focused contract test,
 Assistant compilation, integration-test compilation, and Spotless pass on
 current framework slice commit.
 
+## Appointment exclusion runtime evidence — 2026-09-06
+
+The forward appointment-hold migration was executed against PostgreSQL 16 in
+the isolated Testcontainers profile. The concurrent overlap test passed with
+one successful writer and one losing writer observing SQLSTATE `23P01` after
+the bounded transient deadlock retry. The production GiST exclusion
+constraint remains the authoritative concurrency invariant.
+
 ## Calendar event-link cardinality slice — 2026-09-05
 
 - [x] Add a test-driven migration contract for the singular

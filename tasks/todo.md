@@ -4921,6 +4921,19 @@ Completed in this slice:
 - The remaining test caller was found by compilation after the constructor
   removal and migrated without changing workflow behavior.
 
+## Current slice — live appointment exclusion verification — 2026-09-06
+
+- [x] Run the deployed appointment-hold migration against PostgreSQL 16.
+- [x] Execute the concurrent overlapping-hold integration test.
+- [x] Verify exactly one writer succeeds and the loser receives SQLSTATE
+      `23P01` after the bounded deadlock retry.
+- [ ] Continue tenant-routing and optimistic-lock aggregate evidence.
+
+### Results
+
+- `AppointmentCollisionConcurrencyIntegrationTest` passed with one test and
+  zero failures or skips under the isolated `colima-emme` Docker profile.
+
 ## Current slice — Task 13F PostgreSQL tenant datasource startup — 2026-09-06
 
 - [x] Verify the worktree and read the repository instructions and Task 13

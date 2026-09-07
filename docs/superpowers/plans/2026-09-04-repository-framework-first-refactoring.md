@@ -3867,3 +3867,16 @@ caller was migrated to the canonical constructor.
       integration-test compilation, and Spotless.
 - [ ] Continue the remaining framework-first persistence, Redis, and event
       recovery gates.
+
+## Current slice 17B — Verify live appointment exclusion enforcement — 2026-09-06
+
+The deployed appointment-hold migration and PostgreSQL GiST exclusion
+constraint were rerun against the isolated Testcontainers PostgreSQL profile.
+The concurrency test passed with one committed overlapping insert and one
+ultimately rejected transaction observing the required `23P01` exclusion
+violation after the bounded deadlock retry.
+
+- [x] Run the deployed appointment migration path against PostgreSQL.
+- [x] Verify the overlap race has exactly one successful writer.
+- [x] Verify the losing writer observes PostgreSQL exclusion SQLSTATE `23P01`.
+- [ ] Run the remaining tenant-routing and optimistic-lock aggregate matrix.

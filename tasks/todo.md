@@ -5118,6 +5118,21 @@ Completed in this slice:
   and one optimistic-lock failure.
 - No production persistence or application contract change was required.
 
+## Current slice — Task 8 live LangGraph checkpoint gate — 2026-09-06
+
+- [x] Verify PostgreSQL checkpoint persistence for a paused conversation.
+- [x] Verify resume after graph recreation with an authorized staff context.
+- [x] Verify another tenant cannot resume or access the workflow checkpoint.
+- [x] Verify durable quote idempotency remains tenant/principal scoped.
+- [ ] Verify every enabled/disabled graph composition path in a live startup
+      context.
+
+### Results
+
+- Conversation checkpoint and quote idempotency integration tests passed with
+  the isolated Docker profile.
+- No production workflow contract or tenant-boundary change was required.
+
 ## Current slice — Task 16G live Salon optimistic locking — 2026-09-06
 
 - [x] Add a focused two-transaction optimistic-lock integration test.

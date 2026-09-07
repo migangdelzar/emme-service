@@ -1131,7 +1131,7 @@ composition-root edge; application workflow ports are unchanged.
 - [x] Add a failing configuration test for the tenant JDBC qualifier.
 - [x] Bind `jdbcCheckpointSaver` to `tenantJdbcClient`.
 - [x] Run focused LangGraph tests and the application DDD/hexagonal architecture test.
-- [ ] Complete live PostgreSQL checkpoint security/resume coverage with Docker.
+- [x] Complete live PostgreSQL checkpoint security/resume coverage with Docker.
 
 #### Current slice 13A — Name the shared tenant JDBC boundary
 
@@ -1183,7 +1183,7 @@ as an empty checkpoint history. The live PostgreSQL proof remains Docker-gated.
 - [x] Add focused regression coverage for an inaccessible existing workflow ID.
 - [x] Reject cross-tenant workflow IDs before returning checkpoint history.
 - [x] Run focused LangGraph/checkpoint tests, compilation, and Spotless.
-- [ ] Run the live PostgreSQL checkpoint security/resume coverage when Docker is available.
+- [x] Run the live PostgreSQL checkpoint security/resume coverage with Docker.
 
 #### Current slice 8E — Quote graph capability gating
 
@@ -1208,7 +1208,7 @@ missing-checkpoint cause; no state mutation is attempted.
 - [x] Add focused missing-checkpoint resume coverage.
 - [x] Reject quote resume without a checkpoint before state mutation.
 - [x] Run the focused quote resume test suite.
-- [ ] Run live LangGraph checkpoint/resume coverage when Docker is available.
+- [x] Run live LangGraph checkpoint/resume coverage with Docker.
 
 #### Current slice 8G — LangGraph context composition coverage
 
@@ -1254,8 +1254,9 @@ git commit -m "refactor(ai): simplify LangGraph workflow composition"
 ```
 
 The non-Docker Task 8 security/configuration gate passed on 2026-09-06. Live
-PostgreSQL checkpoint security/resume and startup evidence remain queued until
-Docker is available.
+PostgreSQL checkpoint security/resume evidence passed on 2026-09-06 with the
+conversation checkpoint and quote idempotency integration tests. Capability
+startup coverage for every enabled/disabled graph remains a separate gate.
 
 #### Current slice 8H — Gate payment workflow persistence with LangGraph
 

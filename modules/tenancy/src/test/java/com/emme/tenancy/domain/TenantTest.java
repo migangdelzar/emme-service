@@ -18,6 +18,7 @@ class TenantTest {
     assertThat(tenant.name()).isEqualTo("Studio A");
     assertThat(tenant.status()).isEqualTo(TenantStatus.ACTIVE);
     assertThat(tenant.keycloakRealm()).isEqualTo("emme");
+    assertThat(tenant.databaseId()).isEqualTo(Tenant.DEFAULT_DATABASE_ID);
   }
 
   @Test

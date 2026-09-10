@@ -7,6 +7,10 @@ import java.util.UUID;
 /** Framework-free tenant aggregate and lifecycle boundary. */
 public final class Tenant {
 
+  /** Stable control-plane identity of the shared default database. */
+  public static final UUID DEFAULT_DATABASE_ID =
+      UUID.fromString("00000000-0000-0000-0000-000000000000");
+
   private final UUID id;
   private final String slug;
   private String name;
@@ -17,7 +21,7 @@ public final class Tenant {
   private final Instant updatedAt;
 
   public Tenant(String slug, String name) {
-    this(null, slug, name, TenantStatus.ACTIVE, null, "emme", null, null);
+    this(null, slug, name, TenantStatus.ACTIVE, DEFAULT_DATABASE_ID, "emme", null, null);
   }
 
   private Tenant(

@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/catalog", version = "1.0")
 @Tag(name = "Catalog")
+@RequiredArgsConstructor
 public class CatalogController {
 
   private final CreateCatalogItemUseCase createCatalogItemUseCase;
@@ -41,19 +43,6 @@ public class CatalogController {
   private final ListCatalogItemsUseCase listCatalogItemsUseCase;
   private final AddCatalogItemImageUseCase addCatalogItemImageUseCase;
   private final MatchCatalogItemsUseCase matchCatalogItemsUseCase;
-
-  public CatalogController(
-      CreateCatalogItemUseCase createCatalogItemUseCase,
-      DeleteCatalogItemUseCase deleteCatalogItemUseCase,
-      ListCatalogItemsUseCase listCatalogItemsUseCase,
-      AddCatalogItemImageUseCase addCatalogItemImageUseCase,
-      MatchCatalogItemsUseCase matchCatalogItemsUseCase) {
-    this.createCatalogItemUseCase = createCatalogItemUseCase;
-    this.deleteCatalogItemUseCase = deleteCatalogItemUseCase;
-    this.listCatalogItemsUseCase = listCatalogItemsUseCase;
-    this.addCatalogItemImageUseCase = addCatalogItemImageUseCase;
-    this.matchCatalogItemsUseCase = matchCatalogItemsUseCase;
-  }
 
   @PostMapping("/items")
   @Operation(summary = "Create a priced catalog item under a service")

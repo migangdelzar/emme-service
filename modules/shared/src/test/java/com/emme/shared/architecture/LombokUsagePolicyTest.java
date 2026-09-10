@@ -167,6 +167,7 @@ class LombokUsagePolicyTest {
           "modules/catalog/src/main/java/com/emme/catalog/application/service/MatchCatalogItemsService.java",
           "modules/catalog/src/main/java/com/emme/catalog/application/service/AddCatalogItemImageService.java",
           "modules/catalog/src/main/java/com/emme/catalog/application/service/ListCatalogItemsService.java",
+          "modules/catalog/src/main/java/com/emme/catalog/adapter/in/web/controller/CatalogController.java",
           "modules/clients/src/main/java/com/emme/clients/application/service/CreateCustomerService.java",
           "modules/clients/src/main/java/com/emme/clients/application/service/GetCustomerService.java",
           "modules/clients/src/main/java/com/emme/clients/application/service/ListCustomersService.java",

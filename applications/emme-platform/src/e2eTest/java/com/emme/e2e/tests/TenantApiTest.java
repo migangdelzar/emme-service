@@ -1,6 +1,6 @@
 package com.emme.e2e.tests;
 
-import static com.emme.client.E2eTest.withSession;
+import static com.emme.client.E2eTest.withPlatformSession;
 import static com.emme.client.E2eTest.withUnauthenticated;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -12,7 +12,7 @@ class TenantApiTest {
 
   @Test
   void shouldCrudComplete() {
-    withSession(
+    withPlatformSession(
         s -> {
           var slug = "crud-" + System.currentTimeMillis();
 
@@ -33,7 +33,7 @@ class TenantApiTest {
 
   @Test
   void shouldSetupFullStudio() {
-    withSession(
+    withPlatformSession(
         s -> {
           var tenantId = s.setup().fullStudio("full-" + System.currentTimeMillis());
           assertThat(tenantId).isNotNull();

@@ -8,13 +8,11 @@ import org.junit.jupiter.api.Test;
 
 class ServiceApiTest {
 
-  private static final String DEMO_TENANT = "00000000-0000-0000-0000-100000000000";
-
   @Test
   void shouldListServices() {
     withSession(
         s -> {
-          s.setup().subscription(DEMO_TENANT);
+          s.setup().subscription(s.tenantId());
           var result = s.services().list();
           assertThat(result).isNotNull().startsWith("[");
         });
@@ -24,7 +22,7 @@ class ServiceApiTest {
   void shouldCreateService() {
     withSession(
         s -> {
-          s.setup().subscription(DEMO_TENANT);
+          s.setup().subscription(s.tenantId());
           String uniqueName = UUID.randomUUID().toString().substring(0, 8) + "-E2E-Svc";
           var result =
               s.services()
@@ -37,7 +35,7 @@ class ServiceApiTest {
   void shouldFilterByCategory() {
     withSession(
         s -> {
-          s.setup().subscription(DEMO_TENANT);
+          s.setup().subscription(s.tenantId());
           var result = s.services().listByCategory("Manicura");
           assertThat(result).isNotNull();
         });
@@ -47,7 +45,7 @@ class ServiceApiTest {
   void shouldRejectEmptyFields() {
     withSession(
         s -> {
-          s.setup().subscription(DEMO_TENANT);
+          s.setup().subscription(s.tenantId());
           var result =
               s.post(
                   "/api/services",

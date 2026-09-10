@@ -8,8 +8,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class SalonWorkdayJourneyTest {
-  private static final String DEMO_TENANT = "00000000-0000-0000-0000-100000000000";
-
   @Test
   void doHealthCheck() {
     withUnauthenticated(
@@ -23,7 +21,7 @@ class SalonWorkdayJourneyTest {
   void doCreateCustomerAndVerify() {
     withSession(
         s -> {
-          s.setup().subscription(DEMO_TENANT);
+          s.setup().subscription(s.tenantId());
           var user = s.user();
           String uniqueName = user.name() + " " + UUID.randomUUID().toString().substring(0, 6);
           var customerJson =
@@ -39,7 +37,7 @@ class SalonWorkdayJourneyTest {
   void doCreateServiceAndVerify() {
     withSession(
         s -> {
-          s.setup().subscription(DEMO_TENANT);
+          s.setup().subscription(s.tenantId());
           String uniqueName = UUID.randomUUID().toString().substring(0, 8) + "-Journey-Manicure";
           var serviceJson =
               s.services()
@@ -62,7 +60,7 @@ class SalonWorkdayJourneyTest {
   void doFullBusinessDay() {
     withSession(
         s -> {
-          s.setup().subscription(DEMO_TENANT);
+          s.setup().subscription(s.tenantId());
           var user = s.user();
 
           // 1. Health

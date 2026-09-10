@@ -35,7 +35,8 @@ import java.util.function.Function;
  *   <li>URL resolution from {@code EMME_E2E_BASE_URL}
  *   <li>User acquisition from pool
  *   <li>UserSession creation (per-user OkHttp client)
- *   <li>Auth token injection via {@code E2E_ACCESS_TOKEN}
+ *   <li>Auth token injection via {@code E2E_TENANT_OWNER_TOKEN}, falling back to {@code
+ *       E2E_ACCESS_TOKEN}
  *   <li>Resource cleanup (session close + user release)
  * </ul>
  */
@@ -80,8 +81,22 @@ public final class E2eTest {
    * }</pre>
    */
   public static <T> T withResult(Function<UserSession, T> block) {
+    return withResult(resolveTenantOwnerToken(), block);
+  }
+
+  /** Execute with the platform token for control-plane APIs such as tenant provisioning. */
+  public static void withPlatformSession(Consumer<UserSession> block) {
+    withResult(
+        resolvePlatformToken(),
+        s -> {
+          block.accept(s);
+          return null;
+        });
+  }
+
+  private static <T> T withResult(String accessToken, Function<UserSession, T> block) {
     var user = E2eUserPool.INSTANCE.acquire();
-    var session = new UserSession(BASE_URL, user);
+    var session = new UserSession(BASE_URL, user, accessToken);
     try {
       return block.apply(session);
     } finally {
@@ -108,5 +123,18 @@ public final class E2eTest {
   /** Return the configured base URL. */
   public static URI baseUrl() {
     return BASE_URL;
+  }
+
+  private static String resolveTenantOwnerToken() {
+    var ownerToken = propertyOrEnvironment("E2E_TENANT_OWNER_TOKEN");
+    return ownerToken.isBlank() ? resolvePlatformToken() : ownerToken;
+  }
+
+  private static String resolvePlatformToken() {
+    return propertyOrEnvironment("E2E_ACCESS_TOKEN");
+  }
+
+  private static String propertyOrEnvironment(String name) {
+    return System.getProperty(name, System.getenv().getOrDefault(name, ""));
   }
 }

@@ -97,7 +97,7 @@ public final class UserSession implements AutoCloseable {
   /** Returns the tenant claim from this session's token, falling back to the fixture metadata. */
   public String tenantId() {
     var tokenTenantId = jwtClaim("tenant_id");
-    if (!tokenTenantId.isBlank()) {
+    if (tokenTenantId != null && !tokenTenantId.isBlank()) {
       return tokenTenantId;
     }
     return System.getProperty(

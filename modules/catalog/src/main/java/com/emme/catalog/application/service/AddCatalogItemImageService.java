@@ -13,29 +13,20 @@ import com.emme.catalog.domain.model.CatalogItem;
 import com.emme.catalog.domain.model.CatalogItemImage;
 import java.util.Base64;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the AddCatalogItemImage use case. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AddCatalogItemImageService implements AddCatalogItemImageUseCase {
 
   private final CatalogItemRepository itemRepository;
   private final CatalogItemImageRepository imageRepository;
   private final ImageStorage imageStorage;
   private final CaptionImageUseCase captionImageUseCase;
-
-  public AddCatalogItemImageService(
-      CatalogItemRepository itemRepository,
-      CatalogItemImageRepository imageRepository,
-      ImageStorage imageStorage,
-      CaptionImageUseCase captionImageUseCase) {
-    this.itemRepository = itemRepository;
-    this.imageRepository = imageRepository;
-    this.imageStorage = imageStorage;
-    this.captionImageUseCase = captionImageUseCase;
-  }
 
   @Override
   public CatalogItemImageDetails addImage(AddCatalogItemImageCommand command) {

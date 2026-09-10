@@ -7,20 +7,16 @@ import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.ConversationEventRepository;
 import com.emme.assistant.application.port.out.ConversationRepository;
 import com.emme.assistant.domain.model.ConversationEvent;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AddConversationEventService implements AddConversationEventUseCase {
   private final ConversationRepository conversations;
   private final ConversationEventRepository events;
-
-  public AddConversationEventService(
-      ConversationRepository conversations, ConversationEventRepository events) {
-    this.conversations = conversations;
-    this.events = events;
-  }
 
   @Override
   public ConversationEventDetails add(AddConversationEventCommand command) {

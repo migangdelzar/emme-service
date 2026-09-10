@@ -483,3 +483,29 @@ Verification completed:
 - Annotation processor reports contain Lombok; Assistant runtime classpath
   does not.
 - Affected Spotless checks passed.
+
+## Expansion addendum — 2026-09-10
+
+The initial three-class pilot is being expanded by module in response to the
+implementation request. The same safety boundary remains in force: only
+application services with one constructor that directly assigns all final
+dependencies may use `@RequiredArgsConstructor`. Domain models, JPA entities,
+records, configuration/property binding types, and constructors that perform
+validation, choose defaults, select optional collaborators, or establish
+provider/tenant lifecycle behavior remain explicit.
+
+The first expansion slice adds the Assistant conversation/action services,
+appointment slot lookup, and Catalog image/list services. The shared policy
+test is the allowlist for the currently migrated production files; subsequent
+module slices must extend that test before adding annotations and must be
+committed independently.
+
+Verification for the first expansion slice:
+
+- Shared Lombok policy test passed after the expected red-to-green cycle.
+- Assistant, Appointments, and Catalog test suites passed.
+- Affected Spotless checks and `git diff --check` passed.
+
+The remaining eligible application-service modules are intentionally queued
+for the next independent slices so each module's compile and test surface is
+verified before the next conversion.

@@ -17,11 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for finding available appointment slots. */
 @org.springframework.stereotype.Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class FindAvailableSlotsService implements FindAvailableSlotsUseCase {
 
   private static final int SLOT_INTERVAL_MINUTES = 15;
@@ -30,17 +32,6 @@ public class FindAvailableSlotsService implements FindAvailableSlotsUseCase {
   private final OperatingHoursRepository operatingHoursRepository;
   private final ServiceRepository serviceRepository;
   private final AppointmentCollisionPort collisionPort;
-
-  public FindAvailableSlotsService(
-      ArtistCapabilityRepository artistCapabilityRepository,
-      OperatingHoursRepository operatingHoursRepository,
-      ServiceRepository serviceRepository,
-      AppointmentCollisionPort collisionPort) {
-    this.artistCapabilityRepository = artistCapabilityRepository;
-    this.operatingHoursRepository = operatingHoursRepository;
-    this.serviceRepository = serviceRepository;
-    this.collisionPort = collisionPort;
-  }
 
   @Override
   public List<AvailableSlot> find(UUID tenantId, UUID serviceId, LocalDate date) {

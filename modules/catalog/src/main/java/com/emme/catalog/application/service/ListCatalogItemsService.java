@@ -6,19 +6,17 @@ import com.emme.catalog.api.usecase.ListCatalogItemsUseCase;
 import com.emme.catalog.application.mapper.CatalogApplicationMapper;
 import com.emme.catalog.application.port.out.CatalogItemRepository;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the ListCatalogItems use case. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ListCatalogItemsService implements ListCatalogItemsUseCase {
 
   private final CatalogItemRepository itemRepository;
-
-  public ListCatalogItemsService(CatalogItemRepository itemRepository) {
-    this.itemRepository = itemRepository;
-  }
 
   @Override
   public List<CatalogItemDetails> list(ListCatalogItemsQuery query) {

@@ -7,17 +7,15 @@ import com.emme.assistant.application.mapper.AssistantApplicationMapper;
 import com.emme.assistant.application.port.out.PendingActionRepository;
 import com.emme.assistant.domain.model.ActionStatus;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GetActiveActionsService implements GetActiveActionsUseCase {
   private final PendingActionRepository repository;
-
-  public GetActiveActionsService(PendingActionRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public List<PendingActionDetails> get(GetActiveActionsQuery query) {

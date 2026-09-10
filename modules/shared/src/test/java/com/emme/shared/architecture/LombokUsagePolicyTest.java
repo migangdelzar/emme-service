@@ -16,8 +16,21 @@ class LombokUsagePolicyTest {
   private static final Set<String> APPROVED_FILES =
       Set.of(
           "modules/assistant/src/main/java/com/emme/assistant/adapter/in/web/controller/ConversationController.java",
+          "modules/assistant/src/main/java/com/emme/assistant/application/service/AddConversationEventService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/application/service/CloseConversationService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/application/service/ConfirmPendingActionService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/application/service/GetActiveActionsService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/application/service/GetConversationHistoryService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/application/service/GetConversationService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/application/service/ListConversationsService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/application/service/ProposePendingActionService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/application/service/RejectPendingActionService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/application/service/StartConversationService.java",
           "modules/appointments/src/main/java/com/emme/appointments/application/service/ListAppointmentsService.java",
-          "modules/catalog/src/main/java/com/emme/catalog/application/service/MatchCatalogItemsService.java");
+          "modules/appointments/src/main/java/com/emme/appointments/application/service/FindAvailableSlotsService.java",
+          "modules/catalog/src/main/java/com/emme/catalog/application/service/MatchCatalogItemsService.java",
+          "modules/catalog/src/main/java/com/emme/catalog/application/service/AddCatalogItemImageService.java",
+          "modules/catalog/src/main/java/com/emme/catalog/application/service/ListCatalogItemsService.java");
 
   @Test
   void onlyUsesLombokInApprovedProductionFiles() throws IOException {
@@ -61,7 +74,7 @@ class LombokUsagePolicyTest {
   }
 
   @Test
-  void adoptsRequiredArgsConstructorsForTheApprovedPilot() throws IOException {
+  void adoptsRequiredArgsConstructorsForApprovedApplicationServices() throws IOException {
     Path root = sourcePath();
 
     for (String relativePath : APPROVED_FILES) {

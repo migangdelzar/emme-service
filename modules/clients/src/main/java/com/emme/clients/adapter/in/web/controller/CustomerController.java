@@ -20,6 +20,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/customers", version = "1.0")
 @Tag(name = "Customers")
+@RequiredArgsConstructor
 public class CustomerController {
 
   private final ListTenantCustomersUseCase listCustomers;
@@ -42,23 +44,6 @@ public class CustomerController {
   private final RetireCustomerUseCase retireCustomer;
   private final SearchCustomersUseCase searchCustomers;
   private final EnforceEntitlementUseCase enforceEntitlement;
-
-  public CustomerController(
-      ListTenantCustomersUseCase listCustomers,
-      CreateCustomerUseCase createCustomer,
-      GetCustomerUseCase getCustomer,
-      UpdateCustomerUseCase updateCustomer,
-      RetireCustomerUseCase retireCustomer,
-      SearchCustomersUseCase searchCustomers,
-      EnforceEntitlementUseCase enforceEntitlement) {
-    this.listCustomers = listCustomers;
-    this.createCustomer = createCustomer;
-    this.getCustomer = getCustomer;
-    this.updateCustomer = updateCustomer;
-    this.retireCustomer = retireCustomer;
-    this.searchCustomers = searchCustomers;
-    this.enforceEntitlement = enforceEntitlement;
-  }
 
   @GetMapping
   @Operation(summary = "List customers for current tenant")

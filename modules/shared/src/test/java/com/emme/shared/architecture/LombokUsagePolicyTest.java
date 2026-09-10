@@ -175,6 +175,7 @@ class LombokUsagePolicyTest {
           "modules/clients/src/main/java/com/emme/clients/application/service/RetireCustomerService.java",
           "modules/clients/src/main/java/com/emme/clients/application/service/SearchCustomersService.java",
           "modules/clients/src/main/java/com/emme/clients/application/service/UpdateCustomerService.java",
+          "modules/clients/src/main/java/com/emme/clients/adapter/in/web/controller/CustomerController.java",
           "modules/documents/src/main/java/com/emme/documents/application/service/ChunkDocumentService.java",
           "modules/documents/src/main/java/com/emme/documents/application/service/FailDocumentService.java",
           "modules/documents/src/main/java/com/emme/documents/application/service/GetDocumentChunksService.java",

@@ -1,5 +1,21 @@
 # Service architecture migration checklist
 
+## Current slice — Framework-first LangGraph security checkpoint — 2026-09-09
+
+- [x] Run the Docker-backed LangGraph startup/checkpoint/resume matrix.
+- [x] Run the affected Task 7–13 unit checkpoint.
+- [x] Record exact test results in the framework-first plan.
+- [ ] Continue the next pending framework phase gate.
+
+### Results
+
+- LangGraph integration matrix: 5 selected classes, 5 tests, 0 failures, 0
+  errors, 0 skips.
+- Affected unit checkpoint passed for Assistant, AI Platform, Tenancy,
+  Subscriptions, and Shared.
+- Docker/Testcontainers was available through the `colima/emme` socket. A
+  non-fatal cleanup-thread prune warning appeared during shutdown.
+
 ## Current slice — Assistant semantic route compatibility — 2026-09-07
 
 - [x] Inventory `route(String)` production and test callers.

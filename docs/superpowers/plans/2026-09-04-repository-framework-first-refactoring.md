@@ -5036,3 +5036,28 @@ source was changed and no incomplete image was used for deployment validation.
 - No frontend image was created by the stalled disposable build.
 - Full K3d apply remains unclaimed because the frontend artifact, CRD, and
   dependency/Secret setup are still external prerequisites.
+
+## Current slice 8O — Run the remaining LangGraph security matrix — 2026-09-09
+
+The Docker-backed LangGraph checkpoint matrix now covers the remaining
+framework-first authorization and tenant-isolation cases. It exercises enabled
+and disabled startup, conversation checkpoint recreation and cross-tenant
+rejection, quote resume authorization, and duplicate payment delivery against
+the PostgreSQL-backed workflow boundary.
+
+- [x] Run the enabled and disabled LangGraph startup integration tests.
+- [x] Run conversation checkpoint recreation and cross-tenant rejection.
+- [x] Run quote resume authorization and tenant isolation.
+- [x] Run duplicate payment workflow delivery handling.
+- [x] Run the affected Task 7–13 unit checkpoint.
+- [ ] Continue the remaining Docker-backed Redis, Kafka, provider, persistence,
+      and deployment framework gates at their respective phase checkpoints.
+
+### Results
+
+- `:modules:assistant:integrationTest` completed the five selected LangGraph
+  integration classes with 5 tests, 0 failures, 0 errors, and 0 skips.
+- `:modules:assistant:test :modules:ai-platform:test :modules:tenancy:test
+  :modules:subscriptions:test :modules:shared:test` passed with 0 failures.
+- The live test process emitted a non-fatal Testcontainers cleanup-thread prune
+  warning during shutdown; the Gradle task still exited successfully.

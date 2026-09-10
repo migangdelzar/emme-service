@@ -6,17 +6,15 @@ import com.emme.subscriptions.api.usecase.ChangeSubscriptionPlanUseCase;
 import com.emme.subscriptions.application.mapper.SubscriptionApplicationMapper;
 import com.emme.subscriptions.application.port.out.SubscriptionRepository;
 import com.emme.subscriptions.domain.model.Subscription;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ChangeSubscriptionPlanService implements ChangeSubscriptionPlanUseCase {
   private final SubscriptionRepository repository;
-
-  public ChangeSubscriptionPlanService(SubscriptionRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public SubscriptionDetails change(ChangeSubscriptionPlanCommand command) {

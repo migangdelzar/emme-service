@@ -7,19 +7,16 @@ import com.emme.payment.application.mapper.PaymentApplicationMapper;
 import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentRepository;
 import com.emme.payment.domain.model.Payment;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RefundPaymentService implements RefundPaymentUseCase {
   private final PaymentRepository repository;
   private final PaymentProvider provider;
-
-  public RefundPaymentService(PaymentRepository repository, PaymentProvider provider) {
-    this.repository = repository;
-    this.provider = provider;
-  }
 
   @Override
   public PaymentDetails refund(RefundPaymentCommand command) {

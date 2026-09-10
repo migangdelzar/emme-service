@@ -8,19 +8,16 @@ import com.emme.payment.application.port.out.PaymentProvider;
 import com.emme.payment.application.port.out.PaymentProviderException;
 import com.emme.payment.application.port.out.PaymentRepository;
 import com.emme.payment.domain.model.Payment;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class InitiatePaymentService implements InitiatePaymentUseCase {
   private final PaymentRepository repository;
   private final PaymentProvider provider;
-
-  public InitiatePaymentService(PaymentRepository repository, PaymentProvider provider) {
-    this.repository = repository;
-    this.provider = provider;
-  }
 
   @Override
   public PaymentDetails initiate(InitiatePaymentCommand command) {

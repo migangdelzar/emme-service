@@ -10,6 +10,7 @@ import com.emme.notification.application.port.out.NotificationRepository;
 import com.emme.notification.application.port.out.PushSender;
 import com.emme.notification.application.port.out.SmsSender;
 import com.emme.notification.domain.model.Notification;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class DeliverNotificationService implements DeliverNotificationUseCase {
   private static final Logger log = LoggerFactory.getLogger(DeliverNotificationService.class);
   private final NotificationRepository repository;
@@ -24,19 +26,6 @@ public class DeliverNotificationService implements DeliverNotificationUseCase {
   private final SmsSender smsSender;
   private final PushSender pushSender;
   private final NotificationEventPublisher events;
-
-  public DeliverNotificationService(
-      NotificationRepository repository,
-      EmailSender emailSender,
-      SmsSender smsSender,
-      PushSender pushSender,
-      NotificationEventPublisher events) {
-    this.repository = repository;
-    this.emailSender = emailSender;
-    this.smsSender = smsSender;
-    this.pushSender = pushSender;
-    this.events = events;
-  }
 
   @Override
   public NotificationDetails deliver(DeliverNotificationCommand command) {

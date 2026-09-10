@@ -6,17 +6,15 @@ import com.emme.notification.api.usecase.CancelNotificationUseCase;
 import com.emme.notification.application.mapper.NotificationApplicationMapper;
 import com.emme.notification.application.port.out.NotificationRepository;
 import com.emme.notification.domain.model.Notification;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CancelNotificationService implements CancelNotificationUseCase {
   private final NotificationRepository repository;
-
-  public CancelNotificationService(NotificationRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public NotificationDetails cancel(CancelNotificationCommand command) {

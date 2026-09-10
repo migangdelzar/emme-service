@@ -6416,6 +6416,9 @@ Completed in this slice:
       services; restore Services' missing web MVC test dependency discovered by
       the affected test compile.
 - [x] Verify the third expansion slice with production compilation.
+- [x] Add the fourth expansion slice for Calendar, Payment, Notification, and
+      Subscriptions application services using test-first allowlist enforcement.
+- [x] Verify the fourth expansion slice with affected tests and compilation.
 - [ ] Continue the remaining eligible application-service modules in separate
       commits after their own red/green checks.
 - [ ] Continue remaining event-delivery, deployment-runtime, and final

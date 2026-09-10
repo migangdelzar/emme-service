@@ -7,19 +7,17 @@ import com.emme.calendar.application.port.out.CalendarEventLinkRepository;
 import com.emme.calendar.domain.model.CalendarEventLink;
 import com.emme.calendar.domain.model.CalendarProvider;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for creating calendar event links. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CreateCalendarEventLinkService implements CreateCalendarEventLinkUseCase {
 
   private final CalendarEventLinkRepository repository;
-
-  public CreateCalendarEventLinkService(CalendarEventLinkRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public CalendarEventLinkDetails create(

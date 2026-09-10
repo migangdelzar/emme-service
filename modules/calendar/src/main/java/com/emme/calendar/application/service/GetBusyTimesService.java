@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,16 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 /** Application service for external calendar availability queries. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GetBusyTimesService implements GetBusyTimesUseCase {
 
   private static final Logger log = LoggerFactory.getLogger(GetBusyTimesService.class);
   private final GoogleCalendarPort googleCalendar;
   private final CalendarProperties properties;
-
-  public GetBusyTimesService(GoogleCalendarPort googleCalendar, CalendarProperties properties) {
-    this.googleCalendar = googleCalendar;
-    this.properties = properties;
-  }
 
   @Override
   public List<CalendarBusyTimeRange> getBusyTimes(UUID tenantId, UUID artistId, LocalDate date) {

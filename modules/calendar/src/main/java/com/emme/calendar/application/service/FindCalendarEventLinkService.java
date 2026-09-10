@@ -7,19 +7,17 @@ import com.emme.calendar.application.port.out.CalendarEventLinkRepository;
 import com.emme.calendar.domain.model.CalendarProvider;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for tenant-scoped calendar-link queries. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class FindCalendarEventLinkService implements FindCalendarEventLinkUseCase {
 
   private final CalendarEventLinkRepository repository;
-
-  public FindCalendarEventLinkService(CalendarEventLinkRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public Optional<CalendarEventLinkDetails> find(UUID appointmentId, String provider) {

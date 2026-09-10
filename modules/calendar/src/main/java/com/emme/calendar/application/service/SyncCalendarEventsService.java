@@ -8,6 +8,7 @@ import com.emme.calendar.domain.model.CalendarProvider;
 import com.emme.calendar.domain.model.CalendarSyncState;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,14 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 /** Application service for tenant calendar synchronization. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class SyncCalendarEventsService implements SyncCalendarEventsUseCase {
 
   private static final Logger log = LoggerFactory.getLogger(SyncCalendarEventsService.class);
   private final CalendarSyncStateRepository repository;
-
-  public SyncCalendarEventsService(CalendarSyncStateRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public CalendarSyncStateDetails sync(UUID tenantId) {

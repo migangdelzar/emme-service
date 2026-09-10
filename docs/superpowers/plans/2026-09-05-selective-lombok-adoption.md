@@ -518,3 +518,8 @@ The third expansion slice adds the simple Services and Salon application
 services. During verification, Services exposed a missing
 `spring-boot-webmvc-test` test dependency; that existing test-classpath gap was
 restored so the affected module suite can compile and run.
+
+The fourth expansion slice adds the direct-assignment application services in
+Calendar, Payment, Notification, and Subscriptions. Provider HTTP clients,
+webhook signature verifiers, persistence adapters, and configuration types are
+not part of this conversion.

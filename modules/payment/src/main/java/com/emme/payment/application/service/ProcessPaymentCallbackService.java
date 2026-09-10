@@ -10,24 +10,17 @@ import com.emme.payment.application.port.out.PaymentRepository;
 import com.emme.payment.application.port.out.PaymentWebhookEventRepository;
 import com.emme.payment.domain.model.Payment;
 import java.math.BigDecimal;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ProcessPaymentCallbackService implements ProcessPaymentCallbackUseCase {
   private final PaymentRepository repository;
   private final PaymentProvider provider;
   private final PaymentWebhookEventRepository webhookEvents;
-
-  public ProcessPaymentCallbackService(
-      PaymentRepository repository,
-      PaymentProvider provider,
-      PaymentWebhookEventRepository webhookEvents) {
-    this.repository = repository;
-    this.provider = provider;
-    this.webhookEvents = webhookEvents;
-  }
 
   @Override
   public PaymentDetails process(ProcessPaymentCallbackCommand command) {

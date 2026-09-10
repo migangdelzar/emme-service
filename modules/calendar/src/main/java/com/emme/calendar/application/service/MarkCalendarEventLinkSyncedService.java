@@ -7,19 +7,17 @@ import com.emme.calendar.application.port.out.CalendarEventLinkRepository;
 import com.emme.calendar.domain.model.CalendarEventLink;
 import com.emme.calendar.domain.model.CalendarProvider;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for marking one calendar link as synchronized. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class MarkCalendarEventLinkSyncedService implements MarkCalendarEventLinkSyncedUseCase {
 
   private final CalendarEventLinkRepository repository;
-
-  public MarkCalendarEventLinkSyncedService(CalendarEventLinkRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public CalendarEventLinkDetails markSynced(UUID appointmentId, String provider, String etag) {

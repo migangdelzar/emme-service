@@ -7,17 +7,15 @@ import com.emme.subscriptions.application.mapper.SubscriptionApplicationMapper;
 import com.emme.subscriptions.application.port.out.SubscriptionRepository;
 import com.emme.subscriptions.domain.model.Subscription;
 import java.time.Instant;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CreateSubscriptionService implements CreateSubscriptionUseCase {
   private final SubscriptionRepository repository;
-
-  public CreateSubscriptionService(SubscriptionRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public SubscriptionDetails create(CreateSubscriptionCommand command) {

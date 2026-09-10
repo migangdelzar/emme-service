@@ -6,17 +6,15 @@ import com.emme.payment.api.usecase.ListPaymentsUseCase;
 import com.emme.payment.application.mapper.PaymentApplicationMapper;
 import com.emme.payment.application.port.out.PaymentRepository;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ListPaymentsService implements ListPaymentsUseCase {
   private final PaymentRepository repository;
-
-  public ListPaymentsService(PaymentRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public List<PaymentDetails> list(ListPaymentsQuery query) {

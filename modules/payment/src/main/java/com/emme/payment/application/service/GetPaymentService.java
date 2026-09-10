@@ -6,17 +6,15 @@ import com.emme.payment.api.usecase.GetPaymentUseCase;
 import com.emme.payment.application.mapper.PaymentApplicationMapper;
 import com.emme.payment.application.port.out.PaymentRepository;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GetPaymentService implements GetPaymentUseCase {
   private final PaymentRepository repository;
-
-  public GetPaymentService(PaymentRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public Optional<PaymentDetails> get(GetPaymentQuery query) {

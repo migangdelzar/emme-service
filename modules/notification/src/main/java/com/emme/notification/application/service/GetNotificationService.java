@@ -6,17 +6,15 @@ import com.emme.notification.api.usecase.GetNotificationUseCase;
 import com.emme.notification.application.mapper.NotificationApplicationMapper;
 import com.emme.notification.application.port.out.NotificationRepository;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GetNotificationService implements GetNotificationUseCase {
   private final NotificationRepository repository;
-
-  public GetNotificationService(NotificationRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public Optional<NotificationDetails> get(GetNotificationQuery query) {

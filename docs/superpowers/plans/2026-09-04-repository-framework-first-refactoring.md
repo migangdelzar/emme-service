@@ -4928,3 +4928,29 @@ by the previously observed native-image startup failure in this environment.
   stable topic with the tenant partition key and expected payload.
 - `kubectl cluster-info` still fails because `k3d-emme-dev` resolves to
   `https://0.0.0.0:56613`, and no k3d cluster is currently running.
+
+## Current slice 24E — Remove competing application container wiring — 2026-09-09
+
+The deployable Spring Boot application already builds its JVM and native OCI
+images through `bootBuildImage` and Cloud Native Buildpacks. Its enabled
+generic `emme.container` task instead attempted to execute Docker against the
+application directory, which has no Dockerfile and was not used by CI. The
+application no longer registers that competing task; the generic convention
+remains available for Dockerfile-backed projects and is documented as such.
+
+- [x] Add a failing application parity test for one image-construction source.
+- [x] Remove the unused application `emme.container` plugin and configuration.
+- [x] Document the boundary between generic Dockerfile builds and Spring Boot
+      Buildpacks image creation.
+- [x] Run the focused parity test and current application image build.
+- [ ] Complete Kubernetes runtime smoke checks with the real frontend artifact
+      and application deployment configuration.
+
+### Results
+
+- The parity test passes and asserts CI continues to use `bootBuildImage`.
+- The current application image builds successfully as
+  `emme-modulith:dev` through Paketo Buildpacks using Java 25.
+- The previously exposed `containerBuild` task failure caused by the missing
+  application Dockerfile is no longer part of the deployable application
+  configuration.

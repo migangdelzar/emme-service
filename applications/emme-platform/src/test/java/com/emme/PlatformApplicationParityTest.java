@@ -53,6 +53,18 @@ class PlatformApplicationParityTest {
   }
 
   @Test
+  void applicationImageUsesSpringBootBuildpacksInsteadOfTheDockerfileConvention()
+      throws IOException {
+    String buildConfiguration = Files.readString(Path.of("build.gradle.kts"));
+
+    assertThat(buildConfiguration)
+        .doesNotContain("id(\"emme.container\")")
+        .doesNotContain("emmeContainer {");
+    assertThat(readSource(".github/workflows/container-image.yml"))
+        .contains(":emme-platform:bootBuildImage");
+  }
+
+  @Test
   void applicationCoverageExcludesOnlyTheBootstrapEntrypoint() throws IOException {
     String buildConfiguration = readSource("applications/emme-platform/build.gradle.kts");
 

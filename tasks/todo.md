@@ -6289,3 +6289,22 @@ Completed in this slice:
   topic, tenant partition key, and expected payload.
 - Kubernetes remains blocked by the absent `k3d-emme-dev` cluster; the current
   context targets `0.0.0.0:56613` and refuses connections.
+
+## Current slice — Single application image-construction boundary (2026-09-09)
+
+- [x] Add a failing application parity test for the image-construction source.
+- [x] Remove the unused application `emme.container` plugin and configuration.
+- [x] Document generic Dockerfile tasks versus Spring Boot Buildpacks.
+- [x] Run the focused parity test.
+- [x] Build the current JVM image with `bootBuildImage` and Java 25.
+- [ ] Complete Kubernetes runtime smoke checks with the real frontend artifact
+      and application deployment configuration.
+
+### Results
+
+- `PlatformApplicationParityTest.applicationImageUsesSpringBootBuildpacksInsteadOfTheDockerfileConvention`
+  passes.
+- `:applications:emme-platform:bootBuildImage --imageName=emme-modulith:dev`
+  passes through Paketo Buildpacks.
+- The application no longer enables a generic Dockerfile task against a
+  directory that has no Dockerfile; no business or tenant behavior changed.

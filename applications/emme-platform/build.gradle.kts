@@ -2,7 +2,6 @@ plugins {
   id("emme.spring-application")
   id("emme.messaging")
   id("emme.integration-testing")
-  id("emme.container")
   id("emme.publishing")
   id("emme.deployment")
 }
@@ -137,12 +136,6 @@ tasks.register<Test>("e2eTest") {
       .orElse("")
       .get(),
   )
-}
-
-emmeContainer {
-  enabled.set(true)
-  imageName.set("ghcr.io/migangdelzar/emme-service")
-  contextDirectory.set(layout.projectDirectory)
 }
 
 emmePublishing {

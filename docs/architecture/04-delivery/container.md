@@ -42,7 +42,19 @@ flowchart LR
 
 ## Build-logic integration
 
-`emme.container` should expose a typed extension, register lazy tasks such as `buildContainerImage`, `verifyContainerImage`, and `pushContainerImage`, and select Docker/Podman through a provider abstraction. The module build script declares the capability; the plugin owns the wiring.
+`emme.container` exposes a typed extension, registers lazy Docker/Podman tasks,
+and selects the runtime through a provider abstraction. Those tasks are a
+generic Dockerfile-context capability and are used only by projects that
+provide the corresponding Dockerfile.
+
+The Spring Boot deployable application is different: its authoritative image
+path is `bootBuildImage`, which uses the supported Cloud Native Buildpacks
+integration for JVM and native variants. The application therefore does not
+apply `emme.container` or configure a second Dockerfile-based image path. CI,
+publishing, and Kubernetes image names all consume the `bootBuildImage` output.
+This keeps one image-construction source of truth and prevents an enabled
+generic task from claiming to build an application image from a nonexistent
+Dockerfile.
 
 ## Runtime image selection
 

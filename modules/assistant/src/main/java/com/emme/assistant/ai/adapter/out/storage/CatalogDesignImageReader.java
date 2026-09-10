@@ -4,18 +4,16 @@ import com.emme.ai.contracts.image.TenantImageReader;
 import com.emme.assistant.ai.application.port.out.DesignImageReader;
 import com.emme.kernel.context.AiExecutionContext;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 /** Reads images through the catalog port and never exposes filesystem locations. */
 @Component
 @ConditionalOnBean(TenantImageReader.class)
+@RequiredArgsConstructor
 public class CatalogDesignImageReader implements DesignImageReader {
   private final TenantImageReader storage;
-
-  public CatalogDesignImageReader(TenantImageReader storage) {
-    this.storage = storage;
-  }
 
   @Override
   public Optional<StoredImage> read(String storageKey, AiExecutionContext context) {

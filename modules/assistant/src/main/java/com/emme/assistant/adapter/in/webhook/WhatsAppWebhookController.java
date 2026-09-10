@@ -5,6 +5,7 @@ import com.emme.assistant.api.usecase.ProcessWhatsAppMessageUseCase;
 import com.emme.assistant.configuration.WhatsAppProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/webhooks/whatsapp")
 @Tag(name = "WhatsApp Webhook")
+@RequiredArgsConstructor
 public class WhatsAppWebhookController {
 
   private static final Logger log = LoggerFactory.getLogger(WhatsAppWebhookController.class);
@@ -30,17 +32,6 @@ public class WhatsAppWebhookController {
   private final WhatsAppProperties properties;
   private final WhatsAppWebhookSignatureVerifier signatureVerifier;
   private final WhatsAppWebhookMapper webhookMapper;
-
-  public WhatsAppWebhookController(
-      ProcessWhatsAppMessageUseCase processMessage,
-      WhatsAppProperties properties,
-      WhatsAppWebhookSignatureVerifier signatureVerifier,
-      WhatsAppWebhookMapper webhookMapper) {
-    this.processMessage = processMessage;
-    this.properties = properties;
-    this.signatureVerifier = signatureVerifier;
-    this.webhookMapper = webhookMapper;
-  }
 
   /** Meta webhook verification — GET with hub.mode, hub.verify_token, hub.challenge */
   @GetMapping

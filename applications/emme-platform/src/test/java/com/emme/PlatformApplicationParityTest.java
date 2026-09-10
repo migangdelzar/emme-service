@@ -192,7 +192,14 @@ class PlatformApplicationParityTest {
         .contains("APP_KEYCLOAK_ISSUER_URI: http://localhost:18080/realms/emme-core")
         .contains("APP_KEYCLOAK_CUSTOMER_ISSUER_URI: http://localhost:18080/realms/emme-customers")
         .contains("APP_KEYCLOAK_JWK_SET_BASE_URL: http://keycloak:8080")
-        .contains("KC_HOSTNAME: http://localhost:18080");
+        .contains("KC_HOSTNAME: http://localhost:18080")
+        .contains(
+            "SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_AUTHORIZATION_URI: "
+                + "http://localhost:18080/realms/emme-core/protocol/openid-connect/auth")
+        .contains(
+            "SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN_URI: "
+                + "http://host.docker.internal:18080/realms/emme-core/protocol/openid-connect/token")
+        .doesNotContain("SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI:");
   }
 
   private static Path sourcePath(String relativePath) {

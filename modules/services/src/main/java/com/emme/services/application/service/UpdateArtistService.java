@@ -7,19 +7,17 @@ import com.emme.services.application.mapper.ArtistApplicationMapper;
 import com.emme.services.application.port.out.ArtistRepository;
 import com.emme.services.domain.model.Artist;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for artist updates. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UpdateArtistService implements UpdateArtistUseCase {
 
   private final ArtistRepository artistRepository;
-
-  public UpdateArtistService(ArtistRepository artistRepository) {
-    this.artistRepository = artistRepository;
-  }
 
   @Override
   public ArtistDetails update(UUID id, String name) {

@@ -6412,6 +6412,10 @@ Completed in this slice:
 - [x] Add the second expansion slice for Clients and Documents application
       services using test-first allowlist enforcement.
 - [x] Verify the second expansion slice with affected tests and compilation.
+- [x] Add the third expansion slice for Services and Salon application
+      services; restore Services' missing web MVC test dependency discovered by
+      the affected test compile.
+- [x] Verify the third expansion slice with production compilation.
 - [ ] Continue the remaining eligible application-service modules in separate
       commits after their own red/green checks.
 - [ ] Continue remaining event-delivery, deployment-runtime, and final

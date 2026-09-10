@@ -6,19 +6,17 @@ import com.emme.salon.application.mapper.BusinessConfigurationApplicationMapper;
 import com.emme.salon.application.port.out.BusinessProfileRepository;
 import com.emme.salon.domain.model.BusinessProfile;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for updating the business profile. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UpdateBusinessProfileService implements UpdateBusinessProfileUseCase {
 
   private final BusinessProfileRepository repository;
-
-  public UpdateBusinessProfileService(BusinessProfileRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public BusinessProfileDetails update(

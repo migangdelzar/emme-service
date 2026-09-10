@@ -513,3 +513,8 @@ verified before the next conversion.
 The second expansion slice adds the Clients and Documents application-service
 constructors. Both modules are now opted into the same compile-only Lombok
 convention; their domain and persistence/entity types remain unchanged.
+
+The third expansion slice adds the simple Services and Salon application
+services. During verification, Services exposed a missing
+`spring-boot-webmvc-test` test dependency; that existing test-classpath gap was
+restored so the affected module suite can compile and run.

@@ -6,19 +6,17 @@ import com.emme.salon.application.mapper.BusinessConfigurationApplicationMapper;
 import com.emme.salon.application.port.out.BookingPolicyRepository;
 import com.emme.salon.domain.model.BookingPolicy;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for updating booking policy. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UpdateBookingPolicyService implements UpdateBookingPolicyUseCase {
 
   private final BookingPolicyRepository repository;
-
-  public UpdateBookingPolicyService(BookingPolicyRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public BookingPolicyDetails update(

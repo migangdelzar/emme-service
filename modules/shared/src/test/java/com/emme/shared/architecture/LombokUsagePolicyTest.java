@@ -46,7 +46,23 @@ class LombokUsagePolicyTest {
           "modules/documents/src/main/java/com/emme/documents/application/service/ProcessDocumentService.java",
           "modules/documents/src/main/java/com/emme/documents/application/service/RetireDocumentService.java",
           "modules/documents/src/main/java/com/emme/documents/application/service/SearchDocumentChunksService.java",
-          "modules/documents/src/main/java/com/emme/documents/application/service/UploadDocumentService.java");
+          "modules/documents/src/main/java/com/emme/documents/application/service/UploadDocumentService.java",
+          "modules/services/src/main/java/com/emme/services/application/service/AddArtistCapabilityService.java",
+          "modules/services/src/main/java/com/emme/services/application/service/CreateArtistService.java",
+          "modules/services/src/main/java/com/emme/services/application/service/DeactivateArtistService.java",
+          "modules/services/src/main/java/com/emme/services/application/service/GetArtistService.java",
+          "modules/services/src/main/java/com/emme/services/application/service/GetServiceCatalogEntryService.java",
+          "modules/services/src/main/java/com/emme/services/application/service/ListActiveServiceCatalogEntriesService.java",
+          "modules/services/src/main/java/com/emme/services/application/service/ListTenantArtistsService.java",
+          "modules/services/src/main/java/com/emme/services/application/service/RemoveArtistCapabilityService.java",
+          "modules/services/src/main/java/com/emme/services/application/service/UpdateArtistService.java",
+          "modules/salon/src/main/java/com/emme/salon/application/service/GetBookingPolicyService.java",
+          "modules/salon/src/main/java/com/emme/salon/application/service/GetBusinessProfileConfigService.java",
+          "modules/salon/src/main/java/com/emme/salon/application/service/GetBusinessProfileService.java",
+          "modules/salon/src/main/java/com/emme/salon/application/service/GetOperatingHoursService.java",
+          "modules/salon/src/main/java/com/emme/salon/application/service/UpdateBookingPolicyService.java",
+          "modules/salon/src/main/java/com/emme/salon/application/service/UpdateBusinessProfileService.java",
+          "modules/salon/src/main/java/com/emme/salon/application/service/UpdateOperatingHoursService.java");
 
   @Test
   void onlyUsesLombokInApprovedProductionFiles() throws IOException {

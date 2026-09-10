@@ -5,19 +5,17 @@ import com.emme.salon.api.usecase.GetBusinessProfileUseCase;
 import com.emme.salon.application.port.out.BusinessProfileRepository;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for the public business-profile query. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GetBusinessProfileService implements GetBusinessProfileUseCase {
 
   private final BusinessProfileRepository profileRepository;
-
-  public GetBusinessProfileService(BusinessProfileRepository profileRepository) {
-    this.profileRepository = profileRepository;
-  }
 
   @Override
   public Optional<BusinessProfileSummary> getBusinessProfile(UUID tenantId) {

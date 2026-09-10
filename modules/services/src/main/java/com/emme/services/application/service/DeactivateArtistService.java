@@ -7,19 +7,17 @@ import com.emme.services.application.mapper.ArtistApplicationMapper;
 import com.emme.services.application.port.out.ArtistRepository;
 import com.emme.services.domain.model.Artist;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for artist deactivation. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class DeactivateArtistService implements DeactivateArtistUseCase {
 
   private final ArtistRepository artistRepository;
-
-  public DeactivateArtistService(ArtistRepository artistRepository) {
-    this.artistRepository = artistRepository;
-  }
 
   @Override
   public ArtistDetails deactivate(UUID id) {

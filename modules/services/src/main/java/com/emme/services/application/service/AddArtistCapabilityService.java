@@ -10,25 +10,18 @@ import com.emme.services.application.port.out.ServiceRepository;
 import com.emme.services.domain.model.Artist;
 import com.emme.services.domain.model.ArtistCapability;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for assigning artist capabilities. */
 @org.springframework.stereotype.Service
 @Transactional
+@RequiredArgsConstructor
 public class AddArtistCapabilityService implements AddArtistCapabilityUseCase {
 
   private final ArtistRepository artistRepository;
   private final ArtistCapabilityRepository artistCapabilityRepository;
   private final ServiceRepository serviceRepository;
-
-  public AddArtistCapabilityService(
-      ArtistRepository artistRepository,
-      ArtistCapabilityRepository artistCapabilityRepository,
-      ServiceRepository serviceRepository) {
-    this.artistRepository = artistRepository;
-    this.artistCapabilityRepository = artistCapabilityRepository;
-    this.serviceRepository = serviceRepository;
-  }
 
   @Override
   public ArtistCapabilityDetails add(UUID artistId, UUID serviceId, UUID tenantId) {

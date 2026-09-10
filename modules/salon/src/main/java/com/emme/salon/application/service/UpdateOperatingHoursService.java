@@ -9,19 +9,17 @@ import com.emme.salon.domain.model.DayOfWeek;
 import com.emme.salon.domain.model.OperatingHours;
 import java.time.LocalTime;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for updating operating hours. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UpdateOperatingHoursService implements UpdateOperatingHoursUseCase {
 
   private final OperatingHoursRepository repository;
-
-  public UpdateOperatingHoursService(OperatingHoursRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public OperatingHoursDetails update(

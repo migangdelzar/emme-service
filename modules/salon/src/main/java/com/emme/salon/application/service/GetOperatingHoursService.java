@@ -6,19 +6,17 @@ import com.emme.salon.application.mapper.BusinessConfigurationApplicationMapper;
 import com.emme.salon.application.port.out.OperatingHoursRepository;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for retrieving operating hours. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GetOperatingHoursService implements GetOperatingHoursUseCase {
 
   private final OperatingHoursRepository repository;
-
-  public GetOperatingHoursService(OperatingHoursRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public List<OperatingHoursDetails> get(UUID tenantId) {

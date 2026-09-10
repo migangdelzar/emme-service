@@ -7,19 +7,17 @@ import com.emme.services.application.mapper.ArtistApplicationMapper;
 import com.emme.services.application.port.out.ArtistCapabilityRepository;
 import com.emme.services.domain.model.ArtistCapability;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for removing artist capabilities. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RemoveArtistCapabilityService implements RemoveArtistCapabilityUseCase {
 
   private final ArtistCapabilityRepository artistCapabilityRepository;
-
-  public RemoveArtistCapabilityService(ArtistCapabilityRepository artistCapabilityRepository) {
-    this.artistCapabilityRepository = artistCapabilityRepository;
-  }
 
   @Override
   public ArtistCapabilityDetails remove(UUID capabilityId) {

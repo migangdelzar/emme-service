@@ -3,6 +3,7 @@ plugins {
   id("emme.integration-testing")
   id("emme.spring-web")
   id("emme.persistence")
+  id("emme.lombok")
 }
 
 dependencies {
@@ -12,6 +13,7 @@ dependencies {
   implementation(libs.spring.boot.starter.web)
   implementation(libs.spring.boot.starter.validation)
   implementation(libs.springdoc.openapi.starter.webmvc.ui)
+  testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(testFixtures(project(":modules:tenancy")))
   add("integrationTestRuntimeOnly", project(":modules:ai-platform"))
   add("integrationTestImplementation", project(":modules:shared"))

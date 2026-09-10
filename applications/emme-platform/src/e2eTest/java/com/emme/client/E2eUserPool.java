@@ -12,9 +12,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public final class E2eUserPool {
 
-  public static final E2eUserPool INSTANCE = new E2eUserPool();
-
   private static final int POOL_SIZE = Integer.getInteger("e2e.user.pool.size", 10);
+
+  public static final E2eUserPool INSTANCE = new E2eUserPool();
 
   private final Queue<TestUser> available = new ConcurrentLinkedQueue<>();
   private final Set<String> inUse = Collections.synchronizedSet(new HashSet<>());

@@ -233,6 +233,8 @@ class LombokUsagePolicyTest {
           "modules/payment/src/main/java/com/emme/payment/application/service/ListPaymentsService.java",
           "modules/payment/src/main/java/com/emme/payment/application/service/ProcessPaymentCallbackService.java",
           "modules/payment/src/main/java/com/emme/payment/application/service/RefundPaymentService.java",
+          "modules/payment/src/main/java/com/emme/payment/adapter/out/messaging/publisher/SpringPaymentWorkflowEventPublisher.java",
+          "modules/payment/src/main/java/com/emme/payment/adapter/out/persistence/adapter/PaymentWebhookEventPersistenceAdapter.java",
           "modules/notification/src/main/java/com/emme/notification/application/service/CancelNotificationService.java",
           "modules/notification/src/main/java/com/emme/notification/application/service/DeliverNotificationService.java",
           "modules/notification/src/main/java/com/emme/notification/application/service/GetNotificationService.java",

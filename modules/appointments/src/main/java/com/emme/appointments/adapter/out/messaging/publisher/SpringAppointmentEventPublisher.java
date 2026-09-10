@@ -4,18 +4,16 @@ import com.emme.appointments.api.event.AppointmentCancelled;
 import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.appointments.api.event.AppointmentRescheduled;
 import com.emme.appointments.application.port.out.AppointmentEventPublisher;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 /** Publishes public appointment facts through Spring Modulith's event infrastructure. */
 @Component
+@RequiredArgsConstructor
 public class SpringAppointmentEventPublisher implements AppointmentEventPublisher {
 
   private final ApplicationEventPublisher publisher;
-
-  public SpringAppointmentEventPublisher(ApplicationEventPublisher publisher) {
-    this.publisher = publisher;
-  }
 
   @Override
   public void publish(AppointmentCreated event) {

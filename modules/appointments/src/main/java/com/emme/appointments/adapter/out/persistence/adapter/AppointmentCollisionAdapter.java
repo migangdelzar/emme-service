@@ -4,17 +4,15 @@ import com.emme.appointments.application.port.out.AppointmentCollisionPort;
 import com.emme.appointments.application.port.out.AppointmentRepository;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** Implements collision detection using the appointment persistence port. */
 @Component
+@RequiredArgsConstructor
 public class AppointmentCollisionAdapter implements AppointmentCollisionPort {
 
   private final AppointmentRepository appointmentRepository;
-
-  public AppointmentCollisionAdapter(AppointmentRepository appointmentRepository) {
-    this.appointmentRepository = appointmentRepository;
-  }
 
   @Override
   public boolean hasCollision(

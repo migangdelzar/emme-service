@@ -5012,3 +5012,27 @@ parity test.
   passed after the manifest change.
 - `kubectl kustomize infra/kubernetes/overlays/k3d-jvm` renders successfully.
 - No image, frontend source, backend route, or tenant behavior changed.
+
+## Current slice 24H — Recheck Kubernetes overlay and frontend artifact prerequisites — 2026-09-09
+
+After the frontend port correction, every checked-in Kubernetes overlay renders
+successfully. A disposable build of the sibling `emme-web` `salon-app` image
+was attempted to unblock K3d runtime validation; it reached Vite’s 4,077-module
+transform but stopped producing output for more than a minute while making the
+local Docker daemon unresponsive, so it was terminated. No sibling repository
+source was changed and no incomplete image was used for deployment validation.
+
+- [x] Render `k3d-jvm`, `k3d-native`, `k3s-production-jvm`, and
+      `k3s-production-native` after the frontend port fix.
+- [x] Attempt to produce the real sibling-owned `emme-frontend:dev` image.
+- [x] Preserve the sibling repository’s unrelated untracked `example.html`.
+- [ ] Complete the frontend image build in a stable sibling-repository Docker
+      environment before applying the full K3d overlay.
+- [ ] Provide the approved Prometheus Operator CRD before server-side apply.
+
+### Results
+
+- All four overlays render successfully with `kubectl kustomize`.
+- No frontend image was created by the stalled disposable build.
+- Full K3d apply remains unclaimed because the frontend artifact, CRD, and
+  dependency/Secret setup are still external prerequisites.

@@ -6347,3 +6347,21 @@ Completed in this slice:
   change.
 - The corrected Kustomize overlay renders successfully and matches the
   sibling-owned frontend image contract.
+
+## Current slice — Kubernetes overlay and frontend artifact recheck (2026-09-09)
+
+- [x] Render all four checked-in Kubernetes overlays after the frontend port
+      correction.
+- [x] Attempt a disposable build of the sibling-owned `emme-frontend:dev`
+      image.
+- [x] Preserve the sibling repository’s unrelated untracked `example.html`.
+- [ ] Complete the frontend image build in a stable Docker environment.
+- [ ] Provide the approved Prometheus Operator CRD and apply the complete K3d
+      overlay with dependency/Secret setup.
+
+### Results
+
+- All four overlays render successfully with `kubectl kustomize`.
+- The sibling build reached Vite’s 4,077-module transform, then stalled and was
+  terminated after the Docker daemon became unresponsive.
+- No incomplete frontend artifact was used for Kubernetes validation.

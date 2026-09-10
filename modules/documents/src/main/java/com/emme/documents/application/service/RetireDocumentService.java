@@ -7,19 +7,17 @@ import com.emme.documents.api.usecase.RetireDocumentUseCase;
 import com.emme.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.documents.application.port.out.DocumentRepository;
 import com.emme.documents.domain.model.Document;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the RetireDocument use case. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RetireDocumentService implements RetireDocumentUseCase {
 
   private final DocumentRepository documentRepository;
-
-  public RetireDocumentService(DocumentRepository documentRepository) {
-    this.documentRepository = documentRepository;
-  }
 
   @Override
   public DocumentDetails retire(RetireDocumentCommand command) {

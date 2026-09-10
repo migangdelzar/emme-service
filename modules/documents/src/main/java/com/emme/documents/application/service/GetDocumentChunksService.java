@@ -7,19 +7,17 @@ import com.emme.documents.api.usecase.GetDocumentChunksUseCase;
 import com.emme.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.documents.application.port.out.DocumentRepository;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the GetDocumentChunks use case. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GetDocumentChunksService implements GetDocumentChunksUseCase {
 
   private final DocumentRepository documentRepository;
-
-  public GetDocumentChunksService(DocumentRepository documentRepository) {
-    this.documentRepository = documentRepository;
-  }
 
   @Override
   public List<DocumentChunkDetails> getChunks(GetDocumentChunksQuery query) {

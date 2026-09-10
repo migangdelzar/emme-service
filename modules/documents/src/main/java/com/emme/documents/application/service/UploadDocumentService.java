@@ -6,19 +6,17 @@ import com.emme.documents.api.usecase.UploadDocumentUseCase;
 import com.emme.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.documents.application.port.out.DocumentRepository;
 import com.emme.documents.domain.model.Document;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the UploadDocument use case. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UploadDocumentService implements UploadDocumentUseCase {
 
   private final DocumentRepository documentRepository;
-
-  public UploadDocumentService(DocumentRepository documentRepository) {
-    this.documentRepository = documentRepository;
-  }
 
   @Override
   public DocumentDetails upload(UploadDocumentCommand command) {

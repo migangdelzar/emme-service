@@ -7,19 +7,17 @@ import com.emme.documents.api.usecase.ProcessDocumentUseCase;
 import com.emme.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.documents.application.port.out.DocumentRepository;
 import com.emme.documents.domain.model.Document;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the ProcessDocument use case. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ProcessDocumentService implements ProcessDocumentUseCase {
 
   private final DocumentRepository documentRepository;
-
-  public ProcessDocumentService(DocumentRepository documentRepository) {
-    this.documentRepository = documentRepository;
-  }
 
   @Override
   public DocumentDetails process(ProcessDocumentCommand command) {

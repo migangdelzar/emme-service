@@ -509,3 +509,7 @@ Verification for the first expansion slice:
 The remaining eligible application-service modules are intentionally queued
 for the next independent slices so each module's compile and test surface is
 verified before the next conversion.
+
+The second expansion slice adds the Clients and Documents application-service
+constructors. Both modules are now opted into the same compile-only Lombok
+convention; their domain and persistence/entity types remain unchanged.

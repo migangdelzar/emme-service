@@ -30,7 +30,23 @@ class LombokUsagePolicyTest {
           "modules/appointments/src/main/java/com/emme/appointments/application/service/FindAvailableSlotsService.java",
           "modules/catalog/src/main/java/com/emme/catalog/application/service/MatchCatalogItemsService.java",
           "modules/catalog/src/main/java/com/emme/catalog/application/service/AddCatalogItemImageService.java",
-          "modules/catalog/src/main/java/com/emme/catalog/application/service/ListCatalogItemsService.java");
+          "modules/catalog/src/main/java/com/emme/catalog/application/service/ListCatalogItemsService.java",
+          "modules/clients/src/main/java/com/emme/clients/application/service/CreateCustomerService.java",
+          "modules/clients/src/main/java/com/emme/clients/application/service/GetCustomerService.java",
+          "modules/clients/src/main/java/com/emme/clients/application/service/ListCustomersService.java",
+          "modules/clients/src/main/java/com/emme/clients/application/service/ListTenantCustomersService.java",
+          "modules/clients/src/main/java/com/emme/clients/application/service/RetireCustomerService.java",
+          "modules/clients/src/main/java/com/emme/clients/application/service/SearchCustomersService.java",
+          "modules/clients/src/main/java/com/emme/clients/application/service/UpdateCustomerService.java",
+          "modules/documents/src/main/java/com/emme/documents/application/service/ChunkDocumentService.java",
+          "modules/documents/src/main/java/com/emme/documents/application/service/FailDocumentService.java",
+          "modules/documents/src/main/java/com/emme/documents/application/service/GetDocumentChunksService.java",
+          "modules/documents/src/main/java/com/emme/documents/application/service/GetDocumentService.java",
+          "modules/documents/src/main/java/com/emme/documents/application/service/ListDocumentsService.java",
+          "modules/documents/src/main/java/com/emme/documents/application/service/ProcessDocumentService.java",
+          "modules/documents/src/main/java/com/emme/documents/application/service/RetireDocumentService.java",
+          "modules/documents/src/main/java/com/emme/documents/application/service/SearchDocumentChunksService.java",
+          "modules/documents/src/main/java/com/emme/documents/application/service/UploadDocumentService.java");
 
   @Test
   void onlyUsesLombokInApprovedProductionFiles() throws IOException {

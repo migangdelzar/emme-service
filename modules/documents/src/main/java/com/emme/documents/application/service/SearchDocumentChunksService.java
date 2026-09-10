@@ -13,21 +13,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes tenant-scoped document retrieval and restores search rank ordering. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class SearchDocumentChunksService implements SearchDocumentChunksUseCase {
 
   private final DocumentSearchPort search;
   private final DocumentRepository repository;
-
-  public SearchDocumentChunksService(DocumentSearchPort search, DocumentRepository repository) {
-    this.search = search;
-    this.repository = repository;
-  }
 
   @Override
   public List<DocumentChunkDetails> search(SearchDocumentChunksQuery query) {

@@ -7,6 +7,7 @@ import com.emme.documents.api.usecase.FailDocumentUseCase;
 import com.emme.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.documents.application.port.out.DocumentRepository;
 import com.emme.documents.domain.model.Document;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,14 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 /** Executes the FailDocument use case. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class FailDocumentService implements FailDocumentUseCase {
 
   private static final Logger log = LoggerFactory.getLogger(FailDocumentService.class);
   private final DocumentRepository documentRepository;
-
-  public FailDocumentService(DocumentRepository documentRepository) {
-    this.documentRepository = documentRepository;
-  }
 
   @Override
   public DocumentDetails fail(FailDocumentCommand command) {

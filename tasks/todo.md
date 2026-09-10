@@ -6409,6 +6409,9 @@ Completed in this slice:
 - [x] Add the first expansion slice for Assistant, Appointments, and Catalog
       application services using test-first allowlist enforcement.
 - [x] Verify the first expansion slice with affected tests and Spotless.
+- [x] Add the second expansion slice for Clients and Documents application
+      services using test-first allowlist enforcement.
+- [x] Verify the second expansion slice with affected tests and compilation.
 - [ ] Continue the remaining eligible application-service modules in separate
       commits after their own red/green checks.
 - [ ] Continue remaining event-delivery, deployment-runtime, and final

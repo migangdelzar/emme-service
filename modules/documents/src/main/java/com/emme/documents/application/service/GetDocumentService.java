@@ -6,19 +6,17 @@ import com.emme.documents.api.result.DocumentDetails;
 import com.emme.documents.api.usecase.GetDocumentUseCase;
 import com.emme.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.documents.application.port.out.DocumentRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the GetDocument use case. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GetDocumentService implements GetDocumentUseCase {
 
   private final DocumentRepository documentRepository;
-
-  public GetDocumentService(DocumentRepository documentRepository) {
-    this.documentRepository = documentRepository;
-  }
 
   @Override
   public DocumentDetails get(GetDocumentQuery query) {

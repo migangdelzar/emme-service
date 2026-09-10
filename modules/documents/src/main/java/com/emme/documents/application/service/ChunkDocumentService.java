@@ -13,19 +13,17 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the ChunkDocument use case. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ChunkDocumentService implements ChunkDocumentUseCase {
 
   private final DocumentRepository documentRepository;
-
-  public ChunkDocumentService(DocumentRepository documentRepository) {
-    this.documentRepository = documentRepository;
-  }
 
   @Override
   public List<DocumentChunkDetails> chunk(ChunkDocumentCommand command) {

@@ -6,19 +6,17 @@ import com.emme.documents.api.usecase.ListDocumentsUseCase;
 import com.emme.documents.application.mapper.DocumentApplicationMapper;
 import com.emme.documents.application.port.out.DocumentRepository;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the ListDocuments use case. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ListDocumentsService implements ListDocumentsUseCase {
 
   private final DocumentRepository documentRepository;
-
-  public ListDocumentsService(DocumentRepository documentRepository) {
-    this.documentRepository = documentRepository;
-  }
 
   @Override
   public List<DocumentDetails> list(ListDocumentsQuery query) {

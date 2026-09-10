@@ -6437,3 +6437,18 @@ Completed in this slice:
   constructor-bound types; no external property or command-line names changed.
 - Controllers, persistence adapters, provider clients, workflow services, and
   configuration types with custom construction behavior remain explicit.
+
+## Current slice — Whole-repository Lombok policy and inventory — 2026-09-10
+
+- [x] Extend the shared Lombok policy across owned source roots and source sets.
+- [x] Add qualified-annotation, same-line-annotation, builder-prefix, and
+      source-set validation coverage.
+- [x] Review the policy diff and resolve all medium-severity findings.
+- [ ] Continue with safe constructor reductions in sequential module slices.
+
+### Working Notes
+
+- Task 1 is complete through `4eb89519`; the final independent review approved
+  the corrected policy detector.
+- The pre-existing untracked `tgrep/` directory is preserved and excluded from
+  all staging commands.

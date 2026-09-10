@@ -208,7 +208,7 @@ because it updates the shared completion ledger and final policy.
 - Keeps the approved production allowlist and adds a separate approved map for
   test/E2E Lombok files.
 
-- [ ] **Step 1: Write the failing policy test.** Add assertions that the inventory includes `applications` and all source sets, excludes generated `build/` paths, rejects the six excluded annotation families, and requires `setterPrefix = "with"` for every approved builder.
+- [x] **Step 1: Write the failing policy test.** Add assertions that the inventory includes `applications` and all source sets, excludes generated `build/` paths, rejects the six excluded annotation families, and requires `setterPrefix = "with"` for every approved builder.
 
 ```java
 @Test
@@ -221,7 +221,7 @@ void scansAllOwnedSourceSetsWithoutGeneratedBuildOutput() throws IOException {
 }
 ```
 
-- [ ] **Step 2: Run the focused test to verify it fails.**
+- [x] **Step 2: Run the focused test to verify it fails.**
 
 Run:
 
@@ -232,21 +232,21 @@ Run:
 Expected: FAIL because the current inventory only walks `modules` and
 `libraries` production Java sources and does not represent all source sets.
 
-- [ ] **Step 3: Implement the smallest policy change.** Add a shared source-root list, filter to owned `src` Java files, exclude `/build/`, and keep the policy detector source out of annotation-usage matching. Use explicit regex checks for annotation usages rather than broad substring checks so policy string literals do not count as usages.
+- [x] **Step 3: Implement the smallest policy change.** Add a shared source-root list, filter to owned `src` Java files, exclude `/build/`, and keep the policy detector source out of annotation-usage matching. Use explicit regex checks for annotation usages rather than broad substring checks so policy string literals do not count as usages.
 
-- [ ] **Step 4: Run the focused policy test to verify it passes.**
+- [x] **Step 4: Run the focused policy test to verify it passes.**
 
 Run the same command. Expected: PASS with no forbidden production/test
 annotation usages and no generated build paths in the inventory.
 
-- [ ] **Step 5: Refactor and verify formatting.** Run:
+- [x] **Step 5: Refactor and verify formatting.** Run:
 
 ```bash
 ./gradlew :modules:shared:spotlessApply :modules:shared:spotlessCheck --no-parallel --no-configuration-cache
 git diff --check
 ```
 
-- [ ] **Step 6: Commit and push.**
+- [x] **Step 6: Commit and push.**
 
 ```bash
 git add modules/shared/src/test/java/com/emme/shared/architecture/LombokUsagePolicyTest.java

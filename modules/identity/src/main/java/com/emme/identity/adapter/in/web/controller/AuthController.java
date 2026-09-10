@@ -18,8 +18,7 @@ import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -32,9 +31,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
-  private static final Logger log = LoggerFactory.getLogger(AuthController.class);
   private final AuthenticateUserUseCase authenticateUserUseCase;
   private final AuthenticateCustomerUseCase authenticateCustomerUseCase;
   private final UpdateCustomerProfileUseCase updateCustomerProfileUseCase;

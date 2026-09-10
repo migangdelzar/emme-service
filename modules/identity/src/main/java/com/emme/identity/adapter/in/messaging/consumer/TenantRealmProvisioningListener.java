@@ -9,8 +9,7 @@ import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.api.event.TenantSchemaReady;
 import com.emme.tenancy.api.usecase.EnsureTenantMembershipUseCase;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
@@ -23,9 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
     name = "app.keycloak.provisioning.enabled",
     havingValue = "true",
     matchIfMissing = false)
+@Slf4j
 public class TenantRealmProvisioningListener {
-
-  private static final Logger log = LoggerFactory.getLogger(TenantRealmProvisioningListener.class);
 
   private final IdentityProviderAdministrationPort administrationPort;
   private final TenantIdentityRealmPort tenantIdentityRealmPort;

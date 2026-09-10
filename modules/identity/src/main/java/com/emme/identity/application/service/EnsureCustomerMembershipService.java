@@ -6,8 +6,7 @@ import com.emme.identity.application.port.out.CustomerMembershipRepository;
 import com.emme.identity.domain.model.CustomerMembership;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,9 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class EnsureCustomerMembershipService implements EnsureCustomerMembershipUseCase {
-
-  private static final Logger log = LoggerFactory.getLogger(EnsureCustomerMembershipService.class);
 
   private final CustomerMembershipRepository repository;
 

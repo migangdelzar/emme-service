@@ -11,8 +11,7 @@ import com.emme.identity.application.port.out.CustomerTokenDecoder;
 import com.emme.identity.domain.model.CustomerIdentity;
 import com.emme.identity.domain.model.SocialProvider;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticateCustomerService implements AuthenticateCustomerUseCase {
 
-  private static final Logger log = LoggerFactory.getLogger(AuthenticateCustomerService.class);
   private static final String CUSTOMERS_ISSUER_SUFFIX = "/realms/emme-customers";
 
   private final CustomerIdentityRepository repository;

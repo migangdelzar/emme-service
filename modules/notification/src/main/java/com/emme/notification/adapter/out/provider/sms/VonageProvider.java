@@ -5,8 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -24,9 +23,9 @@ import org.springframework.web.client.RestClientResponseException;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.sms.provider", havingValue = "vonage")
+@Slf4j
 public class VonageProvider implements com.emme.notification.application.port.out.SmsSender {
 
-  private static final Logger log = LoggerFactory.getLogger(VonageProvider.class);
   private static final String PRODUCTION_API_BASE = "https://rest.nexmo.com";
   private final String apiKey;
   private final String apiSecret;

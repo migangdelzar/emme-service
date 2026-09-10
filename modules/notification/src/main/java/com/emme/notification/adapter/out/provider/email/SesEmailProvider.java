@@ -15,8 +15,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -36,9 +35,9 @@ import org.springframework.web.client.RestClientResponseException;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.email.provider", havingValue = "ses")
+@Slf4j
 public class SesEmailProvider implements com.emme.notification.application.port.out.EmailSender {
 
-  private static final Logger log = LoggerFactory.getLogger(SesEmailProvider.class);
   private static final String SERVICE = "ses";
   private static final String CONTENT_TYPE = "application/json";
   private static final DateTimeFormatter DATE_FMT =

@@ -3,8 +3,7 @@ package com.emme.notification.adapter.out.provider.email;
 import com.emme.notification.configuration.NotificationProperties;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -23,9 +22,8 @@ import org.springframework.web.client.RestClientResponseException;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.email.provider", havingValue = "sendgrid")
+@Slf4j
 public class SendGridProvider implements com.emme.notification.application.port.out.EmailSender {
-
-  private static final Logger log = LoggerFactory.getLogger(SendGridProvider.class);
 
   private final String apiKey;
   private final RestClient client;

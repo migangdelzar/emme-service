@@ -1,8 +1,7 @@
 package com.emme.notification.adapter.out.provider.email;
 
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -15,9 +14,8 @@ import org.springframework.stereotype.Component;
     name = "app.notification.email.provider",
     havingValue = "mock",
     matchIfMissing = true)
+@Slf4j
 public class MockEmailProvider implements com.emme.notification.application.port.out.EmailSender {
-
-  private static final Logger log = LoggerFactory.getLogger(MockEmailProvider.class);
 
   @Override
   public String name() {

@@ -3,8 +3,7 @@ package com.emme.notification.adapter.out.provider.sms;
 import com.emme.notification.configuration.NotificationProperties;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -25,9 +24,9 @@ import org.springframework.web.client.RestClientResponseException;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.sms.provider", havingValue = "twilio")
+@Slf4j
 public class TwilioSmsProvider implements com.emme.notification.application.port.out.SmsSender {
 
-  private static final Logger log = LoggerFactory.getLogger(TwilioSmsProvider.class);
   private static final String PRODUCTION_API_BASE = "https://api.twilio.com/2010-04-01";
 
   private final String accountSid;

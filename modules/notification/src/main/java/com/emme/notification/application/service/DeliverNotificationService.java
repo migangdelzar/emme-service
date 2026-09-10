@@ -11,16 +11,15 @@ import com.emme.notification.application.port.out.PushSender;
 import com.emme.notification.application.port.out.SmsSender;
 import com.emme.notification.domain.model.Notification;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class DeliverNotificationService implements DeliverNotificationUseCase {
-  private static final Logger log = LoggerFactory.getLogger(DeliverNotificationService.class);
   private final NotificationRepository repository;
   private final EmailSender emailSender;
   private final SmsSender smsSender;

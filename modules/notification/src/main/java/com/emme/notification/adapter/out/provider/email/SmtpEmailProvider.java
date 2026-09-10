@@ -9,8 +9,7 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -23,9 +22,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.email.provider", havingValue = "smtp")
+@Slf4j
 public class SmtpEmailProvider implements com.emme.notification.application.port.out.EmailSender {
-
-  private static final Logger log = LoggerFactory.getLogger(SmtpEmailProvider.class);
 
   private final String host;
   private final int port;

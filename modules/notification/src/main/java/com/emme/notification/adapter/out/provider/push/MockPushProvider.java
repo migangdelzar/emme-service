@@ -2,8 +2,7 @@ package com.emme.notification.adapter.out.provider.push;
 
 import java.util.Map;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +15,8 @@ import org.springframework.stereotype.Component;
     name = "app.notification.push.provider",
     havingValue = "mock",
     matchIfMissing = true)
+@Slf4j
 public class MockPushProvider implements com.emme.notification.application.port.out.PushSender {
-
-  private static final Logger log = LoggerFactory.getLogger(MockPushProvider.class);
 
   @Override
   public String name() {

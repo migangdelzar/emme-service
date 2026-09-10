@@ -12,8 +12,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -32,9 +31,9 @@ import org.springframework.web.client.RestClientResponseException;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.push.provider", havingValue = "apns")
+@Slf4j
 public class ApnsPushProvider implements com.emme.notification.application.port.out.PushSender {
 
-  private static final Logger log = LoggerFactory.getLogger(ApnsPushProvider.class);
   private static final String PROD_URL = "https://api.push.apple.com";
   private static final String SANDBOX_URL = "https://api.sandbox.push.apple.com";
 

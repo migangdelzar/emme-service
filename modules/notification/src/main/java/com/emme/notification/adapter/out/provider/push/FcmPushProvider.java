@@ -13,8 +13,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -36,9 +35,9 @@ import org.springframework.web.client.RestClientResponseException;
  */
 @Component
 @ConditionalOnProperty(name = "app.notification.push.provider", havingValue = "fcm")
+@Slf4j
 public class FcmPushProvider implements com.emme.notification.application.port.out.PushSender {
 
-  private static final Logger log = LoggerFactory.getLogger(FcmPushProvider.class);
   static final String DEFAULT_TOKEN_URL = "https://oauth2.googleapis.com/token";
   private static final String DEFAULT_FCM_URL =
       "https://fcm.googleapis.com/v1/projects/%s/messages:send";

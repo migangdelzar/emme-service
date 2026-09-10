@@ -326,7 +326,19 @@ class LombokUsagePolicyTest {
           "modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/TenantRealmProvisioningListener.java",
           "modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/AuthController.java",
           "modules/identity/src/main/java/com/emme/identity/application/service/AuthenticateCustomerService.java",
-          "modules/identity/src/main/java/com/emme/identity/application/service/EnsureCustomerMembershipService.java");
+          "modules/identity/src/main/java/com/emme/identity/application/service/EnsureCustomerMembershipService.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/email/MockEmailProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/email/SendGridProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/email/SesEmailProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/email/SmtpEmailProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/push/ApnsPushProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/push/FcmPushProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/push/MockPushProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/MessageBirdProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/MockSmsProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/TwilioSmsProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/VonageProvider.java",
+          "modules/notification/src/main/java/com/emme/notification/application/service/DeliverNotificationService.java");
 
   @Test
   void onlyUsesLombokInApprovedProductionFiles() throws IOException {

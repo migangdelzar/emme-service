@@ -6331,3 +6331,19 @@ Completed in this slice:
   blocked by the missing `monitoring.coreos.com/v1/PrometheusRule` CRD.
 - No Kubernetes deployment was applied with incomplete observability or image
   prerequisites.
+
+## Current slice — Align Kubernetes frontend ports (2026-09-09)
+
+- [x] Add a failing parity test for the frontend image port contract.
+- [x] Change the frontend Deployment container and health probes to port
+      `8080`.
+- [x] Change the frontend Service target port to `8080`.
+- [x] Render the K3d JVM overlay with `kubectl kustomize`.
+- [x] Run the focused test, affected checks, and `git diff --check`.
+
+### Results
+
+- The parity test caught the stale port `80` declaration before the manifest
+  change.
+- The corrected Kustomize overlay renders successfully and matches the
+  sibling-owned frontend image contract.

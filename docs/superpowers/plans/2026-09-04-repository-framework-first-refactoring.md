@@ -4990,3 +4990,25 @@ requires the real frontend image owned by `emme-web`.
 - `kubectl apply --dry-run=server -k infra/kubernetes/overlays/k3d-jvm`
   reaches the API but cannot map `PrometheusRule` because its CRD is not
   installed; full runtime apply is therefore not claimed.
+
+## Current slice 24G — Align Kubernetes frontend ports with the image contract — 2026-09-09
+
+The frontend image owned by `emme-web` listens on port `8080`, as used by its
+Dockerfile and Compose deployment. The shared Kubernetes base manifest still
+declared port `80`, which would make probes fail and route the Service to the
+wrong container port. The manifest now uses `8080` consistently for the
+container, health probes, and Service target, protected by an application
+parity test.
+
+- [x] Add a failing parity test for the frontend image/manifest port contract.
+- [x] Align the frontend Deployment container and probe ports with `8080`.
+- [x] Align the frontend Service target port with `8080`.
+- [x] Render the K3d JVM overlay successfully with `kubectl kustomize`.
+- [x] Run the focused parity test and affected repository checks.
+
+### Results
+
+- The focused parity test first failed on the existing `80` contract and then
+  passed after the manifest change.
+- `kubectl kustomize infra/kubernetes/overlays/k3d-jvm` renders successfully.
+- No image, frontend source, backend route, or tenant behavior changed.

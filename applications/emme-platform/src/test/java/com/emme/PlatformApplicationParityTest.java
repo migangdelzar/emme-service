@@ -172,6 +172,17 @@ class PlatformApplicationParityTest {
                 .doesNotContain("kafka-sasl-jaas-config"));
   }
 
+  @Test
+  void kubernetesFrontendContractMatchesTheBuildpacksImagePort() {
+    String deployment = readSource("infra/kubernetes/base/frontend-deployment.yaml");
+    String service = readSource("infra/kubernetes/base/frontend-service.yaml");
+
+    assertThat(deployment)
+        .contains("containerPort: 8080")
+        .contains("path: /health\n              port: 8080");
+    assertThat(service).contains("targetPort: 8080");
+  }
+
   private static Path sourcePath(String relativePath) {
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {

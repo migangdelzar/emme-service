@@ -4954,3 +4954,39 @@ remains available for Dockerfile-backed projects and is documented as such.
 - The previously exposed `containerBuild` task failure caused by the missing
   application Dockerfile is no longer part of the deployable application
   configuration.
+
+## Current slice 24F — Verify Buildpacks application startup and Kubernetes readiness — 2026-09-09
+
+The current Java 25 application image was exercised through the disposable
+Compose E2E topology after resolving a host-port collision with the local k3d
+load balancer. PostgreSQL, Redis, Keycloak, Liquibase, and the application all
+became healthy; the health endpoint reported `UP` and unauthenticated API
+documentation returned `401`. Server-side Kubernetes validation is partially
+blocked by the newly bootstrapped k3d cluster lacking the Prometheus Operator
+CRD required by the shared `PrometheusRule`, and a full apply additionally
+requires the real frontend image owned by `emme-web`.
+
+- [x] Build the current JVM image through `bootBuildImage` and Paketo.
+- [x] Start the exact image in the Compose E2E topology.
+- [x] Verify PostgreSQL, Redis, Keycloak, migration completion, and backend
+      readiness.
+- [x] Verify `/actuator/health` returns `UP`.
+- [x] Verify unauthenticated `/v3/api-docs` returns `401`.
+- [x] Bootstrap the documented disposable `emme-local` k3d cluster.
+- [x] Record server-side Kubernetes validation requirements and blockers.
+- [ ] Install/provide the approved Prometheus Operator CRD in the deployment
+      environment before server-side manifest validation.
+- [ ] Provide the real `emme-frontend:dev` artifact and apply the full K3d
+      overlay with its dependency and Secret setup.
+
+### Results
+
+- `emme-modulith:dev` builds with Java 25 and Paketo Buildpacks.
+- Compose E2E startup succeeds with the application bound to temporary host
+  port `18081`; `/actuator/health` returns `{"groups":["liveness","readiness"],"status":"UP"}`.
+- `/v3/api-docs` returns HTTP `401` without authentication.
+- `kubectl cluster-info` succeeds against the disposable `k3d-emme-local`
+  cluster.
+- `kubectl apply --dry-run=server -k infra/kubernetes/overlays/k3d-jvm`
+  reaches the API but cannot map `PrometheusRule` because its CRD is not
+  installed; full runtime apply is therefore not claimed.

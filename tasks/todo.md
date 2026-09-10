@@ -6308,3 +6308,26 @@ Completed in this slice:
   passes through Paketo Buildpacks.
 - The application no longer enables a generic Dockerfile task against a
   directory that has no Dockerfile; no business or tenant behavior changed.
+
+## Current slice — Buildpacks startup and Kubernetes readiness checkpoint (2026-09-09)
+
+- [x] Build the current JVM application image with `bootBuildImage`.
+- [x] Start the exact image in the disposable Compose E2E topology.
+- [x] Verify PostgreSQL, Redis, Keycloak, Liquibase, and application health.
+- [x] Verify authenticated-boundary behavior: unauthenticated API docs return
+      `401`.
+- [x] Bootstrap the documented `emme-local` k3d cluster.
+- [x] Run server-side Kustomize validation against the reachable API.
+- [ ] Install the approved Prometheus Operator CRD required by `PrometheusRule`.
+- [ ] Provide the real sibling-owned frontend image and apply the complete K3d
+      overlay with dependency/Secret setup.
+
+### Results
+
+- Paketo Buildpacks produced `emme-modulith:dev` using Java 25.
+- The exact image became healthy in Compose; `/actuator/health` returned `UP`.
+- `/v3/api-docs` returned `401` without credentials.
+- The disposable K3d API is reachable, but server-side overlay validation is
+  blocked by the missing `monitoring.coreos.com/v1/PrometheusRule` CRD.
+- No Kubernetes deployment was applied with incomplete observability or image
+  prerequisites.

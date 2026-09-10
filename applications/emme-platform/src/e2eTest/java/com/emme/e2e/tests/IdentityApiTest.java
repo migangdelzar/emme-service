@@ -7,6 +7,7 @@ import com.emme.client.E2eUsers;
 import com.emme.client.Roles;
 import com.emme.client.UserSession;
 import com.emme.client.WithUser;
+import com.emme.client.WithUsers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -34,8 +35,10 @@ class IdentityApiTest {
   }
 
   @Test
-  @WithUser(roles = {Roles.PLATFORM_ADMIN})
-  @WithUser(roles = {Roles.TENANT_OWNER})
+  @WithUsers({
+    @WithUser(roles = {Roles.PLATFORM_ADMIN, Roles.TENANT_OWNER}),
+    @WithUser(roles = {Roles.TENANT_OWNER})
+  })
   void shouldInjectMultipleConfiguredUsers(E2eUsers users) {
     assertThat(users.size()).isEqualTo(2);
     assertThat(users.first().user().userId()).isNotEqualTo(users.get(1).user().userId());

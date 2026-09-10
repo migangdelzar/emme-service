@@ -23,8 +23,10 @@ import org.junit.jupiter.api.extension.ParameterResolver;
  *
  * <pre>{@code
  * @ExtendWith(E2eUserExtension.class)
- * @WithUser(roles = {Roles.TENANT_OWNER})
- * @WithUser(roles = {Roles.TENANT_STAFF})
+ * @WithUsers({
+ *   @WithUser(roles = {Roles.TENANT_OWNER}),
+ *   @WithUser(roles = {Roles.TENANT_STAFF})
+ * })
  * class TenantBoundaryTest {
  *   @Test
  *   void staffCannotAccessOwnerData(E2eUsers users) {

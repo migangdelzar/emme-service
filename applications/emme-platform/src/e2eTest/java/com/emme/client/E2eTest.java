@@ -2,6 +2,8 @@ package com.emme.client;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -114,6 +116,13 @@ public final class E2eTest {
       sessions.forEach(UserSession::close);
       acquiredUsers.forEach(user -> E2eUserPool.INSTANCE.release(user.userId()));
     }
+  }
+
+  /** Executes a scenario with an explicit collection of user specifications. */
+  public static void withUsers(List<E2eUserSpec> specifications, Consumer<E2eUsers> block) {
+    Objects.requireNonNull(specifications, "specifications must not be null");
+    Objects.requireNonNull(block, "block must not be null");
+    withUsers(block, specifications.toArray(E2eUserSpec[]::new));
   }
 
   /** Convenience overload for one identity. */

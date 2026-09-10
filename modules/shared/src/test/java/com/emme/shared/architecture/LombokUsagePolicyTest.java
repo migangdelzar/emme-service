@@ -28,11 +28,9 @@ class LombokUsagePolicyTest {
           "e2eTest", Set.<String>of());
   private static final Pattern FORBIDDEN_ANNOTATION_PATTERN =
       Pattern.compile(
-          "(?m)^\\s*@(?:[A-Za-z_$][\\w$]*\\.)*(?:Data|Setter|EqualsAndHashCode|ToString|Delegate|SneakyThrows|Synchronized|ExtensionMethod|StandardException)\\b");
+          "@(?:[A-Za-z_$][\\w$]*\\.)*(?:Data|Setter|EqualsAndHashCode|ToString|Delegate|SneakyThrows|Synchronized|ExtensionMethod|StandardException)\\b");
   private static final Pattern BUILDER_ANNOTATION_PATTERN =
-      Pattern.compile("(?ms)^\\s*@(?:[A-Za-z_$][\\w$]*\\.)*Builder\\b(?:\\s*\\(([^)]*)\\))?");
-  private static final Pattern REQUIRED_BUILDER_PREFIX_PATTERN =
-      Pattern.compile("\\bsetterPrefix\\s*=\\s*\\\"with\\\"");
+      Pattern.compile("@(?:[A-Za-z_$][\\w$]*\\.)*Builder\\b(?:\\s*\\(([^)]*)\\))?");
 
   @Test
   void scansAllOwnedSourceSetsWithoutGeneratedBuildOutput() throws IOException {
@@ -78,6 +76,9 @@ class LombokUsagePolicyTest {
           .as("qualified forbidden annotation: %s", annotation)
           .isTrue();
     }
+    assertThat(containsForbiddenAnnotation("@Nullable @lombok.Data\nclass Synthetic {}"))
+        .as("forbidden annotations after another annotation on the same line")
+        .isTrue();
 
     assertThat(containsForbiddenAnnotation("// @Data\nString description = \"@lombok.Setter\";"))
         .isFalse();
@@ -91,11 +92,25 @@ class LombokUsagePolicyTest {
         .as("default builder prefix must be rejected")
         .isFalse();
     assertThat(builderHasRequiredSetterPrefix("@lombok.Builder(setterPrefix = \"set\")")).isFalse();
+    assertThat(containsBuilderAnnotation("@Validated @Builder\nclass Synthetic {}"))
+        .as("builder annotations after another annotation on the same line")
+        .isTrue();
+    assertThat(builderHasRequiredSetterPrefix("@Validated @Builder\nclass Synthetic {}"))
+        .as("builder without a prefix must be rejected after another annotation")
+        .isFalse();
     assertThat(
             builderHasRequiredSetterPrefix(
                 "@Builder\n// setterPrefix = \"with\"\n"
                     + "String misleading = \"setterPrefix = \\\"with\\\"\";"))
         .as("comments and string literals must not satisfy the builder policy")
+        .isFalse();
+    assertThat(
+            builderHasRequiredSetterPrefix(
+                "@Builder(builderMethodName = \"setterPrefix = \\\"with\\\"\")"))
+        .as("quoted text in another builder argument must not satisfy setterPrefix")
+        .isFalse();
+    assertThat(containsBuilderAnnotation("// @Builder\nString description = \"@Builder\";"))
+        .as("comments and string literals must not count as builder annotations")
         .isFalse();
   }
 
@@ -270,7 +285,7 @@ class LombokUsagePolicyTest {
             .as("forbidden Lombok source: %s", source)
             .doesNotContain("import lombok.");
       }
-      assertThat(contents)
+      assertThat(maskCommentsAndStrings(contents))
           .as("forbidden Lombok annotation: %s", source)
           .doesNotContainPattern(FORBIDDEN_ANNOTATION_PATTERN);
 
@@ -340,25 +355,174 @@ class LombokUsagePolicyTest {
   }
 
   private static boolean containsForbiddenAnnotation(String contents) {
-    return FORBIDDEN_ANNOTATION_PATTERN.matcher(contents).find();
+    return FORBIDDEN_ANNOTATION_PATTERN.matcher(maskCommentsAndStrings(contents)).find();
   }
 
   private static boolean containsBuilderAnnotation(String contents) {
-    return BUILDER_ANNOTATION_PATTERN.matcher(contents).find();
+    return BUILDER_ANNOTATION_PATTERN.matcher(maskCommentsAndStrings(contents)).find();
   }
 
   private static boolean builderHasRequiredSetterPrefix(String contents) {
-    Matcher builders = BUILDER_ANNOTATION_PATTERN.matcher(contents);
+    String maskedContents = maskCommentsAndStrings(contents);
+    Matcher builders = BUILDER_ANNOTATION_PATTERN.matcher(maskedContents);
     boolean foundBuilder = false;
     while (builders.find()) {
       foundBuilder = true;
-      String annotationBody = builders.group(1);
-      if (annotationBody == null
-          || !REQUIRED_BUILDER_PREFIX_PATTERN.matcher(annotationBody).find()) {
+      if (builders.start(1) < 0
+          || !hasRequiredSetterPrefix(contents.substring(builders.start(1), builders.end(1)))) {
         return false;
       }
     }
     return foundBuilder;
+  }
+
+  private static boolean hasRequiredSetterPrefix(String annotationBody) {
+    int argumentStart = 0;
+    while (argumentStart < annotationBody.length()) {
+      int argumentEnd = findTopLevelDelimiter(annotationBody, argumentStart, ',');
+      if (isRequiredSetterPrefixElement(annotationBody.substring(argumentStart, argumentEnd))) {
+        return true;
+      }
+      if (argumentEnd == annotationBody.length()) {
+        break;
+      }
+      argumentStart = argumentEnd + 1;
+    }
+    return false;
+  }
+
+  private static boolean isRequiredSetterPrefixElement(String argument) {
+    int equals = findTopLevelDelimiter(argument, 0, '=');
+    if (equals < 0) {
+      return false;
+    }
+    String elementName = maskCommentsAndStrings(argument.substring(0, equals)).trim();
+    return elementName.equals("setterPrefix")
+        && isWithStringLiteral(argument.substring(equals + 1));
+  }
+
+  private static boolean isWithStringLiteral(String value) {
+    int index = skipWhitespaceAndComments(value, 0);
+    if (index >= value.length()
+        || value.charAt(index) != '"'
+        || value.startsWith("\"\"\"", index)) {
+      return false;
+    }
+    index++;
+    int valueStart = index;
+    while (index < value.length() && value.charAt(index) != '"') {
+      if (value.charAt(index) == '\\'
+          || value.charAt(index) == '\n'
+          || value.charAt(index) == '\r') {
+        return false;
+      }
+      index++;
+    }
+    if (index >= value.length() || !value.substring(valueStart, index).equals("with")) {
+      return false;
+    }
+    return skipWhitespaceAndComments(value, index + 1) == value.length();
+  }
+
+  private static int findTopLevelDelimiter(String source, int start, char delimiter) {
+    int parentheses = 0;
+    int braces = 0;
+    int brackets = 0;
+    int index = start;
+    while (index < source.length()) {
+      if (source.startsWith("//", index) || source.startsWith("/*", index)) {
+        index = skipComment(source, index);
+        continue;
+      }
+      if (source.charAt(index) == '"') {
+        index = skipStringLiteral(source, index);
+        continue;
+      }
+      switch (source.charAt(index)) {
+        case '(' -> parentheses++;
+        case ')' -> parentheses--;
+        case '{' -> braces++;
+        case '}' -> braces--;
+        case '[' -> brackets++;
+        case ']' -> brackets--;
+        default -> {
+          if (source.charAt(index) == delimiter
+              && parentheses == 0
+              && braces == 0
+              && brackets == 0) {
+            return index;
+          }
+        }
+      }
+      index++;
+    }
+    return source.length();
+  }
+
+  private static int skipWhitespaceAndComments(String source, int start) {
+    int index = start;
+    while (index < source.length()) {
+      if (Character.isWhitespace(source.charAt(index))) {
+        index++;
+      } else if (source.startsWith("//", index) || source.startsWith("/*", index)) {
+        index = skipComment(source, index);
+      } else {
+        break;
+      }
+    }
+    return index;
+  }
+
+  private static int skipComment(String source, int start) {
+    if (source.startsWith("//", start)) {
+      int newline = source.indexOf('\n', start + 2);
+      return newline < 0 ? source.length() : newline;
+    }
+    int closing = source.indexOf("*/", start + 2);
+    return closing < 0 ? source.length() : closing + 2;
+  }
+
+  private static int skipStringLiteral(String source, int start) {
+    if (source.startsWith("\"\"\"", start)) {
+      int closing = source.indexOf("\"\"\"", start + 3);
+      return closing < 0 ? source.length() : closing + 3;
+    }
+    int index = start + 1;
+    while (index < source.length()) {
+      if (source.charAt(index) == '\\') {
+        index += Math.min(2, source.length() - index);
+      } else if (source.charAt(index++) == '"') {
+        break;
+      }
+    }
+    return index;
+  }
+
+  private static String maskCommentsAndStrings(String source) {
+    char[] masked = source.toCharArray();
+    int index = 0;
+    while (index < source.length()) {
+      if (source.startsWith("//", index) || source.startsWith("/*", index)) {
+        int end = skipComment(source, index);
+        blankRange(masked, index, end);
+        index = end;
+      } else if (source.charAt(index) == '"') {
+        int end = skipStringLiteral(source, index);
+        blankRange(masked, index, end);
+        index = end;
+      } else {
+        index++;
+      }
+    }
+    return new String(masked);
+  }
+
+  private static void blankRange(char[] source, int start, int end) {
+    for (int index = start; index < end; index++) {
+      if (source[index] != '\n' && source[index] != '\r') {
+        source[index] = ' ';
+      }
+    }
   }
 
   private static Set<String> approvedTestFiles(Path root) throws IOException {

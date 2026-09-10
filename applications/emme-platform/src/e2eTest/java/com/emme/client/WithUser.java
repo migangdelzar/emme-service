@@ -17,14 +17,11 @@ import java.lang.annotation.Target;
 @Repeatable(WithUsers.class)
 public @interface WithUser {
 
-  /** Realm role used to select the provisioned test user. */
-  String role() default Roles.PLATFORM_ADMIN;
+  /** Realm roles that the selected provisioned test user must contain. */
+  String[] roles() default {Roles.PLATFORM_ADMIN};
 
   /** Tenant ID. Empty string selects any tenant for the role. */
   String tenant() default "";
-
-  /** Optional environment variable or system property containing this user's bearer token. */
-  String tokenEnvironmentVariable() default "";
 
   /** Whether the session sends a bearer token. */
   boolean authenticated() default true;

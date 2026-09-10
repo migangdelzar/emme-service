@@ -23,8 +23,8 @@ import org.junit.jupiter.api.extension.ParameterResolver;
  *
  * <pre>{@code
  * @ExtendWith(E2eUserExtension.class)
- * @WithUser(tokenEnvironmentVariable = "E2E_OWNER_TOKEN")
- * @WithUser(role = Roles.TENANT_STAFF, tokenEnvironmentVariable = "E2E_STAFF_TOKEN")
+ * @WithUser(roles = {Roles.TENANT_OWNER})
+ * @WithUser(roles = {Roles.TENANT_STAFF})
  * class TenantBoundaryTest {
  *   @Test
  *   void staffCannotAccessOwnerData(E2eUsers users) {
@@ -115,10 +115,11 @@ public final class E2eUserExtension
           sessions.add(new UserSession(E2eTest.baseUrl(), null, "", false));
           continue;
         }
-        var user = E2eUserPool.INSTANCE.acquire(configuration.role(), configuration.tenant());
+        var user =
+            E2eUserPool.INSTANCE.acquire(
+                Arrays.asList(configuration.roles()), configuration.tenant());
         acquiredUsers.add(user);
-        sessions.add(
-            new UserSession(E2eTest.baseUrl(), user, resolveToken(configuration, index), true));
+        sessions.add(new UserSession(E2eTest.baseUrl(), user, resolveToken(configuration), true));
       }
       store(context).put(USERS_KEY, new AcquiredUsers(acquiredUsers, sessions));
     } catch (RuntimeException exception) {
@@ -177,12 +178,10 @@ public final class E2eUserExtension
     return lifecycle;
   }
 
-  private static String resolveToken(WithUser configuration, int index) {
-    if (!configuration.tokenEnvironmentVariable().isBlank()) {
-      return propertyOrEnvironment(configuration.tokenEnvironmentVariable());
-    }
-    var indexed = propertyOrEnvironment("E2E_ACCESS_TOKEN_" + (index + 1));
-    return indexed.isBlank() ? propertyOrEnvironment("E2E_ACCESS_TOKEN") : indexed;
+  private static String resolveToken(WithUser configuration) {
+    return Arrays.asList(configuration.roles()).contains(Roles.PLATFORM_ADMIN)
+        ? propertyOrEnvironment("E2E_ACCESS_TOKEN")
+        : propertyOrEnvironment("E2E_TENANT_OWNER_TOKEN");
   }
 
   private static String propertyOrEnvironment(String name) {

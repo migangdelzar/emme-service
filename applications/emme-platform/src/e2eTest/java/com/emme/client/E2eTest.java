@@ -1,6 +1,7 @@
 package com.emme.client;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -94,6 +95,32 @@ public final class E2eTest {
         });
   }
 
+  /** Executes a scenario with the supplied identities and releases every session afterwards. */
+  public static void withUsers(Consumer<E2eUsers> block, E2eUserSpec... specifications) {
+    var sessions = new ArrayList<UserSession>(specifications.length);
+    var acquiredUsers = new ArrayList<E2eUserPool.TestUser>(specifications.length);
+    try {
+      for (var specification : specifications) {
+        if (!specification.authenticated()) {
+          sessions.add(new UserSession(BASE_URL, null, "", false));
+          continue;
+        }
+        var user = E2eUserPool.INSTANCE.acquire(specification.roles(), specification.tenantId());
+        acquiredUsers.add(user);
+        sessions.add(new UserSession(BASE_URL, user, resolveToken(specification), true));
+      }
+      block.accept(new E2eUsers(sessions));
+    } finally {
+      sessions.forEach(UserSession::close);
+      acquiredUsers.forEach(user -> E2eUserPool.INSTANCE.release(user.userId()));
+    }
+  }
+
+  /** Convenience overload for one identity. */
+  public static void withUser(E2eUserSpec specification, Consumer<UserSession> block) {
+    withUsers(users -> block.accept(users.first()), specification);
+  }
+
   private static <T> T withResult(String accessToken, Function<UserSession, T> block) {
     var user = E2eUserPool.INSTANCE.acquire();
     var session = new UserSession(BASE_URL, user, accessToken);
@@ -107,7 +134,7 @@ public final class E2eTest {
 
   /** Execute with a specific role requirement. Useful when different tests need different roles. */
   public static void withSession(String[] roles, Consumer<UserSession> block) {
-    withSession(block);
+    withUser(E2eUserSpec.authenticated(roles), block);
   }
 
   /** Execute without auth token injection (for testing 401/403 responses). */
@@ -132,6 +159,15 @@ public final class E2eTest {
 
   private static String resolvePlatformToken() {
     return propertyOrEnvironment("E2E_ACCESS_TOKEN");
+  }
+
+  private static String resolveToken(E2eUserSpec specification) {
+    if (!specification.accessToken().isBlank()) {
+      return specification.accessToken();
+    }
+    return specification.roles().contains(Roles.PLATFORM_ADMIN)
+        ? resolvePlatformToken()
+        : resolveTenantOwnerToken();
   }
 
   private static String propertyOrEnvironment(String name) {

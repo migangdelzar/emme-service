@@ -8,8 +8,8 @@ import java.util.List;
  * <p>Use this record when a scenario needs to exercise interactions between distinct identities:
  *
  * <pre>{@code
- * @WithUser(tokenEnvironmentVariable = "E2E_OWNER_TOKEN")
- * @WithUser(role = Roles.TENANT_STAFF, tokenEnvironmentVariable = "E2E_STAFF_TOKEN")
+ * @WithUser(roles = {Roles.TENANT_OWNER})
+ * @WithUser(roles = {Roles.TENANT_STAFF})
  * void ownerAndStaff(E2eUsers users) {
  *   users.first().tenants().list();
  *   users.get(1).customers().list();

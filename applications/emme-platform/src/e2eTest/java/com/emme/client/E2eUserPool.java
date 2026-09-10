@@ -63,17 +63,34 @@ public final class E2eUserPool {
     if (role == null || role.isBlank()) {
       return acquire();
     }
+    return acquire(List.of(role), tenantId);
+  }
+
+  /** Acquires a user whose provisioned roles include every requested role. */
+  public synchronized TestUser acquire(List<String> roles) {
+    return acquire(roles, "");
+  }
+
+  /** Acquires a user whose provisioned roles include every requested role and matching tenant. */
+  public synchronized TestUser acquire(List<String> roles, String tenantId) {
+    var requiredRoles =
+        roles == null
+            ? List.<String>of()
+            : roles.stream().filter(role -> role != null && !role.isBlank()).toList();
+    if (requiredRoles.isEmpty()) {
+      return acquire();
+    }
     var selected =
         available.stream()
-            .filter(user -> user.roles().contains(role))
+            .filter(user -> user.roles().containsAll(requiredRoles))
             .filter(
                 user -> tenantId == null || tenantId.isBlank() || user.tenantId().equals(tenantId))
             .findFirst()
             .orElseThrow(
                 () ->
                     new IllegalStateException(
-                        "No E2E user matching role "
-                            + role
+                        "No E2E user matching roles "
+                            + requiredRoles
                             + (tenantId == null || tenantId.isBlank()
                                 ? ""
                                 : " and tenant " + tenantId)));

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class E2eUserExtensionTest {
 
   @Test
-  @WithUser(role = Roles.TENANT_OWNER, tokenEnvironmentVariable = "E2E_TENANT_OWNER_TOKEN")
+  @WithUser(roles = {Roles.TENANT_OWNER})
   void shouldProvisionAUserDeclaredOnlyOnTheTestMethod(UserSession session) {
     assertThat(session.identity().me()).isNotNull();
   }

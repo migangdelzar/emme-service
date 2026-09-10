@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(E2eUserExtension.class)
-@WithUser(role = Roles.PLATFORM_ADMIN)
+@WithUser(roles = {Roles.PLATFORM_ADMIN})
 class IdentityApiTest {
 
   @Test
@@ -27,22 +27,22 @@ class IdentityApiTest {
   }
 
   @Test
-  @WithUser(role = Roles.TENANT_OWNER, tokenEnvironmentVariable = "E2E_TENANT_OWNER_TOKEN")
+  @WithUser(roles = {Roles.TENANT_OWNER})
   void shouldDenyFeatureFlagsWithoutAdmin(UserSession session) {
     var result = session.get("/api/admin/feature-flags", 403);
     assertThat(result).isNotNull();
   }
 
   @Test
-  @WithUser(role = Roles.PLATFORM_ADMIN)
-  @WithUser(role = Roles.TENANT_OWNER)
+  @WithUser(roles = {Roles.PLATFORM_ADMIN})
+  @WithUser(roles = {Roles.TENANT_OWNER})
   void shouldInjectMultipleConfiguredUsers(E2eUsers users) {
     assertThat(users.size()).isEqualTo(2);
     assertThat(users.first().user().userId()).isNotEqualTo(users.get(1).user().userId());
   }
 
   @Test
-  @WithUser(role = Roles.TENANT_OWNER)
+  @WithUser(roles = {Roles.TENANT_OWNER})
   void shouldInjectMethodConfiguredUser(UserSession session) {
     assertThat(session.identity().me()).isNotNull();
   }

@@ -6444,7 +6444,9 @@ Completed in this slice:
 - [x] Add qualified-annotation, same-line-annotation, builder-prefix, and
       source-set validation coverage.
 - [x] Review the policy diff and resolve all medium-severity findings.
-- [ ] Continue with safe constructor reductions in sequential module slices.
+- [x] Continue with safe constructor reductions in sequential module slices.
+- [x] Record adopted and rejected candidates, TDD evidence, affected checks,
+      commit hashes, and concerns in the Task 2 report.
 
 ### Working Notes
 
@@ -6452,3 +6454,21 @@ Completed in this slice:
   the corrected policy detector.
 - The pre-existing untracked `tgrep/` directory is preserved and excluded from
   all staging commands.
+
+## Current slice — Lombok Task 2 safe constructor reductions — 2026-09-10
+
+- [x] Process the safe candidates in plan order through Tenancy.
+- [x] Run the allowlist red phase before each module's source conversion.
+- [x] Run affected module tests, Java/test/integration compilation where
+      defined, Spotless, and Checkstyle for every adopted slice.
+- [x] Commit and push every module slice before proceeding to the next.
+- [x] Document eight rejected constructor candidates without forcing adoption.
+- [x] Run the final focused policy verification and publish the complete report.
+
+### Results
+
+- 48 safe constructor-only reductions were adopted across ten modules plus
+  Shared; Salon and Services had no safe candidates.
+- Eight candidates remain explicit because their constructors instantiate a
+  mapper or perform validation.
+- `tgrep/` remains untracked and untouched.

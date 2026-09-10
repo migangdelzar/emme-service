@@ -270,9 +270,9 @@ git push origin feat/ai-platform-foundation
 - Produces constructor-only Lombok usage with public generated constructors,
   unchanged parameter order, and unchanged Spring bean behavior.
 
-- [ ] **Step 1: Write one failing allowlist test per module slice.** Before changing a module, add its accepted paths to the policy's expected approved set without adding Lombok to the source. Run the policy test and verify it fails with the missing approved source path.
+- [x] **Step 1: Write one failing allowlist test per module slice.** Before changing a module, add its accepted paths to the policy's expected approved set without adding Lombok to the source. Run the policy test and verify it fails with the missing approved source path.
 
-- [ ] **Step 2: Run the focused red test.**
+- [x] **Step 2: Run the focused red test.**
 
 ```bash
 ./gradlew :modules:shared:test --tests com.emme.shared.architecture.LombokUsagePolicyTest --no-parallel --no-configuration-cache
@@ -281,7 +281,7 @@ git push origin feat/ai-platform-foundation
 Expected: FAIL because the approved source path does not yet contain
 `import lombok.RequiredArgsConstructor;` and `@RequiredArgsConstructor`.
 
-- [ ] **Step 3: Convert only a plain constructor.** For an accepted class such as `DashboardController`, replace the pure constructor with:
+- [x] **Step 3: Convert only a plain constructor.** For an accepted class such as `DashboardController`, replace the pure constructor with:
 
 ```java
 import lombok.RequiredArgsConstructor;
@@ -298,7 +298,7 @@ custom side effects. For a class with a constructor qualifier, keep the
 explicit constructor unless a field-level qualifier and focused wiring test
 prove equivalent behavior.
 
-- [ ] **Step 4: Run the affected module tests and compilation.** For each module slice run the module test task, `compileJava`, and `compileTestJava`; include `compileIntegrationTestJava` when the module defines that source set. The minimum commands are:
+- [x] **Step 4: Run the affected module tests and compilation.** For each module slice run the module test task, `compileJava`, and `compileTestJava`; include `compileIntegrationTestJava` when the module defines that source set. The minimum commands are:
 
 ```bash
 for lombok_module in appointments assistant calendar catalog clients documents identity notification payment salon services shared subscriptions tenancy; do
@@ -309,9 +309,9 @@ done
 
 Expected: PASS with no changed public behavior.
 
-- [ ] **Step 5: Refactor and inspect generated-constructor compatibility.** Confirm constructor parameter order remains the field declaration order, `-parameters` remains enabled, and no tenant/provider qualifier or Spring bean ambiguity changed. Run the module's Spotless and Checkstyle tasks.
+- [x] **Step 5: Refactor and inspect generated-constructor compatibility.** Confirm constructor parameter order remains the field declaration order, `-parameters` remains enabled, and no tenant/provider qualifier or Spring bean ambiguity changed. Run the module's Spotless and Checkstyle tasks.
 
-- [ ] **Step 6: Commit and push each module slice.** Use the module name as the conventional commit scope:
+- [x] **Step 6: Commit and push each module slice.** Use the module name as the conventional commit scope:
 
 ```bash
 lombok_module=appointments
@@ -331,6 +331,13 @@ overlap with logging: `appointments`, `assistant`, `calendar`, `catalog`,
 `clients`, `documents`, `identity`, `notification`, `payment`, `salon`,
 `services`, `shared`, `subscriptions`, and `tenancy`. Do not convert the
 custom-construction classes listed in Section 1 without a new approved design.
+
+Task 2 completion: 48 safe constructor candidates were converted in the
+specified order. Eight candidates were rejected because their constructors
+instantiate mappers or perform validation; `salon` and `services` therefore
+received no source conversion. Full adoption, rejection, TDD, verification,
+and commit evidence is recorded in
+[task-2-report.md](../../../.superpowers/sdd/task-2-report.md).
 
 ### Task 3: Replace ordinary logger boilerplate with `@Slf4j`
 

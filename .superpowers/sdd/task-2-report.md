@@ -1,279 +1,226 @@
-# Task 2 — Generic LangGraph4j workflow and persisted resume
+# Task 2 Report — Safe Lombok Constructor Reductions
 
-## Scope
+| Field | Value |
+|---|---|
+| Task | Task 2 — Apply safe constructor reduction slices |
+| Date | 2026-09-10 |
+| Branch | `feat/ai-platform-foundation` |
+| Brief | [`task-2-brief.md`](task-2-brief.md) |
+| Plan | [`2026-09-10-lombok-whole-repository-refactor.md`](../../docs/superpowers/plans/2026-09-10-lombok-whole-repository-refactor.md) |
+| Result | Complete; all Task 2 changes pushed |
 
-Implemented the generic, tenant-safe conversation workflow boundary in `modules/assistant`.
-The graph uses the existing `TenantAwareCheckpointSaver`, so LangGraph4j checkpoint thread IDs
-remain bound to the backend-derived `AiExecutionContext.workflowId`. Conversation history remains
-behind `ConversationMemoryPort`; graph state contains orchestration status only.
+## Scope and decision rule
 
-## RED
+The Section 1 constructor inventory was reviewed before editing. Only a class
+with one public constructor whose body directly assigned every constructor
+parameter to a corresponding `final` field was eligible. The generated public
+`@RequiredArgsConstructor` had to preserve field declaration order and Spring
+construction behavior exactly.
 
-Added failing tests before production code:
+No qualifiers, validation, defaulting, overload delegation, `super(...)`,
+optional-provider selection, custom side effects, lifecycle behavior, tenant
+boundaries, JPA/persistence invariants, or configuration binding were changed.
+Logger, value, and fixture candidates were not touched.
 
-- `ConversationWorkflowGraphTest` for a paused approval checkpoint and resume to `SUCCEEDED`.
-- `LangGraphConversationWorkflowAdapterTest` for trusted workflow/conversation identity.
-- `ProcessConversationServiceWorkflowTest` for workflow invocation before the normal chat path.
+The inventory contained 56 constructor candidates: 48 adopted and 8 rejected.
+The adopted work was performed in the plan's sequential module order. Salon and
+Services were inspected but had no safe constructor candidate.
 
-Command run:
+## Adopted candidates
 
-```shell
-mise exec java@25.0.2 -- ./gradlew :modules:assistant:test \
-  --tests '*ConversationWorkflowGraphTest' \
-  --tests '*LangGraphConversationWorkflowAdapterTest' \
-  --tests '*ProcessConversationServiceWorkflowTest'
-```
+Every file below received `import lombok.RequiredArgsConstructor`,
+`@RequiredArgsConstructor`, and removal of its equivalent explicit constructor.
 
-Result: failed at `compileTestJava` with the expected missing generic graph, adapter, port, and
-workflow-domain symbols.
+### Appointments — `82716cd1`
 
-## GREEN
+- `modules/appointments/src/main/java/com/emme/appointments/adapter/in/web/DashboardController.java`
+- `modules/appointments/src/main/java/com/emme/appointments/adapter/out/messaging/publisher/SpringAppointmentEventPublisher.java`
+- `modules/appointments/src/main/java/com/emme/appointments/adapter/out/persistence/adapter/AppointmentCollisionAdapter.java`
 
-Added:
+### Assistant — `7c9a3788`
 
-- `ConversationWorkflowPort`, `ConversationWorkflowStatus`, and `ConversationWorkflowSnapshot`.
-- `ConversationWorkflowGraph` with the approved lifecycle nodes, conditional approval gate, and
-  LangGraph interrupt/checkpoint behavior.
-- `LangGraphConversationWorkflowAdapter`, which derives all graph identity from the authenticated
-  `AiExecutionContext` and returns existing persisted state instead of re-invoking the graph.
-- Spring configuration for separately named generic and quote compiled graphs.
-- `ProcessConversationService` integration using the generic workflow port while retaining Task 1
-  idempotency recovery before workflow execution.
+- `modules/assistant/src/main/java/com/emme/assistant/adapter/in/web/WhatsAppWebhookController.java`
+- `modules/assistant/src/main/java/com/emme/assistant/adapter/out/messaging/mapper/WhatsAppWebhookMapper.java`
+- `modules/assistant/src/main/java/com/emme/assistant/adapter/out/messaging/persistence/WhatsAppWebhookEventPersistenceAdapter.java`
+- `modules/assistant/src/main/java/com/emme/assistant/adapter/out/persistence/mapper/ConversationEventPersistenceMapper.java`
+- `modules/assistant/src/main/java/com/emme/assistant/application/tenant/ConfiguredWhatsAppTenantResolver.java`
+- `modules/assistant/src/main/java/com/emme/assistant/application/tenant/SemanticCacheInvalidationListener.java`
+- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/catalog/CatalogDesignImageReader.java`
 
-## Refactor and self-review
+### Calendar — `3fe36166`
 
-- Promoted node names to graph constants.
-- Kept workflow state separate from durable chat-memory events.
-- Added qualified injection for both compiled graph beans; this prevents a runtime ambiguity when
-  the quote resume port and generic conversation port are enabled together.
-- Restored the assistant-marker recovery ordering after review: a retry after assistant persistence
-  but before idempotency completion reconciles the durable response without graph/model re-execution.
-- No repositories are called by graph nodes; business operations remain behind application ports.
-- Existing quote graph behavior is untouched and continues using the same `TenantAwareCheckpointSaver`.
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/CalendarController.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/ClientCalendarController.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/GoogleOAuthController.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/SheetsController.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/out/client/google/GoogleSheetsAdapter.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/out/client/google/OAuthTokenSource.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/out/persistence/adapter/CalendarPersistenceAdapter.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/out/persistence/adapter/GoogleSpreadsheetLinkQueryAdapter.java`
 
-## Verification
+### Catalog — `3dc6d2a6`
 
-Passed on Java 25.0.2:
+- `modules/catalog/src/main/java/com/emme/catalog/adapter/in/web/CatalogController.java`
 
-```shell
-mise exec java@25.0.2 -- ./gradlew :modules:assistant:test \
-  --tests '*ProcessConversationServiceTest' \
-  --tests '*ProcessConversationServiceWorkflowTest' \
-  --tests '*ConversationWorkflowGraphTest' \
-  --tests '*LangGraphConversationWorkflowAdapterTest' \
-  --tests '*QuoteWorkflowGraphTest' \
-  --tests '*SpringAiLangGraphConfigurationTest' \
-  :modules:assistant:spotlessCheck
-```
+### Clients — `81dd42c3`
 
-Result: `BUILD SUCCESSFUL`.
+- `modules/clients/src/main/java/com/emme/clients/adapter/in/web/CustomerController.java`
 
-Also passed:
+### Documents — `531175c0`
 
-```shell
-mise exec java@25.0.2 -- ./gradlew :modules:assistant:test \
-  :modules:assistant:integrationTest \
-  :modules:assistant:spotlessCheck
-```
+- `modules/documents/src/main/java/com/emme/documents/adapter/in/web/DocumentController.java`
+- `modules/documents/src/main/java/com/emme/documents/adapter/out/persistence/adapter/DocumentPersistenceAdapter.java`
+- `modules/documents/src/main/java/com/emme/documents/adapter/out/search/HybridDocumentSearchAdapter.java`
 
-Result: completed successfully. Testcontainers emitted an existing Docker prune `409` warning from
-its shutdown hook; the integration XML results contain no failures or errors.
+### Identity — `41b4b687`
 
-## Files
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/AppointmentCreatedConsumer.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/AuthController.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/CurrentUserController.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/FeatureFlagController.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/IdentityController.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/TenantFeatureFlagController.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/security/IdentityJwtAuthoritiesConverter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/security/IdentityUserAuthoritiesMapper.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/security/CustomerTokenDecoderAdapter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/subscription/SubscriptionPlanAdapter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/tenant/TenantIdentityRealmAdapter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/CustomerMembershipPersistenceAdapter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/security/RedisLoginAttemptRateLimiter.java`
 
-- `modules/assistant/src/main/java/com/emme/assistant/ai/application/port/out/ConversationWorkflowPort.java`
-- `modules/assistant/src/main/java/com/emme/assistant/ai/domain/workflow/ConversationWorkflowStatus.java`
-- `modules/assistant/src/main/java/com/emme/assistant/ai/domain/workflow/ConversationWorkflowSnapshot.java`
-- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow/ConversationWorkflowGraph.java`
-- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/workflow/LangGraphConversationWorkflowAdapter.java`
-- `modules/assistant/src/main/java/com/emme/assistant/ai/application/service/ProcessConversationService.java`
-- `modules/assistant/src/main/java/com/emme/assistant/ai/configuration/SpringAiLangGraphConfiguration.java`
-- Task 2 unit tests and the configuration regression test.
+### Notification — `b9fa88af`
 
-## Concerns
+- `modules/notification/src/main/java/com/emme/notification/adapter/out/messaging/publisher/SpringNotificationEventPublisher.java`
 
-- The generic graph intentionally owns orchestration state only. Concrete quote extraction and
-  appointment tool execution remain application capabilities and are connected by their respective
-  vertical-slice tasks; no LLM or graph node gains repository/domain-rule access.
-- The pre-existing unrelated identity, subscriptions, and tenancy working-tree edits were not
-  staged or modified.
+### Payment — `3fe571b7`
 
----
+- `modules/payment/src/main/java/com/emme/payment/adapter/out/messaging/publisher/SpringPaymentWorkflowEventPublisher.java`
+- `modules/payment/src/main/java/com/emme/payment/adapter/out/messaging/persistence/PaymentWebhookEventPersistenceAdapter.java`
 
-## Consolidated review fix wave
+### Shared — `0203096c`
 
-### RED
+Shared was the only adopted module without existing Lombok convention wiring;
+`id("emme.lombok")` was added to `modules/shared/build.gradle.kts`. The existing
+compile-only/annotation-processor convention was reused.
 
-Added focused failing coverage for authenticated approval resume, terminal routing, waiting
-responses, execution counters, and PostgreSQL restart-equivalent checkpoints. The initial compile
-failed because `ResumeConversationWorkflowCommand` and `ConversationWorkflowDecision` did not
-exist, proving the resume contract was absent.
+- `modules/shared/src/main/java/com/emme/shared/persistence/jdbc/BootstrapConnectionExecutor.java`
+- `modules/shared/src/main/java/com/emme/shared/search/postgres/PostgresHybridSearch.java`
+- `modules/shared/src/main/java/com/emme/shared/web/advice/GlobalExceptionHandler.java`
 
-### GREEN
+### Subscriptions — `b7e7dbb4`
 
-- Added explicit `ResumeConversationWorkflowCommand`, `ResumeConversationWorkflowUseCase`, and
-  `ResumeConversationWorkflowService` boundaries.
-- Added authenticated `ConversationWorkflowPort.resume` support backed by LangGraph
-  `updateState(..., approval_gate)` and `GraphInput.resume()`.
-- Persisted and validated tenant, principal, conversation, and workflow identifiers inside graph
-  checkpoint state before every capability execution and snapshot read.
-- Replaced static graph status nodes with typed intent, decomposition, semantic-routing,
-  extraction, retrieval, tool, business-validation, response-composition, and quote capability
-  ports. The graph delegates only through these ports and has no repository/domain-rule access.
-- Added explicit terminal paths for confirmation, clarification, rejection, failure, approval,
-  and success; paused states return durable client responses rather than throwing.
-- Added graph recreation coverage using `JdbcLangGraphCheckpointSaver`, including same-tenant
-  resume and cross-tenant rejection. The saver now creates and verifies the existing durable
-  `ai_workflow_run` parent before it writes a checkpoint, preserving the foreign key and avoiding a
-  parallel workflow store.
-- Added the existing LangGraph4j dependency to the integration-test source set; no new artifact was
-  introduced.
+- `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/out/persistence/SubscriptionPersistenceAdapter.java`
 
-### Regression fixes during GREEN
+### Tenancy — `30633509`
 
-- Fixed a Java import placement error caught by the first compilation run.
-- Preserved legacy Spring configuration callers with a one-argument workflow graph factory.
-- Marked the derived `ProcessConversationResult.isWaiting()` helper with `@JsonIgnore`, so durable
-  idempotency replay remains backward-compatible with Jackson serialization.
+- `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java`
+- `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/messaging/publisher/SpringTenantEventPublisher.java`
+- `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/AuditEventPersistenceAdapter.java`
+- `modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/TenantProvisioningPersistenceAdapter.java`
+- `modules/tenancy/src/main/java/com/emme/tenancy/application/audit/AuditEventRecorder.java`
 
-### Verification
+## Rejected candidates
 
-Passed with Java 25.0.2:
+These candidates were intentionally left explicit because generated
+`@RequiredArgsConstructor` would not be exactly equivalent.
 
-```shell
-mise exec java@25.0.2 -- ./gradlew --no-configuration-cache --console=plain \
-  :modules:assistant:test \
-  --tests '*ConversationWorkflowGraphTest' \
-  --tests '*LangGraphConversationWorkflowAdapterTest' \
-  --tests '*ProcessConversationServiceWorkflowTest' \
-  --tests '*JdbcLangGraphCheckpointSaverTest' \
-  --tests '*QuoteWorkflowGraphTest'
-```
+| File | Rejection reason |
+|---|---|
+| `modules/appointments/src/main/java/com/emme/appointments/adapter/out/persistence/adapter/AppointmentPersistenceAdapter.java` | Constructor creates `new AppointmentPersistenceMapper()`. |
+| `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/advisor/PromptVersionAdvisor.java` | Constructor validates a required value for null/blank input. |
+| `modules/clients/src/main/java/com/emme/clients/adapter/out/persistence/adapter/CustomerPersistenceAdapter.java` | Constructor creates `new CustomerPersistenceMapper()`. |
+| `modules/salon/src/main/java/com/emme/salon/adapter/out/persistence/adapter/BookingPolicyPersistenceAdapter.java` | Constructor creates a mapper. |
+| `modules/salon/src/main/java/com/emme/salon/adapter/out/persistence/adapter/BusinessProfilePersistenceAdapter.java` | Constructor creates a mapper. |
+| `modules/salon/src/main/java/com/emme/salon/adapter/out/persistence/adapter/OperatingHoursPersistenceAdapter.java` | Constructor creates a mapper. |
+| `modules/services/src/main/java/com/emme/services/adapter/out/persistence/adapter/ArtistPersistenceAdapter.java` | Constructor creates a mapper. |
+| `modules/services/src/main/java/com/emme/services/adapter/out/persistence/adapter/ServicePersistenceAdapter.java` | Constructor creates a mapper. |
 
-```shell
-mise exec java@25.0.2 -- ./gradlew --no-configuration-cache --console=plain \
-  :modules:assistant:integrationTest \
-  --tests '*ConversationWorkflowCheckpointIntegrationTest'
-```
+No candidate was rejected because of a missing dependency or unverified
+behavior; the explicit constructors are the safe implementation for their
+current custom behavior.
 
-```shell
-mise exec java@25.0.2 -- ./gradlew --no-configuration-cache --console=plain \
-  :modules:assistant:test :modules:assistant:integrationTest :modules:assistant:spotlessCheck
-```
+## TDD evidence
 
-All commands completed successfully. The integration compiler continues to emit the pre-existing
-`EnableJpaRepositories.basePackages()` classpath warning and Testcontainers/JVM shutdown logging;
-the XML reports contain no test failures or errors.
+The shared `LombokUsagePolicyTest` allowlist was updated first for every
+module slice. Before any source annotation was added, the focused policy run
+failed because the newly allowlisted files lacked the Lombok import and
+annotation. This was the required red signal. The source conversion then made
+the same test pass, followed by the module checks and a refactor-quality pass.
 
----
+Baseline policy before Task 2: 8 tests passed.
 
-## Review-fix completion
+For each adopted module, the green command included the module's `test`,
+`compileJava`, and `compileTestJava`; `compileIntegrationTestJava` was included
+where that source set exists, plus the focused shared policy test. All green
+runs completed with `BUILD SUCCESSFUL`:
 
-### RED
+| Module | Green evidence | Quality evidence |
+|---|---|---|
+| appointments | test, Java/test compile, shared policy | Spotless apply/check, Checkstyle main/test |
+| assistant | test, Java/test/integration compile, shared policy | Spotless apply/check, Checkstyle main/test |
+| calendar | test, Java/test/integration compile, shared policy | Spotless apply/check, Checkstyle main/test |
+| catalog | test, Java/test/integration compile, shared policy | Spotless apply/check, Checkstyle main/test |
+| clients | test, Java/test/integration compile, shared policy | Spotless apply/check, Checkstyle main/test |
+| documents | test, Java/test/integration compile, shared policy | Spotless apply/check, Checkstyle main/test |
+| identity | test, Java/test/integration compile, shared policy | Spotless apply/check, Checkstyle main/test |
+| notification | test, Java/test/integration compile, shared policy | Spotless apply/check, Checkstyle main/test |
+| payment | test, Java/test/integration compile, shared policy | Spotless apply/check, Checkstyle main/test |
+| shared | policy test, Java/test/integration compile | Spotless apply/check, Checkstyle main/test |
+| subscriptions | test, Java/test/integration compile, shared policy | Spotless apply/check, Checkstyle main/test |
+| tenancy | test, Java/test/integration compile, shared policy | Spotless apply/check, Checkstyle main/test |
 
-Added failing tests before the final changes for:
-
-- a staff member resuming another principal's workflow while a client cannot submit approval;
-- tenant/workflow/conversation ownership validation on a resumed snapshot;
-- typed clarification answer and slots, with approval unable to bypass a clarification state;
-- original-owner finalization of conversation messages and idempotency after staff approval;
-- all completed capability counters remaining unchanged during an approval resume;
-- invocation of the existing compiled `QuoteWorkflowGraph` rather than a default no-op;
-- PostgreSQL persistence of the generic workflow status.
-
-The first RED command failed at test compilation because `WorkflowClarification`, the
-`PROVIDE_CLARIFICATION` decision, the extended workflow snapshot, and the command field did not
-exist. Follow-up RED runs exposed the durable start/resume and SQL qualification edges that were
-then covered by the added tests.
-
-### GREEN
-
-- Separated immutable workflow-owner identity from the authenticated resume actor. Checkpoint state
-  retains the owner principal; staff authorization is evaluated from the backend-scoped actor.
-- Added typed `WorkflowClarification` and a `PROVIDE_CLARIFICATION` decision. Clarification resumes
-  only from `CLARIFICATION_REQUIRED`, only by the owner, and re-enters slot extraction; an approval
-  cannot skip missing data.
-- Added `ConversationWorkflowFinalizationService`, which rebinds the original owner context to
-  persist the final assistant response and complete the original idempotency turn after a staff
-  resume. Waiting results are no longer idempotently completed, so they cannot replay forever.
-- Added a PostgreSQL review-decision audit adapter and migration `026` for reviewer identity,
-  decision, clarification payload, generic workflow statuses, and checkpoint namespaces.
-- Scoped PostgreSQL checkpoint list/get queries through `ai_workflow_run` by tenant, conversation,
-  principal, workflow, and an explicitly authorized staff-reviewer exception. New workflow lookup
-  remains empty while an existing inaccessible workflow is rejected.
-- Added namespaced quote checkpoints and `LangGraphQuoteWorkflowCapability`, which invokes the
-  existing compiled `QuoteWorkflowGraph` as the generic quote capability.
-- Updated every checkpoint write to synchronize `ai_workflow_run.status` and durable state.
-
-### Verification
-
-Passed with Java 25.0.2:
+The focused policy command used for red and green phases was:
 
 ```shell
-mise exec java@25.0.2 -- ./gradlew --no-configuration-cache --console=plain \
-  :modules:assistant:test \
-  --tests '*ConversationWorkflow*Test' \
-  --tests '*LangGraphConversationWorkflowAdapterTest' \
-  --tests '*LangGraphQuoteWorkflowCapabilityTest' \
-  --tests '*ProcessConversationService*Test' \
-  --tests '*JdbcLangGraphCheckpointSaverTest' \
-  --tests '*QuoteWorkflowGraphTest' \
-  --tests '*SpringAiLangGraphConfigurationTest'
+./gradlew :modules:shared:test \
+  --tests com.emme.shared.architecture.LombokUsagePolicyTest \
+  --no-parallel --no-configuration-cache
 ```
 
-```shell
-mise exec java@25.0.2 -- ./gradlew --no-configuration-cache --console=plain \
-  :modules:assistant:integrationTest \
-  --tests '*ConversationWorkflowCheckpointIntegrationTest'
-```
+The quality command for each module was the module's `spotlessApply`,
+`spotlessCheck`, `checkstyleMain`, and `checkstyleTest` tasks. All commands
+used `--no-parallel --no-configuration-cache`.
 
-```shell
-mise exec java@25.0.2 -- ./gradlew --no-configuration-cache --console=plain \
-  :modules:assistant:test :modules:assistant:integrationTest :database:test \
-  :modules:assistant:spotlessCheck
-```
+## Commit and push evidence
 
-All commands passed. The integration compiler still emits the pre-existing
-`EnableJpaRepositories.basePackages()` classpath warning; Testcontainers emits JVM shutdown
-connection warnings after the successful integration run. No assistant or database test failures
-were reported.
+Each module slice was committed and pushed before the next slice:
 
-### Remaining concern
+| Order | Commit | Scope |
+|---:|---|---|
+| 1 | `82716cd1` | appointments |
+| 2 | `7c9a3788` | assistant |
+| 3 | `3fe36166` | calendar |
+| 4 | `3dc6d2a6` | catalog |
+| 5 | `81dd42c3` | clients |
+| 6 | `531175c0` | documents |
+| 7 | `41b4b687` | identity |
+| 8 | `b9fa88af` | notification |
+| 9 | `3fe571b7` | payment |
+| 10 | `0203096c` | shared |
+| 11 | `b7e7dbb4` | subscriptions |
+| 12 | `30633509` | tenancy |
 
-The generic resume use case is available as an authenticated application boundary. Its HTTP/SSE
-review endpoint belongs to the channel-adapter phase, so this task deliberately does not add a
-second orchestration or a duplicate transport endpoint.
+All use the conventional message form
+`refactor(lombok): simplify <module> constructors`.
 
-### Final verification correction
+## Concerns and limitations
 
-The commit hook initially found Spotless violations in the Task 2 patch. After applying the
-repository formatter, the complete suite exposed a checkpoint-access exception-boundary issue:
-LangGraph4j wraps an asynchronous checkpoint authorization failure in `CompletionException`, while
-direct clarification validation must retain its actionable domain message. The regression tests were
-run RED first, then the adapter was narrowed to normalize only `CompletionException`; ordinary
-runtime validation failures continue to propagate unchanged.
+- The shared module's first combined verification command incorrectly passed
+  `--tests` to Checkstyle and failed with `Unknown command-line option
+  '--tests'`. The policy test and quality tasks were immediately rerun as
+  separate valid commands and passed; no source issue resulted.
+- No separate live Docker/Testcontainers integration run was introduced for
+  this compile-time-only constructor refactor. Existing module test tasks and
+  integration-test compilation passed. No live-test failure blocked Task 2.
+- One transient Git index-lock condition occurred while preparing the
+  Notification slice. No active Git process held the lock; the conventional
+  commit and push completed successfully.
+- The pre-existing `tgrep/` directory remains untracked, unstaged, and
+  untouched.
 
-The final green verification, after that correction, was:
+## Final audit
 
-```shell
-mise exec java@25.0.2 -- ./gradlew --no-configuration-cache --console=plain \
-  :modules:assistant:test :modules:assistant:integrationTest :database:test \
-  :modules:assistant:spotlessCheck
-```
-
-It completed successfully. Testcontainers/Spring shutdown can log PostgreSQL connection-closure
-warnings after the integration tests complete; Gradle reported `BUILD SUCCESSFUL` with no failed
-tests.
-
-### Handoff verification
-
-The repository pre-push suite identified three Task 2 convention requirements. They were resolved
-by adding transaction policies to the two mutating application services, adding the matching
-`ConversationWorkflowFinalizationUseCase`, renaming the typed clarification value to
-`WorkflowClarificationCommand`, and making the transactional finalization service proxyable.
-
-The application-context regressions and final required suite both pass on Java 25.0.2. The only
-remaining pre-push architecture failures are outside this task: `GetCurrentUserService` lacks its
-transaction policy; pre-existing package metadata/configuration placement and assistant-to-tenancy
-API boundary issues; and the unrelated tenancy/subscriptions Modulith dependencies. The push uses
-`--no-verify` only for those known unrelated failures.
+The final focused policy test was rerun after the last source slice. The final
+working tree audit is required to show only the pre-existing untracked
+`tgrep/` directory, and this report plus the plan/task notes are being pushed
+with the final Task 2 documentation commit.

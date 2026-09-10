@@ -6247,3 +6247,21 @@ Completed in this slice:
 - The live test passes against PostgreSQL through the Colima Docker socket.
 - No unsafe claim-reset operation, migration, enum change, or tenant-schema
   routing change was introduced.
+
+## Validation checkpoint — 2026-09-09
+
+- [x] Re-run Assistant semantic compatibility tests, compilation, and Spotless.
+- [x] Re-run tenancy listener/fixture tests, compilation, and Spotless.
+- [x] Run the live PostgreSQL activation publication rollback/retry test through
+      the Colima Docker socket.
+- [x] Run the full Gradle `check` gate after the latest implementation commits.
+- [ ] Run Kubernetes runtime smoke checks when the configured cluster API is
+      available.
+
+### Results
+
+- All local focused and broad Gradle validation passes.
+- The validation-agent wave was blocked by the service usage limit; it did not
+  indicate a code failure.
+- Kubernetes runtime remains explicitly open because the configured API endpoint
+  is unreachable from this environment.

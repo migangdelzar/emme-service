@@ -4873,3 +4873,24 @@ legacy overload was removed.
   compensating claim reset.
 - The final pushed test correction is `c9314e9a`; remote history also contains
   the Assistant boundary commits `b08f77e0` and `78ee4801`.
+
+## Validation checkpoint — 2026-09-09
+
+- [x] Re-run Assistant semantic compatibility tests, compilation, and Spotless.
+- [x] Re-run tenancy listener/fixture tests, compilation, and Spotless.
+- [x] Run the live PostgreSQL activation publication rollback/retry test through
+      the Colima Docker socket.
+- [x] Run the full Gradle `check` gate after the latest implementation commits.
+- [ ] Run Kubernetes runtime smoke checks when the configured cluster API is
+      available.
+
+### Results
+
+- Assistant and Tenancy focused validation pass; the live retry test passes.
+- `./gradlew check --no-parallel --no-configuration-cache` passes with 269
+  actionable tasks.
+- The separate validation-agent wave could not return because the agent service
+  reached its usage limit; equivalent local validation completed successfully.
+- Kubernetes remains the only environment-specific runtime blocker observed in
+  this checkpoint; `kubectl cluster-info` previously returned connection
+  refused at `0.0.0.0:56613`.

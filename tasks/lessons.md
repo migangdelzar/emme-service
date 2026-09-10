@@ -2510,3 +2510,14 @@
 - **Prevention rule:** Any formatted SQL changeset containing a PostgreSQL
   dollar-quoted block must declare `splitStatements:false` and have a migration
   contract test asserting that parser metadata.
+
+## 2026-09-09 — Keep integration-test identifiers within database limits
+
+- **Failure mode:** The new publication-retry integration test generated a
+  tenant schema slug longer than PostgreSQL's 63-character identifier limit,
+  so the fixture failed during setup before exercising the transaction.
+- **Detection signal:** The live test failed with SQLSTATE data-length
+  validation while inserting `tenant_registry`, before the listener ran.
+- **Prevention rule:** Bound generated schema/tenant identifiers in integration
+  fixtures before testing the behavior under test; keep the identifier-length
+  constraint explicit in fixture helpers where possible.

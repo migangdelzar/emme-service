@@ -104,3 +104,41 @@ not staged.
 - The approved test/E2E Lombok maps remain empty because the current repository
   has no approved test/E2E Lombok files.
 - `tgrep/` remains untracked and was not staged, as required.
+
+---
+
+## Final policy-fix addendum
+
+**Status:** DONE
+**Date:** 2026-09-10
+**Implementation commit:** `aa43892c`
+
+### Review findings closed
+
+- Forbidden and `Builder` annotation tokens are matched independently of
+  line-start position, so annotations following another annotation on the same
+  line are enforced.
+- Comments and string literals are masked before annotation detection, while
+  the original annotation body is retained for argument validation.
+- Builder arguments are split at top-level delimiters and only the actual
+  `setterPrefix` element can satisfy the required exact value `"with"`;
+  quoted text in another builder argument is rejected.
+- Existing owned-root, source-set, generated-`build/`, production allowlist,
+  test/E2E map, and policy-test exclusion protections remain unchanged.
+
+### TDD and verification evidence
+
+- **RED:** The inherited same-line annotation and quoted-builder-argument
+  regressions were present as focused tests before the implementation changes;
+  the prior report records their failing compilation/implementation cycle.
+- **GREEN:** `./gradlew :modules:shared:test --tests com.emme.shared.architecture.LombokUsagePolicyTest --no-parallel --no-configuration-cache`
+  completed with `BUILD SUCCESSFUL`; the XML result reports 8 tests, 0
+  skipped, 0 failures, and 0 errors.
+- **REFACTOR:** `./gradlew :modules:shared:spotlessApply :modules:shared:spotlessCheck --no-parallel --no-configuration-cache`
+  completed with `BUILD SUCCESSFUL`.
+- `git diff --check` passed.
+
+### Preservation
+
+The pre-existing untracked `tgrep/` directory remains untracked and was not
+staged or modified.

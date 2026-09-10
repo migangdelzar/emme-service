@@ -33,69 +33,69 @@ Every file below received `import lombok.RequiredArgsConstructor`,
 
 ### Appointments — `82716cd1`
 
-- `modules/appointments/src/main/java/com/emme/appointments/adapter/in/web/DashboardController.java`
+- `modules/appointments/src/main/java/com/emme/appointments/adapter/in/web/controller/DashboardController.java`
 - `modules/appointments/src/main/java/com/emme/appointments/adapter/out/messaging/publisher/SpringAppointmentEventPublisher.java`
 - `modules/appointments/src/main/java/com/emme/appointments/adapter/out/persistence/adapter/AppointmentCollisionAdapter.java`
 
 ### Assistant — `7c9a3788`
 
-- `modules/assistant/src/main/java/com/emme/assistant/adapter/in/web/WhatsAppWebhookController.java`
-- `modules/assistant/src/main/java/com/emme/assistant/adapter/out/messaging/mapper/WhatsAppWebhookMapper.java`
-- `modules/assistant/src/main/java/com/emme/assistant/adapter/out/messaging/persistence/WhatsAppWebhookEventPersistenceAdapter.java`
+- `modules/assistant/src/main/java/com/emme/assistant/adapter/in/webhook/WhatsAppWebhookController.java`
+- `modules/assistant/src/main/java/com/emme/assistant/adapter/in/webhook/WhatsAppWebhookMapper.java`
+- `modules/assistant/src/main/java/com/emme/assistant/adapter/out/persistence/adapter/WhatsAppWebhookEventPersistenceAdapter.java`
 - `modules/assistant/src/main/java/com/emme/assistant/adapter/out/persistence/mapper/ConversationEventPersistenceMapper.java`
-- `modules/assistant/src/main/java/com/emme/assistant/application/tenant/ConfiguredWhatsAppTenantResolver.java`
-- `modules/assistant/src/main/java/com/emme/assistant/application/tenant/SemanticCacheInvalidationListener.java`
-- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/catalog/CatalogDesignImageReader.java`
+- `modules/assistant/src/main/java/com/emme/assistant/adapter/out/tenant/ConfiguredWhatsAppTenantResolver.java`
+- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/in/messaging/SemanticCacheInvalidationListener.java`
+- `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/storage/CatalogDesignImageReader.java`
 
 ### Calendar — `3fe36166`
 
-- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/CalendarController.java`
-- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/ClientCalendarController.java`
-- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/GoogleOAuthController.java`
-- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/SheetsController.java`
-- `modules/calendar/src/main/java/com/emme/calendar/adapter/out/client/google/GoogleSheetsAdapter.java`
-- `modules/calendar/src/main/java/com/emme/calendar/adapter/out/client/google/OAuthTokenSource.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/controller/CalendarController.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/controller/ClientCalendarController.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/controller/GoogleOAuthController.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/controller/SheetsController.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/adapter/GoogleSheetsAdapter.java`
+- `modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/oauth/OAuthTokenSource.java`
 - `modules/calendar/src/main/java/com/emme/calendar/adapter/out/persistence/adapter/CalendarPersistenceAdapter.java`
 - `modules/calendar/src/main/java/com/emme/calendar/adapter/out/persistence/adapter/GoogleSpreadsheetLinkQueryAdapter.java`
 
 ### Catalog — `3dc6d2a6`
 
-- `modules/catalog/src/main/java/com/emme/catalog/adapter/in/web/CatalogController.java`
+- `modules/catalog/src/main/java/com/emme/catalog/adapter/in/web/controller/CatalogController.java`
 
 ### Clients — `81dd42c3`
 
-- `modules/clients/src/main/java/com/emme/clients/adapter/in/web/CustomerController.java`
+- `modules/clients/src/main/java/com/emme/clients/adapter/in/web/controller/CustomerController.java`
 
 ### Documents — `531175c0`
 
-- `modules/documents/src/main/java/com/emme/documents/adapter/in/web/DocumentController.java`
+- `modules/documents/src/main/java/com/emme/documents/adapter/in/web/controller/DocumentController.java`
 - `modules/documents/src/main/java/com/emme/documents/adapter/out/persistence/adapter/DocumentPersistenceAdapter.java`
 - `modules/documents/src/main/java/com/emme/documents/adapter/out/search/HybridDocumentSearchAdapter.java`
 
 ### Identity — `41b4b687`
 
-- `modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/AppointmentCreatedConsumer.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/AuthController.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/CurrentUserController.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/FeatureFlagController.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/IdentityController.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/TenantFeatureFlagController.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/out/security/IdentityJwtAuthoritiesConverter.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/out/security/IdentityUserAuthoritiesMapper.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/out/security/CustomerTokenDecoderAdapter.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/out/subscription/SubscriptionPlanAdapter.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/out/tenant/TenantIdentityRealmAdapter.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/CustomerMembershipPersistenceAdapter.java`
-- `modules/identity/src/main/java/com/emme/identity/adapter/out/security/RedisLoginAttemptRateLimiter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/messaging/consumer/AppointmentCreatedConsumer.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/AuthController.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/CurrentUserController.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/FeatureFlagController.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/IdentityController.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/controller/TenantFeatureFlagController.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/security/IdentityJwtAuthoritiesConverter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/in/web/security/IdentityUserAuthoritiesMapper.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/client/keycloak/CustomerTokenDecoderAdapter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/client/subscription/SubscriptionPlanAdapter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/module/tenancy/TenantIdentityRealmAdapter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/persistence/adapter/CustomerMembershipPersistenceAdapter.java`
+- `modules/identity/src/main/java/com/emme/identity/adapter/out/ratelimit/RedisLoginAttemptRateLimiter.java`
 
 ### Notification — `b9fa88af`
 
-- `modules/notification/src/main/java/com/emme/notification/adapter/out/messaging/publisher/SpringNotificationEventPublisher.java`
+- `modules/notification/src/main/java/com/emme/notification/adapter/out/event/SpringNotificationEventPublisher.java`
 
 ### Payment — `3fe571b7`
 
 - `modules/payment/src/main/java/com/emme/payment/adapter/out/messaging/publisher/SpringPaymentWorkflowEventPublisher.java`
-- `modules/payment/src/main/java/com/emme/payment/adapter/out/messaging/persistence/PaymentWebhookEventPersistenceAdapter.java`
+- `modules/payment/src/main/java/com/emme/payment/adapter/out/persistence/adapter/PaymentWebhookEventPersistenceAdapter.java`
 
 ### Shared — `0203096c`
 
@@ -109,7 +109,7 @@ compile-only/annotation-processor convention was reused.
 
 ### Subscriptions — `b7e7dbb4`
 
-- `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/out/persistence/SubscriptionPersistenceAdapter.java`
+- `modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/out/persistence/adapter/SubscriptionPersistenceAdapter.java`
 
 ### Tenancy — `30633509`
 
@@ -224,3 +224,21 @@ The final focused policy test was rerun after the last source slice. The final
 working tree audit is required to show only the pre-existing untracked
 `tgrep/` directory, and this report plus the plan/task notes are being pushed
 with the final Task 2 documentation commit.
+
+## Report correction addendum — 2026-09-10
+
+This addendum corrects F-01 from `task-2-review.md`. The adopted-candidate
+inventory above now uses the exact 48 production source paths from the Task 2
+range `2406a826..db23c045` and the current `LombokUsagePolicyTest` allowlist.
+The corrected entries preserve the original module and commit grouping; no
+production source, policy assertion, or policy behavior was changed.
+
+Verification performed after the correction:
+
+- The adopted list contains 48 paths.
+- The adopted list matches the 48 production paths changed in
+  `git diff --name-only 2406a826..db23c045 -- 'modules/**/src/main/java/**/*.java'`.
+- Every adopted path exists in the checkout and is present in the policy
+  allowlist.
+- `git diff --check` reports no whitespace errors for the corrected report.
+- The pre-existing untracked `tgrep/` directory remains untouched.

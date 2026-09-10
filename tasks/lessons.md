@@ -2521,3 +2521,14 @@
 - **Prevention rule:** Bound generated schema/tenant identifiers in integration
   fixtures before testing the behavior under test; keep the identifier-length
   constraint explicit in fixture helpers where possible.
+
+## 2026-09-10 — Avoid zsh special variables in repository audits
+
+- Failure mode: A path-audit loop used the variable name `path`, which zsh
+  treats as the executable search path, breaking subsequent `git` and `grep`
+  commands in that shell.
+- Detection signal: The audit reported command-not-found errors even though
+  the same commands worked before the loop.
+- Prevention rule: Use neutral variable names such as `candidate` for file
+  paths in zsh audit scripts; rerun the complete audit after any shell-level
+  verification failure.

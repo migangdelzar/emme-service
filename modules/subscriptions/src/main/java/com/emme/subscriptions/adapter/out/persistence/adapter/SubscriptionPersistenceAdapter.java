@@ -5,15 +5,13 @@ import com.emme.subscriptions.adapter.out.persistence.repository.SpringDataSubsc
 import com.emme.subscriptions.application.port.out.SubscriptionRepository;
 import com.emme.subscriptions.domain.model.Subscription;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class SubscriptionPersistenceAdapter implements SubscriptionRepository {
   private final SpringDataSubscriptionRepository repository;
-
-  public SubscriptionPersistenceAdapter(SpringDataSubscriptionRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public Optional<Subscription> find() {

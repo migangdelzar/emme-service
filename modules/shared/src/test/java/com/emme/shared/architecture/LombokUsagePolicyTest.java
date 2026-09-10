@@ -247,6 +247,7 @@ class LombokUsagePolicyTest {
           "modules/subscriptions/src/main/java/com/emme/subscriptions/application/service/EnsureTenantSubscriptionService.java",
           "modules/subscriptions/src/main/java/com/emme/subscriptions/application/service/GetSubscriptionPlanService.java",
           "modules/subscriptions/src/main/java/com/emme/subscriptions/application/service/GetSubscriptionService.java",
+          "modules/subscriptions/src/main/java/com/emme/subscriptions/adapter/out/persistence/adapter/SubscriptionPersistenceAdapter.java",
           "modules/identity/src/main/java/com/emme/identity/application/service/AssignMembershipService.java",
           "modules/identity/src/main/java/com/emme/identity/application/service/AuthenticateCustomerService.java",
           "modules/identity/src/main/java/com/emme/identity/application/service/AuthenticateUserService.java",

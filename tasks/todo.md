@@ -6265,3 +6265,27 @@ Completed in this slice:
   indicate a code failure.
 - Kubernetes runtime remains explicitly open because the configured API endpoint
   is unreachable from this environment.
+
+## Current slice — Live persistence, RLS, and deferred Kafka checkpoint (2026-09-09)
+
+- [x] Run live Clients, Services, and Salon persistence integration suites.
+- [x] Run live Notification, Payment, Catalog, and Assistant optimistic-lock
+      conflict tests.
+- [x] Run aggregate non-Kafka `integrationTest` with the isolated Colima Docker
+      socket.
+- [x] Run opt-in Kafka externalization with `-Pemme.kafka-deferred=true`.
+- [x] Confirm broader tenant RLS behavior passes through the tenancy suite.
+- [ ] Complete Kubernetes runtime smoke checks when a reachable k3d cluster is
+      available.
+- [ ] Continue final enterprise runtime gates requiring Kubernetes or external
+      provider infrastructure.
+
+### Results
+
+- The three foundational JPA persistence suites pass live against PostgreSQL.
+- All four remaining aggregate optimistic-lock conflict tests pass live.
+- Aggregate non-Kafka integration passes with 105 actionable tasks.
+- Kafka externalization passes with the test-local externalized event, stable
+  topic, tenant partition key, and expected payload.
+- Kubernetes remains blocked by the absent `k3d-emme-dev` cluster; the current
+  context targets `0.0.0.0:56613` and refuses connections.

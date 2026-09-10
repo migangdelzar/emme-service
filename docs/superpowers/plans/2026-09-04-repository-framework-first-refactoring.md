@@ -4894,3 +4894,37 @@ legacy overload was removed.
 - Kubernetes remains the only environment-specific runtime blocker observed in
   this checkpoint; `kubectl cluster-info` previously returned connection
   refused at `0.0.0.0:56613`.
+
+## Current slice 19U/23E — Complete live non-Kafka and deferred Kafka evidence — 2026-09-09
+
+The remaining local PostgreSQL aggregate conflict matrix and the aggregate
+non-Kafka integration gate now pass through the isolated Colima Docker socket.
+The broader tenant RLS behavior test also passes as part of the tenancy
+integration suite. The explicitly deferred Kafka externalization test now
+passes with the opt-in Gradle property, so Kafka delivery is no longer blocked
+by the previously observed native-image startup failure in this environment.
+
+- [x] Run live Clients, Services, and Salon persistence suites.
+- [x] Run live Notification, Payment, Catalog, and Assistant optimistic-lock
+      conflict tests.
+- [x] Run the aggregate non-Kafka `integrationTest` gate.
+- [x] Run the opt-in Kafka externalization Testcontainers test.
+- [x] Record broader tenant RLS behavior and teardown warnings accurately.
+- [ ] Complete Kubernetes runtime smoke checks when a reachable cluster is
+      available.
+- [ ] Continue final enterprise runtime gates that require Kubernetes or
+      external provider infrastructure.
+
+### Results
+
+- Clients, Services, and Salon live persistence integration tests pass.
+- Notification, Payment, Catalog, and Assistant live optimistic-lock tests
+  pass with one winner and one conflict as expected.
+- Aggregate `integrationTest` passes: 105 actionable tasks, no failed tests.
+  Hikari/PostgreSQL connection messages occur only during isolated
+  Testcontainers shutdown after successful module tasks.
+- Opt-in `KafkaEventStreamingIntegrationTest` passes with
+  `-Pemme.kafka-deferred=true`: the test-local externalized event reaches its
+  stable topic with the tenant partition key and expected payload.
+- `kubectl cluster-info` still fails because `k3d-emme-dev` resolves to
+  `https://0.0.0.0:56613`, and no k3d cluster is currently running.

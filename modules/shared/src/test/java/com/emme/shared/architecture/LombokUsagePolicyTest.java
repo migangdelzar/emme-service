@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,13 @@ class LombokUsagePolicyTest {
           "integrationTest", Set.<String>of(),
           "testFixtures", Set.<String>of(),
           "e2eTest", Set.<String>of());
+  private static final Pattern FORBIDDEN_ANNOTATION_PATTERN =
+      Pattern.compile(
+          "(?m)^\\s*@(?:[A-Za-z_$][\\w$]*\\.)*(?:Data|Setter|EqualsAndHashCode|ToString|Delegate|SneakyThrows|Synchronized|ExtensionMethod|StandardException)\\b");
+  private static final Pattern BUILDER_ANNOTATION_PATTERN =
+      Pattern.compile("(?ms)^\\s*@(?:[A-Za-z_$][\\w$]*\\.)*Builder\\b(?:\\s*\\(([^)]*)\\))?");
+  private static final Pattern REQUIRED_BUILDER_PREFIX_PATTERN =
+      Pattern.compile("\\bsetterPrefix\\s*=\\s*\\\"with\\\"");
 
   @Test
   void scansAllOwnedSourceSetsWithoutGeneratedBuildOutput() throws IOException {
@@ -37,6 +46,82 @@ class LombokUsagePolicyTest {
         .anyMatch(path -> path.toString().replace('\\', '/').contains("/src/e2eTest/java/"))
         .anyMatch(path -> path.toString().replace('\\', '/').contains("/src/testFixtures/java/"))
         .noneMatch(path -> path.toString().replace('\\', '/').contains("/build/"));
+  }
+
+  @Test
+  void considersEveryOwnedSourceRootIncludingBuildLogic() throws IOException {
+    Path root = sourcePath();
+
+    assertThat(ownedSourceRoots(root))
+        .containsExactlyInAnyOrder("modules", "libraries", "applications", "build-logic");
+  }
+
+  @Test
+  void rejectsEachForbiddenAnnotationFamilyInSyntheticSources() {
+    Set<String> forbiddenAnnotations =
+        Set.of(
+            "Data",
+            "Setter",
+            "EqualsAndHashCode",
+            "ToString",
+            "Delegate",
+            "SneakyThrows",
+            "Synchronized",
+            "ExtensionMethod",
+            "StandardException");
+
+    for (String annotation : forbiddenAnnotations) {
+      assertThat(containsForbiddenAnnotation("@" + annotation + "\nclass Synthetic {}"))
+          .as("unqualified forbidden annotation: %s", annotation)
+          .isTrue();
+      assertThat(containsForbiddenAnnotation("@lombok." + annotation + "\nclass Synthetic {}"))
+          .as("qualified forbidden annotation: %s", annotation)
+          .isTrue();
+    }
+
+    assertThat(containsForbiddenAnnotation("// @Data\nString description = \"@lombok.Setter\";"))
+        .isFalse();
+  }
+
+  @Test
+  void validatesBuilderPrefixOnlyInsideQualifiedBuilderAnnotation() {
+    assertThat(builderHasRequiredSetterPrefix("@Builder(setterPrefix = \"with\")")).isTrue();
+    assertThat(builderHasRequiredSetterPrefix("@lombok.Builder(setterPrefix = \"with\")")).isTrue();
+    assertThat(builderHasRequiredSetterPrefix("@Builder"))
+        .as("default builder prefix must be rejected")
+        .isFalse();
+    assertThat(builderHasRequiredSetterPrefix("@lombok.Builder(setterPrefix = \"set\")")).isFalse();
+    assertThat(
+            builderHasRequiredSetterPrefix(
+                "@Builder\n// setterPrefix = \"with\"\n"
+                    + "String misleading = \"setterPrefix = \\\"with\\\"\";"))
+        .as("comments and string literals must not satisfy the builder policy")
+        .isFalse();
+  }
+
+  @Test
+  void validatesApprovedTestMapEntriesAgainstOwnedNonProductionSourceSets() throws IOException {
+    Path root = sourcePath();
+
+    assertThat(
+            isValidApprovedTestSource(
+                root,
+                "test",
+                "modules/shared/src/test/java/com/emme/shared/architecture/LombokUsagePolicyTest.java"))
+        .isTrue();
+    assertThat(
+            isValidApprovedTestSource(
+                root,
+                "integrationTest",
+                "modules/shared/src/test/java/com/emme/shared/architecture/LombokUsagePolicyTest.java"))
+        .isFalse();
+    assertThat(
+            isValidApprovedTestSource(
+                root,
+                "test",
+                "modules/shared/src/main/java/com/emme/shared/configuration/I18nConfiguration.java"))
+        .isFalse();
+    assertThat(isValidApprovedTestSource(root, "test", "README.java")).isFalse();
   }
 
   private static final Set<String> APPROVED_FILES =
@@ -160,10 +245,7 @@ class LombokUsagePolicyTest {
 
     assertThat(lombokFiles).containsExactlyInAnyOrderElementsOf(APPROVED_FILES);
 
-    Set<String> approvedTestFiles =
-        APPROVED_TEST_FILES_BY_SOURCE_SET.values().stream()
-            .flatMap(Set::stream)
-            .collect(Collectors.toSet());
+    Set<String> approvedTestFiles = approvedTestFiles(root);
     Set<String> testLombokFiles =
         ownedJavaSources(root).stream()
             .filter(path -> !isProductionSource(path))
@@ -190,13 +272,14 @@ class LombokUsagePolicyTest {
       }
       assertThat(contents)
           .as("forbidden Lombok annotation: %s", source)
-          .doesNotContainPattern(
-              "(?m)^\\s*@(Data|Setter|EqualsAndHashCode|ToString|Delegate|SneakyThrows|Synchronized|ExtensionMethod|StandardException)\\b");
+          .doesNotContainPattern(FORBIDDEN_ANNOTATION_PATTERN);
 
-      if (!isPolicyTest(root, source) && containsAnnotation(contents, "Builder")) {
+      if (!isPolicyTest(root, source) && containsBuilderAnnotation(contents)) {
         String relativePath = root.relativize(source).toString().replace('\\', '/');
         assertThat(approvedLombokFiles()).contains(relativePath);
-        assertThat(contents).containsPattern("setterPrefix\\s*=\\s*\"with\"");
+        assertThat(builderHasRequiredSetterPrefix(contents))
+            .as("every builder must use setterPrefix = \"with\": %s", source)
+            .isTrue();
       }
     }
   }
@@ -225,7 +308,7 @@ class LombokUsagePolicyTest {
           .filter(
               path -> {
                 String normalized = root.relativize(path).toString().replace('\\', '/');
-                return OWNED_SOURCE_ROOTS.stream()
+                return ownedSourceRoots(root).stream()
                         .anyMatch(sourceRoot -> normalized.startsWith(sourceRoot + "/"))
                     && normalized.contains("/src/")
                     && !normalized.contains("/build/")
@@ -233,6 +316,12 @@ class LombokUsagePolicyTest {
               })
           .toList();
     }
+  }
+
+  private static Set<String> ownedSourceRoots(Path root) {
+    return OWNED_SOURCE_ROOTS.stream()
+        .filter(sourceRoot -> Files.isDirectory(root.resolve(sourceRoot)))
+        .collect(Collectors.toSet());
   }
 
   private static boolean isProductionSource(Path path) {
@@ -250,8 +339,56 @@ class LombokUsagePolicyTest {
         .collect(Collectors.toSet());
   }
 
-  private static boolean containsAnnotation(String contents, String annotation) {
-    return contents.lines().anyMatch(line -> line.matches("\\s*@" + annotation + "\\b.*"));
+  private static boolean containsForbiddenAnnotation(String contents) {
+    return FORBIDDEN_ANNOTATION_PATTERN.matcher(contents).find();
+  }
+
+  private static boolean containsBuilderAnnotation(String contents) {
+    return BUILDER_ANNOTATION_PATTERN.matcher(contents).find();
+  }
+
+  private static boolean builderHasRequiredSetterPrefix(String contents) {
+    Matcher builders = BUILDER_ANNOTATION_PATTERN.matcher(contents);
+    boolean foundBuilder = false;
+    while (builders.find()) {
+      foundBuilder = true;
+      String annotationBody = builders.group(1);
+      if (annotationBody == null
+          || !REQUIRED_BUILDER_PREFIX_PATTERN.matcher(annotationBody).find()) {
+        return false;
+      }
+    }
+    return foundBuilder;
+  }
+
+  private static Set<String> approvedTestFiles(Path root) throws IOException {
+    Set<String> approvedFiles =
+        APPROVED_TEST_FILES_BY_SOURCE_SET.values().stream()
+            .flatMap(Set::stream)
+            .collect(Collectors.toSet());
+
+    for (Map.Entry<String, Set<String>> entry : APPROVED_TEST_FILES_BY_SOURCE_SET.entrySet()) {
+      for (String relativePath : entry.getValue()) {
+        assertThat(isValidApprovedTestSource(root, entry.getKey(), relativePath))
+            .as(
+                "approved test source must be owned and in src/%s/java: %s",
+                entry.getKey(), relativePath)
+            .isTrue();
+      }
+    }
+    return approvedFiles;
+  }
+
+  private static boolean isValidApprovedTestSource(Path root, String sourceSet, String relativePath)
+      throws IOException {
+    Path source = root.resolve(relativePath).normalize();
+    if (!source.startsWith(root) || !Files.isRegularFile(source)) {
+      return false;
+    }
+    String normalized = root.relativize(source).toString().replace('\\', '/');
+    return ownedJavaSources(root).contains(source)
+        && normalized.contains("/src/" + sourceSet + "/java/")
+        && !isProductionSource(source);
   }
 
   private boolean containsLombok(Path source) {

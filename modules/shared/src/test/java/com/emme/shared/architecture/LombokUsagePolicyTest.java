@@ -321,7 +321,8 @@ class LombokUsagePolicyTest {
           "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/client/GoogleSheetsClient.java",
           "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/oauth/OAuthTokenSource.java",
           "modules/calendar/src/main/java/com/emme/calendar/application/service/GetBusyTimesService.java",
-          "modules/calendar/src/main/java/com/emme/calendar/application/service/SyncCalendarEventsService.java");
+          "modules/calendar/src/main/java/com/emme/calendar/application/service/SyncCalendarEventsService.java",
+          "modules/documents/src/main/java/com/emme/documents/application/service/FailDocumentService.java");
 
   @Test
   void onlyUsesLombokInApprovedProductionFiles() throws IOException {

@@ -10,20 +10,16 @@ import com.emme.documents.domain.model.DocumentChunk;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** JPA adapter implementing the application-owned document persistence port. */
 @Component
+@RequiredArgsConstructor
 public class DocumentPersistenceAdapter implements DocumentRepository {
 
   private final SpringDataDocumentRepository documents;
   private final SpringDataDocumentChunkRepository chunks;
-
-  public DocumentPersistenceAdapter(
-      SpringDataDocumentRepository documents, SpringDataDocumentChunkRepository chunks) {
-    this.documents = documents;
-    this.chunks = chunks;
-  }
 
   @Override
   public Optional<Document> findById(UUID documentId) {

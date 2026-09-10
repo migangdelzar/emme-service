@@ -6,17 +6,15 @@ import com.emme.shared.search.HybridSearch;
 import com.emme.shared.search.SearchTarget;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** Adapts the shared PostgreSQL hybrid search capability to Documents. */
 @Component
+@RequiredArgsConstructor
 public class HybridDocumentSearchAdapter implements DocumentSearchPort {
 
   private final HybridSearch search;
-
-  public HybridDocumentSearchAdapter(HybridSearch search) {
-    this.search = search;
-  }
 
   @Override
   public List<DocumentSearchHit> search(

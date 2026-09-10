@@ -25,6 +25,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/documents", version = "1.0")
 @Tag(name = "Documents")
+@RequiredArgsConstructor
 public class DocumentController {
 
   private final UploadDocumentUseCase uploadDocument;
@@ -45,23 +47,6 @@ public class DocumentController {
   private final RetireDocumentUseCase retireDocument;
   private final GetDocumentChunksUseCase getDocumentChunks;
   private final DocumentWebMapper mapper;
-
-  public DocumentController(
-      UploadDocumentUseCase uploadDocument,
-      ListDocumentsUseCase listDocuments,
-      GetDocumentUseCase getDocument,
-      ProcessDocumentUseCase processDocument,
-      RetireDocumentUseCase retireDocument,
-      GetDocumentChunksUseCase getDocumentChunks,
-      DocumentWebMapper mapper) {
-    this.uploadDocument = uploadDocument;
-    this.listDocuments = listDocuments;
-    this.getDocument = getDocument;
-    this.processDocument = processDocument;
-    this.retireDocument = retireDocument;
-    this.getDocumentChunks = getDocumentChunks;
-    this.mapper = mapper;
-  }
 
   @PostMapping
   @Operation(summary = "Upload a new document")

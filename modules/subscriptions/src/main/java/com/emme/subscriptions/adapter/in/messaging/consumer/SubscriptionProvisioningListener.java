@@ -8,6 +8,8 @@ import java.util.Objects;
 import java.util.UUID;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class SubscriptionProvisioningListener {
@@ -24,6 +26,7 @@ public class SubscriptionProvisioningListener {
   }
 
   @ApplicationModuleListener(id = "subscriptions.tenant-activated.provisioning")
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
   public void onTenantActivated(TenantActivated event) {
     UUID databaseId = databaseResolver.resolve(event.tenantId());
     TenantContextHolder.withTenantAndCorrelation(

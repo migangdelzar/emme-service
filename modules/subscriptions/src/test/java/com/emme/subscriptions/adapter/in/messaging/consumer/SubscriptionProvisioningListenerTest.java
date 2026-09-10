@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @ExtendWith(MockitoExtension.class)
 class SubscriptionProvisioningListenerTest {
@@ -73,5 +75,16 @@ class SubscriptionProvisioningListenerTest {
                 listener.onTenantActivated(
                     new TenantActivated(null, tenantId, "studio", "studio_schema", "realm")))
         .isSameAs(failure);
+  }
+
+  @Test
+  void suspendsTheEventTransactionBeforeInstallingTenantContext() throws Exception {
+    var method =
+        SubscriptionProvisioningListener.class.getDeclaredMethod(
+            "onTenantActivated", TenantActivated.class);
+
+    assertThat(method.getAnnotation(Transactional.class)).isNotNull();
+    assertThat(method.getAnnotation(Transactional.class).propagation())
+        .isEqualTo(Propagation.NOT_SUPPORTED);
   }
 }

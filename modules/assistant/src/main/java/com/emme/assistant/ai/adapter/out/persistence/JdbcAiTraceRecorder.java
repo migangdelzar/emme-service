@@ -19,10 +19,6 @@ public final class JdbcAiTraceRecorder implements AiTraceRecorder {
   private final AiTraceRedactor redactor;
   private final ObjectMapper objectMapper;
 
-  public JdbcAiTraceRecorder(JdbcClient jdbc, AiTraceRedactor redactor) {
-    this(jdbc, redactor, new ObjectMapper());
-  }
-
   public JdbcAiTraceRecorder(JdbcClient jdbc, AiTraceRedactor redactor, ObjectMapper objectMapper) {
     this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null");
     this.redactor = Objects.requireNonNull(redactor, "redactor must not be null");

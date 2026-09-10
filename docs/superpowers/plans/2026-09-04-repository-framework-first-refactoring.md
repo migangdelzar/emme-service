@@ -5061,3 +5061,26 @@ the PostgreSQL-backed workflow boundary.
   :modules:subscriptions:test :modules:shared:test` passed with 0 failures.
 - The live test process emitted a non-fatal Testcontainers cleanup-thread prune
   warning during shutdown; the Gradle task still exited successfully.
+
+## Current slice — Spring-managed AI trace serialization — 2026-09-09
+
+The durable AI trace adapter now requires the application-owned Jackson
+`ObjectMapper` at its construction boundary. The Spring configuration is the
+only composition path, and the unused fallback constructor/overload that
+created a private mapper has been removed.
+
+- [x] Add a failing contract test for the single explicit trace-recorder
+      constructor and Spring configuration method.
+- [x] Remove the fallback `ObjectMapper` construction from the trace adapter
+      and configuration.
+- [x] Run focused Assistant tests, compilation, and Spotless.
+- [ ] Continue remaining event-delivery, deployment-runtime, and final
+      compatibility gates.
+
+### Results
+
+- `SpringAiTraceConfigurationTest` passes with the Spring-managed mapper
+  supplied explicitly.
+- Assistant Java/test compilation and Spotless checks pass.
+- No provider-neutral contract, tenant boundary, migration, or trace payload
+  behavior changed.

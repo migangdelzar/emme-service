@@ -6364,6 +6364,24 @@ Completed in this slice:
 - The corrected Kustomize overlay renders successfully and matches the
   sibling-owned frontend image contract.
 
+## Current slice — Spring-managed AI trace serialization — 2026-09-09
+
+- [x] Add a failing contract test for the explicit trace-recorder constructor
+      and configuration dependency.
+- [x] Remove the fallback `ObjectMapper` construction from the AI trace
+      adapter and Spring configuration.
+- [x] Run focused Assistant tests, compilation, Spotless, and `git diff --check`.
+- [ ] Continue remaining event-delivery, deployment-runtime, and final
+      compatibility gates.
+
+### Results
+
+- `SpringAiTraceConfigurationTest` passes with one explicit,
+  Spring-managed `ObjectMapper` path.
+- Assistant compilation and Spotless checks pass.
+- No tenant-schema, provider-neutral contract, migration, or trace behavior
+  changed.
+
 ## Current slice — Kubernetes overlay and frontend artifact recheck (2026-09-09)
 
 - [x] Render all four checked-in Kubernetes overlays after the frontend port

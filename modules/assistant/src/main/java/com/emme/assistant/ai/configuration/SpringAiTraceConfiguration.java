@@ -29,8 +29,4 @@ public class SpringAiTraceConfiguration {
             client -> new JdbcAiTraceRecorder(client, redactor, objectMapper))
         .orElse(NoopAiTraceRecorder.INSTANCE);
   }
-
-  AiTraceRecorder aiTraceRecorder(Optional<JdbcClient> jdbc, AiTraceRedactor redactor) {
-    return aiTraceRecorder(jdbc, redactor, new ObjectMapper());
-  }
 }

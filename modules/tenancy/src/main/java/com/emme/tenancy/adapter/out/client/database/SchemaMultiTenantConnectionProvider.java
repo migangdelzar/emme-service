@@ -9,12 +9,12 @@ import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.hibernate.service.UnknownUnwrapTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnBean(name = "tenantRoutingDataSource")
+@Conditional(TenantIdentifierResolver.TenantDatabaseCondition.class)
 @SuppressWarnings("serial")
 public class SchemaMultiTenantConnectionProvider
     implements MultiTenantConnectionProvider<String>, HibernatePropertiesCustomizer {

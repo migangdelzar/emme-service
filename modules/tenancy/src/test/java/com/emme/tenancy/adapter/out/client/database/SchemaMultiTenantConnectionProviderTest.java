@@ -13,8 +13,18 @@ import java.util.HashMap;
 import javax.sql.DataSource;
 import org.hibernate.cfg.AvailableSettings;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Conditional;
 
 class SchemaMultiTenantConnectionProviderTest {
+
+  @Test
+  void usesTheDeterministicTenantDatabaseConditionForBeanRegistration() {
+    var condition = SchemaMultiTenantConnectionProvider.class.getAnnotation(Conditional.class);
+
+    assertThat(condition).isNotNull();
+    assertThat(condition.value())
+        .containsExactly(TenantIdentifierResolver.TenantDatabaseCondition.class);
+  }
 
   @Test
   void getsCoreConnectionsFromTheMetadataDataSource() throws Exception {

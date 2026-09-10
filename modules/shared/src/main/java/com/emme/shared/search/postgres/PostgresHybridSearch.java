@@ -5,21 +5,19 @@ import com.emme.shared.search.SearchTarget;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /** PostgreSQL implementation of {@link HybridSearch} using pgvector, FTS, and RRF. */
 @Component
+@RequiredArgsConstructor
 public final class PostgresHybridSearch implements HybridSearch {
 
   private static final int BRANCH_LIMIT = 20;
   private static final int RRF_K = 60;
 
   private final JdbcClient jdbc;
-
-  public PostgresHybridSearch(JdbcClient jdbc) {
-    this.jdbc = jdbc;
-  }
 
   @Override
   public List<Scored> search(

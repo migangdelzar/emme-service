@@ -1,6 +1,7 @@
 package com.emme.shared.persistence.jdbc;
 
 import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -13,13 +14,10 @@ import org.springframework.stereotype.Component;
  * themselves.
  */
 @Component
+@RequiredArgsConstructor
 public final class BootstrapConnectionExecutor {
 
   private final JdbcTemplate jdbcTemplate;
-
-  public BootstrapConnectionExecutor(JdbcTemplate jdbcTemplate) {
-    this.jdbcTemplate = jdbcTemplate;
-  }
 
   /**
    * Executes side-effecting work with a managed connection.

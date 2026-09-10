@@ -1,5 +1,6 @@
 plugins {
   id("emme.java-library")
+  id("emme.lombok")
   id("emme.integration-testing")
   id("emme.persistence")
   id("emme.modulith")

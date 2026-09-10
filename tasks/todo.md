@@ -6399,3 +6399,21 @@ Completed in this slice:
 - The sibling build reached Vite’s 4,077-module transform, then stalled and was
   terminated after the Docker daemon became unresponsive.
 - No incomplete frontend artifact was used for Kubernetes validation.
+
+## Current slice — Selective Lombok and `with` builder policy — 2026-09-09
+
+- [x] Add opt-in Lombok convention wiring at version `1.18.48`.
+- [x] Add a repository policy for approved Lombok usage and future
+      `setterPrefix = "with"` builders.
+- [x] Convert only the approved constructor-only Spring beans.
+- [x] Verify annotation processor/runtime scopes, tests, compilation, and
+      Spotless.
+- [ ] Continue remaining event-delivery, deployment-runtime, and final
+      compatibility gates.
+
+### Results
+
+- Shared policy, Assistant, Appointments, and Catalog tests pass.
+- Lombok is compile-time only and absent from the Assistant runtime classpath.
+- Spring configuration-property records and API command records remain direct
+  constructor-bound types; no external property or command-line names changed.

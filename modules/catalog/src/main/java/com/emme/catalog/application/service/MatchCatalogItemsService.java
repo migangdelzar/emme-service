@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
 
   private static final int BRANCH_K = 10;
@@ -38,19 +40,6 @@ public class MatchCatalogItemsService implements MatchCatalogItemsUseCase {
   private final CatalogSearchPort searchPort;
   private final CatalogItemRepository itemRepository;
   private final CatalogItemImageRepository imageRepository;
-
-  public MatchCatalogItemsService(
-      CaptionImageUseCase captionImageUseCase,
-      EmbeddingService embeddingService,
-      CatalogSearchPort searchPort,
-      CatalogItemRepository itemRepository,
-      CatalogItemImageRepository imageRepository) {
-    this.captionImageUseCase = captionImageUseCase;
-    this.embeddingService = embeddingService;
-    this.searchPort = searchPort;
-    this.itemRepository = itemRepository;
-    this.imageRepository = imageRepository;
-  }
 
   @Override
   public CatalogMatchList match(MatchCatalogItemsQuery query) {

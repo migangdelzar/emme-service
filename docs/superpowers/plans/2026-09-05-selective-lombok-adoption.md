@@ -460,3 +460,26 @@ Lombok's official Gradle setup requires compile-only and annotation-processor co
 - [ ] Focused tests, compilation, Spotless, and Checkstyle pass with zero failures.
 - [ ] Lombok is absent from all opted-in runtime classpaths.
 - [ ] Changes are committed atomically and pushed to `origin/feat/ai-platform-foundation`.
+
+## Implementation result — 2026-09-09
+
+The selective pilot is implemented and pushed. Lombok `1.18.48` is wired
+through the opt-in `emme.lombok` convention plugin with compile-only and
+annotation-processor scopes. Exactly the three approved production classes use
+`@RequiredArgsConstructor`; domain models, JPA entities, records, and
+configuration-property types remain explicit.
+
+The builder convention is intentionally prospective: any future Lombok
+`@Builder` must be limited to an approved non-boundary type and declare
+`setterPrefix = "with"`. Spring environment/property binding and API command
+records are not converted to builders because Spring binds them directly and
+the builder would not affect external property names or binding behavior.
+
+Verification completed:
+
+- Shared Lombok policy test passed.
+- Assistant, Appointments, and Catalog test suites passed.
+- Pilot production and test compilation passed.
+- Annotation processor reports contain Lombok; Assistant runtime classpath
+  does not.
+- Affected Spotless checks passed.

@@ -32,6 +32,7 @@ dependency-check = "12.2.2"
 sonarqube = "6.0.1.5171"
 japicmp = "0.4.6"
 graalvm-native-build-tools = "1.1.5"
+lombok = "1.18.48"
 
 [libraries]
 # --- Platforms ---
@@ -142,6 +143,7 @@ java-uuid-generator = { module = "com.fasterxml.uuid:java-uuid-generator", versi
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
 okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 
 # --- Caffeine (version managed by spring-boot-dependencies BOM) ---
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine" }

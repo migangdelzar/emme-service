@@ -30,6 +30,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/conversations", version = "1.0")
 @Tag(name = "Conversations")
+@RequiredArgsConstructor
 public class ConversationController {
   private final StartConversationUseCase start;
   private final ListConversationsUseCase list;
@@ -52,25 +54,6 @@ public class ConversationController {
   private final ProposePendingActionUseCase propose;
   private final ConfirmPendingActionUseCase confirm;
   private final RejectPendingActionUseCase reject;
-
-  public ConversationController(
-      StartConversationUseCase start,
-      ListConversationsUseCase list,
-      GetConversationUseCase get,
-      CloseConversationUseCase close,
-      GetConversationHistoryUseCase history,
-      ProposePendingActionUseCase propose,
-      ConfirmPendingActionUseCase confirm,
-      RejectPendingActionUseCase reject) {
-    this.start = start;
-    this.list = list;
-    this.get = get;
-    this.close = close;
-    this.history = history;
-    this.propose = propose;
-    this.confirm = confirm;
-    this.reject = reject;
-  }
 
   @PostMapping
   @Operation(summary = "Start a new conversation")

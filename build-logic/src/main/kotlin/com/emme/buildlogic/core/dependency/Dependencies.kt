@@ -94,6 +94,7 @@ class Dependencies(
   val okhttpMockwebserver get() = lib("okhttp-mockwebserver")
   val jacksonDatabind get() = lib("jackson-databind")
   val javaUuidGenerator get() = lib("java-uuid-generator")
+  val lombok get() = lib("lombok")
   val shedlockSpring get() = lib("shedlock-spring")
   val shedlockProviderJdbcTemplate get() = lib("shedlock-provider-jdbc-template")
   val springdocOpenapiStarterWebmvcUi get() = lib("springdoc-openapi-starter-webmvc-ui")

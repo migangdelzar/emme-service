@@ -11,29 +11,20 @@ import com.emme.services.application.port.out.ArtistRepository;
 import com.emme.services.application.port.out.ServiceRepository;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for the public appointment-list query. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ListAppointmentsService implements ListAppointmentsUseCase {
 
   private final AppointmentRepository appointmentRepository;
   private final CustomerRepository customerRepository;
   private final ServiceRepository serviceRepository;
   private final ArtistRepository artistRepository;
-
-  public ListAppointmentsService(
-      AppointmentRepository appointmentRepository,
-      CustomerRepository customerRepository,
-      ServiceRepository serviceRepository,
-      ArtistRepository artistRepository) {
-    this.appointmentRepository = appointmentRepository;
-    this.customerRepository = customerRepository;
-    this.serviceRepository = serviceRepository;
-    this.artistRepository = artistRepository;
-  }
 
   @Override
   public List<AppointmentSummary> listAppointments(UUID tenantId) {

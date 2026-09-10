@@ -5084,3 +5084,29 @@ created a private mapper has been removed.
 - Assistant Java/test compilation and Spotless checks pass.
 - No provider-neutral contract, tenant boundary, migration, or trace payload
   behavior changed.
+
+## Current slice — Selective Lombok and `with` builder policy — 2026-09-09
+
+The approved selective-Lombok pilot is now implemented. Lombok is opt-in and
+compile-time only; it reduces constructor boilerplate in three structurally
+safe Spring beans while preserving explicit domain, JPA, API-record, and
+configuration-property construction. A repository policy test also establishes
+that any future Lombok builder must use `setterPrefix = "with"` and remain
+outside those framework and contract boundaries.
+
+- [x] Add the version-catalog and opt-in convention-plugin wiring.
+- [x] Add the repository Lombok usage and builder-prefix policy test.
+- [x] Convert the three approved constructor-only pilot classes.
+- [x] Verify annotation-processor/runtime dependency scopes.
+- [x] Run affected tests, compilation, Spotless, and dependency verification.
+- [ ] Continue remaining event-delivery, deployment-runtime, and final
+      compatibility gates.
+
+### Results
+
+- `:modules:shared:test` Lombok policy passes.
+- Assistant, Appointments, and Catalog test suites pass.
+- Lombok appears in annotation-processor configurations and not Assistant
+  runtime classpath.
+- No environment-variable names, Spring property keys, command records,
+  tenant boundaries, migrations, or provider-neutral contracts changed.

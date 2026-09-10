@@ -4,6 +4,7 @@ plugins {
   id("emme.spring-web")
   id("emme.persistence")
   id("emme.messaging")
+  id("emme.lombok")
 }
 
 dependencies {

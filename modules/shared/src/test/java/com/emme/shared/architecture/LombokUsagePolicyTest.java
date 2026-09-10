@@ -238,6 +238,7 @@ class LombokUsagePolicyTest {
           "modules/notification/src/main/java/com/emme/notification/application/service/GetNotificationService.java",
           "modules/notification/src/main/java/com/emme/notification/application/service/ListNotificationsService.java",
           "modules/notification/src/main/java/com/emme/notification/application/service/RequestNotificationService.java",
+          "modules/notification/src/main/java/com/emme/notification/adapter/out/event/SpringNotificationEventPublisher.java",
           "modules/subscriptions/src/main/java/com/emme/subscriptions/application/service/ChangeSubscriptionPlanService.java",
           "modules/subscriptions/src/main/java/com/emme/subscriptions/application/service/CreateSubscriptionService.java",
           "modules/subscriptions/src/main/java/com/emme/subscriptions/application/service/EnforceEntitlementService.java",

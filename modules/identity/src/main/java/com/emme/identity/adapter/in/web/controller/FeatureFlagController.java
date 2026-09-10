@@ -11,6 +11,7 @@ import com.emme.identity.api.usecase.SetPlatformFeatureFlagUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,17 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/api/admin/feature-flags", version = "1.0")
 @Tag(name = "Platform Feature Flags")
 @PreAuthorize("hasRole('admin')")
+@RequiredArgsConstructor
 public class FeatureFlagController {
 
   private final SetPlatformFeatureFlagUseCase setPlatformFeatureFlag;
   private final ListPlatformFeatureFlagsUseCase listPlatformFeatureFlags;
-
-  public FeatureFlagController(
-      SetPlatformFeatureFlagUseCase setPlatformFeatureFlag,
-      ListPlatformFeatureFlagsUseCase listPlatformFeatureFlags) {
-    this.setPlatformFeatureFlag = setPlatformFeatureFlag;
-    this.listPlatformFeatureFlags = listPlatformFeatureFlags;
-  }
 
   @GetMapping
   @Operation(summary = "List all global feature flags")

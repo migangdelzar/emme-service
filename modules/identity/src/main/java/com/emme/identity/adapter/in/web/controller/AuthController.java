@@ -17,6 +17,7 @@ import com.emme.identity.api.usecase.UpdateCustomerProfileUseCase;
 import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 public class AuthController {
 
   private static final Logger log = LoggerFactory.getLogger(AuthController.class);
@@ -37,17 +39,6 @@ public class AuthController {
   private final AuthenticateCustomerUseCase authenticateCustomerUseCase;
   private final UpdateCustomerProfileUseCase updateCustomerProfileUseCase;
   private final GetCurrentUserUseCase getCurrentUser;
-
-  public AuthController(
-      AuthenticateUserUseCase authenticateUserUseCase,
-      AuthenticateCustomerUseCase authenticateCustomerUseCase,
-      UpdateCustomerProfileUseCase updateCustomerProfileUseCase,
-      GetCurrentUserUseCase getCurrentUser) {
-    this.authenticateUserUseCase = authenticateUserUseCase;
-    this.authenticateCustomerUseCase = authenticateCustomerUseCase;
-    this.updateCustomerProfileUseCase = updateCustomerProfileUseCase;
-    this.getCurrentUser = getCurrentUser;
-  }
 
   @PostMapping(path = "/api/auth/login", version = "1.0")
   public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {

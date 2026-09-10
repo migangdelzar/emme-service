@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
@@ -13,13 +14,10 @@ import org.springframework.stereotype.Component;
 
 /** Maps Keycloak realm roles from browser OAuth2/OIDC authorities. */
 @Component
+@RequiredArgsConstructor
 public final class IdentityUserAuthoritiesMapper implements GrantedAuthoritiesMapper {
 
   private final IdentityRoleAuthorityMapper roleAuthorityMapper;
-
-  public IdentityUserAuthoritiesMapper(IdentityRoleAuthorityMapper roleAuthorityMapper) {
-    this.roleAuthorityMapper = roleAuthorityMapper;
-  }
 
   @Override
   public Collection<? extends GrantedAuthority> mapAuthorities(

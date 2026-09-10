@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,23 +33,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "/api/identity", version = "1.0")
+@RequiredArgsConstructor
 public class IdentityController {
 
   private final AssignMembershipUseCase assignMembership;
   private final GetCurrentUserMembershipsUseCase currentMemberships;
   private final GetUserPermissionsUseCase permissions;
   private final RevokeMembershipUseCase revokeMembership;
-
-  public IdentityController(
-      AssignMembershipUseCase assignMembership,
-      GetCurrentUserMembershipsUseCase currentMemberships,
-      GetUserPermissionsUseCase permissions,
-      RevokeMembershipUseCase revokeMembership) {
-    this.assignMembership = assignMembership;
-    this.currentMemberships = currentMemberships;
-    this.permissions = permissions;
-    this.revokeMembership = revokeMembership;
-  }
 
   @GetMapping("/me")
   @Operation(summary = "Get current user memberships")

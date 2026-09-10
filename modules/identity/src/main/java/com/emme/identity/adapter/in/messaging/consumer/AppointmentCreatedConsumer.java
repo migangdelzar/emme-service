@@ -4,17 +4,15 @@ import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.identity.api.command.EnsureCustomerMembershipCommand;
 import com.emme.identity.api.usecase.EnsureCustomerMembershipUseCase;
 import com.emme.kernel.context.TenantContextHolder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** Starts idempotent customer membership establishment from the durable appointment fact. */
 @Component
+@RequiredArgsConstructor
 public class AppointmentCreatedConsumer {
 
   private final EnsureCustomerMembershipUseCase ensureCustomerMembership;
-
-  public AppointmentCreatedConsumer(EnsureCustomerMembershipUseCase ensureCustomerMembership) {
-    this.ensureCustomerMembership = ensureCustomerMembership;
-  }
 
   @org.springframework.modulith.events.ApplicationModuleListener(
       id = "identity.appointment-created-membership")

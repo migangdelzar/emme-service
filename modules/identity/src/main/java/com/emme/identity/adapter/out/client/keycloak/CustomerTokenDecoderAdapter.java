@@ -2,18 +2,16 @@ package com.emme.identity.adapter.out.client.keycloak;
 
 import com.emme.identity.application.port.out.CustomerTokenClaims;
 import com.emme.identity.application.port.out.CustomerTokenDecoder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 /** Adapts the Keycloak JWT decoder to the customer authentication port. */
 @Component
+@RequiredArgsConstructor
 public final class CustomerTokenDecoderAdapter implements CustomerTokenDecoder {
 
   private final MultiRealmJwtDecoder decoder;
-
-  public CustomerTokenDecoderAdapter(MultiRealmJwtDecoder decoder) {
-    this.decoder = decoder;
-  }
 
   @Override
   public CustomerTokenClaims decode(String providerToken) {

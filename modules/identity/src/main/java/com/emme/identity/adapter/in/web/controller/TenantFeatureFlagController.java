@@ -11,6 +11,7 @@ import com.emme.identity.api.usecase.SetTenantFeatureFlagOverrideUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,17 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/api/tenant/features", version = "1.0")
 @Tag(name = "Tenant Features")
 @PreAuthorize("hasAnyRole('admin', 'tenant_owner')")
+@RequiredArgsConstructor
 public class TenantFeatureFlagController {
 
   private final GetEffectiveFeatureFlagsUseCase getEffectiveFeatureFlags;
   private final SetTenantFeatureFlagOverrideUseCase setTenantFeatureFlagOverride;
-
-  public TenantFeatureFlagController(
-      GetEffectiveFeatureFlagsUseCase getEffectiveFeatureFlags,
-      SetTenantFeatureFlagOverrideUseCase setTenantFeatureFlagOverride) {
-    this.getEffectiveFeatureFlags = getEffectiveFeatureFlags;
-    this.setTenantFeatureFlagOverride = setTenantFeatureFlagOverride;
-  }
 
   @GetMapping
   @Operation(summary = "Get effective feature flags for current tenant")

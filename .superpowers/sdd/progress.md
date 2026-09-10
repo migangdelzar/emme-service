@@ -33,3 +33,12 @@ Task 4: complete (commits aa71f623..c123cfa5, review approved; unrelated full-su
 Task 5: complete (commits c123cfa5..5a5aa399, review approved; focused Java 25 tests and Spotless passed)
 Task 6: complete (commits 988cc73d..2d128c55, review approved; focused learning/database/Modulith tests passed)
 Task 6: complete (current commit; learning remains durable, asynchronous, and promotion-gated; no learning-specific worker/orchestrator added)
+## Plan: 2026-09-10-lombok-whole-repository-refactor
+
+Task 1: complete (commits a0f762c3..4eb89519, review approved)
+Task 2: pending
+Task 3: pending
+Task 4: pending
+Task 5: pending
+Task 6: pending
+Task 7: pending

@@ -11,19 +11,17 @@ import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** Creates tenant schemas and applies the Studio Liquibase changelog. */
 @Component
+@RequiredArgsConstructor
 public final class LiquibaseTenantSchemaMigrationAdapter implements TenantSchemaMigrationPort {
 
   private static final String STUDIO_CHANGELOG = "db/emme-studio/changelog.yaml";
 
   private final BootstrapConnectionExecutor connectionExecutor;
-
-  public LiquibaseTenantSchemaMigrationAdapter(BootstrapConnectionExecutor connectionExecutor) {
-    this.connectionExecutor = connectionExecutor;
-  }
 
   @Override
   public String migrate(UUID tenantId, String slug) {

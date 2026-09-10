@@ -7,18 +7,16 @@ import com.emme.tenancy.domain.model.TenantProvisioningState;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Transactional
+@RequiredArgsConstructor
 public class TenantProvisioningPersistenceAdapter implements TenantProvisioningRepository {
 
   private final SpringDataTenantRegistryRepository repository;
-
-  public TenantProvisioningPersistenceAdapter(SpringDataTenantRegistryRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public UUID requestProvisioning(UUID tenantId, String slug, String schemaName) {

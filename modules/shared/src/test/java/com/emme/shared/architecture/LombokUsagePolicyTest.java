@@ -287,6 +287,11 @@ class LombokUsagePolicyTest {
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/SuspendTenantService.java",
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/UpdateTenantIdentityRealmService.java",
           "modules/tenancy/src/main/java/com/emme/tenancy/application/service/UpdateTenantService.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/LiquibaseTenantSchemaMigrationAdapter.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/messaging/publisher/SpringTenantEventPublisher.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/AuditEventPersistenceAdapter.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/persistence/adapter/TenantProvisioningPersistenceAdapter.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/application/audit/AuditEventRecorder.java",
           "modules/shared/src/main/java/com/emme/shared/persistence/jdbc/BootstrapConnectionExecutor.java",
           "modules/shared/src/main/java/com/emme/shared/search/postgres/PostgresHybridSearch.java",
           "modules/shared/src/main/java/com/emme/shared/web/advice/GlobalExceptionHandler.java");

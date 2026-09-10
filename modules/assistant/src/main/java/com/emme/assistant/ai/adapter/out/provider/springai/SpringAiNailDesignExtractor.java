@@ -15,16 +15,14 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.content.Media;
 import org.springframework.util.MimeTypeUtils;
 
 /** Spring AI structured-output adapter for text and securely loaded design images. */
+@Slf4j
 public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SpringAiNailDesignExtractor.class);
 
   private static final String SYSTEM_PROMPT =
       "You extract nail-design attributes for Emme. Return only the requested structured schema. "
@@ -137,7 +135,7 @@ public final class SpringAiNailDesignExtractor implements NailDesignExtractor {
       traceRecorder.recordModelExecution(trace);
     } catch (RuntimeException failure) {
       // Trace persistence is best effort and must not alter extraction semantics.
-      AiTracePersistenceFailureReporter.report(LOGGER, trace.operation(), failure);
+      AiTracePersistenceFailureReporter.report(log, trace.operation(), failure);
     }
   }
 

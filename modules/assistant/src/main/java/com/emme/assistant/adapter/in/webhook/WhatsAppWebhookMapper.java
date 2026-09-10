@@ -6,16 +6,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /** Maps Meta's webhook JSON into an application-neutral inbound message. */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public final class WhatsAppWebhookMapper {
-
-  private static final Logger log = LoggerFactory.getLogger(WhatsAppWebhookMapper.class);
 
   private final ObjectMapper objectMapper;
   private final WhatsAppTenantResolver tenantResolver;

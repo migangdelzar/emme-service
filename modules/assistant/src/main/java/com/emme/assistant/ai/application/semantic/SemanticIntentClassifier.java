@@ -12,13 +12,11 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /** Deterministic intent classifier backed by tenant-scoped vector references. */
+@Slf4j
 public final class SemanticIntentClassifier {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SemanticIntentClassifier.class);
 
   private static final int CANDIDATE_LIMIT = 2;
 
@@ -90,7 +88,7 @@ public final class SemanticIntentClassifier {
               0));
     } catch (RuntimeException failure) {
       recordSafely(() -> metrics.recordFailure("trace", "trace_persistence_failed"));
-      AiTracePersistenceFailureReporter.report(LOGGER, "intent_routing", failure);
+      AiTracePersistenceFailureReporter.report(log, "intent_routing", failure);
     }
   }
 

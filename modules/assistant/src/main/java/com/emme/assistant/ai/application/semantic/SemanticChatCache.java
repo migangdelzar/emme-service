@@ -24,8 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Principal-scoped semantic cache for safe informational chat responses.
@@ -33,9 +32,8 @@ import org.slf4j.LoggerFactory;
  * <p>Transactional requests never enter this cache. PostgreSQL remains authoritative for the cached
  * response and hit accounting; this service only defines eligibility and cache identity.
  */
+@Slf4j
 public final class SemanticChatCache implements SemanticResponseCache {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SemanticChatCache.class);
 
   private static final String CACHE_KIND = "CHAT_INFORMATIONAL";
 
@@ -259,7 +257,7 @@ public final class SemanticChatCache implements SemanticResponseCache {
               0));
     } catch (RuntimeException traceFailure) {
       recordFailure("trace", traceFailure);
-      AiTracePersistenceFailureReporter.report(LOGGER, operation, traceFailure);
+      AiTracePersistenceFailureReporter.report(log, operation, traceFailure);
     }
   }
 

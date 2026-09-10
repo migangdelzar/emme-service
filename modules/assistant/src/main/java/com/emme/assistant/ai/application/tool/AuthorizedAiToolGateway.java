@@ -18,13 +18,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /** In-process tool gateway that keeps authorization and tenant context outside model control. */
+@Slf4j
 public final class AuthorizedAiToolGateway implements AiToolGateway {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizedAiToolGateway.class);
 
   private final Map<String, AiToolDefinition> definitions;
   private final AiTraceRecorder traceRecorder;
@@ -212,7 +210,7 @@ public final class AuthorizedAiToolGateway implements AiToolGateway {
     try {
       traceRecorder.recordToolCall(trace);
     } catch (RuntimeException failure) {
-      AiTracePersistenceFailureReporter.report(LOGGER, trace.toolKey(), failure);
+      AiTracePersistenceFailureReporter.report(log, trace.toolKey(), failure);
     }
   }
 

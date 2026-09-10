@@ -3,8 +3,7 @@ package com.emme.assistant.adapter.out.client.whatsapp;
 import com.emme.assistant.application.port.out.WhatsAppReplyPort;
 import com.emme.assistant.configuration.WhatsAppProperties;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
@@ -16,9 +15,8 @@ import org.springframework.web.client.RestClientResponseException;
 /** Meta Graph API adapter implementing the Assistant WhatsApp reply port. */
 @Component
 @ConditionalOnExpression("not '${app.whatsapp.verify-token:}'.isEmpty()")
+@Slf4j
 public class WhatsAppReplyAdapter implements WhatsAppReplyPort {
-
-  private static final Logger log = LoggerFactory.getLogger(WhatsAppReplyAdapter.class);
 
   private final WhatsAppProperties properties;
   private final RestClient restClient;

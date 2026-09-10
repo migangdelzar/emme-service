@@ -299,7 +299,19 @@ class LombokUsagePolicyTest {
   private static final Set<String> APPROVED_LOGGER_FILES =
       Set.of(
           "modules/appointments/src/main/java/com/emme/appointments/adapter/in/web/controller/DashboardController.java",
-          "modules/appointments/src/main/java/com/emme/appointments/adapter/in/web/sse/DashboardBroadcaster.java");
+          "modules/appointments/src/main/java/com/emme/appointments/adapter/in/web/sse/DashboardBroadcaster.java",
+          "modules/assistant/src/main/java/com/emme/assistant/adapter/in/webhook/WhatsAppWebhookController.java",
+          "modules/assistant/src/main/java/com/emme/assistant/adapter/in/webhook/WhatsAppWebhookMapper.java",
+          "modules/assistant/src/main/java/com/emme/assistant/adapter/out/client/whatsapp/WhatsAppReplyAdapter.java",
+          "modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiNailDesignExtractor.java",
+          "modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/TracingAiChatCompletion.java",
+          "modules/assistant/src/main/java/com/emme/assistant/ai/application/provider/TracingEmbeddingService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/ai/application/semantic/SemanticCacheInvalidationService.java",
+          "modules/assistant/src/main/java/com/emme/assistant/ai/application/semantic/SemanticCacheResolver.java",
+          "modules/assistant/src/main/java/com/emme/assistant/ai/application/semantic/SemanticChatCache.java",
+          "modules/assistant/src/main/java/com/emme/assistant/ai/application/semantic/SemanticIntentClassifier.java",
+          "modules/assistant/src/main/java/com/emme/assistant/ai/application/semantic/SemanticToolSelector.java",
+          "modules/assistant/src/main/java/com/emme/assistant/ai/application/tool/AuthorizedAiToolGateway.java");
 
   @Test
   void onlyUsesLombokInApprovedProductionFiles() throws IOException {

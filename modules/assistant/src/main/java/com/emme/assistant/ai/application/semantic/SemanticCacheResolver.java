@@ -13,13 +13,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /** Resolves a semantic-cache hit before an LLM pipeline is invoked. */
+@Slf4j
 public final class SemanticCacheResolver {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SemanticCacheResolver.class);
 
   private static final int CANDIDATE_LIMIT = 2;
 
@@ -119,7 +117,7 @@ public final class SemanticCacheResolver {
               0));
     } catch (RuntimeException failure) {
       recordSafely(() -> metrics.recordFailure("trace", "trace_persistence_failed"));
-      AiTracePersistenceFailureReporter.report(LOGGER, "semantic_cache", failure);
+      AiTracePersistenceFailureReporter.report(log, "semantic_cache", failure);
     }
   }
 

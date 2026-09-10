@@ -9,13 +9,11 @@ import com.emme.assistant.ai.application.trace.AiTraceRecorder;
 import com.emme.kernel.context.AiExecutionContextScope;
 import java.util.Objects;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /** Records each embedding-provider attempt without persisting vector values. */
+@Slf4j
 public final class TracingEmbeddingService implements EmbeddingService {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TracingEmbeddingService.class);
 
   private final EmbeddingService delegate;
   private final String providerKey;
@@ -89,7 +87,7 @@ public final class TracingEmbeddingService implements EmbeddingService {
       recorder.recordModelExecution(trace);
     } catch (RuntimeException failure) {
       // Trace persistence is best effort and must not alter provider semantics.
-      AiTracePersistenceFailureReporter.report(LOGGER, trace.operation(), failure);
+      AiTracePersistenceFailureReporter.report(log, trace.operation(), failure);
     }
   }
 

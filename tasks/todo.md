@@ -6422,8 +6422,9 @@ Completed in this slice:
 - [x] Add the fifth expansion slice for Identity and Tenancy application
       services using test-first allowlist enforcement.
 - [x] Verify the fifth expansion slice with affected tests and compilation.
-- [ ] Continue the remaining eligible application-service modules in separate
-      commits after their own red/green checks.
+- [x] Continue the remaining eligible application-service modules in separate
+      commits after their own red/green checks; all currently eligible
+      application-service constructors are now covered.
 - [ ] Continue remaining event-delivery, deployment-runtime, and final
       compatibility gates.
 
@@ -6434,3 +6435,5 @@ Completed in this slice:
 - Lombok is compile-time only and absent from the Assistant runtime classpath.
 - Spring configuration-property records and API command records remain direct
   constructor-bound types; no external property or command-line names changed.
+- Controllers, persistence adapters, provider clients, workflow services, and
+  configuration types with custom construction behavior remain explicit.

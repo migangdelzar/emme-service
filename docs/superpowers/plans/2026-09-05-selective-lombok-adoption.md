@@ -506,9 +506,9 @@ Verification for the first expansion slice:
 - Assistant, Appointments, and Catalog test suites passed.
 - Affected Spotless checks and `git diff --check` passed.
 
-The remaining eligible application-service modules are intentionally queued
-for the next independent slices so each module's compile and test surface is
-verified before the next conversion.
+The remaining eligible application-service modules are intentionally handled
+as independent slices so each module's compile and test surface is verified
+before the next conversion.
 
 The second expansion slice adds the Clients and Documents application-service
 constructors. Both modules are now opted into the same compile-only Lombok
@@ -528,3 +528,18 @@ The fifth expansion slice adds the direct-assignment application services in
 Identity and Tenancy. Authorization decisions, tenant context, database
 routing, provisioning state transitions, and event publication remain in the
 service methods; Lombok only supplies the dependency constructor.
+
+## Expansion completion — 2026-09-10
+
+All currently eligible application-service constructors across the repository
+are now covered by the policy allowlist and use `@RequiredArgsConstructor`.
+No eligible application-service constructor remains unconverted. The
+allowlist intentionally does not require Lombok for controllers, persistence
+adapters, provider clients, configuration types, domain models, entities, or
+workflow services whose construction carries custom behavior; those classes
+remain explicit until a separate review proves that generated construction
+preserves their boundary invariants.
+
+The `with` builder rule remains prospective: a future Lombok `@Builder` must
+declare `setterPrefix = "with"` and may not be introduced on environment,
+property-binding, command, API, domain, or persistence-boundary types.

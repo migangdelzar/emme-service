@@ -179,7 +179,11 @@ class LombokUsagePolicyTest {
     try (Stream<Path> modules = Files.walk(root.resolve("modules"));
         Stream<Path> libraries = Files.walk(root.resolve("libraries"))) {
       return Stream.concat(modules, libraries)
-          .filter(path -> path.toString().replace('\\', '/').contains("/src/main/java/"))
+          .filter(
+              path -> {
+                String normalized = path.toString().replace('\\', '/');
+                return normalized.contains("/src/main/java/") && !normalized.contains("/build/");
+              })
           .filter(path -> path.toString().endsWith(".java"))
           .toList();
     }

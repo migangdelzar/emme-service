@@ -50,11 +50,8 @@ public final class E2eProvisionerApplication {
     var loginBody = JSON.createObjectNode().put("email", adminEmail).put("password", adminPass);
     var loginResp =
         HTTP.send(
-            HttpRequest.newBuilder()
-                .uri(URI.create(platformUrl + "/api/auth/login"))
+            platformRequest(URI.create(platformUrl + "/api/auth/login"))
                 .header("Content-Type", "application/json")
-                .header("API-Version", API_VERSION)
-                .header("X-Tenant-Slug", "emme-core")
                 .POST(HttpRequest.BodyPublishers.ofString(loginBody.toString()))
                 .build(),
             HttpResponse.BodyHandlers.ofString());
@@ -77,12 +74,9 @@ public final class E2eProvisionerApplication {
       var body = JSON.createObjectNode().put("slug", slug).put("name", name);
       var resp =
           HTTP.send(
-              HttpRequest.newBuilder()
-                  .uri(URI.create(platformUrl + "/api/tenants"))
+              platformRequest(URI.create(platformUrl + "/api/tenants"))
                   .header("Content-Type", "application/json")
-                  .header("API-Version", API_VERSION)
                   .header("Authorization", "Bearer " + token)
-                  .header("X-Tenant-Slug", "emme-core")
                   .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
                   .build(),
               HttpResponse.BodyHandlers.ofString());
@@ -154,11 +148,8 @@ public final class E2eProvisionerApplication {
       throws Exception {
     var response =
         HTTP.send(
-            HttpRequest.newBuilder()
-                .uri(URI.create(platformUrl + "/api/tenants"))
-                .header("API-Version", API_VERSION)
+            platformRequest(URI.create(platformUrl + "/api/tenants"))
                 .header("Authorization", "Bearer " + token)
-                .header("X-Tenant-Slug", "emme-core")
                 .GET()
                 .build(),
             HttpResponse.BodyHandlers.ofString());
@@ -175,6 +166,10 @@ public final class E2eProvisionerApplication {
     } catch (java.io.IOException exception) {
       throw new IllegalArgumentException("Invalid tenant list response", exception);
     }
+  }
+
+  static HttpRequest.Builder platformRequest(URI uri) {
+    return HttpRequest.newBuilder().uri(uri).header("API-Version", API_VERSION);
   }
 
   private static String qualifyUsername(String username, String tenantSlug) {

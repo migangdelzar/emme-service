@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,16 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/google/sheets", version = "1.0")
 @Tag(name = "Google Sheets")
+@RequiredArgsConstructor
 public class SheetsController {
 
   private final GoogleSheetsExportPort exportService;
   private final GoogleSpreadsheetLinkQueryPort sheetLinks;
-
-  public SheetsController(
-      GoogleSheetsExportPort exportService, GoogleSpreadsheetLinkQueryPort sheetLinks) {
-    this.exportService = exportService;
-    this.sheetLinks = sheetLinks;
-  }
 
   /** Export data to a new Google Sheet. */
   @PostMapping("/export")

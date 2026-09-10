@@ -13,25 +13,18 @@ import com.emme.calendar.domain.model.CalendarSyncState;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** Implements Calendar application persistence ports using Spring Data repositories. */
 @Component
+@RequiredArgsConstructor
 public class CalendarPersistenceAdapter
     implements CalendarEventLinkRepository, CalendarSyncStateRepository {
 
   private final SpringDataCalendarEventLinkRepository eventLinks;
   private final SpringDataCalendarSyncStateRepository syncStates;
   private final CalendarPersistenceMapper mapper;
-
-  public CalendarPersistenceAdapter(
-      SpringDataCalendarEventLinkRepository eventLinks,
-      SpringDataCalendarSyncStateRepository syncStates,
-      CalendarPersistenceMapper mapper) {
-    this.eventLinks = eventLinks;
-    this.syncStates = syncStates;
-    this.mapper = mapper;
-  }
 
   @Override
   public List<CalendarEventLink> findByAppointmentId(UUID appointmentId) {

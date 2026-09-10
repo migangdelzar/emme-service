@@ -11,6 +11,7 @@ import com.emme.shared.web.security.CurrentUserContextHolder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,17 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/client/calendar", version = "1.0")
 @Tag(name = "Client Calendar")
+@RequiredArgsConstructor
 public class ClientCalendarController {
 
   private final SyncClientCalendarUseCase syncClientCalendar;
   private final UnsyncClientCalendarUseCase unsyncClientCalendar;
-
-  public ClientCalendarController(
-      SyncClientCalendarUseCase syncClientCalendar,
-      UnsyncClientCalendarUseCase unsyncClientCalendar) {
-    this.syncClientCalendar = syncClientCalendar;
-    this.unsyncClientCalendar = unsyncClientCalendar;
-  }
 
   @PostMapping("/sync")
   @PreAuthorize(

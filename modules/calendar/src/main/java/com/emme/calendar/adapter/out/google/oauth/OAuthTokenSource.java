@@ -4,6 +4,7 @@ import com.emme.calendar.adapter.out.google.adapter.GoogleOAuthAdapter;
 import com.emme.calendar.adapter.out.google.model.PersonaType;
 import com.emme.kernel.context.TenantContext;
 import com.emme.shared.web.security.CurrentUserContextHolder;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -14,14 +15,11 @@ import org.springframework.stereotype.Component;
  * present.
  */
 @Component
+@RequiredArgsConstructor
 public class OAuthTokenSource implements GoogleUserTokenSource {
 
   private static final Logger log = LoggerFactory.getLogger(OAuthTokenSource.class);
   private final GoogleOAuthAdapter oauthService;
-
-  public OAuthTokenSource(GoogleOAuthAdapter oauthService) {
-    this.oauthService = oauthService;
-  }
 
   @Override
   public String getAccessToken() {

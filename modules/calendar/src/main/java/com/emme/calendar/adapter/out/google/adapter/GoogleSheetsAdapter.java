@@ -14,6 +14,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class GoogleSheetsAdapter implements GoogleSheetsExportPort {
 
   private static final Logger log = LoggerFactory.getLogger(GoogleSheetsAdapter.class);
@@ -33,17 +35,6 @@ public class GoogleSheetsAdapter implements GoogleSheetsExportPort {
   private final SpringDataGoogleSpreadsheetLinkRepository sheetRepo;
   private final ListAppointmentsUseCase listAppointments;
   private final ListCustomersUseCase listCustomers;
-
-  public GoogleSheetsAdapter(
-      GoogleSheetsClient sheetsClient,
-      SpringDataGoogleSpreadsheetLinkRepository sheetRepo,
-      ListAppointmentsUseCase listAppointments,
-      ListCustomersUseCase listCustomers) {
-    this.sheetsClient = sheetsClient;
-    this.sheetRepo = sheetRepo;
-    this.listAppointments = listAppointments;
-    this.listCustomers = listCustomers;
-  }
 
   /** Export data to a new spreadsheet. */
   public GoogleSpreadsheetDetails export(UUID tenantId, String exportType) throws Exception {

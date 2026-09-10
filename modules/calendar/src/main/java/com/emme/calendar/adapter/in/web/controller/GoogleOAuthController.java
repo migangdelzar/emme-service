@@ -23,6 +23,7 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/google/oauth", version = "1.0")
 @Tag(name = "Google OAuth")
+@RequiredArgsConstructor
 public class GoogleOAuthController {
 
   private static final Logger log = LoggerFactory.getLogger(GoogleOAuthController.class);
@@ -49,21 +51,6 @@ public class GoogleOAuthController {
   private final DisconnectGoogleOAuthUseCase disconnectGoogleOAuthUseCase;
   private final StringRedisTemplate redis;
   private final ObjectMapper mapper;
-
-  public GoogleOAuthController(
-      StartGoogleOAuthUseCase startGoogleOAuthUseCase,
-      CompleteGoogleOAuthUseCase completeGoogleOAuthUseCase,
-      GetGoogleOAuthStatusUseCase getGoogleOAuthStatusUseCase,
-      DisconnectGoogleOAuthUseCase disconnectGoogleOAuthUseCase,
-      StringRedisTemplate redis,
-      ObjectMapper mapper) {
-    this.startGoogleOAuthUseCase = startGoogleOAuthUseCase;
-    this.completeGoogleOAuthUseCase = completeGoogleOAuthUseCase;
-    this.getGoogleOAuthStatusUseCase = getGoogleOAuthStatusUseCase;
-    this.disconnectGoogleOAuthUseCase = disconnectGoogleOAuthUseCase;
-    this.redis = redis;
-    this.mapper = mapper;
-  }
 
   /** Redirect to Google consent screen. Stores OAuth state in Redis for CSRF protection. */
   @GetMapping("/authorize")

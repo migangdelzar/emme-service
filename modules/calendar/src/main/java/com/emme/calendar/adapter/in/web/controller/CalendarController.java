@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,16 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/calendar", version = "1.0")
 @Tag(name = "Calendar")
+@RequiredArgsConstructor
 public class CalendarController {
 
   private final GetBusyTimesUseCase getBusyTimes;
   private final SyncCalendarEventsUseCase syncCalendarEvents;
-
-  public CalendarController(
-      GetBusyTimesUseCase getBusyTimes, SyncCalendarEventsUseCase syncCalendarEvents) {
-    this.getBusyTimes = getBusyTimes;
-    this.syncCalendarEvents = syncCalendarEvents;
-  }
 
   @GetMapping("/busy")
   @Operation(summary = "Get busy times for an artist on a given date")

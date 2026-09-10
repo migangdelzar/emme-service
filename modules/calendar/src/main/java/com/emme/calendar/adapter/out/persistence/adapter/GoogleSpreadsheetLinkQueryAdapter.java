@@ -5,18 +5,14 @@ import com.emme.calendar.adapter.out.persistence.repository.SpringDataGoogleSpre
 import com.emme.calendar.api.result.GoogleSpreadsheetDetails;
 import com.emme.calendar.application.port.out.GoogleSpreadsheetLinkQueryPort;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class GoogleSpreadsheetLinkQueryAdapter implements GoogleSpreadsheetLinkQueryPort {
   private final SpringDataGoogleSpreadsheetLinkRepository repository;
   private final GoogleSpreadsheetLinkMapper mapper;
-
-  public GoogleSpreadsheetLinkQueryAdapter(
-      SpringDataGoogleSpreadsheetLinkRepository repository, GoogleSpreadsheetLinkMapper mapper) {
-    this.repository = repository;
-    this.mapper = mapper;
-  }
 
   @Override
   public List<GoogleSpreadsheetDetails> findAll() {

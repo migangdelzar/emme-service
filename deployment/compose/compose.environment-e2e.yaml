@@ -35,15 +35,16 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/emme-core
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/emme-core/protocol/openid-connect/certs
       APP_KEYCLOAK_BASE_URL: http://keycloak:8080
-      APP_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/emme-core
-      # Spring's dynamic tenant decoder reads JWKS from the host-published
-      # Keycloak endpoint in local Compose. Password grants and provisioning
-      # continue to use the internal service address above.
-      APP_KEYCLOAK_JWK_SET_BASE_URL: http://host.docker.internal:18080
+      # Browser-issued tokens carry the host-facing issuer. The adapter uses
+      # APP_KEYCLOAK_BASE_URL for in-network transport and this value only for
+      # issuer trust and realm identity.
+      APP_KEYCLOAK_ISSUER_URI: http://localhost:18080/realms/emme-core
+      # The dynamic decoder reads JWKS through the internal Keycloak service.
+      APP_KEYCLOAK_JWK_SET_BASE_URL: http://keycloak:8080
       APP_KEYCLOAK_DEFAULT_REALM: emme-core
       APP_KEYCLOAK_CLIENT_ID: salon-app
       APP_KEYCLOAK_PLATFORM_CLIENT_ID: admin-app
-      APP_KEYCLOAK_CUSTOMER_ISSUER_URI: http://keycloak:8080/realms/emme-customers
+      APP_KEYCLOAK_CUSTOMER_ISSUER_URI: http://localhost:18080/realms/emme-customers
       APP_KEYCLOAK_CUSTOMER_CLIENT_ID: client-app
       APP_KEYCLOAK_ADMIN_PASSWORD: ${EMME_E2E_KEYCLOAK_ADMIN_PASSWORD:-e2e-admin-password}
       APP_KEYCLOAK_PROVISIONING_ENABLED: "true"

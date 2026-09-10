@@ -35,13 +35,9 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
       @Qualifier("identityRestClient") RestClient httpClient,
       ObjectMapper objectMapper,
       IdentityKeycloakProperties properties) {
-    int realmIndex = properties.issuerUri().indexOf("/realms/");
-    if (realmIndex < 0) {
-      throw new IllegalArgumentException("Keycloak issuer URI must contain /realms/");
-    }
     this.httpClient = httpClient;
     this.objectMapper = objectMapper;
-    this.baseUrl = properties.issuerUri().substring(0, realmIndex);
+    this.baseUrl = stripTrailingSlash(properties.baseUrl());
     this.properties = properties;
   }
 
@@ -90,6 +86,10 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
         : properties.clientId();
   }
 
+  private static String stripTrailingSlash(String value) {
+    return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+  }
+
   @Override
   public UserClaimsResult getUserClaims(String accessToken) {
     try {
@@ -120,9 +120,21 @@ public final class KeycloakUserAuthenticationAdapter implements UserAuthenticati
     try {
       JWT jwt = JWTParser.parse(accessToken);
       String issuer = jwt.getJWTClaimsSet().getIssuer();
-      return issuer + "/protocol/openid-connect/userinfo";
+      return baseUrl + "/realms/" + realmFromIssuer(issuer) + "/protocol/openid-connect/userinfo";
     } catch (ParseException exception) {
       return baseUrl + "/realms/" + properties.defaultRealm() + "/protocol/openid-connect/userinfo";
     }
+  }
+
+  private static String realmFromIssuer(String issuer) {
+    int realmsIndex = issuer.indexOf("/realms/");
+    if (realmsIndex < 0) {
+      throw new IllegalArgumentException("Identity issuer must contain /realms/");
+    }
+    String realm = issuer.substring(realmsIndex + "/realms/".length());
+    if (realm.isBlank() || realm.contains("/")) {
+      throw new IllegalArgumentException("Identity issuer must contain one realm");
+    }
+    return realm;
   }
 }

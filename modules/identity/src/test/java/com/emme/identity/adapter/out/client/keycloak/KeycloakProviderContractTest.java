@@ -60,6 +60,46 @@ class KeycloakProviderContractTest {
   }
 
   @Test
+  void usesTheInternalBaseUrlForTokenTransportWhenIssuerIsExternallyVisible() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer server = bindTo(builder).build();
+    var properties =
+        propertiesWithTransportAndIssuer("https://keycloak.internal", "https://login.example");
+    KeycloakUserAuthenticationAdapter adapter =
+        new KeycloakUserAuthenticationAdapter(builder.build(), new ObjectMapper(), properties);
+
+    server
+        .expect(
+            requestTo("https://keycloak.internal/realms/emme-core/protocol/openid-connect/token"))
+        .andRespond(withStatus(HttpStatus.OK).body("{\"access_token\":\"access-123\"}"));
+
+    assertThat(adapter.authenticate("emme-core", "alice", "password").accessToken())
+        .isEqualTo("access-123");
+    server.verify();
+  }
+
+  @Test
+  void usesTheInternalBaseUrlForUserInfoTransportWhenTokenIssuerIsExternallyVisible() {
+    RestClient.Builder builder = RestClient.builder();
+    MockRestServiceServer server = bindTo(builder).build();
+    var properties =
+        propertiesWithTransportAndIssuer("https://keycloak.internal", "https://login.example");
+    KeycloakUserAuthenticationAdapter adapter =
+        new KeycloakUserAuthenticationAdapter(builder.build(), new ObjectMapper(), properties);
+
+    server
+        .expect(
+            requestTo(
+                "https://keycloak.internal/realms/emme-core/protocol/openid-connect/userinfo"))
+        .andExpect(header("Authorization", "Bearer " + externalIssuerToken()))
+        .andRespond(withStatus(HttpStatus.OK).body("{\"sub\":\"user-123\"}"));
+
+    assertThat(adapter.getUserClaims(externalIssuerToken()).claims())
+        .containsEntry("sub", "user-123");
+    server.verify();
+  }
+
+  @Test
   void createsARealmThroughAnAdminTokenAndPreservesTheRealmRepresentation() throws Exception {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer server = bindTo(builder).build();
@@ -148,10 +188,20 @@ class KeycloakProviderContractTest {
     return form;
   }
 
+  private static String externalIssuerToken() {
+    return "eyJhbGciOiJub25lIn0.eyJpc3MiOiJodHRwczovL2xvZ2luLmV4YW1wbGUvcmVhbG1zL2VtbWUtY29yZSJ9.";
+  }
+
   private static IdentityKeycloakProperties properties() {
+    return propertiesWithTransportAndIssuer(
+        "https://keycloak.test", "https://keycloak.test/realms/emme-core");
+  }
+
+  private static IdentityKeycloakProperties propertiesWithTransportAndIssuer(
+      String baseUrl, String issuerHost) {
     return new IdentityKeycloakProperties(
-        "https://keycloak.test",
-        "https://keycloak.test/realms/emme-core",
+        baseUrl,
+        issuerHost + "/realms/emme-core",
         "",
         "client-app",
         "platform-app",
@@ -159,7 +209,7 @@ class KeycloakProviderContractTest {
         "admin",
         "admin-password",
         "emme-core",
-        "https://keycloak.test/realms/emme-customers",
+        issuerHost + "/realms/emme-customers",
         "customer-app");
   }
 }

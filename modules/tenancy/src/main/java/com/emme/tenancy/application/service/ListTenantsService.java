@@ -6,17 +6,15 @@ import com.emme.tenancy.api.usecase.ListTenantsUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ListTenantsService implements ListTenantsUseCase {
   private final TenantRepository repository;
-
-  public ListTenantsService(TenantRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public List<TenantDetails> list(ListTenantsQuery query) {

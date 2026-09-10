@@ -4,17 +4,15 @@ import com.emme.tenancy.api.command.RequestTenantProvisioningCommand;
 import com.emme.tenancy.api.usecase.RequestTenantProvisioningUseCase;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RequestTenantProvisioningService implements RequestTenantProvisioningUseCase {
   private final TenantProvisioningRepository repository;
-
-  public RequestTenantProvisioningService(TenantProvisioningRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public UUID request(RequestTenantProvisioningCommand command) {

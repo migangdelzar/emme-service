@@ -3,6 +3,7 @@ plugins {
   id("emme.integration-testing")
   id("emme.spring-web")
   id("emme.persistence")
+  id("emme.lombok")
   id("emme.test-fixtures")
 }
 

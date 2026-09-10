@@ -7,19 +7,17 @@ import com.emme.identity.application.mapper.FeatureFlagApplicationMapper;
 import com.emme.identity.application.port.out.FeatureFlagRepository;
 import com.emme.identity.domain.model.FeatureFlag;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the SetPlatformFeatureFlag use case. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class SetPlatformFeatureFlagService implements SetPlatformFeatureFlagUseCase {
 
   private final FeatureFlagRepository repository;
-
-  public SetPlatformFeatureFlagService(FeatureFlagRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public FeatureFlagDetails set(SetPlatformFeatureFlagCommand command) {

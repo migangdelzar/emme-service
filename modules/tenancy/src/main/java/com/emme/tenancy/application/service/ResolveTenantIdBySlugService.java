@@ -5,17 +5,15 @@ import com.emme.tenancy.api.usecase.ResolveTenantIdBySlugUseCase;
 import com.emme.tenancy.application.port.out.TenantRepository;
 import com.emme.tenancy.domain.model.Tenant;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ResolveTenantIdBySlugService implements ResolveTenantIdBySlugUseCase {
   private final TenantRepository repository;
-
-  public ResolveTenantIdBySlugService(TenantRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public UUID resolve(ResolveTenantIdBySlugQuery query) {

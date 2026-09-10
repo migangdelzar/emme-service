@@ -5,17 +5,15 @@ import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.SuspendTenantUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class SuspendTenantService implements SuspendTenantUseCase {
   private final TenantRepository repository;
-
-  public SuspendTenantService(TenantRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public TenantDetails suspend(SuspendTenantCommand command) {

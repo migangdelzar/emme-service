@@ -5,17 +5,15 @@ import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.ReactivateTenantUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ReactivateTenantService implements ReactivateTenantUseCase {
   private final TenantRepository repository;
-
-  public ReactivateTenantService(TenantRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public TenantDetails reactivate(ReactivateTenantCommand command) {

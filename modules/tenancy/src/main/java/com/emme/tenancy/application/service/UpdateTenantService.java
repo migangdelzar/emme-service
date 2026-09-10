@@ -6,17 +6,15 @@ import com.emme.tenancy.api.usecase.UpdateTenantUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
 import com.emme.tenancy.domain.model.Tenant;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UpdateTenantService implements UpdateTenantUseCase {
   private final TenantRepository repository;
-
-  public UpdateTenantService(TenantRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public TenantDetails update(UpdateTenantCommand command) {

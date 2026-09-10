@@ -3,6 +3,7 @@ plugins {
   id("emme.spring-web")
   id("emme.messaging")
   id("emme.persistence")
+  id("emme.lombok")
   id("emme.integration-testing")
   `java-test-fixtures`
 }

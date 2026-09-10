@@ -5,19 +5,17 @@ import com.emme.identity.api.usecase.ListPlatformFeatureFlagsUseCase;
 import com.emme.identity.application.mapper.FeatureFlagApplicationMapper;
 import com.emme.identity.application.port.out.FeatureFlagRepository;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the ListPlatformFeatureFlags use case. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ListPlatformFeatureFlagsService implements ListPlatformFeatureFlagsUseCase {
 
   private final FeatureFlagRepository repository;
-
-  public ListPlatformFeatureFlagsService(FeatureFlagRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public List<FeatureFlagDetails> list() {

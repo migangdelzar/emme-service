@@ -7,17 +7,15 @@ import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
 import com.emme.tenancy.domain.model.TenantStatus;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ListActiveTenantsService implements ListActiveTenantsUseCase {
   private final TenantRepository repository;
-
-  public ListActiveTenantsService(TenantRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public List<TenantDetails> list(ListActiveTenantsQuery query) {

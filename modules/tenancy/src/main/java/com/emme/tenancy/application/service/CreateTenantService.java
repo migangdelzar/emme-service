@@ -10,24 +10,17 @@ import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
 import com.emme.tenancy.application.port.out.TenantRepository;
 import com.emme.tenancy.domain.model.Tenant;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CreateTenantService implements CreateTenantUseCase {
   private final TenantRepository repository;
   private final TenantProvisioningRepository provisioningRepository;
   private final TenantEventPublisher eventPublisher;
-
-  public CreateTenantService(
-      TenantRepository repository,
-      TenantProvisioningRepository provisioningRepository,
-      TenantEventPublisher eventPublisher) {
-    this.repository = repository;
-    this.provisioningRepository = provisioningRepository;
-    this.eventPublisher = eventPublisher;
-  }
 
   @Override
   public TenantDetails create(CreateTenantCommand command) {

@@ -5,17 +5,15 @@ import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.StageDeleteTenantUseCase;
 import com.emme.tenancy.application.mapper.TenantApplicationMapper;
 import com.emme.tenancy.application.port.out.TenantRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class StageDeleteTenantService implements StageDeleteTenantUseCase {
   private final TenantRepository repository;
-
-  public StageDeleteTenantService(TenantRepository repository) {
-    this.repository = repository;
-  }
 
   @Override
   public TenantDetails stageDelete(StageDeleteTenantCommand command) {

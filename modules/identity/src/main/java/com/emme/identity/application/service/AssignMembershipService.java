@@ -10,22 +10,18 @@ import com.emme.identity.application.port.out.RoleRepository;
 import com.emme.identity.domain.model.Membership;
 import com.emme.identity.domain.model.Role;
 import com.emme.identity.domain.model.RoleScope;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Executes the AssignMembership use case. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AssignMembershipService implements AssignMembershipUseCase {
 
   private final MembershipRepository membershipRepository;
   private final RoleRepository roleRepository;
-
-  public AssignMembershipService(
-      MembershipRepository membershipRepository, RoleRepository roleRepository) {
-    this.membershipRepository = membershipRepository;
-    this.roleRepository = roleRepository;
-  }
 
   @Override
   public MembershipDetails assign(AssignMembershipCommand command) {

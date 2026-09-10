@@ -10,6 +10,7 @@ import com.emme.identity.application.port.out.CustomerTokenClaims;
 import com.emme.identity.application.port.out.CustomerTokenDecoder;
 import com.emme.identity.domain.model.CustomerIdentity;
 import com.emme.identity.domain.model.SocialProvider;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 /** Authenticates customer provider tokens and coordinates identity persistence. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AuthenticateCustomerService implements AuthenticateCustomerUseCase {
 
   private static final Logger log = LoggerFactory.getLogger(AuthenticateCustomerService.class);
@@ -25,12 +27,6 @@ public class AuthenticateCustomerService implements AuthenticateCustomerUseCase 
 
   private final CustomerIdentityRepository repository;
   private final CustomerTokenDecoder tokenDecoder;
-
-  public AuthenticateCustomerService(
-      CustomerIdentityRepository repository, CustomerTokenDecoder tokenDecoder) {
-    this.repository = repository;
-    this.tokenDecoder = tokenDecoder;
-  }
 
   @Override
   public CustomerLoginResult authenticate(AuthenticateCustomerCommand command) {

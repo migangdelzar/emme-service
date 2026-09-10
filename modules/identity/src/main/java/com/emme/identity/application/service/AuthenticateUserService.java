@@ -9,24 +9,17 @@ import com.emme.identity.application.port.out.IdentityRealmConfigurationPort;
 import com.emme.identity.application.port.out.UserAuthenticationPort;
 import com.emme.tenancy.api.query.ListTenantsQuery;
 import com.emme.tenancy.api.usecase.ListTenantsUseCase;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /** Coordinates user authentication and tenant-realm selection. */
 @Service
+@RequiredArgsConstructor
 public class AuthenticateUserService implements AuthenticateUserUseCase {
 
   private final UserAuthenticationPort authenticationPort;
   private final ListTenantsUseCase listTenants;
   private final IdentityRealmConfigurationPort realmConfiguration;
-
-  public AuthenticateUserService(
-      UserAuthenticationPort authenticationPort,
-      ListTenantsUseCase listTenants,
-      IdentityRealmConfigurationPort realmConfiguration) {
-    this.authenticationPort = authenticationPort;
-    this.listTenants = listTenants;
-    this.realmConfiguration = realmConfiguration;
-  }
 
   @Override
   public UserTokenResult authenticate(AuthenticateUserCommand command) {

@@ -8,22 +8,18 @@ import com.emme.identity.domain.model.Role;
 import com.emme.identity.domain.model.RoleScope;
 import com.emme.tenancy.api.usecase.EnsureTenantMembershipUseCase;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Ensures identity memberships during tenant realm provisioning. */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class EnsureTenantMembershipService implements EnsureTenantMembershipUseCase {
 
   private final MembershipRepository membershipRepository;
   private final RoleRepository roleRepository;
-
-  public EnsureTenantMembershipService(
-      MembershipRepository membershipRepository, RoleRepository roleRepository) {
-    this.membershipRepository = membershipRepository;
-    this.roleRepository = roleRepository;
-  }
 
   @Override
   public void ensure(UUID tenantId, String userReference, String roleCode) {

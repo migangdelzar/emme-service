@@ -14,26 +14,19 @@ import com.emme.tenancy.api.result.TenantDetails;
 import com.emme.tenancy.api.usecase.GetTenantUseCase;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Application service for the current-user read workflow. */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GetCurrentUserService implements GetCurrentUserUseCase {
 
   private final GetCurrentUserMembershipsUseCase memberships;
   private final GetUserPermissionsUseCase permissions;
   private final GetTenantUseCase tenants;
-
-  public GetCurrentUserService(
-      GetCurrentUserMembershipsUseCase memberships,
-      GetUserPermissionsUseCase permissions,
-      GetTenantUseCase tenants) {
-    this.memberships = memberships;
-    this.permissions = permissions;
-    this.tenants = tenants;
-  }
 
   @Override
   public CurrentUserDetails get(GetCurrentUserQuery query) {

@@ -6419,6 +6419,9 @@ Completed in this slice:
 - [x] Add the fourth expansion slice for Calendar, Payment, Notification, and
       Subscriptions application services using test-first allowlist enforcement.
 - [x] Verify the fourth expansion slice with affected tests and compilation.
+- [x] Add the fifth expansion slice for Identity and Tenancy application
+      services using test-first allowlist enforcement.
+- [x] Verify the fifth expansion slice with affected tests and compilation.
 - [ ] Continue the remaining eligible application-service modules in separate
       commits after their own red/green checks.
 - [ ] Continue remaining event-delivery, deployment-runtime, and final

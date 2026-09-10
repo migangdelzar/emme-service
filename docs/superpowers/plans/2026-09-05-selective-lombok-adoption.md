@@ -523,3 +523,8 @@ The fourth expansion slice adds the direct-assignment application services in
 Calendar, Payment, Notification, and Subscriptions. Provider HTTP clients,
 webhook signature verifiers, persistence adapters, and configuration types are
 not part of this conversion.
+
+The fifth expansion slice adds the direct-assignment application services in
+Identity and Tenancy. Authorization decisions, tenant context, database
+routing, provisioning state transitions, and event publication remain in the
+service methods; Lombok only supplies the dependency constructor.

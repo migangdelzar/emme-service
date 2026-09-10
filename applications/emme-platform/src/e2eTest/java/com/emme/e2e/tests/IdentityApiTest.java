@@ -27,6 +27,7 @@ class IdentityApiTest {
   }
 
   @Test
+  @WithUser(role = Roles.TENANT_OWNER, tokenEnvironmentVariable = "E2E_TENANT_OWNER_TOKEN")
   void shouldDenyFeatureFlagsWithoutAdmin(UserSession session) {
     var result = session.get("/api/admin/feature-flags", 403);
     assertThat(result).isNotNull();

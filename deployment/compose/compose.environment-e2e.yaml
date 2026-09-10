@@ -34,9 +34,9 @@ services:
       # externally observable issuer claim.
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/emme-core
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/emme-core/protocol/openid-connect/certs
-      APP_KEYCLOAK_BASE_URL: http://keycloak:8080
+      APP_KEYCLOAK_BASE_URL: http://host.docker.internal:18080
       # Browser-issued tokens carry the host-facing issuer. The adapter uses
-      # APP_KEYCLOAK_BASE_URL for in-network transport and this value only for
+      # APP_KEYCLOAK_BASE_URL for host-routed transport and this value only for
       # issuer trust and realm identity.
       APP_KEYCLOAK_ISSUER_URI: http://localhost:18080/realms/emme-core
       # The dynamic decoder reads JWKS through the internal Keycloak service.

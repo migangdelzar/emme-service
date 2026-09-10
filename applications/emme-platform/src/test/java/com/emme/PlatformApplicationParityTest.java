@@ -188,7 +188,7 @@ class PlatformApplicationParityTest {
     String compose = readSource("deployment/compose/compose.environment-e2e.yaml");
 
     assertThat(compose)
-        .contains("APP_KEYCLOAK_BASE_URL: http://keycloak:8080")
+        .contains("APP_KEYCLOAK_BASE_URL: http://host.docker.internal:18080")
         .contains("APP_KEYCLOAK_ISSUER_URI: http://localhost:18080/realms/emme-core")
         .contains("APP_KEYCLOAK_CUSTOMER_ISSUER_URI: http://localhost:18080/realms/emme-customers")
         .contains("APP_KEYCLOAK_JWK_SET_BASE_URL: http://keycloak:8080");

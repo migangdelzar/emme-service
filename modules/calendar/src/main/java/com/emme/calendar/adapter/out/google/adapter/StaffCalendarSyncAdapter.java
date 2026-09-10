@@ -20,8 +20,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.modulith.events.ApplicationModuleListener;
@@ -38,9 +37,9 @@ import org.springframework.web.client.RestClient;
  */
 @Service
 @Transactional
+@Slf4j
 public class StaffCalendarSyncAdapter {
 
-  private static final Logger log = LoggerFactory.getLogger(StaffCalendarSyncAdapter.class);
   private static final String EVENTS_URL =
       "https://www.googleapis.com/calendar/v3/calendars/%s/events";
   private static final DateTimeFormatter ISO_INSTANT =

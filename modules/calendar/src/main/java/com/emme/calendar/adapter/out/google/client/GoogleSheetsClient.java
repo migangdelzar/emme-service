@@ -6,8 +6,7 @@ import com.emme.kernel.context.TenantContextHolder;
 import com.emme.shared.web.security.CurrentUserContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -15,9 +14,9 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
 @Service
+@Slf4j
 public class GoogleSheetsClient {
 
-  private static final Logger log = LoggerFactory.getLogger(GoogleSheetsClient.class);
   private static final String SHEETS_API = "https://sheets.googleapis.com/v4/spreadsheets";
 
   private final GoogleOAuthAdapter oauthService;

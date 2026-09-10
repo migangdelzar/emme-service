@@ -15,8 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -37,9 +36,9 @@ import org.springframework.web.client.RestClientResponseException;
  */
 @Service
 @Transactional
+@Slf4j
 public class GoogleOAuthAdapter implements GoogleOAuthPort {
 
-  private static final Logger log = LoggerFactory.getLogger(GoogleOAuthAdapter.class);
   private static final String AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
   private static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
   private static final String REVOKE_URL = "https://oauth2.googleapis.com/revoke";

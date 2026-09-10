@@ -11,8 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class GetBusyTimesService implements GetBusyTimesUseCase {
 
-  private static final Logger log = LoggerFactory.getLogger(GetBusyTimesService.class);
   private final GoogleCalendarPort googleCalendar;
   private final CalendarProperties properties;
 

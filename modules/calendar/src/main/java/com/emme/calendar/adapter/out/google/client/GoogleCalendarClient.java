@@ -20,8 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -35,9 +34,8 @@ import org.springframework.web.client.RestClient;
  * no Google SDK dependency.
  */
 @Component
+@Slf4j
 public class GoogleCalendarClient implements GoogleCalendarPort {
-
-  private static final Logger log = LoggerFactory.getLogger(GoogleCalendarClient.class);
 
   private static final String SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
   private static final long TOKEN_CACHE_SECONDS = 59 * 60; // 59 min (1h with buffer)

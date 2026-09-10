@@ -9,8 +9,7 @@ import com.emme.calendar.domain.model.CalendarSyncState;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class SyncCalendarEventsService implements SyncCalendarEventsUseCase {
 
-  private static final Logger log = LoggerFactory.getLogger(SyncCalendarEventsService.class);
   private final CalendarSyncStateRepository repository;
 
   @Override

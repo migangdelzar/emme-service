@@ -16,8 +16,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -31,9 +30,9 @@ import org.springframework.web.client.RestClient;
  * locate and delete the corresponding Google Calendar event.
  */
 @Service
+@Slf4j
 public class ClientCalendarSyncAdapter implements ClientCalendarSyncPort {
 
-  private static final Logger log = LoggerFactory.getLogger(ClientCalendarSyncAdapter.class);
   private static final String EVENTS_URL =
       "https://www.googleapis.com/calendar/v3/calendars/primary/events";
   private static final DateTimeFormatter ISO_INSTANT =

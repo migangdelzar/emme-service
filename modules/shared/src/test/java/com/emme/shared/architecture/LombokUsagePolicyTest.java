@@ -311,7 +311,17 @@ class LombokUsagePolicyTest {
           "modules/assistant/src/main/java/com/emme/assistant/ai/application/semantic/SemanticChatCache.java",
           "modules/assistant/src/main/java/com/emme/assistant/ai/application/semantic/SemanticIntentClassifier.java",
           "modules/assistant/src/main/java/com/emme/assistant/ai/application/semantic/SemanticToolSelector.java",
-          "modules/assistant/src/main/java/com/emme/assistant/ai/application/tool/AuthorizedAiToolGateway.java");
+          "modules/assistant/src/main/java/com/emme/assistant/ai/application/tool/AuthorizedAiToolGateway.java",
+          "modules/calendar/src/main/java/com/emme/calendar/adapter/in/web/controller/GoogleOAuthController.java",
+          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/adapter/ClientCalendarSyncAdapter.java",
+          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/adapter/GoogleOAuthAdapter.java",
+          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/adapter/GoogleSheetsAdapter.java",
+          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/adapter/StaffCalendarSyncAdapter.java",
+          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/client/GoogleCalendarClient.java",
+          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/client/GoogleSheetsClient.java",
+          "modules/calendar/src/main/java/com/emme/calendar/adapter/out/google/oauth/OAuthTokenSource.java",
+          "modules/calendar/src/main/java/com/emme/calendar/application/service/GetBusyTimesService.java",
+          "modules/calendar/src/main/java/com/emme/calendar/application/service/SyncCalendarEventsService.java");
 
   @Test
   void onlyUsesLombokInApprovedProductionFiles() throws IOException {

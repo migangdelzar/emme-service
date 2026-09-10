@@ -24,8 +24,7 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,9 +38,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/api/google/oauth", version = "1.0")
 @Tag(name = "Google OAuth")
 @RequiredArgsConstructor
+@Slf4j
 public class GoogleOAuthController {
 
-  private static final Logger log = LoggerFactory.getLogger(GoogleOAuthController.class);
   private static final String STATE_PREFIX = "oauth:state:";
   private static final Duration STATE_TTL = Duration.ofMinutes(5);
 

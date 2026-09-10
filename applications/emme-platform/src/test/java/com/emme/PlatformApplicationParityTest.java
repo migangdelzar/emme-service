@@ -191,7 +191,8 @@ class PlatformApplicationParityTest {
         .contains("APP_KEYCLOAK_BASE_URL: http://host.docker.internal:18080")
         .contains("APP_KEYCLOAK_ISSUER_URI: http://localhost:18080/realms/emme-core")
         .contains("APP_KEYCLOAK_CUSTOMER_ISSUER_URI: http://localhost:18080/realms/emme-customers")
-        .contains("APP_KEYCLOAK_JWK_SET_BASE_URL: http://keycloak:8080");
+        .contains("APP_KEYCLOAK_JWK_SET_BASE_URL: http://keycloak:8080")
+        .contains("KC_HOSTNAME: http://localhost:18080");
   }
 
   private static Path sourcePath(String relativePath) {

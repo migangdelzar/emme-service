@@ -6,12 +6,38 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 class LombokUsagePolicyTest {
+
+  private static final List<String> OWNED_SOURCE_ROOTS =
+      List.of("modules", "libraries", "applications", "build-logic");
+  private static final String POLICY_TEST =
+      "modules/shared/src/test/java/com/emme/shared/architecture/LombokUsagePolicyTest.java";
+  private static final Map<String, Set<String>> APPROVED_TEST_FILES_BY_SOURCE_SET =
+      Map.of(
+          "test", Set.<String>of(),
+          "integrationTest", Set.<String>of(),
+          "testFixtures", Set.<String>of(),
+          "e2eTest", Set.<String>of());
+
+  @Test
+  void scansAllOwnedSourceSetsWithoutGeneratedBuildOutput() throws IOException {
+    Path root = sourcePath();
+
+    assertThat(ownedJavaSources(root))
+        .allMatch(path -> path.toString().replace('\\', '/').contains("/src/"))
+        .anyMatch(path -> path.toString().replace('\\', '/').contains("/applications/"))
+        .anyMatch(path -> path.toString().replace('\\', '/').contains("/src/test/java/"))
+        .anyMatch(path -> path.toString().replace('\\', '/').contains("/src/integrationTest/java/"))
+        .anyMatch(path -> path.toString().replace('\\', '/').contains("/src/e2eTest/java/"))
+        .anyMatch(path -> path.toString().replace('\\', '/').contains("/src/testFixtures/java/"))
+        .noneMatch(path -> path.toString().replace('\\', '/').contains("/build/"));
+  }
 
   private static final Set<String> APPROVED_FILES =
       Set.of(
@@ -133,13 +159,27 @@ class LombokUsagePolicyTest {
             .collect(Collectors.toSet());
 
     assertThat(lombokFiles).containsExactlyInAnyOrderElementsOf(APPROVED_FILES);
+
+    Set<String> approvedTestFiles =
+        APPROVED_TEST_FILES_BY_SOURCE_SET.values().stream()
+            .flatMap(Set::stream)
+            .collect(Collectors.toSet());
+    Set<String> testLombokFiles =
+        ownedJavaSources(root).stream()
+            .filter(path -> !isProductionSource(path))
+            .filter(path -> !isPolicyTest(root, path))
+            .filter(this::containsLombok)
+            .map(path -> root.relativize(path).toString().replace('\\', '/'))
+            .collect(Collectors.toSet());
+
+    assertThat(testLombokFiles).containsExactlyInAnyOrderElementsOf(approvedTestFiles);
   }
 
   @Test
   void forbidsBroadLombokAnnotationsAndBoundaryUsage() throws IOException {
     Path root = sourcePath();
 
-    for (Path source : productionSources(root)) {
+    for (Path source : ownedJavaSources(root)) {
       String normalized = source.toString().replace('\\', '/');
       String contents = Files.readString(source);
 
@@ -150,15 +190,13 @@ class LombokUsagePolicyTest {
       }
       assertThat(contents)
           .as("forbidden Lombok annotation: %s", source)
-          .doesNotContainPattern("@Data\\b")
-          .doesNotContainPattern("@Setter\\b")
-          .doesNotContainPattern("@EqualsAndHashCode\\b")
-          .doesNotContainPattern("@ToString\\b");
+          .doesNotContainPattern(
+              "(?m)^\\s*@(Data|Setter|EqualsAndHashCode|ToString|Delegate|SneakyThrows|Synchronized|ExtensionMethod|StandardException)\\b");
 
-      if (contents.contains("@Builder")) {
+      if (!isPolicyTest(root, source) && containsAnnotation(contents, "Builder")) {
         String relativePath = root.relativize(source).toString().replace('\\', '/');
-        assertThat(APPROVED_FILES).contains(relativePath);
-        assertThat(contents).contains("setterPrefix = \"with\"");
+        assertThat(approvedLombokFiles()).contains(relativePath);
+        assertThat(contents).containsPattern("setterPrefix\\s*=\\s*\"with\"");
       }
     }
   }
@@ -176,23 +214,51 @@ class LombokUsagePolicyTest {
   }
 
   private static List<Path> productionSources(Path root) throws IOException {
-    try (Stream<Path> modules = Files.walk(root.resolve("modules"));
-        Stream<Path> libraries = Files.walk(root.resolve("libraries"))) {
-      return Stream.concat(modules, libraries)
+    return ownedJavaSources(root).stream()
+        .filter(LombokUsagePolicyTest::isProductionSource)
+        .toList();
+  }
+
+  private static List<Path> ownedJavaSources(Path root) throws IOException {
+    try (Stream<Path> sources = Files.walk(root)) {
+      return sources
           .filter(
               path -> {
-                String normalized = path.toString().replace('\\', '/');
-                return normalized.contains("/src/main/java/") && !normalized.contains("/build/");
+                String normalized = root.relativize(path).toString().replace('\\', '/');
+                return OWNED_SOURCE_ROOTS.stream()
+                        .anyMatch(sourceRoot -> normalized.startsWith(sourceRoot + "/"))
+                    && normalized.contains("/src/")
+                    && !normalized.contains("/build/")
+                    && normalized.endsWith(".java");
               })
-          .filter(path -> path.toString().endsWith(".java"))
           .toList();
     }
+  }
+
+  private static boolean isProductionSource(Path path) {
+    return path.toString().replace('\\', '/').contains("/src/main/java/");
+  }
+
+  private static boolean isPolicyTest(Path root, Path source) {
+    return root.relativize(source).toString().replace('\\', '/').equals(POLICY_TEST);
+  }
+
+  private static Set<String> approvedLombokFiles() {
+    return Stream.concat(
+            APPROVED_FILES.stream(),
+            APPROVED_TEST_FILES_BY_SOURCE_SET.values().stream().flatMap(Set::stream))
+        .collect(Collectors.toSet());
+  }
+
+  private static boolean containsAnnotation(String contents, String annotation) {
+    return contents.lines().anyMatch(line -> line.matches("\\s*@" + annotation + "\\b.*"));
   }
 
   private boolean containsLombok(Path source) {
     try {
       String contents = Files.readString(source);
-      return contents.contains("import lombok.") || contents.contains("lombok.");
+      return contents.lines().anyMatch(line -> line.matches("\\s*import\\s+lombok\\..*"))
+          || contents.lines().anyMatch(line -> line.matches("\\s*@lombok\\.[A-Za-z].*"));
     } catch (IOException exception) {
       throw new IllegalStateException("Cannot read source: " + source, exception);
     }
@@ -201,8 +267,9 @@ class LombokUsagePolicyTest {
   private static Path sourcePath() {
     Path current = Path.of("").toAbsolutePath();
     while (current != null) {
-      if (Files.isDirectory(current.resolve("modules"))
-          && Files.isDirectory(current.resolve("libraries"))) {
+      Path candidate = current;
+      if (OWNED_SOURCE_ROOTS.stream()
+          .allMatch(sourceRoot -> Files.isDirectory(candidate.resolve(sourceRoot)))) {
         return current;
       }
       current = current.getParent();

@@ -296,6 +296,11 @@ class LombokUsagePolicyTest {
           "modules/shared/src/main/java/com/emme/shared/search/postgres/PostgresHybridSearch.java",
           "modules/shared/src/main/java/com/emme/shared/web/advice/GlobalExceptionHandler.java");
 
+  private static final Set<String> APPROVED_LOGGER_FILES =
+      Set.of(
+          "modules/appointments/src/main/java/com/emme/appointments/adapter/in/web/controller/DashboardController.java",
+          "modules/appointments/src/main/java/com/emme/appointments/adapter/in/web/sse/DashboardBroadcaster.java");
+
   @Test
   void onlyUsesLombokInApprovedProductionFiles() throws IOException {
     Path root = sourcePath();
@@ -306,7 +311,10 @@ class LombokUsagePolicyTest {
             .map(path -> root.relativize(path).toString().replace('\\', '/'))
             .collect(Collectors.toSet());
 
-    assertThat(lombokFiles).containsExactlyInAnyOrderElementsOf(APPROVED_FILES);
+    assertThat(lombokFiles)
+        .containsExactlyInAnyOrderElementsOf(
+            Stream.concat(APPROVED_FILES.stream(), APPROVED_LOGGER_FILES.stream())
+                .collect(Collectors.toSet()));
 
     Set<String> approvedTestFiles = approvedTestFiles(root);
     Set<String> testLombokFiles =
@@ -359,6 +367,20 @@ class LombokUsagePolicyTest {
     }
   }
 
+  @Test
+  void adoptsSlf4jForApprovedLoggerFiles() throws IOException {
+    Path root = sourcePath();
+
+    for (String relativePath : APPROVED_LOGGER_FILES) {
+      assertThat(Files.readString(root.resolve(relativePath)))
+          .as("Lombok logger source: %s", relativePath)
+          .doesNotContain("LoggerFactory.getLogger")
+          .doesNotContain("import org.slf4j.Logger;")
+          .contains("import lombok.extern.slf4j.Slf4j;")
+          .contains("@Slf4j");
+    }
+  }
+
   private static List<Path> productionSources(Path root) throws IOException {
     return ownedJavaSources(root).stream()
         .filter(LombokUsagePolicyTest::isProductionSource)
@@ -397,7 +419,7 @@ class LombokUsagePolicyTest {
 
   private static Set<String> approvedLombokFiles() {
     return Stream.concat(
-            APPROVED_FILES.stream(),
+            Stream.concat(APPROVED_FILES.stream(), APPROVED_LOGGER_FILES.stream()),
             APPROVED_TEST_FILES_BY_SOURCE_SET.values().stream().flatMap(Set::stream))
         .collect(Collectors.toSet());
   }

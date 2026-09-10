@@ -5,8 +5,7 @@ import com.emme.appointments.api.event.AppointmentCreated;
 import com.emme.notification.api.event.NotificationDelivered;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
@@ -14,9 +13,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /** Inbound web adapter that projects module events to dashboard SSE subscribers. */
 @Component
+@Slf4j
 public class DashboardBroadcaster {
 
-  private static final Logger log = LoggerFactory.getLogger(DashboardBroadcaster.class);
   private static final int MAX_SUBSCRIBERS = 100;
 
   private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();

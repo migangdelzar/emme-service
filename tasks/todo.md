@@ -6465,6 +6465,20 @@ Completed in this slice:
 - [x] Document eight rejected constructor candidates without forcing adoption.
 - [x] Run the final focused policy verification and publish the complete report.
 
+## Current slice — Lombok Task 3 ordinary logger reductions — 2026-09-10
+
+- [x] Convert ordinary logger boilerplate to `@Slf4j` in the planned modules.
+- [x] Preserve `SecurityAuditLogger` and custom logger factories explicitly.
+- [x] Verify logger slices with affected tests, compilation, Spotless,
+      Checkstyle, and the shared policy test.
+- [ ] Review values/builders, resource reductions, and fixtures.
+
+### Results
+
+- Ordinary logger slices were committed through Tenancy at `d3822753`.
+- `SecurityAuditLogger` remains the only planned explicit LoggerFactory use,
+  preserving its dedicated security category and redaction behavior.
+
 ### Results
 
 - 48 safe constructor-only reductions were adopted across ten modules plus

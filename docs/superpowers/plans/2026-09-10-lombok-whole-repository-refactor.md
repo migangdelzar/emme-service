@@ -356,7 +356,7 @@ and commit evidence is recorded in
 - Does not change security-audit logger semantics or introduce sensitive log
   fields.
 
-- [ ] **Step 1: Write the failing source-policy assertion.** Add each chosen logger file to the approved Lombok map and add an assertion that approved logger migrations no longer import `LoggerFactory` or declare the removed logger field.
+- [x] **Step 1: Write the failing source-policy assertion.** Add each chosen logger file to the approved Lombok map and add an assertion that approved logger migrations no longer import `LoggerFactory` or declare the removed logger field.
 
 ```java
 assertThat(contents)
@@ -365,7 +365,7 @@ assertThat(contents)
     .contains("@Slf4j");
 ```
 
-- [ ] **Step 2: Run the logger policy test and verify red.**
+- [x] **Step 2: Run the logger policy test and verify red.**
 
 ```bash
 ./gradlew :modules:shared:test --tests com.emme.shared.architecture.LombokUsagePolicyTest --no-parallel --no-configuration-cache
@@ -373,13 +373,13 @@ assertThat(contents)
 
 Expected: FAIL because the approved class still declares its manual logger.
 
-- [ ] **Step 3: Apply the minimal logger change.** Add `import lombok.extern.slf4j.Slf4j;`, add `@Slf4j`, remove the `Logger`/`LoggerFactory` field and imports, and keep all logging calls unchanged when the field is already named `log`. For uppercase `LOGGER` fields, rename only logger references to `log` in the same file and preserve log messages, levels, arguments, and exception objects.
+- [x] **Step 3: Apply the minimal logger change.** Add `import lombok.extern.slf4j.Slf4j;`, add `@Slf4j`, remove the `Logger`/`LoggerFactory` field and imports, and keep all logging calls unchanged when the field is already named `log`. For uppercase `LOGGER` fields, rename only logger references to `log` in the same file and preserve log messages, levels, arguments, and exception objects.
 
-- [ ] **Step 4: Run focused behavior and source checks.** Run the affected module test, compile tasks, policy test, Spotless, and Checkstyle. For `SecurityAuditLogger.java`, keep the explicit logger unless a dedicated test proves category and redaction behavior unchanged.
+- [x] **Step 4: Run focused behavior and source checks.** Run the affected module test, compile tasks, policy test, Spotless, and Checkstyle. For `SecurityAuditLogger.java`, keep the explicit logger unless a dedicated test proves category and redaction behavior unchanged.
 
-- [ ] **Step 5: Refactor and inspect sensitive logging.** Confirm no token, credential, tenant secret, or raw AI/provider payload was added to log calls. Confirm `@Slf4j` uses the existing class category.
+- [x] **Step 5: Refactor and inspect sensitive logging.** Confirm no token, credential, tenant secret, or raw AI/provider payload was added to log calls. Confirm `@Slf4j` uses the existing class category.
 
-- [ ] **Step 6: Commit and push each independent logging slice.**
+- [x] **Step 6: Commit and push each independent logging slice.**
 
 ```bash
 lombok_logging_module=appointments

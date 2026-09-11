@@ -339,7 +339,14 @@ class LombokUsagePolicyTest {
           "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/TwilioSmsProvider.java",
           "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/VonageProvider.java",
           "modules/notification/src/main/java/com/emme/notification/application/service/DeliverNotificationService.java",
-          "modules/payment/src/main/java/com/emme/payment/adapter/in/webhook/MercadoPagoWebhookController.java");
+          "modules/payment/src/main/java/com/emme/payment/adapter/in/webhook/MercadoPagoWebhookController.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/messaging/consumer/TenantActivationListener.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/messaging/consumer/TenantSchemaProvisioningListener.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/filter/TenantContextFilter.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/in/web/filter/TenantRateLimitInterceptor.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/SchemaMultiTenantConnectionProvider.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantDatabasePoolProvider.java",
+          "modules/tenancy/src/main/java/com/emme/tenancy/adapter/out/client/database/TenantIdentifierResolver.java");
 
   @Test
   void onlyUsesLombokInApprovedProductionFiles() throws IOException {

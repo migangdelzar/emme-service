@@ -6,8 +6,7 @@ import com.emme.tenancy.api.event.TenantSchemaReady;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
 import com.emme.tenancy.application.port.out.TenantSchemaMigrationPort;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
@@ -16,9 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Listens for {@link TenantCreated} events and provisions tenant schemas via Liquibase. */
 @Component
+@Slf4j
 public class TenantSchemaProvisioningListener {
-
-  private static final Logger log = LoggerFactory.getLogger(TenantSchemaProvisioningListener.class);
 
   private final TenantSchemaMigrationPort schemaMigrationPort;
   private final TenantProvisioningRepository provisioningRepository;

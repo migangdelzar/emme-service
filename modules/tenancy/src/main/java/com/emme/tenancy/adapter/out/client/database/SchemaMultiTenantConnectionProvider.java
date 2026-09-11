@@ -4,11 +4,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import javax.sql.DataSource;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.hibernate.service.UnknownUnwrapTypeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
@@ -16,11 +15,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Conditional(TenantIdentifierResolver.TenantDatabaseCondition.class)
 @SuppressWarnings("serial")
+@Slf4j
 public class SchemaMultiTenantConnectionProvider
     implements MultiTenantConnectionProvider<String>, HibernatePropertiesCustomizer {
 
-  private static final Logger log =
-      LoggerFactory.getLogger(SchemaMultiTenantConnectionProvider.class);
   private static final String CORE_SCHEMA = "emme_core";
 
   private final DataSource metadataDataSource;

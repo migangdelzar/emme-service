@@ -5,8 +5,7 @@ import com.emme.tenancy.api.event.TenantActivated;
 import com.emme.tenancy.api.event.TenantRealmReady;
 import com.emme.tenancy.application.port.out.TenantProvisioningRepository;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
@@ -14,9 +13,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@Slf4j
 public class TenantActivationListener {
 
-  private static final Logger log = LoggerFactory.getLogger(TenantActivationListener.class);
   private final TenantProvisioningRepository provisioningRepository;
   private final ApplicationEventPublisher eventPublisher;
 

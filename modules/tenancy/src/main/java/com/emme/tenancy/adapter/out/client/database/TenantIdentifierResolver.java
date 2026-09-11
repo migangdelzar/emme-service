@@ -5,10 +5,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -21,10 +20,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Conditional(TenantIdentifierResolver.TenantDatabaseCondition.class)
+@Slf4j
 public class TenantIdentifierResolver
     implements CurrentTenantIdentifierResolver<String>, HibernatePropertiesCustomizer {
 
-  private static final Logger log = LoggerFactory.getLogger(TenantIdentifierResolver.class);
   private static final String CORE_SCHEMA = "emme_core";
 
   private final JdbcClient bootstrapJdbc;

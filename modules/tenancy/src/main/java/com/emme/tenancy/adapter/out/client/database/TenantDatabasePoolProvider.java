@@ -15,8 +15,7 @@ import jakarta.annotation.PreDestroy;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,9 +27,8 @@ import org.springframework.stereotype.Component;
  * separately and never evicted.
  */
 @Component
+@Slf4j
 public class TenantDatabasePoolProvider {
-
-  private static final Logger log = LoggerFactory.getLogger(TenantDatabasePoolProvider.class);
 
   private final TenantPoolingProperties config;
   private final TenantDatabaseConnectionProperties connectionProperties;

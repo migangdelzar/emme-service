@@ -10,8 +10,7 @@ import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -23,9 +22,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 @ConditionalOnBean(StringRedisTemplate.class)
 @ConditionalOnProperty(name = "app.rate-limit.enabled", havingValue = "true", matchIfMissing = true)
+@Slf4j
 public class TenantRateLimitInterceptor implements HandlerInterceptor {
 
-  private static final Logger log = LoggerFactory.getLogger(TenantRateLimitInterceptor.class);
   private static final String KEY_PREFIX = "rate_limit:";
 
   private final StringRedisTemplate redis;

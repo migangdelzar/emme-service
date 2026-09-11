@@ -6486,3 +6486,29 @@ Completed in this slice:
 - Eight candidates remain explicit because their constructors instantiate a
   mapper or perform validation.
 - `tgrep/` remains untracked and untouched.
+
+## Current slice — Lombok Task 4 immutable-value and builder audit — 2026-09-10
+
+- [x] Audit graph enums and AI contract graph/semantic/RAG value carriers.
+- [x] Audit complex Assistant and E2E fixture construction, mutability, and
+      equality boundaries.
+- [x] Add focused rejection/policy coverage before changing production code.
+- [x] Run the focused Red → Green → Refactor policy cycle.
+- [x] Run focused tests, shared compilation, Spotless, Checkstyle, and diff
+      validation.
+- [x] Record explicit rejections and exact evidence in the whole-repository
+      Lombok plan and Task 4 report.
+- [x] Commit and push the scoped slice; verify the remote tip.
+
+### Results
+
+- No safe `@Value`, `@With`, `@EqualsAndHashCode`, or `@Builder` candidate was
+  accepted. No production annotation or builder was added.
+- The shared policy now audits the three graph enums, every AI contract source
+  under graph/semantic/RAG, and the named Assistant/E2E fixture files for
+  generated immutable/equality/copy/builder APIs while asserting explicit
+  construction shapes.
+- Red: the focused policy test failed at compilation for the missing audit
+  helper. Green: the restored helper produced 10 passing tests. Refactor:
+  deterministic source collection retained 10 passing tests.
+- `tgrep/` remains untracked, untouched, and unstaged.

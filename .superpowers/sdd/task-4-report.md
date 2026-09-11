@@ -1,56 +1,155 @@
-# Task 4 Report
+# Lombok Task 4 — Immutable values, equality, builders, and immutable updates
 
-## Files
+| Field | Detail |
+|---|---|
+| **Date** | 2026-09-10 |
+| **Branch** | `feat/ai-platform-foundation` |
+| **Status** | DONE — audit-only |
+| **Scope** | Whole-repository Lombok plan, Section 1 / Task 4 |
 
-Added actor-aware appointment commands/use cases and assistant appointment tool configuration/handlers. Updated appointment services to enforce actor tenant, client ownership, staff roles, confirmation, and confirmed-state mutation policy. Existing AI gateway supplies backend-derived idempotency claim/replay behavior.
+## Outcome
 
-## Tests and verification
+Task 4 completed as an audit-only slice. No production `@Value`, `@With`,
+`@EqualsAndHashCode`, `@Builder`, `@Singular`, `@Builder.Default`, `@ToBuilder`,
+or `@Jacksonized` annotation was safe or materially clearer for the reviewed
+types. No Java record was changed and no constructor/logger work was included.
 
-- `mise exec java@25.0.2 -- ./gradlew :modules:appointments:compileJava :modules:assistant:compileJava` — passed.
-- `mise exec java@25.0.2 -- ./gradlew :modules:appointments:test` — passed.
-- `mise exec java@25.0.2 -- ./gradlew :modules:assistant:test` — 334 tests completed, 16 failed.
-- Exact unrelated baseline failures: `AiCapabilityConventionTest.everyMaterializedProductionPackageHasPackageMetadata`; `ConversationWebTest.shouldRejectUnauthenticatedRequest`; `ConversationWebTest.shouldAcceptValidConversationRequest`; `AiWebTest.shouldAcceptRagRequestWithTheAuthenticatedTenantContext`; `AiWebTest.shouldRejectWithoutFeatureFlag`; `AiWebTest.shouldAcceptValidChatRequest`; `ConversationModuleTest.shouldCreateConversation`; `ConversationModuleTest.shouldListConversations`; `ConversationModuleTest.shouldGetConversationById`; `ConversationModuleTest.shouldRejectWithoutJwt`; `AiModuleTest.shouldReturnMockProviderResponse`; `AiModuleTest.shouldHandleEmptyMessageGracefully`; `AiModuleTest.shouldGetAiResponse`; `AiModuleTest.shouldDetectIntent`; `AiModuleTest.shouldHandleConversationContext`; `AiModuleTest.shouldRejectWithoutJwt`.
-- Proof: the convention failure reports the pre-existing missing `package-info.java` under `modules/assistant/src/main/java/com/emme/assistant/ai/adapter/out/storage`; all 15 Spring failures fail during context creation because `CatalogDesignImageReader` has no `TenantImageReader` bean. Neither path is touched by Task 4 changes.
-- Focused remediation verification: `:modules:assistant:test --tests '*AppointmentToolHandlerTest' --tests '*AuthorizedAiToolGatewayIdempotencyTest'` — passed.
-- `:modules:assistant:spotlessApply` — passed.
+The shared Lombok policy now has focused coverage for the reviewed AI contract
+and fixture boundaries. It rejects immutable/equality/copy/builder annotations
+in the audited files and asserts the explicit enum and stateful construction
+shapes that must remain visible.
 
-## Limitations
+## Audit scope and decisions
 
-Full assistant verification remains red only on the documented unrelated baseline failures. Existing legacy appointment use cases remain unscoped compatibility adapters; new AI callers must use actor-aware use cases through the authorized gateway.
+### AI contract graph types
 
-## Review remediation
+The following remain explicit enums with domain-specific constructor fields and
+accessors:
 
-Added actor-tenant reference checks and canonical tenant/tool/principal/idempotency/argument operation keys. Added `AppointmentToolHandlerTest` for malformed arguments, backend context propagation, and preservation of domain, security, and collision runtime exceptions. Gateway tests verify tenant/tool/principal/idempotency identity, sorted canonical argument fingerprints, reordered-argument replay, and changed arguments receiving a distinct non-replay identity. Reformatted sources with Spotless.
+- `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/graph/GraphNodeType.java`
+- `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/graph/GraphRelationshipType.java`
+- `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/graph/GraphTraversalKind.java`
 
-## Follow-up fixes
+Lombok value/equality/copy annotations do not improve enum construction or
+behavior. `GraphRelationshipType` and `GraphTraversalKind` expose explicit
+allowlisted graph relationships and endpoint types; generated value semantics
+would not add a safe construction API.
 
-- Collision persistence now uses strict interval overlap (`existing.startsAt < requested.endsAt && existing.endsAt > requested.startsAt`); endpoint-touching appointments do not collide.
-- Authorized rescheduling excludes the appointment being moved from its collision query.
-- Tool handlers translate only malformed UUID/time arguments; authorization, domain, and collision exceptions propagate unchanged.
+### AI contract graph, semantic, and RAG sources
 
-Verification: Java 25 appointment repository tests and repository-wide `spotlessCheck` pass. Assistant production sources compile successfully; the full assistant suite's only failures are the 16 baseline tests listed above.
+All Java sources under these contract directories were included in the policy
+audit:
 
-## Task 4 isolation fix
+- `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/graph`
+- `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/semantic`
+- `libraries/ai-contracts/src/main/java/com/emme/ai/contracts/rag`
 
-Collision lookup is now tenant-scoped through the application use cases, collision port, persistence adapter, and Spring Data repository query (`tenantId` + `artistId` + overlapping interval). Legacy collision signatures remain available as compatibility defaults. Available-slot lookup, booking, and rescheduling use the tenant-aware path. Regression coverage proves that an appointment for the same artist ID in another tenant cannot affect a collision decision.
+The response/value carriers are already records, with interfaces and enums
+forming the remaining non-record boundary types. The inventory found no
+non-record response/value object that needed Lombok. Records therefore retain
+their existing immutable construction, equality, component/property names, and
+serialization behavior.
 
-Focused verification (Java 25):
-`mise exec java@25.0.2 -- ./gradlew :modules:appointments:spotlessApply :modules:appointments:test --tests 'com.emme.appointments.adapter.out.persistence.adapter.AppointmentCollisionAdapterTest' --tests 'com.emme.appointments.application.service.AppointmentMutationAuthorizationTest'` — passed.
+### Assistant fixtures
 
-## Task 4 review remediation completion
+The focused audit covers:
 
-Added `AppointmentMutationAuthorizationTest` covering tenant mismatch and
-cross-tenant customer/service/artist reference rejection, non-owner client
-authorization, non-confirmed mutation rejection, and reschedule self-exclusion.
-The existing domain and collision tests cover strict start-before-end interval
-validation, endpoint-touching boundaries, and confirmed/in-progress versus
-non-confirmed collision status. Existing appointment tool tests verify cancel
-and reschedule backend actor/context propagation.
+- `modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiNailDesignExtractorTest.java`
+- `modules/assistant/src/test/java/com/emme/assistant/ai/application/service/ProcessDesignQuoteServiceTest.java`
+- `modules/assistant/src/test/java/com/emme/assistant/ai/application/service/ReviewQuoteServiceTest.java`
+- `modules/assistant/src/test/java/com/emme/assistant/ai/application/service/SemanticRoutingServiceTest.java`
 
-Mutation idempotency operation identities now use sorted length-framed argument
-encoding followed by SHA-256, preserving replay compatibility while preventing
-delimiter ambiguity. Regression coverage verifies reordered arguments replay
-and ambiguous delimiter inputs receive distinct identities.
+These files contain recording fakes and mutable observation state such as call
+counters, captured requests, saved workflows, and captured semantic metrics.
+Generated value/equality APIs would make test doubles compare by incidental
+observation state and would not improve fixture construction. They remain
+explicit.
 
-Final focused verification (Java 25):
-`mise exec java@25.0.2 -- ./gradlew :modules:appointments:test --tests '*AppointmentMutationAuthorizationTest' :modules:assistant:test --tests '*AuthorizedAiToolGatewayIdempotencyTest' --tests '*AppointmentToolHandlerTest' :modules:appointments:spotlessCheck :modules:assistant:spotlessCheck` — passed.
+### E2E fixtures
+
+The focused audit covers:
+
+- `applications/emme-platform/src/e2eTest/java/com/emme/client/UserSessionHelper.java`
+- `applications/emme-platform/src/e2eTest/java/com/emme/client/UserSession.java`
+- `applications/emme-platform/src/e2eTest/java/com/emme/client/SetupHelper.java`
+
+`UserSession` has four construction paths, optional authentication behavior,
+token normalization, and HTTP client/interceptor setup. A builder would obscure
+those construction modes and could change authentication or client lifecycle
+semantics. `UserSessionHelper` contains mutable default setup state, while
+`SetupHelper` is an explicit session-bound orchestration helper. Neither is an
+immutable value object and neither receives a builder or generated equality.
+
+## TDD evidence
+
+The accepted change is policy/audit coverage rather than a production
+annotation. The focused cycle was still executed for the new policy behavior.
+
+1. **Red:** Added `keepsTask4ImmutableBoundariesAndFixturesExplicit()` and its
+   audit contract before the helper existed. The focused command failed during
+   test compilation with:
+
+   ```text
+   error: cannot find symbol
+   symbol:   method task4ImmutableAuditFindings(Path)
+   location: class LombokUsagePolicyTest
+   ```
+
+   Command:
+
+   ```bash
+   ./gradlew :modules:shared:test \
+     --tests com.emme.shared.architecture.LombokUsagePolicyTest \
+     --no-parallel --no-configuration-cache
+   ```
+
+2. **Green:** Added the minimum source collector and immutable-annotation scan.
+   The same focused policy command completed with `BUILD SUCCESSFUL`.
+
+3. **Refactor:** Extracted deterministic source collection into
+   `task4AuditSources(Path)` and used `LinkedHashSet` for stable audit results.
+   The forced focused run completed with 10 tests, 0 skipped, 0 failures, and
+   0 errors.
+
+## Verification
+
+| Check | Result |
+|---|---|
+| `./gradlew :modules:shared:test --tests com.emme.shared.architecture.LombokUsagePolicyTest --rerun-tasks --no-parallel --no-configuration-cache` | `BUILD SUCCESSFUL`; 10 tests, 0 skipped, 0 failures, 0 errors |
+| `./gradlew :modules:shared:spotlessApply :modules:shared:spotlessCheck --no-parallel --no-configuration-cache` | `BUILD SUCCESSFUL` |
+| `./gradlew :modules:shared:checkstyleTest :modules:shared:test --tests com.emme.shared.architecture.LombokUsagePolicyTest --no-parallel --no-configuration-cache` | `BUILD SUCCESSFUL` |
+| `./gradlew :libraries:ai-contracts:compileJava :modules:shared:compileTestJava :applications:emme-platform:compileE2eTestJava --no-parallel --no-configuration-cache` | `BUILD SUCCESSFUL` |
+| `git diff --check` | Passed |
+
+The full affected compilation confirms that the graph contracts, shared policy,
+and E2E fixture source set compile without production changes. No JSON
+serialization check was needed for a new annotation because no builder/value
+candidate was accepted; the existing records and property names remain
+untouched.
+
+## Changed files
+
+- `modules/shared/src/test/java/com/emme/shared/architecture/LombokUsagePolicyTest.java`
+  — focused Task 4 audit and rejection contract.
+- `docs/superpowers/plans/2026-09-10-lombok-whole-repository-refactor.md`
+  — Task 4 checklist and implementation result.
+- `tasks/todo.md` — Task 4 checklist and evidence.
+- `.superpowers/sdd/task-4-report.md` — this complete report.
+
+No files under the reviewed graph, Assistant fixture, or E2E fixture paths were
+modified. The pre-existing untracked `tgrep/` directory was preserved,
+untouched, and unstaged.
+
+## Follow-up boundary
+
+Future immutable Lombok adoption requires a separate focused contract test for
+all fields, equality, immutability, copy behavior, and JSON/property names. Any
+future builder must use `@Builder(setterPrefix = "with")` and must not cross
+domain, JPA, tenant, security, workflow, configuration, provider, or API-record
+boundaries without a new behavior-preserving review.
+
+## Commit and remote evidence
+
+The scoped audit, tracking updates, and this report are committed and pushed in
+one logical slice. The final commit and remote-tip verification are recorded in
+the handoff message after push.

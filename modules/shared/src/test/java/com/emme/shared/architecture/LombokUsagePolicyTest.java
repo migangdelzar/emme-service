@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,26 @@ class LombokUsagePolicyTest {
       List.of("modules", "libraries", "applications", "build-logic");
   private static final String POLICY_TEST =
       "modules/shared/src/test/java/com/emme/shared/architecture/LombokUsagePolicyTest.java";
+  private static final List<String> TASK4_EXPLICIT_FILES =
+      List.of(
+          "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/graph/GraphNodeType.java",
+          "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/graph/GraphRelationshipType.java",
+          "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/graph/GraphTraversalKind.java",
+          "modules/assistant/src/test/java/com/emme/assistant/ai/adapter/out/provider/springai/SpringAiNailDesignExtractorTest.java",
+          "modules/assistant/src/test/java/com/emme/assistant/ai/application/service/ProcessDesignQuoteServiceTest.java",
+          "modules/assistant/src/test/java/com/emme/assistant/ai/application/service/ReviewQuoteServiceTest.java",
+          "modules/assistant/src/test/java/com/emme/assistant/ai/application/service/SemanticRoutingServiceTest.java",
+          "applications/emme-platform/src/e2eTest/java/com/emme/client/UserSessionHelper.java",
+          "applications/emme-platform/src/e2eTest/java/com/emme/client/UserSession.java",
+          "applications/emme-platform/src/e2eTest/java/com/emme/client/SetupHelper.java");
+  private static final List<String> TASK4_CONTRACT_DIRECTORIES =
+      List.of(
+          "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/graph",
+          "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/semantic",
+          "libraries/ai-contracts/src/main/java/com/emme/ai/contracts/rag");
+  private static final Pattern IMMUTABLE_LOMBOK_ANNOTATION_PATTERN =
+      Pattern.compile(
+          "@(?:[A-Za-z_$][\\w$]*\\.)*(?:Value|With|EqualsAndHashCode|Builder|Jacksonized)\\b");
   private static final Map<String, Set<String>> APPROVED_TEST_FILES_BY_SOURCE_SET =
       Map.of(
           "test", Set.<String>of(),
@@ -137,6 +158,30 @@ class LombokUsagePolicyTest {
                 "modules/shared/src/main/java/com/emme/shared/configuration/I18nConfiguration.java"))
         .isFalse();
     assertThat(isValidApprovedTestSource(root, "test", "README.java")).isFalse();
+  }
+
+  @Test
+  void keepsTask4ImmutableBoundariesAndFixturesExplicit() throws IOException {
+    Path root = sourcePath();
+
+    assertThat(task4ImmutableAuditFindings(root))
+        .as("Task 4 files must not gain generated value, equality, copy, or builder APIs")
+        .isEmpty();
+    assertThat(Files.readString(root.resolve(TASK4_EXPLICIT_FILES.get(0))))
+        .contains("public enum GraphNodeType");
+    assertThat(Files.readString(root.resolve(TASK4_EXPLICIT_FILES.get(1))))
+        .contains("public enum GraphRelationshipType");
+    assertThat(Files.readString(root.resolve(TASK4_EXPLICIT_FILES.get(2))))
+        .contains("public enum GraphTraversalKind");
+
+    assertThat(Files.readString(root.resolve(TASK4_EXPLICIT_FILES.get(8))))
+        .contains("UserSession(URI baseUrl, TestUser user)")
+        .contains("UserSession(URI baseUrl, TestUser user, boolean authenticated)")
+        .contains("private OkHttpClient buildClient(boolean authenticated)");
+    assertThat(Files.readString(root.resolve(TASK4_EXPLICIT_FILES.get(7))))
+        .contains("private String defaultTenantId;");
+    assertThat(Files.readString(root.resolve(TASK4_EXPLICIT_FILES.get(9))))
+        .contains("public SetupHelper(UserSession session)");
   }
 
   private static final Set<String> APPROVED_FILES =
@@ -469,6 +514,35 @@ class LombokUsagePolicyTest {
             Stream.concat(APPROVED_FILES.stream(), APPROVED_LOGGER_FILES.stream()),
             APPROVED_TEST_FILES_BY_SOURCE_SET.values().stream().flatMap(Set::stream))
         .collect(Collectors.toSet());
+  }
+
+  private static Set<String> task4ImmutableAuditFindings(Path root) throws IOException {
+    return task4AuditSources(root).stream()
+        .filter(
+            relativePath -> {
+              try {
+                return IMMUTABLE_LOMBOK_ANNOTATION_PATTERN
+                    .matcher(maskCommentsAndStrings(Files.readString(root.resolve(relativePath))))
+                    .find();
+              } catch (IOException exception) {
+                throw new IllegalStateException(
+                    "Cannot inspect Task 4 immutable candidate: " + relativePath, exception);
+              }
+            })
+        .collect(Collectors.toCollection(LinkedHashSet::new));
+  }
+
+  private static Set<String> task4AuditSources(Path root) throws IOException {
+    Set<String> sources = new LinkedHashSet<>(TASK4_EXPLICIT_FILES);
+    for (String directory : TASK4_CONTRACT_DIRECTORIES) {
+      try (Stream<Path> files = Files.list(root.resolve(directory))) {
+        files
+            .filter(path -> path.toString().endsWith(".java"))
+            .map(path -> root.relativize(path).toString().replace('\\', '/'))
+            .forEach(sources::add);
+      }
+    }
+    return sources;
   }
 
   private static boolean containsForbiddenAnnotation(String contents) {

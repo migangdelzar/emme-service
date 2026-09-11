@@ -414,17 +414,17 @@ time, using these explicit values: `appointments`, `assistant`, `calendar`,
 - Any accepted `@Value`, `@With`, or `@EqualsAndHashCode` preserves the type's
   public construction, equality, immutability, and serialization contract.
 
-- [ ] **Step 1: Write a focused failing contract test for the selected candidate.** For `@Value` or `@With`, test all fields, immutability, copy behavior, and equality. For a builder, test required fields, omitted defaults, collection handling, and `withX` method names. For `@Jacksonized`, test JSON round-trip names. If no candidate has a real builder need, add the audit decision to the plan and make no production builder change.
+- [x] **Step 1: Write a focused failing contract test for the selected candidate.** The audit contract covers the graph enums, all graph/semantic/RAG contract sources, and the named Assistant/E2E fixtures. It rejects generated value, equality, copy, builder, and Jacksonized APIs while asserting the explicit enum and stateful-construction shapes. No candidate had a real builder need, so no production builder test or change was added.
 
-- [ ] **Step 2: Run the focused test to verify red.** Run only the selected test class and confirm it fails for the missing generated API or current contract mismatch.
+- [x] **Step 2: Run the focused test to verify red.** `./gradlew :modules:shared:test --tests com.emme.shared.architecture.LombokUsagePolicyTest --no-parallel --no-configuration-cache` failed at test compilation with the expected missing `task4ImmutableAuditFindings(Path)` symbol before the helper was introduced.
 
-- [ ] **Step 3: Apply the narrow annotation set.** Use `@Value` only on an immutable non-record value object, `@With` only on final fields with an established copy-update API, and `@EqualsAndHashCode` only with explicit included identity fields. Use `@Builder(setterPrefix = "with")` only on the selected carrier and add `@Singular`, `@Builder.Default`, `@ToBuilder`, or `@Jacksonized` only when the focused test requires that behavior.
+- [x] **Step 3: Apply the narrow annotation set.** Audit-only decision: no `@Value`, `@With`, `@EqualsAndHashCode`, `@Builder`, `@Singular`, `@Builder.Default`, `@ToBuilder`, or `@Jacksonized` was safe or materially clearer for the reviewed files. Graph enums, AI contract records, stateful fakes, overloaded `UserSession` construction, auth/client setup, and mutable E2E helper state remain explicit.
 
-- [ ] **Step 4: Run focused tests, affected compilation, and serialization checks.** Expected: PASS with unchanged public property and JSON names.
+- [x] **Step 4: Run focused tests, affected compilation, and serialization checks.** The shared policy test passed with 10 tests and 0 failures; shared test compilation, Spotless, and Checkstyle passed. No production value or serialization surface changed.
 
-- [ ] **Step 5: Refactor for the smallest readable annotation set.** Remove annotations that duplicate record behavior or make invariants less obvious. Keep custom equality and persistence identity explicit.
+- [x] **Step 5: Refactor for the smallest readable annotation set.** Refactored the policy-only source collector for deterministic, readable audit coverage. No production annotation was introduced, and explicit equality/identity, tenant/security, provider, workflow, and fixture lifecycle boundaries remain unchanged.
 
-- [ ] **Step 6: Commit and push each accepted value/builder slice.**
+- [x] **Step 6: Commit and push each accepted value/builder slice.** The audit-only policy slice and tracking/report updates are committed and pushed together because no production candidate was accepted.
 
 ```bash
 git add -A -- \
@@ -442,6 +442,15 @@ git add -A -- \
 git commit -m "refactor(lombok): simplify immutable value construction"
 git push origin feat/ai-platform-foundation
 ```
+
+#### Task 4 implementation result — 2026-09-10
+
+Task 4 is complete as an audit-only slice. The graph types remain explicit enums;
+the AI contract graph, semantic, and RAG carriers remain records/interfaces;
+Assistant fixtures retain mutable recording fakes; and E2E sessions/helpers
+retain overloaded construction, authentication/client setup, and mutable setup
+state. The focused policy contract now prevents accidental immutable Lombok
+annotations or builders from entering these boundaries without a new review.
 
 ### Task 5: Review resource and field reductions
 

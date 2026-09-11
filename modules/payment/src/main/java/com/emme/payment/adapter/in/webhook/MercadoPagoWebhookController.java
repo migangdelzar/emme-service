@@ -14,8 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @ConditionalOnProperty(name = "app.payment.provider", havingValue = "mercadopago")
+@Slf4j
 class MercadoPagoWebhookController {
 
-  private static final Logger log = LoggerFactory.getLogger(MercadoPagoWebhookController.class);
   private static final String TENANT_HEADER = "X-Tenant-ID";
 
   private final ProcessPaymentWorkflowCallbackUseCase processPaymentCallback;

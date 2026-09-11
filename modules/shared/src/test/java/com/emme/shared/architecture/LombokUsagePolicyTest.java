@@ -338,7 +338,8 @@ class LombokUsagePolicyTest {
           "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/MockSmsProvider.java",
           "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/TwilioSmsProvider.java",
           "modules/notification/src/main/java/com/emme/notification/adapter/out/provider/sms/VonageProvider.java",
-          "modules/notification/src/main/java/com/emme/notification/application/service/DeliverNotificationService.java");
+          "modules/notification/src/main/java/com/emme/notification/application/service/DeliverNotificationService.java",
+          "modules/payment/src/main/java/com/emme/payment/adapter/in/webhook/MercadoPagoWebhookController.java");
 
   @Test
   void onlyUsesLombokInApprovedProductionFiles() throws IOException {

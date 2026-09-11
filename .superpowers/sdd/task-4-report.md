@@ -150,6 +150,9 @@ boundaries without a new behavior-preserving review.
 
 ## Commit and remote evidence
 
-The scoped audit, tracking updates, and this report are committed and pushed in
-one logical slice. The final commit and remote-tip verification are recorded in
-the handoff message after push.
+The scoped audit, tracking updates, and this report were committed in:
+
+- `0d8be587` — `test(lombok): audit immutable value boundaries`
+
+The branch push and final remote-tip verification are recorded in the handoff
+message after the final verification run.
